@@ -130,6 +130,7 @@ export type TSlashCommandCustomRender = (props: { userMessage: string }) => Reac
 export interface IChatSlashCommandHandler {
   execute: (value: string, send: TChatSlashCommandSend, editor?: ICodeEditor) => MaybePromise<void>;
   providerInputPlaceholder?: (value: string, editor?: ICodeEditor) => string;
+  providerDefaultInput?: (value: string, editor?: ICodeEditor) => MaybePromise<string>;
   providerPrompt?: (value: string, editor?: ICodeEditor) => MaybePromise<string>;
   providerRender?: TSlashCommandCustomRender;
   /** 自定义 invoke：有此方法时跳过 ACP/默认 agent，由 handler 自行处理请求和响应 */

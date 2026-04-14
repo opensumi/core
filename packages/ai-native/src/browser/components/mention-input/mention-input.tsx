@@ -42,6 +42,8 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   },
   contextService,
   onModeChange,
+  defaultInput,
+  onDefaultInputConsumed,
 }) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
   const mentionPanelContainerRef = React.useRef<HTMLDivElement>(null);
@@ -146,6 +148,22 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       setSelectedMode(footerConfig.defaultMode);
     }
   }, [footerConfig.defaultMode]);
+
+  // 当 defaultInput 变化时，填充输入框并将光标置于末尾
+  React.useEffect(() => {
+    if (defaultInput && editorRef.current) {
+      editorRef.current.textContent = defaultInput;
+      // 将光标放到末尾
+      const range = document.createRange();
+      const selection = window.getSelection();
+      range.selectNodeContents(editorRef.current);
+      range.collapse(false);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      editorRef.current.focus();
+      onDefaultInputConsumed?.();
+    }
+  }, [defaultInput]);
 
   React.useEffect(() => {
     if (mentionState.level === 1 && mentionState.parentType && debouncedSecondLevelFilter !== undefined) {

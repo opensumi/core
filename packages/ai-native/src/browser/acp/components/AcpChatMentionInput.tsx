@@ -109,6 +109,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
   const outlineTreeService = useInjectable<OutlineTreeService>(OutlineTreeService);
   const prevOutlineItems = useRef<MentionItem[]>([]);
   const [placeholder, setPlaceholder] = useState(localize('aiNative.chat.input.placeholder.default'));
+  const [defaultInput, setDefaultInput] = useState('');
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const rulesService = useInjectable<RulesService>(RulesServiceToken);
   const handleShowMCPConfig = React.useCallback(() => {
@@ -134,7 +135,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
     }
   }, [props.agentModes]);
 
-  // 当 slash command 变化时，更新 placeholder
+  // 当 slash command 变化时，更新 placeholder 和 defaultInput
   useEffect(() => {
     const defaultPlaceholder = localize('aiNative.chat.input.placeholder.default');
     const findCommandHandler = chatFeatureRegistry.getSlashCommandHandler(props.command);
@@ -144,6 +145,15 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
       setPlaceholder(customPlaceholder || defaultPlaceholder);
     } else {
       setPlaceholder(defaultPlaceholder);
+    }
+
+    if (findCommandHandler?.providerDefaultInput) {
+      const editor = monacoCommandRegistry.getActiveCodeEditor();
+      Promise.resolve(findCommandHandler.providerDefaultInput(value, editor)).then((input) => {
+        if (input) {
+          setDefaultInput(input);
+        }
+      });
     }
   }, [chatFeatureRegistry, props.command]);
 
@@ -741,6 +751,8 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
         onImageUpload={handleImageUpload}
         contextService={contextService}
         onModeChange={handleModeChange}
+        defaultInput={defaultInput}
+        onDefaultInputConsumed={() => setDefaultInput('')}
       />
     </div>
   );

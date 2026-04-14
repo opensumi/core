@@ -121,6 +121,8 @@ export interface MentionInputProps {
   onSend?: (content: string, config?: { model: string; [key: string]: any }) => void;
   onStop?: () => void;
   placeholder?: string;
+  defaultInput?: string;
+  onDefaultInputConsumed?: () => void;
   loading?: boolean;
   onSelectionChange?: (value: string) => void;
   onImageUpload?: (files: File[]) => Promise<void>;
