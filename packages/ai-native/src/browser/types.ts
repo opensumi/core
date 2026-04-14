@@ -172,6 +172,7 @@ export type ChatInputRender = (props: {
   theme?: string | null;
   setTheme: (theme: string | null) => void;
   agentId: string;
+  agentCwd?: string;
   setAgentId: (theme: string) => void;
   defaultAgentId?: string;
   command: string;

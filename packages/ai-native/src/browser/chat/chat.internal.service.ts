@@ -79,8 +79,8 @@ export class ChatInternalService extends Disposable {
     return this._latestRequestId;
   }
 
-  #sessionModel: ChatModel | undefined;
-  get sessionModel(): ChatModel | undefined {
+  #sessionModel: ChatModel;
+  get sessionModel(): ChatModel {
     return this.#sessionModel;
   }
 
