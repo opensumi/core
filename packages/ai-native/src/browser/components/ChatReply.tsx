@@ -268,7 +268,7 @@ export const ChatReply = (props: IChatReplyProps) => {
             command,
             agentId,
             messageId: msgId,
-            sessionId: aiChatService.sessionModel.sessionId,
+            sessionId: aiChatService.sessionModel?.sessionId,
           });
         }
 

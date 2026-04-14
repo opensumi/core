@@ -13,7 +13,7 @@
  * - ChatView (chat.view.tsx): 依赖注入使用，用于会话管理和事件订阅
  */
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, PreferenceService } from '@opensumi/ide-core-browser';
 import { AIBackSerivcePath, Disposable, Emitter, Event, IAIBackService } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 
@@ -29,6 +29,9 @@ import { ChatModel, ChatRequestModel } from './chat-model';
 export class ChatInternalService extends Disposable {
   @Autowired(AIBackSerivcePath)
   public aiBackService: IAIBackService;
+
+  @Autowired(AINativeConfigService)
+  protected aiNativeConfigService: AINativeConfigService;
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
@@ -62,6 +65,10 @@ export class ChatInternalService extends Disposable {
   private readonly _onSessionLoadingChange = new Emitter<boolean>();
   public readonly onSessionLoadingChange: Event<boolean> = this._onSessionLoadingChange.event;
 
+  /** 当 sessionModel 变化时触发 */
+  private readonly _onSessionModelChange = new Emitter<ChatModel | undefined>();
+  public readonly onSessionModelChange: Event<ChatModel | undefined> = this._onSessionModelChange.event;
+
   // 委托 chatManagerService 的 storageInit 事件
   public get onStorageInit() {
     return this.chatManagerService.onStorageInit;
@@ -72,20 +79,23 @@ export class ChatInternalService extends Disposable {
     return this._latestRequestId;
   }
 
-  #sessionModel!: ChatModel;
-  get sessionModel(): ChatModel {
+  #sessionModel: ChatModel | undefined;
+  get sessionModel(): ChatModel | undefined {
     return this.#sessionModel;
   }
 
   init() {
     this.chatManagerService.onStorageInit(async () => {
+      // ACP 模式下 session 由外层调用方（如 AcpChatViewWrapper）统一控制
+      if (this.aiNativeConfigService.capabilities.supportsAgentMode) {
+        return;
+      }
+      // 非 ACP 模式下自动激活最后一个 session 或创建新 session
       const sessions = this.chatManagerService.getSessions();
-
       if (sessions.length > 0) {
-        // acp模式不需要恢复第一条数据
-        // await this.activateSession(sessions[sessions.length - 1].sessionId);
+        await this.activateSession(sessions[sessions.length - 1].sessionId);
       } else {
-        this.createSessionModel();
+        await this.createSessionModel();
       }
     });
   }
@@ -115,11 +125,19 @@ export class ChatInternalService extends Disposable {
   }
 
   createRequest(input: string, agentId: string, images?: string[], command?: string) {
-    return this.chatManagerService.createRequest(this.#sessionModel.sessionId, input, agentId, command, images);
+    const sessionId = this.#sessionModel?.sessionId;
+    if (!sessionId) {
+      throw new Error('No active session');
+    }
+    return this.chatManagerService.createRequest(sessionId, input, agentId, command, images);
   }
 
   sendRequest(request: ChatRequestModel, regenerate = false) {
-    const result = this.chatManagerService.sendRequest(this.#sessionModel.sessionId, request, regenerate);
+    const sessionId = this.#sessionModel?.sessionId;
+    if (!sessionId) {
+      throw new Error('No active session');
+    }
+    const result = this.chatManagerService.sendRequest(sessionId, request, regenerate);
     if (regenerate) {
       this._onRegenerateRequest.fire();
     }
@@ -127,25 +145,36 @@ export class ChatInternalService extends Disposable {
   }
 
   cancelRequest() {
-    this.chatManagerService.cancelRequest(this.#sessionModel.sessionId);
+    const sessionId = this.#sessionModel?.sessionId;
+    if (!sessionId) {
+      throw new Error('No active session');
+    }
+    this.chatManagerService.cancelRequest(sessionId);
     this._onCancelRequest.fire();
   }
 
   async createSessionModel() {
     this._onSessionLoadingChange.fire(true);
     this.#sessionModel = await this.chatManagerService.startSession();
+    this._onSessionModelChange.fire(this.#sessionModel);
     this._onChangeSession.fire(this.#sessionModel.sessionId);
     this._onSessionLoadingChange.fire(false);
   }
 
   async clearSessionModel(sessionId?: string) {
-    sessionId = sessionId || this.#sessionModel.sessionId;
+    sessionId = sessionId || this.#sessionModel?.sessionId;
+    if (!sessionId) {
+      throw new Error('No active session');
+    }
     this._onWillClearSession.fire(sessionId);
     this.chatManagerService.clearSession(sessionId);
-    if (sessionId === this.#sessionModel.sessionId) {
+    if (this.#sessionModel && sessionId === this.#sessionModel.sessionId) {
       this.#sessionModel = await this.chatManagerService.startSession();
+      this._onSessionModelChange.fire(this.#sessionModel);
     }
-    this._onChangeSession.fire(this.#sessionModel.sessionId);
+    if (this.#sessionModel) {
+      this._onChangeSession.fire(this.#sessionModel.sessionId);
+    }
   }
 
   getSessions() {
@@ -184,6 +213,7 @@ export class ChatInternalService extends Disposable {
         throw new Error(`There is no session with session id ${sessionId}`);
       }
       this.#sessionModel = updatedSession;
+      this._onSessionModelChange.fire(this.#sessionModel);
       this._onChangeSession.fire(this.#sessionModel.sessionId);
     } finally {
       // 会话加载完成，关闭loading状态

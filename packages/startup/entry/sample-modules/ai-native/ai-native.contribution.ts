@@ -337,6 +337,17 @@ Good: "Instance network interfaces exceeded system limit"`;
         providerInputPlaceholder(value, editor) {
           return 'Please enter or paste the code.';
         },
+        // providerDefaultInput: 当用户点击 slash command 快捷入口时，自动填充输入框的默认内容
+        // 如果编辑器中有选中的代码，则自动填充选中的代码；否则返回空字符串
+        providerDefaultInput(value, editor) {
+          if (editor) {
+            const selection = editor.getSelection();
+            if (selection && !selection.isEmpty()) {
+              return editor.getModel()?.getValueInRange(Selection.liftSelection(selection)) || '';
+            }
+          }
+          return '';
+        },
         providerPrompt(value, editor) {
           return `Explain code: \`\`\`\n${value}\n\`\`\``;
         },
