@@ -1081,6 +1081,7 @@ export const localizationBundle = {
     'chat.selectCWDForACP': 'Select working directory for AI chat',
     'chat.defaultCWDSelected': 'No directory selected, using default: {0}',
     'chat.switchWorkspaceDir': 'Switch working directory',
+    'chat.switchWorkspaceDirHint': 'Current path: {0}. Click to switch working directory (creates a new session)',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',

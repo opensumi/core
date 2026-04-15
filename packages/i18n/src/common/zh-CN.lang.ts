@@ -727,6 +727,7 @@ export const localizationBundle = {
     'chat.selectCWDForACP': '为 AI 对话选择工作路径',
     'chat.defaultCWDSelected': '未选择路径，默认使用：{0}',
     'chat.switchWorkspaceDir': '切换工作路径',
+    'chat.switchWorkspaceDirHint': '当前路径：{0}，点击切换工作路径（切换会新建会话）',
 
     'view.command.show': '打开 {0}',
 

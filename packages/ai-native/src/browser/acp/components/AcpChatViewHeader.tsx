@@ -3,7 +3,13 @@ import React from 'react';
 import { QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { ChatMessageRole, DisposableCollection, IDisposable, localize } from '@opensumi/ide-core-common';
+import {
+  ChatMessageRole,
+  DisposableCollection,
+  IDisposable,
+  formatLocalize,
+  localize,
+} from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -41,12 +47,20 @@ export function AcpChatViewHeader({
   const [sessionSwitching, setSessionSwitching] = React.useState(false);
   const isMultiRoot = workspaceService.isMultiRootWorkspaceOpened;
 
-  // Force re-render after switching workspace dir
-  const [, forceUpdate] = React.useReducer((x: number) => x + 1, 0);
+  const [currentWorkspaceDir, setCurrentWorkspaceDir] = React.useState<string>(getCachedWorkspaceDir());
+
+  // Sync state when cache is updated externally (e.g. by session provider on first init)
+  React.useEffect(() => {
+    const cached = getCachedWorkspaceDir();
+    if (cached && cached !== currentWorkspaceDir) {
+      setCurrentWorkspaceDir(cached);
+    }
+  });
+
   const handleSwitchWorkspaceDir = React.useCallback(async () => {
     const oldDir = getCachedWorkspaceDir();
     const newDir = await switchWorkspaceDir(workspaceService, quickPick, messageService);
-    forceUpdate();
+    setCurrentWorkspaceDir(newDir);
     // Create new session with new cwd if path actually changed
     if (newDir && newDir !== oldDir) {
       try {
@@ -196,7 +210,11 @@ export function AcpChatViewHeader({
         <Popover
           overlayClassName={styles.popover_icon}
           id={'ai-chat-header-switch-cwd'}
-          title={getCachedWorkspaceDir() || localize('chat.switchWorkspaceDir')}
+          title={
+            currentWorkspaceDir
+              ? formatLocalize('chat.switchWorkspaceDirHint', currentWorkspaceDir)
+              : localize('chat.switchWorkspaceDir')
+          }
         >
           <EnhanceIcon
             wrapperClassName={styles.action_btn}
