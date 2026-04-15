@@ -6,6 +6,7 @@ import {
   AINativeConfigService,
   AppConfig,
   LabelService,
+  QuickPickService,
   getIcon,
   useInjectable,
   useUpdateOnEvent,
@@ -70,6 +71,7 @@ import { ChatFeatureRegistry } from './chat.feature.registry';
 import { ChatInternalService } from './chat.internal.service';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
+import { getCachedWorkspaceDir, switchWorkspaceDir } from './pick-workspace-dir';
 
 const SCROLL_CLASSNAME = 'chat_scroll';
 
@@ -963,9 +965,19 @@ export function DefaultChatViewHeader({
   const messageService = useInjectable<IMessageService>(IMessageService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
+  const quickPick = useInjectable<QuickPickService>(QuickPickService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
+  const [workspaceDirLabel, setWorkspaceDirLabel] = React.useState<string>(getCachedWorkspaceDir());
+  const isMultiRoot = workspaceService.isMultiRootWorkspaceOpened;
+
+  const handleSwitchWorkspaceDir = React.useCallback(async () => {
+    const dir = await switchWorkspaceDir(workspaceService, quickPick, messageService);
+    setWorkspaceDirLabel(dir);
+  }, [workspaceService, quickPick, messageService]);
+
   const handleNewChat = React.useCallback(() => {
     if (aiChatService.sessionModel?.history.getMessages().length > 0) {
       try {
@@ -1120,6 +1132,22 @@ export function DefaultChatViewHeader({
           />
         );
       })()}
+      {isMultiRoot && (
+        <Popover
+          overlayClassName={styles.popover_icon}
+          id={'ai-chat-header-switch-cwd'}
+          title={workspaceDirLabel || localize('chat.switchWorkspaceDir')}
+        >
+          <EnhanceIcon
+            wrapperClassName={styles.action_btn}
+            className={getIcon('folder')}
+            onClick={handleSwitchWorkspaceDir}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('chat.switchWorkspaceDir')}
+          />
+        </Popover>
+      )}
       <Popover
         overlayClassName={styles.popover_icon}
         id={'ai-chat-header-clear'}

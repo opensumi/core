@@ -726,6 +726,7 @@ export const localizationBundle = {
     'terminal.selectCWDForNewTerminal': '为新 terminal 选择当前工作路径',
     'chat.selectCWDForACP': '为 AI 对话选择工作路径',
     'chat.defaultCWDSelected': '未选择路径，默认使用：{0}',
+    'chat.switchWorkspaceDir': '切换工作路径',
 
     'view.command.show': '打开 {0}',
 
