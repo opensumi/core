@@ -39,12 +39,13 @@ export function AcpChatViewHeader({
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const [historyLoading, setHistoryLoading] = React.useState(false);
   const [sessionSwitching, setSessionSwitching] = React.useState(false);
-  const [workspaceDirLabel, setWorkspaceDirLabel] = React.useState<string>(getCachedWorkspaceDir());
   const isMultiRoot = workspaceService.isMultiRootWorkspaceOpened;
 
+  // Force re-render after switching workspace dir
+  const [, forceUpdate] = React.useReducer((x: number) => x + 1, 0);
   const handleSwitchWorkspaceDir = React.useCallback(async () => {
-    const dir = await switchWorkspaceDir(workspaceService, quickPick, messageService);
-    setWorkspaceDirLabel(dir);
+    await switchWorkspaceDir(workspaceService, quickPick, messageService);
+    forceUpdate();
   }, [workspaceService, quickPick, messageService]);
 
   React.useEffect(() => {
@@ -186,7 +187,7 @@ export function AcpChatViewHeader({
         <Popover
           overlayClassName={styles.popover_icon}
           id={'ai-chat-header-switch-cwd'}
-          title={workspaceDirLabel || localize('chat.switchWorkspaceDir')}
+          title={getCachedWorkspaceDir() || localize('chat.switchWorkspaceDir')}
         >
           <EnhanceIcon
             wrapperClassName={styles.action_btn}
