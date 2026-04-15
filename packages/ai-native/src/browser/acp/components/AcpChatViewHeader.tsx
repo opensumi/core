@@ -208,6 +208,7 @@ export function AcpChatViewHeader({
       />
       {isMultiRoot && (
         <Popover
+          key={`switch-cwd-${currentWorkspaceDir}`}
           overlayClassName={styles.popover_icon}
           id={'ai-chat-header-switch-cwd'}
           title={
