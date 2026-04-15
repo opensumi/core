@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { PreferenceService, QuickPickService } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancellationToken,
@@ -10,7 +10,6 @@ import {
   IApplicationService,
   IChatProgress,
   MCPConfigServiceToken,
-  URI,
 } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
@@ -32,6 +31,7 @@ import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
 import { ChatFeatureRegistry } from './chat.feature.registry';
 import { getAgentConfig, getDefaultAgentType } from './get-default-agent-type';
+import { pickWorkspaceDir } from './pick-workspace-dir';
 
 /**
  * ACP Chat Agent - 实现默认的聊天代理
@@ -69,6 +69,9 @@ export class AcpChatAgent implements IChatAgent {
 
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
+
+  @Autowired(QuickPickService)
+  private readonly quickPick: QuickPickService;
 
   public id = AcpChatAgent.AGENT_ID;
 
@@ -153,7 +156,9 @@ export class AcpChatAgent implements IChatAgent {
     const lastmessage = history[history.length - 1];
 
     try {
-      await this.workspaceService.whenReady;
+      const agentType = getDefaultAgentType(this.preferenceService);
+      const agentConfig = getAgentConfig(this.preferenceService, agentType);
+      const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
       const stream = await this.aiBackService.requestStream(
         prompt,
         {
@@ -162,14 +167,10 @@ export class AcpChatAgent implements IChatAgent {
           history: [lastmessage],
           images: request.images,
           ...(await this.getRequestOptions()),
-          agentSessionConfig: (() => {
-            const agentType = getDefaultAgentType(this.preferenceService);
-            const agentConfig = getAgentConfig(this.preferenceService, agentType);
-            return {
-              ...agentConfig,
-              workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
-            };
-          })(),
+          agentSessionConfig: {
+            ...agentConfig,
+            workspaceDir,
+          },
         },
         token,
       );
