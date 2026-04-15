@@ -1,15 +1,17 @@
 import React from 'react';
 
-import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { ChatMessageRole, DisposableCollection, IDisposable, localize } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../../common';
 import { cleanAttachedTextWrapper } from '../../../common/utils';
 import { ChatInternalService } from '../../chat/chat.internal.service';
 import styles from '../../chat/chat.module.less';
+import { getCachedWorkspaceDir, switchWorkspaceDir } from '../../chat/pick-workspace-dir';
 
 import AcpChatHistory, { IChatHistoryItem } from './AcpChatHistory';
 
@@ -30,11 +32,20 @@ export function AcpChatViewHeader({
 }) {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const messageService = useInjectable<IMessageService>(IMessageService);
+  const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
+  const quickPick = useInjectable<QuickPickService>(QuickPickService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const [historyLoading, setHistoryLoading] = React.useState(false);
   const [sessionSwitching, setSessionSwitching] = React.useState(false);
+  const [workspaceDirLabel, setWorkspaceDirLabel] = React.useState<string>(getCachedWorkspaceDir());
+  const isMultiRoot = workspaceService.isMultiRootWorkspaceOpened;
+
+  const handleSwitchWorkspaceDir = React.useCallback(async () => {
+    const dir = await switchWorkspaceDir(workspaceService, quickPick, messageService);
+    setWorkspaceDirLabel(dir);
+  }, [workspaceService, quickPick, messageService]);
 
   React.useEffect(() => {
     const dispose = aiChatService.onSessionLoadingChange((loading) => {
@@ -171,6 +182,22 @@ export function AcpChatViewHeader({
         onHistoryItemChange={handleHistoryItemChange}
         onHistoryPopoverVisibleChange={handleHistoryPopoverVisibleChange}
       />
+      {isMultiRoot && (
+        <Popover
+          overlayClassName={styles.popover_icon}
+          id={'ai-chat-header-switch-cwd'}
+          title={workspaceDirLabel || localize('chat.switchWorkspaceDir')}
+        >
+          <EnhanceIcon
+            wrapperClassName={styles.action_btn}
+            className={getIcon('folder')}
+            onClick={handleSwitchWorkspaceDir}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('chat.switchWorkspaceDir')}
+          />
+        </Popover>
+      )}
       <Popover
         overlayClassName={styles.popover_icon}
         id={'ai-chat-header-clear'}
