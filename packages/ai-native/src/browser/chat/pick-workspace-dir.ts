@@ -12,7 +12,7 @@ export async function pickWorkspaceDir(
   workspaceService: IWorkspaceService,
   quickPick: QuickPickService,
   messageService: IMessageService,
-): Promise<string | undefined> {
+): Promise<string> {
   await workspaceService.whenReady;
 
   if (workspaceService.isMultiRootWorkspaceOpened) {
@@ -34,5 +34,5 @@ export async function pickWorkspaceDir(
     return new URI(workspaceService.workspace.uri).codeUri.fsPath;
   }
 
-  return undefined;
+  return '';
 }
