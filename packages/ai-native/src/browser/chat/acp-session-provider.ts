@@ -170,8 +170,8 @@ export class ACPSessionProvider implements ISessionProvider {
 
       return sessionModel;
     } catch (error) {
-      this.messageService.error(error.message);
-      return undefined;
+      // 不在 provider 层弹错误提示，将异常抛给调用方统一处理（如 activateSession 会自动创建新会话）
+      throw error;
     }
   }
 

@@ -210,11 +210,19 @@ export class ChatInternalService extends Disposable {
       // 重新获取 targetSession，因为 loadSession 可能更新了 session 对象
       const updatedSession = this.chatManagerService.getSession(sessionId);
       if (!updatedSession) {
-        throw new Error(`There is no session with session id ${sessionId}`);
+        // Session 不存在（可能已被删除或过期），自动创建新会话
+        this.messageService.info(`Session ${sessionId} not found, creating a new session.`);
+        await this.createSessionModel();
+        return;
       }
       this.#sessionModel = updatedSession;
       this._onSessionModelChange.fire(this.#sessionModel);
       this._onChangeSession.fire(this.#sessionModel.sessionId);
+    } catch (error) {
+      // loadSession 失败（如 Resource not found），自动创建新会话
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.messageService.info(`Failed to load session, creating a new session. (${errorMessage})`);
+      await this.createSessionModel();
     } finally {
       // 会话加载完成，关闭loading状态
       // this.__isSessionLoading = false;
