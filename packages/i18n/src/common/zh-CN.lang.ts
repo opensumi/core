@@ -724,6 +724,8 @@ export const localizationBundle = {
     'terminal.killProcess': '结束进程',
     'terminal.process.unHealthy': '*此终端会话已被系统超时回收，请打开新的终端会话来进行操作',
     'terminal.selectCWDForNewTerminal': '为新 terminal 选择当前工作路径',
+    'chat.selectCWDForACP': '为 AI 对话选择工作路径',
+    'chat.defaultCWDSelected': '未选择路径，默认使用：{0}',
 
     'view.command.show': '打开 {0}',
 

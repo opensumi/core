@@ -1078,6 +1078,8 @@ export const localizationBundle = {
     'terminal.process.unHealthy':
       '*This terminal session has been timed out and killed by the system. Please open a new terminal session to proceed with operations.',
     'terminal.selectCWDForNewTerminal': 'Select current working directory for new terminal',
+    'chat.selectCWDForACP': 'Select working directory for AI chat',
+    'chat.defaultCWDSelected': 'No directory selected, using default: {0}',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
