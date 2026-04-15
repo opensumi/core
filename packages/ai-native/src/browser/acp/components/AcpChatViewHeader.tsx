@@ -44,9 +44,18 @@ export function AcpChatViewHeader({
   // Force re-render after switching workspace dir
   const [, forceUpdate] = React.useReducer((x: number) => x + 1, 0);
   const handleSwitchWorkspaceDir = React.useCallback(async () => {
-    await switchWorkspaceDir(workspaceService, quickPick, messageService);
+    const oldDir = getCachedWorkspaceDir();
+    const newDir = await switchWorkspaceDir(workspaceService, quickPick, messageService);
     forceUpdate();
-  }, [workspaceService, quickPick, messageService]);
+    // Create new session with new cwd if path actually changed
+    if (newDir && newDir !== oldDir) {
+      try {
+        aiChatService.createSessionModel();
+      } catch (error) {
+        messageService.error(error.message);
+      }
+    }
+  }, [workspaceService, quickPick, messageService, aiChatService]);
 
   React.useEffect(() => {
     const dispose = aiChatService.onSessionLoadingChange((loading) => {
