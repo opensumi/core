@@ -1,10 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
-import { AIBackSerivcePath, AgentProcessConfig, Domain, IAIBackService, URI } from '@opensumi/ide-core-common';
+import { PreferenceService, QuickPickService } from '@opensumi/ide-core-browser';
+import { AIBackSerivcePath, AgentProcessConfig, Domain, IAIBackService } from '@opensumi/ide-core-common';
 import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { getAgentConfig, getDefaultAgentType } from './get-default-agent-type';
+import { pickWorkspaceDir } from './pick-workspace-dir';
 import { ISessionModel, ISessionProvider, SessionProviderDomain } from './session-provider';
 
 /**
@@ -32,6 +33,9 @@ export class ACPSessionProvider implements ISessionProvider {
   @Autowired(MessageService)
   protected messageService: MessageService;
 
+  @Autowired(QuickPickService)
+  private readonly quickPick: QuickPickService;
+
   canHandle(mode: string): boolean {
     return mode.startsWith('acp');
   }
@@ -45,8 +49,9 @@ export class ACPSessionProvider implements ISessionProvider {
       await this.workspaceService.whenReady;
       const agentType = getDefaultAgentType(this.preferenceService);
       const agentConfig = getAgentConfig(this.preferenceService, agentType);
+      const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
       const result = await this.aiBackService.createSession({
-        workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
+        workspaceDir,
         ...agentConfig,
       });
 
@@ -92,8 +97,9 @@ export class ACPSessionProvider implements ISessionProvider {
       const agentType = getDefaultAgentType(this.preferenceService);
       const agentConfig = getAgentConfig(this.preferenceService, agentType);
 
+      const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
       const result = await this.aiBackService.listSessions({
-        workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
+        workspaceDir,
         ...agentConfig,
       });
 
@@ -151,9 +157,10 @@ export class ACPSessionProvider implements ISessionProvider {
       // 构造 AgentProcessConfig
       const agentType = getDefaultAgentType(this.preferenceService);
       const agentConfig = getAgentConfig(this.preferenceService, agentType);
+      const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
       const config: AgentProcessConfig = {
         ...agentConfig,
-        workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
+        workspaceDir,
       };
 
       const agentSession = await this.aiBackService.loadAgentSession(config, agentSessionId);
