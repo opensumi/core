@@ -1,10 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService, QuickPickService } from '@opensumi/ide-core-browser';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancellationToken,
   ChatFeatureRegistryToken,
   Deferred,
+  IACPConfigProvider,
   IAIBackService,
   IAIReporter,
   IApplicationService,
@@ -15,7 +16,6 @@ import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/setting
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { listenReadable } from '@opensumi/ide-utils/lib/stream';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
   CoreMessage,
@@ -30,8 +30,6 @@ import {
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
 import { ChatFeatureRegistry } from './chat.feature.registry';
-import { getAgentConfig, getDefaultAgentType } from './get-default-agent-type';
-import { pickWorkspaceDir } from './pick-workspace-dir';
 
 /**
  * ACP Chat Agent - 实现默认的聊天代理
@@ -41,37 +39,34 @@ export class AcpChatAgent implements IChatAgent {
   static readonly AGENT_ID = 'Default_Chat_Agent';
 
   @Autowired(IChatAgentService)
-  private readonly chatAgentService: IChatAgentService;
+  protected readonly chatAgentService: IChatAgentService;
 
   @Autowired(AIBackSerivcePath)
-  private readonly aiBackService: IAIBackService;
+  protected readonly aiBackService: IAIBackService;
 
   @Autowired(PreferenceService)
-  private readonly preferenceService: PreferenceService;
+  protected readonly preferenceService: PreferenceService;
 
   @Autowired(IApplicationService)
-  private readonly applicationService: IApplicationService;
+  protected readonly applicationService: IApplicationService;
 
   @Autowired(MonacoCommandRegistry)
-  private readonly monacoCommandRegistry: MonacoCommandRegistry;
+  protected readonly monacoCommandRegistry: MonacoCommandRegistry;
 
   @Autowired(ChatFeatureRegistryToken)
-  private readonly chatFeatureRegistry: ChatFeatureRegistry;
+  protected readonly chatFeatureRegistry: ChatFeatureRegistry;
 
   @Autowired(IAIReporter)
-  private readonly aiReporter: IAIReporter;
+  protected readonly aiReporter: IAIReporter;
 
   @Autowired(IMessageService)
-  private readonly messageService: IMessageService;
+  protected readonly messageService: IMessageService;
 
   @Autowired(MCPConfigServiceToken)
-  private readonly mcpConfigService: MCPConfigService;
+  protected readonly mcpConfigService: MCPConfigService;
 
-  @Autowired(IWorkspaceService)
-  private readonly workspaceService: IWorkspaceService;
-
-  @Autowired(QuickPickService)
-  private readonly quickPick: QuickPickService;
+  @Autowired(IACPConfigProvider)
+  protected readonly configProvider: IACPConfigProvider;
 
   public id = AcpChatAgent.AGENT_ID;
 
@@ -85,7 +80,7 @@ export class AcpChatAgent implements IChatAgent {
     // 不处理
   }
 
-  private async getRequestOptions() {
+  protected async getRequestOptions() {
     const model = this.preferenceService.get<string>(AINativeSettingSectionsId.LLMModelSelection);
     const modelId = this.preferenceService.get<string>(AINativeSettingSectionsId.ModelID);
     let apiKey: string = '';
@@ -156,9 +151,7 @@ export class AcpChatAgent implements IChatAgent {
     const lastmessage = history[history.length - 1];
 
     try {
-      const agentType = getDefaultAgentType(this.preferenceService);
-      const agentConfig = getAgentConfig(this.preferenceService, agentType);
-      const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
+      const config = await this.configProvider.resolveConfig();
       const stream = await this.aiBackService.requestStream(
         prompt,
         {
@@ -167,10 +160,7 @@ export class AcpChatAgent implements IChatAgent {
           history: [lastmessage],
           images: request.images,
           ...(await this.getRequestOptions()),
-          agentSessionConfig: {
-            ...agentConfig,
-            workspaceDir,
-          },
+          agentSessionConfig: config,
         },
         token,
       );

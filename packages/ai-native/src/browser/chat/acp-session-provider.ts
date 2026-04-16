@@ -1,11 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService, QuickPickService } from '@opensumi/ide-core-browser';
-import { AIBackSerivcePath, AgentProcessConfig, Domain, IAIBackService } from '@opensumi/ide-core-common';
-import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { AIBackSerivcePath, Domain, IACPConfigProvider, IAIBackService } from '@opensumi/ide-core-common';
+import { IMessageService } from '@opensumi/ide-overlay';
 
-import { getAgentConfig, getDefaultAgentType } from './get-default-agent-type';
-import { pickWorkspaceDir } from './pick-workspace-dir';
 import { ISessionModel, ISessionProvider, SessionProviderDomain } from './session-provider';
 
 /**
@@ -20,21 +16,15 @@ export class ACPSessionProvider implements ISessionProvider {
   @Autowired(AIBackSerivcePath)
   private aiBackService: IAIBackService;
 
-  @Autowired(IWorkspaceService)
-  private workspaceService: IWorkspaceService;
+  @Autowired(IACPConfigProvider)
+  private configProvider: IACPConfigProvider;
 
-  @Autowired(PreferenceService)
-  private preferenceService: PreferenceService;
+  @Autowired(IMessageService)
+  protected messageService: IMessageService;
 
   private loadedSessionMap: Map<string, ISessionModel> = new Map();
 
   private loadedSessionsResult: ISessionModel[] | null = null;
-
-  @Autowired(MessageService)
-  protected messageService: MessageService;
-
-  @Autowired(QuickPickService)
-  private readonly quickPick: QuickPickService;
 
   canHandle(mode: string): boolean {
     return mode.startsWith('acp');
@@ -46,14 +36,8 @@ export class ACPSessionProvider implements ISessionProvider {
     }
 
     try {
-      await this.workspaceService.whenReady;
-      const agentType = getDefaultAgentType(this.preferenceService);
-      const agentConfig = getAgentConfig(this.preferenceService, agentType);
-      const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
-      const result = await this.aiBackService.createSession({
-        workspaceDir,
-        ...agentConfig,
-      });
+      const config = await this.configProvider.resolveConfig();
+      const result = await this.aiBackService.createSession(config);
 
       if (!result?.sessionId) {
         throw new Error('createSession did not return a valid sessionId');
@@ -93,15 +77,8 @@ export class ACPSessionProvider implements ISessionProvider {
     }
 
     try {
-      await this.workspaceService.whenReady;
-      const agentType = getDefaultAgentType(this.preferenceService);
-      const agentConfig = getAgentConfig(this.preferenceService, agentType);
-
-      const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
-      const result = await this.aiBackService.listSessions({
-        workspaceDir,
-        ...agentConfig,
-      });
+      const config = await this.configProvider.resolveConfig();
+      const result = await this.aiBackService.listSessions(config);
 
       if (!result?.sessions?.length) {
         return [];
@@ -140,12 +117,6 @@ export class ACPSessionProvider implements ISessionProvider {
       return undefined;
     }
 
-    // // 检查缓存，避免重复加载
-    // const cachedSession = this.loadedSessionMap.get(sessionId);
-    // if (cachedSession) {
-    //   return cachedSession;
-    // }
-
     if (!this.aiBackService?.loadAgentSession) {
       return undefined;
     }
@@ -154,15 +125,7 @@ export class ACPSessionProvider implements ISessionProvider {
     const agentSessionId = sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
 
     try {
-      // 构造 AgentProcessConfig
-      const agentType = getDefaultAgentType(this.preferenceService);
-      const agentConfig = getAgentConfig(this.preferenceService, agentType);
-      const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
-      const config: AgentProcessConfig = {
-        ...agentConfig,
-        workspaceDir,
-      };
-
+      const config = await this.configProvider.resolveConfig();
       const agentSession = await this.aiBackService.loadAgentSession(config, agentSessionId);
 
       if (!agentSession) {

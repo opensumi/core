@@ -9,7 +9,7 @@
  *
  * 非 ACP 模式下直接渲染子组件
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { AINativeConfigService, useInjectable } from '@opensumi/ide-core-browser';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -42,7 +42,16 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
   // ACP 模式：等待 sessionModel 准备好
   const [sessionReady, setSessionReady] = useState(false);
 
-  // ACP 模式：只在第一次渲染时触发初始化
+  // 初始化超时状态：超过 30s 未完成时展示重试按钮
+  const [timedOut, setTimedOut] = useState(false);
+
+  // 重试 key：变化时触发重新初始化
+  const [retryKey, setRetryKey] = useState(0);
+
+  // 用于取消上一轮初始化的 cancelled flag
+  const cancelledRef = useRef(false);
+
+  // ACP 模式：只在第一次渲染或重试时触发初始化
   useEffect(() => {
     // 非 ACP 模式不需要延迟初始化
     if (!aiNativeConfigService.capabilities.supportsAgentMode) {
@@ -51,9 +60,13 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
       return;
     }
 
-    if (initState.initialized) {
-      return;
-    }
+    // 取消上一轮初始化，重置状态
+    cancelledRef.current = false;
+    setInitState({ initialized: false, error: null });
+    setSessionReady(false);
+    setTimedOut(false);
+
+    const cancelled = () => cancelledRef.current;
 
     const initializeACP = async () => {
       try {
@@ -63,6 +76,9 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
         const maxRetries = 10; // 最多重试 10 次，每次 1s，总共 10 秒
 
         while (!ready && retries < maxRetries) {
+          if (cancelled()) {
+            return;
+          }
           const isReady = await aiBackService.ready?.();
           ready = !!isReady;
 
@@ -70,6 +86,10 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
             await new Promise((resolve) => setTimeout(resolve, 1000));
             retries++;
           }
+        }
+
+        if (cancelled()) {
+          return;
         }
 
         if (!ready) {
@@ -81,11 +101,22 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
         // 创建新会话
         await aiChatService.createSessionModel();
 
+        if (cancelled()) {
+          return;
+        }
+
         // 加载历史会话列表（用于 history 下拉展示）
         await chatManagerService.loadSessionList();
 
+        if (cancelled()) {
+          return;
+        }
+
         setInitState({ initialized: true, error: null });
       } catch (error) {
+        if (cancelled()) {
+          return;
+        }
         setInitState({
           initialized: true,
           error: error instanceof Error ? error.message : String(error) || 'ACP 服务初始化失败',
@@ -93,8 +124,22 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
       }
     };
 
+    // 30s 超时 timer
+    const timeoutTimer = window.setTimeout(() => {
+      setTimedOut(true);
+    }, 30000);
+
     initializeACP();
-  }, []);
+
+    return () => {
+      cancelledRef.current = true;
+      clearTimeout(timeoutTimer);
+    };
+  }, [retryKey]);
+
+  const handleRetry = () => {
+    setRetryKey((k) => k + 1);
+  };
 
   // 等待 sessionModel 准备好
   useEffect(() => {
@@ -114,38 +159,29 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
     }
 
     // 轮询检查 sessionModel，直到就绪
-    let interval: number | null = null;
     let pollCount = 0;
     const MAX_POLL_COUNT = 12000; // 1200s at 100ms intervals
 
-    const checkSession = () => {
+    const interval = window.setInterval(() => {
       pollCount++;
       if (aiChatService.sessionModel) {
         setSessionReady(true);
-        if (interval) {
-          clearInterval(interval);
-        }
+        clearInterval(interval);
         return;
       }
       if (pollCount >= MAX_POLL_COUNT) {
-        if (interval) {
-          clearInterval(interval);
-        }
+        clearInterval(interval);
         setInitState({
           initialized: true,
           error: 'Session initialization timed out',
         });
       }
-    };
-
-    interval = window.setInterval(checkSession, 100);
+    }, 100);
 
     return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
+      clearInterval(interval);
     };
-  }, [initState.initialized]);
+  }, [initState.initialized, retryKey]);
   if (!aiNativeConfigService.capabilities.supportsAgentMode) {
     return children;
   }
@@ -161,6 +197,16 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
       <div className={styles.loading_container}>
         <Progress loading={true} />
         <div>{localize('aiNative.chat.acp.initializing.text', 'Initializing ACP service...')}</div>
+        {timedOut && (
+          <>
+            <div className={styles.timeout_hint}>
+              {localize('aiNative.chat.acp.timeout.hint', 'Initialization is taking longer than expected')}
+            </div>
+            <button className={styles.retry_button} onClick={handleRetry}>
+              {localize('aiNative.chat.acp.retry', 'Retry')}
+            </button>
+          </>
+        )}
       </div>
     );
   }

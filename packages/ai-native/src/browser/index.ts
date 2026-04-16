@@ -16,6 +16,7 @@ import {
 import {
   AcpPermissionServicePath,
   AcpPermissionServiceToken,
+  IACPConfigProvider,
   IntelligentCompletionsRegistryToken,
   MCPConfigServiceToken,
   ProblemFixRegistryToken,
@@ -54,6 +55,7 @@ import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
+import { DefaultACPConfigProvider } from './chat/default-acp-config-provider';
 import { DefaultChatAgent } from './chat/default-chat-agent';
 import { LocalStorageProvider } from './chat/local-storage-provider';
 import { ISessionProviderRegistry, SessionProviderRegistry } from './chat/session-provider-registry';
@@ -123,6 +125,11 @@ export class AINativeModule extends BrowserModule {
     {
       token: ISessionProviderRegistry,
       useClass: SessionProviderRegistry,
+    },
+    // ACP Config Provider
+    {
+      token: IACPConfigProvider,
+      useClass: DefaultACPConfigProvider,
     },
     // Session Providers
     LocalStorageProvider,

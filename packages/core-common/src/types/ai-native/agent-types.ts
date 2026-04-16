@@ -69,3 +69,20 @@ export interface AgentProcessConfig {
   env?: Record<string, string>;
   enablePermissionConfirmation?: boolean;
 }
+
+/**
+ * DI Token for ACP config provider.
+ * Allows downstream projects to customize AgentProcessConfig construction
+ * (e.g., inject custom env vars, override command paths, add validation).
+ */
+export const IACPConfigProvider = Symbol('IACPConfigProvider');
+
+export interface IACPConfigProvider {
+  /**
+   * Build the AgentProcessConfig for ACP operations.
+   * Called by ACPSessionProvider and AcpChatAgent before any agent operation.
+   * Implementations can customize command, args, workspaceDir, env, etc.
+   * Should throw if prerequisites are not met (e.g., missing API key).
+   */
+  resolveConfig(): Promise<AgentProcessConfig>;
+}
