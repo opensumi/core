@@ -139,6 +139,7 @@ export class DebugVariablesModelService {
   public flushEventQueueDeferred: Deferred<void> | null;
   private _eventFlushTimeout: number;
   private _changeEventDispatchQueue: string[] = [];
+  private _pendingFlushCallback: (() => Promise<void> | void) | undefined;
 
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
@@ -357,40 +358,65 @@ export class DebugVariablesModelService {
   }
 
   private queueChangeEvent(path: string, callback: any) {
+    if (!this._pendingFlushCallback) {
+      this._pendingFlushCallback = callback;
+    }
+
+    if (this._changeEventDispatchQueue.indexOf(path) === -1) {
+      this._changeEventDispatchQueue.push(path);
+    }
+
     if (!this.flushEventQueueDeferred) {
       this.flushEventQueueDeferred = new Deferred<void>();
       clearTimeout(this._eventFlushTimeout);
       this._eventFlushTimeout = setTimeout(async () => {
-        await this.flushEventQueue()!;
-        await callback();
-        this.flushEventQueueDeferred?.resolve();
-        this.flushEventQueueDeferred = null;
+        try {
+          do {
+            const pendingFlushCallback = this._pendingFlushCallback;
+            this._pendingFlushCallback = undefined;
+
+            await this.flushEventQueue();
+            await pendingFlushCallback?.();
+          } while (this._changeEventDispatchQueue.length > 0);
+
+          this.flushEventQueueDeferred?.resolve();
+        } catch (error) {
+          this.flushEventQueueDeferred?.reject(error);
+        } finally {
+          this.flushEventQueueDeferred = null;
+        }
       }, DebugVariablesModelService.DEFAULT_REFRESH_DELAY) as any;
-    }
-    if (this._changeEventDispatchQueue.indexOf(path) === -1) {
-      this._changeEventDispatchQueue.push(path);
     }
   }
 
+  private isSameOrParentPath(basePath: string, targetPath: string) {
+    const base = new Path(basePath);
+    const target = new Path(targetPath);
+    return base.isEqual(target) || base.isEqualOrParent(target);
+  }
+
   public flushEventQueue = () => {
-    let promise: Promise<any>;
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
-    this._changeEventDispatchQueue.sort((pathA, pathB) => {
+
+    const queuedPaths = [...this._changeEventDispatchQueue];
+    this._changeEventDispatchQueue = [];
+
+    queuedPaths.sort((pathA, pathB) => {
       const pathADepth = Path.pathDepth(pathA);
       const pathBDepth = Path.pathDepth(pathB);
       return pathADepth - pathBDepth;
     });
-    const roots = [this._changeEventDispatchQueue[0]];
-    for (const path of this._changeEventDispatchQueue) {
-      if (roots.some((root) => path.indexOf(root) === 0)) {
+    const roots = [queuedPaths[0]];
+    for (const path of queuedPaths) {
+      if (roots.some((root) => this.isSameOrParentPath(root, path))) {
         continue;
       } else {
         roots.push(path);
       }
     }
-    promise = pSeries(
+    return pSeries(
       roots.map((path) => async () => {
         const watcher = this.treeModel?.root?.watchEvents.get(path);
         if (watcher && typeof watcher.callback === 'function') {
@@ -399,8 +425,6 @@ export class DebugVariablesModelService {
         return null;
       }),
     );
-    this._changeEventDispatchQueue = [];
-    return promise;
   };
 
   initDecorations(root) {

@@ -1,4 +1,4 @@
-import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { Deferred, IContextKeyService } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Disposable } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
@@ -157,6 +157,65 @@ describe('Debug Variables Tree Model', () => {
 
     expect(mockSession.onVariableChange).toHaveBeenCalledTimes(1);
     expect(refreshSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('queues another flush when a refresh arrives during an active flush', async () => {
+    jest.useFakeTimers();
+    try {
+      const flushDeferred = new Deferred<void>();
+      const fooWatcher = {
+        callback: jest.fn(() => flushDeferred.promise),
+      };
+      const barWatcher = {
+        callback: jest.fn(async () => {}),
+      };
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root: {
+          watchEvents: new Map([
+            ['/testRoot/foo', fooWatcher],
+            ['/testRoot/bar', barWatcher],
+          ]),
+        },
+      };
+
+      (debugVariablesModelService as any).queueChangeEvent('/testRoot/foo', jest.fn());
+      await jest.advanceTimersByTimeAsync(100);
+      expect(fooWatcher.callback).toHaveBeenCalledTimes(1);
+
+      (debugVariablesModelService as any).queueChangeEvent('/testRoot/bar', jest.fn());
+      flushDeferred.resolve();
+      await Promise.resolve();
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(barWatcher.callback).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('does not dedupe sibling paths that only share a string prefix', async () => {
+    const fooWatcher = {
+      callback: jest.fn(async () => {}),
+    };
+    const foobarWatcher = {
+      callback: jest.fn(async () => {}),
+    };
+
+    (debugVariablesModelService as any)._activeTreeModel = {
+      root: {
+        watchEvents: new Map([
+          ['/testRoot/foo', fooWatcher],
+          ['/testRoot/foobar', foobarWatcher],
+        ]),
+      },
+    };
+    (debugVariablesModelService as any)._changeEventDispatchQueue = ['/testRoot/foo', '/testRoot/foobar'];
+
+    await debugVariablesModelService.flushEventQueue();
+
+    expect(fooWatcher.callback).toHaveBeenCalledTimes(1);
+    expect(foobarWatcher.callback).toHaveBeenCalledTimes(1);
   });
 
   it('restores expanded Locals and Globals from cached scope state', async () => {
