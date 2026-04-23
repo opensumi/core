@@ -15,6 +15,8 @@ import { DebugContextKey } from './../../../../src/browser/contextkeys/debug-con
 describe('Debug Variables Tree Model', () => {
   const mockInjector = createBrowserInjector([]);
   let debugVariablesModelService: DebugVariablesModelService;
+  let viewModelChangeListener: (() => void | Promise<void>) | undefined;
+  let variableChangeListener: (() => void | Promise<void>) | undefined;
   const mockDebugHoverSource = {
     onDidChange: jest.fn(() => Disposable.create(() => {})),
   } as any;
@@ -54,7 +56,11 @@ describe('Debug Variables Tree Model', () => {
   } as any;
 
   const mockDebugViewModel = {
-    onDidChange: jest.fn(),
+    currentSession: undefined as any,
+    onDidChange: jest.fn((listener) => {
+      viewModelChangeListener = listener;
+      return Disposable.create(() => {});
+    }),
   };
 
   beforeAll(() => {
@@ -113,6 +119,7 @@ describe('Debug Variables Tree Model', () => {
     expect(typeof debugVariablesModelService.dispose).toBe('function');
     expect(typeof debugVariablesModelService.onDidUpdateTreeModel).toBe('function');
     expect(typeof debugVariablesModelService.initTreeModel).toBe('function');
+    expect(typeof debugVariablesModelService.refresh).toBe('function');
     expect(typeof debugVariablesModelService.initDecorations).toBe('function');
     expect(typeof debugVariablesModelService.activeNodeDecoration).toBe('function');
     expect(typeof debugVariablesModelService.activeNodeActivedDecoration).toBe('function');
@@ -132,6 +139,79 @@ describe('Debug Variables Tree Model', () => {
 
   it('should init success', () => {
     expect(mockDebugViewModel.onDidChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('refreshes when current session variables change', async () => {
+    const mockSession = {
+      on: jest.fn(),
+      onVariableChange: jest.fn((listener) => {
+        variableChangeListener = listener;
+        return Disposable.create(() => {});
+      }),
+    } as any;
+    const refreshSpy = jest.spyOn(debugVariablesModelService, 'refresh').mockResolvedValue();
+
+    mockDebugViewModel.currentSession = mockSession;
+    await viewModelChangeListener?.();
+    await variableChangeListener?.();
+
+    expect(mockSession.onVariableChange).toHaveBeenCalledTimes(1);
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('restores expanded Locals and Globals from cached scope state', async () => {
+    const localsRawScope = { name: 'Locals', expensive: false };
+    const globalsRawScope = { name: 'Globals', expensive: false };
+    const oldLocalsScope = {
+      expanded: true,
+      variablesReference: 1,
+      getRawScope: () => localsRawScope,
+    };
+    const oldGlobalsScope = {
+      expanded: true,
+      variablesReference: 2,
+      getRawScope: () => globalsRawScope,
+    };
+    const refreshedLocalsScope = {
+      expanded: false,
+      variablesReference: 101,
+      children: [],
+      setExpanded: jest.fn(async () => {
+        refreshedLocalsScope.expanded = true;
+      }),
+      getRawScope: () => ({ name: 'Locals', expensive: false }),
+    };
+    const refreshedGlobalsScope = {
+      expanded: false,
+      variablesReference: 102,
+      children: [],
+      setExpanded: jest.fn(async () => {
+        refreshedGlobalsScope.expanded = true;
+      }),
+      getRawScope: () => ({ name: 'Globals', expensive: false }),
+    };
+    const refreshedClosureScope = {
+      expanded: false,
+      variablesReference: 103,
+      children: [],
+      setExpanded: jest.fn(async () => {
+        refreshedClosureScope.expanded = true;
+      }),
+      getRawScope: () => ({ name: 'Closure', expensive: false }),
+    };
+
+    (debugVariablesModelService as any).keepExpandedScopesModel.set(oldLocalsScope);
+    (debugVariablesModelService as any).keepExpandedScopesModel.set(oldGlobalsScope);
+
+    await (debugVariablesModelService as any).restoreExpandedScopes([
+      refreshedLocalsScope,
+      refreshedGlobalsScope,
+      refreshedClosureScope,
+    ]);
+
+    expect(refreshedLocalsScope.setExpanded).toHaveBeenCalledTimes(1);
+    expect(refreshedGlobalsScope.setExpanded).toHaveBeenCalledTimes(1);
+    expect(refreshedClosureScope.setExpanded).not.toHaveBeenCalled();
   });
 
   it('initTreeModel method should be work', () => {

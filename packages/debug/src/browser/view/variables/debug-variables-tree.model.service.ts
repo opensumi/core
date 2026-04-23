@@ -8,6 +8,7 @@ import {
   TreeModel,
   TreeNodeEvent,
   TreeNodeType,
+  WatchEvent,
 } from '@opensumi/ide-components';
 import {
   Deferred,
@@ -16,6 +17,8 @@ import {
   Event,
   IClipboardService,
   ThrottledDelayer,
+  pSeries,
+  path,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
@@ -35,46 +38,68 @@ import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
 import { DebugVariablesModel } from './debug-variables-model';
 import styles from './debug-variables.module.less';
 
+const { Path } = path;
+
 export interface IDebugVariablesHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
 }
 
 export type DebugVariableWithRawScope = DebugScope | DebugVariableContainer;
 
+interface IKeepExpandedScopeState {
+  expandedVariables: number[];
+  scopeExpanded: boolean;
+}
+
 class KeepExpandedScopesModel {
-  private _keepExpandedScopesMap = new Map<DebugProtocol.Scope, Array<number>>();
+  private _keepExpandedScopesMap = new Map<DebugProtocol.Scope, IKeepExpandedScopeState>();
   constructor() {}
 
   private getMirrorScope(item: DebugVariableWithRawScope) {
     return Array.from(this._keepExpandedScopesMap.keys()).find((f) => isEqual(f, item.getRawScope()));
   }
 
+  private isTopLevelScope(item: DebugVariableWithRawScope) {
+    return !item.parent || DebugVariableRoot.is(item.parent as ExpressionContainer);
+  }
+
   set(item: DebugVariableWithRawScope): void {
     const scope = item.getRawScope();
     if (scope) {
       const keepScope = this.getMirrorScope(item);
-      if (keepScope) {
-        const kScopeVars = this._keepExpandedScopesMap.get(keepScope)!;
-        let nScopeVars: number[];
-        if (item.expanded) {
-          nScopeVars = Array.from(new Set([...kScopeVars, item.variablesReference]));
-        } else {
-          nScopeVars = kScopeVars.filter((v) => v !== item.variablesReference);
-        }
-        this._keepExpandedScopesMap.set(keepScope, nScopeVars);
+      const targetScope = keepScope || scope;
+      const state = this._keepExpandedScopesMap.get(targetScope) || {
+        expandedVariables: [],
+        scopeExpanded: false,
+      };
+
+      if (this.isTopLevelScope(item)) {
+        state.scopeExpanded = item.expanded;
       } else {
-        this._keepExpandedScopesMap.set(scope, item.expanded ? [item.variablesReference] : []);
+        state.expandedVariables = item.expanded
+          ? Array.from(new Set([...state.expandedVariables, item.variablesReference]))
+          : state.expandedVariables.filter((v) => v !== item.variablesReference);
       }
+
+      this._keepExpandedScopesMap.set(targetScope, state);
     }
   }
 
-  get(item: DebugVariableWithRawScope): number[] {
+  getExpandedVariables(item: DebugVariableWithRawScope): number[] {
     const keepScope = this.getMirrorScope(item);
     if (keepScope) {
-      return this._keepExpandedScopesMap.get(keepScope) || [];
+      return this._keepExpandedScopesMap.get(keepScope)?.expandedVariables || [];
     } else {
       return [];
     }
+  }
+
+  isScopeExpanded(item: DebugVariableWithRawScope): boolean {
+    const keepScope = this.getMirrorScope(item);
+    if (keepScope) {
+      return !!this._keepExpandedScopesMap.get(keepScope)?.scopeExpanded;
+    }
+    return false;
   }
 
   clear(): void {
@@ -84,6 +109,7 @@ class KeepExpandedScopesModel {
 
 @Injectable()
 export class DebugVariablesModelService {
+  private static DEFAULT_REFRESH_DELAY = 100;
   private static DEFAULT_TRIGGER_DELAY = 200;
 
   @Autowired(INJECTOR_TOKEN)
@@ -111,6 +137,8 @@ export class DebugVariablesModelService {
   private _currentVariableInternalContext: DebugVariable | DebugVariableContainer | undefined;
 
   public flushEventQueueDeferred: Deferred<void> | null;
+  private _eventFlushTimeout: number;
+  private _changeEventDispatchQueue: string[] = [];
 
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
@@ -130,10 +158,13 @@ export class DebugVariablesModelService {
   private flushDispatchChangeDelayer = new ThrottledDelayer<void>(DebugVariablesModelService.DEFAULT_TRIGGER_DELAY);
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
+  private currentSessionDisposableCollection: DisposableCollection = new DisposableCollection();
+  private currentSession: DebugSession | undefined;
 
   private keepExpandedScopesModel: KeepExpandedScopesModel = new KeepExpandedScopesModel();
 
   constructor() {
+    this.listenCurrentSessionVariableChange();
     this.listenViewModelChange();
   }
 
@@ -181,6 +212,13 @@ export class DebugVariablesModelService {
   }
 
   dispose() {
+    this.disposeTreeListeners();
+    if (!this.currentSessionDisposableCollection.disposed) {
+      this.currentSessionDisposableCollection.dispose();
+    }
+  }
+
+  private disposeTreeListeners() {
     if (!this.disposableCollection.disposed) {
       this.disposableCollection.dispose();
     }
@@ -188,6 +226,7 @@ export class DebugVariablesModelService {
 
   listenViewModelChange() {
     this.viewModel.onDidChange(async () => {
+      this.listenCurrentSessionVariableChange();
       if (!this.flushDispatchChangeDelayer.isTriggered()) {
         this.flushDispatchChangeDelayer.cancel();
       }
@@ -209,24 +248,7 @@ export class DebugVariablesModelService {
               }
             }
           }
-
-          const execExpands = async (data: Array<DebugVariableWithRawScope>) => {
-            for (const s of data) {
-              const cacheExpands = this.keepExpandedScopesModel.get(s);
-              if (cacheExpands.includes(s.variablesReference)) {
-                await s.setExpanded(true);
-                if (Array.isArray(s.children)) {
-                  await execExpands(s.children as Array<DebugVariableWithRawScope>);
-                }
-              }
-            }
-          };
-
-          scopes.forEach(async (s) => {
-            if (Array.isArray(s.children)) {
-              await execExpands(s.children as Array<DebugVariableWithRawScope>);
-            }
-          });
+          await this.restoreExpandedScopes(scopes);
         } else {
           this._activeTreeModel = undefined;
           this.keepExpandedScopesModel.clear();
@@ -237,8 +259,26 @@ export class DebugVariablesModelService {
     });
   }
 
+  private listenCurrentSessionVariableChange() {
+    if (this.currentSession === this.viewModel.currentSession) {
+      return;
+    }
+
+    this.currentSession = this.viewModel.currentSession;
+    this.currentSessionDisposableCollection.dispose();
+    this.currentSessionDisposableCollection = new DisposableCollection();
+
+    if (this.currentSession) {
+      this.currentSessionDisposableCollection.push(
+        this.currentSession.onVariableChange(() => {
+          this.refresh();
+        }),
+      );
+    }
+  }
+
   listenTreeViewChange() {
-    this.dispose();
+    this.disposeTreeListeners();
     if (!this.treeModel) {
       return;
     }
@@ -266,6 +306,102 @@ export class DebugVariablesModelService {
     this.listenTreeViewChange();
     return this._activeTreeModel;
   }
+
+  private isPreservedRootScope(scope: DebugVariableWithRawScope) {
+    const rawScope = scope.getRawScope();
+    return (
+      !!rawScope &&
+      (rawScope.name === 'Locals' || rawScope.name === 'Globals') &&
+      (!scope.parent || DebugVariableRoot.is(scope.parent as ExpressionContainer))
+    );
+  }
+
+  private async restoreExpandedScopes(scopes: Array<DebugVariableWithRawScope>) {
+    for (const scope of scopes) {
+      if (this.isPreservedRootScope(scope) && this.keepExpandedScopesModel.isScopeExpanded(scope) && !scope.expanded) {
+        await scope.setExpanded(true);
+      }
+
+      const cacheExpands = this.keepExpandedScopesModel.getExpandedVariables(scope);
+      const children = (scope.children || []) as Array<DebugVariableWithRawScope>;
+      for (const child of children) {
+        if (cacheExpands.includes(child.variablesReference)) {
+          await child.setExpanded(true);
+          if (Array.isArray(child.children)) {
+            await this.restoreExpandedScopes(child.children as Array<DebugVariableWithRawScope>);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * 刷新指定节点下的所有子节点
+   */
+  async refresh(node?: ExpressionContainer) {
+    if (!node) {
+      if (this.treeModel) {
+        node = this.treeModel.root as ExpressionContainer;
+      } else {
+        return;
+      }
+    }
+    if (!ExpressionContainer.is(node) && (node as ExpressionContainer).parent) {
+      node = (node as ExpressionContainer).parent as ExpressionContainer;
+    }
+    this.queueChangeEvent(node.path, async () => {
+      const scopes = (this.treeModel?.root.children as Array<DebugVariableWithRawScope>) || [];
+      await this.restoreExpandedScopes(scopes);
+      this.onDidRefreshedEmitter.fire();
+    });
+  }
+
+  private queueChangeEvent(path: string, callback: any) {
+    if (!this.flushEventQueueDeferred) {
+      this.flushEventQueueDeferred = new Deferred<void>();
+      clearTimeout(this._eventFlushTimeout);
+      this._eventFlushTimeout = setTimeout(async () => {
+        await this.flushEventQueue()!;
+        await callback();
+        this.flushEventQueueDeferred?.resolve();
+        this.flushEventQueueDeferred = null;
+      }, DebugVariablesModelService.DEFAULT_REFRESH_DELAY) as any;
+    }
+    if (this._changeEventDispatchQueue.indexOf(path) === -1) {
+      this._changeEventDispatchQueue.push(path);
+    }
+  }
+
+  public flushEventQueue = () => {
+    let promise: Promise<any>;
+    if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
+      return;
+    }
+    this._changeEventDispatchQueue.sort((pathA, pathB) => {
+      const pathADepth = Path.pathDepth(pathA);
+      const pathBDepth = Path.pathDepth(pathB);
+      return pathADepth - pathBDepth;
+    });
+    const roots = [this._changeEventDispatchQueue[0]];
+    for (const path of this._changeEventDispatchQueue) {
+      if (roots.some((root) => path.indexOf(root) === 0)) {
+        continue;
+      } else {
+        roots.push(path);
+      }
+    }
+    promise = pSeries(
+      roots.map((path) => async () => {
+        const watcher = this.treeModel?.root?.watchEvents.get(path);
+        if (watcher && typeof watcher.callback === 'function') {
+          await watcher.callback({ type: WatchEvent.Changed, path });
+        }
+        return null;
+      }),
+    );
+    this._changeEventDispatchQueue = [];
+    return promise;
+  };
 
   initDecorations(root) {
     this._decorations = new DecorationsManager(root as any);
