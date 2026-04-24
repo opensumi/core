@@ -160,6 +160,85 @@ describe('Debug Variables Tree Model', () => {
     refreshSpy.mockRestore();
   });
 
+  it('does not refresh a stale tree when session changes before the new tree is ready', async () => {
+    jest.useFakeTimers();
+    try {
+      let currentVariableChangeListener: (() => void | Promise<void>) | undefined;
+      const oldSession = {
+        id: 'old-session',
+        terminated: false,
+        onVariableChange: jest.fn(() => Disposable.create(() => {})),
+      } as any;
+      const newSession = {
+        id: 'new-session',
+        terminated: false,
+        onVariableChange: jest.fn((listener) => {
+          currentVariableChangeListener = listener;
+          return Disposable.create(() => {});
+        }),
+      } as any;
+      const oldWatcher = {
+        callback: jest.fn(async () => {}),
+      };
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root: {
+          session: oldSession,
+          path: '/oldRoot',
+          children: [],
+          watchEvents: new Map([['/oldRoot', oldWatcher]]),
+        },
+      };
+      (debugVariablesModelService as any).currentSession = oldSession;
+      mockDebugViewModel.currentSession = newSession;
+      (debugVariablesModelService as any).listenCurrentSessionVariableChange();
+
+      await currentVariableChangeListener?.();
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(oldWatcher.callback).not.toHaveBeenCalled();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('does not refresh when the subscribed session is terminated', async () => {
+    jest.useFakeTimers();
+    try {
+      let currentVariableChangeListener: (() => void | Promise<void>) | undefined;
+      const session = {
+        id: 'terminated-session',
+        terminated: true,
+        onVariableChange: jest.fn((listener) => {
+          currentVariableChangeListener = listener;
+          return Disposable.create(() => {});
+        }),
+      } as any;
+      const watcher = {
+        callback: jest.fn(async () => {}),
+      };
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root: {
+          session,
+          path: '/terminatedRoot',
+          children: [],
+          watchEvents: new Map([['/terminatedRoot', watcher]]),
+        },
+      };
+      (debugVariablesModelService as any).currentSession = undefined;
+      mockDebugViewModel.currentSession = session;
+      (debugVariablesModelService as any).listenCurrentSessionVariableChange();
+
+      await currentVariableChangeListener?.();
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(watcher.callback).not.toHaveBeenCalled();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('recreates tree listener collection after disposing old listeners', () => {
     const previousCollection = (debugVariablesModelService as any).disposableCollection;
 

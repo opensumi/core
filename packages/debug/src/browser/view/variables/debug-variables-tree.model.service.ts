@@ -272,9 +272,12 @@ export class DebugVariablesModelService {
     this.currentSessionDisposableCollection = new DisposableCollection();
 
     if (this.currentSession) {
+      const session = this.currentSession;
       this.currentSessionDisposableCollection.push(
-        this.currentSession.onVariableChange(() => {
-          this.refresh();
+        session.onVariableChange(() => {
+          if (session === this.currentSession && session === this.viewModel.currentSession && !session.terminated) {
+            this.refresh();
+          }
         }),
       );
     }
@@ -342,6 +345,9 @@ export class DebugVariablesModelService {
    * 刷新指定节点下的所有子节点
    */
   async refresh(node?: ExpressionContainer) {
+    if (!this.isActiveTreeModelForCurrentSession()) {
+      return;
+    }
     if (!node) {
       if (this.treeModel) {
         node = this.treeModel.root as ExpressionContainer;
@@ -357,6 +363,16 @@ export class DebugVariablesModelService {
       await this.restoreExpandedScopes(scopes);
       this.onDidRefreshedEmitter.fire();
     });
+  }
+
+  private isActiveTreeModelForCurrentSession() {
+    const treeSession = (this.treeModel?.root as DebugVariableRoot | undefined)?.session;
+    if (!treeSession) {
+      return true;
+    }
+    return (
+      treeSession === this.currentSession && treeSession === this.viewModel.currentSession && !treeSession.terminated
+    );
   }
 
   private queueChangeEvent(path: string, callback: () => Promise<void> | void) {
