@@ -1012,6 +1012,9 @@ export class DebugSession implements IDebugSession {
 
     // 在 VS Code JavaScript Debugger 中，如果一个表达式取值为 `undefined`, 这里将不会返回结果
     const response = await this.sendRequest('evaluate', { expression, frameId, context });
+    if (context === 'repl') {
+      this._onVariableChange.fire();
+    }
     return response.body;
   }
 
