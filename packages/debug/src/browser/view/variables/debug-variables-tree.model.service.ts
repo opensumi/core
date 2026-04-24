@@ -139,7 +139,8 @@ export class DebugVariablesModelService {
   public flushEventQueueDeferred: Deferred<void> | null;
   private _eventFlushTimeout: number;
   private _changeEventDispatchQueue: string[] = [];
-  private _pendingFlushCallback: (() => Promise<void> | void) | undefined;
+  private _pendingFlushCallbacks: Array<() => Promise<void> | void> = [];
+  private _isFlushingEventQueue = false;
 
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
@@ -223,6 +224,7 @@ export class DebugVariablesModelService {
     if (!this.disposableCollection.disposed) {
       this.disposableCollection.dispose();
     }
+    this.disposableCollection = new DisposableCollection();
   }
 
   listenViewModelChange() {
@@ -350,43 +352,49 @@ export class DebugVariablesModelService {
     if (!ExpressionContainer.is(node) && (node as ExpressionContainer).parent) {
       node = (node as ExpressionContainer).parent as ExpressionContainer;
     }
-    this.queueChangeEvent(node.path, async () => {
+    return this.queueChangeEvent(node.path, async () => {
       const scopes = (this.treeModel?.root.children as Array<DebugVariableWithRawScope>) || [];
       await this.restoreExpandedScopes(scopes);
       this.onDidRefreshedEmitter.fire();
     });
   }
 
-  private queueChangeEvent(path: string, callback: any) {
-    if (!this._pendingFlushCallback) {
-      this._pendingFlushCallback = callback;
-    }
-
+  private queueChangeEvent(path: string, callback: () => Promise<void> | void) {
     if (this._changeEventDispatchQueue.indexOf(path) === -1) {
       this._changeEventDispatchQueue.push(path);
     }
+    this._pendingFlushCallbacks.push(callback);
 
     if (!this.flushEventQueueDeferred) {
       this.flushEventQueueDeferred = new Deferred<void>();
       clearTimeout(this._eventFlushTimeout);
       this._eventFlushTimeout = setTimeout(async () => {
         try {
-          do {
-            const pendingFlushCallback = this._pendingFlushCallback;
-            this._pendingFlushCallback = undefined;
+          this._isFlushingEventQueue = true;
+          while (this._changeEventDispatchQueue.length > 0 || this._pendingFlushCallbacks.length > 0) {
+            const pendingFlushCallbacks = [...this._pendingFlushCallbacks];
+            this._pendingFlushCallbacks = [];
 
-            await this.flushEventQueue();
-            await pendingFlushCallback?.();
-          } while (this._changeEventDispatchQueue.length > 0);
+            await this.flushQueuedEventBatch();
+            await pSeries(
+              pendingFlushCallbacks.map((pendingFlushCallback) => async () => {
+                await pendingFlushCallback();
+                return null;
+              }),
+            );
+          }
 
           this.flushEventQueueDeferred?.resolve();
         } catch (error) {
           this.flushEventQueueDeferred?.reject(error);
         } finally {
+          this._isFlushingEventQueue = false;
           this.flushEventQueueDeferred = null;
         }
       }, DebugVariablesModelService.DEFAULT_REFRESH_DELAY) as any;
     }
+
+    return this.flushEventQueueDeferred.promise;
   }
 
   private isSameOrParentPath(basePath: string, targetPath: string) {
@@ -396,6 +404,13 @@ export class DebugVariablesModelService {
   }
 
   public flushEventQueue = () => {
+    if (this._isFlushingEventQueue) {
+      return;
+    }
+    return this.flushQueuedEventBatch();
+  };
+
+  private flushQueuedEventBatch = () => {
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }

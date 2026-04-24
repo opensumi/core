@@ -157,6 +157,60 @@ describe('Debug Variables Tree Model', () => {
 
     expect(mockSession.onVariableChange).toHaveBeenCalledTimes(1);
     expect(refreshSpy).toHaveBeenCalledTimes(1);
+    refreshSpy.mockRestore();
+  });
+
+  it('recreates tree listener collection after disposing old listeners', () => {
+    const previousCollection = (debugVariablesModelService as any).disposableCollection;
+
+    debugVariablesModelService.initDecorations(mockRoot);
+    (debugVariablesModelService as any)._activeTreeModel = {
+      root: mockRoot,
+    };
+    debugVariablesModelService.listenTreeViewChange();
+
+    expect((debugVariablesModelService as any).disposableCollection).not.toBe(previousCollection);
+  });
+
+  it('waits for queued watcher refresh before resolving refresh', async () => {
+    jest.useFakeTimers();
+    try {
+      const watcherDeferred = new Deferred<void>();
+      const watcher = {
+        callback: jest.fn(() => watcherDeferred.promise),
+      };
+      const root = {
+        path: '/testRoot',
+        children: [],
+        watchEvents: new Map([['/testRoot', watcher]]),
+      };
+      const refreshed = jest.fn();
+      let refreshResolved = false;
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root,
+      };
+      debugVariablesModelService.onDidRefreshed(refreshed);
+
+      const refreshPromise = debugVariablesModelService.refresh(root as any).then(() => {
+        refreshResolved = true;
+      });
+      await Promise.resolve();
+
+      expect(refreshResolved).toBe(false);
+
+      await jest.advanceTimersByTimeAsync(100);
+      expect(watcher.callback).toHaveBeenCalledTimes(1);
+      expect(refreshResolved).toBe(false);
+
+      watcherDeferred.resolve();
+      await refreshPromise;
+
+      expect(refreshed).toHaveBeenCalledTimes(1);
+      expect(refreshResolved).toBe(true);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('queues another flush when a refresh arrives during an active flush', async () => {
@@ -189,6 +243,43 @@ describe('Debug Variables Tree Model', () => {
       await jest.advanceTimersByTimeAsync(100);
 
       expect(barWatcher.callback).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('preserves queued callbacks if flushEventQueue is called during an active flush', async () => {
+    jest.useFakeTimers();
+    try {
+      const flushDeferred = new Deferred<void>();
+      const fooWatcher = {
+        callback: jest.fn(() => flushDeferred.promise),
+      };
+      const barWatcher = {
+        callback: jest.fn(async () => {}),
+      };
+      const barCallback = jest.fn();
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root: {
+          watchEvents: new Map([
+            ['/testRoot/foo', fooWatcher],
+            ['/testRoot/bar', barWatcher],
+          ]),
+        },
+      };
+
+      (debugVariablesModelService as any).queueChangeEvent('/testRoot/foo', jest.fn());
+      await jest.advanceTimersByTimeAsync(100);
+      expect(fooWatcher.callback).toHaveBeenCalledTimes(1);
+
+      (debugVariablesModelService as any).queueChangeEvent('/testRoot/bar', barCallback);
+      await debugVariablesModelService.flushEventQueue();
+      flushDeferred.resolve();
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(barWatcher.callback).toHaveBeenCalledTimes(1);
+      expect(barCallback).toHaveBeenCalledTimes(1);
     } finally {
       jest.useRealTimers();
     }
