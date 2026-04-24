@@ -141,6 +141,7 @@ export class DebugVariablesModelService {
   private _changeEventDispatchQueue: string[] = [];
   private _pendingFlushCallbacks: Array<() => Promise<void> | void> = [];
   private _isFlushingEventQueue = false;
+  private _disposed = false;
 
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
@@ -214,10 +215,23 @@ export class DebugVariablesModelService {
   }
 
   dispose() {
+    this._disposed = true;
+    this.disposeEventQueue();
     this.disposeTreeListeners();
     if (!this.currentSessionDisposableCollection.disposed) {
       this.currentSessionDisposableCollection.dispose();
     }
+  }
+
+  private disposeEventQueue() {
+    clearTimeout(this._eventFlushTimeout);
+    this._changeEventDispatchQueue = [];
+    this._pendingFlushCallbacks = [];
+    this._isFlushingEventQueue = false;
+
+    const flushEventQueueDeferred = this.flushEventQueueDeferred;
+    this.flushEventQueueDeferred = null;
+    flushEventQueueDeferred?.resolve();
   }
 
   private disposeTreeListeners() {
@@ -229,11 +243,17 @@ export class DebugVariablesModelService {
 
   listenViewModelChange() {
     this.viewModel.onDidChange(async () => {
+      if (this._disposed) {
+        return;
+      }
       this.listenCurrentSessionVariableChange();
       if (!this.flushDispatchChangeDelayer.isTriggered()) {
         this.flushDispatchChangeDelayer.cancel();
       }
       this.flushDispatchChangeDelayer.trigger(async () => {
+        if (this._disposed) {
+          return;
+        }
         if (this.viewModel && this.viewModel.currentSession && !this.viewModel.currentSession.terminated) {
           const currentTreeModel = await this.initTreeModel(this.viewModel.currentSession);
           this._activeTreeModel = currentTreeModel;
@@ -345,6 +365,9 @@ export class DebugVariablesModelService {
    * 刷新指定节点下的所有子节点
    */
   async refresh(node?: ExpressionContainer) {
+    if (this._disposed) {
+      return;
+    }
     if (!this.isActiveTreeModelForCurrentSession()) {
       return;
     }
@@ -376,6 +399,9 @@ export class DebugVariablesModelService {
   }
 
   private queueChangeEvent(path: string, callback: () => Promise<void> | void) {
+    if (this._disposed) {
+      return Promise.resolve();
+    }
     if (this._changeEventDispatchQueue.indexOf(path) === -1) {
       this._changeEventDispatchQueue.push(path);
     }
@@ -386,15 +412,26 @@ export class DebugVariablesModelService {
       clearTimeout(this._eventFlushTimeout);
       this._eventFlushTimeout = setTimeout(async () => {
         try {
+          if (this._disposed) {
+            return;
+          }
           this._isFlushingEventQueue = true;
-          while (this._changeEventDispatchQueue.length > 0 || this._pendingFlushCallbacks.length > 0) {
+          while (
+            !this._disposed &&
+            (this._changeEventDispatchQueue.length > 0 || this._pendingFlushCallbacks.length > 0)
+          ) {
             const pendingFlushCallbacks = [...this._pendingFlushCallbacks];
             this._pendingFlushCallbacks = [];
 
             await this.flushQueuedEventBatch();
+            if (this._disposed) {
+              return;
+            }
             await pSeries(
               pendingFlushCallbacks.map((pendingFlushCallback) => async () => {
-                await pendingFlushCallback();
+                if (!this._disposed) {
+                  await pendingFlushCallback();
+                }
                 return null;
               }),
             );
@@ -402,7 +439,9 @@ export class DebugVariablesModelService {
 
           this.flushEventQueueDeferred?.resolve();
         } catch (error) {
-          this.flushEventQueueDeferred?.reject(error);
+          if (!this._disposed) {
+            this.flushEventQueueDeferred?.reject(error);
+          }
         } finally {
           this._isFlushingEventQueue = false;
           this.flushEventQueueDeferred = null;
@@ -420,14 +459,14 @@ export class DebugVariablesModelService {
   }
 
   public flushEventQueue = () => {
-    if (this._isFlushingEventQueue) {
+    if (this._disposed || this._isFlushingEventQueue) {
       return;
     }
     return this.flushQueuedEventBatch();
   };
 
   private flushQueuedEventBatch = () => {
-    if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
+    if (this._disposed || !this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
 

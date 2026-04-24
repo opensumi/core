@@ -292,6 +292,42 @@ describe('Debug Variables Tree Model', () => {
     }
   });
 
+  it('cancels pending queued refresh work when disposed', async () => {
+    jest.useFakeTimers();
+    try {
+      const watcher = {
+        callback: jest.fn(async () => {}),
+      };
+      const root = {
+        path: '/disposeRoot',
+        children: [],
+        watchEvents: new Map([['/disposeRoot', watcher]]),
+      };
+      const refreshed = jest.fn();
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root,
+      };
+      debugVariablesModelService.onDidRefreshed(refreshed);
+
+      const refreshPromise = debugVariablesModelService.refresh(root as any);
+      await Promise.resolve();
+
+      debugVariablesModelService.dispose();
+
+      expect(debugVariablesModelService.flushEventQueuePromise).toBeFalsy();
+
+      await jest.advanceTimersByTimeAsync(100);
+      await refreshPromise;
+
+      expect(watcher.callback).not.toHaveBeenCalled();
+      expect(refreshed).not.toHaveBeenCalled();
+    } finally {
+      (debugVariablesModelService as any)._disposed = false;
+      jest.useRealTimers();
+    }
+  });
+
   it('queues another flush when a refresh arrives during an active flush', async () => {
     jest.useFakeTimers();
     try {
