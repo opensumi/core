@@ -210,6 +210,16 @@ export class FileTreeContribution
     return resourceTitle;
   }
 
+  private getExplorerTargetUri(uri?: URI): URI | undefined {
+    return (
+      uri ||
+      this.fileTreeModelService.activeUri ||
+      this.fileTreeModelService.focusedFile?.uri ||
+      this.fileTreeModelService.selectedFiles?.[0]?.uri ||
+      this.fileTreeModelService.contextMenuFile?.uri
+    );
+  }
+
   private revealFile(locationUri: URI) {
     if (locationUri) {
       if (this.isRendered) {
@@ -749,13 +759,14 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_PATH, {
       execute: async (uri) => {
-        if (!uri) {
+        const targetUri = this.getExplorerTargetUri(uri);
+        if (!targetUri) {
           return;
         }
-        const copyUri: URI = uri;
+        const copyUri: URI = targetUri;
         let uriPath = copyUri.path.toString();
-        if (uri.scheme === DIFF_SCHEME) {
-          const query = uri.getParsedQuery();
+        if (targetUri.scheme === DIFF_SCHEME) {
+          const query = targetUri.getParsedQuery();
           uriPath = new URI(query.modified).path.toString();
         }
         let pathStr: string = decodeURIComponent(uriPath);
@@ -770,14 +781,15 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_RELATIVE_PATH, {
       execute: async (uri) => {
-        if (!uri) {
+        let targetUri = this.getExplorerTargetUri(uri);
+        if (!targetUri) {
           return;
         }
-        if (uri.scheme === DIFF_SCHEME) {
-          const query = uri.getParsedQuery();
-          uri = new URI(query.modified).withScheme('file');
+        if (targetUri.scheme === DIFF_SCHEME) {
+          const query = targetUri.getParsedQuery();
+          targetUri = new URI(query.modified).withScheme('file');
         }
-        const node = this.fileTreeService.getNodeByPathOrUri(uri);
+        const node = this.fileTreeService.getNodeByPathOrUri(targetUri);
         if (node) {
           if (node.filestat.isInSymbolicDirectory) {
             // 软链接文件需要通过直接通过文件树 Path 获取
@@ -789,20 +801,20 @@ export class FileTreeContribution
           // 多工作区额外处理
           for (const root of await this.workspaceService.roots) {
             rootUri = new URI(root.uri);
-            if (rootUri.isEqual(uri)) {
+            if (rootUri.isEqual(targetUri)) {
               return await this.clipboardService.writeText('./');
             }
-            if (rootUri.isEqualOrParent(uri)) {
-              return await this.clipboardService.writeText(decodeURIComponent(rootUri.relative(uri)!.toString()));
+            if (rootUri.isEqualOrParent(targetUri)) {
+              return await this.clipboardService.writeText(decodeURIComponent(rootUri.relative(targetUri)!.toString()));
             }
           }
         } else {
           if (this.workspaceService.workspace) {
             rootUri = new URI(this.workspaceService.workspace.uri);
-            if (rootUri.isEqual(uri)) {
+            if (rootUri.isEqual(targetUri)) {
               return await this.clipboardService.writeText('./');
             }
-            return await this.clipboardService.writeText(decodeURIComponent(rootUri.relative(uri)!.toString()));
+            return await this.clipboardService.writeText(decodeURIComponent(rootUri.relative(targetUri)!.toString()));
           }
         }
       },
