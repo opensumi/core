@@ -83,6 +83,7 @@ export namespace FILE_COMMANDS {
   export const COPY_RELATIVE_PATH: Command = {
     id: 'filetree.copy.relativepath',
     category: CATEGORY,
+    label: '%file.copy.relativepath%',
   };
 
   export const COPY_FILE: Command = {
