@@ -1,60 +1,44 @@
+/**
+ * ChatProxyService - 聊天代理服务
+ *
+ * 负责注册默认的聊天 Agent，作为 AI 后端服务和聊天界面之间的代理：
+ * - 根据配置动态注册 ACP Agent 或 Local Agent
+ * - 注册默认 Agent 处理聊天请求
+ * - 调用 AI 后端服务进行流式请求
+ * - 管理请求配置（模型、API Key、系统提示等）
+ *
+ * 被以下类调用:
+ * - ChatFeatureRegistry: 使用 AGENT_ID 注册斜杠命令
+ * - ChatAgentViewService: 过滤渲染 Agent 时排除默认 Agent
+ * - ApplyService: 依赖注入使用，获取请求配置
+ */
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
-  AIBackSerivcePath,
-  CancellationToken,
   ChatAgentViewServiceToken,
-  ChatFeatureRegistryToken,
-  Deferred,
   Disposable,
-  IAIBackService,
-  IAIReporter,
   IApplicationService,
-  IChatProgress,
   MCPConfigServiceToken,
 } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
-import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
-import { IMessageService } from '@opensumi/ide-overlay';
-import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 
-import {
-  CoreMessage,
-  IChatAgentCommand,
-  IChatAgentRequest,
-  IChatAgentResult,
-  IChatAgentService,
-  IChatAgentWelcomeMessage,
-} from '../../common';
-import { DEFAULT_SYSTEM_PROMPT } from '../../common/prompts/system-prompt';
+import { DefaultChatAgentToken, IChatAgentService } from '../../common';
 import { ChatToolRender } from '../components/ChatToolRender';
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 import { IChatAgentViewService } from '../types';
 
-import { ChatFeatureRegistry } from './chat.feature.registry';
+import { AcpChatAgent } from './acp-chat-agent';
+import { DefaultChatAgent } from './default-chat-agent';
 
 /**
  * @internal
  */
 @Injectable()
 export class ChatProxyService extends Disposable {
-  // 避免和插件注册的 agent id 冲突
-  static readonly AGENT_ID = 'Default_Chat_Agent';
+  static readonly AGENT_ID = DefaultChatAgent.AGENT_ID;
 
   @Autowired(IChatAgentService)
   private readonly chatAgentService: IChatAgentService;
-
-  @Autowired(AIBackSerivcePath)
-  private readonly aiBackService: IAIBackService;
-
-  @Autowired(ChatFeatureRegistryToken)
-  private readonly chatFeatureRegistry: ChatFeatureRegistry;
-
-  @Autowired(MonacoCommandRegistry)
-  private readonly monacoCommandRegistry: MonacoCommandRegistry;
-
-  @Autowired(IAIReporter)
-  private readonly aiReporter: IAIReporter;
 
   @Autowired(ChatAgentViewServiceToken)
   private readonly chatAgentViewService: IChatAgentViewService;
@@ -62,16 +46,40 @@ export class ChatProxyService extends Disposable {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(AINativeConfigService)
+  private readonly aiNativeConfigService: AINativeConfigService;
+
   @Autowired(IApplicationService)
   private readonly applicationService: IApplicationService;
-
-  @Autowired(IMessageService)
-  private readonly messageService: IMessageService;
 
   @Autowired(MCPConfigServiceToken)
   private readonly mcpConfigService: MCPConfigService;
 
-  private chatDeferred: Deferred<void> = new Deferred<void>();
+  @Autowired(DefaultChatAgentToken)
+  private readonly defaultChatAgent: DefaultChatAgent;
+
+  @Autowired(AcpChatAgent)
+  private readonly acpChatAgent: AcpChatAgent;
+
+  public registerDefaultAgent() {
+    this.chatAgentViewService.registerChatComponent({
+      id: 'toolCall',
+      component: ChatToolRender,
+      initialProps: {},
+    });
+
+    this.applicationService.getBackendOS().then(() => {
+      // 根据配置动态选择 Agent：ACP 模式使用 AcpChatAgent，否则使用 DefaultChatAgent
+      const agentToRegister = this.aiNativeConfigService.capabilities.supportsAgentMode
+        ? this.acpChatAgent
+        : this.defaultChatAgent;
+
+      this.addDispose(this.chatAgentService.registerAgent(agentToRegister));
+      queueMicrotask(() => {
+        this.chatAgentService.updateAgent(ChatProxyService.AGENT_ID, {});
+      });
+    });
+  }
 
   public async getRequestOptions() {
     const model = this.preferenceService.get<string>(AINativeSettingSectionsId.LLMModelSelection);
@@ -90,7 +98,7 @@ export class ChatProxyService extends Disposable {
       baseURL = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiBaseURL, '');
     }
     const maxTokens = this.preferenceService.get<number>(AINativeSettingSectionsId.MaxTokens);
-    const agent = this.chatAgentService.getAgent(ChatProxyService.AGENT_ID);
+    const agent = this.chatAgentService.getAgent(DefaultChatAgent.AGENT_ID);
     const disabledTools = await this.mcpConfigService.getDisabledTools();
     return {
       clientId: this.applicationService.clientId,
@@ -102,86 +110,5 @@ export class ChatProxyService extends Disposable {
       system: agent?.metadata.systemPrompt,
       disabledTools,
     };
-  }
-
-  public registerDefaultAgent() {
-    this.chatAgentViewService.registerChatComponent({
-      id: 'toolCall',
-      component: ChatToolRender,
-      initialProps: {},
-    });
-
-    this.applicationService.getBackendOS().then(() => {
-      this.addDispose(
-        this.chatAgentService.registerAgent({
-          id: ChatProxyService.AGENT_ID,
-          metadata: {
-            systemPrompt: this.preferenceService.get<string>(
-              AINativeSettingSectionsId.SystemPrompt,
-              DEFAULT_SYSTEM_PROMPT,
-            ),
-          },
-          invoke: async (
-            request: IChatAgentRequest,
-            progress: (part: IChatProgress) => void,
-            history: CoreMessage[],
-            token: CancellationToken,
-          ): Promise<IChatAgentResult> => {
-            this.chatDeferred = new Deferred<void>();
-            const { message, command } = request;
-            let prompt: string = message;
-            if (command) {
-              const commandHandler = this.chatFeatureRegistry.getSlashCommandHandler(command);
-              if (commandHandler && commandHandler.providerPrompt) {
-                const editor = this.monacoCommandRegistry.getActiveCodeEditor();
-                const slashCommandPrompt = await commandHandler.providerPrompt(message, editor);
-                prompt = slashCommandPrompt;
-              }
-            }
-
-            const stream = await this.aiBackService.requestStream(
-              prompt,
-              {
-                requestId: request.requestId,
-                sessionId: request.sessionId,
-                history,
-                images: request.images,
-                ...(await this.getRequestOptions()),
-              },
-              token,
-            );
-
-            listenReadable<IChatProgress>(stream, {
-              onData: (data) => {
-                progress(data);
-              },
-              onEnd: () => {
-                this.chatDeferred.resolve();
-              },
-              onError: (error) => {
-                this.messageService.error(error.message);
-                this.aiReporter.end(request.sessionId + '_' + request.requestId, {
-                  message: error.message,
-                  success: false,
-                  command,
-                });
-              },
-            });
-
-            await this.chatDeferred.promise;
-            return {};
-          },
-          provideSlashCommands: async (): Promise<IChatAgentCommand[]> =>
-            this.chatFeatureRegistry
-              .getAllSlashCommand()
-              .map((s) => ({ ...s, name: s.name, description: s.description || '' })),
-          provideChatWelcomeMessage: async (): Promise<IChatAgentWelcomeMessage | undefined> => undefined,
-        }),
-      );
-    });
-
-    queueMicrotask(() => {
-      this.chatAgentService.updateAgent(ChatProxyService.AGENT_ID, {});
-    });
   }
 }

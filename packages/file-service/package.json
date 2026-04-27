@@ -18,6 +18,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
+    "@furyjs/fury": "0.5.9-beta",
     "@opensumi/ide-connection": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",

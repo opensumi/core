@@ -35,7 +35,7 @@ export class AITerminalDecorationService extends Disposable {
     terminal: Terminal,
     marker: IMarker,
     height: number,
-    inlineWidget: { operationList: AIActionItem[]; onClickItem: () => void },
+    inlineWidget: { operationList: AIActionItem[]; onClickItem: (id: string) => void },
   ) {
     const decoration = terminal.registerDecoration({
       marker,
@@ -59,8 +59,8 @@ export class AITerminalDecorationService extends Disposable {
       root.render(
         <TerminalInlineWidgetForDetection
           actions={inlineWidget.operationList}
-          onClickItem={() => {
-            inlineWidget.onClickItem();
+          onClickItem={(id) => {
+            inlineWidget.onClickItem(id);
           }}
         />,
       );

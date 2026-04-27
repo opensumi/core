@@ -1,3 +1,17 @@
+/**
+ * ChatAgentService - AI 聊天 Agent 服务
+ *
+ * 负责管理 AI 聊天 Agent 的注册和调用，包括：
+ * - 注册和管理多个聊天 Agent
+ * - 调用 Agent 处理聊天请求
+ * - 提供上下文消息增强
+ * - 获取 Followups 和示例问题
+ *
+ * 被以下类调用:
+ * - ChatManagerService: 依赖注入使用，用于调用 Agent 处理聊天请求
+ * - ChatProxyService: 注册默认 Agent
+ * - ChatAgentViewService: 获取已注册的 Agent 列表
+ */
 import flatMap from 'lodash/flatMap';
 
 import { Autowired, Injectable } from '@opensumi/di';
@@ -145,7 +159,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   ): Promise<IChatAgentResult> {
     const data = this.agents.get(id);
     if (!data) {
-      throw new Error(`No agent with id ${id}`);
+      throw new Error(`No agent with id ${id},this.agents ${this.agents}`);
     }
 
     // 发送第一条消息时携带初始 context

@@ -1,4 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { AcpChatMentionInput } from '@opensumi/ide-ai-native/lib/browser/acp/components/AcpChatMentionInput';
+import { AcpChatViewHeader } from '@opensumi/ide-ai-native/lib/browser/acp/components/AcpChatViewHeader';
 import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
 import {
   BaseTerminalDetectionLineMatcher,
@@ -13,6 +15,7 @@ import {
   AINativeCoreContribution,
   ERunStrategy,
   IChatFeatureRegistry,
+  IChatRenderRegistry,
   IInlineChatFeatureRegistry,
   IIntelligentCompletionsRegistry,
   IProblemFixContext,
@@ -20,6 +23,7 @@ import {
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
+  TChatSlashCommandSend,
   TerminalSuggestionReadableStream,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { InlineChatController } from '@opensumi/ide-ai-native/lib/browser/widget/inline-chat/inline-chat-controller';
@@ -30,7 +34,7 @@ import {
 import { MergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
 import { RenamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
 import { TerminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
-import { Domain, getIcon } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, Domain, getIcon } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancelResponse,
@@ -46,6 +50,8 @@ import {
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, ISelection, NewSymbolName, NewSymbolNameTag, Range, Selection } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
+
+import { SlashCommand } from './SlashCommand';
 
 export enum EInlineOperation {
   Comments = 'Comments',
@@ -76,6 +82,9 @@ export class AINativeContribution implements AINativeCoreContribution {
 
   @Autowired(ChatServiceToken)
   private readonly aiChatService: ChatService;
+
+  @Autowired(AINativeConfigService)
+  private readonly aiNativeConfigService: AINativeConfigService;
 
   logger = getDebugLogger();
 
@@ -193,7 +202,11 @@ export class AINativeContribution implements AINativeCoreContribution {
       },
       {
         triggerRules: 'selection',
-        execute: async (stdout: string) => {},
+        execute: async (stdout: string) => {
+          this.aiChatService.sendMessage({
+            message: `Explain terminal output:\n\`\`\`\n${stdout}\n\`\`\``,
+          });
+        },
       },
     );
 
@@ -219,6 +232,27 @@ export class AINativeContribution implements AINativeCoreContribution {
         execute: async (stdout: string, stdin: string, rule) => {
           const prompt = this.terminalDetectionPromptManager.generateBasePrompt(stdout);
           // 通过 ai 后端服务请求
+        },
+      },
+    );
+
+    registry.registerTerminalInlineChat(
+      {
+        id: 'terminal-qa',
+        name: '智能答疑',
+      },
+      {
+        triggerRules: 'selection',
+        // triggerRules: [NodeMatcher, TSCMatcher, NPMMatcher, ShellMatcher, JavaMatcher],
+        execute: async (stdout: string, stdin: string) => {
+          // 1. 打开 Chat 面板，将错误信息填入输入框
+          this.aiChatService.showChatView();
+
+          // 2. 直接调用独立 API（TODO: 替换为真实 API）
+          const reply = `【智能答疑】\n\n**命令：** \`${stdin}\`\n\n**错误分析：**\n${stdout}\n\n这是模拟回复，后续替换为真实 API。`;
+
+          // 3. 以 AI 角色推送回复到 Chat 面板
+          this.aiChatService.sendReplyMessage(reply);
         },
       },
     );
@@ -291,26 +325,46 @@ Good: "Instance network interfaces exceeded system limit"`;
       },
     });
 
-    // registry.registerSlashCommand(
-    //   {
-    //     name: 'Explain',
-    //     description: 'Explain',
-    //     isShortcut: true,
-    //     tooltip: 'Explain',
-    //   },
-    //   {
-    //     providerRender: SlashCommand,
-    //     providerInputPlaceholder(value, editor) {
-    //       return 'Please enter or paste the code.';
-    //     },
-    //     providerPrompt(value, editor) {
-    //       return `Explain code: \`\`\`\n${value}\n\`\`\``;
-    //     },
-    //     execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
-    //       send(value);
-    //     },
-    //   },
-    // );
+    registry.registerSlashCommand(
+      {
+        name: 'Explain',
+        description: 'Explain',
+        isShortcut: true,
+        tooltip: 'Explain',
+      },
+      {
+        // providerRender: SlashCommand,
+        providerInputPlaceholder(value, editor) {
+          return 'Please enter or paste the code.';
+        },
+        // providerDefaultInput: 当用户点击 slash command 快捷入口时，自动填充输入框的默认内容
+        // 如果编辑器中有选中的代码，则自动填充选中的代码；否则返回空字符串
+        providerDefaultInput(value, editor) {
+          if (editor) {
+            const selection = editor.getSelection();
+            if (selection && !selection.isEmpty()) {
+              return editor.getModel()?.getValueInRange(Selection.liftSelection(selection)) || '';
+            }
+          }
+          return '';
+        },
+        providerPrompt(value, editor) {
+          return `Explain code: \`\`\`\n${value}\n\`\`\``;
+        },
+        execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
+          send(value);
+        },
+        // 自定义 invoke：跳过 ACP，走独立 API 服务
+        // TODO: 替换为真实 API 调用
+        invoke: async (message, progress, _token) => {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          progress({
+            content: `【Explain Mock】\n\n**输入：**\n\`\`\`\n${message}\n\`\`\`\n\n**回答：**\n这是模拟回复，后续替换为真实 API。`,
+            kind: 'content',
+          });
+        },
+      },
+    );
 
     // registry.registerSlashCommand(
     //   {
@@ -557,12 +611,15 @@ Good: "Instance network interfaces exceeded system limit"`;
     });
   }
 
-  registerChatAgentPromptProvider(): void {
-    this.injector.overrideProviders({
-      token: ChatAgentPromptProvider,
-      useClass: DefaultChatAgentPromptProvider,
-    });
+  registerChatRender(registry: IChatRenderRegistry): void {
+    if (this.aiNativeConfigService.capabilities.supportsAgentMode) {
+      registry.registerInputRender(AcpChatMentionInput);
+      registry.registerChatViewHeaderRender(AcpChatViewHeader);
+      registry.registerEnabledMentionTypes(['file', 'folder', 'rule']);
+    }
   }
+
+  registerChatAgentPromptProvider(): void {}
 }
 
 const MAX_IMAGE_SIZE = 3 * 1024 * 1024;

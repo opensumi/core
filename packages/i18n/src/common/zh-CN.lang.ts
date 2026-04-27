@@ -724,6 +724,10 @@ export const localizationBundle = {
     'terminal.killProcess': '结束进程',
     'terminal.process.unHealthy': '*此终端会话已被系统超时回收，请打开新的终端会话来进行操作',
     'terminal.selectCWDForNewTerminal': '为新 terminal 选择当前工作路径',
+    'chat.selectCWDForACP': '为 AI 对话选择工作路径',
+    'chat.defaultCWDSelected': '未选择路径，默认使用：{0}',
+    'chat.switchWorkspaceDir': '切换工作路径',
+    'chat.switchWorkspaceDirHint': '当前路径：{0}，点击切换工作路径（切换会新建会话）',
 
     'view.command.show': '打开 {0}',
 
@@ -1272,6 +1276,7 @@ export const localizationBundle = {
     'aiNative.operate.chatHistory.delete': '删除',
 
     'aiNative.chat.welcome.loading.text': '初始化中...',
+    'aiNative.chat.acp.initializing.text': '正在初始化 ACP 服务...',
     'aiNative.chat.ai.assistant.limit.message': '{0} 条最早的消息因输入 Tokens 限制而被丢弃',
     'aiNative.inlineDiff.acceptAll': '接受全部',
     'aiNative.inlineDiff.rejectAll': '拒绝全部',
@@ -1313,6 +1318,17 @@ export const localizationBundle = {
     'preference.ai.native.globalRules.description': '这些规则将发送到所有聊天、Agent 中。',
 
     'preference.ai.native.chat.system.prompt': '默认聊天系统提示词',
+
+    'preference.ai.native.agent.configs.title': 'Agent 配置',
+    'preference.ai.native.agent.configs': 'Agent 配置',
+    'preference.ai.native.agent.configs.description': 'Agent 配置，用于配置不同 Agent 的启动命令和参数',
+    'preference.ai.native.agent.configs.markdownDescription':
+      '配置 AI Agent 的命令和参数。示例：\n```json\n{\n  "qwen": {\n    "command": "qwen",\n    "args": ["--acp", "--channel=ACP"],\n    "streaming": true,\n    "description": "Qwen CLI Agent"\n  },\n  "claude-agent-acp": {\n    "command": "claude-agent-acp",\n    "args": [],\n    "streaming": true,\n    "description": "Claude Code ACP Agent"\n  }\n}\n```',
+    'preference.ai.native.agent.configs.command.description': '启动 Agent 的命令',
+    'preference.ai.native.agent.configs.args.description': '传递给 Agent 的参数',
+    'preference.ai.native.agent.configs.streaming.description': '是否支持流式输出',
+    'preference.ai.native.agent.configs.description.description': 'Agent 描述信息',
+    'preference.ai.native.agent.defaultType.description': '用于 AI 聊天和命令的默认 Agent 类型',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

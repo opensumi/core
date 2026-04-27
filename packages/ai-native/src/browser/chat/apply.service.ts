@@ -1,3 +1,15 @@
+/**
+ * ApplyService - 代码应用服务
+ *
+ * 负责将 AI 生成的代码应用到实际文件中：
+ * - 继承 BaseApplyService 提供基础应用能力
+ * - 支持代码块应用后的自动修复（调用 Code Action）
+ * - 通过 AI 后端服务合并代码更新
+ *
+ * 被以下类调用:
+ * - ChatEditSchemeDocumentProvider: 依赖注入使用，用于获取代码块内容
+ * - ChatMultiDiffResolver: 依赖注入使用，用于获取会话代码块
+ */
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   AIBackSerivcePath,

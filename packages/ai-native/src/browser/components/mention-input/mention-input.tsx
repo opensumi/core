@@ -1,13 +1,15 @@
 import cls from 'classnames';
 import * as React from 'react';
 
-import { getSymbolIcon, localize } from '@opensumi/ide-core-browser';
-import { Icon, Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { getSymbolIcon, localize, useInjectable } from '@opensumi/ide-core-browser';
+import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { URI } from '@opensumi/ide-utils';
 
 import { FileContext } from '../../../common/llm-context';
 import { ProjectRule } from '../../../common/types';
+import { PermissionDialogManager } from '../../acp/permission-dialog-container';
+import { PermissionDialogWidget } from '../permission-dialog-widget';
 
 import styles from './mention-input.module.less';
 import { MentionPanel } from './mention-panel';
@@ -39,8 +41,12 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     showModelSelector: false,
   },
   contextService,
+  onModeChange,
+  defaultInput,
+  onDefaultInputConsumed,
 }) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
+  const mentionPanelContainerRef = React.useRef<HTMLDivElement>(null);
   const [mentionState, setMentionState] = React.useState<MentionState>({
     active: false,
     startPos: null,
@@ -57,6 +63,9 @@ export const MentionInput: React.FC<MentionInputProps> = ({
 
   // 添加模型选择状态
   const [selectedModel, setSelectedModel] = React.useState<string>(footerConfig.defaultModel || '');
+
+  // 添加 Mode 选择状态
+  const [selectedMode, setSelectedMode] = React.useState<string>(footerConfig.defaultMode || '');
 
   // 添加缓存状态，用于存储二级菜单项
   const [secondLevelCache, setSecondLevelCache] = React.useState<Record<string, MentionItem[]>>({});
@@ -84,6 +93,10 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       contextId: string;
     }>
   >([]);
+
+  // 权限弹窗服务
+  const permissionDialogManager = useInjectable<PermissionDialogManager>(PermissionDialogManager);
+  const [optionsBottomPosition, setOptionsBottomPosition] = React.useState(0);
 
   const getCurrentItems = (): MentionItem[] => {
     if (mentionState.level === 0) {
@@ -121,6 +134,36 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   React.useEffect(() => {
     setSelectedModel(footerConfig.defaultModel || '');
   }, [footerConfig.defaultModel]);
+
+  // 外部受控模式：当 footerConfig.currentMode 变化时（如 ACP Mention 切换通知），同步更新选择器
+  React.useEffect(() => {
+    if (footerConfig.currentMode) {
+      setSelectedMode(footerConfig.currentMode);
+    }
+  }, [footerConfig.currentMode]);
+
+  // 当 defaultMode 从空值变为有值时（如 mentionModes 异步加载完成），更新 selectedMode
+  React.useEffect(() => {
+    if (footerConfig.defaultMode && !selectedMode) {
+      setSelectedMode(footerConfig.defaultMode);
+    }
+  }, [footerConfig.defaultMode]);
+
+  // 当 defaultInput 变化时，填充输入框并将光标置于末尾
+  React.useEffect(() => {
+    if (defaultInput && editorRef.current) {
+      editorRef.current.textContent = defaultInput;
+      // 将光标放到末尾
+      const range = document.createRange();
+      const selection = window.getSelection();
+      range.selectNodeContents(editorRef.current);
+      range.collapse(false);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      editorRef.current.focus();
+      onDefaultInputConsumed?.();
+    }
+  }, [defaultInput]);
 
   React.useEffect(() => {
     if (mentionState.level === 1 && mentionState.parentType && debouncedSecondLevelFilter !== undefined) {
@@ -639,7 +682,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
 
   // 处理点击事件
   const handleDocumentClick = (e: MouseEvent) => {
-    if (mentionState.active && !document.querySelector(`.${styles.mention_panel}`)?.contains(e.target as Node)) {
+    if (mentionState.active && !mentionPanelContainerRef.current?.contains(e.target as Node)) {
       setMentionState((prev) => ({
         ...prev,
         active: false,
@@ -989,6 +1032,15 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     [selectedModel, onSelectionChange],
   );
 
+  // 处理 Mode 选择变更
+  const handleModeChange = React.useCallback(
+    (value: string) => {
+      setSelectedMode(value);
+      onModeChange?.(value);
+    },
+    [onModeChange],
+  );
+
   // 修改 handleSend 函数
   const handleSend = () => {
     if (!editorRef.current) {
@@ -1257,9 +1309,10 @@ export const MentionInput: React.FC<MentionInputProps> = ({
 
   return (
     <div className={styles.input_container}>
+      <PermissionDialogWidget dialogManager={permissionDialogManager} bottom={optionsBottomPosition} />
       {renderContextPreview()}
       {mentionState.active && (
-        <div className={styles.mention_panel_container}>
+        <div ref={mentionPanelContainerRef} className={styles.mention_panel_container}>
           <MentionPanel
             items={getCurrentItems()}
             activeIndex={mentionState.activeIndex}
@@ -1299,6 +1352,25 @@ export const MentionInput: React.FC<MentionInputProps> = ({
                 onThinkingChange={footerConfig.onThinkingChange}
               />,
             )}
+
+          {footerConfig.showModeSelector &&
+            footerConfig.modeOptions &&
+            footerConfig.modeOptions.length > 0 &&
+            renderModelSelectorTip(
+              <MentionSelect
+                options={footerConfig.modeOptions.map((opt) => ({
+                  label: opt.name,
+                  value: opt.id,
+                  description: opt.description,
+                }))}
+                value={selectedMode}
+                onChange={handleModeChange}
+                className={styles.mode_selector}
+                size='small'
+                disabled={footerConfig.disableModeSelector}
+              />,
+            )}
+
           {renderButtons(FooterButtonPosition.LEFT)}
         </div>
         <div className={styles.right_control}>

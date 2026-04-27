@@ -92,7 +92,11 @@ interface FooterButton {
   onClick?: () => void;
   position: FooterButtonPosition;
 }
-
+export interface ModeOption {
+  id: string;
+  name: string;
+  description?: string;
+}
 export interface FooterConfig {
   modelOptions?: ModelOption[];
   extendedModelOptions?: ExtendedModelOption[];
@@ -103,6 +107,13 @@ export interface FooterConfig {
   showThinking?: boolean;
   thinkingEnabled?: boolean;
   onThinkingChange?: (enabled: boolean) => void;
+  // Mode 选择器配置
+  modeOptions?: ModeOption[];
+  defaultMode?: string;
+  /** 受控的当前模式 ID，变化时会同步更新选择器显示 */
+  currentMode?: string;
+  showModeSelector?: boolean;
+  disableModeSelector?: boolean;
 }
 
 export interface MentionInputProps {
@@ -110,6 +121,8 @@ export interface MentionInputProps {
   onSend?: (content: string, config?: { model: string; [key: string]: any }) => void;
   onStop?: () => void;
   placeholder?: string;
+  defaultInput?: string;
+  onDefaultInputConsumed?: () => void;
   loading?: boolean;
   onSelectionChange?: (value: string) => void;
   onImageUpload?: (files: File[]) => Promise<void>;
@@ -118,6 +131,10 @@ export interface MentionInputProps {
   labelService?: LabelService;
   workspaceService?: IWorkspaceService;
   contextService?: LLMContextService;
+  // Agent 选择回调
+  onAgentChange?: (agentId: string) => void;
+  // Mode 选择回调
+  onModeChange?: (modeId: string) => void;
 }
 
 export const MENTION_KEYWORD = '@';

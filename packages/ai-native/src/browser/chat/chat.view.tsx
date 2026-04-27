@@ -49,6 +49,7 @@ import {
 } from '../../common/llm-context';
 import { CodeBlockData } from '../../common/types';
 import { cleanAttachedTextWrapper } from '../../common/utils';
+import { AcpChatViewWrapper } from '../acp/components/AcpChatViewWrapper';
 import { FileChange, FileListDisplay } from '../components/ChangeList';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
@@ -115,6 +116,15 @@ const getFileChanges = (codeBlocks: CodeBlockData[]) =>
 
 export const AIChatView = () => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  return (
+    <AcpChatViewWrapper aiChatService={aiChatService}>
+      <AIChatViewContent />
+    </AcpChatViewWrapper>
+  );
+};
+
+const AIChatViewContent = () => {
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
@@ -125,7 +135,10 @@ export const AIChatView = () => {
   const llmContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
-  const msgHistoryManager = aiChatService.sessionModel.history;
+  const msgHistoryManager = aiChatService.sessionModel?.history;
+  if (!msgHistoryManager) {
+    return null;
+  }
   const containerRef = React.useRef<HTMLDivElement>(null);
   const autoScroll = React.useRef<boolean>(true);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
@@ -136,7 +149,7 @@ export const AIChatView = () => {
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const commandService = useInjectable<CommandService>(CommandService);
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
-  const [sessionModelId, setSessionModelId] = React.useState<string | undefined>(aiChatService.sessionModel.modelId);
+  const [sessionModelId, setSessionModelId] = React.useState<string | undefined>(aiChatService.sessionModel?.modelId);
 
   const [changeList, setChangeList] = React.useState<FileChange[]>(
     getFileChanges(applyService.getSessionCodeBlocks() || []),
@@ -156,14 +169,22 @@ export const AIChatView = () => {
   }, []);
 
   const [loading, setLoading] = React.useState(false);
+  const [sessionLoading, setSessionLoading] = React.useState(false);
   const [agentId, setAgentId] = React.useState('');
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
   // 切换session或Agent输出状态变化时
   React.useEffect(() => {
-    setSessionModelId(aiChatService.sessionModel.modelId);
+    setSessionModelId(aiChatService.sessionModel?.modelId);
   }, [loading, aiChatService.sessionModel]);
+
+  React.useEffect(() => {
+    const dispose = aiChatService.onSessionLoadingChange((isLoading) => {
+      setSessionLoading(isLoading);
+    });
+    return () => dispose.dispose();
+  }, [aiChatService]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
@@ -209,14 +230,16 @@ export const AIChatView = () => {
   useUpdateOnEvent(aiChatService.onChangeSession);
 
   const ChatInputWrapperRender = React.useMemo(() => {
+    // 优先使用 registerInputRender 注册的渲染器
     if (chatRenderRegistry.chatInputRender) {
       return chatRenderRegistry.chatInputRender;
     }
+    // 降级使用默认组件
     if (aiNativeConfigService.capabilities.supportsMCP) {
       return ChatMentionInput;
     }
     return ChatInput;
-  }, [chatRenderRegistry.chatInputRender]);
+  }, [chatRenderRegistry.chatInputRender, aiNativeConfigService]);
 
   const firstMsg = React.useMemo(
     () =>
@@ -311,7 +334,7 @@ export const AIChatView = () => {
         if (data.kind === 'content') {
           const relationId = aiReporter.start(AIServiceType.CustomReply, {
             message: data.content,
-            sessionId: aiChatService.sessionModel.sessionId,
+            sessionId: aiChatService.sessionModel?.sessionId,
           });
           msgHistoryManager.addAssistantMessage({
             content: data.content,
@@ -321,7 +344,7 @@ export const AIChatView = () => {
         } else {
           const relationId = aiReporter.start(AIServiceType.CustomReply, {
             message: 'component#' + data.component,
-            sessionId: aiChatService.sessionModel.sessionId,
+            sessionId: aiChatService.sessionModel?.sessionId,
           });
           msgHistoryManager.addAssistantMessage({
             componentId: data.component,
@@ -343,7 +366,7 @@ export const AIChatView = () => {
 
           const relationId = aiReporter.start(AIServiceType.Chat, {
             message: '',
-            sessionId: aiChatService.sessionModel.sessionId,
+            sessionId: aiChatService.sessionModel?.sessionId,
           });
 
           if (role === 'assistant') {
@@ -643,7 +666,7 @@ export const AIChatView = () => {
           userMessage: message,
           actionType,
           actionSource,
-          sessionId: aiChatService.sessionModel.sessionId,
+          sessionId: aiChatService.sessionModel?.sessionId,
         },
         // 由于涉及 tool 调用，超时时间设置长一点
         600 * 1000,
@@ -676,7 +699,7 @@ export const AIChatView = () => {
       // 创建消息时，设置当前活跃的消息信息，便于toolCall打点
       mcpServerRegistry.activeMessageInfo = {
         messageId: msgId,
-        sessionId: aiChatService.sessionModel.sessionId,
+        sessionId: aiChatService.sessionModel?.sessionId,
       };
 
       await renderReply({
@@ -799,7 +822,7 @@ export const AIChatView = () => {
             images: msg.images,
           });
         } else if (msg.role === ChatMessageRole.Assistant && msg.requestId) {
-          const request = aiChatService.sessionModel.getRequest(msg.requestId)!;
+          const request = aiChatService.sessionModel?.getRequest(msg.requestId)!;
           // 从storage恢复时，request为undefined
           if (request && !request.response.isComplete) {
             setLoading(true);
@@ -847,7 +870,11 @@ export const AIChatView = () => {
   return (
     <div id={styles.ai_chat_view}>
       <div className={styles.header_container}>
-        <HeaderRender handleClear={handleClear} handleCloseChatView={handleCloseChatView}></HeaderRender>
+        <HeaderRender
+          handleClear={handleClear}
+          handleCloseChatView={handleCloseChatView}
+          sessionModel={aiChatService.sessionModel}
+        ></HeaderRender>
       </div>
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>
@@ -860,12 +887,12 @@ export const AIChatView = () => {
               dataSource={messageListData}
             />
           </div>
-          {aiChatService.sessionModel.slicedMessageCount ? (
+          {aiChatService.sessionModel?.slicedMessageCount ? (
             <div className={styles.chat_tips_text}>
               <div className={styles.chat_tips_container}>
                 {formatLocalize(
                   'aiNative.chat.ai.assistant.limit.message',
-                  aiChatService.sessionModel.slicedMessageCount,
+                  aiChatService.sessionModel?.slicedMessageCount,
                 )}
               </div>
             </div>
@@ -903,7 +930,7 @@ export const AIChatView = () => {
             )}
             <ChatInputWrapperRender
               onSend={handleSend}
-              disabled={loading}
+              disabled={loading || sessionLoading}
               enableOptions={true}
               theme={theme}
               setTheme={setTheme}
@@ -916,6 +943,7 @@ export const AIChatView = () => {
               ref={chatInputRef}
               disableModelSelector={sessionModelId !== undefined || loading}
               sessionModelId={sessionModelId}
+              agentCwd={appConfig.workspaceDir}
             />
           </div>
         </div>
@@ -934,11 +962,12 @@ export function DefaultChatViewHeader({
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const handleNewChat = React.useCallback(() => {
-    if (aiChatService.sessionModel.history.getMessages().length > 0) {
+    if (aiChatService.sessionModel?.history.getMessages().length > 0) {
       try {
         aiChatService.createSessionModel();
       } catch (error) {
@@ -985,7 +1014,7 @@ export function DefaultChatViewHeader({
 
   React.useEffect(() => {
     const getHistoryList = async () => {
-      const currentMessages = aiChatService.sessionModel.history.getMessages();
+      const currentMessages = aiChatService.sessionModel?.history.getMessages();
       const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
       const currentTitle = latestUserMessage
         ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
@@ -1042,14 +1071,14 @@ export function DefaultChatViewHeader({
         }
         sessionListenIds.add(sessionId);
         toDispose.push(
-          aiChatService.sessionModel.history.onMessageChange(() => {
+          aiChatService.sessionModel?.history.onMessageChange(() => {
             getHistoryList();
           }),
         );
       }),
     );
     toDispose.push(
-      aiChatService.sessionModel.history.onMessageChange(() => {
+      aiChatService.sessionModel?.history.onMessageChange(() => {
         getHistoryList();
       }),
     );
@@ -1060,17 +1089,37 @@ export function DefaultChatViewHeader({
 
   return (
     <div className={styles.header}>
-      <ChatHistory
-        className={styles.chat_history}
-        // 取对话名称
-        currentId={aiChatService.sessionModel.sessionId}
-        title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
-        historyList={historyList}
-        onNewChat={handleNewChat}
-        onHistoryItemSelect={handleHistoryItemSelect}
-        onHistoryItemDelete={handleHistoryItemDelete}
-        onHistoryItemChange={() => {}}
-      />
+      {(() => {
+        // 优先使用注册的 ChatHistory 渲染器（ACP 模式）
+        if (chatRenderRegistry.chatHistoryRender) {
+          const ChatHistoryRender = chatRenderRegistry.chatHistoryRender;
+          return (
+            <ChatHistoryRender
+              className={styles.chat_history}
+              currentId={aiChatService.sessionModel?.sessionId}
+              title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
+              historyList={historyList}
+              onNewChat={handleNewChat}
+              onHistoryItemSelect={handleHistoryItemSelect}
+              onHistoryItemDelete={handleHistoryItemDelete}
+              onHistoryItemChange={() => {}}
+            />
+          );
+        }
+        // 降级使用默认 ChatHistory 组件
+        return (
+          <ChatHistory
+            className={styles.chat_history}
+            currentId={aiChatService.sessionModel?.sessionId}
+            title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
+            historyList={historyList}
+            onNewChat={handleNewChat}
+            onHistoryItemSelect={handleHistoryItemSelect}
+            onHistoryItemDelete={handleHistoryItemDelete}
+            onHistoryItemChange={() => {}}
+          />
+        );
+      })()}
       <Popover
         overlayClassName={styles.popover_icon}
         id={'ai-chat-header-clear'}

@@ -19,6 +19,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
+    "@agentclientprotocol/sdk": "^0.16.1",
     "@ai-sdk/anthropic": "^1.1.9",
     "@ai-sdk/deepseek": "^0.1.11",
     "@ai-sdk/openai": "^1.1.9",
@@ -53,6 +54,7 @@
     "diff": "^7.0.0",
     "dom-align": "^1.7.0",
     "eventsource": "^3.0.5",
+    "node-pty": "1.0.0",
     "rc-collapse": "^4.0.0",
     "react-chat-elements": "^12.0.10",
     "react-highlight": "^0.15.0",

@@ -292,3 +292,70 @@
   width: calc(100% - 40px);
   color: var(--design-text-foreground);
 }
+
+.loading_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  color: var(--tab-inactiveForeground);
+  font-size: 12px;
+}
+
+.timeout_hint {
+  color: var(--design-text-secondary);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.retry_button {
+  margin-top: 4px;
+  padding: 4px 16px;
+  font-size: 12px;
+  color: var(--button-foreground);
+  background-color: var(--button-background);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--button-hoverBackground);
+  }
+}
+
+.acp_error_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+
+  .acp_error_icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .acp_error_title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--design-text-foreground);
+  }
+
+  .acp_error_message {
+    font-size: 14px;
+    color: var(--design-text-secondary);
+    margin-bottom: 16px;
+    max-width: 400px;
+    word-break: break-all;
+  }
+
+  .acp_error_hint {
+    font-size: 12px;
+    color: var(--design-text-secondary);
+  }
+}

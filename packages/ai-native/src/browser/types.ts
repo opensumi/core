@@ -10,6 +10,7 @@ import {
   Deferred,
   IAICompletionOption,
   IAICompletionResultModel,
+  IChatProgress,
   IDisposable,
   IPosition,
   IResolveConflictHandler,
@@ -31,6 +32,8 @@ import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/co
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 import { LLMContextService } from '../common/llm-context';
 
+import { ChatModel } from './chat/chat-model';
+import { MessageData } from './components/utils';
 import {
   ICodeEditsContextBean,
   ICodeEditsResult,
@@ -127,8 +130,11 @@ export type TSlashCommandCustomRender = (props: { userMessage: string }) => Reac
 export interface IChatSlashCommandHandler {
   execute: (value: string, send: TChatSlashCommandSend, editor?: ICodeEditor) => MaybePromise<void>;
   providerInputPlaceholder?: (value: string, editor?: ICodeEditor) => string;
+  providerDefaultInput?: (value: string, editor?: ICodeEditor) => MaybePromise<string>;
   providerPrompt?: (value: string, editor?: ICodeEditor) => MaybePromise<string>;
   providerRender?: TSlashCommandCustomRender;
+  /** 自定义 invoke：有此方法时跳过 ACP/默认 agent，由 handler 自行处理请求和响应 */
+  invoke?: (message: string, progress: (part: IChatProgress) => void, token: CancellationToken) => Promise<void>;
 }
 
 export interface IChatFeatureRegistry {
@@ -166,6 +172,7 @@ export type ChatInputRender = (props: {
   theme?: string | null;
   setTheme: (theme: string | null) => void;
   agentId: string;
+  agentCwd?: string;
   setAgentId: (theme: string) => void;
   defaultAgentId?: string;
   command: string;
@@ -175,7 +182,39 @@ export type ChatInputRender = (props: {
 export type ChatViewHeaderRender = (props: {
   handleClear: () => any;
   handleCloseChatView: () => any;
+  sessionModel: ChatModel;
 }) => React.ReactElement | React.JSX.Element;
+
+export interface IChatHistoryItem {
+  id: string;
+  title: string;
+  updatedAt: number;
+  loading: boolean;
+}
+
+export type ChatHistoryRender = (props: {
+  title: string;
+  historyList: IChatHistoryItem[];
+  currentId?: string;
+  className?: string;
+  onNewChat: () => void;
+  onHistoryItemSelect: (item: IChatHistoryItem) => void;
+  onHistoryItemDelete: (item: IChatHistoryItem) => void;
+  onHistoryItemChange: (item: IChatHistoryItem, title: string) => void;
+  onHistoryPopoverVisibleChange?: (visible: boolean) => void;
+}) => React.ReactNode;
+
+export interface IChatMessageProcessor {
+  /**
+   * 处理器优先级，值越小越先执行，默认 100
+   */
+  priority?: number;
+  /**
+   * 处理消息列表：可过滤（返回子集）或变换（修改内容）
+   * 管道模式：前一个处理器的输出作为下一个处理器的输入
+   */
+  processMessages(messages: MessageData[]): MessageData[];
+}
 
 export interface IChatRenderRegistry {
   registerWelcomeRender(render: ChatWelcomeRender): void;
@@ -195,9 +234,30 @@ export interface IChatRenderRegistry {
   registerInputRender(render: ChatInputRender): void;
 
   /**
+   * 配置启用的 mention 类型（如 'file', 'folder', 'code', 'rule'）
+   * 不调用时默认全部启用
+   */
+  registerEnabledMentionTypes(types: string[]): void;
+
+  /**
+   * 获取启用的 mention 类型，undefined 表示全部启用
+   */
+  enabledMentionTypes?: string[];
+
+  /**
    * 顶部栏渲染
    */
   registerChatViewHeaderRender(render: ChatViewHeaderRender): void;
+
+  /**
+   * 历史记录渲染
+   */
+  registerChatHistoryRender(render: ChatHistoryRender): void;
+
+  /**
+   * 注册消息处理器，用于在渲染前对消息列表进行过滤或变换
+   */
+  registerMessageProcessor(processor: IChatMessageProcessor): IDisposable;
 }
 
 export interface IResolveConflictRegistry {

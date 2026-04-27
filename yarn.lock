@@ -12,6 +12,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@agentclientprotocol/sdk@npm:^0.16.1":
+  version: 0.16.1
+  resolution: "@agentclientprotocol/sdk@npm:0.16.1"
+  peerDependencies:
+    zod: ^3.25.0 || ^4.0.0
+  checksum: 10/565495a1024712423ddac966a944ae03ee1e54592504be74cc538250979e907f91550f7ba9fef080aac4cc15de430ee44bdd3bda32009a2735513d4024cec1f5
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/anthropic@npm:^1.1.9":
   version: 1.1.9
   resolution: "@ai-sdk/anthropic@npm:1.1.9"
@@ -3414,6 +3423,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-ai-native@workspace:packages/ai-native"
   dependencies:
+    "@agentclientprotocol/sdk": "npm:^0.16.1"
     "@ai-sdk/anthropic": "npm:^1.1.9"
     "@ai-sdk/deepseek": "npm:^0.1.11"
     "@ai-sdk/openai": "npm:^1.1.9"
@@ -3449,6 +3459,7 @@ __metadata:
     diff: "npm:^7.0.0"
     dom-align: "npm:^1.7.0"
     eventsource: "npm:^3.0.5"
+    node-pty: "npm:1.0.0"
     rc-collapse: "npm:^4.0.0"
     react-chat-elements: "npm:^12.0.10"
     react-highlight: "npm:^0.15.0"
@@ -3581,11 +3592,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-core-common@workspace:packages/core-common"
   dependencies:
+    "@agentclientprotocol/sdk": "npm:^0.16.1"
     "@opensumi/di": "npm:^1.8.0"
     "@opensumi/events": "npm:^1.0.0"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
     ai: "npm:^4.3.16"
+    electron: "npm:^22.3.21"
   languageName: unknown
   linkType: soft
 
@@ -3890,6 +3903,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-file-service@workspace:packages/file-service"
   dependencies:
+    "@furyjs/fury": "npm:0.5.9-beta"
     "@opensumi/ide-connection": "workspace:*"
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"

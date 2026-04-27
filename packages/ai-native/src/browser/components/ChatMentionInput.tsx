@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Image } from '@opensumi/ide-components/lib/image';
 import {
+  AINativeConfigService,
   LabelService,
   PreferenceService,
   RecentFilesManager,
@@ -38,7 +39,7 @@ import { RulesService } from '../rules/rules.service';
 
 import styles from './components.module.less';
 import { MentionInput } from './mention-input/mention-input';
-import { FooterButtonPosition, FooterConfig, MentionItem, MentionType } from './mention-input/types';
+import { FooterButtonPosition, FooterConfig, MentionItem, MentionType, ModeOption } from './mention-input/types';
 
 export interface IChatMentionInputProps {
   onSend: (
@@ -68,6 +69,7 @@ export interface IChatMentionInputProps {
   disableModelSelector?: boolean;
   sessionModelId?: string;
   contextService?: LLMContextService;
+  agentModes?: Array<{ id: string; name: string; description?: string }>;
 }
 
 export const ChatMentionInput = (props: IChatMentionInputProps) => {
@@ -75,7 +77,9 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
 
   const [value, setValue] = useState(props.value || '');
   const [images, setImages] = useState(props.images || []);
+  const [currentMode, setCurrentMode] = useState<string>(props.agentModes?.[0]?.id || 'default');
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const commandService = useInjectable<CommandService>(CommandService);
   const searchService = useInjectable<IFileSearchService>(FileSearchServicePath);
   const recentFilesManager = useInjectable<RecentFilesManager>(RecentFilesManager);
@@ -96,6 +100,21 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const handleShowRules = React.useCallback(() => {
     commandService.executeCommand(RulesCommands.OPEN_RULES_FILE.id);
   }, [commandService]);
+
+  // 监听 ACP Agent 模式切换成功事件，同步更新 UI
+  useEffect(() => {
+    const disposable = aiChatService.onModeChange((modeId) => {
+      setCurrentMode(modeId);
+    });
+    return () => disposable.dispose();
+  }, [aiChatService]);
+
+  // 当 agentModes 变化时，更新 currentMode 为第一个 mode
+  useEffect(() => {
+    if (props.agentModes?.length && !props.agentModes.find((m) => m.id === currentMode)) {
+      setCurrentMode(props.agentModes[0].id);
+    }
+  }, [props.agentModes]);
 
   useEffect(() => {
     if (props.value !== value) {
@@ -421,8 +440,21 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
       },
     },
   ];
+  // Mode 选项：优先使用 Agent 初始化时返回的真实 modes，降级为硬编码默认值
+  const modeOptions: ModeOption[] = useMemo(
+    () =>
+      props.agentModes?.length
+        ? props.agentModes
+        : [{ id: 'default', name: 'Default', description: 'Require approval for edits' }],
+    [props.agentModes],
+  );
+
   const defaultMentionInputFooterOptions: FooterConfig = useMemo(
     () => ({
+      modeOptions,
+      defaultMode: modeOptions[0]?.id || 'default',
+      currentMode,
+      showModeSelector: modeOptions.length > 1,
       modelOptions: [
         {
           value: 'qwen-plus-latest',
@@ -460,41 +492,43 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
       ],
       defaultModel:
         props.sessionModelId || preferenceService.get<string>(AINativeSettingSectionsId.ModelID) || 'deepseek-r1',
-      buttons: [
-        {
-          id: 'mcp-server',
-          icon: 'mcp',
-          title: 'MCP Server',
-          onClick: handleShowMCPConfig,
-          position: FooterButtonPosition.LEFT,
-        },
-        {
-          id: 'rules',
-          icon: 'rules',
-          title: 'Rules',
-          onClick: handleShowRules,
-          position: FooterButtonPosition.LEFT,
-        },
-        {
-          id: 'upload-image',
-          icon: 'image',
-          title: localize('aiNative.chat.imageUpload'),
-          onClick: () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = (e) => {
-              const files = (e.target as HTMLInputElement).files;
-              if (files?.length) {
-                handleImageUpload(Array.from(files));
-              }
-            };
-            input.click();
-          },
-          position: FooterButtonPosition.LEFT,
-        },
-      ],
-      showModelSelector: true,
+      buttons: aiNativeConfigService.capabilities.supportsAgentMode
+        ? []
+        : [
+            {
+              id: 'mcp-server',
+              icon: 'mcp',
+              title: 'MCP Server',
+              onClick: handleShowMCPConfig,
+              position: FooterButtonPosition.LEFT,
+            },
+            {
+              id: 'rules',
+              icon: 'rules',
+              title: 'Rules',
+              onClick: handleShowRules,
+              position: FooterButtonPosition.LEFT,
+            },
+            {
+              id: 'upload-image',
+              icon: 'image',
+              title: localize('aiNative.chat.imageUpload'),
+              onClick: () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e) => {
+                  const files = (e.target as HTMLInputElement).files;
+                  if (files?.length) {
+                    handleImageUpload(Array.from(files));
+                  }
+                };
+                input.click();
+              },
+              position: FooterButtonPosition.LEFT,
+            },
+          ],
+      showModelSelector: aiNativeConfigService.capabilities.supportsAgentMode ? false : true, // agnet 模式不支持选择模型
       disableModelSelector: props.disableModelSelector,
     }),
     [iconService, handleShowMCPConfig, handleShowRules, props.disableModelSelector, props.sessionModelId],
@@ -547,6 +581,18 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
     [images],
   );
 
+  const handleModeChange = useCallback(
+    async (modeId: string) => {
+      try {
+        await aiChatService.setSessionMode(modeId);
+      } catch (error) {
+        // console.error('Failed to switch mode:', error);
+        messageService.error('Failed to switch mode: ' + (error instanceof Error ? error.message : String(error)));
+      }
+    },
+    [aiChatService, messageService],
+  );
+
   const handleDeleteImage = useCallback(
     (index: number) => {
       setImages(images.filter((_, i) => i !== index));
@@ -568,6 +614,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         footerConfig={defaultMentionInputFooterOptions}
         onImageUpload={handleImageUpload}
         contextService={contextService}
+        onModeChange={handleModeChange}
       />
     </div>
   );

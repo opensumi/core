@@ -23,6 +23,7 @@ const DEFAULT_CAPABILITIES: Required<IAINativeCapabilities> = {
   supportsTerminalCommandSuggest: true,
   supportsCustomLLMSettings: true,
   supportsMCP: true,
+  supportsAgentMode: true, // agent 模式
 };
 
 const DISABLED_ALL_CAPABILITIES = {} as Required<IAINativeCapabilities>;

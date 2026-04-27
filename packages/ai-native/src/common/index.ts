@@ -129,6 +129,7 @@ export interface ChatCompletionRequestMessage {
 export const IChatInternalService = Symbol('IChatInternalService');
 export const IChatManagerService = Symbol('IChatManagerService');
 export const IChatAgentService = Symbol('IChatAgentService');
+export const DefaultChatAgentToken = Symbol('DefaultChatAgentToken');
 
 export const ChatProxyServiceToken = Symbol('ChatProxyServiceToken');
 

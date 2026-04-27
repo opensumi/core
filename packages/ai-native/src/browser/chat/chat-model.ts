@@ -1,4 +1,18 @@
-/* eslint-disable no-console */
+/**
+ * ChatModel - 聊天数据模型
+ *
+ * 定义了聊天会话、请求、响应的数据模型：
+ * - ChatModel: 表示一个聊天会话，管理会话 ID、历史消息和请求列表
+ * - ChatRequestModel: 表示一次聊天请求，包含请求消息和响应
+ * - ChatResponseModel: 表示聊天响应，管理响应内容、状态和错误信息
+ * - ChatWelcomeMessageModel: 表示欢迎消息和示例问题
+ * - ChatSlashCommandItemModel: 表示斜杠命令项
+ *
+ * 被以下类调用:
+ * - ChatManagerService: 创建和管理会话模型
+ * - ChatFeatureRegistry: 创建欢迎消息和命令项模型
+ * - ChatInternalService: 使用会话模型进行会话管理
+ */
 import { Injectable } from '@opensumi/di';
 import {
   Disposable,
@@ -300,12 +314,18 @@ export class ChatModel extends Disposable implements IChatModel {
 
   constructor(
     private chatFeatureRegistry: ChatFeatureRegistry,
-    initParams?: { sessionId?: string; history?: MsgHistoryManager; modelId?: string },
+    initParams?: { sessionId?: string; history?: MsgHistoryManager; modelId?: string; title?: string },
   ) {
     super();
     this.#sessionId = initParams?.sessionId ?? uuid();
     this.history = initParams?.history ?? new MsgHistoryManager(this.chatFeatureRegistry);
     this.#modelId = initParams?.modelId;
+    this.#title = initParams?.title ?? '';
+  }
+
+  #title: string;
+  get title(): string {
+    return this.#title;
   }
 
   #sessionId: string;
@@ -415,7 +435,6 @@ export class ChatModel extends Disposable implements IChatModel {
     try {
       return JSON.parse(jsonString);
     } catch (e) {
-      console.error(`[ChatModel] Failed to parse ${context}:`, e);
       return {};
     }
   }
@@ -502,12 +521,15 @@ export class ChatModel extends Disposable implements IChatModel {
     if (basicKind.includes(kind)) {
       request.response.updateContent(progress, quiet);
     } else {
-      console.error(`Couldn't handle progress: ${JSON.stringify(progress)}`);
+      // Couldn't handle progress
     }
   }
 
   getRequest(requestId: string): ChatRequestModel | undefined {
     return this.#requests.get(requestId);
+  }
+  getRequests(): ChatRequestModel[] {
+    return Array.from(this.#requests.values());
   }
 
   override dispose(): void {

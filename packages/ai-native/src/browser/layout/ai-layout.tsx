@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { SlotLocation, SlotRenderer, useInjectable } from '@opensumi/ide-core-browser';
 import { BoxPanel, SplitPanel, getStorageValue } from '@opensumi/ide-core-browser/lib/components';
@@ -6,10 +6,36 @@ import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/consta
 
 import { AI_CHAT_VIEW_ID } from '../../common';
 
+// 使用 UA 判断是否为移动设备
+const isMobileDevice = () => {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
 export const AILayout = () => {
   const { layout } = getStorageValue();
   const designLayoutConfig = useInjectable(DesignLayoutConfig);
 
+  // 判断是否应该显示完整布局
+  const shouldShowFullLayout = !isMobileDevice();
+
+  // 移动端模式：只渲染 AI_CHAT_VIEW_ID，添加 mobile class
+  if (!shouldShowFullLayout) {
+    return (
+      <SlotRenderer
+        slot={AI_CHAT_VIEW_ID}
+        isTabbar={true}
+        defaultSize={layout['AI-Chat']?.currentId ? layout['AI-Chat']?.size || 360 : 0}
+        maxResize={420}
+        minResize={280}
+        minSize={0}
+      />
+    );
+  }
+
+  // 正常模式：渲染完整布局
   const defaultRightSize = useMemo(
     () => (designLayoutConfig.useMergeRightWithLeftPanel ? 0 : 49),
     [designLayoutConfig.useMergeRightWithLeftPanel],
@@ -64,7 +90,7 @@ export const AILayout = () => {
           slot={AI_CHAT_VIEW_ID}
           isTabbar={true}
           defaultSize={layout['AI-Chat']?.currentId ? layout['AI-Chat']?.size || 360 : 0}
-          maxResize={420}
+          maxResize={1080}
           minResize={280}
           minSize={0}
         />

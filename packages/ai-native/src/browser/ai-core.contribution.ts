@@ -50,6 +50,7 @@ import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
+  ChatServiceToken,
   CommandService,
   IDisposable,
   InlineChatFeatureRegistryToken,
@@ -62,6 +63,7 @@ import {
   STORAGE_NAMESPACE,
   StorageProvider,
   TerminalRegistryToken,
+  URI,
   isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
@@ -97,6 +99,7 @@ import {
   deepSeekModels,
   openAiNativeModels,
 } from '../common';
+import { LLMContextService, LLMContextServiceToken } from '../common/llm-context';
 import { MCPServerDescription, MCPServersDisabledKey } from '../common/mcp-server-manager';
 import { MCP_SERVER_TYPE } from '../common/types';
 
@@ -104,6 +107,7 @@ import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
 import { ChatProxyService } from './chat/chat-proxy.service';
+import { ChatService } from './chat/chat.api.service';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { AIChatView } from './chat/chat.view';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
@@ -280,6 +284,12 @@ export class AINativeBrowserContribution
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
 
+  @Autowired(ChatServiceToken)
+  private readonly chatService: ChatService;
+
+  @Autowired(LLMContextServiceToken)
+  private readonly llmContextService: LLMContextService;
+
   @Autowired()
   private readonly chatEditResourceProvider: ChatEditSchemeDocumentProvider;
 
@@ -299,14 +309,19 @@ export class AINativeBrowserContribution
   }
 
   async initialize() {
-    const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
+    const { supportsChatAssistant, supportsAgentMode } = this.aiNativeConfigService.capabilities;
 
     if (supportsChatAssistant) {
       ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, AI_CHAT_VIEW_ID, AI_CHAT_CONTAINER_ID);
       ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, DESIGN_MENU_BAR_RIGHT, AI_CHAT_LOGO_AVATAR_ID);
       this.chatProxyService.registerDefaultAgent();
-      this.chatInternalService.init();
-      await this.chatManagerService.init();
+
+      // Local 模式：立即初始化
+      // ACP 模式：延迟到面板打开时初始化
+      if (!supportsAgentMode) {
+        this.chatInternalService.init();
+        this.chatManagerService.init();
+      }
     }
   }
 
@@ -536,6 +551,33 @@ export class AINativeBrowserContribution
       contribution.registerChatAgentPromptProvider?.();
     });
 
+    // 注册内置的 "Chat" 按钮，将选中代码添加到 Chat 面板的 context 中
+    if (this.aiNativeConfigService.capabilities.supportsChatAssistant) {
+      this.inlineChatFeatureRegistry.registerEditorInlineChat(
+        {
+          id: 'ai-chat',
+          name: 'Chat',
+          title: 'Add to Chat',
+          renderType: 'button',
+        },
+        {
+          execute: async (editor, selection) => {
+            const model = editor.getModel();
+            if (!model) {
+              return;
+            }
+            const uri = model.uri;
+            const [startLine, endLine] = [selection.selectionStartLineNumber, selection.positionLineNumber].sort(
+              (a, b) => a - b,
+            );
+
+            this.llmContextService.addFileToContext(new URI(uri.toString()), [startLine, endLine], true);
+            this.chatService.sendMessage({ message: '', immediate: false });
+          },
+        },
+      );
+    }
+
     // 注册 Opensumi 框架提供的 MCP Server Tools 能力 (此时的 Opensumi 作为 MCP Server)
     this.mcpServerContributions.getContributions().forEach((contribution) => {
       contribution.registerMCPServer(this.mcpServerRegistry);
@@ -671,6 +713,23 @@ export class AINativeBrowserContribution
           {
             id: AINativeSettingSectionsId.TerminalAutoRun,
             localized: 'ai.native.terminal.autorun',
+          },
+        ],
+      });
+    }
+
+    // Register Agent configs settings
+    if (this.aiNativeConfigService.capabilities.supportsAgentMode) {
+      registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
+        title: localize('preference.ai.native.agent.configs.title'),
+        preferences: [
+          {
+            id: AINativeSettingSectionsId.AgentConfigs,
+            localized: 'preference.ai.native.agent.configs',
+          },
+          {
+            id: AINativeSettingSectionsId.DefaultAgentType,
+            localized: 'preference.ai.native.agent.defaultType',
           },
         ],
       });

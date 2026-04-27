@@ -176,10 +176,17 @@ export class AITerminalService extends Disposable {
     if (terminal && output && marker) {
       const lines = output?.split('\n').length;
 
+      // 收集所有检测类 action（triggerRules 为数组的），而非只显示匹配到的那一个
+      const allActions = this.inlineChatFeatureRegistry.getTerminalActions();
+      const detectionActions = allActions.filter((a) => {
+        const handler = this.inlineChatFeatureRegistry.getTerminalHandler(a.id);
+        return handler && Array.isArray(handler.triggerRules);
+      });
+
       this.terminalDecorations.addZoneDecoration(terminal, marker, lines, {
-        operationList: [action.action],
-        onClickItem: () => {
-          const handler = this.inlineChatFeatureRegistry.getTerminalHandler(action.action.id);
+        operationList: detectionActions,
+        onClickItem: (id: string) => {
+          const handler = this.inlineChatFeatureRegistry.getTerminalHandler(id);
           if (handler) {
             handler.execute(output, input || '', action.matcher);
           }

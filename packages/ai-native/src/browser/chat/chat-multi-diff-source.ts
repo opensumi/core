@@ -1,3 +1,14 @@
+/**
+ * ChatMultiDiffResolver / ChatMultiDiffSource - 聊天多路差异解析器
+ *
+ * 负责解析和提供聊天编辑功能的多路差异对比源：
+ * - ChatMultiDiffResolver: 解析特定 scheme 的 URI 为多路差异源
+ * - ChatMultiDiffSource: 提供差异对比所需的文件资源列表
+ * - 支持多文件差异对比视图
+ *
+ * 被以下类调用:
+ * - 由 IDE 多路差异编辑器系统通过 IMultiDiffSourceResolver 接口调用
+ */
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, Event, URI, path } from '@opensumi/ide-core-browser';
 import {

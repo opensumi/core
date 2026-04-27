@@ -18,10 +18,12 @@
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-common.json"
   },
   "dependencies": {
+    "@agentclientprotocol/sdk": "^0.16.1",
     "@opensumi/di": "^1.8.0",
     "@opensumi/events": "^1.0.0",
     "@opensumi/ide-utils": "workspace:*",
-    "ai": "^4.3.16"
+    "ai": "^4.3.16",
+    "electron": "^22.3.21"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*"

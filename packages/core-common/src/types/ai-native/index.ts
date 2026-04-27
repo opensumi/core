@@ -4,6 +4,8 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
 
+import { ListSessionsResponse } from './acp-types';
+import { AgentProcessConfig } from './agent-types';
 import { IAIReportCompletionOption } from './reporter';
 
 import type { CoreMessage } from 'ai';
@@ -58,6 +60,10 @@ export interface IAINativeCapabilities {
    * supports modelcontextprotocol
    */
   supportsMCP?: boolean;
+  /**
+   * supports agent mode for chat input
+   */
+  supportsAgentMode?: boolean;
 }
 
 export interface IDesignLayoutConfig {
@@ -188,6 +194,7 @@ export interface IAIBackServiceOption {
   /** 响应首尾是否有需要trim的内容 */
   trimTexts?: [string, string];
   disabledTools?: string[];
+  agentSessionConfig?: AgentProcessConfig;
 }
 
 /**
@@ -247,6 +254,28 @@ export interface IAIBackService<
    * @deprecated
    */
   reportCompletion?<I extends IAIReportCompletionOption>(input: I): Promise<void>;
+
+  loadAgentSession?(
+    config: AgentProcessConfig,
+    agentSessionId: string,
+  ): Promise<{
+    sessionId: string;
+    messages: Array<{
+      role: 'user' | 'assistant';
+      content: string;
+      timestamp?: number;
+    }>;
+  }>;
+
+  listSessions?(config: AgentProcessConfig): Promise<ListSessionsResponse>;
+
+  createSession?(config: AgentProcessConfig): Promise<{
+    sessionId: string;
+  }>;
+
+  setSessionMode?(sessionId: string, modeId: string): Promise<void>;
+
+  ready?(): Promise<boolean>;
 }
 
 export class ReplyResponse {
@@ -467,3 +496,6 @@ export enum ECodeEditsSourceTyping {
   Trigger = 'trigger',
 }
 // ## Code Edits ends ##
+
+export * from './acp-types';
+export * from './agent-types';

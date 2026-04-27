@@ -1,0 +1,261 @@
+import React from 'react';
+
+import { QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
+import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import {
+  ChatMessageRole,
+  DisposableCollection,
+  IDisposable,
+  formatLocalize,
+  localize,
+} from '@opensumi/ide-core-common';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
+import { IChatInternalService } from '../../../common';
+import { cleanAttachedTextWrapper } from '../../../common/utils';
+import { ChatInternalService } from '../../chat/chat.internal.service';
+import styles from '../../chat/chat.module.less';
+import { getCachedWorkspaceDir, switchWorkspaceDir } from '../../chat/pick-workspace-dir';
+
+import AcpChatHistory, { IChatHistoryItem } from './AcpChatHistory';
+
+const MAX_TITLE_LENGTH = 100;
+
+/**
+ * ACP 专属的 ChatViewHeader
+ * 与 DefaultChatViewHeader 的区别：
+ * - 使用 session.title（服务端返回的标题）构建 historyList，而非从消息内容推导
+ * - 不显示删除按钮（ACP 模式下由服务端管理会话生命周期）
+ */
+export function AcpChatViewHeader({
+  handleClear,
+  handleCloseChatView,
+}: {
+  handleClear: () => any;
+  handleCloseChatView: () => any;
+}) {
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const messageService = useInjectable<IMessageService>(IMessageService);
+  const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
+  const quickPick = useInjectable<QuickPickService>(QuickPickService);
+
+  const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
+  const [currentTitle, setCurrentTitle] = React.useState<string>('');
+  const [historyLoading, setHistoryLoading] = React.useState(false);
+  const [sessionSwitching, setSessionSwitching] = React.useState(false);
+  const isMultiRoot = workspaceService.isMultiRootWorkspaceOpened;
+
+  const [currentWorkspaceDir, setCurrentWorkspaceDir] = React.useState<string>(getCachedWorkspaceDir());
+
+  // Sync state when cache is updated externally (e.g. by session provider on first init)
+  React.useEffect(() => {
+    const cached = getCachedWorkspaceDir();
+    if (cached && cached !== currentWorkspaceDir) {
+      setCurrentWorkspaceDir(cached);
+    }
+  });
+
+  const handleSwitchWorkspaceDir = React.useCallback(async () => {
+    const oldDir = getCachedWorkspaceDir();
+    const newDir = await switchWorkspaceDir(workspaceService, quickPick, messageService);
+    setCurrentWorkspaceDir(newDir);
+    // Create new session with new cwd if path actually changed
+    if (newDir && newDir !== oldDir) {
+      try {
+        aiChatService.createSessionModel();
+      } catch (error) {
+        messageService.error(error.message);
+      }
+    }
+  }, [workspaceService, quickPick, messageService, aiChatService]);
+
+  React.useEffect(() => {
+    const dispose = aiChatService.onSessionLoadingChange((loading) => {
+      setSessionSwitching(loading);
+    });
+    return () => dispose.dispose();
+  }, [aiChatService]);
+
+  const handleNewChat = React.useCallback(() => {
+    if (sessionSwitching) {
+      return;
+    }
+    if (aiChatService.sessionModel && aiChatService.sessionModel.history.getMessages().length > 0) {
+      try {
+        aiChatService.createSessionModel();
+      } catch (error) {
+        messageService.error(error.message);
+      }
+    }
+  }, [aiChatService, sessionSwitching]);
+
+  const handleHistoryItemSelect = React.useCallback(
+    (item: IChatHistoryItem) => {
+      if (sessionSwitching) {
+        return;
+      }
+      aiChatService.activateSession(item.id);
+    },
+    [aiChatService, sessionSwitching],
+  );
+
+  const handleHistoryItemChange = React.useCallback(() => {}, []);
+
+  /**
+   * 构建 ACP 历史列表
+   * 优先使用 session.title（服务端元数据），降级使用第一条消息内容
+   */
+  const getHistoryList = React.useCallback(async () => {
+    const sessions = aiChatService.getSessions();
+
+    // 当前会话标题
+    const currentMessages = aiChatService.sessionModel?.history.getMessages() || [];
+    const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
+    const title = latestUserMessage
+      ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
+      : '';
+    setCurrentTitle(title);
+
+    setHistoryList(
+      sessions.map((session) => {
+        const messages = session.history.getMessages();
+
+        // ACP 关键区别：优先使用 session.title
+        let sessionTitle = '';
+        if (session.title) {
+          sessionTitle = session.title.slice(0, MAX_TITLE_LENGTH);
+        } else if (messages.length > 0) {
+          sessionTitle = cleanAttachedTextWrapper(messages[0].content).slice(0, MAX_TITLE_LENGTH);
+        }
+
+        const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
+
+        return {
+          id: session.sessionId,
+          title: sessionTitle,
+          updatedAt,
+          loading: false,
+        };
+      }),
+    );
+  }, [aiChatService]);
+
+  // 监听 popover 打开时刷新列表
+  const handleHistoryPopoverVisibleChange = React.useCallback(
+    async (visible: boolean) => {
+      if (visible) {
+        setHistoryLoading(true);
+        try {
+          await aiChatService.getSessionsByAcp();
+          await getHistoryList();
+        } finally {
+          setHistoryLoading(false);
+        }
+      }
+    },
+    [aiChatService, getHistoryList],
+  );
+
+  React.useEffect(() => {
+    getHistoryList();
+
+    const toDispose = new DisposableCollection();
+    let previousMessageChangeDisposable: IDisposable | undefined;
+
+    toDispose.push(
+      aiChatService.onChangeSession(() => {
+        getHistoryList();
+        previousMessageChangeDisposable?.dispose();
+        if (aiChatService.sessionModel) {
+          previousMessageChangeDisposable = aiChatService.sessionModel.history.onMessageChange(() => {
+            getHistoryList();
+          });
+        }
+      }),
+    );
+
+    toDispose.push({ dispose: () => previousMessageChangeDisposable?.dispose() });
+
+    if (aiChatService.sessionModel) {
+      toDispose.push(
+        aiChatService.sessionModel.history.onMessageChange(() => {
+          getHistoryList();
+        }),
+      );
+    }
+
+    return () => {
+      toDispose.dispose();
+    };
+  }, [aiChatService]);
+
+  return (
+    <div className={styles.header}>
+      <AcpChatHistory
+        className={styles.chat_history}
+        currentId={aiChatService.sessionModel?.sessionId}
+        title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
+        historyList={historyList}
+        historyLoading={historyLoading}
+        disabled={sessionSwitching}
+        onNewChat={handleNewChat}
+        onHistoryItemSelect={handleHistoryItemSelect}
+        onHistoryItemDelete={() => {}}
+        onHistoryItemChange={handleHistoryItemChange}
+        onHistoryPopoverVisibleChange={handleHistoryPopoverVisibleChange}
+      />
+      {isMultiRoot && (
+        <Popover
+          key={`switch-cwd-${currentWorkspaceDir}`}
+          overlayClassName={styles.popover_icon}
+          id={'ai-chat-header-switch-cwd'}
+          title={
+            currentWorkspaceDir
+              ? formatLocalize('chat.switchWorkspaceDirHint', currentWorkspaceDir)
+              : localize('chat.switchWorkspaceDir')
+          }
+        >
+          <EnhanceIcon
+            wrapperClassName={styles.action_btn}
+            className={getIcon('folder')}
+            onClick={handleSwitchWorkspaceDir}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('chat.switchWorkspaceDir')}
+          />
+        </Popover>
+      )}
+      <Popover
+        overlayClassName={styles.popover_icon}
+        id={'ai-chat-header-clear'}
+        title={localize('aiNative.operate.clear.title')}
+      >
+        <EnhanceIcon
+          wrapperClassName={styles.action_btn}
+          className={getIcon('clear')}
+          onClick={handleClear}
+          tabIndex={0}
+          role='button'
+          ariaLabel={localize('aiNative.operate.clear.title')}
+        />
+      </Popover>
+      <Popover
+        overlayClassName={styles.popover_icon}
+        id={'ai-chat-header-close'}
+        position={PopoverPosition.left}
+        title={localize('aiNative.operate.close.title')}
+      >
+        <EnhanceIcon
+          wrapperClassName={styles.action_btn}
+          className={getIcon('window-close')}
+          onClick={handleCloseChatView}
+          tabIndex={0}
+          role='button'
+          ariaLabel={localize('aiNative.operate.close.title')}
+        />
+      </Popover>
+    </div>
+  );
+}
