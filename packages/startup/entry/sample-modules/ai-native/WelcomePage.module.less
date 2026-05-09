@@ -1,0 +1,56 @@
+.welcome_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 32px 24px;
+  gap: 24px;
+}
+
+.welcome_header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  .welcome_title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--design-text-foreground);
+  }
+
+  .welcome_desc {
+    margin: 0;
+    font-size: 13px;
+    color: var(--design-text-secondary);
+    text-align: center;
+  }
+}
+
+.sample_questions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.sample_card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background-color: var(--design-block-hoverBackground);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--design-text-foreground);
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: var(--design-block-hoverActiveBackground);
+    color: var(--design-text-hoverForeground);
+  }
+}

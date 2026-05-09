@@ -145,6 +145,14 @@ export interface IChatFeatureRegistry {
   registerMessageSummaryProvider(provider: IMessageSummaryProvider): void;
 }
 
+export type ChatWelcomePageRender = (props: {
+  onSend: (message: string, images?: string[], agentId?: string, command?: string) => void;
+  agentId?: string;
+  setAgentId: (id: string) => void;
+  command?: string;
+  setCommand: (cmd: string) => void;
+}) => React.ReactElement | React.JSX.Element;
+
 export type ChatWelcomeRender = (props: {
   message: IChatWelcomeMessageContent;
   sampleQuestions: ISampleQuestions[];
@@ -258,6 +266,11 @@ export interface IChatRenderRegistry {
    * 注册消息处理器，用于在渲染前对消息列表进行过滤或变换
    */
   registerMessageProcessor(processor: IChatMessageProcessor): IDisposable;
+
+  /**
+   * 欢迎页面渲染器（独立于 WelcomeMessage，占据 chat_container 位置）
+   */
+  registerChatWelcomePageRender(render: ChatWelcomePageRender): void;
 }
 
 export interface IResolveConflictRegistry {

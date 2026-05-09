@@ -24,6 +24,7 @@ import {
   ChatThinkingResultRender,
   ChatUserRoleRender,
   ChatViewHeaderRender,
+  ChatWelcomePageRender,
   ChatWelcomeRender,
   IChatMessageProcessor,
   IChatRenderRegistry,
@@ -102,5 +103,11 @@ export class ChatRenderRegistry extends Disposable implements IChatRenderRegistr
 
   registerChatHistoryRender(render: ChatHistoryRender): void {
     this.chatHistoryRender = render;
+  }
+
+  public chatWelcomePageRender?: ChatWelcomePageRender;
+
+  registerChatWelcomePageRender(render: ChatWelcomePageRender): void {
+    this.chatWelcomePageRender = render;
   }
 }

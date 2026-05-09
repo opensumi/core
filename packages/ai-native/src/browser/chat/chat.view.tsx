@@ -150,6 +150,7 @@ const AIChatViewContent = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
   const [sessionModelId, setSessionModelId] = React.useState<string | undefined>(aiChatService.sessionModel?.modelId);
+  const [hasUserSentMessage, setHasUserSentMessage] = React.useState(false);
 
   const [changeList, setChangeList] = React.useState<FileChange[]>(
     getFileChanges(applyService.getSessionCodeBlocks() || []),
@@ -776,15 +777,18 @@ const AIChatViewContent = () => {
           );
         }
       }
-      return handleAgentReply({ message: processedContent, images, agentId, command, reportExtra });
+      return handleAgentReply({ message: processedContent, images, agentId, command, reportExtra }).finally(() => {
+        setHasUserSentMessage(true);
+      });
     },
-    [handleAgentReply],
+    [handleAgentReply, setHasUserSentMessage],
   );
 
   const handleClear = React.useCallback(() => {
     aiChatService.clearSessionModel();
     chatApiService.clearHistoryMessages();
     clearChatContent();
+    setHasUserSentMessage(false);
   }, [messageListData]);
 
   const clearChatContent = React.useCallback(() => {
@@ -859,6 +863,7 @@ const AIChatViewContent = () => {
   React.useEffect(() => {
     // 尝试重新渲染历史记录
     clearChatContent();
+    setHasUserSentMessage(false);
     const cancellationTokenSource = new CancellationTokenSource();
     setLoading(false);
     recover(cancellationTokenSource.token);
@@ -879,13 +884,23 @@ const AIChatViewContent = () => {
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>
           <div className={styles.chat_container} ref={containerRef}>
-            <MessageList
-              className={styles.message_list}
-              lockable={true}
-              toBottomHeight={'100%'}
-              // @ts-ignore
-              dataSource={messageListData}
-            />
+            {!hasUserSentMessage && chatRenderRegistry.chatWelcomePageRender ? (
+              React.createElement(chatRenderRegistry.chatWelcomePageRender, {
+                onSend: handleSend,
+                agentId,
+                setAgentId,
+                command,
+                setCommand,
+              })
+            ) : (
+              <MessageList
+                className={styles.message_list}
+                lockable={true}
+                toBottomHeight={'100%'}
+                // @ts-ignore
+                dataSource={messageListData}
+              />
+            )}
           </div>
           {aiChatService.sessionModel?.slicedMessageCount ? (
             <div className={styles.chat_tips_text}>

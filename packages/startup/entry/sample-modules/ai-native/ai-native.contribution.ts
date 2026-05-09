@@ -52,6 +52,7 @@ import { ICodeEditor, ISelection, NewSymbolName, NewSymbolNameTag, Range, Select
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { SlashCommand } from './SlashCommand';
+import { exampleWelcomePageRender } from './WelcomePage';
 
 export enum EInlineOperation {
   Comments = 'Comments',
@@ -616,6 +617,7 @@ Good: "Instance network interfaces exceeded system limit"`;
       registry.registerInputRender(AcpChatMentionInput);
       registry.registerChatViewHeaderRender(AcpChatViewHeader);
       registry.registerEnabledMentionTypes(['file', 'folder', 'rule']);
+      registry.registerChatWelcomePageRender(exampleWelcomePageRender);
     }
   }
 
