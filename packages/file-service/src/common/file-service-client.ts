@@ -4,6 +4,8 @@ import {
   Event,
   FileChangeEvent,
   FileSystemProviderCapabilities,
+  FileWatcherFailureParams,
+  FileWatcherOverflowParams,
   IDisposable,
   IFileServiceClient as IFileServiceClientToken,
   URI,
@@ -32,7 +34,13 @@ export interface IFileServiceClient {
 
   onFilesChanged: Event<FileChangeEvent>;
 
+  onImageFilesChanged: Event<FileChangeEvent>;
+
   onFileProviderChanged: Event<string[]>;
+
+  onWatcherOverflow?: Event<FileWatcherOverflowParams>;
+
+  onWatcherFailed?: Event<FileWatcherFailureParams>;
 
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable;
 

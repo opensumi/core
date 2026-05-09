@@ -1,4 +1,4 @@
-import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { Deferred, IContextKeyService } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Disposable } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
@@ -15,6 +15,8 @@ import { DebugContextKey } from './../../../../src/browser/contextkeys/debug-con
 describe('Debug Variables Tree Model', () => {
   const mockInjector = createBrowserInjector([]);
   let debugVariablesModelService: DebugVariablesModelService;
+  let viewModelChangeListener: (() => void | Promise<void>) | undefined;
+  let variableChangeListener: (() => void | Promise<void>) | undefined;
   const mockDebugHoverSource = {
     onDidChange: jest.fn(() => Disposable.create(() => {})),
   } as any;
@@ -54,7 +56,11 @@ describe('Debug Variables Tree Model', () => {
   } as any;
 
   const mockDebugViewModel = {
-    onDidChange: jest.fn(),
+    currentSession: undefined as any,
+    onDidChange: jest.fn((listener) => {
+      viewModelChangeListener = listener;
+      return Disposable.create(() => {});
+    }),
   };
 
   beforeAll(() => {
@@ -113,6 +119,7 @@ describe('Debug Variables Tree Model', () => {
     expect(typeof debugVariablesModelService.dispose).toBe('function');
     expect(typeof debugVariablesModelService.onDidUpdateTreeModel).toBe('function');
     expect(typeof debugVariablesModelService.initTreeModel).toBe('function');
+    expect(typeof debugVariablesModelService.refresh).toBe('function');
     expect(typeof debugVariablesModelService.initDecorations).toBe('function');
     expect(typeof debugVariablesModelService.activeNodeDecoration).toBe('function');
     expect(typeof debugVariablesModelService.activeNodeActivedDecoration).toBe('function');
@@ -132,6 +139,344 @@ describe('Debug Variables Tree Model', () => {
 
   it('should init success', () => {
     expect(mockDebugViewModel.onDidChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('refreshes when current session variables change', async () => {
+    const mockSession = {
+      on: jest.fn(),
+      onVariableChange: jest.fn((listener) => {
+        variableChangeListener = listener;
+        return Disposable.create(() => {});
+      }),
+    } as any;
+    const refreshSpy = jest.spyOn(debugVariablesModelService, 'refresh').mockResolvedValue();
+
+    mockDebugViewModel.currentSession = mockSession;
+    await viewModelChangeListener?.();
+    await variableChangeListener?.();
+
+    expect(mockSession.onVariableChange).toHaveBeenCalledTimes(1);
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    refreshSpy.mockRestore();
+  });
+
+  it('does not refresh a stale tree when session changes before the new tree is ready', async () => {
+    jest.useFakeTimers();
+    try {
+      let currentVariableChangeListener: (() => void | Promise<void>) | undefined;
+      const oldSession = {
+        id: 'old-session',
+        terminated: false,
+        onVariableChange: jest.fn(() => Disposable.create(() => {})),
+      } as any;
+      const newSession = {
+        id: 'new-session',
+        terminated: false,
+        onVariableChange: jest.fn((listener) => {
+          currentVariableChangeListener = listener;
+          return Disposable.create(() => {});
+        }),
+      } as any;
+      const oldWatcher = {
+        callback: jest.fn(async () => {}),
+      };
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root: {
+          session: oldSession,
+          path: '/oldRoot',
+          children: [],
+          watchEvents: new Map([['/oldRoot', oldWatcher]]),
+        },
+      };
+      (debugVariablesModelService as any).currentSession = oldSession;
+      mockDebugViewModel.currentSession = newSession;
+      (debugVariablesModelService as any).listenCurrentSessionVariableChange();
+
+      await currentVariableChangeListener?.();
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(oldWatcher.callback).not.toHaveBeenCalled();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('does not refresh when the subscribed session is terminated', async () => {
+    jest.useFakeTimers();
+    try {
+      let currentVariableChangeListener: (() => void | Promise<void>) | undefined;
+      const session = {
+        id: 'terminated-session',
+        terminated: true,
+        onVariableChange: jest.fn((listener) => {
+          currentVariableChangeListener = listener;
+          return Disposable.create(() => {});
+        }),
+      } as any;
+      const watcher = {
+        callback: jest.fn(async () => {}),
+      };
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root: {
+          session,
+          path: '/terminatedRoot',
+          children: [],
+          watchEvents: new Map([['/terminatedRoot', watcher]]),
+        },
+      };
+      (debugVariablesModelService as any).currentSession = undefined;
+      mockDebugViewModel.currentSession = session;
+      (debugVariablesModelService as any).listenCurrentSessionVariableChange();
+
+      await currentVariableChangeListener?.();
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(watcher.callback).not.toHaveBeenCalled();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('recreates tree listener collection after disposing old listeners', () => {
+    const previousCollection = (debugVariablesModelService as any).disposableCollection;
+
+    debugVariablesModelService.initDecorations(mockRoot);
+    (debugVariablesModelService as any)._activeTreeModel = {
+      root: mockRoot,
+    };
+    debugVariablesModelService.listenTreeViewChange();
+
+    expect((debugVariablesModelService as any).disposableCollection).not.toBe(previousCollection);
+  });
+
+  it('waits for queued watcher refresh before resolving refresh', async () => {
+    jest.useFakeTimers();
+    try {
+      const watcherDeferred = new Deferred<void>();
+      const watcher = {
+        callback: jest.fn(() => watcherDeferred.promise),
+      };
+      const root = {
+        path: '/testRoot',
+        children: [],
+        watchEvents: new Map([['/testRoot', watcher]]),
+      };
+      const refreshed = jest.fn();
+      let refreshResolved = false;
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root,
+      };
+      debugVariablesModelService.onDidRefreshed(refreshed);
+
+      const refreshPromise = debugVariablesModelService.refresh(root as any).then(() => {
+        refreshResolved = true;
+      });
+      await Promise.resolve();
+
+      expect(refreshResolved).toBe(false);
+
+      await jest.advanceTimersByTimeAsync(100);
+      expect(watcher.callback).toHaveBeenCalledTimes(1);
+      expect(refreshResolved).toBe(false);
+
+      watcherDeferred.resolve();
+      await refreshPromise;
+
+      expect(refreshed).toHaveBeenCalledTimes(1);
+      expect(refreshResolved).toBe(true);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('cancels pending queued refresh work when disposed', async () => {
+    jest.useFakeTimers();
+    try {
+      const watcher = {
+        callback: jest.fn(async () => {}),
+      };
+      const root = {
+        path: '/disposeRoot',
+        children: [],
+        watchEvents: new Map([['/disposeRoot', watcher]]),
+      };
+      const refreshed = jest.fn();
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root,
+      };
+      debugVariablesModelService.onDidRefreshed(refreshed);
+
+      const refreshPromise = debugVariablesModelService.refresh(root as any);
+      await Promise.resolve();
+
+      debugVariablesModelService.dispose();
+
+      expect(debugVariablesModelService.flushEventQueuePromise).toBeFalsy();
+
+      await jest.advanceTimersByTimeAsync(100);
+      await refreshPromise;
+
+      expect(watcher.callback).not.toHaveBeenCalled();
+      expect(refreshed).not.toHaveBeenCalled();
+    } finally {
+      (debugVariablesModelService as any)._disposed = false;
+      jest.useRealTimers();
+    }
+  });
+
+  it('queues another flush when a refresh arrives during an active flush', async () => {
+    jest.useFakeTimers();
+    try {
+      const flushDeferred = new Deferred<void>();
+      const fooWatcher = {
+        callback: jest.fn(() => flushDeferred.promise),
+      };
+      const barWatcher = {
+        callback: jest.fn(async () => {}),
+      };
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root: {
+          watchEvents: new Map([
+            ['/testRoot/foo', fooWatcher],
+            ['/testRoot/bar', barWatcher],
+          ]),
+        },
+      };
+
+      (debugVariablesModelService as any).queueChangeEvent('/testRoot/foo', jest.fn());
+      await jest.advanceTimersByTimeAsync(100);
+      expect(fooWatcher.callback).toHaveBeenCalledTimes(1);
+
+      (debugVariablesModelService as any).queueChangeEvent('/testRoot/bar', jest.fn());
+      flushDeferred.resolve();
+      await Promise.resolve();
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(barWatcher.callback).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('preserves queued callbacks if flushEventQueue is called during an active flush', async () => {
+    jest.useFakeTimers();
+    try {
+      const flushDeferred = new Deferred<void>();
+      const fooWatcher = {
+        callback: jest.fn(() => flushDeferred.promise),
+      };
+      const barWatcher = {
+        callback: jest.fn(async () => {}),
+      };
+      const barCallback = jest.fn();
+
+      (debugVariablesModelService as any)._activeTreeModel = {
+        root: {
+          watchEvents: new Map([
+            ['/testRoot/foo', fooWatcher],
+            ['/testRoot/bar', barWatcher],
+          ]),
+        },
+      };
+
+      (debugVariablesModelService as any).queueChangeEvent('/testRoot/foo', jest.fn());
+      await jest.advanceTimersByTimeAsync(100);
+      expect(fooWatcher.callback).toHaveBeenCalledTimes(1);
+
+      (debugVariablesModelService as any).queueChangeEvent('/testRoot/bar', barCallback);
+      await debugVariablesModelService.flushEventQueue();
+      flushDeferred.resolve();
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(barWatcher.callback).toHaveBeenCalledTimes(1);
+      expect(barCallback).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('does not dedupe sibling paths that only share a string prefix', async () => {
+    const fooWatcher = {
+      callback: jest.fn(async () => {}),
+    };
+    const foobarWatcher = {
+      callback: jest.fn(async () => {}),
+    };
+
+    (debugVariablesModelService as any)._activeTreeModel = {
+      root: {
+        watchEvents: new Map([
+          ['/testRoot/foo', fooWatcher],
+          ['/testRoot/foobar', foobarWatcher],
+        ]),
+      },
+    };
+    (debugVariablesModelService as any)._changeEventDispatchQueue = ['/testRoot/foo', '/testRoot/foobar'];
+
+    await debugVariablesModelService.flushEventQueue();
+
+    expect(fooWatcher.callback).toHaveBeenCalledTimes(1);
+    expect(foobarWatcher.callback).toHaveBeenCalledTimes(1);
+  });
+
+  it('restores expanded Locals and Globals from cached scope state', async () => {
+    const localsRawScope = { name: 'Locals', expensive: false };
+    const globalsRawScope = { name: 'Globals', expensive: false };
+    const oldLocalsScope = {
+      expanded: true,
+      variablesReference: 1,
+      getRawScope: () => localsRawScope,
+    };
+    const oldGlobalsScope = {
+      expanded: true,
+      variablesReference: 2,
+      getRawScope: () => globalsRawScope,
+    };
+    const refreshedLocalsScope = {
+      expanded: false,
+      variablesReference: 101,
+      children: [],
+      setExpanded: jest.fn(async () => {
+        refreshedLocalsScope.expanded = true;
+      }),
+      getRawScope: () => ({ name: 'Locals', expensive: false }),
+    };
+    const refreshedGlobalsScope = {
+      expanded: false,
+      variablesReference: 102,
+      children: [],
+      setExpanded: jest.fn(async () => {
+        refreshedGlobalsScope.expanded = true;
+      }),
+      getRawScope: () => ({ name: 'Globals', expensive: false }),
+    };
+    const refreshedClosureScope = {
+      expanded: false,
+      variablesReference: 103,
+      children: [],
+      setExpanded: jest.fn(async () => {
+        refreshedClosureScope.expanded = true;
+      }),
+      getRawScope: () => ({ name: 'Closure', expensive: false }),
+    };
+
+    (debugVariablesModelService as any).keepExpandedScopesModel.set(oldLocalsScope);
+    (debugVariablesModelService as any).keepExpandedScopesModel.set(oldGlobalsScope);
+
+    await (debugVariablesModelService as any).restoreExpandedScopes([
+      refreshedLocalsScope,
+      refreshedGlobalsScope,
+      refreshedClosureScope,
+    ]);
+
+    expect(refreshedLocalsScope.setExpanded).toHaveBeenCalledTimes(1);
+    expect(refreshedGlobalsScope.setExpanded).toHaveBeenCalledTimes(1);
+    expect(refreshedClosureScope.setExpanded).not.toHaveBeenCalled();
   });
 
   it('initTreeModel method should be work', () => {

@@ -3,7 +3,8 @@ import net, { SocketConnectOpts } from 'net';
 import { Injectable, Optional } from '@opensumi/di';
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
-import { DebugLog, Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, IDisposable } from '@opensumi/ide-core-common';
+import { Deferred } from '@opensumi/ide-core-node';
 
 import {
   IPtyProxyRPCService,
@@ -34,6 +35,13 @@ export const PtyServiceManagerRemoteOptions = Symbol('PtyServiceManagerRemoteOpt
 @Injectable()
 export class PtyServiceManagerRemote extends PtyServiceManager {
   private disposer: Disposable;
+  private isRemoteConnected = false;
+  private hasConnectedBefore = false;
+  private readonly onDidReconnectEmitter = new Emitter<void>();
+  private readonly onDidDisconnectEmitter = new Emitter<void>();
+
+  readonly onDidReconnect: Event<void> = this.onDidReconnectEmitter.event;
+  readonly onDidDisconnect: Event<void> = this.onDidDisconnectEmitter.event;
 
   // Pty运行在单独的容器上，通过Socket连接，可以自定义Socket连接参数
   constructor(
@@ -100,6 +108,8 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
       reconnectTimer = setTimeout(() => {
         this.logger.log('PtyServiceManagerRemote reconnect');
         socket.destroy();
+        this.callbackMap.clear();
+        this.ptyServiceProxyDeferred = new Deferred();
         this.initRemoteConnectionMode(opts);
       }, reconnectInterval || 2000);
     };
@@ -114,12 +124,21 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
         clearTimeout(reconnectTimer);
         reconnectTimer = null;
       }
+      this.isRemoteConnected = true;
       this.disposer.addDispose(this.initRPCService(socket));
+      if (this.hasConnectedBefore) {
+        this.onDidReconnectEmitter.fire();
+      }
+      this.hasConnectedBefore = true;
     });
 
     // UNIX Socket 连接失败或者断开，此时需要等待 1.5s 后重新连接
     socket.on('close', (hadError) => {
       this.logger.log('PtyServiceManagerRemote socket close, hadError:', hadError);
+      if (this.isRemoteConnected) {
+        this.onDidDisconnectEmitter.fire();
+      }
+      this.isRemoteConnected = false;
       reconnect();
     });
 

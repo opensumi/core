@@ -56,6 +56,7 @@ import {
   EditorDocumentModelContentChangedEvent,
   EditorDocumentModelOptionChangedEvent,
   EditorDocumentModelRemovalEvent,
+  EditorDocumentModelSaveErrorEvent,
   EditorDocumentModelSavedEvent,
   EditorDocumentModelWillSaveEvent,
   IDocModelUpdateOptions,
@@ -73,6 +74,7 @@ export interface EditorDocumentModelConstructionOptions {
   alwaysDirty?: boolean;
   closeAutoSave?: boolean;
   disposeEvenDirty?: boolean;
+  byteSize?: number;
 }
 
 export interface IDirtyChange {
@@ -152,6 +154,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   private _isInitOption = true;
 
+  public isLargeFile = false;
+
   private readonly _onDidChangeEncoding = new Emitter<void>();
   readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
 
@@ -172,6 +176,13 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
     this.monacoModel = monaco.editor.createModel(content, options.languageId, MonacoURI.parse(uri.toString()));
     this.editorPreferences = createEditorPreferenceProxy(this.preferences, this.uri.toString(), this.languageId);
+
+    const largeFileSize = this.editorPreferences['editor.largeFile'];
+    const largeFileOptimizations = this.editorPreferences['editor.largeFileOptimizations'];
+    if (largeFileOptimizations !== false && typeof options.byteSize === 'number' && options.byteSize >= largeFileSize) {
+      this.isLargeFile = true;
+    }
+
     this.updateOptions({});
     if (options.eol) {
       this.eol = options.eol;
@@ -498,6 +509,14 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
         this.eventBus.fire(new EditorDocumentModelSavedEvent(this.uri));
         this.setPersist(this.savingTasks[0].alternativeVersionId);
       } else {
+        if (res.state === 'error') {
+          this.eventBus.fire(
+            new EditorDocumentModelSaveErrorEvent({
+              uri: this.uri,
+              errorMessage: res.errorMessage,
+            }),
+          );
+        }
         // 回滚 changes
         this.dirtyChanges.unshift(...changes);
       }
@@ -751,5 +770,31 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
         timer.timeEnd(this.uri.path.ext);
       }
     }
+  }
+
+  dispose() {
+    const debouncedAutoSave = this._tryAutoSaveAfterDelay as typeof this._tryAutoSaveAfterDelay & {
+      cancel?: () => void;
+    };
+    debouncedAutoSave?.cancel?.();
+    this._tryAutoSaveAfterDelay = undefined;
+
+    for (const task of this.savingTasks) {
+      try {
+        task.dispose();
+      } catch (err) {}
+    }
+    this.savingTasks = [];
+    this.dirtyChanges = [];
+    this._baseContent = '';
+    this._baseContentMd5 = null;
+
+    if (this.monacoModel && !this.monacoModel.isDisposed()) {
+      this.monacoModel.dispose();
+    }
+    // this.monacoModel的引用需要主动释放，否则内存依然存在占用，不能只靠dispose
+    this.monacoModel = undefined as any;
+
+    super.dispose();
   }
 }

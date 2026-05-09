@@ -57,6 +57,9 @@ export class ExtHostDocumentData extends MirrorTextModel {
   dispose(): void {
     this._isDisposed = true;
     this._isDirty = false;
+    this._textLines.length = 0;
+    (this as any)._document = undefined;
+    super.dispose();
   }
 
   equalLines(lines: string[]): boolean {

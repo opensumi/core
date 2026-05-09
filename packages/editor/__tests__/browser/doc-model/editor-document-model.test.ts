@@ -1,10 +1,11 @@
 import uniqueId from 'lodash/uniqueId';
 
-import { IEventBus, URI } from '@opensumi/ide-core-browser';
+import { IEventBus, SaveTaskResponseState, URI } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { EmptyDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { isLinux, isMacintosh } from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
@@ -14,8 +15,11 @@ import { EditorDocumentModel, EditorDocumentModelConstructionOptions } from '../
 import {
   EditorDocumentModelContentChangedEvent,
   EditorDocumentModelOptionChangedEvent,
+  EditorDocumentModelSaveErrorEvent,
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelService,
 } from '../../../src/browser/doc-model/types';
-import { IDocPersistentCacheProvider } from '../../../src/common';
+import { IDocPersistentCacheProvider, SaveReason } from '../../../src/common';
 
 describe('EditorDocumentModel', () => {
   let injector: MockInjector;
@@ -173,6 +177,90 @@ describe('EditorDocumentModel', () => {
 
       expect(docModel.getMonacoModel().getValue()).toBe('a' + content);
       expect(chagneFn).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('dispose', () => {
+    let uri: URI;
+    let content: string;
+
+    beforeEach(() => {
+      uri = new URI(`test://dispose/${Math.random()}`);
+      content = uniqueId('dispose-content');
+    });
+
+    it('should release internal resources on dispose', () => {
+      const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
+      const autoSave = docModel.tryAutoSaveAfterDelay;
+      const cancelSpy = jest.spyOn(autoSave, 'cancel');
+
+      const docModelAny = docModel as any;
+      docModelAny.savingTasks = [{ dispose: jest.fn() }, { dispose: jest.fn() }];
+      docModelAny.dirtyChanges = [{ fromVersionId: 1, toVersionId: 2, changes: [] }];
+      const tasksSnapshot = [...docModelAny.savingTasks];
+
+      // Prime MD5 cache to ensure it gets cleared.
+      docModel.getBaseContentMd5();
+
+      docModel.dispose();
+
+      expect(cancelSpy).toHaveBeenCalled();
+      tasksSnapshot.forEach((task) => expect(task.dispose).toHaveBeenCalled());
+      expect(docModelAny.savingTasks).toHaveLength(0);
+      expect(docModelAny.dirtyChanges).toHaveLength(0);
+      expect(docModel.baseContent).toBe('');
+      expect(docModelAny._baseContentMd5).toBeNull();
+      expect(docModelAny._tryAutoSaveAfterDelay).toBeUndefined();
+    });
+  });
+
+  describe('save', () => {
+    let uri: URI;
+    let docModel: EditorDocumentModel;
+    let saveEditorDocumentModel: jest.Mock;
+    let eventBus: IEventBus;
+    let saveErrorListener: jest.Mock;
+    let saveErrorDisposer: { dispose(): void };
+
+    beforeEach(() => {
+      uri = new URI(`test://save/${Math.random()}`);
+      eventBus = injector.get(IEventBus);
+      injector.mockService(IEditorDocumentModelContentRegistry, {
+        getProvider: jest.fn().mockResolvedValue({
+          isReadonly: jest.fn().mockResolvedValue(false),
+        }),
+      });
+      injector.mockService(IMessageService, {
+        error: jest.fn(),
+      });
+      saveEditorDocumentModel = jest.fn().mockResolvedValue({
+        state: SaveTaskResponseState.ERROR,
+        errorMessage: 'save failed',
+      });
+      injector.mockService(IEditorDocumentModelService, {
+        saveEditorDocumentModel,
+      });
+      docModel = injector.get(EditorDocumentModel, [uri, 'original content', { savable: true }]);
+      saveErrorListener = jest.fn();
+      saveErrorDisposer = eventBus.on(EditorDocumentModelSaveErrorEvent, saveErrorListener);
+    });
+
+    afterEach(() => {
+      saveErrorDisposer.dispose();
+      docModel.dispose();
+    });
+
+    it('should emit save error event when saving fails', async () => {
+      docModel.getMonacoModel().setValue('updated content');
+
+      const result = await docModel.save(false, SaveReason.AfterDelay);
+
+      expect(result).toBe(false);
+      expect(saveEditorDocumentModel).toHaveBeenCalledTimes(1);
+      expect(saveErrorListener).toHaveBeenCalledTimes(1);
+      const event = saveErrorListener.mock.calls[0][0];
+      expect(event.payload.uri.toString()).toBe(uri.toString());
+      expect(event.payload.errorMessage).toBe('save failed');
     });
   });
 });

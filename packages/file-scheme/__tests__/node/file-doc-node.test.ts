@@ -1,3 +1,4 @@
+import { statSync } from 'fs';
 import { tmpdir } from 'os';
 import { dirname, join } from 'path';
 
@@ -48,10 +49,17 @@ describe('node file doc service test', () => {
         if (uriString.indexOf('notexist') > -1) {
           return undefined;
         }
+        const fsPath = new URI(uriString).codeUri.fsPath;
+        let lastModification = Date.now();
+        try {
+          lastModification = statSync(fsPath).mtime.getTime();
+        } catch {
+          // virtual file, use Date.now()
+        }
         const stat: FileStat = {
           uri: uriString,
           isDirectory: false,
-          lastModification: Date.now(),
+          lastModification,
         };
         return stat;
       }),
@@ -60,10 +68,20 @@ describe('node file doc service test', () => {
     injector.mock(
       IFileService,
       'resolveContent',
-      jest.fn((stat: FileStat) => ({
-        stat,
-        content: 'current content',
-      })),
+      jest.fn(async (uriString: string, options?: { encoding?: string }) => {
+        const fsPath = new URI(uriString).codeUri.fsPath;
+        let content: string;
+        try {
+          const buf = await readFile(fsPath);
+          content =
+            options?.encoding && options.encoding !== 'utf8' && options.encoding !== 'utf-8'
+              ? iconvDecode(buf, options.encoding)
+              : buf.toString('utf8');
+        } catch {
+          content = 'current content';
+        }
+        return { stat: { uri: uriString, isDirectory: false, lastModification: Date.now() }, content };
+      }),
     );
 
     injector.mock(
@@ -73,7 +91,23 @@ describe('node file doc service test', () => {
     );
 
     injector.mock(IFileService, 'createFile', jest.fn());
-    injector.mock(IFileService, 'setContent', jest.fn());
+    injector.mock(
+      IFileService,
+      'setContent',
+      jest.fn(async (stat: FileStat, content: string, options?: { encoding?: string }) => {
+        const fsPath = new URI(stat.uri).codeUri.fsPath;
+        try {
+          const buf =
+            options?.encoding && options.encoding !== 'utf8' && options.encoding !== 'utf-8'
+              ? iconvEncode(content, options.encoding)
+              : Buffer.from(content, 'utf8');
+          await writeFile(fsPath, buf);
+        } catch {
+          // virtual file, no-op
+        }
+        return stat;
+      }),
+    );
 
     const fileDocNodeService: IFileSchemeDocNodeService = injector.get(FileSchemeDocNodeServiceImpl);
     const fileService: IFileService = injector.get(IFileService);

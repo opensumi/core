@@ -78,6 +78,12 @@ describe('ext host terminal test', () => {
         detectAvailableProfiles() {
           return [];
         },
+        input() {
+          // no-op for tests
+        },
+        resize() {
+          // no-op for tests
+        },
       },
     },
     {

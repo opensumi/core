@@ -54,11 +54,59 @@ export interface FileSystemWatcherClient {
    * 文件监听下的文件修改时触发事件
    */
   onDidFilesChanged(event: DidFilesChangedParams): void;
+  onWatcherOverflow?(event: FileWatcherOverflowParams): void;
+  onWatcherFailed?(event: FileWatcherFailureParams): void;
 }
 
 export interface WatchOptions {
   excludes: string[];
   pollingWatch?: boolean;
+}
+
+export interface FileWatcherOverflowParams {
+  /**
+   * The resolved URI after following symlinks. May differ from the watched URI.
+   */
+  resolvedUri?: string;
+  /**
+   * Backend implementation that reported the overflow.
+   */
+  backend?: RecursiveWatcherBackend | 'polling';
+  /**
+   * Number of native events that were dropped.
+   */
+  eventCount: number;
+  /**
+   * Threshold that triggered the overflow handling.
+   */
+  limit: number;
+  /**
+   * Timestamp (in ms) when the overflow was detected.
+   */
+  timestamp: number;
+}
+
+export interface FileWatcherFailureParams {
+  /**
+   * The resolved URI after following symlinks. May differ from the watched URI.
+   */
+  resolvedUri?: string;
+  /**
+   * Backend implementation that reported the failure.
+   */
+  backend?: RecursiveWatcherBackend | 'polling';
+  /**
+   * failure message.
+   */
+  message: string;
+  /**
+   * Number of attempts that have been made before failing.
+   */
+  attempts?: number;
+  /**
+   * Timestamp (in ms) when the failure was detected.
+   */
+  timestamp: number;
 }
 
 export interface DidFilesChangedParams {

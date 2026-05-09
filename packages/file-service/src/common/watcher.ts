@@ -3,6 +3,8 @@ import { Event, FileChange, IRelativePattern, URI, UriComponents } from '@opensu
 import {
   DidFilesChangedParams,
   FileSystemWatcherClient,
+  FileWatcherFailureParams,
+  FileWatcherOverflowParams,
   RecursiveWatcherBackend,
 } from '@opensumi/ide-core-common/lib/types/file-watch';
 
@@ -91,4 +93,6 @@ export interface IWatcherProcessManager {
   setWatcherFileExcludes(excludes: string[]): Promise<void>;
 
   $onDidFilesChanged(events: DidFilesChangedParams): void;
+  $onWatcherOverflow?(event: FileWatcherOverflowParams): void;
+  $onWatcherFailed?(event: FileWatcherFailureParams): void;
 }

@@ -328,6 +328,7 @@ export interface ITerminalServiceClient {
     rows: number,
     launchConfig: IShellLaunchConfig,
   ): Promise<INodePtyInstance | undefined>;
+  input(id: string, data: string): void;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number): void;
   disposeById(id: string): void;
@@ -345,6 +346,8 @@ export interface ITerminalServiceClient {
     signal?: number,
   ): void;
   processChange(clientId: string, processName: string): void;
+  reconnected(sessionId: string): void;
+  disconnected(sessionId: string): void;
   setConnectionClientId(clientId: string): void;
   dispose(): void;
   getShellName(id: string): string;

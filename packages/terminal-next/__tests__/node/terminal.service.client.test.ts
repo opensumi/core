@@ -62,7 +62,7 @@ describe('TerminalServiceClientImpl', () => {
       receiveData = receiveData + data;
     });
 
-    terminalServiceClient.onMessage(mockId, JSON.stringify({ data: 'message test' }));
+    terminalServiceClient.input(mockId, 'message test');
     terminalServiceClient.resize(mockId, 400, 400);
 
     await new Promise<void>((resolve) => {

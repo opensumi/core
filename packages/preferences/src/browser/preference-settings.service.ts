@@ -730,6 +730,7 @@ export const defaultSettingSections: {
         // {id: 'editor.forceReadOnly', localized: 'preference.editor.forceReadOnly'},
         { id: 'editor.maxTokenizationLineLength', localized: 'preference.editor.maxTokenizationLineLength' },
         { id: 'editor.largeFile', localized: 'preference.editor.largeFile' },
+        { id: 'editor.streamLargeFile', localized: 'preference.editor.streamLargeFile' },
         { id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles' },
         {
           id: 'editor.bracketPairColorization.enabled',

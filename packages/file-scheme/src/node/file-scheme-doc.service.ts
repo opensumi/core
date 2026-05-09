@@ -1,5 +1,3 @@
-import { existsSync, readFile, statSync, writeFile } from 'fs-extra';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import {
@@ -10,9 +8,6 @@ import {
   SaveTaskErrorCause,
   SaveTaskResponseState,
   Throttler,
-  URI,
-  iconvDecode,
-  iconvEncode,
   isEditChange,
 } from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
@@ -29,8 +24,6 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
 
   private saveQueueByUri = new Map<string, Throttler>();
 
-  // 由于此处只处理file协议，为了简洁，不再使用 fileService,
-
   async $saveByChange(
     uri: string,
     change: IContentChange,
@@ -39,39 +32,39 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
     token?: CancellationToken,
   ): Promise<IEditorDocumentModelSaveResult> {
     try {
-      const fsPath = new URI(uri).codeUri.fsPath;
-      if (existsSync(fsPath)) {
-        const mtime = statSync(fsPath).mtime.getTime();
-        const contentBuffer = await readFile(fsPath);
-        if (token?.isCancellationRequested) {
-          return {
-            state: SaveTaskResponseState.ERROR,
-            errorMessage: SaveTaskErrorCause.CANCEL,
-          };
-        }
-        const content = iconvDecode(contentBuffer, encoding ? encoding : 'utf8');
-        if (!force) {
-          const currentMd5 = this.hashCalculateService.calculate(content);
-          if (change.baseMd5 !== currentMd5) {
-            return {
-              state: SaveTaskResponseState.DIFF,
-            };
-          }
-        }
-        const contentRes = applyChanges(content, change.changes!, change.eol);
-        if (statSync(fsPath).mtime.getTime() !== mtime) {
-          throw new Error('File has been modified during saving, please retry');
-        }
-        await writeFile(fsPath, iconvEncode(contentRes, encoding ? encoding : 'utf8'));
-        return {
-          state: SaveTaskResponseState.SUCCESS,
-        };
-      } else {
+      const stat = await this.fileService.getFileStat(uri);
+      if (!stat) {
         return {
           state: SaveTaskResponseState.ERROR,
           errorMessage: SaveTaskErrorCause.USE_BY_CONTENT,
         };
       }
+      const mtime = stat.lastModification;
+      const res = await this.fileService.resolveContent(uri, { encoding });
+      if (token?.isCancellationRequested) {
+        return {
+          state: SaveTaskResponseState.ERROR,
+          errorMessage: SaveTaskErrorCause.CANCEL,
+        };
+      }
+      const content = res.content;
+      if (!force) {
+        const currentMd5 = this.hashCalculateService.calculate(content);
+        if (change.baseMd5 !== currentMd5) {
+          return {
+            state: SaveTaskResponseState.DIFF,
+          };
+        }
+      }
+      const contentRes = applyChanges(content, change.changes!, change.eol);
+      const latestStat = await this.fileService.getFileStat(uri);
+      if (!latestStat || latestStat.lastModification !== mtime) {
+        throw new Error('File has been modified during saving, please retry');
+      }
+      await this.fileService.setContent(latestStat, contentRes, { encoding });
+      return {
+        state: SaveTaskResponseState.SUCCESS,
+      };
     } catch (e) {
       return {
         state: SaveTaskResponseState.ERROR,

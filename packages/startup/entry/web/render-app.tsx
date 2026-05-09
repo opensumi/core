@@ -112,6 +112,8 @@ export const getDefaultClientAppOpts = ({
       'general.productIconTheme': 'opensumi-icons',
       'application.confirmExit': 'never',
       'editor.quickSuggestionsDelay': 100,
+      'editor.largeFile': 10 * 1024 * 1024,
+      'editor.largeFileOptimizations': true,
     },
     defaultPanels: {
       [SlotLocation.panel]: '@opensumi/ide-terminal-next',

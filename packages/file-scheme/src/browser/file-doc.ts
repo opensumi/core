@@ -12,6 +12,8 @@ import {
   ISchemaStore,
   MaybePromise,
   PreferenceService,
+  SaveTaskErrorCause,
+  SaveTaskResponseState,
   Schemes,
   URI,
 } from '@opensumi/ide-core-browser';
@@ -70,7 +72,7 @@ export class FileSchemeDocumentProvider
   ): Promise<IEditorDocumentModelSaveResult> {
     const baseMd5 = this.hashCalculateService.calculate(baseContent);
     if (content.length > FILE_SAVE_BY_CHANGE_THRESHOLD) {
-      return await this.fileSchemeDocClient.saveByChange(
+      const result = await this.fileSchemeDocClient.saveByChange(
         uri.toString(),
         {
           baseMd5,
@@ -81,6 +83,19 @@ export class FileSchemeDocumentProvider
         ignoreDiff,
         token,
       );
+      if (result.state === SaveTaskResponseState.ERROR && result.errorMessage === SaveTaskErrorCause.USE_BY_CONTENT) {
+        return await this.fileSchemeDocClient.saveByContent(
+          uri.toString(),
+          {
+            baseMd5,
+            content,
+          },
+          encoding,
+          ignoreDiff,
+          token,
+        );
+      }
+      return result;
     } else {
       return await this.fileSchemeDocClient.saveByContent(
         uri.toString(),

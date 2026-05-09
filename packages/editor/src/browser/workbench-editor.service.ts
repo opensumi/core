@@ -1081,7 +1081,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   @OnEvent(ResourceOpenTypeChangedEvent)
-  oResourceOpenTypeChangedEvent(e: ResourceOpenTypeChangedEvent) {
+  async oResourceOpenTypeChangedEvent(e: ResourceOpenTypeChangedEvent) {
     const uri = e.payload;
     if (this.cachedResourcesOpenTypes.has(uri.toString())) {
       this.cachedResourcesOpenTypes.delete(uri.toString());
@@ -1089,8 +1089,22 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
       this.resetOpenType();
 
+      // large files intercepted by LargeFilePrevent component need to reset status when change open type
+      const resourceReady = new Deferred<void>();
+      this.resourceStatus.set(this.currentResource, resourceReady.promise);
+
+      // 超过60ms loading时间的才展示加载
+      const delayTimer = setTimeout(() => {
+        this.notifyTabLoading(this.currentResource!);
+      }, 60);
+
       this.notifyBodyChanged();
-      this.displayResourceComponent(this.currentResource, {});
+      try {
+        await this.displayResourceComponent(this.currentResource, {});
+      } finally {
+        clearTimeout(delayTimer);
+        resourceReady.resolve();
+      }
     }
   }
 

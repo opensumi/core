@@ -10,17 +10,20 @@ import {
   Event,
   ExtensionActivateEvent,
   FileUri,
+  FileWatcherFailureEvent,
+  FileWatcherOverflowEvent,
   FilesChangeEvent,
   IDisposable,
   ParsedPattern,
+  PreferenceService,
   URI,
   Uri,
   parseGlob,
 } from '@opensumi/ide-core-browser';
-import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { FileSystemProviderCapabilities, IEventBus, ILogger, Schemes, isUndefined } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { IApplicationService } from '@opensumi/ide-core-common/lib/types/application';
+import { IReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 import {
@@ -36,6 +39,8 @@ import {
   FileStat,
   FileSystemError,
   FileSystemProvider,
+  FileWatcherFailureParams,
+  FileWatcherOverflowParams,
   IBrowserFileSystemRegistry,
   IDiskFileProvider,
   IFileServiceClient,
@@ -47,6 +52,7 @@ import {
   TextDocumentContentChangeEvent,
   containsExtraFileMethod,
 } from '../common';
+import { EXT_LIST_IMAGE } from '../common/file-ext';
 
 import { FileSystemWatcher } from './watcher';
 
@@ -73,6 +79,14 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
   protected readonly _onFilesChanged = new Emitter<FileChangeEvent>();
   readonly onFilesChanged: Event<FileChangeEvent> = this._onFilesChanged.event;
+
+  protected readonly _onWatcherOverflow = new Emitter<FileWatcherOverflowParams>();
+  readonly onWatcherOverflow: Event<FileWatcherOverflowParams> = this._onWatcherOverflow.event;
+
+  protected readonly _onWatcherFailed = new Emitter<FileWatcherFailureParams>();
+  readonly onWatcherFailed: Event<FileWatcherFailureParams> = this._onWatcherFailed.event;
+  protected readonly _onImageFilesChanged = new Emitter<FileChangeEvent>();
+  readonly onImageFilesChanged: Event<FileChangeEvent> = this._onImageFilesChanged.event;
 
   protected readonly _onFileProviderChanged = new Emitter<string[]>();
   readonly onFileProviderChanged: Event<string[]> = this._onFileProviderChanged.event;
@@ -155,13 +169,15 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
     this.userHomeDeferred.resolve(userHome);
   }
 
-  corePreferences: CorePreferences;
+  @Autowired(PreferenceService)
+  private readonly preference: PreferenceService;
 
   handlesScheme(scheme: string) {
     return this.registry.providers.has(scheme) || this.fsProviders.has(scheme);
   }
 
   public dispose() {
+    this._onImageFilesChanged.dispose();
     return this.toDisposable.dispose();
   }
 
@@ -175,16 +191,16 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
     const provider = await this.getProvider(_uri.scheme);
     const rawContent = await provider.readFile(_uri.codeUri);
     const data = (rawContent as any).data || rawContent;
-    const buffer = BinaryBuffer.wrap(Uint8Array.from(data));
+    const buffer = BinaryBuffer.wrap(data instanceof Uint8Array ? data : Uint8Array.from(data));
     return { content: buffer.toString(options?.encoding) };
   }
 
   async readFile(uri: string) {
     const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
-    const rawContent = await provider.readFile(_uri.codeUri);
+    const rawContent = await this.doReadFile(provider, _uri.codeUri);
     const data = (rawContent as any).data || rawContent;
-    const buffer = BinaryBuffer.wrap(Uint8Array.from(data));
+    const buffer = BinaryBuffer.wrap(data instanceof Uint8Array ? data : Uint8Array.from(data));
     return { content: buffer };
   }
 
@@ -348,8 +364,31 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
           type: change.type,
         } as FileChange),
     );
+
+    // 触发所有文件变化事件
     this._onFilesChanged.fire(changes);
     this.eventBus.fire(new FilesChangeEvent(changes));
+
+    // 过滤图片文件变化并触发专门的事件
+    const imageChanges = changes.filter((change) => {
+      const uri = new URI(change.uri);
+      const ext = uri.path.ext?.toLowerCase().replace('.', '');
+      return ext && EXT_LIST_IMAGE.has(ext);
+    });
+
+    if (imageChanges.length > 0) {
+      this._onImageFilesChanged.fire(imageChanges);
+    }
+  }
+
+  fireWatcherOverflow(event: FileWatcherOverflowParams): void {
+    this._onWatcherOverflow.fire(event);
+    this.eventBus.fire(new FileWatcherOverflowEvent(event));
+  }
+
+  fireWatcherFailed(event: FileWatcherFailureParams): void {
+    this._onWatcherFailed.fire(event);
+    this.eventBus.fire(new FileWatcherFailureEvent(event));
   }
 
   private uriWatcherMap: Map<
@@ -496,6 +535,12 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
     if (provider.onDidChangeFile) {
       disposables.push(provider.onDidChangeFile((e) => this.fireFilesChange({ changes: e })));
     }
+    if (provider.onDidWatcherOverflow) {
+      disposables.push(provider.onDidWatcherOverflow((e) => this.fireWatcherOverflow(e)));
+    }
+    if (provider.onDidWatcherFailed) {
+      disposables.push(provider.onDidWatcherFailed((e) => this.fireWatcherFailed(e)));
+    }
     this.toDisposable.push(
       provider.onDidChangeCapabilities(() =>
         this._onDidChangeFileSystemProviderCapabilities.fire({ provider, scheme }),
@@ -577,6 +622,93 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
     }
 
     return _uri;
+  }
+
+  private async doReadFile(provider: FileSystemProvider, uri: Uri) {
+    const shouldStream = await this.shouldUseReadStream(provider, uri);
+    if (shouldStream && provider.readFileStream) {
+      try {
+        const stream = await provider.readFileStream(uri);
+        return await this.collectReadableStream(stream);
+      } catch (error) {
+        this.logger?.warn('[FileServiceClient] readFileStream failed, fallback to readFile.', error);
+      }
+    }
+
+    return await provider.readFile(uri);
+  }
+
+  private async shouldUseReadStream(provider: FileSystemProvider, uri: Uri): Promise<boolean> {
+    if (!provider.readFileStream || !this.isLargeFileStreamEnabled()) {
+      return false;
+    }
+
+    const threshold = this.getLargeFileStreamThreshold();
+    if (!threshold) {
+      return false;
+    }
+
+    try {
+      const stat = await provider.stat(uri);
+      if (stat && typeof stat.size === 'number' && stat.size >= threshold) {
+        return true;
+      }
+    } catch (error) {
+      this.logger?.warn(
+        '[FileServiceClient] stat failed when deciding readFile strategy, fallback to readFile.',
+        error,
+      );
+    }
+
+    return false;
+  }
+
+  private collectReadableStream(stream: IReadableStream<Uint8Array>): Promise<Uint8Array> {
+    return new Promise((resolve, reject) => {
+      const chunks: Uint8Array[] = [];
+      let totalLength = 0;
+
+      listenReadable(stream, {
+        onData: (chunk) => {
+          const data = chunk instanceof Uint8Array ? chunk : Uint8Array.from(chunk as any);
+          chunks.push(data);
+          totalLength += data.byteLength;
+        },
+        onError: (error) => reject(error),
+        onEnd: () => {
+          if (chunks.length === 0) {
+            resolve(new Uint8Array(0));
+            return;
+          }
+
+          if (chunks.length === 1) {
+            resolve(chunks[0]);
+            return;
+          }
+
+          const merged = new Uint8Array(totalLength);
+          let offset = 0;
+          for (const chunk of chunks) {
+            merged.set(chunk, offset);
+            offset += chunk.byteLength;
+          }
+          resolve(merged);
+        },
+      });
+    });
+  }
+
+  private getLargeFileStreamThreshold(): number | undefined {
+    const threshold = this.preference?.getValid<number>('editor.largeFile', 4 * 1024 * 1024 * 1024);
+    if (typeof threshold === 'number' && threshold > 0) {
+      return threshold;
+    }
+    return undefined;
+  }
+
+  private isLargeFileStreamEnabled(): boolean {
+    const enabled = this.preference?.getValid<boolean>('editor.streamLargeFile', true);
+    return typeof enabled === 'undefined' ? true : enabled;
   }
 
   private updateExcludeMatcher() {

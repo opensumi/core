@@ -320,8 +320,26 @@ export class DebugSession implements IDebugSession {
     return this.doRunInTerminal({ name: title, cwd, env, args });
   }
 
+  private async getValidTerminalProcessId(terminalId: string, removeOnInvalid = false): Promise<number | undefined> {
+    try {
+      const processId = await this.terminalService.getProcessId(terminalId);
+      if (processId && processId > 0) {
+        return processId;
+      }
+      if (removeOnInvalid) {
+        this.terminalService.removeTerm(terminalId);
+      }
+      return undefined;
+    } catch {
+      if (removeOnInvalid) {
+        this.terminalService.removeTerm(terminalId);
+      }
+      return undefined;
+    }
+  }
+
   protected async doRunInTerminal(options: TerminalOptions): Promise<DebugProtocol.RunInTerminalResponse['body']> {
-    const activeTerminal = this.terminalService.terminals.find(
+    let activeTerminal = this.terminalService.terminals.find(
       (terminal) => terminal.name === options.name && terminal.isActive,
     );
     let processId: number | undefined;
@@ -329,16 +347,30 @@ export class DebugSession implements IDebugSession {
     const command = prepareCommand(shellPath, options.args, false, options.cwd?.toString(), options.env);
     // 当存在同名终端并且处于激活状态时，复用该终端
     if (activeTerminal) {
+      processId = await this.getValidTerminalProcessId(activeTerminal.id, true);
+      if (!processId) {
+        activeTerminal = undefined;
+      }
+    }
+    if (activeTerminal) {
       if (command) {
         this.terminalService.sendText(activeTerminal.id, command);
       }
-      processId = await this.terminalService.getProcessId(activeTerminal.id);
     } else {
-      const terminal = await this.terminalService.createTerminal(options);
-      terminal.show();
-      if (command) {
-        this.terminalService.sendText(terminal.id, command);
-        processId = await this.terminalService.getProcessId(terminal.id);
+      let createdTerminalId: string | undefined;
+      try {
+        const terminal = await this.terminalService.createTerminal(options);
+        createdTerminalId = terminal.id;
+        terminal.show();
+        if (command) {
+          this.terminalService.sendText(terminal.id, command);
+        }
+        processId = await this.getValidTerminalProcessId(terminal.id, true);
+      } catch (error) {
+        if (createdTerminalId) {
+          await this.getValidTerminalProcessId(createdTerminalId, true);
+        }
+        throw error;
       }
     }
     return { processId };
@@ -980,6 +1012,9 @@ export class DebugSession implements IDebugSession {
 
     // 在 VS Code JavaScript Debugger 中，如果一个表达式取值为 `undefined`, 这里将不会返回结果
     const response = await this.sendRequest('evaluate', { expression, frameId, context });
+    if (context === 'repl') {
+      this._onVariableChange.fire();
+    }
     return response.body;
   }
 

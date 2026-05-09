@@ -1,10 +1,37 @@
 import React, { memo } from 'react';
 
-import { Disposable, useInjectable } from '@opensumi/ide-core-browser';
+import { Disposable, URI, useInjectable } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { IResource, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import styles from './style.module.less';
+
+interface UseResourceChangeResult {
+  fileChanged: number;
+}
+
+const useResourceChange = (resource: IResource): UseResourceChangeResult => {
+  const fileServiceClient = useInjectable<IFileServiceClient>(IFileServiceClient);
+  const [fileChanged, setFileChanged] = React.useState(0);
+
+  React.useEffect(() => {
+    const disposable = fileServiceClient.onImageFilesChanged((events) => {
+      const hasResourceChanged = events.some((event) => {
+        const eventUri = typeof event.uri === 'string' ? new URI(event.uri) : event.uri;
+        return eventUri.isEqual(resource.uri);
+      });
+
+      if (hasResourceChanged) {
+        setFileChanged((prev) => prev + 1);
+      }
+    });
+
+    return () => disposable.dispose();
+  }, [resource.uri, fileServiceClient]);
+
+  return { fileChanged };
+};
 
 const useResource = (resource: IResource) => {
   const staticService = useInjectable<StaticResourceService>(StaticResourceService);
@@ -29,16 +56,24 @@ export const ImagePreview: ReactEditorComponent<null> = (props) => {
   const imgRef = React.useRef<HTMLImageElement>();
   const imgContainerRef = React.useRef<HTMLDivElement>();
   const { src } = useResource(props.resource);
+  const { fileChanged } = useResourceChange(props.resource);
 
   React.useEffect(() => {
     const disposer = new Disposable();
     if (imgRef.current) {
-      imgRef.current.src = src;
+      try {
+        const url = new URL(src);
+        url.searchParams.set('_t', fileChanged.toString());
+        imgRef.current.src = url.href;
+      } catch (error) {
+        // 如果 src 不是有效的 URL，直接使用原始 src
+        imgRef.current.src = src;
+      }
     }
     return () => {
       disposer.dispose();
     };
-  }, [props.resource]);
+  }, [src, fileChanged]);
 
   return (
     <div className={styles.kt_image_preview}>

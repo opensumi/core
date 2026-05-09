@@ -119,6 +119,7 @@
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*",
     "browserfs": "^1.4.3",
+    "cross-env": "^7.0.3",
     "css-loader": "^6.9.1",
     "electron": "^22.3.21",
     "less-loader": "^12.1.0",

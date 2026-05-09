@@ -24,22 +24,43 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
   constructor(private readonly logger: ILogService) {}
 
   dispose(): void {
+    // 先关闭所有 watcher
+    for (const [, watcher] of this.watcherCollections) {
+      try {
+        watcher.close();
+      } catch (error) {
+        this.logger.error('[Un-Recursive] Error closing watcher during dispose:', error);
+      }
+    }
+    this.watcherCollections.clear();
     this.toDispose.dispose();
   }
 
-  private async doWatch(basePath: string) {
+  /**
+   * 创建文件监听器
+   * @param basePath 要监听的路径
+   * @returns 创建的 watcher，如果失败则返回 undefined
+   */
+  private async doWatch(basePath: string): Promise<fs.FSWatcher | undefined> {
     try {
       const watcher = watch(basePath);
       this.logger.log('[Un-Recursive] start watching', basePath);
-      const isDirectory = fs.lstatSync(basePath).isDirectory();
+
+      // 将 watcher 加入 collections
+      this.watcherCollections.set(basePath, watcher);
+
+      const stat = await fs.lstat(basePath);
+      const isDirectory = stat.isDirectory();
 
       const docChildren = new Set<string>();
       let signalDoc = '';
       if (isDirectory) {
         try {
-          for (const child of fs.readdirSync(basePath)) {
+          const children = await fs.readdir(basePath);
+          for (const child of children) {
             const base = join(basePath, String(child));
-            if (!fs.lstatSync(base).isDirectory()) {
+            const childStat = await fs.lstat(base);
+            if (!childStat.isDirectory()) {
               docChildren.add(child);
             }
           }
@@ -56,6 +77,8 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
           `[Un-Recursive] Failed to watch ${basePath} for changes using fs.watch() (${code}, ${signal})`,
         );
         watcher.close();
+        // 从 collections 中移除
+        this.watcherCollections.delete(basePath);
       });
 
       watcher.on('change', (type: string, filename: string | Buffer) => {
@@ -78,10 +101,14 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
         const changePath = join(basePath, changeFileName);
         if (isDirectory) {
           setTimeout(async () => {
+            // 检查是否已销毁，避免在销毁后执行
+            if (this.toDispose.disposed) {
+              return;
+            }
             // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
             if (docChildren.has(changeFileName)) {
               if ((type === 'rename' || type === 'change') && changeFileName === filename) {
-                const fileExists = fs.existsSync(changePath);
+                const fileExists = await fs.pathExists(changePath);
                 if (fileExists) {
                   this.pushUpdated(changePath);
                 } else {
@@ -89,8 +116,9 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
                   this.pushDeleted(changePath);
                 }
               }
-            } else if (fs.pathExistsSync(changePath)) {
-              if (!fs.lstatSync(changePath).isDirectory()) {
+            } else if (await fs.pathExists(changePath)) {
+              const changeStat = await fs.lstat(changePath);
+              if (!changeStat.isDirectory()) {
                 this.pushAdded(changePath);
                 docChildren.add(changeFileName);
               }
@@ -98,8 +126,12 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
           }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
         } else {
           setTimeout(async () => {
+            // 检查是否已销毁，避免在销毁后执行
+            if (this.toDispose.disposed) {
+              return;
+            }
             if (changeFileName === signalDoc) {
-              if (fs.pathExistsSync(basePath)) {
+              if (await fs.pathExists(basePath)) {
                 this.pushUpdated(basePath);
               } else {
                 this.pushDeleted(basePath);
@@ -109,8 +141,21 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
           }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
         }
       });
+
+      return watcher;
     } catch (error) {
       this.logger.error(`[Un-Recursive] Failed to watch ${basePath} for change using fs.watch() (${error.toString()})`);
+      // 清理已注册的 watcher，避免资源泄漏
+      const existingWatcher = this.watcherCollections.get(basePath);
+      if (existingWatcher) {
+        try {
+          existingWatcher.close();
+        } catch {
+          // ignore close error
+        }
+        this.watcherCollections.delete(basePath);
+      }
+      return undefined;
     }
   }
 
@@ -145,26 +190,44 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
       return disposables;
     }
 
-    const tryWatchDir = async (retryDelay = 1000) => {
-      try {
-        this.doWatch(realPath);
-      } catch (error) {
-        await new Promise((resolve) => {
-          setTimeout(resolve, retryDelay);
-        });
-      }
-      return undefined;
-    };
-    await tryWatchDir();
+    const watcher = await this.doWatch(realPath);
+
+    if (watcher) {
+      disposables.push(
+        Disposable.create(() => {
+          try {
+            watcher.close();
+            this.watcherCollections.delete(realPath);
+            this.logger.log('[Un-Recursive] stop watching via disposable', realPath);
+          } catch (error) {
+            this.logger.error('[Un-Recursive] Error closing watcher:', error);
+          }
+        }),
+      );
+    }
+
     return disposables;
   }
 
   unwatchFileChanges(uri: string): void {
     const basePath = FileUri.fsPath(uri);
-    if (this.watcherCollections.has(basePath)) {
-      const watcher = this.watcherCollections.get(basePath);
+
+    // 尝试解析 realPath，保持与 start 方法一致
+    let realPath = basePath;
+    try {
+      realPath = fs.realpathSync(basePath);
+    } catch {
+      // 如果解析失败（如路径不存在），使用原始路径
+    }
+
+    // 尝试使用 realPath 和 basePath 两种方式查找
+    const pathToClose = this.watcherCollections.has(realPath) ? realPath : basePath;
+
+    if (this.watcherCollections.has(pathToClose)) {
+      const watcher = this.watcherCollections.get(pathToClose);
       watcher?.close();
-      this.watcherCollections.delete(basePath);
+      this.watcherCollections.delete(pathToClose);
+      this.logger.log('[Un-Recursive] stop watching', pathToClose);
     }
   }
 

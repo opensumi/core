@@ -3,22 +3,31 @@ import { URI, Emitter, Event, FileUri, IDisposable, BinaryBuffer } from '@opensu
 
 import { IFileServiceClient } from '../src/common/file-service-client';
 import {
-  FileSetContentOptions,
-  FileStat,
-  FileMoveOptions,
-  FileCreateOptions,
-  FileCopyOptions,
-  FileDeleteOptions,
-  FileSystemProvider,
-  TextDocumentContentChangeEvent,
-  FileChangeEvent,
   DidFilesChangedParams,
   FileChange,
+  FileChangeEvent,
+  FileCopyOptions,
+  FileCreateOptions,
+  FileDeleteOptions,
+  FileMoveOptions,
+  FileSetContentOptions,
+  FileStat,
+  FileSystemProvider,
+  FileWatcherFailureParams,
+  FileWatcherOverflowParams,
+  TextDocumentContentChangeEvent,
 } from '../src/common/files';
 import { IFileServiceWatcher } from '../src/common/watcher';
 
 @Injectable()
 export class MockFileServiceClient implements IFileServiceClient {
+  initialize?: (() => Promise<void>) | undefined;
+  reconnect(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  dispose(): void {
+    throw new Error('Method not implemented.');
+  }
   shouldWaitProvider(scheme: string): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
@@ -52,6 +61,12 @@ export class MockFileServiceClient implements IFileServiceClient {
 
   protected readonly onFileProviderChangedEmitter = new Emitter<string[]>();
   readonly onFileProviderChanged: Event<string[]> = this.onFileProviderChangedEmitter.event;
+
+  protected readonly onWatcherOverflowEmitter = new Emitter<FileWatcherOverflowParams>();
+  readonly onWatcherOverflow: Event<FileWatcherOverflowParams> = this.onWatcherOverflowEmitter.event;
+
+  protected readonly onWatcherFailedEmitter = new Emitter<FileWatcherFailureParams>();
+  readonly onWatcherFailed: Event<FileWatcherFailureParams> = this.onWatcherFailedEmitter.event;
 
   handlesScheme(scheme: string) {
     return true;
@@ -153,6 +168,14 @@ export class MockFileServiceClient implements IFileServiceClient {
         } as FileChange),
     );
     this.onFileChangedEmitter.fire(changes);
+  }
+
+  fireWatcherOverflow(event: FileWatcherOverflowParams): void {
+    this.onWatcherOverflowEmitter.fire(event);
+  }
+
+  fireWatcherFailed(event: FileWatcherFailureParams): void {
+    this.onWatcherFailedEmitter.fire(event);
   }
 
   // 添加监听文件

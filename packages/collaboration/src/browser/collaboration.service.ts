@@ -303,12 +303,20 @@ export class CollaborationService extends WithEventBus implements ICollaboration
       return;
     }
 
+    const uri = e.payload.uri;
     const uriString = e.payload.uri.toString();
+    /**
+     * e.payload 里面有文件的完整文件 content 内容，内存占用较大
+     * 如果 this.backService.requestInitContent/yMapReady.promise 一直不 resolve，会导致内存泄漏问题
+     * 在获取完 e.payload.uri 后，将 e 置为 undefined 主动释放内存
+     */
+    (e as any) = undefined;
+
     const { bindingReady, yMapReady } = this.getDeferred(uriString);
     await this.backService.requestInitContent(uriString);
     await yMapReady.promise;
     // get monaco model from model ref by uri
-    const ref = this.docModelManager.getModelReference(e.payload.uri);
+    const ref = this.docModelManager.getModelReference(uri);
     const monacoModel = ref?.instance.getMonacoModel();
     ref?.dispose();
     if (monacoModel) {

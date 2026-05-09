@@ -23,6 +23,8 @@ interface IRPCTerminalService {
   closeClient(id: string, data: ITerminalError | { code?: number; signal?: number } | number, signal?: number): void;
   $processChange(id: string, processName: string): void;
   onMessage(id: string, msg: string): void;
+  reconnected(id: string): void;
+  disconnected(id: string): void;
 }
 
 /**
@@ -153,13 +155,22 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   }
 
   onMessage(id: string, msg: string): void {
-    const { data, params, method } = JSON.parse(msg);
+    try {
+      const { data, params, method } = JSON.parse(msg);
 
-    if (method === 'resize') {
-      this.resize(id, params.rows, params.cols);
-    } else {
-      this.terminalService.onMessage(id, data);
+      if (method === 'resize') {
+        this.resize(id, params.rows, params.cols);
+      } else {
+        this.terminalService.onMessage(id, data);
+      }
+    } catch {
+      // Fallback for legacy/raw messages.
+      this.terminalService.onMessage(id, msg);
     }
+  }
+
+  input(id: string, data: string): void {
+    this.terminalService.onMessage(id, data);
   }
 
   resize(id: string, rows: number, cols: number) {
@@ -168,6 +179,22 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   disposeById(id: string) {
     this.terminalService.disposeById(id);
+  }
+
+  reconnected(id: string) {
+    if (this.client) {
+      this.client.reconnected(id);
+    } else {
+      this.logger.warn(`reconnected ${id} rpcClient not found`);
+    }
+  }
+
+  disconnected(id: string) {
+    if (this.client) {
+      this.client.disconnected(id);
+    } else {
+      this.logger.warn(`disconnected ${id} rpcClient not found`);
+    }
   }
 
   getProcessId(id: string): number {

@@ -1,7 +1,7 @@
 import { Event, Uri } from '@opensumi/ide-utils';
 import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
 
-import { FileChangeEvent } from './file-watch';
+import { FileChangeEvent, FileWatcherFailureParams, FileWatcherOverflowParams } from './file-watch';
 
 export * from './file-watch';
 
@@ -145,6 +145,16 @@ export interface FileSystemProvider {
    * as Event<vscode.FileChangeEvent[]>
    */
   readonly onDidChangeFile: Event<FileChangeEvent>;
+
+  /**
+   * Fired when the watcher drops events because the native queue overflowed.
+   */
+  readonly onDidWatcherOverflow?: Event<FileWatcherOverflowParams>;
+
+  /**
+   * Fired when the watcher backend fails to start or encounters a fatal error.
+   */
+  readonly onDidWatcherFailed?: Event<FileWatcherFailureParams>;
 
   /**
    * Subscribe to events in the file or folder denoted by `uri`.

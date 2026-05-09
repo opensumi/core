@@ -156,6 +156,11 @@ export interface IEditorDocumentModel extends IDisposable {
   readonly closeAutoSave: boolean;
 
   /**
+   * 是否是大文件
+   */
+  readonly isLargeFile: boolean;
+
+  /**
    * 获得monaco的TextModel
    */
   getMonacoModel(): ITextModel;

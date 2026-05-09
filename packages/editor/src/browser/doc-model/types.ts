@@ -36,6 +36,12 @@ export interface IEditorDocumentModelContentProvider {
   provideEditorDocumentModelContent(uri: URI, encoding?: string): MaybePromise<string>;
 
   /**
+   * 提供文档内容的字节长度（可选）
+   * @param uri
+   */
+  provideEditorDocumentModelContentSize?(uri: URI): MaybePromise<number | undefined>;
+
+  /**
    * 这个文档是否只读（注意只读和无法保存的区别）
    * @param uri
    */
@@ -208,6 +214,11 @@ export interface IEditorDocumentModelCreationEventPayload {
 export class EditorDocumentModelRemovalEvent extends BasicEvent<URI> {}
 
 export class EditorDocumentModelSavedEvent extends BasicEvent<URI> {}
+
+export class EditorDocumentModelSaveErrorEvent extends BasicEvent<{
+  uri: URI;
+  errorMessage?: string;
+}> {}
 
 export class EditorDocumentModelWillSaveEvent extends BasicEvent<{
   uri: URI;

@@ -91,7 +91,18 @@ export interface ITerminalService {
   onExit(handler: (event: IPtyExitEvent) => void): IDisposable;
 
   onProcessChange(handler: (event: IPtyProcessChangeEvent) => void): IDisposable;
+  /**
+   * 终端断开连接
+   *
+   * @param handler
+   */
+  onDisconnect?(handler: (sessionId: string) => void): IDisposable;
 
+  /**
+   * 终端重连
+   * @param handler
+   */
+  onReconnected?(handler: (sessionId: string) => void): IDisposable;
   /**
    * 返回终端环境的 OS
    */

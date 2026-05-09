@@ -43,8 +43,7 @@ export class ChatMultiDiffSource implements IResolvedMultiDiffSource {
     const appConfig = this.appConfig;
     return {
       get value(): readonly MultiDiffEditorItem[] {
-        return applyService
-          .getSessionCodeBlocks()
+        return (applyService.getSessionCodeBlocks() || [])
           .filter((block) => block.status === 'success' || block.status === 'pending')
           .reduce(
             (acc, cur) => {

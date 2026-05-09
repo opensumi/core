@@ -2,7 +2,7 @@ import {
   IApplicationService,
   IClipboardService,
   IContextKeyService,
-  OS,
+  OperatingSystem,
   PreferenceService,
   QuickOpenService,
 } from '@opensumi/ide-core-browser';
@@ -15,6 +15,7 @@ import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explor
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IFileTreeAPI, IFileTreeService } from '@opensumi/ide-file-tree-next';
 import { FileTreeContribution } from '@opensumi/ide-file-tree-next/lib/browser/file-tree-contribution';
+import { FileTreeModelService } from '@opensumi/ide-file-tree-next/lib/browser/services/file-tree-model.service';
 import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
 import { ViewsRegistry } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 import { IDialogService, IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
@@ -26,6 +27,8 @@ import { MockQuickOpenService } from '../../../quick-open/src/common/mocks/quick
 
 describe('FileTreeContribution', () => {
   let mockInjector: MockInjector;
+  let mockClipboardService;
+  let mockFileTreeModelService;
   const tabbarHandlerMap = new Map();
 
   const mockMainLayoutService = {
@@ -38,6 +41,7 @@ describe('FileTreeContribution', () => {
         updateViewTitle: jest.fn(),
         onActivate: jest.fn(),
         onInActivate: jest.fn(),
+        isActivated: jest.fn(() => true),
       };
       tabbarHandlerMap.set(name, handler);
       return handler;
@@ -72,6 +76,22 @@ describe('FileTreeContribution', () => {
 
   beforeEach(() => {
     mockInjector = createBrowserInjector([]);
+    mockClipboardService = {
+      writeText: jest.fn(),
+    };
+    mockFileTreeModelService = {
+      selectedFiles: [],
+      focusedFile: undefined,
+      contextMenuFile: undefined,
+      whenReady: Promise.resolve(),
+      contextKey: {
+        explorerViewletVisibleContext: {
+          set: jest.fn(),
+        },
+      },
+      performLocationOnHandleShow: jest.fn(),
+      handleTreeBlur: jest.fn(),
+    };
 
     mockInjector.overrideProviders(
       {
@@ -112,7 +132,11 @@ describe('FileTreeContribution', () => {
       },
       {
         token: IClipboardService,
-        useValue: {},
+        useValue: mockClipboardService,
+      },
+      {
+        token: FileTreeModelService,
+        useValue: mockFileTreeModelService,
       },
       {
         token: IDialogService,
@@ -137,7 +161,8 @@ describe('FileTreeContribution', () => {
       {
         token: IApplicationService,
         useValue: {
-          getBackendOS: () => Promise.resolve(OS.type()),
+          backendOS: Promise.resolve(OperatingSystem.Linux),
+          getBackendOS: () => Promise.resolve(OperatingSystem.Linux),
         },
       },
     );
@@ -203,6 +228,44 @@ describe('FileTreeContribution', () => {
       const register = jest.fn();
       contribution.registerToolbarItems({ registerItem: register } as any);
       expect(register).toHaveBeenCalled();
+    });
+  });
+
+  describe('copy path commands', () => {
+    const registerCommands = () => {
+      const contribution = mockInjector.get(FileTreeContribution);
+      const commands = new Map<string, any>();
+      contribution.registerCommands({
+        registerCommand: jest.fn((command, handler) => {
+          commands.set(command.id, { command, ...handler });
+        }),
+      } as any);
+      return commands;
+    };
+
+    it('uses the selected explorer file when copy path is triggered from a shortcut', async () => {
+      mockFileTreeModelService.selectedFiles = [{ uri: URI.file('/userhome/test.ts') }];
+      const commands = registerCommands();
+
+      await commands.get('filetree.copy.path').execute();
+
+      expect(mockClipboardService.writeText).toHaveBeenCalledWith('/userhome/test.ts');
+    });
+
+    it('uses the selected explorer file when copy relative path is triggered from a shortcut', async () => {
+      mockFileTreeModelService.selectedFiles = [{ uri: URI.file('/userhome/test.ts') }];
+      const commands = registerCommands();
+
+      await commands.get('filetree.copy.relativepath').execute();
+
+      expect(mockClipboardService.writeText).toHaveBeenCalledWith('test.ts');
+    });
+
+    it('exposes labels for copy path commands so users can configure shortcuts', () => {
+      const commands = registerCommands();
+
+      expect(commands.get('filetree.copy.path').command.label).toBe('%file.copy.path%');
+      expect(commands.get('filetree.copy.relativepath').command.label).toBe('%file.copy.relativepath%');
     });
   });
 });

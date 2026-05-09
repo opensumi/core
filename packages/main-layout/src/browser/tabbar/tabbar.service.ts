@@ -828,7 +828,7 @@ export class TabbarService extends WithEventBus {
 
   protected onResize() {
     fastdom.measureAtNextFrame(() => {
-      if (!this.currentContainerId || !this.resizeHandle) {
+      if (!this.currentContainerId.get() || !this.resizeHandle) {
         // 折叠时不监听变化
         return;
       }

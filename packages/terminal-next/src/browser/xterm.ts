@@ -109,9 +109,11 @@ export class XTerm extends Disposable implements IXTerm {
 
       this.addDispose(this._webglAddon);
       this.addDispose(
-        this._webglAddon.onContextLoss(() => {
-          // @ts-ignore
-          this.raw.options.rendererType = 'dom';
+        this._webglAddon.onContextLoss(async () => {
+          // Fallback to canvas renderer when WebGL context is lost
+          this._webglAddon?.dispose();
+          this._webglAddon = undefined;
+          await this.enableCanvasRenderer();
         }),
       );
       this.raw.loadAddon(this._webglAddon);

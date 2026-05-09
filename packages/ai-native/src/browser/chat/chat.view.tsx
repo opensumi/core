@@ -138,7 +138,9 @@ export const AIChatView = () => {
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
   const [sessionModelId, setSessionModelId] = React.useState<string | undefined>(aiChatService.sessionModel.modelId);
 
-  const [changeList, setChangeList] = React.useState<FileChange[]>(getFileChanges(applyService.getSessionCodeBlocks()));
+  const [changeList, setChangeList] = React.useState<FileChange[]>(
+    getFileChanges(applyService.getSessionCodeBlocks() || []),
+  );
 
   const [messageListData, dispatchMessage] = React.useReducer((state: MessageData[], action: TDispatchAction) => {
     switch (action.type) {
@@ -166,7 +168,7 @@ export const AIChatView = () => {
   React.useEffect(() => {
     const disposer = new Disposable();
     const doUpdate = () => {
-      const fileChanges = getFileChanges(applyService.getSessionCodeBlocks());
+      const fileChanges = getFileChanges(applyService.getSessionCodeBlocks() || []);
       setChangeList(fileChanges);
     };
     disposer.addDispose(aiChatService.onChangeSession(doUpdate));
