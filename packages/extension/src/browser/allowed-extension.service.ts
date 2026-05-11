@@ -2,7 +2,6 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { WorkspaceTrustService, WorkspaceTrustState } from '@opensumi/ide-core-browser';
 import { ContributionProvider, createContributionProvider } from '@opensumi/ide-core-common';
 
-
 /**
  * Base allowed extension IDs in restricted mode
  */
@@ -32,7 +31,7 @@ export class AllowedExtensionService {
    * Get all allowed extension IDs (base + contributions)
    */
   getAllowedExtensionIds(): string[] {
-    const allIds = new Set(DEFAULT_ALLOWED_EXTENSION_IDS);
+    const allIds = new Set<string>(DEFAULT_ALLOWED_EXTENSION_IDS);
     const contribs = this.contributions.getContributions();
     for (const c of contribs) {
       for (const id of c.getAllowedExtensionIds()) {

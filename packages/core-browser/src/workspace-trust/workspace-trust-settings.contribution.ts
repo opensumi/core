@@ -1,4 +1,5 @@
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired } from '@opensumi/di';
+import { localize } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 
 import { ClientAppContribution } from '../common/common.define';
@@ -15,12 +16,12 @@ export class WorkspaceTrustSettingsContribution implements ClientAppContribution
   onStart() {
     this.preferenceSettingsService.registerSettingGroup({
       id: 'workspace-trust',
-      title: '%workspace.trust.settings.group.title%',
+      title: localize('workspace.trust.settings.group.title'),
       iconClass: getIcon('shield'),
     });
 
     this.preferenceSettingsService.registerSettingSection('workspace-trust', {
-      title: '%workspace.trust.settings.section.title%',
+      title: localize('workspace.trust.settings.section.title'),
       component: WorkspaceTrustSettingPanel,
     });
   }

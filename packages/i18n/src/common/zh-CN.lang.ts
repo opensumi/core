@@ -1441,8 +1441,8 @@ export const localizationBundle = {
     'workspace.trust.dialog.title': '是否信任此文件夹中的文件的作者？',
     'workspace.trust.dialog.message':
       '当前 IDE 提供可以自动在此文件夹中执行文件的功能。\n\n如果不信任这些文件的作者，则建议继续使用受限模式，因为这些文件可能是恶意文件。',
-    'workspace.trust.dialog.button.trust': '是的，我信任他们',
-    'workspace.trust.dialog.button.restricted': '受限模式',
+    'workspace.trust.dialog.button.trust': '我信任该文件夹',
+    'workspace.trust.dialog.button.restricted': '使用受限模式',
     'workspace.trust.statusbar.restricted': '受限模式',
     'workspace.trust.statusbar.restricted.tooltip': '受限模式 - 部分功能已出于安全考虑被禁用',
     'workspace.trust.exitRestricted.label': '退出受限模式',
