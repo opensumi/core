@@ -1,7 +1,11 @@
 import React, { useCallback, useState } from 'react';
 
-import { IClientApp, localize, useInjectable } from '@opensumi/ide-core-browser';
+import { localize } from '@opensumi/ide-core-common';
 
+import { IClientApp } from '../browser-module';
+import { useInjectable } from '../react-hooks/injectable-hooks';
+
+import { WorkspaceTrustState } from './common';
 import styles from './workspace-trust-setting-panel.module.less';
 import { WorkspaceTrustService } from './workspace-trust.service';
 
@@ -15,9 +19,9 @@ export const WorkspaceTrustSettingPanel: React.FC<{ scope: number }> = () => {
   const handleClick = useCallback(async () => {
     setLoading(true);
     if (isRestricted) {
-      await workspaceTrustService.setTrustState('trusted' as any);
+      await workspaceTrustService.setTrustState(WorkspaceTrustState.Trusted);
     } else {
-      await workspaceTrustService.setTrustState('restricted' as any);
+      await workspaceTrustService.setTrustState(WorkspaceTrustState.Restricted);
     }
     clientApp.fireOnReload(true);
   }, [isRestricted, workspaceTrustService, clientApp]);

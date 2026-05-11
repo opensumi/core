@@ -40,7 +40,6 @@ import { VariableModule } from '@opensumi/ide-variable/lib/browser';
 import { WebviewModule } from '@opensumi/ide-webview';
 import { WorkspaceModule } from '@opensumi/ide-workspace/lib/browser';
 import { WorkspaceEditModule } from '@opensumi/ide-workspace-edit/lib/browser';
-import { WorkspaceTrustModule } from '@opensumi/ide-workspace-trust';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   MainLayoutModule,
@@ -62,7 +61,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
 
   ThemeModule,
   WorkspaceModule,
-  WorkspaceTrustModule,
   ExtensionStorageModule,
   StorageModule,
   OpenedEditorModule,

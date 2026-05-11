@@ -37,7 +37,6 @@ import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-se
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { WorkspaceTrustService } from '@opensumi/ide-workspace-trust';
 
 import {
   ERestartPolicy,
@@ -58,6 +57,7 @@ import {
 import { MainThreadAPIIdentifier } from '../common/vscode';
 
 import { ActivationEventServiceImpl } from './activation.service';
+import { AllowedExtensionService } from './allowed-extension.service';
 import { Extension } from './extension';
 import { SumiContributionsService, SumiContributionsServiceToken } from './sumi/contributes';
 import {
@@ -149,8 +149,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   @Autowired(IFileServiceClient)
   protected fileServiceClient: IFileServiceClient;
 
-  @Autowired(WorkspaceTrustService)
-  private readonly workspaceTrustService: WorkspaceTrustService;
+  @Autowired(AllowedExtensionService)
+  private readonly allowedExtensionService: AllowedExtensionService;
 
   constructor() {
     super();
@@ -239,22 +239,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     await this.updateExtHostData();
   }
 
-  private isWorkspaceTrustedModuleAvailable() {
-    try {
-      return !!this.workspaceTrustService;
-    } catch (e) {
-      return false;
-    }
-  }
-
   public async activate(): Promise<void> {
     await this.initExtensionMetaData();
-    if (this.isWorkspaceTrustedModuleAvailable()) {
-      // Wait for workspace trust decision before filtering extensions
-      await this.workspaceTrustService.whenTrustDecided();
-      // Apply trust filter if in restricted mode
-      this.extensionMetaDataArr = this.workspaceTrustService.filterExtensions(this.extensionMetaDataArr);
-    }
+    // Apply trust filter if in restricted mode
+    this.extensionMetaDataArr = await this.allowedExtensionService.filterExtensionsAfterTrustDecided(
+      this.extensionMetaDataArr,
+    );
     await this.initExtensionInstanceData();
     await this.runEagerExtensionsContributes();
     // update nls config by extensions

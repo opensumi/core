@@ -1,5 +1,9 @@
 import { Autowired } from '@opensumi/di';
-import { AppConfig, ClientAppContribution, Domain, ILogger } from '@opensumi/ide-core-browser';
+import { ILogger } from '@opensumi/ide-core-common';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+
+import { ClientAppContribution } from '../common/common.define';
+import { AppConfig } from '../react-providers/config-provider';
 
 import { WorkspaceTrustService } from './workspace-trust.service';
 
@@ -14,7 +18,7 @@ export class WorkspaceTrustContribution implements ClientAppContribution {
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
-  async initialize() {
+  async onStart() {
     const workspacePath = this.appConfig.workspaceDir;
     if (!workspacePath) {
       this.logger.log('[workspace-trust] No workspace directory, skipping trust check');
@@ -27,7 +31,7 @@ export class WorkspaceTrustContribution implements ClientAppContribution {
     await this.workspaceTrustService.initialize(workspacePath);
 
     // If no saved trust state, show dialog
-    if (this.workspaceTrustService.getTrustState() === ('undecided' as any)) {
+    if (this.workspaceTrustService.getTrustState() === 'undecided') {
       await this.workspaceTrustService.ensureTrustDecided();
     }
 

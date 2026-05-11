@@ -1,22 +1,17 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  ContributionProvider,
+  CommandService,
   Deferred,
   IStorage,
+  MessageType,
   STORAGE_NAMESPACE,
   StorageProvider,
-  URI,
   localize,
-} from '@opensumi/ide-core-browser';
-import { IDialogService } from '@opensumi/ide-overlay';
+} from '@opensumi/ide-core-common';
 
-import {
-  AllowedExtensionsContribution,
-  DEFAULT_ALLOWED_EXTENSION_IDS,
-  IAllowedExtensionsContribution,
-  WORKSPACE_TRUST_STORAGE_KEY,
-  WorkspaceTrustState,
-} from '../common';
+import { OpenDialogArgs } from '../common/common.command';
+
+import { WORKSPACE_TRUST_STORAGE_KEY, WorkspaceTrustState } from './common';
 
 /**
  * Workspace trust service
@@ -27,11 +22,8 @@ export class WorkspaceTrustService {
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
 
-  @Autowired(IDialogService)
-  private readonly dialogService: IDialogService;
-
-  @Autowired(AllowedExtensionsContribution)
-  private readonly allowedExtensionsContributions: ContributionProvider<IAllowedExtensionsContribution>;
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   private trustStorage: IStorage;
   private currentTrustState: WorkspaceTrustState = WorkspaceTrustState.Undecided;
@@ -117,20 +109,20 @@ export class WorkspaceTrustService {
    * Show trust dialog and wait for user decision
    */
   async showTrustDialog(): Promise<WorkspaceTrustState> {
-    const result = await this.dialogService.open({
+    const trustLabel = localize('workspace.trust.dialog.button.trust', 'Yes, I trust the authors');
+    const restrictedLabel = localize('workspace.trust.dialog.button.restricted', 'Restricted Mode');
+
+    const result = await this.commandService.executeCommand<string>('dialog.open', {
       message: `${localize('workspace.trust.dialog.title', '是否信任此文件夹中的文件的作者？')}\n\n${localize(
         'workspace.trust.dialog.message',
         '当前 IDE 提供可以自动在此文件夹中执行文件的功能。\n\n如果不信任这些文件的作者，则建议继续使用受限模式，因为这些文件可能是恶意文件。',
       )}`,
-      type: 1, // MessageType.Info
-      buttons: [
-        localize('workspace.trust.dialog.button.trust', '是的，我信任他们'),
-        localize('workspace.trust.dialog.button.restricted', '受限模式'),
-      ],
+      type: MessageType.Info,
+      buttons: [trustLabel, restrictedLabel],
       closable: false,
-    });
+    } as OpenDialogArgs);
 
-    if (result === localize('workspace.trust.dialog.button.trust', 'Yes, I trust the authors')) {
+    if (result === trustLabel) {
       await this.setTrustState(WorkspaceTrustState.Trusted);
       return WorkspaceTrustState.Trusted;
     } else {
@@ -146,30 +138,5 @@ export class WorkspaceTrustService {
     if (this.currentTrustState === WorkspaceTrustState.Undecided) {
       await this.showTrustDialog();
     }
-  }
-
-  /**
-   * Get allowed extension IDs in restricted mode (base + contributions)
-   */
-  getAllowedExtensionIds(): string[] {
-    const allIds = new Set(DEFAULT_ALLOWED_EXTENSION_IDS);
-    const contributions = this.allowedExtensionsContributions.getContributions();
-    for (const c of contributions) {
-      for (const id of c.getAllowedExtensionIds()) {
-        allIds.add(id);
-      }
-    }
-    return Array.from(allIds);
-  }
-
-  /**
-   * Filter extension metadata to only include allowed extensions in restricted mode
-   */
-  filterExtensions<T extends { id: string }>(extensions: T[]): T[] {
-    if (!this.isRestricted()) {
-      return extensions;
-    }
-    const allowedIds = new Set(this.getAllowedExtensionIds());
-    return extensions.filter((ext) => allowedIds.has(ext.id));
   }
 }

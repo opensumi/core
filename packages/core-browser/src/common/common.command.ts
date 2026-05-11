@@ -3,7 +3,7 @@
  * because the `localize` func maybe cannot get the correct languageId at the beginning of whole lifecycle.
  */
 
-import { Command } from '@opensumi/ide-core-common';
+import { Command, MessageType } from '@opensumi/ide-core-common';
 
 import { getIcon } from '../style/icon/icon';
 
@@ -872,11 +872,23 @@ export namespace KEYBOARD_COMMANDS {
   };
 }
 
+export interface OpenDialogArgs {
+  message: string;
+  type: MessageType;
+  buttons?: string[];
+  closable?: boolean;
+}
+
 export namespace DIALOG_COMMANDS {
   const CATEGORY = 'dialog';
 
   export const ENSURE: Command = {
     id: 'dialog.ensure',
+    category: CATEGORY,
+  };
+
+  export const OPEN: Command = {
+    id: 'dialog.open',
     category: CATEGORY,
   };
 }

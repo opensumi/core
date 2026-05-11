@@ -1,6 +1,9 @@
 import { Autowired } from '@opensumi/di';
-import { ClientAppContribution, Domain, localize, runWhenIdle } from '@opensumi/ide-core-browser';
-import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser/lib/services/status-bar-service';
+import { localize, runWhenIdle } from '@opensumi/ide-core-common';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+
+import { ClientAppContribution } from '../common/common.define';
+import { IStatusBarService, StatusBarAlignment } from '../services/status-bar-service';
 
 import { WORKSPACE_TRUST_EXIT_RESTRICTED_COMMAND } from './workspace-trust-command.contribution';
 import { WorkspaceTrustService } from './workspace-trust.service';
@@ -16,7 +19,8 @@ export class WorkspaceTrustStatusBarContribution implements ClientAppContributio
   private readonly statusBarService: IStatusBarService;
 
   onStart() {
-    runWhenIdle(() => {
+    runWhenIdle(async () => {
+      await this.workspaceTrustService.whenTrustDecided();
       if (this.workspaceTrustService.isRestricted()) {
         this.statusBarService.addElement(RESTRICTED_MODE_STATUSBAR_ID, {
           text: `$(shield) ${localize('workspace.trust.statusbar.restricted', 'Restricted Mode')}`,
