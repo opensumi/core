@@ -35,6 +35,7 @@
     "@opensumi/ide-terminal-next": "workspace:*",
     "@opensumi/ide-utils": "workspace:*",
     "@opensumi/ide-webview": "workspace:*",
+    "@opensumi/ide-workspace-trust": "workspace:*",
     "address": "^1.1.2",
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",

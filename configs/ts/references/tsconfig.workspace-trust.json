@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/workspace-trust/src",
+    "outDir": "../../../packages/workspace-trust/lib"
+  },
+  "include": ["../../../packages/workspace-trust/src"],
+  "exclude": ["../../../packages/workspace-trust/__mocks__"]
+}

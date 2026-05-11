@@ -3846,6 +3846,7 @@ __metadata:
     "@opensumi/ide-webview": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
     "@opensumi/ide-workspace-edit": "workspace:*"
+    "@opensumi/ide-workspace-trust": "workspace:*"
     address: "npm:^1.1.2"
     glob-to-regexp: "npm:0.4.1"
     is-running: "npm:^2.1.0"
@@ -4497,6 +4498,19 @@ __metadata:
     "@opensumi/ide-main-layout": "workspace:*"
     "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-overlay": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
+"@opensumi/ide-workspace-trust@workspace:*, @opensumi/ide-workspace-trust@workspace:packages/workspace-trust":
+  version: 0.0.0-use.local
+  resolution: "@opensumi/ide-workspace-trust@workspace:packages/workspace-trust"
+  dependencies:
+    "@opensumi/ide-core-browser": "workspace:*"
+    "@opensumi/ide-core-common": "workspace:*"
+    "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/ide-overlay": "workspace:*"
+    "@opensumi/ide-status-bar": "workspace:*"
+    "@opensumi/ide-workspace": "workspace:*"
   languageName: unknown
   linkType: soft
 

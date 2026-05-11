@@ -37,6 +37,7 @@ import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-se
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkspaceTrustService } from '@opensumi/ide-workspace-trust';
 
 import {
   ERestartPolicy,
@@ -148,6 +149,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   @Autowired(IFileServiceClient)
   protected fileServiceClient: IFileServiceClient;
 
+  @Autowired(WorkspaceTrustService)
+  private readonly workspaceTrustService: WorkspaceTrustService;
+
   constructor() {
     super();
 
@@ -235,8 +239,22 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     await this.updateExtHostData();
   }
 
+  private isWorkspaceTrustedModuleAvailable() {
+    try {
+      return !!this.workspaceTrustService;
+    } catch (e) {
+      return false;
+    }
+  }
+
   public async activate(): Promise<void> {
     await this.initExtensionMetaData();
+    if (this.isWorkspaceTrustedModuleAvailable()) {
+      // Wait for workspace trust decision before filtering extensions
+      await this.workspaceTrustService.whenTrustDecided();
+      // Apply trust filter if in restricted mode
+      this.extensionMetaDataArr = this.workspaceTrustService.filterExtensions(this.extensionMetaDataArr);
+    }
     await this.initExtensionInstanceData();
     await this.runEagerExtensionsContributes();
     // update nls config by extensions

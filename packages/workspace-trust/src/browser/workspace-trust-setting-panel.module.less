@@ -1,0 +1,37 @@
+.workspaceTrustPanel {
+  padding: 12px 18px;
+
+  .description {
+    margin-bottom: 12px;
+    color: var(--foreground);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .button {
+    padding: 6px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #fff;
+    transition: opacity 0.15s;
+
+    &:hover:not(:disabled) {
+      opacity: 0.85;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .buttonTrust {
+    background-color: var(--button-background);
+  }
+
+  .buttonRestrict {
+    background-color: var(--button-background);
+  }
+}

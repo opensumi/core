@@ -1436,5 +1436,27 @@ export const localizationBundle = {
     'ai.native.mcp.tool.action.edit': '修改',
     'ai.native.mcp.tool.action.delete': '删除',
     'ai.native.mcp.tool.action.sync': '同步',
+
+    // Workspace Trust
+    'workspace.trust.dialog.title': '是否信任此文件夹中的文件的作者？',
+    'workspace.trust.dialog.message':
+      '当前 IDE 提供可以自动在此文件夹中执行文件的功能。\n\n如果不信任这些文件的作者，则建议继续使用受限模式，因为这些文件可能是恶意文件。',
+    'workspace.trust.dialog.button.trust': '是的，我信任他们',
+    'workspace.trust.dialog.button.restricted': '受限模式',
+    'workspace.trust.statusbar.restricted': '受限模式',
+    'workspace.trust.statusbar.restricted.tooltip': '受限模式 - 部分功能已出于安全考虑被禁用',
+    'workspace.trust.exitRestricted.label': '退出受限模式',
+    'workspace.trust.exitRestricted.description': '点击以信任此工作区中文件的作者并退出受限模式',
+    'workspace.trust.exitRestricted.confirm.message': '您确定要信任此工作区中文件的作者并退出受限模式吗？',
+    'workspace.trust.exitRestricted.confirm.ok': '信任并重新加载',
+    'workspace.trust.exitRestricted.cancel': '取消',
+    'workspace.trust.settings.group.title': '工作区信任',
+    'workspace.trust.settings.section.title': '信任管理',
+    'workspace.trust.settings.trustButton': '信任当前项目',
+    'workspace.trust.settings.restrictButton': '进入受限模式',
+    'workspace.trust.settings.restrictedDesc':
+      '当前处于受限模式。当前 IDE 提供可以自动在此文件夹中执行文件的功能。点击以信任此工作区中文件的作者。',
+    'workspace.trust.settings.trustedDesc': '此工作区已被信任。点击以进入受限模式并禁用可能存在风险的功能。',
+    'workspace.trust.settings.loading': '处理中...',
   },
 };

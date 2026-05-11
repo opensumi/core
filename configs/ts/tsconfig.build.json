@@ -40,6 +40,9 @@
       "path": "./references/tsconfig.workspace.json"
     },
     {
+      "path": "./references/tsconfig.workspace-trust.json"
+    },
+    {
       "path": "./references/tsconfig.toolbar.json"
     },
     {

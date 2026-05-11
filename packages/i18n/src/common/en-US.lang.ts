@@ -1679,5 +1679,30 @@ export const localizationBundle = {
     'ai.native.mcp.tool.action.edit': 'Edit',
     'ai.native.mcp.tool.action.delete': 'Delete',
     'ai.native.mcp.tool.action.sync': 'Sync',
+
+    // Workspace Trust
+    'workspace.trust.dialog.title': 'Do you trust the authors of the files in this folder?',
+    'workspace.trust.dialog.message':
+      'The current IDE provides features that can automatically execute files in this folder.\n\nIf you do not trust the authors of these files, it is recommended to continue using Restricted Mode, as these files may be malicious.',
+    'workspace.trust.dialog.button.trust': 'Yes, I trust the authors',
+    'workspace.trust.dialog.button.restricted': 'Restricted Mode',
+    'workspace.trust.statusbar.restricted': 'Restricted Mode',
+    'workspace.trust.statusbar.restricted.tooltip': 'Restricted Mode - Some features are disabled for security',
+    'workspace.trust.exitRestricted.label': 'Exit Restricted Mode',
+    'workspace.trust.exitRestricted.description':
+      'Click to trust the authors of files in this workspace and exit Restricted Mode',
+    'workspace.trust.exitRestricted.confirm.message':
+      'Are you sure you want to trust the authors of the files in this workspace and exit Restricted Mode?',
+    'workspace.trust.exitRestricted.confirm.ok': 'Trust and Reload',
+    'workspace.trust.exitRestricted.cancel': 'Cancel',
+    'workspace.trust.settings.group.title': 'Workspace Trust',
+    'workspace.trust.settings.section.title': 'Trust Management',
+    'workspace.trust.settings.trustButton': 'Trust Current Project',
+    'workspace.trust.settings.restrictButton': 'Enter Restricted Mode',
+    'workspace.trust.settings.restrictedDesc':
+      'Currently in Restricted Mode. The current IDE provides features that can automatically execute files in this folder. Click to trust the authors of files in this workspace.',
+    'workspace.trust.settings.trustedDesc':
+      'This workspace is trusted. Click to enter Restricted Mode and disable potentially unsafe features.',
+    'workspace.trust.settings.loading': 'Processing...',
   },
 };
