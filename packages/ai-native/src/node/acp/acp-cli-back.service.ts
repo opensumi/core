@@ -13,8 +13,12 @@ import {
   SetSessionModeRequest,
 } from '@opensumi/ide-core-common';
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
-import { INodeLogger } from '@opensumi/ide-core-node';
+import { ChatReadableStream, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
+
+
+import { BaseLanguageModel } from '../base-language-model';
+import { OpenAICompatibleModel } from '../openai-compatible/openai-compatible-language-model';
 
 import {
   AcpAgentServiceToken,
@@ -93,6 +97,9 @@ export class AcpCliBackService implements IAIBackService {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
+  @Autowired(OpenAICompatibleModel)
+  private openAICompatibleModel: OpenAICompatibleModel;
+
   private isDisposing = false;
 
   // private registerProcessExitHandlers(): void {
@@ -138,7 +145,25 @@ export class AcpCliBackService implements IAIBackService {
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<SumiReadableStream<IChatProgress>> {
+    // Fallback to OpenAI-compatible API when ACP agent is not configured
+    if (!options.agentSessionConfig) {
+      return this.openAIRequestStream(input, options, cancelToken);
+    }
     return this.agentRequestStream(input, options, cancelToken);
+  }
+
+  private async openAIRequestStream(
+    input: string,
+    options: IAIBackServiceOption,
+    cancelToken?: CancellationToken,
+  ): Promise<ChatReadableStream> {
+    const stream = new ChatReadableStream();
+    try {
+      await this.openAICompatibleModel.request(input, stream, options, cancelToken);
+    } catch (error) {
+      stream.emitError(error instanceof Error ? error : new Error(String(error)));
+    }
+    return stream;
   }
 
   private agentRequestStream(

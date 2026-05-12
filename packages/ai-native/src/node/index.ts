@@ -27,6 +27,7 @@ import {
 import { AcpCliBackService } from './acp/acp-cli-back.service';
 import { AcpCliClientService } from './acp/acp-cli-client.service';
 import { SumiMCPServerBackend } from './mcp/sumi-mcp-server';
+import { OpenAICompatibleModel } from './openai-compatible/openai-compatible-language-model';
 
 @Injectable()
 export class AINativeModule extends NodeModule {
@@ -71,6 +72,8 @@ export class AINativeModule extends NodeModule {
       token: AcpAgentRequestHandlerToken,
       useClass: AcpAgentRequestHandler,
     },
+    // Language models for non-ACP fallback
+    OpenAICompatibleModel,
   ];
 
   backServices = [

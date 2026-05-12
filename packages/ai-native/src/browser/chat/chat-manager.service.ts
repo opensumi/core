@@ -145,6 +145,20 @@ export class ChatManagerService extends Disposable {
     this.mainProvider = p;
   }
 
+  /**
+   * Fallback to local session provider when ACP is unavailable.
+   * Switches mainProvider to LocalStorageProvider, clears existing sessions, and reloads.
+   */
+  fallbackToLocal(): void {
+    const localProvider = this.sessionProviderRegistry.getProvider('local');
+    if (!localProvider) {
+      return;
+    }
+    this.mainProvider = localProvider;
+    this.#sessionModels.clear();
+    this.loadSessionList();
+  }
+
   async init() {
     await this.loadSessionList();
   }

@@ -74,6 +74,10 @@ export class DefaultChatAgent implements IChatAgent {
     };
   }
 
+  public set metadata(_) {
+    // no-op
+  }
+
   async invoke(
     request: IChatAgentRequest,
     progress: (part: IChatProgress) => void,

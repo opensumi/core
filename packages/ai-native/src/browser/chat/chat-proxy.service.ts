@@ -18,6 +18,7 @@ import {
   ChatAgentViewServiceToken,
   Disposable,
   IApplicationService,
+  IDisposable,
   MCPConfigServiceToken,
 } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
@@ -61,6 +62,8 @@ export class ChatProxyService extends Disposable {
   @Autowired(AcpChatAgent)
   private readonly acpChatAgent: AcpChatAgent;
 
+  private agentDisposable: IDisposable | null = null;
+
   public registerDefaultAgent() {
     this.chatAgentViewService.registerChatComponent({
       id: 'toolCall',
@@ -74,10 +77,23 @@ export class ChatProxyService extends Disposable {
         ? this.acpChatAgent
         : this.defaultChatAgent;
 
-      this.addDispose(this.chatAgentService.registerAgent(agentToRegister));
+      const disposable = this.chatAgentService.registerAgent(agentToRegister);
+      this.agentDisposable = disposable;
       queueMicrotask(() => {
         this.chatAgentService.updateAgent(ChatProxyService.AGENT_ID, {});
       });
+    });
+  }
+
+  /**
+   * Fallback to DefaultChatAgent when ACP is unavailable.
+   * Disposes the previously registered AcpChatAgent and registers DefaultChatAgent in its place.
+   */
+  public registerFallbackAgent(): void {
+    this.agentDisposable?.dispose();
+    this.addDispose(this.chatAgentService.registerAgent(this.defaultChatAgent));
+    queueMicrotask(() => {
+      this.chatAgentService.updateAgent(ChatProxyService.AGENT_ID, {});
     });
   }
 
