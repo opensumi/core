@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   AINativeConfigService,
@@ -27,6 +29,7 @@ import {
   TabbarBehaviorConfig,
   getIcon,
   localize,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 import {
   AI_CHAT_VISIBLE,
@@ -110,9 +113,13 @@ import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatService } from './chat/chat.api.service';
+import { ChatHistoryRegistryToken, IChatHistoryRegistry } from './chat/chat.history.registry';
 import { IChatInputRegistry } from './chat/chat.input.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { AIChatView } from './chat/chat.view';
+import { AIChatViewACP } from './chat/chat.view.acp';
+import { ChatViewRegistryToken, IChatViewRegistry } from './chat/chat.view.registry';
+import ChatHistoryACP from './components/ChatHistory.acp';
 import { ChatInput } from './components/ChatInput';
 import { ChatMentionInput } from './components/ChatMentionInput';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
@@ -157,6 +164,15 @@ import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stre
 import { SumiLightBulbWidget } from './widget/light-bulb';
 
 export const INLINE_DIFF_MANAGER_WIDGET_ID = 'inline-diff-manager-widget';
+
+const DynamicChatViewWrapper: React.FC = () => {
+  const chatViewRegistry = useInjectable<IChatViewRegistry>(ChatViewRegistryToken);
+  const activeView = chatViewRegistry.getActiveChatView();
+  if (!activeView) {
+    return null;
+  }
+  return React.createElement(activeView.component);
+};
 
 @Domain(
   ClientAppContribution,
@@ -210,6 +226,12 @@ export class AINativeBrowserContribution
 
   @Autowired(ChatInputRegistryToken)
   private readonly chatInputRegistry: IChatInputRegistry;
+
+  @Autowired(ChatViewRegistryToken)
+  private readonly chatViewRegistry: IChatViewRegistry;
+
+  @Autowired(ChatHistoryRegistryToken)
+  private readonly chatHistoryRegistry: IChatHistoryRegistry;
 
   @Autowired(ResolveConflictRegistryToken)
   private readonly resolveConflictRegistry: IResolveConflictRegistry;
@@ -562,6 +584,9 @@ export class AINativeBrowserContribution
     // 注册默认输入组件
     this.registerDefaultInputs();
 
+    // 注册默认聊天视图和历史记录组件
+    this.registerChatViews();
+
     // 注册内置的 "Chat" 按钮，将选中代码添加到 Chat 面板的 context 中
     if (this.aiNativeConfigService.capabilities.supportsChatAssistant) {
       this.inlineChatFeatureRegistry.registerEditorInlineChat(
@@ -617,6 +642,30 @@ export class AINativeBrowserContribution
     this.chatInputRegistry.registerChatInput({
       id: 'chat-input',
       component: ChatInput,
+      priority: 50,
+    });
+  }
+
+  private registerChatViews() {
+    const { supportsAgentMode } = this.aiNativeConfigService.capabilities;
+
+    if (supportsAgentMode) {
+      this.chatViewRegistry.registerChatView({
+        id: 'acp-chat-view',
+        component: AIChatViewACP,
+        priority: 200,
+      });
+
+      this.chatHistoryRegistry.registerChatHistory({
+        id: 'acp-chat-history',
+        component: ChatHistoryACP,
+        priority: 200,
+      });
+    }
+
+    this.chatViewRegistry.registerChatView({
+      id: 'default-chat-view',
+      component: AIChatView,
       priority: 50,
     });
   }
@@ -938,7 +987,7 @@ export class AINativeBrowserContribution
 
   registerComponent(registry: ComponentRegistry): void {
     registry.register(AI_CHAT_CONTAINER_ID, [], {
-      component: AIChatView,
+      component: DynamicChatViewWrapper,
       title: localize('aiNative.chat.ai.assistant.name'),
       iconClass: getIcon('magic-wand'),
       containerId: AI_CHAT_CONTAINER_ID,
