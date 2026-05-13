@@ -6,6 +6,7 @@ import {
   BrowserModule,
   ChatAgentViewServiceToken,
   ChatFeatureRegistryToken,
+  ChatInputRegistryToken,
   ChatRenderRegistryToken,
   ChatServiceToken,
   IAIInlineChatService,
@@ -53,6 +54,7 @@ import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
+import { ChatInputRegistry } from './chat/chat.input.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
 import { DefaultACPConfigProvider } from './chat/default-acp-config-provider';
@@ -173,6 +175,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: ChatRenderRegistryToken,
       useClass: ChatRenderRegistry,
+    },
+    {
+      token: ChatInputRegistryToken,
+      useClass: ChatInputRegistry,
     },
     {
       token: ResolveConflictRegistryToken,

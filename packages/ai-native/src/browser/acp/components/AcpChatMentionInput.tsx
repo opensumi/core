@@ -591,7 +591,14 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
       defaultModel:
         props.sessionModelId || preferenceService.get<string>(AINativeSettingSectionsId.ModelID) || 'deepseek-r1',
       buttons: aiNativeConfigService.capabilities.supportsAgentMode
-        ? []
+        ? [
+            {
+              id: 'mention-trigger',
+              icon: 'at-sign',
+              title: localize('aiNative.chat.context.title'),
+              position: FooterButtonPosition.LEFT,
+            },
+          ]
         : [
             {
               id: 'mcp-server',

@@ -1172,24 +1172,46 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     (position: FooterButtonPosition) =>
       (footerConfig.buttons || [])
         .filter((button) => button.position === position)
-        .map((button) => (
-          <Popover
-            key={button.id}
-            overlayClassName={styles.popover_icon}
-            id={`ai-chat-${button.id}`}
-            position={PopoverPosition.top}
-            title={button.title}
-          >
-            <EnhanceIcon
-              className={cls(button.icon ? getIcon(button.icon) : button.iconClass, styles[`${button.id}_logo`])}
-              tabIndex={0}
-              role='button'
-              ariaLabel={button.title}
-              onClick={button.onClick}
-            />
-          </Popover>
-        )),
-    [footerConfig.buttons],
+        .map((button) => {
+          // Built-in @ mention trigger button
+          if (button.id === 'mention-trigger') {
+            return (
+              <Popover
+                key={button.id}
+                overlayClassName={styles.popover_icon}
+                id={'ai-chat-mention-trigger'}
+                position={PopoverPosition.top}
+                title={button.title}
+              >
+                <EnhanceIcon
+                  className={cls(getIcon('at-sign'), styles.mention_trigger_logo)}
+                  tabIndex={0}
+                  role='button'
+                  ariaLabel={button.title}
+                  onClick={handleTitleClick}
+                />
+              </Popover>
+            );
+          }
+          return (
+            <Popover
+              key={button.id}
+              overlayClassName={styles.popover_icon}
+              id={`ai-chat-${button.id}`}
+              position={PopoverPosition.top}
+              title={button.title}
+            >
+              <EnhanceIcon
+                className={cls(button.icon ? getIcon(button.icon) : button.iconClass, styles[`${button.id}_logo`])}
+                tabIndex={0}
+                role='button'
+                ariaLabel={button.title}
+                onClick={button.onClick}
+              />
+            </Popover>
+          );
+        }),
+    [footerConfig.buttons, handleTitleClick],
   );
 
   const hasContext = React.useMemo(

@@ -520,3 +520,6 @@ export interface IAIMiddleware {
     provideInlineCompletions?: IProvideInlineCompletionsSignature;
   };
 }
+
+// Re-export ChatInput types for convenience
+export { IChatInputProps, ChatInputContribution, IChatInputRegistry } from './chat/chat.input.registry';

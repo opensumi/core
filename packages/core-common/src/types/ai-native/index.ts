@@ -335,6 +335,7 @@ export const MCPConfigServiceToken = Symbol('MCPConfigServiceToken');
 export const RulesServiceToken = Symbol('RulesServiceToken');
 export const ChatServiceToken = Symbol('ChatServiceToken');
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
+export const ChatInputRegistryToken = Symbol('ChatInputRegistryToken');
 
 /**
  * Contribute Registry

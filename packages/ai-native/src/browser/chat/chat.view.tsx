@@ -19,6 +19,7 @@ import {
   CancellationToken,
   CancellationTokenSource,
   ChatFeatureRegistryToken,
+  ChatInputRegistryToken,
   ChatMessageRole,
   ChatRenderRegistryToken,
   ChatServiceToken,
@@ -55,7 +56,6 @@ import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
-import { ChatMentionInput } from '../components/ChatMentionInput';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
@@ -67,6 +67,7 @@ import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
 import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
+import { ChatInputRegistry } from './chat.input.registry';
 import { ChatInternalService } from './chat.internal.service';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
@@ -130,6 +131,7 @@ const AIChatViewContent = () => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const chatInputRegistry = useInjectable<ChatInputRegistry>(ChatInputRegistryToken);
   const mcpServerRegistry = useInjectable<IMCPServerRegistry>(TokenMCPServerRegistry);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const llmContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
@@ -231,16 +233,18 @@ const AIChatViewContent = () => {
   useUpdateOnEvent(aiChatService.onChangeSession);
 
   const ChatInputWrapperRender = React.useMemo(() => {
-    // 优先使用 registerInputRender 注册的渲染器
+    // 1. 优先使用 ChatInputRegistry 注册的输入组件（按优先级 + when 条件匹配）
+    const activeInput = chatInputRegistry.getActiveChatInput();
+    if (activeInput) {
+      return activeInput.component;
+    }
+    // 2. 向后兼容：使用 registerInputRender 注册的
     if (chatRenderRegistry.chatInputRender) {
       return chatRenderRegistry.chatInputRender;
     }
-    // 降级使用默认组件
-    if (aiNativeConfigService.capabilities.supportsMCP) {
-      return ChatMentionInput;
-    }
+    // 3. 最降级
     return ChatInput;
-  }, [chatRenderRegistry.chatInputRender, aiNativeConfigService]);
+  }, [chatInputRegistry, chatRenderRegistry.chatInputRender]);
 
   const firstMsg = React.useMemo(
     () =>

@@ -49,6 +49,7 @@ import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/render
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
+  ChatInputRegistryToken,
   ChatRenderRegistryToken,
   ChatServiceToken,
   CommandService,
@@ -103,13 +104,17 @@ import { LLMContextService, LLMContextServiceToken } from '../common/llm-context
 import { MCPServerDescription, MCPServersDisabledKey } from '../common/mcp-server-manager';
 import { MCP_SERVER_TYPE } from '../common/types';
 
+import { AcpChatMentionInput } from './acp/components/AcpChatMentionInput';
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatService } from './chat/chat.api.service';
+import { IChatInputRegistry } from './chat/chat.input.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { AIChatView } from './chat/chat.view';
+import { ChatInput } from './components/ChatInput';
+import { ChatMentionInput } from './components/ChatMentionInput';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
 import { InlineCompletionsController } from './contrib/inline-completions/inline-completions.controller';
@@ -202,6 +207,9 @@ export class AINativeBrowserContribution
 
   @Autowired(ChatRenderRegistryToken)
   private readonly chatRenderRegistry: IChatRenderRegistry;
+
+  @Autowired(ChatInputRegistryToken)
+  private readonly chatInputRegistry: IChatInputRegistry;
 
   @Autowired(ResolveConflictRegistryToken)
   private readonly resolveConflictRegistry: IResolveConflictRegistry;
@@ -551,6 +559,9 @@ export class AINativeBrowserContribution
       contribution.registerChatAgentPromptProvider?.();
     });
 
+    // 注册默认输入组件
+    this.registerDefaultInputs();
+
     // 注册内置的 "Chat" 按钮，将选中代码添加到 Chat 面板的 context 中
     if (this.aiNativeConfigService.capabilities.supportsChatAssistant) {
       this.inlineChatFeatureRegistry.registerEditorInlineChat(
@@ -581,6 +592,32 @@ export class AINativeBrowserContribution
     // 注册 Opensumi 框架提供的 MCP Server Tools 能力 (此时的 Opensumi 作为 MCP Server)
     this.mcpServerContributions.getContributions().forEach((contribution) => {
       contribution.registerMCPServer(this.mcpServerRegistry);
+    });
+  }
+
+  private registerDefaultInputs() {
+    const { supportsAgentMode, supportsMCP } = this.aiNativeConfigService.capabilities;
+
+    if (supportsAgentMode) {
+      this.chatInputRegistry.registerChatInput({
+        id: 'acp-mention-input',
+        component: AcpChatMentionInput,
+        priority: 200,
+      });
+    }
+
+    if (supportsMCP) {
+      this.chatInputRegistry.registerChatInput({
+        id: 'mention-input',
+        component: ChatMentionInput,
+        priority: 100,
+      });
+    }
+
+    this.chatInputRegistry.registerChatInput({
+      id: 'chat-input',
+      component: ChatInput,
+      priority: 50,
     });
   }
 
