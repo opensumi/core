@@ -50,6 +50,11 @@ export const searchPreferenceSchema: PreferenceSchema = {
       description: '%preference.search.searchOnTypeDebouncePeriod%',
       default: 300,
     },
+    [SearchSettingId.FollowSymlinks]: {
+      type: 'boolean',
+      default: true,
+      description: '%preference.search.followSymlinks%',
+    },
   },
 };
 
@@ -60,6 +65,7 @@ export interface SearchConfiguration {
   [SearchSettingId.UseReplacePreview]: boolean;
   [SearchSettingId.SearchOnType]: boolean;
   [SearchSettingId.SearchOnTypeDebouncePeriod]: number;
+  [SearchSettingId.FollowSymlinks]: boolean;
 }
 
 export const SearchPreferences = Symbol('SearchPreferences');

@@ -366,6 +366,7 @@ export class FileSearchQuickCommandHandler {
         useGitIgnore: true,
         noIgnoreParent: true,
         excludePatterns: this.getPreferenceSearchExcludes(),
+        followSymlinks: this.preferenceService.get<boolean>('search.followSymlinks') ?? true,
       },
       token,
     );

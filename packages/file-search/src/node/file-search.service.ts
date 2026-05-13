@@ -78,6 +78,9 @@ export class FileSearchService implements IFileSearchService {
       if (rootOptions.noIgnoreParent === undefined) {
         rootOptions.noIgnoreParent = opts.noIgnoreParent;
       }
+      if (rootOptions.followSymlinks === undefined) {
+        rootOptions.followSymlinks = opts.followSymlinks;
+      }
     }
 
     const exactMatches = new Set<string>();
@@ -184,6 +187,9 @@ export class FileSearchService implements IFileSearchService {
     }
     if (options.noIgnoreParent) {
       args.push('--no-ignore-parent');
+    }
+    if (options.followSymlinks) {
+      args.push('--follow');
     }
     return args;
   }

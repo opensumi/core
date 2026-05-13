@@ -42,6 +42,10 @@ export interface ContentSearchOptions {
    * See the setting `"files.encoding"`
    */
   encoding?: string;
+  /**
+   * Follow symbolic links while searching.
+   */
+  followSymlinks?: boolean;
 }
 
 export interface IContentSearchServer {
@@ -119,6 +123,7 @@ export interface IUIState {
   isOnlyOpenEditors: boolean;
 
   isIncludeIgnored: boolean;
+  isFollowSymlinks: boolean;
 }
 
 export interface ContentSearchResult {

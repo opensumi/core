@@ -430,6 +430,7 @@ export const localizationBundle = {
     'preference.search.searchOnType': 'Controls whether to search as you type',
     'preference.search.searchOnTypeDebouncePeriod':
       'Controls the debounce period of search as you type in milliseconds.',
+    'preference.search.followSymlinks': 'Controls whether to follow symlinks while searching.',
     'preference.files.exclude.title': 'Exclude file display `files.exclude`',
     'preference.array.additem': 'Add',
     'preference.files.associations.title': 'File Association',
