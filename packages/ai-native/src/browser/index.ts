@@ -54,9 +54,11 @@ import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
+import { ChatHistoryRegistry, ChatHistoryRegistryToken } from './chat/chat.history.registry';
 import { ChatInputRegistry } from './chat/chat.input.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
+import { ChatViewRegistry, ChatViewRegistryToken } from './chat/chat.view.registry';
 import { DefaultACPConfigProvider } from './chat/default-acp-config-provider';
 import { DefaultChatAgent } from './chat/default-chat-agent';
 import { LocalStorageProvider } from './chat/local-storage-provider';
@@ -179,6 +181,14 @@ export class AINativeModule extends BrowserModule {
     {
       token: ChatInputRegistryToken,
       useClass: ChatInputRegistry,
+    },
+    {
+      token: ChatViewRegistryToken,
+      useClass: ChatViewRegistry,
+    },
+    {
+      token: ChatHistoryRegistryToken,
+      useClass: ChatHistoryRegistry,
     },
     {
       token: ResolveConflictRegistryToken,

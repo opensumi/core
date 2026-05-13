@@ -523,3 +523,7 @@ export interface IAIMiddleware {
 
 // Re-export ChatInput types for convenience
 export { IChatInputProps, ChatInputContribution, IChatInputRegistry } from './chat/chat.input.registry';
+
+// Re-export ChatView and ChatHistory registry types for convenience
+export { ChatViewContribution, IChatViewRegistry, ChatViewRegistryToken } from './chat/chat.view.registry';
+export { ChatHistoryContribution, IChatHistoryRegistry, ChatHistoryRegistryToken } from './chat/chat.history.registry';
