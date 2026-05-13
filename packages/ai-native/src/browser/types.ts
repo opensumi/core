@@ -525,5 +525,6 @@ export interface IAIMiddleware {
 export { IChatInputProps, ChatInputContribution, IChatInputRegistry } from './chat/chat.input.registry';
 
 // Re-export ChatView and ChatHistory registry types for convenience
-export { ChatViewContribution, IChatViewRegistry, ChatViewRegistryToken } from './chat/chat.view.registry';
-export { ChatHistoryContribution, IChatHistoryRegistry, ChatHistoryRegistryToken } from './chat/chat.history.registry';
+export { ChatViewContribution, IChatViewRegistry } from './chat/chat.view.registry';
+export { ChatHistoryContribution, IChatHistoryRegistry } from './chat/chat.history.registry';
+export { ChatViewRegistryToken, ChatHistoryRegistryToken } from '@opensumi/ide-core-common';

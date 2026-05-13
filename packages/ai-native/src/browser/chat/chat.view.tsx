@@ -50,7 +50,6 @@ import {
 } from '../../common/llm-context';
 import { CodeBlockData } from '../../common/types';
 import { cleanAttachedTextWrapper } from '../../common/utils';
-import { AcpChatViewWrapper } from '../acp/components/AcpChatViewWrapper';
 import { FileChange, FileListDisplay } from '../components/ChangeList';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
@@ -116,15 +115,6 @@ const getFileChanges = (codeBlocks: CodeBlockData[]) =>
     }, [] as FileChange[]);
 
 export const AIChatView = () => {
-  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
-  return (
-    <AcpChatViewWrapper aiChatService={aiChatService}>
-      <AIChatViewContent />
-    </AcpChatViewWrapper>
-  );
-};
-
-const AIChatViewContent = () => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);

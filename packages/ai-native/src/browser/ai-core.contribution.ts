@@ -52,9 +52,11 @@ import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/render
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
+  ChatHistoryRegistryToken,
   ChatInputRegistryToken,
   ChatRenderRegistryToken,
   ChatServiceToken,
+  ChatViewRegistryToken,
   CommandService,
   IDisposable,
   InlineChatFeatureRegistryToken,
@@ -113,12 +115,12 @@ import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatService } from './chat/chat.api.service';
-import { ChatHistoryRegistryToken, IChatHistoryRegistry } from './chat/chat.history.registry';
+import { IChatHistoryRegistry } from './chat/chat.history.registry';
 import { IChatInputRegistry } from './chat/chat.input.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { AIChatView } from './chat/chat.view';
 import { AIChatViewACP } from './chat/chat.view.acp';
-import { ChatViewRegistryToken, IChatViewRegistry } from './chat/chat.view.registry';
+import { IChatViewRegistry } from './chat/chat.view.registry';
 import ChatHistoryACP from './components/ChatHistory.acp';
 import { ChatInput } from './components/ChatInput';
 import { ChatMentionInput } from './components/ChatMentionInput';
@@ -621,23 +623,19 @@ export class AINativeBrowserContribution
   }
 
   private registerDefaultInputs() {
-    const { supportsAgentMode, supportsMCP } = this.aiNativeConfigService.capabilities;
+    this.chatInputRegistry.registerChatInput({
+      id: 'acp-mention-input',
+      component: AcpChatMentionInput,
+      priority: 200,
+      when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
+    });
 
-    if (supportsAgentMode) {
-      this.chatInputRegistry.registerChatInput({
-        id: 'acp-mention-input',
-        component: AcpChatMentionInput,
-        priority: 200,
-      });
-    }
-
-    if (supportsMCP) {
-      this.chatInputRegistry.registerChatInput({
-        id: 'mention-input',
-        component: ChatMentionInput,
-        priority: 100,
-      });
-    }
+    this.chatInputRegistry.registerChatInput({
+      id: 'mention-input',
+      component: ChatMentionInput,
+      priority: 100,
+      when: () => this.aiNativeConfigService.capabilities.supportsMCP,
+    });
 
     this.chatInputRegistry.registerChatInput({
       id: 'chat-input',
@@ -647,21 +645,19 @@ export class AINativeBrowserContribution
   }
 
   private registerChatViews() {
-    const { supportsAgentMode } = this.aiNativeConfigService.capabilities;
+    this.chatViewRegistry.registerChatView({
+      id: 'acp-chat-view',
+      component: AIChatViewACP,
+      priority: 200,
+      when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
+    });
 
-    if (supportsAgentMode) {
-      this.chatViewRegistry.registerChatView({
-        id: 'acp-chat-view',
-        component: AIChatViewACP,
-        priority: 200,
-      });
-
-      this.chatHistoryRegistry.registerChatHistory({
-        id: 'acp-chat-history',
-        component: ChatHistoryACP,
-        priority: 200,
-      });
-    }
+    this.chatHistoryRegistry.registerChatHistory({
+      id: 'acp-chat-history',
+      component: ChatHistoryACP,
+      priority: 200,
+      when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
+    });
 
     this.chatViewRegistry.registerChatView({
       id: 'default-chat-view',

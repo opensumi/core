@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Injectable } from '@opensumi/di';
-import { Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { ChatViewRegistryToken, Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 export interface ChatViewContribution {
   id: string;
@@ -18,8 +18,6 @@ export interface IChatViewRegistry {
   /** Get the highest-priority contribution whose `when()` condition passes, or null. */
   getActiveChatView(): ChatViewContribution | null;
 }
-
-export const ChatViewRegistryToken = Symbol('ChatViewRegistryToken');
 
 @Injectable()
 export class ChatViewRegistry extends Disposable implements IChatViewRegistry {

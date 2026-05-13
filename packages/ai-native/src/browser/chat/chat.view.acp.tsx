@@ -19,6 +19,7 @@ import {
   CancellationToken,
   CancellationTokenSource,
   ChatFeatureRegistryToken,
+  ChatHistoryRegistryToken,
   ChatInputRegistryToken,
   ChatMessageRole,
   ChatRenderRegistryToken,
@@ -67,6 +68,7 @@ import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
 import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
+import { IChatHistoryRegistry } from './chat.history.registry';
 import { ChatInputRegistry } from './chat.input.registry';
 import { ChatInternalService } from './chat.internal.service';
 import styles from './chat.module.less';
@@ -982,6 +984,7 @@ export function DefaultChatViewHeaderACP({
   const messageService = useInjectable<IMessageService>(IMessageService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const chatHistoryRegistry = useInjectable<IChatHistoryRegistry>(ChatHistoryRegistryToken);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
@@ -1109,11 +1112,12 @@ export function DefaultChatViewHeaderACP({
   return (
     <div className={styles.header}>
       {(() => {
-        // 优先使用注册的 ChatHistory 渲染器（ACP 模式）
-        if (chatRenderRegistry.chatHistoryRender) {
-          const ChatHistoryRender = chatRenderRegistry.chatHistoryRender;
+        // 1. 优先使用 ChatHistoryRegistry 注册的历史组件（按优先级 + when 条件匹配）
+        const activeHistory = chatHistoryRegistry.getActiveChatHistory();
+        if (activeHistory) {
+          const ChatHistoryComponent = activeHistory.component;
           return (
-            <ChatHistoryRender
+            <ChatHistoryComponent
               className={styles.chat_history}
               currentId={aiChatService.sessionModel?.sessionId}
               title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
@@ -1125,7 +1129,7 @@ export function DefaultChatViewHeaderACP({
             />
           );
         }
-        // 降级使用默认 ChatHistory 组件
+        // 2. 降级使用默认 ChatHistory 组件
         return (
           <ChatHistory
             className={styles.chat_history}

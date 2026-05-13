@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Injectable } from '@opensumi/di';
-import { Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { ChatHistoryRegistryToken, Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 export interface ChatHistoryContribution {
   id: string;
@@ -17,8 +17,6 @@ export interface IChatHistoryRegistry {
   getChatHistoryContributions(): ChatHistoryContribution[];
   getActiveChatHistory(): ChatHistoryContribution | null;
 }
-
-export const ChatHistoryRegistryToken = Symbol('ChatHistoryRegistryToken');
 
 @Injectable()
 export class ChatHistoryRegistry extends Disposable implements IChatHistoryRegistry {

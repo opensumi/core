@@ -336,6 +336,8 @@ export const RulesServiceToken = Symbol('RulesServiceToken');
 export const ChatServiceToken = Symbol('ChatServiceToken');
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 export const ChatInputRegistryToken = Symbol('ChatInputRegistryToken');
+export const ChatViewRegistryToken = Symbol('ChatViewRegistryToken');
+export const ChatHistoryRegistryToken = Symbol('ChatHistoryRegistryToken');
 
 /**
  * Contribute Registry
