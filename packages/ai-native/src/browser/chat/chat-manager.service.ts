@@ -1,14 +1,3 @@
-/**
- * ChatManagerService - 聊天会话管理器服务
- *
- * 负责管理 AI 聊天的会话生命周期，包括：
- * - 创建、获取、清除聊天会话
- * - 管理聊天请求的发送和取消
- * - 持久化会话历史到存储
- *
- * 被以下类调用:
- * - ChatInternalService: 依赖注入使用，用于会话管理操作
- */
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AINativeConfigService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
