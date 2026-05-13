@@ -190,7 +190,7 @@ export type ChatInputRender = (props: {
 export type ChatViewHeaderRender = (props: {
   handleClear: () => any;
   handleCloseChatView: () => any;
-  sessionModel: ChatModel;
+  sessionModel?: ChatModel;
 }) => React.ReactElement | React.JSX.Element;
 
 export interface IChatHistoryItem {

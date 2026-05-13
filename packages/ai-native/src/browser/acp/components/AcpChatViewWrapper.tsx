@@ -17,8 +17,11 @@ import { AIBackSerivcePath, IAIBackService, localize } from '@opensumi/ide-core-
 
 import { ChatProxyServiceToken, IChatManagerService } from '../../../common';
 import { ChatManagerService } from '../../chat/chat-manager.service';
+import { AcpChatManagerService } from '../../chat/chat-manager.service.acp';
 import { ChatProxyService } from '../../chat/chat-proxy.service';
+import { AcpChatProxyService } from '../../chat/chat-proxy.service.acp';
 import { ChatInternalService } from '../../chat/chat.internal.service';
+import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
 
 interface AcpChatViewWrapperProps {
@@ -29,8 +32,8 @@ interface AcpChatViewWrapperProps {
 export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapperProps) {
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const aiBackService = useInjectable<IAIBackService>(AIBackSerivcePath);
-  const chatManagerService = useInjectable<ChatManagerService>(IChatManagerService);
-  const chatProxyService = useInjectable<ChatProxyService>(ChatProxyServiceToken);
+  const chatManagerService = useInjectable<AcpChatManagerService>(IChatManagerService);
+  const chatProxyService = useInjectable<AcpChatProxyService>(ChatProxyServiceToken);
 
   // ACP 模式初始化状态
   const [initState, setInitState] = useState<{

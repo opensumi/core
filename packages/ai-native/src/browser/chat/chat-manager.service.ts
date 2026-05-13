@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { AINativeConfigService, PreferenceService } from '@opensumi/ide-core-browser';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AINativeSettingSectionsId,
   CancellationToken,
@@ -9,18 +9,37 @@ import {
   Emitter,
   IChatProgress,
   IDisposable,
+  IStorage,
   LRUCache,
+  STORAGE_NAMESPACE,
+  StorageProvider,
   debounce,
 } from '@opensumi/ide-core-common';
-import { ChatFeatureRegistryToken } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { ChatFeatureRegistryToken, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
-import { IChatAgentService } from '../../common';
+import { IChatAgentService, IChatFollowup, IChatRequestMessage, IChatResponseErrorDetails } from '../../common';
 import { MsgHistoryManager } from '../model/msg-history-manager';
 
-import { ChatModel, ChatRequestModel, ChatResponseModel } from './chat-model';
+import { ChatModel, ChatRequestModel, ChatResponseModel, IChatProgressResponseContent } from './chat-model';
 import { ChatFeatureRegistry } from './chat.feature.registry';
-import { ISessionModel, ISessionProvider } from './session-provider';
-import { ISessionProviderRegistry } from './session-provider-registry';
+
+interface ISessionModel {
+  sessionId: string;
+  modelId: string;
+  history: { additional: Record<string, any>; messages: IHistoryChatMessage[] };
+  requests: {
+    requestId: string;
+    message: IChatRequestMessage;
+    response: {
+      isCanceled: boolean;
+      responseText: string;
+      responseContents: IChatProgressResponseContent[];
+      responseParts: IChatProgressResponseContent[];
+      errorDetails: IChatResponseErrorDetails | undefined;
+      followups: IChatFollowup[];
+    };
+  }[];
+}
 
 const MAX_SESSION_COUNT = 20;
 
@@ -43,13 +62,11 @@ class DisposableLRUCache<K, V extends IDisposable = IDisposable> extends LRUCach
 
 @Injectable()
 export class ChatManagerService extends Disposable {
-  #sessionModels = this.registerDispose(new DisposableLRUCache<string, ChatModel>(MAX_SESSION_COUNT));
+  // Exposed as protected so AcpChatManagerService subclass can access it
+  protected sessionModels = this.registerDispose(new DisposableLRUCache<string, ChatModel>(MAX_SESSION_COUNT));
   #pendingRequests = this.registerDispose(new DisposableMap<string, CancellationTokenSource>());
-  private storageInitEmitter = new Emitter<void>();
+  protected storageInitEmitter = new Emitter<void>();
   public onStorageInit = this.storageInitEmitter.event;
-
-  @Autowired(AINativeConfigService)
-  protected readonly aiNativeConfig: AINativeConfigService;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -57,26 +74,25 @@ export class ChatManagerService extends Disposable {
   @Autowired(IChatAgentService)
   chatAgentService: IChatAgentService;
 
-  @Autowired(ISessionProviderRegistry)
-  private sessionProviderRegistry: ISessionProviderRegistry;
+  @Autowired(StorageProvider)
+  private storageProvider: StorageProvider;
 
   @Autowired(PreferenceService)
   private preferenceService: PreferenceService;
 
   @Autowired(ChatFeatureRegistryToken)
-  private chatFeatureRegistry: ChatFeatureRegistry;
+  protected chatFeatureRegistry: ChatFeatureRegistry;
 
-  private mainProvider: ISessionProvider | null = null;
+  private _chatStorage: IStorage;
 
   protected fromJSON(data: ISessionModel[]) {
     return data
-      .filter((item) => item.history.messages.length > 0 || item.sessionId.startsWith('acp:'))
+      .filter((item) => item.history.messages.length > 0)
       .map((item) => {
         const model = new ChatModel(this.chatFeatureRegistry, {
           sessionId: item.sessionId,
           history: new MsgHistoryManager(this.chatFeatureRegistry, item.history),
           modelId: item.modelId,
-          title: item?.title,
         });
         const requests = item.requests.map(
           (request) =>
@@ -100,166 +116,42 @@ export class ChatManagerService extends Disposable {
       });
   }
 
-  /**
-   * 将 ChatModel 转换为 ISessionModel 数据
-   */
-  private toSessionData(model: ChatModel): ISessionModel {
-    return {
-      sessionId: model.sessionId,
-      modelId: model.modelId,
-      history: model.history.toJSON(),
-      requests: model.getRequests().map((request) => ({
-        requestId: request.requestId,
-        message: request.message,
-        response: {
-          isCanceled: request.response.isCanceled,
-          responseText: request.response.responseText,
-          responseContents: request.response.responseContents,
-          responseParts: request.response.responseParts,
-          errorDetails: request.response.errorDetails,
-          followups: request.response.followups,
-        },
-      })),
-    };
-  }
-
   constructor() {
     super();
-    const mode = this.aiNativeConfig.capabilities.supportsAgentMode ? 'acp' : 'local'; // TODO 写死， 按需切换
-
-    const allProviders = this.sessionProviderRegistry.getAllProviders();
-
-    const p = allProviders.filter((provider) => provider.canHandle(mode))[0];
-
-    this.mainProvider = p;
-  }
-
-  /**
-   * Fallback to local session provider when ACP is unavailable.
-   * Switches mainProvider to LocalStorageProvider, clears existing sessions, and reloads.
-   */
-  fallbackToLocal(): void {
-    const localProvider = this.sessionProviderRegistry.getProvider('local');
-    if (!localProvider) {
-      return;
-    }
-    this.mainProvider = localProvider;
-    this.#sessionModels.clear();
-    this.loadSessionList();
   }
 
   async init() {
-    await this.loadSessionList();
-  }
-
-  /**
-   * 加载 ACP 会话列表
-   * - 只拉取会话列表（元数据），具体的 Session 完整数据通过 loadSession 按需加载
-   * - 加载失败时清空会话列表，但不会抛出错误
-   */
-  async loadSessionList() {
-    if (!this.mainProvider) {
-      await this.storageInitEmitter.fireAndAwait();
-      return;
-    }
-
-    try {
-      // acp 模式只会先拉取列表，具体的 Session 需要单独的 load
-      const sessionsModelData = await this.mainProvider.loadSessions();
-
-      // 只保留最新的 20 个会话
-      const recentSessionsData = sessionsModelData.slice(-MAX_SESSION_COUNT);
-
-      // 为已有的活跃 session 预留空间，避免被 LRU 淘汰
-      const activeKeys = new Set(this.#sessionModels.keys());
-      const filteredData = recentSessionsData.filter((item) => !activeKeys.has(item.sessionId));
-      const maxIncoming = MAX_SESSION_COUNT - activeKeys.size;
-
-      if (maxIncoming > 0) {
-        const savedSessions = this.fromJSON(filteredData.slice(-maxIncoming));
-        savedSessions.forEach((session) => {
-          this.#sessionModels.set(session.sessionId, session);
-        });
-      }
-    } catch (error) {
-      // 加载失败时清空会话列表，但不抛出错误，让应用可以继续使用空列表
-      this.#sessionModels.clear();
-    }
-
+    this._chatStorage = await this.storageProvider(STORAGE_NAMESPACE.CHAT);
+    const sessionsModelData = this._chatStorage.get<ISessionModel[]>('sessionModels', []);
+    const savedSessions = this.fromJSON(sessionsModelData);
+    savedSessions.forEach((session) => {
+      this.sessionModels.set(session.sessionId, session);
+      this.listenSession(session);
+    });
     await this.storageInitEmitter.fireAndAwait();
   }
 
   getSessions() {
-    const sessions = Array.from(this.#sessionModels.values());
-
-    return sessions;
+    return Array.from(this.sessionModels.values());
   }
 
-  /**
-   * 启动新会话
-   * - ACP 模式：调用 Provider.createSession 创建远程会话
-   * - Local 模式：创建本地会话
-   */
   async startSession(): Promise<ChatModel> {
-    if (this.aiNativeConfig.capabilities.supportsAgentMode && this.mainProvider?.createSession) {
-      const sessionData = await this.mainProvider.createSession();
-      const models = this.fromJSON([sessionData]);
-      if (models.length > 0) {
-        const model = models[0];
-        this.#sessionModels.set(model.sessionId, model);
-        this.listenSession(model);
-
-        return model;
-      }
-    }
-
-    // Local 模式：创建本地会话
     const model = new ChatModel(this.chatFeatureRegistry);
-    this.#sessionModels.set(model.sessionId, model);
+    this.sessionModels.set(model.sessionId, model);
     this.listenSession(model);
-
     return model;
   }
 
   getSession(sessionId: string): ChatModel | undefined {
-    return this.#sessionModels.get(sessionId);
-  }
-
-  /**
-   * 加载指定会话
-   * @param sessionId 本地 Session ID
-   * @returns Session 数据，不存在时返回 undefined
-   */
-  async loadSession(sessionId: string) {
-    if (this.aiNativeConfig.capabilities.supportsAgentMode) {
-      // 如果是acp模式，会从provider的loadSession(sessionId)加载指定的会话
-      const existingSession = this.#sessionModels.get(sessionId);
-      if (existingSession?.history?.getMessages()?.length) {
-        return;
-      }
-
-      // 从provider加载指定会话
-      if (this.mainProvider?.loadSession && sessionId) {
-        return this.mainProvider.loadSession(sessionId).then((sessionData) => {
-          if (sessionData) {
-            const sessions = this.fromJSON([sessionData]);
-            if (sessions.length > 0) {
-              const session = sessions[0];
-              this.#sessionModels.set(sessionId, session);
-              this.listenSession(session);
-            }
-          }
-        });
-      }
-    }
+    return this.sessionModels.get(sessionId);
   }
 
   clearSession(sessionId: string) {
-    const model = this.#sessionModels.get(sessionId) as ChatModel;
+    const model = this.sessionModels.get(sessionId) as ChatModel;
     if (!model) {
       throw new Error(`Unknown session: ${sessionId}`);
     }
-    this.#sessionModels.disposeKey(sessionId);
+    this.sessionModels.disposeKey(sessionId);
     this.#pendingRequests.get(sessionId)?.cancel();
     this.#pendingRequests.disposeKey(sessionId);
     this.saveSessions();
@@ -302,7 +194,7 @@ export class ChatManagerService extends Disposable {
     });
 
     const contextWindow = this.preferenceService.get<number>(AINativeSettingSectionsId.ContextWindow);
-    const history = typeof contextWindow === 'number' ? model.getMessageHistory(contextWindow) : [];
+    const history = model.getMessageHistory(contextWindow);
 
     try {
       const progressCallback = (progress: IChatProgress) => {
@@ -357,12 +249,8 @@ export class ChatManagerService extends Disposable {
   }
 
   @debounce(1000)
-  protected async saveSessions() {
-    if (!this.mainProvider?.saveSessions) {
-      return;
-    }
-    const sessionsData = this.getSessions().map((model) => this.toSessionData(model));
-    await this.mainProvider.saveSessions(sessionsData);
+  protected saveSessions() {
+    this._chatStorage.set('sessionModels', this.getSessions());
   }
 
   cancelRequest(sessionId: string) {

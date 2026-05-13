@@ -16,6 +16,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IChatInternalService } from '../../../common';
 import { cleanAttachedTextWrapper } from '../../../common/utils';
 import { ChatInternalService } from '../../chat/chat.internal.service';
+import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
 import { getCachedWorkspaceDir, switchWorkspaceDir } from '../../chat/pick-workspace-dir';
 
@@ -36,7 +37,7 @@ export function AcpChatViewHeader({
   handleClear: () => any;
   handleCloseChatView: () => any;
 }) {
-  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const quickPick = useInjectable<QuickPickService>(QuickPickService);

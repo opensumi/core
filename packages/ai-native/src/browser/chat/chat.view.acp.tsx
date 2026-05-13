@@ -71,6 +71,7 @@ import { ChatFeatureRegistry } from './chat.feature.registry';
 import { IChatHistoryRegistry } from './chat.history.registry';
 import { ChatInputRegistry } from './chat.input.registry';
 import { ChatInternalService } from './chat.internal.service';
+import { AcpChatInternalService } from './chat.internal.service.acp';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
 
@@ -118,7 +119,7 @@ const getFileChanges = (codeBlocks: CodeBlockData[]) =>
     }, [] as FileChange[]);
 
 export const AIChatViewACP = () => {
-  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   return (
     <AcpChatViewWrapper aiChatService={aiChatService}>
       <AIChatViewACPContent />
@@ -127,7 +128,7 @@ export const AIChatViewACP = () => {
 };
 
 export const AIChatViewACPContent = () => {
-  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
@@ -980,7 +981,7 @@ export function DefaultChatViewHeaderACP({
   handleClear: () => any;
   handleCloseChatView: () => any;
 }) {
-  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);

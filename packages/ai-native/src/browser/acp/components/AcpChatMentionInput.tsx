@@ -35,6 +35,7 @@ import { IChatInternalService, SLASH_SYMBOL } from '../../../common';
 import { LLMContextService } from '../../../common/llm-context';
 import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
 import { ChatInternalService } from '../../chat/chat.internal.service';
+import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import { ChatRenderRegistry } from '../../chat/chat.render.registry';
 import styles from '../../components/components.module.less';
 import { MentionInput } from '../../components/mention-input/mention-input';
@@ -93,7 +94,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
   const [value, setValue] = useState(props.value || '');
   const [images, setImages] = useState(props.images || []);
   const [currentMode, setCurrentMode] = useState<string>(props.agentModes?.[0]?.id || 'default');
-  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const commandService = useInjectable<CommandService>(CommandService);
   const searchService = useInjectable<IFileSearchService>(FileSearchServicePath);

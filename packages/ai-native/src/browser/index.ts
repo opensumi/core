@@ -1,4 +1,4 @@
-import { Autowired, Injectable, Provider } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Provider } from '@opensumi/di';
 import {
   AIBackSerivcePath,
   AIBackSerivceToken,
@@ -53,12 +53,15 @@ import { ApplyService } from './chat/apply.service';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
+import { AcpChatManagerService } from './chat/chat-manager.service.acp';
 import { ChatProxyService } from './chat/chat-proxy.service';
+import { AcpChatProxyService } from './chat/chat-proxy.service.acp';
 import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatHistoryRegistry } from './chat/chat.history.registry';
 import { ChatInputRegistry } from './chat/chat.input.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
+import { AcpChatInternalService } from './chat/chat.internal.service.acp';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
 import { ChatViewRegistry } from './chat/chat.view.registry';
 import { DefaultACPConfigProvider } from './chat/default-acp-config-provider';
@@ -140,6 +143,10 @@ export class AINativeModule extends BrowserModule {
     // Session Providers
     LocalStorageProvider,
     ACPSessionProvider,
+    // ACP service subclasses (used conditionally via factory)
+    AcpChatManagerService,
+    AcpChatInternalService,
+    AcpChatProxyService,
 
     // MCP Server Contributions START
     ListDirTool,
@@ -206,7 +213,13 @@ export class AINativeModule extends BrowserModule {
     },
     {
       token: IChatManagerService,
-      useClass: ChatManagerService,
+      useFactory: (injector: Injector) => {
+        const config = injector.get(AINativeConfigService);
+        if (config.capabilities.supportsAgentMode) {
+          return injector.get(AcpChatManagerService);
+        }
+        return injector.get(ChatManagerService);
+      },
     },
     {
       token: IChatAgentService,
@@ -218,11 +231,23 @@ export class AINativeModule extends BrowserModule {
     },
     {
       token: IChatInternalService,
-      useClass: ChatInternalService,
+      useFactory: (injector: Injector) => {
+        const config = injector.get(AINativeConfigService);
+        if (config.capabilities.supportsAgentMode) {
+          return injector.get(AcpChatInternalService);
+        }
+        return injector.get(ChatInternalService);
+      },
     },
     {
       token: ChatProxyServiceToken,
-      useClass: ChatProxyService,
+      useFactory: (injector: Injector) => {
+        const config = injector.get(AINativeConfigService);
+        if (config.capabilities.supportsAgentMode) {
+          return injector.get(AcpChatProxyService);
+        }
+        return injector.get(ChatProxyService);
+      },
     },
     {
       token: DefaultChatAgentToken,
