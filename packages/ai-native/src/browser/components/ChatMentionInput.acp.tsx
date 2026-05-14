@@ -38,9 +38,10 @@ import { MCPConfigCommands } from '../mcp/config/mcp-config.commands';
 import { RulesCommands } from '../rules/rules.contribution';
 import { RulesService } from '../rules/rules.service';
 
+import { MentionInput } from './acp/MentionInput';
+import { ModeOption } from './acp/types';
 import styles from './components.module.less';
-import { MentionInput } from './mention-input/mention-input';
-import { FooterButtonPosition, FooterConfig, MentionItem, MentionType, ModeOption } from './mention-input/types';
+import { FooterButtonPosition, FooterConfig, MentionItem, MentionType } from './mention-input/types';
 
 export interface IChatMentionInputProps {
   onSend: (
@@ -611,7 +612,7 @@ export const ChatMentionInputACP = (props: IChatMentionInputProps) => {
         loading={disabled}
         labelService={labelService}
         workspaceService={workspaceService}
-        placeholder={localize('aiNative.chat.input.placeholder.default')}
+        placeholder='message claude-agent-acp @to include context, / for command'
         footerConfig={defaultMentionInputFooterOptions}
         onImageUpload={handleImageUpload}
         contextService={contextService}

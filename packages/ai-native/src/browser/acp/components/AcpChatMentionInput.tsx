@@ -37,15 +37,10 @@ import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
 import { ChatInternalService } from '../../chat/chat.internal.service';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import { ChatRenderRegistry } from '../../chat/chat.render.registry';
+import { MentionInput } from '../../components/acp/MentionInput';
+import { ModeOption } from '../../components/acp/types';
 import styles from '../../components/components.module.less';
-import { MentionInput } from '../../components/mention-input/mention-input';
-import {
-  FooterButtonPosition,
-  FooterConfig,
-  MentionItem,
-  MentionType,
-  ModeOption,
-} from '../../components/mention-input/types';
+import { FooterButtonPosition, FooterConfig, MentionItem, MentionType } from '../../components/mention-input/types';
 import { MCPConfigCommands } from '../../mcp/config/mcp-config.commands';
 import { RulesCommands } from '../../rules/rules.contribution';
 import { RulesService } from '../../rules/rules.service';
@@ -109,7 +104,9 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const outlineTreeService = useInjectable<OutlineTreeService>(OutlineTreeService);
   const prevOutlineItems = useRef<MentionItem[]>([]);
-  const [placeholder, setPlaceholder] = useState(localize('aiNative.chat.input.placeholder.default'));
+  const [placeholder, setPlaceholder] = useState(
+    props.placeholder || localize('aiNative.chat.input.placeholder.default'),
+  );
   const [defaultInput, setDefaultInput] = useState('');
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const rulesService = useInjectable<RulesService>(RulesServiceToken);
@@ -138,7 +135,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
 
   // 当 slash command 变化时，更新 placeholder 和 defaultInput
   useEffect(() => {
-    const defaultPlaceholder = localize('aiNative.chat.input.placeholder.default');
+    const defaultPlaceholder = props.placeholder || localize('aiNative.chat.input.placeholder.default');
     const findCommandHandler = chatFeatureRegistry.getSlashCommandHandler(props.command);
     if (findCommandHandler && findCommandHandler.providerInputPlaceholder) {
       const editor = monacoCommandRegistry.getActiveCodeEditor();
@@ -592,14 +589,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
       defaultModel:
         props.sessionModelId || preferenceService.get<string>(AINativeSettingSectionsId.ModelID) || 'deepseek-r1',
       buttons: aiNativeConfigService.capabilities.supportsAgentMode
-        ? [
-            {
-              id: 'mention-trigger',
-              icon: 'at-sign',
-              title: localize('aiNative.chat.context.title'),
-              position: FooterButtonPosition.LEFT,
-            },
-          ]
+        ? []
         : [
             {
               id: 'mcp-server',

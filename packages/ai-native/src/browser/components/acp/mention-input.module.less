@@ -1,0 +1,45 @@
+@import '../mention-input/mention-input.module.less';
+
+.popover_icon {
+  // 移除 margin-left: auto
+}
+
+.mention_trigger_logo {
+  margin-right: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: var(--badge-background);
+  }
+}
+
+.mode_selector {
+  margin-right: 5px;
+}
+
+.left_control {
+  flex: 0 0 auto !important;
+}
+
+.context_preview_container {
+  margin: 0 4px;
+  margin-bottom: 0;
+  width: auto;
+  flex: 1 1 auto;
+  background: none;
+  border: none;
+  padding: 0;
+  max-width: 400px;
+  min-width: 0;
+}
+
+.context_preview_title {
+  &::before {
+    content: '@';
+  }
+}

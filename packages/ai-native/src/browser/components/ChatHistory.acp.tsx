@@ -5,7 +5,7 @@ import { Icon, Input, Loading, Popover, PopoverPosition, PopoverTriggerType, get
 import { localize } from '@opensumi/ide-core-browser';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 
-import styles from './chat-history.module.less';
+import styles from './acp/chat-history.module.less';
 
 export interface IChatHistoryItem {
   id: string;

@@ -966,6 +966,7 @@ export const AIChatViewACPContent = () => {
               disableModelSelector={sessionModelId !== undefined || loading}
               sessionModelId={sessionModelId}
               agentCwd={appConfig.workspaceDir}
+              placeholder='message claude-agent-acp @to include context, / for command'
             />
           </div>
         </div>

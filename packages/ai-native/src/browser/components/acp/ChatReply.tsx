@@ -46,17 +46,16 @@ import {
 import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
-import { IChatAgentService, IChatInternalService } from '../../common';
-import { ChatRequestModel } from '../chat/chat-model';
-import { ChatService } from '../chat/chat.api.service';
-import { ChatInternalService } from '../chat/chat.internal.service';
-import { ChatRenderRegistry } from '../chat/chat.render.registry';
-import { MsgHistoryManager } from '../model/msg-history-manager';
-import { IChatAgentViewService } from '../types';
-
-import { ChatMarkdown } from './ChatMarkdown';
-import { ChatThinking, ChatThinkingResult } from './ChatThinking';
-import styles from './components.module.less';
+import { IChatAgentService, IChatInternalService } from '../../../common';
+import { ChatRequestModel } from '../../chat/chat-model';
+import { ChatService } from '../../chat/chat.api.service';
+import { ChatInternalService } from '../../chat/chat.internal.service';
+import { ChatRenderRegistry } from '../../chat/chat.render.registry';
+import { MsgHistoryManager } from '../../model/msg-history-manager';
+import { IChatAgentViewService } from '../../types';
+import { ChatMarkdown } from '../ChatMarkdown';
+import { ChatThinking, ChatThinkingResult } from '../ChatThinking';
+import styles from '../components.module.less';
 
 interface IChatReplyProps {
   relationId: string;
@@ -268,7 +267,7 @@ export const ChatReply = (props: IChatReplyProps) => {
             command,
             agentId,
             messageId: msgId,
-            sessionId: aiChatService.sessionModel.sessionId,
+            sessionId: aiChatService.sessionModel?.sessionId,
           });
         }
 
