@@ -112,6 +112,7 @@ export class WorkspaceTrustService {
     const trustLabel = localize('workspace.trust.dialog.button.trust', 'Yes, I trust the authors');
     const restrictedLabel = localize('workspace.trust.dialog.button.restricted', 'Restricted Mode');
 
+    await this.commandService.waitCommandHandlerRegistered('dialog.open');
     const result = await this.commandService.executeCommand<string>('dialog.open', {
       message: `${localize('workspace.trust.dialog.title', '是否信任此文件夹中的文件的作者？')}\n\n${localize(
         'workspace.trust.dialog.message',
