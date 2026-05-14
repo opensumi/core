@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { WorkspaceTrustService, WorkspaceTrustState } from '@opensumi/ide-core-browser';
-import { ContributionProvider, createContributionProvider } from '@opensumi/ide-core-common';
+import { WorkspaceTrustService } from '@opensumi/ide-core-browser';
+import { ContributionProvider } from '@opensumi/ide-core-common';
 
 /**
  * Base allowed extension IDs in restricted mode
@@ -53,10 +53,9 @@ export class AllowedExtensionService {
   }
 
   /**
-   * Wait for trust decision then filter extensions
+   * Wait for trust decision to be made
    */
-  async filterExtensionsAfterTrustDecided<T extends { id: string }>(extensions: T[]): Promise<T[]> {
-    await this.workspaceTrustService.whenTrustDecided();
-    return this.filterExtensions(extensions);
+  waitTrustDecided(): Promise<void> {
+    return this.workspaceTrustService.whenTrustDecided();
   }
 }

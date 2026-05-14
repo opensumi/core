@@ -241,12 +241,30 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   public async activate(): Promise<void> {
     await this.initExtensionMetaData();
-    // Apply trust filter if in restricted mode
-    this.extensionMetaDataArr = await this.allowedExtensionService.filterExtensionsAfterTrustDecided(
-      this.extensionMetaDataArr,
-    );
-    await this.initExtensionInstanceData();
+
+    // Split extensions into allowed (can init before trust decision) and others (wait for trust)
+    const allowedIds = new Set(this.allowedExtensionService.getAllowedExtensionIds());
+    const allowedExtensions = this.extensionMetaDataArr.filter((ext) => allowedIds.has(ext.id));
+    const pendingExtensions = this.extensionMetaDataArr.filter((ext) => !allowedIds.has(ext.id));
+
+    // Initialize allowed extensions immediately
+    await this.initExtensionInstanceData(allowedExtensions);
     await this.runEagerExtensionsContributes();
+
+    if (pendingExtensions.length > 0) {
+      // Wait for trust decision, then initialize the rest
+      await this.allowedExtensionService.waitTrustDecided();
+      const allowedPending = this.allowedExtensionService.filterExtensions(pendingExtensions);
+      if (allowedPending.length > 0) {
+        await this.initExtensionInstanceData(allowedPending);
+      }
+      // Run eager extension contributes once all extensions are initialized
+      await this.runEagerExtensionsContributes();
+    }
+
+    // Final extension list after trust filtering
+    this.extensionMetaDataArr = this.allowedExtensionService.filterExtensions(this.extensionMetaDataArr);
+
     // update nls config by extensions
     await this.setupExtensionNLSConfig();
 
@@ -309,8 +327,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   /**
    * 初始化插件实例数据
    */
-  private async initExtensionInstanceData() {
-    for (const extensionMetaData of this.extensionMetaDataArr) {
+  private async initExtensionInstanceData(extensions?: IExtensionMetaData[]) {
+    const metaDataArr = extensions ?? this.extensionMetaDataArr;
+    for (const extensionMetaData of metaDataArr) {
       const isBuiltin = this.extensionInstanceManageService.checkIsBuiltin(extensionMetaData);
       const isDevelopment = this.extensionInstanceManageService.checkIsDevelopment(extensionMetaData);
       const extension = await this.extensionInstanceManageService.createExtensionInstance(
