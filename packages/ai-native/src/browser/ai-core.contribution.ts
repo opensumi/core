@@ -109,6 +109,7 @@ import { LLMContextService, LLMContextServiceToken } from '../common/llm-context
 import { MCPServerDescription, MCPServersDisabledKey } from '../common/mcp-server-manager';
 import { MCP_SERVER_TYPE } from '../common/types';
 
+import { AcpChatInput } from './acp/components/AcpChatInput';
 import { AcpChatMentionInput } from './acp/components/AcpChatMentionInput';
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
@@ -627,6 +628,13 @@ export class AINativeBrowserContribution
       id: 'acp-mention-input',
       component: AcpChatMentionInput,
       priority: 200,
+      when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
+    });
+
+    this.chatInputRegistry.registerChatInput({
+      id: 'acp-chat-input',
+      component: AcpChatInput,
+      priority: 150,
       when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
     });
 
