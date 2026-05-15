@@ -727,11 +727,6 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
 
   return (
     <div className={styles.chat_input_container}>
-      {props.theme && (
-        <div className={styles.theme_container}>
-          <div className={styles.theme_block}>{props.theme}</div>
-        </div>
-      )}
       {images.length > 0 && <ImagePreviewer images={images} onDelete={handleDeleteImage} />}
       <MentionInput
         mentionItems={
@@ -751,6 +746,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
         onModeChange={handleModeChange}
         defaultInput={defaultInput}
         onDefaultInputConsumed={() => setDefaultInput('')}
+        slashCommand={props.theme}
       />
     </div>
   );

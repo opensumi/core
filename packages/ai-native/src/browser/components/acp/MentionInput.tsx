@@ -34,6 +34,7 @@ export const MentionInput: React.FC<
     onAgentChange?: (agentId: string) => void;
     modeOptions?: ModeOption[];
     currentMode?: string;
+    slashCommand?: string | null;
   }
 > = ({
   mentionItems = [],
@@ -56,6 +57,7 @@ export const MentionInput: React.FC<
   onModeChange,
   modeOptions,
   currentMode,
+  slashCommand,
 }) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
   const mentionPanelContainerRef = React.useRef<HTMLDivElement>(null);
@@ -180,6 +182,29 @@ export const MentionInput: React.FC<
       onDefaultInputConsumed?.();
     }
   }, [defaultInput]);
+
+  // 当 slashCommand 变化时，将其文本注入到编辑器内容前
+  React.useEffect(() => {
+    if (slashCommand && editorRef.current) {
+      const existingContent = editorRef.current.innerHTML;
+      editorRef.current.innerHTML = `${slashCommand}${existingContent ? ' ' + existingContent : ''}`;
+      // 将光标放到 slash 文本之后
+      const range = document.createRange();
+      const selection = window.getSelection();
+      const textNode = editorRef.current.childNodes[0];
+      if (textNode) {
+        const offset = textNode.nodeType === Node.TEXT_NODE ? textNode.textContent?.length : 0;
+        range.setStart(textNode, offset ?? 0);
+        range.collapse(true);
+      } else {
+        range.selectNodeContents(editorRef.current);
+        range.collapse(false);
+      }
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      editorRef.current.focus();
+    }
+  }, [slashCommand]);
 
   React.useEffect(() => {
     if (mentionState.level === 1 && mentionState.parentType && debouncedSecondLevelFilter !== undefined) {
