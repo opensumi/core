@@ -46,6 +46,7 @@ import { ChatAgentPromptProvider, DefaultChatAgentPromptProvider } from '../comm
 import { ACPChatAgentPromptProvider } from '../common/prompts/empty-prompt-provider';
 
 import { AcpPermissionBridgeService, AcpPermissionRpcService } from './acp';
+import { AcpFooterContribution } from './acp/components/AcpFooterContribution';
 import { AcpPermissionDialogContribution, PermissionDialogManager } from './acp/permission-dialog-container';
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AcpChatAgent } from './chat/acp-chat-agent';
@@ -164,6 +165,7 @@ export class AINativeModule extends BrowserModule {
     // Context Service
     LlmContextContribution,
     RulesContribution,
+    AcpFooterContribution,
     {
       token: LLMContextServiceToken,
       useClass: LLMContextServiceImpl,
