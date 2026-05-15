@@ -583,6 +583,6 @@ export class ChatSlashCommandItemModel extends Disposable implements IChatSlashC
   }
 
   get nameWithSlash() {
-    return this.name.startsWith(SLASH_SYMBOL) ? this.name : `${SLASH_SYMBOL} ${this.name}`;
+    return this.name.startsWith(SLASH_SYMBOL) ? this.name : `${SLASH_SYMBOL}${this.name}`;
   }
 }

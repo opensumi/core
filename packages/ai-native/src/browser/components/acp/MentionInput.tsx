@@ -221,7 +221,7 @@ export const MentionInput: React.FC<
       range.insertNode(slashTag);
 
       // 在标签后插入空格
-      const spaceNode = document.createTextNode(' ');
+      const spaceNode = document.createTextNode('');
       const newRange = document.createRange();
       newRange.setStartAfter(slashTag);
       newRange.insertNode(spaceNode);
@@ -1360,7 +1360,7 @@ export const MentionInput: React.FC<
     });
 
     // 查找所有 slash 命令标签并替换为纯文本
-    const slashTags = tempDiv.querySelectorAll(`.${styles.slash_command_tag}`);
+    const slashTags = tempDiv.querySelectorAll('span[data-command]');
     slashTags.forEach((tag) => {
       const replacement = document.createTextNode(tag.getAttribute('data-command') || tag.textContent || '');
       tag.parentNode?.replaceChild(replacement, tag);
