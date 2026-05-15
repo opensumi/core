@@ -39,7 +39,7 @@ import { ChatRenderRegistry } from '../../chat/chat.render.registry';
 import { MentionInput } from '../../components/acp/MentionInput';
 import { ModeOption } from '../../components/acp/types';
 import styles from '../../components/components.module.less';
-import { FooterConfig, MentionItem, MentionType } from '../../components/mention-input/types';
+import { FooterButtonPosition, FooterConfig, MentionItem, MentionType } from '../../components/mention-input/types';
 import { MCPConfigCommands } from '../../mcp/config/mcp-config.commands';
 import { RulesCommands } from '../../rules/rules.contribution';
 import { RulesService } from '../../rules/rules.service';
@@ -545,6 +545,17 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
     [props.agentModes],
   );
 
+  const slashCommands = useMemo(
+    () =>
+      chatFeatureRegistry.getAllSlashCommand().map((cmd) => ({
+        nameWithSlash: cmd.nameWithSlash,
+        icon: cmd.icon,
+        name: cmd.name,
+        description: cmd.description,
+      })),
+    [chatFeatureRegistry],
+  );
+
   const defaultMentionInputFooterOptions: FooterConfig = useMemo(
     () => ({
       modeOptions,
@@ -734,6 +745,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
             ? defaultMenuItems.filter((item) => chatRenderRegistry.enabledMentionTypes!.includes(item.id))
             : defaultMenuItems
         }
+        slashCommands={slashCommands}
         onSend={handleSend}
         onStop={handleStop}
         loading={disabled}

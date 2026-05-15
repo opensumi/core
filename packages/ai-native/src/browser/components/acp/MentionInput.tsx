@@ -34,6 +34,7 @@ export const MentionInput: React.FC<
     modeOptions?: ModeOption[];
     currentMode?: string;
     slashCommand?: string | null;
+    slashCommands?: Array<{ nameWithSlash: string; icon?: string; name?: string; description?: string }>;
   }
 > = ({
   mentionItems = [],
@@ -57,6 +58,7 @@ export const MentionInput: React.FC<
   modeOptions,
   currentMode,
   slashCommand,
+  slashCommands = [],
 }) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
   const mentionPanelContainerRef = React.useRef<HTMLDivElement>(null);
@@ -72,6 +74,7 @@ export const MentionInput: React.FC<
     inlineSearchActive: false, // 是否在输入框中进行二级搜索
     inlineSearchStartPos: null, // 内联搜索的起始位置
     loading: false, // 添加加载状态
+    trigger: '@',
   });
 
   // 添加模型选择状态
@@ -130,6 +133,19 @@ export const MentionInput: React.FC<
     return [];
   };
 
+  const getSlashItems = (): MentionItem[] => {
+    const filterText = mentionState.filter.substring(1).toLowerCase();
+    return slashCommands
+      .filter((cmd) => cmd.nameWithSlash.toLowerCase().includes(filterText))
+      .map((cmd) => ({
+        id: cmd.nameWithSlash,
+        type: 'slash',
+        text: cmd.nameWithSlash,
+        description: cmd.description,
+        icon: cmd.icon,
+      }));
+  };
+
   const useDebounce = <T,>(value: T, delay: number): T => {
     const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
 
@@ -184,25 +200,36 @@ export const MentionInput: React.FC<
     }
   }, [defaultInput]);
 
-  // 当 slashCommand 变化时，将其文本注入到编辑器内容前
+  // 当 slashCommand 变化时，将其作为标签插入到光标位置
   React.useEffect(() => {
     if (slashCommand && editorRef.current) {
-      const existingContent = editorRef.current.innerHTML;
-      editorRef.current.innerHTML = `${slashCommand}${existingContent ? ' ' + existingContent : ''}`;
-      // 将光标放到 slash 文本之后
-      const range = document.createRange();
       const selection = window.getSelection();
-      const textNode = editorRef.current.childNodes[0];
-      if (textNode) {
-        const offset = textNode.nodeType === Node.TEXT_NODE ? textNode.textContent?.length : 0;
-        range.setStart(textNode, offset ?? 0);
-        range.collapse(true);
-      } else {
-        range.selectNodeContents(editorRef.current);
-        range.collapse(false);
+      if (!selection || !selection.rangeCount) {
+        return;
       }
-      selection?.removeAllRanges();
-      selection?.addRange(range);
+
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+
+      // 创建 slash 标签
+      const slashTag = document.createElement('span');
+      slashTag.className = styles.slash_command_tag;
+      slashTag.dataset.command = slashCommand;
+      slashTag.contentEditable = 'false';
+      slashTag.textContent = slashCommand;
+
+      range.insertNode(slashTag);
+
+      // 在标签后插入空格
+      const spaceNode = document.createTextNode(' ');
+      const newRange = document.createRange();
+      newRange.setStartAfter(slashTag);
+      newRange.insertNode(spaceNode);
+      newRange.setStartAfter(spaceNode);
+      newRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+
       editorRef.current.focus();
     }
   }, [slashCommand]);
@@ -300,27 +327,91 @@ export const MentionInput: React.FC<
       if (!editorRef.current || !detail?.nameWithSlash) {
         return;
       }
-      const existingContent = editorRef.current.innerHTML;
-      editorRef.current.innerHTML = `${detail.nameWithSlash}${existingContent ? ' ' + existingContent : ''}`;
-      const range = document.createRange();
+
       const selection = window.getSelection();
-      const textNode = editorRef.current.childNodes[0];
-      if (textNode) {
-        const offset = textNode.nodeType === Node.TEXT_NODE ? textNode.textContent?.length : 0;
-        range.setStart(textNode, offset ?? 0);
-        range.collapse(true);
-      } else {
-        range.selectNodeContents(editorRef.current);
-        range.collapse(false);
+      if (!selection || !selection.rangeCount) {
+        return;
       }
-      selection?.removeAllRanges();
-      selection?.addRange(range);
+
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+
+      // 创建 slash 标签
+      const slashTag = document.createElement('span');
+      slashTag.className = styles.slash_command_tag;
+      slashTag.dataset.command = detail.nameWithSlash;
+      slashTag.contentEditable = 'false';
+      slashTag.textContent = detail.nameWithSlash;
+
+      range.insertNode(slashTag);
+
+      // 在标签后插入空格
+      const spaceNode = document.createTextNode(' ');
+      const newRange = document.createRange();
+      newRange.setStartAfter(slashTag);
+      newRange.insertNode(spaceNode);
+      newRange.setStartAfter(spaceNode);
+      newRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+
       editorRef.current.focus();
     };
 
     window.addEventListener('opensumi-chat-input-insert-slash', handleInsertSlash);
     return () => {
       window.removeEventListener('opensumi-chat-input-insert-slash', handleInsertSlash);
+    };
+  }, []);
+
+  // 监听外部打开 slash panel 的事件（如 footer "/" 按钮点击）
+  React.useEffect(() => {
+    const handleOpenSlashPanel = () => {
+      if (!editorRef.current) {
+        return;
+      }
+
+      // 确保编辑器聚焦
+      editorRef.current.focus();
+
+      // 在光标位置插入 "/"
+      const selection = window.getSelection();
+      if (!selection || !selection.rangeCount) {
+        return;
+      }
+
+      const range = selection.getRangeAt(0);
+      const textNode = document.createTextNode('/');
+      range.insertNode(textNode);
+
+      // 将光标放到 "/" 之后
+      const newRange = document.createRange();
+      newRange.setStartAfter(textNode);
+      newRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+
+      // 打开 slash panel
+      const cursorPos = getCursorPosition(editorRef.current);
+      setMentionState({
+        active: true,
+        startPos: cursorPos,
+        filter: '/',
+        position: { top: 0, left: 0 },
+        activeIndex: 0,
+        level: 0,
+        parentType: null,
+        secondLevelFilter: '',
+        inlineSearchActive: false,
+        inlineSearchStartPos: null,
+        loading: false,
+        trigger: '/',
+      });
+    };
+
+    window.addEventListener('opensumi-chat-input-open-slash-panel', handleOpenSlashPanel);
+    return () => {
+      window.removeEventListener('opensumi-chat-input-open-slash-panel', handleOpenSlashPanel);
     };
   }, []);
 
@@ -406,6 +497,30 @@ export const MentionInput: React.FC<
         inlineSearchActive: false,
         inlineSearchStartPos: null,
         loading: false,
+        trigger: '@',
+      });
+    }
+
+    // 判断是否刚输入了 /
+    if (
+      text[cursorPos - 1] === '/' &&
+      !mentionState.active &&
+      !mentionState.inlineSearchActive &&
+      slashCommands.length > 0
+    ) {
+      setMentionState({
+        active: true,
+        startPos: cursorPos,
+        filter: '/',
+        position: { top: 0, left: 0 },
+        activeIndex: 0,
+        level: 0,
+        parentType: null,
+        secondLevelFilter: '',
+        inlineSearchActive: false,
+        inlineSearchStartPos: null,
+        loading: false,
+        trigger: '/',
       });
     }
 
@@ -484,6 +599,15 @@ export const MentionInput: React.FC<
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     // 如果按下ESC键且提及面板处于活动状态或内联搜索处于活动状态
     if (e.key === 'Escape' && (mentionState.active || mentionState.inlineSearchActive)) {
+      // 如果是 slash command 面板，直接关闭
+      if (mentionState.trigger === '/') {
+        setMentionState((prev) => ({
+          ...prev,
+          active: false,
+        }));
+        e.preventDefault();
+        return;
+      }
       // 如果在二级菜单，返回一级菜单
       if (mentionState.level > 0) {
         setMentionState((prev) => ({
@@ -531,6 +655,33 @@ export const MentionInput: React.FC<
         inlineSearchActive: false,
         inlineSearchStartPos: null,
         loading: false,
+        trigger: '@',
+      });
+    }
+
+    // 添加对 / 键的监听，支持在任意位置触发 slash command 菜单
+    if (
+      e.key === '/' &&
+      !mentionState.active &&
+      !mentionState.inlineSearchActive &&
+      editorRef.current &&
+      slashCommands.length > 0
+    ) {
+      const cursorPos = getCursorPosition(editorRef.current);
+
+      setMentionState({
+        active: true,
+        startPos: cursorPos + 1,
+        filter: '/',
+        position: { top: 0, left: 0 },
+        activeIndex: 0,
+        level: 0,
+        parentType: null,
+        secondLevelFilter: '',
+        inlineSearchActive: false,
+        inlineSearchStartPos: null,
+        loading: false,
+        trigger: '/',
       });
     }
 
@@ -619,10 +770,15 @@ export const MentionInput: React.FC<
     }
 
     // 获取当前过滤后的项目
-    let filteredItems = getCurrentItems();
+    let filteredItems = mentionState.trigger === '/' ? getSlashItems() : getCurrentItems();
 
-    // 一级菜单过滤
-    if (mentionState.level === 0 && mentionState.filter && mentionState.filter.length > 1) {
+    // 一级菜单过滤（仅对 mention 面板生效）
+    if (
+      mentionState.level === 0 &&
+      mentionState.filter &&
+      mentionState.filter.length > 1 &&
+      mentionState.trigger !== '/'
+    ) {
       const searchText = mentionState.filter.substring(1).toLowerCase();
       filteredItems = filteredItems.filter((item) => item.text.toLowerCase().includes(searchText));
     }
@@ -784,6 +940,56 @@ export const MentionInput: React.FC<
   // 选择提及项目
   const handleSelectItem = (item: MentionItem, isTriggerByClick = true) => {
     if (!editorRef.current) {
+      return;
+    }
+
+    // 处理 slash command 选择
+    if (mentionState.trigger === '/') {
+      // 仅删除 / 和过滤文本，实际命令文本由事件监听器插入
+      let textNode;
+      let startOffset;
+      let endOffset;
+
+      const walker = document.createTreeWalker(editorRef.current, NodeFilter.SHOW_TEXT);
+      let charCount = 0;
+      let node;
+
+      while ((node = walker.nextNode())) {
+        const nodeLength = node.textContent?.length || 0;
+
+        if (
+          mentionState.startPos !== null &&
+          mentionState.startPos - 1 >= charCount &&
+          mentionState.startPos - 1 < charCount + nodeLength
+        ) {
+          textNode = node;
+          startOffset = mentionState.startPos - 1 - charCount;
+          const cursorPos = isTriggerByClick
+            ? mentionState.startPos + mentionState.filter.length - 1
+            : getCursorPosition(editorRef.current);
+          endOffset = Math.min(cursorPos - charCount, nodeLength);
+          break;
+        }
+
+        charCount += nodeLength;
+      }
+
+      if (textNode) {
+        const tempRange = document.createRange();
+        tempRange.setStart(textNode, startOffset);
+        tempRange.setEnd(textNode, endOffset);
+        tempRange.deleteContents();
+      }
+
+      setMentionState((prev) => ({ ...prev, active: false }));
+      editorRef.current.focus();
+
+      // 通过事件通知父组件设置 slash command（事件监听器会负责插入命令文本）
+      window.dispatchEvent(
+        new CustomEvent('opensumi-chat-input-insert-slash', {
+          detail: { nameWithSlash: item.text },
+        }),
+      );
       return;
     }
 
@@ -1153,6 +1359,13 @@ export const MentionInput: React.FC<
       }
     });
 
+    // 查找所有 slash 命令标签并替换为纯文本
+    const slashTags = tempDiv.querySelectorAll(`.${styles.slash_command_tag}`);
+    slashTags.forEach((tag) => {
+      const replacement = document.createTextNode(tag.getAttribute('data-command') || tag.textContent || '');
+      tag.parentNode?.replaceChild(replacement, tag);
+    });
+
     // 获取处理后的内容
     let processedContent = tempDiv.innerHTML;
     processedContent = processedContent.trim().replaceAll(WHITE_SPACE_TEXT, ' ');
@@ -1240,6 +1453,7 @@ export const MentionInput: React.FC<
       inlineSearchActive: false,
       inlineSearchStartPos: null,
       loading: false,
+      trigger: '@',
     });
   }, []);
 
@@ -1417,7 +1631,7 @@ export const MentionInput: React.FC<
       {mentionState.active && (
         <div ref={mentionPanelContainerRef} className={styles.mention_panel_container}>
           <MentionPanel
-            items={getCurrentItems()}
+            items={mentionState.trigger === '/' ? getSlashItems() : getCurrentItems()}
             activeIndex={mentionState.activeIndex}
             onSelectItem={(item) => handleSelectItem(item, true)}
             position={{ top: 0, left: 0 }}

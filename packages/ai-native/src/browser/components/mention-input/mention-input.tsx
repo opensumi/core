@@ -53,6 +53,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     inlineSearchActive: false, // 是否在输入框中进行二级搜索
     inlineSearchStartPos: null, // 内联搜索的起始位置
     loading: false, // 添加加载状态
+    trigger: '@',
   });
 
   // 添加模型选择状态
@@ -281,6 +282,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         inlineSearchActive: false,
         inlineSearchStartPos: null,
         loading: false,
+        trigger: '@',
       });
     }
 
@@ -406,6 +408,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         inlineSearchActive: false,
         inlineSearchStartPos: null,
         loading: false,
+        trigger: '@',
       });
     }
 
@@ -1106,6 +1109,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       inlineSearchActive: false,
       inlineSearchStartPos: null,
       loading: false,
+      trigger: '@',
     });
   }, []);
 

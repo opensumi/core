@@ -921,7 +921,8 @@ export const AIChatViewACPContent = () => {
           ) : null}
           <div className={styles.chat_input_wrap}>
             <div className={styles.header_operate}>
-              <div className={styles.header_operate_left}>
+              {/* 定制需求。不需要透出shortcut*/}
+              {/* <div className={styles.header_operate_left}>
                 {shortcutCommands.map((command) => (
                   <Popover
                     id={`ai-chat-shortcut-${command.name}`}
@@ -933,7 +934,7 @@ export const AIChatViewACPContent = () => {
                     </div>
                   </Popover>
                 ))}
-              </div>
+              </div>*/}
             </div>
             {changeList.length > 0 && (
               <FileListDisplay

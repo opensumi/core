@@ -15,7 +15,7 @@ interface MentionItemProps {
 export const MentionItem: React.FC<MentionItemProps> = ({ item, isActive, onClick }) => (
   <div className={`${styles.mention_item} ${isActive ? styles.active : ''}`} onClick={() => onClick(item)}>
     <div className={styles.mention_item_left}>
-      <Icon className={cls(styles.mention_item_icon, item.icon)} />
+      {item.icon && <Icon className={cls(styles.mention_item_icon, item.icon)} />}
       <span className={styles.mention_item_text}>{item.text}</span>
       <span className={styles.mention_item_description}>{item.description}</span>
     </div>
