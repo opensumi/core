@@ -1,4 +1,5 @@
-import { CancellationToken, MaybePromise, Uri } from '@opensumi/ide-utils';
+import { CancellationToken, IDisposable, MaybePromise, Uri } from '@opensumi/ide-utils';
+import { Event } from '@opensumi/ide-utils/lib/event';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { FileType } from '../file';
@@ -338,6 +339,28 @@ export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 export const ChatInputRegistryToken = Symbol('ChatInputRegistryToken');
 export const ChatViewRegistryToken = Symbol('ChatViewRegistryToken');
 export const ChatHistoryRegistryToken = Symbol('ChatHistoryRegistryToken');
+export const ChatInputFooterRegistryToken = Symbol('ChatInputFooterRegistryToken');
+
+/**
+ * Chat Input Footer Contribution Point
+ */
+export enum FooterButtonPosition {
+  LEFT = 'left',
+  RIGHT = 'right',
+}
+
+export interface ChatInputFooterItem {
+  component: React.ComponentType<any>;
+  order?: number;
+  position?: FooterButtonPosition;
+  visible?: () => boolean;
+}
+
+export interface IChatInputFooterRegistry {
+  registerFooterItem(id: string, item: ChatInputFooterItem): IDisposable;
+  getItems(): ChatInputFooterItem[];
+  onDidChange: Event<void>;
+}
 
 /**
  * Contribute Registry

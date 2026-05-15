@@ -4,21 +4,20 @@ import * as React from 'react';
 import { getSymbolIcon, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { FooterButtonPosition } from '@opensumi/ide-core-common';
 import { URI } from '@opensumi/ide-utils';
 
 import { FileContext } from '../../../common/llm-context';
 import { ProjectRule } from '../../../common/types';
 import { PermissionDialogManager } from '../../acp/permission-dialog-container';
+import {
+  ChatInputFooterContribution,
+  ChatInputFooterRegistry,
+  ChatInputFooterRegistryToken,
+} from '../../chat/chat-input-footer.registry';
 import { MentionPanel } from '../mention-input/mention-panel';
 import { ExtendedModelOption, MentionSelect } from '../mention-input/mention-select';
-import {
-  FooterButtonPosition,
-  MENTION_KEYWORD,
-  MentionInputProps,
-  MentionItem,
-  MentionState,
-  MentionType,
-} from '../mention-input/types';
+import { MENTION_KEYWORD, MentionInputProps, MentionItem, MentionState, MentionType } from '../mention-input/types';
 import { PermissionDialogWidget } from '../permission-dialog-widget';
 
 import styles from './mention-input.module.less';
@@ -103,6 +102,8 @@ export const MentionInput: React.FC<
 
   // 权限弹窗服务
   const permissionDialogManager = useInjectable<PermissionDialogManager>(PermissionDialogManager);
+  const footerRegistry = useInjectable<ChatInputFooterRegistry>(ChatInputFooterRegistryToken);
+  const [footerItems, setFooterItems] = React.useState<ChatInputFooterContribution[]>([]);
   const [optionsBottomPosition, setOptionsBottomPosition] = React.useState(0);
 
   // 添加用于跟踪 mention_tag 的状态
@@ -280,6 +281,46 @@ export const MentionInput: React.FC<
 
     return () => {
       disposable?.dispose();
+    };
+  }, []);
+
+  React.useEffect(() => {
+    setFooterItems(footerRegistry.getItems());
+    const disposable = footerRegistry.onDidChange(() => {
+      setFooterItems(footerRegistry.getItems());
+    });
+    return () => {
+      disposable.dispose();
+    };
+  }, [footerRegistry]);
+
+  React.useEffect(() => {
+    const handleInsertSlash = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!editorRef.current || !detail?.nameWithSlash) {
+        return;
+      }
+      const existingContent = editorRef.current.innerHTML;
+      editorRef.current.innerHTML = `${detail.nameWithSlash}${existingContent ? ' ' + existingContent : ''}`;
+      const range = document.createRange();
+      const selection = window.getSelection();
+      const textNode = editorRef.current.childNodes[0];
+      if (textNode) {
+        const offset = textNode.nodeType === Node.TEXT_NODE ? textNode.textContent?.length : 0;
+        range.setStart(textNode, offset ?? 0);
+        range.collapse(true);
+      } else {
+        range.selectNodeContents(editorRef.current);
+        range.collapse(false);
+      }
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      editorRef.current.focus();
+    };
+
+    window.addEventListener('opensumi-chat-input-insert-slash', handleInsertSlash);
+    return () => {
+      window.removeEventListener('opensumi-chat-input-insert-slash', handleInsertSlash);
     };
   }, []);
 
@@ -1400,6 +1441,12 @@ export const MentionInput: React.FC<
       </div>
       <div className={styles.footer}>
         <div className={styles.left_control}>
+          {footerItems
+            .filter((item) => item.position !== FooterButtonPosition.RIGHT)
+            .map((item) => {
+              const Component = item.component;
+              return <Component key={item.id} />;
+            })}
           {footerConfig.showModelSelector &&
             renderModelSelectorTip(
               <MentionSelect
@@ -1435,6 +1482,12 @@ export const MentionInput: React.FC<
         </div>
         {renderContextPreview()}
         <div className={styles.right_control}>
+          {footerItems
+            .filter((item) => item.position === FooterButtonPosition.RIGHT)
+            .map((item) => {
+              const Component = item.component;
+              return <Component key={item.id} />;
+            })}
           {renderButtons(FooterButtonPosition.RIGHT)}
           <Popover
             overlayClassName={styles.popover_icon}

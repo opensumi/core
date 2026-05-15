@@ -13,7 +13,9 @@ import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import {
   AINativeSettingSectionsId,
   ChatFeatureRegistryToken,
+  ChatInputFooterRegistryToken,
   ChatRenderRegistryToken,
+  FooterButtonPosition,
   RulesServiceToken,
   URI,
   localize,
@@ -31,19 +33,21 @@ import { IconType } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { IChatInternalService, SLASH_SYMBOL } from '../../../common';
+import { IChatInternalService } from '../../../common';
 import { LLMContextService } from '../../../common/llm-context';
+import { ChatInputFooterRegistry } from '../../chat/chat-input-footer.registry';
 import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
-import { ChatInternalService } from '../../chat/chat.internal.service';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import { ChatRenderRegistry } from '../../chat/chat.render.registry';
 import { MentionInput } from '../../components/acp/MentionInput';
 import { ModeOption } from '../../components/acp/types';
 import styles from '../../components/components.module.less';
-import { FooterButtonPosition, FooterConfig, MentionItem, MentionType } from '../../components/mention-input/types';
+import { FooterConfig, MentionItem, MentionType } from '../../components/mention-input/types';
 import { MCPConfigCommands } from '../../mcp/config/mcp-config.commands';
 import { RulesCommands } from '../../rules/rules.contribution';
 import { RulesService } from '../../rules/rules.service';
+
+import { AcpMCPFooterButton, AcpRulesFooterButton, AcpSlashCommandFooter } from './AcpFooterButtons';
 
 export interface IChatMentionInputProps {
   onSend: (
@@ -110,6 +114,32 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
   const [defaultInput, setDefaultInput] = useState('');
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const rulesService = useInjectable<RulesService>(RulesServiceToken);
+  const footerRegistry = useInjectable<ChatInputFooterRegistry>(ChatInputFooterRegistryToken);
+
+  // Register built-in footer items
+  useEffect(() => {
+    const disposables = [
+      footerRegistry.registerFooterItem('mcp-server', {
+        component: AcpMCPFooterButton,
+        order: 0,
+        position: FooterButtonPosition.LEFT,
+      }),
+      footerRegistry.registerFooterItem('rules', {
+        component: AcpRulesFooterButton,
+        order: 10,
+        position: FooterButtonPosition.LEFT,
+      }),
+      footerRegistry.registerFooterItem('slash-commands', {
+        component: AcpSlashCommandFooter,
+        order: 20,
+        position: FooterButtonPosition.LEFT,
+      }),
+    ];
+    return () => {
+      disposables.forEach((d) => d.dispose());
+    };
+  }, [footerRegistry]);
+
   const handleShowMCPConfig = React.useCallback(() => {
     commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
   }, [commandService]);

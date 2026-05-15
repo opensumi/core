@@ -1,4 +1,4 @@
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Provider } from '@opensumi/di';
+import { Autowired, Injectable, Injector, Provider } from '@opensumi/di';
 import {
   AIBackSerivcePath,
   AIBackSerivceToken,
@@ -7,6 +7,7 @@ import {
   ChatAgentViewServiceToken,
   ChatFeatureRegistryToken,
   ChatHistoryRegistryToken,
+  ChatInputFooterRegistryToken,
   ChatInputRegistryToken,
   ChatRenderRegistryToken,
   ChatServiceToken,
@@ -52,6 +53,7 @@ import { ACPSessionProvider } from './chat/acp-session-provider';
 import { ApplyService } from './chat/apply.service';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
+import { ChatInputFooterRegistry } from './chat/chat-input-footer.registry';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { AcpChatManagerService } from './chat/chat-manager.service.acp';
 import { ChatProxyService } from './chat/chat-proxy.service';
@@ -198,6 +200,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: ChatHistoryRegistryToken,
       useClass: ChatHistoryRegistry,
+    },
+    {
+      token: ChatInputFooterRegistryToken,
+      useClass: ChatInputFooterRegistry,
     },
     {
       token: ResolveConflictRegistryToken,
