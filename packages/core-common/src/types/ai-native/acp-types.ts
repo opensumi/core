@@ -38,6 +38,8 @@ export type {
   AuthenticateRequest,
   AuthenticateResponse,
   AuthMethod,
+  AvailableCommand,
+  AvailableCommandsUpdate,
   CancelNotification,
   ClientCapabilities,
   ContentBlock,

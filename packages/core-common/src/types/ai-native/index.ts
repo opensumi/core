@@ -5,12 +5,13 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
 
-import { ListSessionsResponse } from './acp-types';
+import { AvailableCommand, ListSessionsResponse } from './acp-types';
 import { AgentProcessConfig } from './agent-types';
 import { IAIReportCompletionOption } from './reporter';
 
 import type { CoreMessage } from 'ai';
 export * from './reporter';
+export type { AvailableCommand };
 
 export interface IAINativeCapabilities {
   /**
@@ -272,6 +273,7 @@ export interface IAIBackService<
 
   createSession?(config: AgentProcessConfig): Promise<{
     sessionId: string;
+    availableCommands: AvailableCommand[];
   }>;
 
   setSessionMode?(sessionId: string, modeId: string): Promise<void>;

@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AINativeConfigService } from '@opensumi/ide-core-browser';
-import { debounce } from '@opensumi/ide-core-common';
+import { AvailableCommand, debounce } from '@opensumi/ide-core-common';
 
 import { MsgHistoryManager } from '../model/msg-history-manager';
 
@@ -21,6 +21,8 @@ export class AcpChatManagerService extends ChatManagerService {
   private sessionProviderRegistry: ISessionProviderRegistry;
 
   private mainProvider: ISessionProvider | null = null;
+
+  private availableCommands: AvailableCommand[] = [];
 
   constructor() {
     super();
@@ -65,9 +67,16 @@ export class AcpChatManagerService extends ChatManagerService {
     return Array.from(this.sessionModels.values());
   }
 
+  getAvailableCommands(): AvailableCommand[] {
+    return this.availableCommands;
+  }
+
   override async startSession(): Promise<ChatModel> {
     if (this.aiNativeConfig.capabilities.supportsAgentMode && this.mainProvider?.createSession) {
       const sessionData = await this.mainProvider.createSession();
+      if (sessionData.extension?.availableCommands) {
+        this.availableCommands = sessionData.extension.availableCommands;
+      }
       const models = this.fromAcpJSON([sessionData]);
       if (models.length > 0) {
         const model = models[0];

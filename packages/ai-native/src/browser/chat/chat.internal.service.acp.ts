@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AINativeConfigService } from '@opensumi/ide-core-browser';
-import { Emitter, Event } from '@opensumi/ide-core-common';
+import { AvailableCommand, Emitter, Event } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 
 import { AcpChatManagerService } from './chat-manager.service.acp';
@@ -23,6 +23,20 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private readonly _onSessionModelChange = new Emitter<ChatModel | undefined>();
   public readonly onSessionModelChange: Event<ChatModel | undefined> = this._onSessionModelChange.event;
+
+  private readonly _onAvailableCommandsChange = new Emitter<AvailableCommand[]>();
+  public readonly onAvailableCommandsChange: Event<AvailableCommand[]> = this._onAvailableCommandsChange.event;
+
+  private availableCommands: AvailableCommand[] = [];
+
+  getAvailableCommands(): AvailableCommand[] {
+    return this.availableCommands;
+  }
+
+  setAvailableCommands(commands: AvailableCommand[]) {
+    this.availableCommands = commands;
+    this._onAvailableCommandsChange.fire(commands);
+  }
 
   public get onStorageInit() {
     return this.chatManagerService.onStorageInit;
@@ -59,6 +73,8 @@ export class AcpChatInternalService extends ChatInternalService {
   override async createSessionModel() {
     this._onSessionLoadingChange.fire(true);
     this._sessionModel = await this.chatManagerService.startSession();
+    const acpManager = this.chatManagerService as AcpChatManagerService;
+    this.setAvailableCommands(acpManager.getAvailableCommands());
     this._onSessionModelChange.fire(this._sessionModel);
     this._onChangeSession.fire(this._sessionModel.sessionId);
     this._onSessionLoadingChange.fire(false);
@@ -73,6 +89,8 @@ export class AcpChatInternalService extends ChatInternalService {
     this.chatManagerService.clearSession(sessionId);
     if (this._sessionModel && sessionId === this._sessionModel.sessionId) {
       this._sessionModel = await this.chatManagerService.startSession();
+      const acpManager = this.chatManagerService as AcpChatManagerService;
+      this.setAvailableCommands(acpManager.getAvailableCommands());
       this._onSessionModelChange.fire(this._sessionModel);
     }
     if (this._sessionModel) {
@@ -106,6 +124,7 @@ export class AcpChatInternalService extends ChatInternalService {
         return;
       }
       this._sessionModel = updatedSession;
+      this.setAvailableCommands(acpManager.getAvailableCommands());
       this._onSessionModelChange.fire(this._sessionModel);
       this._onChangeSession.fire(this._sessionModel.sessionId);
     } catch (error) {

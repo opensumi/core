@@ -1,4 +1,4 @@
-import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { AvailableCommand, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { IChatFollowup, IChatRequestMessage, IChatResponseErrorDetails } from '../../common';
 
@@ -28,6 +28,13 @@ export interface ISessionModel {
 }
 
 /**
+ * Session 模型扩展字段（非持久化，来自 Agent）
+ */
+export interface ISessionModelExtension {
+  availableCommands: AvailableCommand[];
+}
+
+/**
  * Session Provider 接口
  * 抽象不同数据源的 Session 加载逻辑
  */
@@ -46,7 +53,7 @@ export interface ISessionProvider {
    * @param title 可选的会话标题
    * @returns 创建的 Session 数据
    */
-  createSession?(): Promise<ISessionModel>;
+  createSession?(): Promise<ISessionModel & { extension?: ISessionModelExtension }>;
 
   /**
    * 加载所有可用会话

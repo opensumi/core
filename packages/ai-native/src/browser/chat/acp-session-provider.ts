@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { AIBackSerivcePath, Domain, IACPConfigProvider, IAIBackService } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 
-import { ISessionModel, ISessionProvider, SessionProviderDomain } from './session-provider';
+import { ISessionModel, ISessionModelExtension, ISessionProvider, SessionProviderDomain } from './session-provider';
 
 /**
  * ACP Session Provider
@@ -47,7 +47,7 @@ export class ACPSessionProvider implements ISessionProvider {
       const sessionId = `acp:${result.sessionId}`;
 
       // 构造空壳会话模型
-      const sessionModel: ISessionModel = {
+      const sessionModel: ISessionModel & { extension?: ISessionModelExtension } = {
         sessionId,
         history: {
           additional: {},
@@ -55,6 +55,7 @@ export class ACPSessionProvider implements ISessionProvider {
         },
         requests: [],
         title: title || '',
+        ...(result.availableCommands?.length ? { extension: { availableCommands: result.availableCommands } } : {}),
       };
 
       // 新创建的 Session 不需要 load，直接加入缓存
@@ -68,6 +69,7 @@ export class ACPSessionProvider implements ISessionProvider {
   }
 
   async loadSessions(): Promise<ISessionModel[]> {
+    return [];
     if (this.loadedSessionsResult) {
       return this.loadedSessionsResult;
     }

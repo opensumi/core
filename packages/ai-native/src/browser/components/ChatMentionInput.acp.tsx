@@ -8,6 +8,7 @@ import {
   PreferenceService,
   RecentFilesManager,
   getSymbolIcon,
+  localize,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
@@ -612,7 +613,7 @@ export const ChatMentionInputACP = (props: IChatMentionInputProps) => {
         loading={disabled}
         labelService={labelService}
         workspaceService={workspaceService}
-        placeholder='message claude-agent-acp @to include context, / for command'
+        placeholder={localize('aiNative.chat.input.placeholder.acp')}
         footerConfig={defaultMentionInputFooterOptions}
         onImageUpload={handleImageUpload}
         contextService={contextService}

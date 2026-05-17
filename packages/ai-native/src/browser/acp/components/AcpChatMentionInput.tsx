@@ -556,6 +556,31 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
     [chatFeatureRegistry],
   );
 
+  const [acpSlashCommands, setAcpSlashCommands] = useState<
+    Array<{ nameWithSlash: string; icon?: string; name?: string; description?: string }>
+  >(() =>
+    aiChatService.getAvailableCommands().map((cmd) => ({
+      nameWithSlash: `/${cmd.name}`,
+      icon: undefined,
+      name: cmd.name,
+      description: cmd.description || '',
+    })),
+  );
+
+  useEffect(() => {
+    const disposable = aiChatService.onAvailableCommandsChange((commands) => {
+      setAcpSlashCommands(
+        commands.map((cmd) => ({
+          nameWithSlash: `/${cmd.name}`,
+          icon: undefined,
+          name: cmd.name,
+          description: cmd.description || '',
+        })),
+      );
+    });
+    return () => disposable.dispose();
+  }, [aiChatService]);
+
   const defaultMentionInputFooterOptions: FooterConfig = useMemo(
     () => ({
       modeOptions,
@@ -745,7 +770,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
             ? defaultMenuItems.filter((item) => chatRenderRegistry.enabledMentionTypes!.includes(item.id))
             : defaultMenuItems
         }
-        slashCommands={slashCommands}
+        slashCommands={[...slashCommands, ...acpSlashCommands]}
         onSend={handleSend}
         onStop={handleStop}
         loading={disabled}

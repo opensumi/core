@@ -1224,6 +1224,7 @@ export const localizationBundle = {
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI 研发助手',
     'aiNative.chat.input.placeholder.default': '可以问我任何问题，输入 @ 可引用内容',
+    'aiNative.chat.input.placeholder.acp': '向 claude-agent-acp 发送消息，输入 @ 引用上下文，/ 使用命令',
     'aiNative.chat.stop.immediately': '我先不想了，有需要可以随时问我',
     'aiNative.chat.error.response': '当前与我互动的人太多，请稍后再试，感谢您的理解与支持',
     'aiNative.chat.code.insert': '插入代码',

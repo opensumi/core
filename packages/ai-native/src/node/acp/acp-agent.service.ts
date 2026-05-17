@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   AcpCliClientServiceToken,
+  type AvailableCommand,
   type CancelNotification,
   type ContentBlock,
   IAcpCliClientService,
@@ -119,7 +120,7 @@ export interface IAcpAgentService {
    */
   getSessionInfo(): AgentSessionInfo | null;
 
-  createSession(config: AgentProcessConfig): Promise<{ sessionId: string }>;
+  createSession(config: AgentProcessConfig): Promise<{ sessionId: string; availableCommands: AvailableCommand[] }>;
 
   /**
    * 列出所有 ACP Agent 会话
@@ -185,10 +186,46 @@ export class AcpAgentService implements IAcpAgentService {
   // 断开事件订阅的取消函数
   private disconnectUnsubscribe: (() => void) | null = null;
 
-  async createSession(config: AgentProcessConfig): Promise<{ sessionId: string }> {
+  async createSession(
+    config: AgentProcessConfig,
+  ): Promise<{ sessionId: string; availableCommands: AvailableCommand[] }> {
     await this.ensureConnected(config);
-    const res = await this.clientService.newSession({ cwd: config.workspaceDir, mcpServers: [] });
-    return { sessionId: res.sessionId };
+
+    // 设置临时通知处理器来收集 availableCommands
+    const availableCommands: AvailableCommand[] = [];
+    const tempHandler = (notification: SessionNotification) => {
+      const update = notification.update as any;
+      if (update?.sessionUpdate === 'available_commands_update' && Array.isArray(update.availableCommands)) {
+        availableCommands.push(...update.availableCommands);
+      }
+    };
+
+    // 订阅临时通知处理器
+    const unsubscribe = this.clientService.onNotification(tempHandler);
+
+    try {
+      const res = await Promise.race([
+        this.clientService.newSession({ cwd: config.workspaceDir, mcpServers: [] }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Create session timeout')), 60000)),
+      ]);
+
+      // 等待延迟的 session/update 通知，增加等待时间以确保 availableCommands 通知到达
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // 根据 name 去重
+      const seen = new Set<string>();
+      const deduplicated = availableCommands.filter((cmd) => {
+        if (seen.has(cmd.name)) {
+          return false;
+        }
+        seen.add(cmd.name);
+        return true;
+      });
+
+      return { ...res, availableCommands: deduplicated };
+    } finally {
+      unsubscribe();
+    }
   }
   /**
    * 确保 Agent 进程已连接并初始化，复用现有连接或启动新进程

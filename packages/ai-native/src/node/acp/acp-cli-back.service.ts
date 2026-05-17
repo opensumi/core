@@ -1,5 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
+  AvailableCommand,
   CancellationToken,
   IAIBackService,
   IAIBackServiceOption,
@@ -15,7 +16,6 @@ import {
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { ChatReadableStream, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
-
 
 import { BaseLanguageModel } from '../base-language-model';
 import { OpenAICompatibleModel } from '../openai-compatible/openai-compatible-language-model';
@@ -116,7 +116,9 @@ export class AcpCliBackService implements IAIBackService {
   //   });
   // }
 
-  async createSession(config: AgentProcessConfig): Promise<{ sessionId: string }> {
+  async createSession(
+    config: AgentProcessConfig,
+  ): Promise<{ sessionId: string; availableCommands: AvailableCommand[] }> {
     await this.ensureAgentInitialized(config);
     return this.agentService.createSession(config);
   }
