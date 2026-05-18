@@ -196,7 +196,7 @@ const ComponentRender = (props: { component: string; value?: unknown; messageId?
     );
     const deferred = chatAgentViewService.getChatComponentDeferred(props.component)!;
     deferred.promise.then(({ component: Component, initialProps }) => {
-      setNode(<Component {...initialProps} value={props.value} />);
+      setNode(<Component {...initialProps} value={props.value} messageId={props.messageId} />);
     });
   }, [props.component, props.value]);
 
