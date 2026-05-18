@@ -44,6 +44,7 @@ export const MentionInput: React.FC<
   mentionKeyword = MENTION_KEYWORD,
   onSelectionChange,
   onImageUpload,
+  onSlashSelect,
   labelService,
   workspaceService,
   placeholder = 'Ask anything, @ to mention',
@@ -984,6 +985,7 @@ export const MentionInput: React.FC<
       setMentionState((prev) => ({ ...prev, active: false }));
       editorRef.current.focus();
 
+      onSlashSelect?.(item.text);
       // 通过事件通知父组件设置 slash command（事件监听器会负责插入命令文本）
       window.dispatchEvent(
         new CustomEvent('opensumi-chat-input-insert-slash', {

@@ -761,6 +761,18 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
     [images],
   );
 
+  const handleSlashSelect = useCallback(
+    (nameWithSlash: string) => {
+      const commandModel = chatFeatureRegistry.getSlashCommandBySlashName(nameWithSlash);
+      if (commandModel) {
+        props.setTheme(nameWithSlash);
+        props.setAgentId(commandModel.agentId!);
+        props.setCommand(commandModel.command!);
+      }
+    },
+    [chatFeatureRegistry],
+  );
+
   return (
     <div className={styles.chat_input_container}>
       {images.length > 0 && <ImagePreviewer images={images} onDelete={handleDeleteImage} />}
@@ -784,6 +796,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
         defaultInput={defaultInput}
         onDefaultInputConsumed={() => setDefaultInput('')}
         slashCommand={props.theme}
+        onSlashSelect={handleSlashSelect}
       />
     </div>
   );

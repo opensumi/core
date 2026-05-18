@@ -114,6 +114,7 @@ export interface MentionInputProps {
   loading?: boolean;
   onSelectionChange?: (value: string) => void;
   onImageUpload?: (files: File[]) => Promise<void>;
+  onSlashSelect?: (nameWithSlash: string) => void; // 通知父组件 slash command 被选中
   footerConfig?: FooterConfig; // 新增配置项
   mentionKeyword?: string;
   labelService?: LabelService;
