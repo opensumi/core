@@ -1,4 +1,4 @@
-import { CancellationToken, Emitter } from '@opensumi/ide-core-common';
+import { AgentProcessConfig, CancellationToken, Emitter } from '@opensumi/ide-core-common';
 import { ChatReadableStream, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 

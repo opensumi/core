@@ -387,10 +387,11 @@ export const ChatReply = (props: IChatReplyProps) => {
         );
         node = item.tooltip ? <Tooltip title={item.tooltip}>{a}</Tooltip> : a;
       } else {
-        if (item.when && !contextKeyService.match(item.when)) {
+        if (!item.when || contextKeyService.match(item.when)) {
+          node = <Button type='default'>{item.title}</Button>;
+        } else {
           node = null;
         }
-        node = <Button type='default'>{item.title}</Button>;
       }
       return node && <Fragment key={index}>{node}</Fragment>;
     });
