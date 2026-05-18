@@ -56,9 +56,13 @@ export class AcpPermissionHandler extends Disposable {
   private defaultTimeout = 60000; // 60 seconds
 
   private permissionStorage: IStorage;
+  private initialized = false;
 
-  constructor() {
-    super();
+  private ensureInitialized(): void {
+    if (this.initialized) {
+      return;
+    }
+    this.initialized = true;
     this.initStorage();
   }
 
@@ -71,6 +75,7 @@ export class AcpPermissionHandler extends Disposable {
    * Request permission for a tool operation
    */
   async requestPermission(request: PermissionRequest): Promise<PermissionDecision> {
+    this.ensureInitialized();
     const requestId = uuid();
 
     // Check existing rules first
@@ -180,6 +185,7 @@ export class AcpPermissionHandler extends Disposable {
    * Get all saved permission rules
    */
   getRules(): PermissionRule[] {
+    this.ensureInitialized();
     return [...this.rules];
   }
 
@@ -187,6 +193,7 @@ export class AcpPermissionHandler extends Disposable {
    * Remove a permission rule
    */
   removeRule(ruleId: string): void {
+    this.ensureInitialized();
     const index = this.rules.findIndex((r) => r.id === ruleId);
     if (index !== -1) {
       this.rules.splice(index, 1);
@@ -198,6 +205,7 @@ export class AcpPermissionHandler extends Disposable {
    * Clear all permission rules
    */
   clearRules(): void {
+    this.ensureInitialized();
     this.rules = [];
     this.saveRules();
   }

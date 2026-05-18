@@ -70,7 +70,7 @@ interface DialogState {
 /**
  * 智能文件名提取工具函数
  */
-const getAffectedFileName = (params: ShowPermissionDialogParams): string => {
+export const getAffectedFileName = (params: ShowPermissionDialogParams): string => {
   // 优先从 locations 获取文件名
   const fromLocations = params.locations?.[0]?.path;
   if (fromLocations) {
@@ -83,7 +83,7 @@ const getAffectedFileName = (params: ShowPermissionDialogParams): string => {
 /**
  * 智能标题生成工具函数
  */
-const getSmartTitle = (params: ShowPermissionDialogParams): string => {
+export const getSmartTitle = (params: ShowPermissionDialogParams): string => {
   const kind = params.kind;
 
   if (kind === 'edit' || kind === 'write') {
