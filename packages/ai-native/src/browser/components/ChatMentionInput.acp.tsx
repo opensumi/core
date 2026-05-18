@@ -311,14 +311,14 @@ export const ChatMentionInputACP = (props: IChatMentionInputProps) => {
             excludePatterns: Object.keys(defaultFilesWatcherExcludes),
             limit: 10,
           });
-          const folders = Array.from(
+          const folderPaths = Array.from(
             new Set(
               files
                 .map((file) => new URI(file).parent.toString())
                 .filter((folder) => folder !== workspaceService.workspace?.uri.toString()),
             ),
           );
-          return await expandFolderPaths(folders, workspaceService.workspace?.uri.toString() || '');
+          folders = await expandFolderPaths(folderPaths, workspaceService.workspace?.uri.toString() || '');
         }
         return folders
           .filter(Boolean)
