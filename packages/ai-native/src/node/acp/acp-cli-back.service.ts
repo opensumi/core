@@ -363,14 +363,11 @@ export class AcpCliBackService implements IAIBackService {
   }
 
   async dispose(): Promise<void> {
-    this.logger?.log('[AcpCliBackService] Already disposin');
     if (this.isDisposing) {
-      this.logger?.log('[AcpCliBackService] Already disposing, skipping...');
       return;
     }
     this.isDisposing = true;
     await this.agentService.dispose();
-    this.logger?.log('[AcpCliBackService] Disposed successfully');
   }
 
   /**

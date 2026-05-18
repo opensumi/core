@@ -76,7 +76,6 @@ export class AcpPermissionHandler extends Disposable {
     // Check existing rules first
     const autoDecision = this.checkRules(request);
     if (autoDecision) {
-      this.logger.log(`Auto-${autoDecision.type}ed permission based on rule for ${request.toolCall.title}`);
       return autoDecision;
     }
 
@@ -206,10 +205,6 @@ export class AcpPermissionHandler extends Disposable {
   private showPermissionDialog(requestId: string, request: PermissionRequest): void {
     // This will be implemented to show a UI dialog
     // For now, log the request
-    this.logger.log(`Permission request [${requestId}]: ${request.toolCall.title}`);
-    this.logger.log(`  Kind: ${request.toolCall.kind}`);
-    this.logger.log(`  Options: ${request.options.map((o) => o.name).join(', ')}`);
-
     // TODO: Implement actual dialog UI component
     // - Show tool call details
     // - Show affected files/directories
@@ -274,8 +269,6 @@ export class AcpPermissionHandler extends Disposable {
 
     this.rules.push(rule);
     this.saveRules();
-
-    this.logger.log(`Permission rule added: ${pattern} => ${decision}`);
   }
 
   private loadRules(): void {
@@ -283,7 +276,6 @@ export class AcpPermissionHandler extends Disposable {
       const saved = this.permissionStorage.get<string>('acp.permission.rules', '[]');
       if (saved && saved !== '[]') {
         this.rules = JSON.parse(saved);
-        this.logger.log(`Loaded ${this.rules.length} permission rules`);
       }
     } catch (e) {
       this.logger.error('Failed to load permission rules:', e);
