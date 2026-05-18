@@ -421,7 +421,7 @@ export const CodeBlockWrapperInput = ({
             @{agentId}
           </div>
         )}
-        {command && <div className={styles.tag}>/ {command}</div>}
+        {command && !tag && <div className={styles.tag}>/ {command}</div>}
         <CodeBlock
           content={txt}
           labelService={labelService}

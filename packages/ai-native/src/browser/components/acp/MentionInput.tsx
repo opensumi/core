@@ -33,7 +33,6 @@ export const MentionInput: React.FC<
     onAgentChange?: (agentId: string) => void;
     modeOptions?: ModeOption[];
     currentMode?: string;
-    slashCommand?: string | null;
     slashCommands?: Array<{ nameWithSlash: string; icon?: string; name?: string; description?: string }>;
   }
 > = ({
@@ -58,7 +57,6 @@ export const MentionInput: React.FC<
   onModeChange,
   modeOptions,
   currentMode,
-  slashCommand,
   slashCommands = [],
 }) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
@@ -200,40 +198,6 @@ export const MentionInput: React.FC<
       onDefaultInputConsumed?.();
     }
   }, [defaultInput]);
-
-  // 当 slashCommand 变化时，将其作为标签插入到光标位置
-  React.useEffect(() => {
-    if (slashCommand && editorRef.current) {
-      const selection = window.getSelection();
-      if (!selection || !selection.rangeCount) {
-        return;
-      }
-
-      const range = selection.getRangeAt(0);
-      range.deleteContents();
-
-      // 创建 slash 标签
-      const slashTag = document.createElement('span');
-      slashTag.className = styles.slash_command_tag;
-      slashTag.dataset.command = slashCommand;
-      slashTag.contentEditable = 'false';
-      slashTag.textContent = slashCommand;
-
-      range.insertNode(slashTag);
-
-      // 在标签后插入空格
-      const spaceNode = document.createTextNode('');
-      const newRange = document.createRange();
-      newRange.setStartAfter(slashTag);
-      newRange.insertNode(spaceNode);
-      newRange.setStartAfter(spaceNode);
-      newRange.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(newRange);
-
-      editorRef.current.focus();
-    }
-  }, [slashCommand]);
 
   React.useEffect(() => {
     if (mentionState.level === 1 && mentionState.parentType && debouncedSecondLevelFilter !== undefined) {

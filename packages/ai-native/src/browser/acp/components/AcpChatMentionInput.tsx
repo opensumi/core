@@ -795,7 +795,6 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
         onModeChange={handleModeChange}
         defaultInput={defaultInput}
         onDefaultInputConsumed={() => setDefaultInput('')}
-        slashCommand={props.theme}
         onSlashSelect={handleSlashSelect}
       />
     </div>
