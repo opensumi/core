@@ -69,7 +69,6 @@ export class ACPSessionProvider implements ISessionProvider {
   }
 
   async loadSessions(): Promise<ISessionModel[]> {
-    return [];
     if (this.loadedSessionsResult) {
       return this.loadedSessionsResult;
     }
@@ -80,7 +79,7 @@ export class ACPSessionProvider implements ISessionProvider {
 
     try {
       const config = await this.configProvider.resolveConfig();
-      const result = await this.aiBackService.listSessions(config);
+      const result = await this.aiBackService!.listSessions(config);
 
       if (!result?.sessions?.length) {
         return [];
@@ -107,7 +106,7 @@ export class ACPSessionProvider implements ISessionProvider {
       }
       this.loadedSessionsResult = sessionModels as unknown as ISessionModel[];
 
-      return this.loadedSessionsResult;
+      return this.loadedSessionsResult ?? [];
     } catch (e) {
       this.messageService.error(e.message);
       return [];

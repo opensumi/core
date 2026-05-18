@@ -8,7 +8,6 @@ import {
   PreferenceService,
   RecentFilesManager,
   getSymbolIcon,
-  localize,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
