@@ -85,6 +85,7 @@ test.describe('OpenSumi Search Panel', () => {
     });
     const input = await search.focusOnReplace();
     await page.keyboard.type(replaceText);
+    await app.page.waitForTimeout(1000);
 
     const contentNode = await search.getTreeNodeByIndex(1);
     expect(contentNode).toBeDefined();
