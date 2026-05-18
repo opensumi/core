@@ -2,13 +2,7 @@ import { AgentProcessConfig, CancellationToken, Emitter } from '@opensumi/ide-co
 import { ChatReadableStream, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
-import {
-  AcpAgentServiceToken,
-  AgentSessionInfo,
-  AgentUpdate,
-  IAcpAgentService,
-  SimpleMessage,
-} from '../../src/node/acp/acp-agent.service';
+import { AgentSessionInfo, AgentUpdate, IAcpAgentService } from '../../src/node/acp/acp-agent.service';
 import { AcpCliBackService } from '../../src/node/acp/acp-cli-back.service';
 import { OpenAICompatibleModel } from '../../src/node/openai-compatible/openai-compatible-language-model';
 
@@ -127,7 +121,6 @@ describe('AcpCliBackService', () => {
 
   describe('requestStream() - fallback to OpenAI', () => {
     it('should use OpenAI stream when agentSessionConfig is not provided', async () => {
-      const mockStream = new ChatReadableStream();
       (mockOpenAIModel.request as jest.Mock).mockImplementation(async (_input, stream) => {
         stream.emitData({ kind: 'content', content: 'hello' });
         stream.end();
@@ -466,6 +459,148 @@ describe('AcpCliBackService', () => {
 
       expect(errors.length).toBe(1);
       expect(errors[0].message).toBe('string error');
+    });
+  });
+
+  describe('requestStream() - with history and images', () => {
+    it('should forward history to agentService.sendMessage', async () => {
+      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
+
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      const history = [
+        { role: 'user' as const, content: 'Previous question' },
+        { role: 'assistant' as const, content: 'Previous answer' },
+      ];
+
+      await service.requestStream('new prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        history: history as any,
+      });
+
+      expect(mockAgentService.sendMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          history,
+        }),
+        expect.any(Object),
+      );
+    });
+
+    it('should handle empty history array', async () => {
+      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
+
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        history: [],
+      });
+
+      expect(mockAgentService.sendMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ history: [] }),
+        expect.any(Object),
+      );
+    });
+
+    it('should forward images to agentService.sendMessage', async () => {
+      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
+
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      const images = ['data:image/png;base64,abc123'];
+
+      await service.requestStream('what is this image?', {
+        agentSessionConfig: mockAgentSessionConfig,
+        images,
+      });
+
+      expect(mockAgentService.sendMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ images }),
+        expect.any(Object),
+      );
+    });
+  });
+
+  describe('setupAgentStream error handling', () => {
+    it('should emit error when ensureAgentInitialized throws', async () => {
+      mockAgentService.getSessionInfo.mockReturnValue(null);
+      mockAgentService.initializeAgent.mockRejectedValue(new Error('Init failed'));
+
+      const stream = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+      });
+
+      const errors: Error[] = [];
+      stream.onError((e) => errors.push(e));
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(errors.length).toBe(1);
+      expect(errors[0].message).toBe('Init failed');
+    });
+  });
+
+  describe('convertToSimpleMessage helper (indirect)', () => {
+    it('should convert CoreMessage with array content to SimpleMessage', async () => {
+      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
+
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      const history = [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Part one' },
+            { type: 'text', text: 'Part two' },
+          ],
+        },
+      ];
+
+      await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        history: history as any,
+      });
+
+      expect(mockAgentService.sendMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          history: [{ role: 'user', content: 'Part one\nPart two' }],
+        }),
+        expect.any(Object),
+      );
+    });
+
+    it('should filter non-text content parts from array content', async () => {
+      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
+
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      const history = [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Keep this' },
+            { type: 'image', url: 'http://example.com/img.png' },
+            { type: 'text', text: 'And this' },
+          ],
+        },
+      ];
+
+      await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        history: history as any,
+      });
+
+      expect(mockAgentService.sendMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          history: [{ role: 'user', content: 'Keep this\nAnd this' }],
+        }),
+        expect.any(Object),
+      );
     });
   });
 });
