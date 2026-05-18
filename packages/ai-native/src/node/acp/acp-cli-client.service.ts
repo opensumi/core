@@ -81,16 +81,12 @@ export class AcpCliClientService implements IAcpCliClientService {
   }
 
   setTransport(stdout: NodeJS.ReadableStream, stdin: NodeJS.WritableStream): void {
-    this.logger?.log('[ACP] Setting up transport streams');
-
     // 先移除旧监听器，防止旧 stdout 的 end/error 事件触发 handleDisconnect
     if (this.stdout) {
-      this.logger?.log('[ACP] Removing old stdout listeners');
       this.stdout.removeAllListeners();
     }
 
     if (this.stdin) {
-      this.logger?.log('[ACP] Closing old stdin');
       try {
         this.stdin.end();
       } catch (_) {}
@@ -120,8 +116,6 @@ export class AcpCliClientService implements IAcpCliClientService {
     this.stdout = stdout;
     this.stdin = stdin;
 
-    this.logger?.log('[ACP] Registering stdout listeners');
-
     this.stdout.on('data', (data: Buffer) => {
       this.handleData(data.toString('utf8'));
     });
@@ -139,7 +133,6 @@ export class AcpCliClientService implements IAcpCliClientService {
     this.buffer = '';
 
     this.transportState = 'connected';
-    this.logger?.log('[ACP] Transport setup complete');
   }
 
   async initialize(params?: InitializeRequest): Promise<ExtendedInitializeResponse> {
@@ -537,8 +530,6 @@ export class AcpCliClientService implements IAcpCliClientService {
     if (this.transportState === 'disconnected') {
       return;
     }
-
-    this.logger?.log('[ACP] Handling disconnect');
 
     this.transportState = 'disconnected';
 
