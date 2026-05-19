@@ -7,6 +7,7 @@ import {
   AppConfig,
   LabelService,
   getIcon,
+  localize,
   useInjectable,
   useUpdateOnEvent,
 } from '@opensumi/ide-core-browser';
@@ -967,7 +968,7 @@ export const AIChatViewACPContent = () => {
               disableModelSelector={sessionModelId !== undefined || loading}
               sessionModelId={sessionModelId}
               agentCwd={appConfig.workspaceDir}
-              placeholder='message claude-agent-acp @to include context, / for command'
+              placeholder={localize('aiNative.chat.input.placeholder.acp')}
             />
           </div>
         </div>
