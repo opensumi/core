@@ -280,6 +280,10 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
       args.push('--encoding', options.encoding);
     }
 
+    if (options?.followSymlinks) {
+      args.push('--follow');
+    }
+
     if ((options && options.useRegExp) || (options && options.matchWholeWord)) {
       args.push('--regexp');
     } else {

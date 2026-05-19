@@ -1,6 +1,14 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { CancellationToken, IDisposable, ILogger, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
+import {
+  CancellationToken,
+  IDisposable,
+  ILogger,
+  OnEvent,
+  PreferenceService,
+  URI,
+  WithEventBus,
+} from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
@@ -38,6 +46,9 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
   @Autowired(ILogger)
   logger: ILogger;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   private workspaceChangeEvent: IDisposable;
 
   constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
@@ -67,6 +78,7 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
       excludePatterns: excludePatternOrDisregardExcludes ? [excludePatternOrDisregardExcludes] : undefined,
       limit: maxResult,
       includePatterns: [includePattern],
+      followSymlinks: this.preferenceService.get('search.followSymlinks') ?? true,
     };
     const result = await this.fileSearchService.find('', fileSearchOptions, token);
     return result;
