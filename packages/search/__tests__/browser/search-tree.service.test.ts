@@ -163,6 +163,8 @@ describe('search-tree.service.ts', () => {
           [SearchSettingId.Include]: '',
           [SearchSettingId.SearchOnType]: true,
           [SearchSettingId.SearchOnTypeDebouncePeriod]: 300,
+          [SearchSettingId.FollowSymlinks]: true,
+          onPreferenceChanged: () => Disposable.NULL,
         },
       },
     );
