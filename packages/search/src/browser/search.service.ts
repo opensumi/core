@@ -194,7 +194,6 @@ export class ContentSearchClientService extends Disposable implements IContentSe
     this.recoverUIState();
 
     this.searchOnType = this.searchPreferences[SearchSettingId.SearchOnType] || true;
-    this.UIState.isFollowSymlinks = this.searchPreferences[SearchSettingId.FollowSymlinks] ?? true;
     const timeout = this.searchPreferences[SearchSettingId.SearchOnTypeDebouncePeriod] || 300;
     this.searchDebounce = debounce(
       () => {
@@ -259,7 +258,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
       matchWholeWord: state.isWholeWord,
       useRegExp: state.isUseRegexp,
       includeIgnored: state.isIncludeIgnored,
-      followSymlinks: state.isFollowSymlinks,
+      followSymlinks: this.searchPreferences[SearchSettingId.FollowSymlinks] ?? true,
 
       include: state.include || splitOnComma(this.includeValue || ''),
       exclude: state.exclude || splitOnComma(this.excludeValue || ''),
