@@ -39,6 +39,7 @@ export class AcpPermissionRpcService extends RPCService implements IAcpPermissio
       // Call the browser-side permission bridge service
       const decision = await this.permissionBridgeService.showPermissionDialog({
         requestId: params.requestId,
+        sessionId: params.sessionId,
         title: params.title,
         kind: params.kind,
         content: params.content,

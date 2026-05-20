@@ -1155,8 +1155,13 @@ export class AcpThread extends Disposable implements IAcpThread {
 
   private async forwardPermissionRequest(params: RequestPermissionRequest, requestId: string): Promise<void> {
     try {
-      const response = await this.options.permissionCaller.requestPermission(params);
+      const sessionId = params.sessionId || this._sessionId;
+      const response = await this.options.permissionCaller.requestPermission(params, sessionId);
       // Resolve the pending request
+      const pending = this._pendingPermissionRequests.get(requestId);
+      if (pending) {
+        pending.resolve(response);
+      }
       this.respondToToolCall(requestId, response.outcome.outcome !== 'cancelled');
     } catch (err) {
       const pending = this._pendingPermissionRequests.get(requestId);

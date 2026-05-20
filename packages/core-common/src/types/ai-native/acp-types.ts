@@ -134,10 +134,10 @@ export const AcpPermissionServiceToken = Symbol('AcpPermissionServiceToken');
 /**
  * Node-side caller interface (for internal use)
  * This is what Node layer uses to call browser
- * Implemented by AcpPermissionCallerManager (multi-instance, per clientId)
+ * Implemented by AcpPermissionCallerService (singleton)
  */
 export interface IAcpPermissionCaller {
-  requestPermission(request: RequestPermissionRequest): Promise<RequestPermissionResponse>;
+  requestPermission(request: RequestPermissionRequest, sessionId: string): Promise<RequestPermissionResponse>;
   cancelRequest(requestId: string): Promise<void>;
 }
 

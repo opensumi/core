@@ -9,6 +9,7 @@ import type { PermissionOption, PermissionOptionKind } from '@opensumi/ide-core-
 
 export interface ShowPermissionDialogParams {
   requestId: string;
+  sessionId: string;
   title: string;
   kind?: string;
   content?: string;
