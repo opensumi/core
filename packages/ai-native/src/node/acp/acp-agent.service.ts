@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Deferred, Disposable, IDisposable, uuid } from '@opensumi/ide-core-common';
+import { Deferred, Disposable, IDisposable } from '@opensumi/ide-core-common';
 import {
   AvailableCommand,
   ListSessionsRequest,
@@ -18,7 +18,6 @@ import {
   AcpThreadRuntimeConfig,
 } from './acp-thread';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
-
 
 // ============================================================================
 // DI Token
@@ -250,6 +249,32 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     return thread;
   }
 
+  /**
+   * Find an idle thread or create a new one, without binding to a sessionId.
+   */
+  private async findOrCreateIdleThread(config: AgentProcessConfig): Promise<AcpThread> {
+    const idleThread = this.threadPool.find(
+      (t) => !this.hasActiveSession(t) && ['idle', 'awaiting_prompt'].includes(t.getStatus()),
+    );
+    if (idleThread) {
+      return idleThread;
+    }
+
+    if (this.threadPool.length < this.maxPoolSize) {
+      const runtimeConfig: AcpThreadRuntimeConfig = {
+        command: config.command,
+        args: config.args,
+        env: config.env,
+        cwd: config.workspaceDir,
+      };
+      const thread = this.threadFactory('', runtimeConfig);
+      this.threadPool.push(thread);
+      return thread;
+    }
+
+    throw new Error(`Thread pool is full (${this.maxPoolSize}), no idle thread available`);
+  }
+
   // -----------------------------------------------------------------------
   // createSession — with Deferred pattern (NOT setTimeout)
   // -----------------------------------------------------------------------
@@ -257,20 +282,13 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   async createSession(
     config: AgentProcessConfig,
   ): Promise<{ sessionId: string; availableCommands: AvailableCommand[] }> {
-    const sessionId = uuid();
-
-    // Check if there's an idle thread already
-    const existingThread = this.threadPool.find(
-      (t) => !this.hasActiveSession(t) && ['idle', 'awaiting_prompt'].includes(t.getStatus()),
-    );
-    const wasExisting = !!existingThread;
-
-    const thread = await this.findOrCreateThread(sessionId, config);
+    const poolSizeBefore = this.threadPool.length;
+    const thread = await this.findOrCreateIdleThread(config);
+    const wasExisting = this.threadPool.length === poolSizeBefore;
 
     const availableCommands: AvailableCommand[] = [];
     const deferred = new Deferred<void>();
 
-    // Subscribe to thread events to capture available_commands_update
     const disposable = thread.onEvent((event: AcpThreadEvent) => {
       if (event.type === 'session_notification') {
         const update = (event.notification as any).update;
@@ -281,6 +299,8 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       }
     });
 
+    let realSessionId: string | undefined;
+
     try {
       if (!thread.initialized) {
         await thread.initialize(config as any);
@@ -288,18 +308,20 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       if (thread.needsReset) {
         thread.reset();
       }
-      await thread.loadSessionOrNew({
-        sessionId,
+
+      const newSessionResponse = await thread.newSession({
         cwd: config.workspaceDir,
         mcpServers: [],
       } as any);
+
+      realSessionId = newSessionResponse.sessionId;
+      this.sessions.set(realSessionId, thread);
 
       await Promise.race([
         deferred.promise,
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Wait for commands timeout')), 5000)),
       ]);
 
-      // Deduplicate availableCommands by name
       const seen = new Set<string>();
       const deduplicated = availableCommands.filter((cmd) => {
         if (seen.has(cmd.name)) {
@@ -309,11 +331,13 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         return true;
       });
 
-      this.updateLastSessionInfo(sessionId, thread, deduplicated);
+      this.updateLastSessionInfo(realSessionId, thread, deduplicated);
 
-      return { sessionId, availableCommands: deduplicated };
+      return { sessionId: realSessionId, availableCommands: deduplicated };
     } catch (e) {
-      this.sessions.delete(sessionId);
+      if (realSessionId) {
+        this.sessions.delete(realSessionId);
+      }
       if (!wasExisting) {
         const idx = this.threadPool.indexOf(thread);
         if (idx !== -1) {
@@ -360,17 +384,23 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     );
     if (idleThread) {
       this.sessions.set(sessionId, idleThread);
-      if (!idleThread.initialized) {
-        await idleThread.initialize(config as any);
-      }
-      if (idleThread.needsReset) {
+      try {
+        if (!idleThread.initialized) {
+          await idleThread.initialize(config as any);
+        }
+        if (idleThread.needsReset) {
+          idleThread.reset();
+        }
+        await idleThread.loadSession({
+          sessionId,
+          cwd: config.workspaceDir,
+          mcpServers: [],
+        } as any);
+      } catch (e) {
+        this.sessions.delete(sessionId);
         idleThread.reset();
+        throw e;
       }
-      await idleThread.loadSession({
-        sessionId,
-        cwd: config.workspaceDir,
-        mcpServers: [],
-      } as any);
       return this.buildSessionLoadResult(sessionId, idleThread);
     }
 
@@ -380,12 +410,22 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.threadPool.push(thread);
       this.sessions.set(sessionId, thread);
 
-      await thread.initialize(config as any);
-      await thread.loadSession({
-        sessionId,
-        cwd: config.workspaceDir,
-        mcpServers: [],
-      } as any);
+      try {
+        await thread.initialize(config as any);
+        await thread.loadSession({
+          sessionId,
+          cwd: config.workspaceDir,
+          mcpServers: [],
+        } as any);
+      } catch (e) {
+        const idx = this.threadPool.indexOf(thread);
+        if (idx !== -1) {
+          this.threadPool.splice(idx, 1);
+        }
+        this.sessions.delete(sessionId);
+        await thread.dispose();
+        throw e;
+      }
       return this.buildSessionLoadResult(sessionId, thread);
     }
 
