@@ -17,8 +17,8 @@ import {
   AcpAgentServiceToken,
   AcpFileSystemHandler,
   AcpFileSystemHandlerToken,
-  AcpPermissionCallerManager,
-  AcpPermissionCallerManagerToken,
+  AcpPermissionCallerService,
+  AcpPermissionCallerServiceToken,
   AcpTerminalHandler,
   AcpTerminalHandlerToken,
   AcpThreadFactoryProvider,
@@ -52,8 +52,8 @@ export class AINativeModule extends NodeModule {
       useClass: AcpAgentService,
     },
     {
-      token: AcpPermissionCallerManagerToken,
-      useClass: AcpPermissionCallerManager,
+      token: AcpPermissionCallerServiceToken,
+      useClass: AcpPermissionCallerService,
     },
     {
       token: ToolInvocationRegistryManager,
@@ -101,7 +101,7 @@ export class AINativeModule extends NodeModule {
     },
     {
       servicePath: AcpPermissionServicePath,
-      token: AcpPermissionCallerManagerToken,
+      token: AcpPermissionCallerServiceToken,
     },
   ];
 }

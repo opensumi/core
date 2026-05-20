@@ -46,9 +46,9 @@ import {
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
-import { AcpPermissionCallerManager, AcpPermissionCallerManagerToken } from './acp-permission-caller.service';
 import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './handlers/file-system.handler';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
+import { PermissionRoutingService, PermissionRoutingServiceToken } from './permission-routing.service';
 
 // ---------------------------------------------------------------------------
 // Polyfill Web Streams for Node 16
@@ -285,7 +285,7 @@ export interface AcpThreadOptions {
   cwd: string;
   fileSystemHandler: AcpFileSystemHandler;
   terminalHandler: AcpTerminalHandler;
-  permissionCaller: AcpPermissionCallerManager;
+  permissionRouting: PermissionRoutingService;
 }
 
 // ---------------------------------------------------------------------------
@@ -326,16 +326,13 @@ export const AcpThreadFactoryToken = Symbol('AcpThreadFactoryToken');
  *     args: ['--stdio'],
  *     cwd: workspaceDir,
  *   });
- *
- * NOTE: onPermissionRequest uses AcpPermissionCallerManager as a placeholder.
- * This should be replaced with PermissionRoutingService when available (Task 4).
  */
 export const AcpThreadFactoryProvider: Provider = {
   token: AcpThreadFactoryToken,
   useFactory: (injector: Injector) => {
     const fileSystemHandler = injector.get(AcpFileSystemHandlerToken);
     const terminalHandler = injector.get(AcpTerminalHandlerToken);
-    const permissionCaller = injector.get(AcpPermissionCallerManagerToken);
+    const permissionRouting = injector.get(PermissionRoutingServiceToken);
 
     return (sessionId: string, config: AcpThreadRuntimeConfig) =>
       new AcpThread({
@@ -345,7 +342,7 @@ export const AcpThreadFactoryProvider: Provider = {
         cwd: config.cwd,
         fileSystemHandler,
         terminalHandler,
-        permissionCaller,
+        permissionRouting,
       });
   },
 };
@@ -1156,7 +1153,7 @@ export class AcpThread extends Disposable implements IAcpThread {
   private async forwardPermissionRequest(params: RequestPermissionRequest, requestId: string): Promise<void> {
     try {
       const sessionId = params.sessionId || this._sessionId;
-      const response = await this.options.permissionCaller.requestPermission(params, sessionId);
+      const response = await this.options.permissionRouting.routePermissionRequest(params, sessionId);
       // Resolve the pending request
       const pending = this._pendingPermissionRequests.get(requestId);
       if (pending) {

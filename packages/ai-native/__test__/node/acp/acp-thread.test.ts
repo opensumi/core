@@ -91,9 +91,11 @@ const mockTerminalHandler = {
   releaseSessionTerminals: jest.fn().mockResolvedValue(undefined),
 };
 
-const mockPermissionCaller = {
-  requestPermission: jest.fn().mockResolvedValue({ outcome: { outcome: 'allowed' } }),
-  cancelRequest: jest.fn().mockResolvedValue(undefined),
+const mockPermissionRouting = {
+  routePermissionRequest: jest.fn().mockResolvedValue({ outcome: { outcome: 'allowed' } }),
+  registerSession: jest.fn(),
+  unregisterSession: jest.fn(),
+  setActiveSession: jest.fn(),
 };
 
 function createMockChildProcess(pid = 12345) {
@@ -121,7 +123,7 @@ function createTestOptions(): AcpThreadOptions {
     env: {},
     fileSystemHandler: mockFileSystemHandler as any,
     terminalHandler: mockTerminalHandler as any,
-    permissionCaller: mockPermissionCaller as any,
+    permissionRouting: mockPermissionRouting as any,
   };
 }
 
