@@ -4,7 +4,7 @@
 
 **Goal:** 完全重写 Node 端 ACP 模块（仅保留 `AcpCliBackService` 不动），以 `AcpThread` 为核心实体实现 Thread AI 架构。每个 thread 维护有序的 `AgentThreadEntry` 列表（UserMessage / AssistantMessage / ToolCall），通过 SDK `ClientSideConnection` 与 Agent 进程通信。
 
-**Architecture:** 每个 WebSocket 连接通过 childInjector 获得独立的 `AcpAgentService` → `AcpConnectionService` → `AcpThread` 实例链。`AcpConnectionService` 封装进程生命周期 + SDK 连接 + `Client` 接口实现。Handler（文件、终端）为单例共享。
+**Architecture:** Browser 与 Node 通过单一 WebSocket 连接通信，RPC 调用复用在同一连接上。Node 层以 DI 单例形式管理一个 Agent 进程实例，`AcpConnectionService` 封装进程生命周期 + SDK 连接 + `Client` 接口实现。`AcpThread` 是按 Agent Session 隔离的实体（每个 Session 一个 Thread）。Handler（文件、终端）为单例共享。
 
 **Tech Stack:** TypeScript, `@agentclientprotocol/sdk` (ESM), `@opensumi/di`, Node.js 16.20.2, `stream/web`, `node-pty`
 
@@ -29,7 +29,7 @@ Browser 层 (ai-native)                    Node 层 (ai-native)                 
 │  PermissionDialog        │◄────────│  - Permission RPC           │         │               │
 │  (UI)                    │  RPC    │    (this.client)            │         │               │
 └──────────────────────────┘         │                             │         └───────────────┘
-                                     │ AcpThread (per connection)  │
+                                     │ AcpThread (per session)   │
 ┌──────────────────────────┐         │  - entries[]                │
 │ ACPSessionProvider       │  调用   │  - status                   │
 │ (ISessionProvider)        │────────►│  - onEvent                  │
@@ -190,9 +190,9 @@ AcpAgentService                     AcpThread
 
 **关键设计决策：**
 
-- 每个 WebSocket 连接通过 childInjector 获得独立的 `AcpAgentService` → `AcpConnectionService` → `AcpThread` 链
+- Browser 与 Node 间通过单一 WebSocket 连接通信，RPC 调用复用在同一连接上
 - `AcpConnectionService` 封装进程 + SDK 连接 + `Client` 接口实现，通过 `RPCService<IAcpPermissionService>` 实现权限 RPC（无静态变量）
-- `AcpThread` 是核心状态模型，维护有序的 `AgentThreadEntry[]` 列表，通过事件驱动通知 UI
+- `AcpThread` 是按 Session 隔离的核心状态模型，维护有序的 `AgentThreadEntry[]` 列表，通过事件驱动通知 UI
 - Handler（文件、终端）为单例共享，不持有连接状态
 - `AcpCliBackService` 保持不变，通过 `IAcpAgentService` 接口调用 `AcpAgentService`
 
@@ -1771,7 +1771,7 @@ npx tsc --noEmit --project configs/ts/references/tsconfig.ai-native.json
 git add packages/ai-native/src/node/acp/index.ts packages/ai-native/src/node/index.ts packages/core-common/src/types/ai-native/acp-types.ts
 git commit -m "feat(acp): update DI registration and exports for Thread AI architecture
 
-Register AcpConnectionService + AcpAgentService as per-connection providers.
+Register AcpConnectionService + AcpAgentService as singleton providers.
 Move AcpPermissionServicePath RPC to AcpConnectionService. Export AcpThread
 and related types. Remove old singleton providers."
 ```
@@ -1781,7 +1781,7 @@ and related types. Remove old singleton providers."
 ## 完成后验证
 
 1. 旧文件已删除：`acp-cli-client.service.ts`、`acp-permission-caller.service.ts`、`cli-agent-process-manager.ts`、`handlers/agent-request.handler.ts`
-2. 每个连接独立实例：`AcpConnectionService`、`AcpAgentService` 无 singleton 标记
+2. Node 层以 DI 单例管理 Agent 进程：`AcpConnectionService`、`AcpAgentService` 为 DI 单例，一个工作区一个 Agent 进程实例
 3. 不再使用静态变量：权限 RPC 通过 `AcpConnectionService extends RPCService` 的 `this.client`
 4. 不再使用 setTimeout 等待通知：通过 `onSessionUpdate` 事件 + `IDisposable` 控制
 5. `AcpCliBackService` 未修改：`IAcpAgentService` 接口签名一致
