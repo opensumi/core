@@ -10,3 +10,17 @@ export { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal
 export { AcpAgentRequestHandler, AcpAgentRequestHandlerToken } from './handlers/agent-request.handler';
 export { AcpAgentService, AcpAgentServiceToken, IAcpAgentService } from './acp-agent.service';
 export { AcpPermissionCallerManager, AcpPermissionCallerManagerToken } from './acp-permission-caller.service';
+export {
+  AcpThread,
+  AcpThreadToken,
+  IAcpThread,
+  ThreadStatus,
+  ToolCallStatus,
+  UserMessageEntry,
+  AssistantMessageEntry,
+  ToolCallEntry,
+  PlanEntry,
+  AgentThreadEntry,
+  AcpThreadEvent,
+  AcpThreadOptions,
+} from './acp-thread';
