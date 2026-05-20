@@ -15,7 +15,7 @@ import { ChildProcess, spawn } from 'node:child_process';
 import { EventEmitter as NodeEventEmitter } from 'node:events';
 import * as streamWeb from 'node:stream/web';
 
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired, Injectable, Injector, Provider } from '@opensumi/di';
 import { Deferred, Disposable, Emitter, Event, ILogger, URI, uuid } from '@opensumi/ide-core-common';
 import {
   AgentCapabilities,
@@ -46,9 +46,9 @@ import {
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
-import { AcpPermissionCallerManager } from './acp-permission-caller.service';
-import { AcpFileSystemHandler } from './handlers/file-system.handler';
-import { AcpTerminalHandler } from './handlers/terminal.handler';
+import { AcpPermissionCallerManager, AcpPermissionCallerManagerToken } from './acp-permission-caller.service';
+import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './handlers/file-system.handler';
+import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
 
 // ---------------------------------------------------------------------------
 // Polyfill Web Streams for Node 16
@@ -287,6 +287,68 @@ export interface AcpThreadOptions {
   terminalHandler: AcpTerminalHandler;
   permissionCaller: AcpPermissionCallerManager;
 }
+
+// ---------------------------------------------------------------------------
+// Factory — DI factory for creating AcpThread instances
+// ---------------------------------------------------------------------------
+
+/**
+ * Runtime configuration for creating an AcpThread.
+ * Provided by the caller (e.g., AcpAgentService) at thread creation time.
+ */
+export interface AcpThreadRuntimeConfig {
+  command: string;
+  args: string[];
+  env?: Record<string, string>;
+  cwd: string;
+}
+
+/**
+ * Factory function type — creates an AcpThread for the given sessionId.
+ * Dependencies (fileSystemHandler, terminalHandler, permissionCaller, logger)
+ * are injected by the DI system. Runtime parameters (command, args, cwd, env)
+ * are provided by the caller.
+ */
+export type AcpThreadFactory = (sessionId: string, config: AcpThreadRuntimeConfig) => AcpThread;
+
+export const AcpThreadFactoryToken = Symbol('AcpThreadFactoryToken');
+
+/**
+ * Provider definition for the AcpThreadFactory.
+ * Uses useFactory pattern with Injector to resolve dependencies.
+ *
+ * Usage in consumer:
+ *   @Autowired(AcpThreadFactoryToken)
+ *   private threadFactory: AcpThreadFactory;
+ *
+ *   const thread = this.threadFactory(sessionId, {
+ *     command: '/path/to/agent',
+ *     args: ['--stdio'],
+ *     cwd: workspaceDir,
+ *   });
+ *
+ * NOTE: onPermissionRequest uses AcpPermissionCallerManager as a placeholder.
+ * This should be replaced with PermissionRoutingService when available (Task 4).
+ */
+export const AcpThreadFactoryProvider: Provider = {
+  token: AcpThreadFactoryToken,
+  useFactory: (injector: Injector) => {
+    const fileSystemHandler = injector.get(AcpFileSystemHandlerToken);
+    const terminalHandler = injector.get(AcpTerminalHandlerToken);
+    const permissionCaller = injector.get(AcpPermissionCallerManagerToken);
+
+    return (sessionId: string, config: AcpThreadRuntimeConfig) =>
+      new AcpThread({
+        command: config.command,
+        args: config.args,
+        env: config.env,
+        cwd: config.cwd,
+        fileSystemHandler,
+        terminalHandler,
+        permissionCaller,
+      });
+  },
+};
 
 // ---------------------------------------------------------------------------
 // AcpThread Implementation

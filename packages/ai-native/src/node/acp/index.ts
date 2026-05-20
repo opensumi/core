@@ -23,4 +23,8 @@ export {
   AgentThreadEntry,
   AcpThreadEvent,
   AcpThreadOptions,
+  AcpThreadFactory,
+  AcpThreadFactoryToken,
+  AcpThreadFactoryProvider,
+  AcpThreadRuntimeConfig,
 } from './acp-thread';

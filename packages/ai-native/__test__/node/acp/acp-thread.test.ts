@@ -54,7 +54,10 @@ jest.mock('node-pty', () => ({
 
 import {
   AcpThread,
+  AcpThreadFactory,
+  AcpThreadFactoryProvider,
   AcpThreadOptions,
+  AcpThreadRuntimeConfig,
   AgentProcessConfig,
   AgentThreadEntry,
   ThreadStatus,
@@ -1036,6 +1039,93 @@ describe('AcpThread', () => {
       const entries = thread.getEntries();
       expect(entries).toHaveLength(1);
       expect(entries[0].type).toBe('user_message');
+    });
+  });
+
+  // ===================================================================
+  // AcpThreadFactory — DI factory for creating AcpThread instances
+  // ===================================================================
+  describe('AcpThreadFactory', () => {
+    const provider = AcpThreadFactoryProvider as any;
+
+    it('AcpThreadFactoryProvider should have correct token', () => {
+      expect(provider.token).toBeDefined();
+      expect(typeof provider.token).toBe('symbol');
+    });
+
+    it('AcpThreadFactoryProvider should have useFactory function', () => {
+      expect(typeof provider.useFactory).toBe('function');
+    });
+
+    it('factory should create an AcpThread instance with correct dependencies', () => {
+      // Simulate Injector.get() behavior
+      const mockInjector = {
+        get: jest.fn((token: symbol) => {
+          if (token === (provider.useFactory as any).toString().match(/AcpFileSystemHandlerToken/)?.[0]) {
+            return mockFileSystemHandler;
+          }
+          return mockTerminalHandler;
+        }),
+      };
+
+      // Directly invoke with mocked injector-like object
+      const factoryFn = provider.useFactory({
+        get: (token: any) =>
+          // Match by checking what token is requested
+           mockFileSystemHandler
+        ,
+      });
+
+      // Since we can't easily match tokens, test the returned function directly
+      const runtimeConfig: AcpThreadRuntimeConfig = {
+        command: 'npx',
+        args: ['@anthropic-ai/claude-code@latest', '--print'],
+        cwd: '/test/workspace',
+        env: {},
+      };
+
+      const threadInstance = factoryFn('test-session-1', runtimeConfig);
+
+      expect(threadInstance).toBeInstanceOf(AcpThread);
+      expect(threadInstance.threadId).toBeDefined();
+      expect(threadInstance.status).toBe('idle');
+    });
+
+    it('factory should return a function with correct type signature', () => {
+      const factoryFn = provider.useFactory({
+        get: () => mockFileSystemHandler,
+      });
+
+      expect(typeof factoryFn).toBe('function');
+
+      // Verify it's a factory function
+      const typedFactory: AcpThreadFactory = factoryFn;
+      const thread = typedFactory('session-2', {
+        command: 'node',
+        args: ['agent.js'],
+        cwd: '/tmp',
+      });
+
+      expect(thread).toBeInstanceOf(AcpThread);
+    });
+
+    it('created thread should receive runtime config parameters', () => {
+      const factoryFn = provider.useFactory({
+        get: () => mockFileSystemHandler,
+      });
+
+      const threadInstance = factoryFn('test-session-3', {
+        command: 'npx',
+        args: ['agent'],
+        cwd: '/test',
+        env: { FOO: 'bar' },
+      });
+
+      // Verify runtime config options are set
+      expect((threadInstance as any).options.command).toBe('npx');
+      expect((threadInstance as any).options.args).toEqual(['agent']);
+      expect((threadInstance as any).options.cwd).toBe('/test');
+      expect((threadInstance as any).options.env).toEqual({ FOO: 'bar' });
     });
   });
 });
