@@ -27,9 +27,6 @@ const mockLogger = {
 const mockFileSystemHandler = {
   readTextFile: jest.fn(),
   writeTextFile: jest.fn(),
-  getFileMeta: jest.fn(),
-  listDirectory: jest.fn(),
-  createDirectory: jest.fn(),
 };
 
 const mockTerminalHandler = {

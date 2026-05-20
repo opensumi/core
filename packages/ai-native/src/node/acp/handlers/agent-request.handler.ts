@@ -264,10 +264,7 @@ export class AcpAgentRequestHandler {
    */
   async handleTerminalOutput(request: TerminalOutputRequest): Promise<TerminalOutputResponse> {
     try {
-      const result = await this.terminalHandler.getTerminalOutput({
-        sessionId: request.sessionId,
-        terminalId: request.terminalId,
-      });
+      const result = await this.terminalHandler.getTerminalOutput(request.terminalId, request.sessionId);
 
       if (result.error) {
         this.logger.error(`[ACP] Terminal output error: ${result.error.message}`);
@@ -290,10 +287,7 @@ export class AcpAgentRequestHandler {
    */
   async handleWaitForTerminalExit(request: WaitForTerminalExitRequest): Promise<WaitForTerminalExitResponse> {
     try {
-      const result = await this.terminalHandler.waitForTerminalExit({
-        sessionId: request.sessionId,
-        terminalId: request.terminalId,
-      });
+      const result = await this.terminalHandler.waitForTerminalExit(request.terminalId, request.sessionId);
 
       if (result.error) {
         this.logger.error(`[ACP] Wait for exit error: ${result.error.message}`);
@@ -315,10 +309,7 @@ export class AcpAgentRequestHandler {
    */
   async handleKillTerminal(request: KillTerminalCommandRequest): Promise<KillTerminalCommandResponse> {
     try {
-      const result = await this.terminalHandler.killTerminal({
-        sessionId: request.sessionId,
-        terminalId: request.terminalId,
-      });
+      const result = await this.terminalHandler.killTerminal(request.terminalId, request.sessionId);
 
       if (result.error) {
         this.logger.error(`[ACP] Kill terminal error: ${result.error.message}`);
@@ -337,10 +328,7 @@ export class AcpAgentRequestHandler {
    */
   async handleReleaseTerminal(request: ReleaseTerminalRequest): Promise<ReleaseTerminalResponse> {
     try {
-      const result = await this.terminalHandler.releaseTerminal({
-        sessionId: request.sessionId,
-        terminalId: request.terminalId,
-      });
+      const result = await this.terminalHandler.releaseTerminal(request.terminalId, request.sessionId);
 
       if (result.error) {
         this.logger.error(`[ACP] Release terminal error: ${result.error.message}`);

@@ -19,7 +19,6 @@ export {
   UserMessageEntry,
   AssistantMessageEntry,
   ToolCallEntry,
-  PlanEntry,
   AgentThreadEntry,
   AcpThreadEvent,
   AcpThreadOptions,

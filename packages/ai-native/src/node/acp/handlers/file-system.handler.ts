@@ -3,83 +3,59 @@
  *
  * 为 CLI Agent 提供受工作区沙箱限制的文件操作能力：
  * - readTextFile：读取文本文件内容，支持按行范围截取
- * - writeTextFile：写入文本文件，写入前可通过 permissionCallback 触发用户授权
- * - getFileMeta：获取文件元信息（大小、修改时间、MIME 类型等）
- * - listDirectory：列举目录条目，支持一层递归
- * - createDirectory：创建目录（含父目录）
+ * - writeTextFile：写入文本文件
  *
  * 安全机制：所有路径均经过 resolvePath 校验，拒绝工作区外的绝对路径和路径穿越攻击。
  */
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired } from '@opensumi/di';
 import { ILogger, URI } from '@opensumi/ide-core-common';
 import { IFileService } from '@opensumi/ide-file-service';
 
 import { ACPErrorCode } from './constants';
 
-export interface FileSystemRequest {
+export const AcpFileSystemHandlerToken = Symbol('AcpFileSystemHandlerToken');
+
+export interface ReadTextFileRequest {
   sessionId: string;
   path: string;
   line?: number;
   limit?: number;
-  content?: string;
-  recursive?: boolean;
 }
 
-export const AcpFileSystemHandlerToken = Symbol('AcpFileSystemHandlerToken');
-
-export interface FileSystemResponse {
-  error?: {
-    code: number;
-    message: string;
-    data?: unknown;
-  };
+export interface ReadTextFileResponse {
   content?: string;
-  size?: number;
-  mtime?: number;
-  isFile?: boolean;
-  mimeType?: string;
-  entries?: Array<{
-    name: string;
-    isFile: boolean;
-    size: number;
-  }>;
+  error?: { message: string; code: number };
 }
 
-export type PermissionCallback = (
-  sessionId: string,
-  operation: 'write' | 'command',
-  details: {
-    path?: string;
-    command?: string;
-    title: string;
-    kind: string;
-    locations?: Array<{ path: string; line?: number }>;
-    content?: string;
-  },
-) => Promise<boolean>;
+export interface WriteTextFileRequest {
+  sessionId: string;
+  path: string;
+  content: string;
+}
 
-@Injectable()
-export class AcpFileSystemHandler {
+export interface WriteTextFileResponse {
+  error?: { message: string; code: number };
+}
+
+export interface IAcpFileSystemHandler {
+  configure(options: { workspaceDir: string; maxFileSize?: number }): void;
+  readTextFile(req: ReadTextFileRequest): Promise<ReadTextFileResponse>;
+  writeTextFile(req: WriteTextFileRequest): Promise<WriteTextFileResponse>;
+}
+
+export class AcpFileSystemHandler implements IAcpFileSystemHandler {
   @Autowired(IFileService)
   private fileService: IFileService;
 
   private logger: ILogger | null = null;
   private workspaceDir: string = '';
   private maxFileSize = 1024 * 1024; // 1MB default
-  private permissionCallback: PermissionCallback | null = null;
 
   setLogger(logger: ILogger): void {
     this.logger = logger;
-  }
-
-  /**
-   * Set the permission callback for write operations
-   */
-  setPermissionCallback(callback: PermissionCallback): void {
-    this.permissionCallback = callback;
   }
 
   configure(options: { workspaceDir: string; maxFileSize?: number }): void {
@@ -89,14 +65,13 @@ export class AcpFileSystemHandler {
     }
   }
 
-  async readTextFile(request: FileSystemRequest): Promise<FileSystemResponse> {
+  async readTextFile(request: ReadTextFileRequest): Promise<ReadTextFileResponse> {
     const filePath = this.resolvePath(request.path);
     if (!filePath) {
       return {
         error: {
           code: ACPErrorCode.SERVER_ERROR,
           message: 'Invalid path',
-          data: { path: request.path },
         },
       };
     }
@@ -111,7 +86,6 @@ export class AcpFileSystemHandler {
           error: {
             code: ACPErrorCode.RESOURCE_NOT_FOUND,
             message: 'File not found',
-            data: { uri: uri.toString() },
           },
         };
       }
@@ -122,7 +96,6 @@ export class AcpFileSystemHandler {
           error: {
             code: ACPErrorCode.SERVER_ERROR,
             message: `File too large: ${stat.size} bytes (max: ${this.maxFileSize})`,
-            data: { path: request.path, size: stat.size },
           },
         };
       }
@@ -148,53 +121,20 @@ export class AcpFileSystemHandler {
         error: {
           code: ACPErrorCode.SERVER_ERROR,
           message: error instanceof Error ? error.message : 'Failed to read file',
-          data: { path: request.path },
         },
       };
     }
   }
 
-  async writeTextFile(request: FileSystemRequest): Promise<FileSystemResponse> {
+  async writeTextFile(request: WriteTextFileRequest): Promise<WriteTextFileResponse> {
     const filePath = this.resolvePath(request.path);
     if (!filePath) {
       return {
         error: {
           code: ACPErrorCode.SERVER_ERROR,
           message: 'Invalid path',
-          data: { path: request.path },
         },
       };
-    }
-
-    if (request.content === undefined) {
-      return {
-        error: {
-          code: ACPErrorCode.INVALID_PARAMS,
-          message: 'Content is required',
-        },
-      };
-    }
-
-    // Check permission for write operation if callback is set
-    if (this.permissionCallback) {
-      const permitted = await this.permissionCallback(request.sessionId, 'write', {
-        path: filePath,
-        title: `Write file: ${path.basename(filePath)}`,
-        kind: 'write',
-        locations: [{ path: filePath }],
-        content: request.content.substring(0, 200), // Include preview
-      });
-
-      if (!permitted) {
-        this.logger?.warn(`Write permission denied for: ${filePath}`);
-        return {
-          error: {
-            code: ACPErrorCode.FORBIDDEN,
-            message: 'Write permission denied',
-            data: { path: filePath },
-          },
-        };
-      }
     }
 
     try {
@@ -225,176 +165,6 @@ export class AcpFileSystemHandler {
         error: {
           code: ACPErrorCode.SERVER_ERROR,
           message: error instanceof Error ? error.message : 'Failed to write file',
-          data: { path: request.path },
-        },
-      };
-    }
-  }
-
-  async getFileMeta(request: FileSystemRequest): Promise<FileSystemResponse> {
-    const filePath = this.resolvePath(request.path);
-    if (!filePath) {
-      return {
-        error: {
-          code: ACPErrorCode.SERVER_ERROR,
-          message: 'Invalid path',
-          data: { path: request.path },
-        },
-      };
-    }
-
-    try {
-      const uri = URI.file(filePath);
-      const stat = await this.fileService.getFileStat(uri.toString());
-
-      if (!stat) {
-        // File doesn't exist, return false for existence check
-        return {
-          isFile: false,
-          size: 0,
-          mtime: 0,
-        };
-      }
-
-      return {
-        size: stat.size,
-        mtime: stat.lastModification,
-        isFile: !stat.isDirectory,
-        mimeType: this.detectMimeType(filePath),
-      };
-    } catch (error) {
-      this.logger?.error(`Error getting file meta ${filePath}:`, error);
-      return {
-        error: {
-          code: ACPErrorCode.SERVER_ERROR,
-          message: error instanceof Error ? error.message : 'Failed to get file metadata',
-          data: { path: request.path },
-        },
-      };
-    }
-  }
-
-  async listDirectory(request: FileSystemRequest): Promise<FileSystemResponse> {
-    const dirPath = this.resolvePath(request.path);
-    if (!dirPath) {
-      return {
-        error: {
-          code: ACPErrorCode.SERVER_ERROR,
-          message: 'Invalid path',
-          data: { path: request.path },
-        },
-      };
-    }
-
-    try {
-      const uri = URI.file(dirPath);
-      const stat = await this.fileService.getFileStat(uri.toString());
-
-      if (!stat) {
-        return {
-          error: {
-            code: ACPErrorCode.RESOURCE_NOT_FOUND,
-            message: 'Directory not found',
-            data: { path: request.path },
-          },
-        };
-      }
-
-      if (!stat.isDirectory) {
-        return {
-          error: {
-            code: ACPErrorCode.INVALID_PARAMS,
-            message: 'Path is a file, not a directory',
-            data: { path: request.path },
-          },
-        };
-      }
-
-      const entries: Array<{ name: string; isFile: boolean; size: number }> = [];
-
-      if (stat.children) {
-        for (const child of stat.children) {
-          entries.push({
-            name: path.basename(child.uri.toString()),
-            isFile: !child.isDirectory,
-            size: child.size || 0,
-          });
-          const childName = path.basename(child.uri.toString());
-          // Handle recursive listing
-          if (request.recursive && child.isDirectory && child.children) {
-            for (const grandChild of child.children) {
-              entries.push({
-                name: `${childName}/${path.basename(grandChild.uri.toString())}`,
-                isFile: !grandChild.isDirectory,
-                size: grandChild.size || 0,
-              });
-            }
-          }
-        }
-      }
-
-      return {
-        entries,
-      };
-    } catch (error) {
-      this.logger?.error(`Error listing directory ${dirPath}:`, error);
-      return {
-        error: {
-          code: ACPErrorCode.SERVER_ERROR,
-          message: error instanceof Error ? error.message : 'Failed to list directory',
-          data: { path: request.path },
-        },
-      };
-    }
-  }
-
-  async createDirectory(request: FileSystemRequest): Promise<FileSystemResponse> {
-    const dirPath = this.resolvePath(request.path);
-    if (!dirPath) {
-      return {
-        error: {
-          code: ACPErrorCode.SERVER_ERROR,
-          message: 'Invalid path',
-          data: { path: request.path },
-        },
-      };
-    }
-
-    // Check permission for write operation if callback is set
-    if (this.permissionCallback) {
-      const permitted = await this.permissionCallback(request.sessionId, 'write', {
-        path: dirPath,
-        title: `Create directory: ${path.basename(dirPath)}`,
-        kind: 'createDirectory',
-        locations: [{ path: dirPath }],
-      });
-
-      if (!permitted) {
-        this.logger?.warn(`Create directory permission denied for: ${dirPath}`);
-        return {
-          error: {
-            code: ACPErrorCode.FORBIDDEN,
-            message: 'Create directory permission denied',
-            data: { path: dirPath },
-          },
-        };
-      }
-    }
-
-    try {
-      const uri = URI.file(dirPath);
-      await this.fileService.createFolder(uri.toString());
-
-      this.logger?.log(`Directory created: ${dirPath}`);
-
-      return {};
-    } catch (error) {
-      this.logger?.error(`Error creating directory ${dirPath}:`, error);
-      return {
-        error: {
-          code: ACPErrorCode.SERVER_ERROR,
-          message: error instanceof Error ? error.message : 'Failed to create directory',
-          data: { path: request.path },
         },
       };
     }

@@ -656,10 +656,10 @@ export class AcpThread extends Disposable implements IAcpThread {
       },
 
       async terminalOutput(params: any): Promise<any> {
-        const result = await self.options.terminalHandler.getTerminalOutput({
-          sessionId: params.sessionId,
-          terminalId: params.terminalId,
-        });
+        const result = await self.options.terminalHandler.getTerminalOutput(params.terminalId, params.sessionId);
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
         return {
           output: result.output || '',
           truncated: result.truncated || false,
@@ -668,33 +668,25 @@ export class AcpThread extends Disposable implements IAcpThread {
       },
 
       async waitForTerminalExit(params: any): Promise<any> {
-        const result = await self.options.terminalHandler.waitForTerminalExit({
-          sessionId: params.sessionId,
-          terminalId: params.terminalId,
-          timeout: params.timeout,
-        });
+        const result = await self.options.terminalHandler.waitForTerminalExit(params.terminalId, params.sessionId);
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
         return {
           exitCode: result.exitCode ?? null,
-          exitStatus: result.exitStatus ?? null,
         };
       },
 
       async killTerminal(params: any): Promise<any> {
-        const result = await self.options.terminalHandler.killTerminal({
-          sessionId: params.sessionId,
-          terminalId: params.terminalId,
-        });
+        const result = await self.options.terminalHandler.killTerminal(params.terminalId, params.sessionId);
         if (result.error) {
           throw new Error(result.error.message);
         }
-        return { exitCode: result.exitCode };
+        return {};
       },
 
       async releaseTerminal(params: any): Promise<any> {
-        const result = await self.options.terminalHandler.releaseTerminal({
-          sessionId: params.sessionId,
-          terminalId: params.terminalId,
-        });
+        const result = await self.options.terminalHandler.releaseTerminal(params.terminalId, params.sessionId);
         if (result.error) {
           throw new Error(result.error.message);
         }

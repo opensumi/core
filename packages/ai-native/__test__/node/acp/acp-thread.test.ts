@@ -80,9 +80,6 @@ const mockLogger = {
 const mockFileSystemHandler = {
   readTextFile: jest.fn().mockResolvedValue({ content: 'file content' }),
   writeTextFile: jest.fn().mockResolvedValue({}),
-  getFileMeta: jest.fn().mockResolvedValue({}),
-  listDirectory: jest.fn().mockResolvedValue({ entries: [] }),
-  createDirectory: jest.fn().mockResolvedValue({}),
 };
 
 const mockTerminalHandler = {
@@ -1072,8 +1069,7 @@ describe('AcpThread', () => {
       const factoryFn = provider.useFactory({
         get: (token: any) =>
           // Match by checking what token is requested
-           mockFileSystemHandler
-        ,
+          mockFileSystemHandler,
       });
 
       // Since we can't easily match tokens, test the returned function directly
