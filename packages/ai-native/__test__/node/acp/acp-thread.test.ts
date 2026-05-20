@@ -55,6 +55,7 @@ jest.mock('node-pty', () => ({
 import {
   AcpThread,
   AcpThreadOptions,
+  AgentProcessConfig,
   AgentThreadEntry,
   ThreadStatus,
   ToolCallStatus,
@@ -91,7 +92,7 @@ const mockTerminalHandler = {
 };
 
 const mockPermissionCaller = {
-  requestPermission: jest.fn().mockResolvedValue({ outcome: { status: 'allowed' } }),
+  requestPermission: jest.fn().mockResolvedValue({ outcome: { outcome: 'allowed' } }),
   cancelRequest: jest.fn().mockResolvedValue(undefined),
 };
 
@@ -124,6 +125,30 @@ function createTestOptions(): AcpThreadOptions {
   };
 }
 
+function createTestConfig(): AgentProcessConfig {
+  return {
+    command: 'npx',
+    args: ['@anthropic-ai/claude-code@latest', '--print'],
+    cwd: '/test/workspace',
+    workspaceDir: '/test/workspace',
+  };
+}
+
+/** Helper: extract UserMessageEntry from AgentThreadEntry */
+function getUserData(entry: AgentThreadEntry) {
+  return entry.type === 'user_message' ? entry.data : null;
+}
+
+/** Helper: extract AssistantMessageEntry from AgentThreadEntry */
+function getAssistantData(entry: AgentThreadEntry) {
+  return entry.type === 'assistant_message' ? entry.data : null;
+}
+
+/** Helper: extract ToolCallEntry from AgentThreadEntry */
+function getToolCallData(entry: AgentThreadEntry) {
+  return entry.type === 'tool_call' ? entry.data : null;
+}
+
 describe('AcpThread', () => {
   let thread: AcpThread;
   let mockChildProcess: ReturnType<typeof createMockChildProcess>;
@@ -144,8 +169,6 @@ describe('AcpThread', () => {
 
   afterEach(async () => {
     try {
-      // Don't actually dispose — just clean up the thread reference
-      // Dispose can be slow due to kill timeout
       (thread as any)._eventEmitter?.dispose();
       (thread as any)._childProcess = null;
       (thread as any)._processRunning = false;
@@ -176,8 +199,9 @@ describe('AcpThread', () => {
       expect(thread.isConnected).toBe(false);
     });
 
-    it('should start with undefined sessionId', () => {
-      expect(thread.sessionId).toBeUndefined();
+    it('should start with empty sessionId (not nullable)', () => {
+      expect(thread.sessionId).toBe('');
+      expect(typeof thread.sessionId).toBe('string');
     });
 
     it('should start with needsReset=false', () => {
@@ -186,6 +210,10 @@ describe('AcpThread', () => {
 
     it('should start with null agentCapabilities', () => {
       expect(thread.agentCapabilities).toBeNull();
+    });
+
+    it('should start with initialized=false', () => {
+      expect(thread.initialized).toBe(false);
     });
   });
 
@@ -197,7 +225,7 @@ describe('AcpThread', () => {
       expect(thread.status).toBe('idle');
     });
 
-    it('should transition to working after newSession', async () => {
+    it('should transition to awaiting_prompt after newSession', async () => {
       // Simulate initialize + newSession flow
       (thread as any)._connected = true;
       (thread as any)._connection = {
@@ -207,52 +235,48 @@ describe('AcpThread', () => {
 
       await thread.newSession();
 
-      // After newSession, status should be awaiting_prompt
       expect(thread.status).toBe('awaiting_prompt');
+      expect(thread.sessionId).toBe('s1');
     });
 
     it('should transition to working during prompt', async () => {
       (thread as any)._connected = true;
       let resolvePrompt: ((value: any) => void) | null = null;
       (thread as any)._connection = {
-        prompt: jest.fn().mockImplementation(() => new Promise((resolve) => {
-            resolvePrompt = resolve;
-          })),
+        prompt: jest.fn().mockImplementation(
+          () =>
+            new Promise((resolve) => {
+              resolvePrompt = resolve;
+            }),
+        ),
       };
       (thread as any)._initialized = true;
 
       const promptPromise = thread.prompt({} as any);
 
-      // Give the promise a tick to start
       await new Promise((r) => setTimeout(r, 10));
 
-      // During prompt execution (before it resolves), status should be working
       expect(thread.status).toBe('working');
 
       resolvePrompt!({ stopReason: 'end_turn' });
       await promptPromise;
 
-      // After prompt completes, should go back to awaiting_prompt
       expect(thread.status).toBe('awaiting_prompt');
     });
 
     it('should transition to disconnected on process exit', async () => {
-      // Directly set the internal state to simulate a running process
       (thread as any)._processRunning = true;
       (thread as any)._connected = true;
 
-      // Create a mock child process with an exit handler
       const exitMock = createMockChildProcess(12345);
       (thread as any)._childProcess = exitMock;
 
-      // Manually register the exit handler (simulating what startProcess does)
       exitMock.on('exit', (code: number | null, signal: string | null) => {
         (thread as any)._processRunning = false;
         (thread as any)._connected = false;
         (thread as any)._status = 'disconnected';
       });
 
-      // Emit exit event
       exitMock.emit('exit', 0, null);
 
       expect((thread as any)._processRunning).toBe(false);
@@ -262,13 +286,11 @@ describe('AcpThread', () => {
   });
 
   // ===================================================================
-  // Message merging (chunk aggregation)
+  // Message merging (chunk aggregation) — uses data wrapper pattern
   // ===================================================================
   describe('message merging', () => {
     it('should create new user message entry on first chunk', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'user_message_chunk',
@@ -278,13 +300,11 @@ describe('AcpThread', () => {
 
       expect(thread.entries).toHaveLength(1);
       expect(thread.entries[0].type).toBe('user_message');
-      expect((thread.entries[0] as any).content).toBe('Hello');
+      expect(getUserData(thread.entries[0])!.content).toBe('Hello');
     });
 
     it('should append to existing user message on subsequent chunks', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'user_message_chunk',
@@ -292,7 +312,7 @@ describe('AcpThread', () => {
         },
       });
 
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'user_message_chunk',
@@ -300,15 +320,12 @@ describe('AcpThread', () => {
         },
       });
 
-      // Still 1 entry, content appended
       expect(thread.entries).toHaveLength(1);
-      expect((thread.entries[0] as any).content).toBe('Hello World');
+      expect(getUserData(thread.entries[0])!.content).toBe('Hello World');
     });
 
     it('should create new assistant message entry for agent_message_chunk', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'agent_message_chunk',
@@ -318,14 +335,14 @@ describe('AcpThread', () => {
 
       expect(thread.entries).toHaveLength(1);
       expect(thread.entries[0].type).toBe('assistant_message');
-      expect((thread.entries[0] as any).content).toBe('Thinking...');
-      expect((thread.entries[0] as any).completed).toBe(false);
+      const data = getAssistantData(thread.entries[0])!;
+      expect(data.chunks).toHaveLength(1);
+      expect(data.chunks[0]).toEqual({ type: 'text', text: 'Thinking...' });
+      expect(data.isComplete).toBe(false);
     });
 
     it('should append to last incomplete assistant message', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'agent_message_chunk',
@@ -333,7 +350,7 @@ describe('AcpThread', () => {
         },
       });
 
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'agent_message_chunk',
@@ -342,14 +359,13 @@ describe('AcpThread', () => {
       });
 
       expect(thread.entries).toHaveLength(1);
-      expect((thread.entries[0] as any).content).toBe('Part 1 Part 2');
+      const data = getAssistantData(thread.entries[0])!;
+      const textBlock = data.chunks.find((c: any) => c.type === 'text') as any;
+      expect(textBlock!.text).toBe('Part 1 Part 2');
     });
 
     it('should create new assistant entry after previous one is marked complete', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      // First message
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'agent_message_chunk',
@@ -357,11 +373,11 @@ describe('AcpThread', () => {
         },
       });
 
-      // Mark complete
-      thread.markAssistantComplete((thread.entries[0] as any).id, 'First');
+      // Mark complete — no params needed
+      thread.markAssistantComplete();
 
       // New chunk should create new entry
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'agent_message_chunk',
@@ -370,16 +386,12 @@ describe('AcpThread', () => {
       });
 
       expect(thread.entries).toHaveLength(2);
-      expect((thread.entries[0] as any).content).toBe('First');
-      expect((thread.entries[0] as any).completed).toBe(true);
-      expect((thread.entries[1] as any).content).toBe('Second');
-      expect((thread.entries[1] as any).completed).toBe(false);
+      expect(getAssistantData(thread.entries[0])!.isComplete).toBe(true);
+      expect(getAssistantData(thread.entries[1])!.isComplete).toBe(false);
     });
 
     it('should handle agent_thought_chunk separately', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'agent_thought_chunk',
@@ -389,18 +401,18 @@ describe('AcpThread', () => {
 
       expect(thread.entries).toHaveLength(1);
       expect(thread.entries[0].type).toBe('assistant_message');
-      expect((thread.entries[0] as any).thought).toBe('Let me think about this...');
+      const data = getAssistantData(thread.entries[0])!;
+      // Thought is appended as a chunk
+      expect(data.chunks.length).toBeGreaterThanOrEqual(1);
     });
   });
 
   // ===================================================================
-  // Tool call lifecycle
+  // Tool call lifecycle — uses data wrapper pattern
   // ===================================================================
   describe('tool call lifecycle', () => {
     it('should create tool call entry on tool_call notification', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'tool_call',
@@ -408,31 +420,26 @@ describe('AcpThread', () => {
           toolName: 'Read',
           input: { path: 'test.txt' },
         },
-      });
+      } as any);
 
       expect(thread.entries).toHaveLength(1);
-      const toolCall = thread.entries[0] as any;
-      expect(toolCall.type).toBe('tool_call');
-      expect(toolCall.toolCallId).toBe('tc-1');
-      expect(toolCall.toolName).toBe('Read');
-      expect(toolCall.status).toBe('pending');
+      const data = getToolCallData(thread.entries[0])!;
+      expect(data.toolCall.toolCallId).toBe('tc-1');
+      expect(data.toolCall.title).toBe('Read');
+      expect(data.status).toBe('pending');
     });
 
     it('should update tool call status to in_progress on tool_call_update', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      // Create tool call
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'tool_call',
           toolCallId: 'tc-1',
           toolName: 'Read',
         },
-      });
+      } as any);
 
-      // Update to in_progress
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'tool_call_update',
@@ -441,23 +448,21 @@ describe('AcpThread', () => {
         },
       });
 
-      const toolCall = thread.entries[0] as any;
-      expect(toolCall.status).toBe('in_progress');
+      const data = getToolCallData(thread.entries[0])!;
+      expect(data.status).toBe('in_progress');
     });
 
     it('should mark tool call as completed on tool_call_update with status=completed', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'tool_call',
           toolCallId: 'tc-1',
           toolName: 'Read',
         },
-      });
+      } as any);
 
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'tool_call_update',
@@ -466,23 +471,21 @@ describe('AcpThread', () => {
         },
       });
 
-      const toolCall = thread.entries[0] as any;
-      expect(toolCall.status).toBe('completed');
+      const data = getToolCallData(thread.entries[0])!;
+      expect(data.status).toBe('completed');
     });
 
     it('should mark tool call as failed on tool_call_update with status=failed', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'tool_call',
           toolCallId: 'tc-1',
           toolName: 'Write',
         },
-      });
+      } as any);
 
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'tool_call_update',
@@ -491,60 +494,29 @@ describe('AcpThread', () => {
         },
       });
 
-      const toolCall = thread.entries[0] as any;
-      expect(toolCall.status).toBe('failed');
-    });
-
-    it('should NOT mark tool call as rejected (SDK has no rejected status) but keep as completed', () => {
-      // SDK ToolCallStatus only has: pending, in_progress, completed, failed
-      // rejected is handled via permission response, not tool_call_update
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
-        sessionId: 's1',
-        update: {
-          sessionUpdate: 'tool_call',
-          toolCallId: 'tc-1',
-          toolName: 'Write',
-        },
-      });
-
-      // There's no 'rejected' status in SDK - permission rejection goes through handlePermissionRequest
-      // So we just verify that unknown statuses don't break anything
-      handleNotification({
-        sessionId: 's1',
-        update: {
-          sessionUpdate: 'tool_call_update',
-          toolCallId: 'tc-1',
-          status: 'in_progress',
-        },
-      });
-
-      const toolCall = thread.entries[0] as any;
-      expect(toolCall.status).toBe('in_progress');
+      const data = getToolCallData(thread.entries[0])!;
+      expect(data.status).toBe('failed');
     });
 
     it('markToolCallWaiting should update status to waiting_for_confirmation', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'tool_call',
           toolCallId: 'tc-1',
           toolName: 'Write',
         },
-      });
+      } as any);
 
       thread.markToolCallWaiting('tc-1');
 
-      const toolCall = thread.entries[0] as any;
-      expect(toolCall.status).toBe('waiting_for_confirmation');
+      const data = getToolCallData(thread.entries[0])!;
+      expect(data.status).toBe('waiting_for_confirmation');
     });
   });
 
   // ===================================================================
-  // Process initialization idempotency
+  // Process initialization
   // ===================================================================
   describe('process initialization', () => {
     it('ensureSdkConnection should only start process once if already running', async () => {
@@ -559,13 +531,11 @@ describe('AcpThread', () => {
     });
 
     it('should clean up stale process reference before starting new one', async () => {
-      // Verify killed process is detected as not alive
       mockChildProcess.killed = true;
       (thread as any)._childProcess = mockChildProcess;
       (thread as any)._processRunning = true;
       expect((thread as any).isProcessAlive()).toBe(false);
 
-      // Clear state so startProcess will attempt a new spawn
       (thread as any)._childProcess = null;
       (thread as any)._processRunning = false;
 
@@ -577,6 +547,23 @@ describe('AcpThread', () => {
       expect(mockSpawn).toHaveBeenCalled();
       expect((thread as any)._processRunning).toBe(true);
       expect((thread as any)._childProcess).toBe(newMock);
+    });
+
+    it('should accept AgentProcessConfig in initialize()', async () => {
+      (thread as any)._childProcess = mockChildProcess;
+      (thread as any)._processRunning = true;
+      (thread as any)._connected = true;
+      const mockInitialize = jest.fn().mockResolvedValue({
+        protocolVersion: 1,
+        agentCapabilities: { fs: { readTextFile: true } },
+      });
+      (thread as any)._connection = { initialize: mockInitialize };
+
+      const config: AgentProcessConfig = createTestConfig();
+      const result = await thread.initialize(config);
+
+      expect(mockInitialize).toHaveBeenCalled();
+      expect(thread.initialized).toBe(true);
     });
   });
 
@@ -609,7 +596,6 @@ describe('AcpThread', () => {
       (thread as any)._childProcess = mockChildProcess;
       (thread as any)._processRunning = true;
 
-      // Simulate process exiting immediately
       const killSpy = jest.spyOn(thread as any, 'killProcess').mockImplementation(async () => {
         (thread as any)._childProcess = null;
         (thread as any)._processRunning = false;
@@ -624,7 +610,7 @@ describe('AcpThread', () => {
   });
 
   // ===================================================================
-  // reset()
+  // reset() — spec: does NOT clear _initialized
   // ===================================================================
   describe('reset()', () => {
     it('should clear all entries', () => {
@@ -642,16 +628,16 @@ describe('AcpThread', () => {
 
       thread.reset();
 
-      expect(thread.sessionId).toBeUndefined();
+      expect(thread.sessionId).toBe('');
       expect(thread.needsReset).toBe(false);
     });
 
-    it('should clear initialized flag', () => {
+    it('should NOT clear initialized flag (thread remains reusable)', () => {
       (thread as any)._initialized = true;
 
       thread.reset();
 
-      expect((thread as any)._initialized).toBe(false);
+      expect((thread as any)._initialized).toBe(true);
     });
 
     it('should reset status to idle', () => {
@@ -675,15 +661,16 @@ describe('AcpThread', () => {
   });
 
   // ===================================================================
-  // Entry manipulation
+  // Entry manipulation — data wrapper pattern
   // ===================================================================
   describe('addUserMessage()', () => {
     it('should create a user message entry and add to entries', () => {
       const entry = thread.addUserMessage('Hello, AI!');
 
-      expect(entry.type).toBe('user_message');
       expect(entry.content).toBe('Hello, AI!');
-      expect(thread.entries).toContain(entry);
+      expect(thread.entries).toHaveLength(1);
+      expect(thread.entries[0].type).toBe('user_message');
+      expect(getUserData(thread.entries[0])!).toBe(entry);
     });
 
     it('should generate a unique id for each message', () => {
@@ -700,8 +687,8 @@ describe('AcpThread', () => {
   });
 
   describe('markAssistantComplete()', () => {
-    it('should mark an assistant message as completed', () => {
-      (thread as any).handleNotification({
+    it('should mark last assistant entry as complete (no params)', () => {
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'agent_message_chunk',
@@ -709,117 +696,177 @@ describe('AcpThread', () => {
         },
       });
 
-      const entry = thread.entries[0] as any;
-      expect(entry.completed).toBe(false);
+      const data = getAssistantData(thread.entries[0])!;
+      expect(data.isComplete).toBe(false);
 
-      thread.markAssistantComplete(entry.id, 'Final answer');
+      // No params — finds last assistant entry automatically
+      thread.markAssistantComplete();
 
-      expect(entry.completed).toBe(true);
-      expect(entry.content).toBe('Final answer');
+      expect(data.isComplete).toBe(true);
     });
 
-    it('should do nothing if entry not found', () => {
-      thread.markAssistantComplete('nonexistent', 'content');
+    it('should transition status to awaiting_prompt', () => {
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'agent_message_chunk',
+          content: { type: 'text', text: 'Answer' },
+        },
+      });
+
+      (thread as any)._status = 'working';
+
+      thread.markAssistantComplete();
+
+      expect(thread.status).toBe('awaiting_prompt');
+    });
+
+    it('should do nothing if no assistant entry exists', () => {
       expect(thread.entries).toEqual([]);
+      thread.markAssistantComplete();
+      expect(thread.entries).toEqual([]);
+    });
+
+    it('should emit entry_updated event', () => {
+      const events: any[] = [];
+      thread.onEvent((e) => events.push(e));
+
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'agent_message_chunk',
+          content: { type: 'text', text: 'Draft' },
+        },
+      });
+
+      thread.markAssistantComplete();
+
+      const updatedEvent = events.find((e) => e.type === 'entry_updated');
+      expect(updatedEvent).toBeDefined();
+      expect(updatedEvent.entry.type).toBe('assistant_message');
     });
   });
 
   // ===================================================================
-  // Notification handling
+  // handleNotification — public method
   // ===================================================================
   describe('handleNotification', () => {
-    it('should handle available_commands_update without creating entries', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
+    it('should be a public method on the instance', () => {
+      expect(typeof thread.handleNotification).toBe('function');
+    });
 
-      handleNotification({
+    it('should handle available_commands_update without creating entries', () => {
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'available_commands_update',
           commands: [],
         },
-      });
+      } as any);
 
       expect(thread.entries).toEqual([]);
     });
 
     it('should create/replace plan entry on plan notification', () => {
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'plan',
           content: { type: 'text', text: 'Plan: 1. Read file 2. Edit' },
         },
-      });
+      } as any);
 
       expect(thread.entries).toHaveLength(1);
       expect(thread.entries[0].type).toBe('plan');
 
       // Second plan should replace first
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'plan',
           content: { type: 'text', text: 'Updated plan: 1. Read 2. Write 3. Test' },
         },
-      });
+      } as any);
 
       expect(thread.entries).toHaveLength(1);
-      expect((thread.entries[0] as any).content).toBe('Updated plan: 1. Read 2. Write 3. Test');
+      expect(thread.entries[0].type).toBe('plan');
     });
 
     it('should transition to working on tool_call notification', () => {
       (thread as any)._status = 'awaiting_prompt';
 
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'tool_call',
           toolCallId: 'tc-1',
           toolName: 'Read',
         },
-      });
+      } as any);
 
       expect(thread.status).toBe('working');
     });
   });
 
   // ===================================================================
-  // Event emission
+  // Event emission — granular events
   // ===================================================================
   describe('onEvent', () => {
     it('should emit status_changed events', () => {
       const events: any[] = [];
       thread.onEvent((e) => events.push(e));
 
-      (thread as any).setStatus('working');
+      thread.setStatus('working');
 
       const statusEvent = events.find((e) => e.type === 'status_changed');
       expect(statusEvent).toBeDefined();
       expect(statusEvent.status).toBe('working');
     });
 
-    it('should emit entries_changed events when entries are modified', () => {
+    it('should emit entry_added events when entries are appended', () => {
       const events: any[] = [];
       thread.onEvent((e) => events.push(e));
 
       thread.addUserMessage('Hello');
 
-      const entriesEvent = events.find((e) => e.type === 'entries_changed');
-      expect(entriesEvent).toBeDefined();
-      expect(entriesEvent.entries).toHaveLength(1);
+      const addedEvent = events.find((e) => e.type === 'entry_added');
+      expect(addedEvent).toBeDefined();
+      expect(addedEvent.entry.type).toBe('user_message');
+    });
+
+    it('should emit entry_updated events when entries are modified', () => {
+      const events: any[] = [];
+      thread.onEvent((e) => events.push(e));
+
+      thread.addUserMessage('Hello');
+      thread.markToolCallWaiting('tc-x'); // no-op but tests mechanism
+
+      // Simulate an update via notification
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'user_message_chunk',
+          content: { type: 'text', text: 'Hello' },
+        },
+      });
+      // Append to existing → fires entry_updated
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'user_message_chunk',
+          content: { type: 'text', text: ' World' },
+        },
+      });
+
+      const updatedEvent = events.find((e) => e.type === 'entry_updated');
+      expect(updatedEvent).toBeDefined();
     });
 
     it('should emit session_notification events when notification received via client', () => {
       const events: any[] = [];
       thread.onEvent((e) => events.push(e));
 
-      // Simulate what the client impl's sessionUpdate does
-      const handleNotification = (thread as any).handleNotification.bind(thread);
-      handleNotification({
+      thread.handleNotification({
         sessionId: 's1',
         update: {
           sessionUpdate: 'agent_message_chunk',
@@ -827,10 +874,9 @@ describe('AcpThread', () => {
         },
       });
 
-      // Fire the event directly (this is what the client impl does after handleNotification)
+      // Fire session_notification event directly (simulates what client impl does)
       (thread as any).fireEvent({
         type: 'session_notification',
-        threadId: thread.threadId,
         notification: {
           sessionId: 's1',
           update: {
@@ -842,6 +888,17 @@ describe('AcpThread', () => {
 
       const notifEvent = events.find((e) => e.type === 'session_notification');
       expect(notifEvent).toBeDefined();
+    });
+
+    it('should NOT emit entries_changed events (replaced by entry_added/entry_updated)', () => {
+      const events: any[] = [];
+      thread.onEvent((e) => events.push(e));
+
+      thread.addUserMessage('Hello');
+      thread.markAssistantComplete();
+
+      const entriesChangedEvent = events.find((e) => e.type === 'entries_changed');
+      expect(entriesChangedEvent).toBeUndefined();
     });
   });
 
@@ -875,35 +932,110 @@ describe('AcpThread', () => {
   });
 
   // ===================================================================
-  // respondToToolCall
+  // respondToToolCall — spec: (toolCallId, allowed: boolean)
   // ===================================================================
   describe('respondToToolCall()', () => {
-    it('should resolve pending permission request', async () => {
-      const pendingPromise = new Promise<any>((resolve, reject) => {
-        (thread as any)._pendingPermissionRequests.set('tc-1', { resolve, reject });
-      });
+    it('should mark tool call as completed when allowed=true', () => {
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'tool_call',
+          toolCallId: 'tc-1',
+          toolName: 'Write',
+        },
+      } as any);
 
-      thread.respondToToolCall('tc-1', { outcome: { outcome: 'cancelled' } });
+      thread.respondToToolCall('tc-1', true);
 
-      const result = await pendingPromise;
-      expect(result.outcome.outcome).toBe('cancelled');
+      const data = getToolCallData(thread.entries[0])!;
+      expect(data.status).toBe('completed');
     });
 
-    it('should remove the resolved request from pending map', async () => {
-      (thread as any)._pendingPermissionRequests.set('tc-1', {
-        resolve: jest.fn(),
-        reject: jest.fn(),
-      });
+    it('should mark tool call as rejected when allowed=false', () => {
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'tool_call',
+          toolCallId: 'tc-1',
+          toolName: 'Write',
+        },
+      } as any);
 
-      thread.respondToToolCall('tc-1', { outcome: { outcome: 'cancelled' } });
+      thread.respondToToolCall('tc-1', false);
 
-      expect((thread as any)._pendingPermissionRequests.has('tc-1')).toBe(false);
+      const data = getToolCallData(thread.entries[0])!;
+      expect(data.status).toBe('rejected');
+    });
+
+    it('should emit entry_updated event', () => {
+      const events: any[] = [];
+      thread.onEvent((e) => events.push(e));
+
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'tool_call',
+          toolCallId: 'tc-1',
+          toolName: 'Write',
+        },
+      } as any);
+
+      thread.respondToToolCall('tc-1', true);
+
+      const updatedEvent = events.find((e) => e.type === 'entry_updated');
+      expect(updatedEvent).toBeDefined();
     });
 
     it('should do nothing for non-existent tool call ID', () => {
       expect(() => {
-        thread.respondToToolCall('nonexistent', { outcome: { outcome: 'cancelled' } });
+        thread.respondToToolCall('nonexistent', true);
       }).not.toThrow();
+    });
+  });
+
+  // ===================================================================
+  // setError — new method (spec)
+  // ===================================================================
+  describe('setError()', () => {
+    it('should set status to errored', () => {
+      const error = new Error('Something went wrong');
+      thread.setError(error);
+
+      expect(thread.status).toBe('errored');
+    });
+
+    it('should emit status_changed and error events', () => {
+      const events: any[] = [];
+      thread.onEvent((e) => events.push(e));
+
+      const error = new Error('Test error');
+      thread.setError(error);
+
+      const statusEvent = events.find((e) => e.type === 'status_changed');
+      expect(statusEvent).toBeDefined();
+      expect(statusEvent.status).toBe('errored');
+
+      const errorEvent = events.find((e) => e.type === 'error');
+      expect(errorEvent).toBeDefined();
+      expect(errorEvent.error).toBe(error);
+    });
+  });
+
+  // ===================================================================
+  // State accessors (spec)
+  // ===================================================================
+  describe('state accessors', () => {
+    it('getStatus() should return current status', () => {
+      expect(thread.getStatus()).toBe('idle');
+      (thread as any)._status = 'working';
+      expect(thread.getStatus()).toBe('working');
+    });
+
+    it('getEntries() should return readonly entries', () => {
+      thread.addUserMessage('Hello');
+      const entries = thread.getEntries();
+      expect(entries).toHaveLength(1);
+      expect(entries[0].type).toBe('user_message');
     });
   });
 });

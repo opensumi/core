@@ -20,6 +20,7 @@ import { Deferred, Disposable, Emitter, Event, ILogger, URI, uuid } from '@opens
 import {
   AgentCapabilities,
   CancelNotification,
+  ContentBlock,
   InitializeRequest,
   InitializeResponse,
   ListSessionsRequest,
@@ -30,6 +31,7 @@ import {
   NewSessionResponse,
   PermissionOption,
   PermissionOptionKind,
+  Plan,
   PromptRequest,
   PromptResponse,
   ReadTextFileRequest,
@@ -37,6 +39,7 @@ import {
   RequestPermissionRequest,
   RequestPermissionResponse,
   SessionNotification,
+  ToolCall,
   ToolCallUpdate,
   WriteTextFileRequest,
   WriteTextFileResponse,
@@ -100,8 +103,11 @@ function nodeWritableToWebStream(writable: NodeJS.WritableStream): WritableStrea
     write(chunk) {
       return new Promise<void>((resolve, reject) => {
         writable.write(chunk, (err) => {
-          if (err) {reject(err);}
-          else {resolve();}
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
         });
       });
     },
@@ -146,54 +152,62 @@ export type ToolCallStatus =
   | 'canceled';
 
 // ---------------------------------------------------------------------------
-// Entry types
+// Entry data types — use SDK types for content, add local tracking fields
 // ---------------------------------------------------------------------------
+
+/** User message — simplified to string (SDK's PromptRequest.prompt is ContentBlock[]) */
 export interface UserMessageEntry {
-  type: 'user_message';
   id: string;
   content: string;
   timestamp: number;
 }
 
+/** Assistant message — chunks use SDK ContentBlock[], local isComplete flag */
 export interface AssistantMessageEntry {
-  type: 'assistant_message';
-  id: string;
-  content: string;
-  thought?: string;
-  timestamp: number;
-  completed: boolean;
+  chunks: ContentBlock[];
+  isComplete: boolean;
+  messageId?: string;
 }
 
+/** Tool Call — toolCall uses SDK ToolCall type, local status + result */
 export interface ToolCallEntry {
-  type: 'tool_call';
-  id: string;
-  toolCallId: string;
-  toolName: string;
-  input?: string;
+  toolCall: ToolCall;
   status: ToolCallStatus;
-  result?: string;
-  timestamp: number;
+  result?: unknown;
 }
 
-export interface PlanEntry {
-  type: 'plan';
-  id: string;
-  content: string;
-  timestamp: number;
-}
+/** Plan — SDK type directly, no wrapper needed */
+// Plan = { entries: Array<{ content: string; completed: boolean }> }
 
-export type AgentThreadEntry = UserMessageEntry | AssistantMessageEntry | ToolCallEntry | PlanEntry;
+/** AgentThreadEntry — discriminated union with data wrapper pattern */
+export type AgentThreadEntry =
+  | { type: 'user_message'; data: UserMessageEntry }
+  | { type: 'assistant_message'; data: AssistantMessageEntry }
+  | { type: 'tool_call'; data: ToolCallEntry }
+  | { type: 'plan'; data: Plan };
 
 // ---------------------------------------------------------------------------
-// Event types
+// Event types — granular events (not bulk entries_changed)
 // ---------------------------------------------------------------------------
-export interface AcpThreadEvent {
-  type: 'entries_changed' | 'status_changed' | 'session_notification' | 'process_started' | 'process_stopped' | 'error';
-  threadId: string;
-  entries?: AgentThreadEntry[];
-  status?: ThreadStatus;
-  notification?: SessionNotification;
-  error?: Error;
+export type AcpThreadEvent =
+  | { type: 'entry_added'; entry: AgentThreadEntry }
+  | { type: 'entry_updated'; entry: AgentThreadEntry }
+  | { type: 'status_changed'; status: ThreadStatus }
+  | { type: 'session_notification'; notification: SessionNotification }
+  | { type: 'error'; error: Error }
+  | { type: 'process_started' }
+  | { type: 'process_stopped' };
+
+// ---------------------------------------------------------------------------
+// AgentProcessConfig — initialize parameter (spec)
+// ---------------------------------------------------------------------------
+export interface AgentProcessConfig {
+  command: string;
+  args: string[];
+  env?: Record<string, string>;
+  cwd: string;
+  workspaceDir: string;
+  [key: string]: unknown;
 }
 
 // ---------------------------------------------------------------------------
@@ -205,20 +219,23 @@ export interface IAcpThread {
   /** Unique thread identifier */
   readonly threadId: string;
 
+  /** Current session ID (bound after newSession/loadSession) */
+  readonly sessionId: string;
+
   /** Current thread status */
   readonly status: ThreadStatus;
 
   /** Ordered list of thread entries */
-  readonly entries: AgentThreadEntry[];
+  readonly entries: ReadonlyArray<AgentThreadEntry>;
+
+  /** Whether the thread has been initialized */
+  readonly initialized: boolean;
 
   /** Whether the agent process is running */
   readonly isProcessRunning: boolean;
 
   /** Whether the SDK connection is established */
   readonly isConnected: boolean;
-
-  /** Current session ID (if bound) */
-  readonly sessionId: string | undefined;
 
   /** Whether the thread was bound to a session and needs reset() before reuse */
   readonly needsReset: boolean;
@@ -230,7 +247,7 @@ export interface IAcpThread {
   readonly onEvent: Event<AcpThreadEvent>;
 
   // Process lifecycle
-  initialize(): Promise<InitializeResponse>;
+  initialize(config: AgentProcessConfig): Promise<InitializeResponse>;
   newSession(params?: Omit<NewSessionRequest, 'sessionId'>): Promise<NewSessionResponse>;
   loadSession(params: LoadSessionRequest): Promise<LoadSessionResponse>;
   loadSessionOrNew(params: LoadSessionRequest): Promise<NewSessionResponse | LoadSessionResponse>;
@@ -238,13 +255,20 @@ export interface IAcpThread {
   cancel(params: CancelNotification): Promise<void>;
   listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse>;
 
-  // Entry manipulation
-  addUserMessage(content: string): UserMessageEntry;
-  markAssistantComplete(entryId: string, content: string): void;
+  // State management (internal + testing)
+  getEntries(): ReadonlyArray<AgentThreadEntry>;
+  getStatus(): ThreadStatus;
+  setStatus(status: ThreadStatus): void;
+  setError(error: Error): void;
+  handleNotification(notification: SessionNotification): void;
 
-  // Tool call state
+  // Message manipulation
+  addUserMessage(content: string): UserMessageEntry;
+  markAssistantComplete(): void;
+
+  // ToolCall interaction
   markToolCallWaiting(toolCallId: string): void;
-  respondToToolCall(toolCallId: string, response: RequestPermissionResponse): void;
+  respondToToolCall(toolCallId: string, allowed: boolean): void;
 
   // Lifecycle
   reset(): void;
@@ -273,7 +297,7 @@ export class AcpThread extends Disposable implements IAcpThread {
   // State
   private _status: ThreadStatus = 'idle';
   private _entries: AgentThreadEntry[] = [];
-  private _sessionId: string | undefined;
+  private _sessionId: string = '';
   private _needsReset = false;
   private _agentCapabilities: AgentCapabilities | null = null;
   private _initialized = false;
@@ -303,8 +327,12 @@ export class AcpThread extends Disposable implements IAcpThread {
     return this._status;
   }
 
-  get entries(): AgentThreadEntry[] {
+  get entries(): ReadonlyArray<AgentThreadEntry> {
     return this._entries;
+  }
+
+  get initialized(): boolean {
+    return this._initialized;
   }
 
   get isProcessRunning(): boolean {
@@ -315,7 +343,7 @@ export class AcpThread extends Disposable implements IAcpThread {
     return this._connected;
   }
 
-  get sessionId(): string | undefined {
+  get sessionId(): string {
     return this._sessionId;
   }
 
@@ -329,6 +357,31 @@ export class AcpThread extends Disposable implements IAcpThread {
 
   constructor(private readonly options: AcpThreadOptions) {
     super();
+  }
+
+  // -----------------------------------------------------------------------
+  // Public API — state accessors (spec)
+  // -----------------------------------------------------------------------
+  getEntries(): ReadonlyArray<AgentThreadEntry> {
+    return this._entries;
+  }
+
+  getStatus(): ThreadStatus {
+    return this._status;
+  }
+
+  setStatus(status: ThreadStatus): void {
+    if (this._status === status) {
+      return;
+    }
+    this._status = status;
+    this.fireEvent({ type: 'status_changed', status } as AcpThreadEvent);
+  }
+
+  setError(error: Error): void {
+    this._status = 'errored';
+    this.fireEvent({ type: 'status_changed', status: 'errored' } as AcpThreadEvent);
+    this.fireEvent({ type: 'error', error } as AcpThreadEvent);
   }
 
   // -----------------------------------------------------------------------
@@ -380,26 +433,35 @@ export class AcpThread extends Disposable implements IAcpThread {
         this._processRunning = false;
         this._connected = false;
         this.setStatus('disconnected');
+        this.fireEvent({ type: 'process_stopped' } as AcpThreadEvent);
       });
 
       setTimeout(() => {
-        if (startupError) {return;}
+        if (startupError) {
+          return;
+        }
         if (!childProcess.pid) {
           reject(new Error(`Failed to get PID for agent process: ${this.options.command}`));
           return;
         }
         this._childProcess = childProcess;
         this._processRunning = true;
-        this.fireEvent({ type: 'process_started', threadId: this.threadId });
+        this.fireEvent({ type: 'process_started' } as AcpThreadEvent);
         resolve();
       }, PROCESS_CONFIG.STARTUP_TIMEOUT_MS);
     });
   }
 
   private isProcessAlive(): boolean {
-    if (!this._childProcess) {return false;}
-    if (this._childProcess.killed || this._childProcess.exitCode !== null) {return false;}
-    if (!this._childProcess.pid) {return false;}
+    if (!this._childProcess) {
+      return false;
+    }
+    if (this._childProcess.killed || this._childProcess.exitCode !== null) {
+      return false;
+    }
+    if (!this._childProcess.pid) {
+      return false;
+    }
     try {
       process.kill(this._childProcess.pid, 0);
       return true;
@@ -459,7 +521,9 @@ export class AcpThread extends Disposable implements IAcpThread {
   // SDK connection
   // -----------------------------------------------------------------------
   private async ensureSdkConnection(): Promise<void> {
-    if (this._connection) {return;}
+    if (this._connection) {
+      return;
+    }
 
     await this.startProcess();
 
@@ -492,9 +556,8 @@ export class AcpThread extends Disposable implements IAcpThread {
         self.handleNotification(params);
         self.fireEvent({
           type: 'session_notification',
-          threadId: self.threadId,
           notification: params,
-        });
+        } as AcpThreadEvent);
       },
 
       async readTextFile(params: ReadTextFileRequest): Promise<ReadTextFileResponse> {
@@ -587,12 +650,12 @@ export class AcpThread extends Disposable implements IAcpThread {
   }
 
   // -----------------------------------------------------------------------
-  // Public API — initialize
+  // Public API — initialize (spec: accepts AgentProcessConfig)
   // -----------------------------------------------------------------------
-  async initialize(params?: InitializeRequest): Promise<InitializeResponse> {
+  async initialize(config: AgentProcessConfig): Promise<InitializeResponse> {
     await this.ensureSdkConnection();
 
-    const initParams: InitializeRequest = params || {
+    const initParams: InitializeRequest = {
       protocolVersion: ACP_PROTOCOL_VERSION,
       clientCapabilities: {
         fs: {
@@ -608,7 +671,13 @@ export class AcpThread extends Disposable implements IAcpThread {
       },
     };
 
-    initParams.protocolVersion = initParams.protocolVersion || ACP_PROTOCOL_VERSION;
+    // Override with config if provided
+    if (config.env) {
+      initParams.clientCapabilities = {
+        ...initParams.clientCapabilities,
+        ...((config as any).clientCapabilities || {}),
+      };
+    }
 
     const response: InitializeResponse = await this._connection.initialize(initParams);
 
@@ -682,7 +751,9 @@ export class AcpThread extends Disposable implements IAcpThread {
   }
 
   async cancel(params: CancelNotification): Promise<void> {
-    if (!this._connection) {return;}
+    if (!this._connection) {
+      return;
+    }
     await this._connection.cancel(params);
   }
 
@@ -696,24 +767,34 @@ export class AcpThread extends Disposable implements IAcpThread {
   // -----------------------------------------------------------------------
   addUserMessage(content: string): UserMessageEntry {
     const entry: UserMessageEntry = {
-      type: 'user_message',
       id: uuid(),
       content,
       timestamp: Date.now(),
     };
-    this._entries.push(entry);
-    this.fireEntriesChanged();
+    const threadEntry: AgentThreadEntry = { type: 'user_message', data: entry };
+    this._entries.push(threadEntry);
+    this.fireEntryAdded(threadEntry);
     return entry;
   }
 
-  markAssistantComplete(entryId: string, content: string): void {
-    const entry = this._entries.find(
-      (e): e is AssistantMessageEntry => e.type === 'assistant_message' && e.id === entryId,
-    );
-    if (entry) {
-      entry.content = content;
-      entry.completed = true;
-      this.fireEntriesChanged();
+  /**
+   * Mark the last assistant entry as complete.
+   * No parameters — finds the last assistant entry automatically.
+   * Transitions status to awaiting_prompt.
+   * Fires entry_updated + status_changed.
+   */
+  markAssistantComplete(): void {
+    // Find last assistant_message entry
+    for (let i = this._entries.length - 1; i >= 0; i--) {
+      const e = this._entries[i];
+      if (e.type === 'assistant_message') {
+        e.data.isComplete = true;
+        this.fireEntryUpdated(e);
+        if (this._status !== 'awaiting_prompt') {
+          this.setStatus('awaiting_prompt');
+        }
+        return;
+      }
     }
   }
 
@@ -721,29 +802,45 @@ export class AcpThread extends Disposable implements IAcpThread {
   // Tool call state management
   // -----------------------------------------------------------------------
   markToolCallWaiting(toolCallId: string): void {
-    const entry = this._entries.find((e): e is ToolCallEntry => e.type === 'tool_call' && e.toolCallId === toolCallId);
+    const entry = this._entries.find(
+      (e): e is Extract<AgentThreadEntry, { type: 'tool_call' }> =>
+        e.type === 'tool_call' && e.data.toolCall.toolCallId === toolCallId,
+    );
     if (entry) {
-      entry.status = 'waiting_for_confirmation';
-      this.fireEntriesChanged();
+      entry.data.status = 'waiting_for_confirmation';
+      this.fireEntryUpdated(entry);
     }
   }
 
-  respondToToolCall(toolCallId: string, response: RequestPermissionResponse): void {
-    const pending = this._pendingPermissionRequests.get(toolCallId);
-    if (pending) {
-      pending.resolve(response);
-      this._pendingPermissionRequests.delete(toolCallId);
+  /**
+   * Respond to a tool call permission request.
+   * Updates the ToolCallEntry.status to 'completed' if allowed, 'rejected' if not.
+   * Fires entry_updated.
+   */
+  respondToToolCall(toolCallId: string, allowed: boolean): void {
+    const entry = this._entries.find(
+      (e): e is Extract<AgentThreadEntry, { type: 'tool_call' }> =>
+        e.type === 'tool_call' && e.data.toolCall.toolCallId === toolCallId,
+    );
+    if (entry) {
+      entry.data.status = allowed ? 'completed' : 'rejected';
+      this.fireEntryUpdated(entry);
     }
   }
 
   // -----------------------------------------------------------------------
   // Reset and dispose
   // -----------------------------------------------------------------------
+  /**
+   * Lightweight reset for pool reuse.
+   * Clears entries, status → idle, releases terminal mapping.
+   * Does NOT clear _initialized — thread remains reusable.
+   */
   reset(): void {
     this._entries = [];
-    this._sessionId = undefined;
+    this._sessionId = '';
     this._needsReset = false;
-    this._initialized = false;
+    // NOTE: Do NOT clear _initialized — thread remains initialized and reusable
     this._pendingPermissionRequests.clear();
     this.setStatus('idle');
   }
@@ -758,11 +855,13 @@ export class AcpThread extends Disposable implements IAcpThread {
   }
 
   // -----------------------------------------------------------------------
-  // Internal — notification handling
+  // Public — notification handling (spec: must be public)
   // -----------------------------------------------------------------------
-  private handleNotification(params: SessionNotification): void {
+  handleNotification(params: SessionNotification): void {
     const update = params.update;
-    if (!update) {return;}
+    if (!update) {
+      return;
+    }
 
     switch (update.sessionUpdate) {
       case 'user_message_chunk': {
@@ -797,30 +896,26 @@ export class AcpThread extends Disposable implements IAcpThread {
 
   private mergeUserMessageChunk(update: any): void {
     const content = this.extractTextContent(update.content);
-    if (!content) {return;}
+    if (!content) {
+      return;
+    }
 
     // Try to merge into last user message (user messages may arrive in chunks)
     const lastEntry = this._entries[this._entries.length - 1];
     if (lastEntry && lastEntry.type === 'user_message') {
-      (lastEntry as UserMessageEntry).content += content;
-      this.fireEntriesChanged();
+      (lastEntry.data as UserMessageEntry).content += content;
+      this.fireEntryUpdated(lastEntry);
     } else {
       // Create new entry
       const entry: UserMessageEntry = {
-        type: 'user_message',
         id: uuid(),
         content,
         timestamp: Date.now(),
       };
-      this._entries.push(entry);
-      this.fireEntriesChanged();
+      const threadEntry: AgentThreadEntry = { type: 'user_message', data: entry };
+      this._entries.push(threadEntry);
+      this.fireEntryAdded(threadEntry);
     }
-  }
-
-  private isUserMessageComplete(_entry: UserMessageEntry): boolean {
-    // User messages may arrive in multiple chunks — only consider complete
-    // when we receive an explicit completion signal (not yet implemented)
-    return false;
   }
 
   private mergeAssistantMessageChunk(update: any): void {
@@ -832,8 +927,8 @@ export class AcpThread extends Disposable implements IAcpThread {
     let lastAssistant: AssistantMessageEntry | undefined;
     for (let i = this._entries.length - 1; i >= 0; i--) {
       const e = this._entries[i];
-      if (e.type === 'assistant_message' && !e.completed) {
-        lastAssistant = e;
+      if (e.type === 'assistant_message' && !e.data.isComplete) {
+        lastAssistant = e.data;
         break;
       }
     }
@@ -841,39 +936,63 @@ export class AcpThread extends Disposable implements IAcpThread {
     if (lastAssistant) {
       // Append to existing message
       if (content) {
-        lastAssistant.content += content;
+        const existingTextBlock = lastAssistant.chunks.find(
+          (c): c is Extract<ContentBlock, { type: 'text' }> => c.type === 'text',
+        );
+        if (existingTextBlock) {
+          existingTextBlock.text += content;
+        } else {
+          lastAssistant.chunks.push({ type: 'text', text: content });
+        }
       }
       if (thought) {
-        lastAssistant.thought = (lastAssistant.thought || '') + thought;
+        // Append thought as a separate text chunk or track separately
+        lastAssistant.chunks.push({ type: 'text', text: thought, _role: 'assistant' } as any);
       }
-      this.fireEntriesChanged();
+      // Find the thread entry to fire updated event
+      for (let i = this._entries.length - 1; i >= 0; i--) {
+        const e = this._entries[i];
+        if (e.type === 'assistant_message' && e.data === lastAssistant) {
+          this.fireEntryUpdated(e);
+          break;
+        }
+      }
     } else {
       // Create new entry
+      const chunks: ContentBlock[] = [];
+      if (content) {
+        chunks.push({ type: 'text', text: content });
+      }
+      if (thought) {
+        chunks.push({ type: 'text', text: thought, _role: 'assistant' } as any);
+      }
       const entry: AssistantMessageEntry = {
-        type: 'assistant_message',
-        id: uuid(),
-        content: content || '',
-        thought,
-        timestamp: Date.now(),
-        completed: false,
+        chunks,
+        isComplete: false,
       };
-      this._entries.push(entry);
-      this.fireEntriesChanged();
+      const threadEntry: AgentThreadEntry = { type: 'assistant_message', data: entry };
+      this._entries.push(threadEntry);
+      this.fireEntryAdded(threadEntry);
     }
   }
 
   private createToolCallEntry(update: any): void {
-    const entry: ToolCallEntry = {
-      type: 'tool_call',
-      id: uuid(),
+    // Build SDK ToolCall from update
+    const toolCall: ToolCall = {
       toolCallId: update.toolCallId,
-      toolName: update.toolName,
-      input: update.input ? JSON.stringify(update.input) : undefined,
+      title: update.toolName || update.title || update.toolCallId,
+      kind: update.kind,
+      rawInput: update.input,
       status: 'pending',
-      timestamp: Date.now(),
     };
-    this._entries.push(entry);
-    this.fireEntriesChanged();
+
+    const entry: ToolCallEntry = {
+      toolCall,
+      status: 'pending',
+    };
+    const threadEntry: AgentThreadEntry = { type: 'tool_call', data: entry };
+    this._entries.push(threadEntry);
+    this.fireEntryAdded(threadEntry);
 
     // Transition thread to working if idle
     if (this._status === 'idle' || this._status === 'awaiting_prompt') {
@@ -885,21 +1004,25 @@ export class AcpThread extends Disposable implements IAcpThread {
     // Find matching tool call entry by toolCallId
     for (let i = this._entries.length - 1; i >= 0; i--) {
       const e = this._entries[i];
-      if (e.type === 'tool_call' && e.toolCallId === update.toolCallId) {
-        const entry = e as ToolCallEntry;
+      if (e.type === 'tool_call' && e.data.toolCall.toolCallId === update.toolCallId) {
+        const entry = e.data as ToolCallEntry;
 
         if (update.status === 'completed') {
           entry.status = 'completed';
-          entry.result = update.rawOutput ? JSON.stringify(update.rawOutput) : undefined;
+          entry.result = update.rawOutput;
+          // Also update the embedded ToolCall.status
+          entry.toolCall.status = 'completed';
         } else if (update.status === 'failed') {
           entry.status = 'failed';
+          entry.toolCall.status = 'failed';
         } else if (update.status === 'in_progress') {
           if (entry.status === 'pending' || entry.status === 'waiting_for_confirmation') {
             entry.status = 'in_progress';
+            entry.toolCall.status = 'in_progress';
           }
         }
 
-        this.fireEntriesChanged();
+        this.fireEntryUpdated(e);
         break;
       }
     }
@@ -909,24 +1032,38 @@ export class AcpThread extends Disposable implements IAcpThread {
     // Remove existing plan entries
     this._entries = this._entries.filter((e) => e.type !== 'plan');
 
-    const content = this.extractTextContent(update.content);
-    if (content) {
-      const entry: PlanEntry = {
-        type: 'plan',
-        id: uuid(),
-        content,
-        timestamp: Date.now(),
-      };
-      this._entries.push(entry);
-      this.fireEntriesChanged();
+    const plan = update.plan as Plan;
+    if (plan) {
+      const threadEntry: AgentThreadEntry = { type: 'plan', data: plan };
+      this._entries.push(threadEntry);
+      this.fireEntryAdded(threadEntry);
+    } else {
+      // Fallback: extract from content field for backward compat
+      const content = this.extractTextContent(update.content);
+      if (content) {
+        const plan: Plan = {
+          entries: [{ content, status: 'pending', priority: 'medium' }],
+        };
+        const threadEntry: AgentThreadEntry = { type: 'plan', data: plan };
+        this._entries.push(threadEntry);
+        this.fireEntryAdded(threadEntry);
+      }
     }
   }
 
   private extractTextContent(contentBlock: any): string | undefined {
-    if (!contentBlock) {return undefined;}
-    if (typeof contentBlock === 'string') {return contentBlock;}
-    if (contentBlock.type === 'text') {return contentBlock.text;}
-    if (contentBlock.text) {return contentBlock.text;}
+    if (!contentBlock) {
+      return undefined;
+    }
+    if (typeof contentBlock === 'string') {
+      return contentBlock;
+    }
+    if (contentBlock.type === 'text') {
+      return contentBlock.text;
+    }
+    if (contentBlock.text) {
+      return contentBlock.text;
+    }
     return undefined;
   }
 
@@ -966,7 +1103,7 @@ export class AcpThread extends Disposable implements IAcpThread {
     try {
       const response = await this.options.permissionCaller.requestPermission(params);
       // Resolve the pending request
-      this.respondToToolCall(requestId, response);
+      this.respondToToolCall(requestId, response.outcome.outcome !== 'cancelled');
     } catch (err) {
       const pending = this._pendingPermissionRequests.get(requestId);
       if (pending) {
@@ -985,21 +1122,15 @@ export class AcpThread extends Disposable implements IAcpThread {
     }
   }
 
-  private setStatus(status: ThreadStatus): void {
-    if (this._status === status) {return;}
-    this._status = status;
-    this.fireEvent({ type: 'status_changed', threadId: this.threadId, status });
+  private fireEntryAdded(entry: AgentThreadEntry): void {
+    this.fireEvent({ type: 'entry_added', entry } as AcpThreadEvent);
   }
 
-  private fireEntriesChanged(): void {
-    this.fireEvent({
-      type: 'entries_changed',
-      threadId: this.threadId,
-      entries: this._entries,
-    });
+  private fireEntryUpdated(entry: AgentThreadEntry): void {
+    this.fireEvent({ type: 'entry_updated', entry } as AcpThreadEvent);
   }
 
-  private fireEvent(event: Omit<AcpThreadEvent, 'threadId'> & { threadId: string }): void {
+  private fireEvent(event: AcpThreadEvent): void {
     if (this._eventEmitter) {
       this._eventEmitter.fire(event);
     }
