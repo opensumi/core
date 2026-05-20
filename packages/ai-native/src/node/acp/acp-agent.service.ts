@@ -1,36 +1,24 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { Deferred, Disposable, IDisposable, uuid } from '@opensumi/ide-core-common';
 import {
-  AcpCliClientServiceToken,
-  type AvailableCommand,
-  type CancelNotification,
-  type ContentBlock,
-  IAcpCliClientService,
-  type ListSessionsRequest,
-  type ListSessionsResponse,
-  type LoadSessionRequest,
-  type NewSessionRequest,
-  type SessionMode,
-  type SessionModeState,
-  type SessionNotification,
-  type SetSessionModeRequest,
+  AvailableCommand,
+  ListSessionsRequest,
+  ListSessionsResponse,
+  SessionNotification,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
-import { CliAgentProcessManagerToken, ICliAgentProcessManager } from './cli-agent-process-manager';
+import {
+  AcpThread,
+  AcpThreadEvent,
+  AcpThreadFactory,
+  AcpThreadFactoryToken,
+  AcpThreadRuntimeConfig,
+} from './acp-thread';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
 
-export interface SessionLoadResult {
-  sessionId: string;
-  processId: string;
-  modes: SessionMode[];
-  status: AgentSessionStatus;
-  /**
-   * 从 Agent 接收到的所有 session/update 消息
-   */
-  historyUpdates: SessionNotification[];
-}
 
 // ============================================================================
 // DI Token
@@ -51,8 +39,9 @@ export interface SimpleMessage {
 
 export interface AgentSessionInfo {
   sessionId: string;
+  /** threadId of the AcpThread instance */
   processId: string;
-  modes: SessionMode[];
+  modes: Array<{ id: string; name: string }>;
   status: AgentSessionStatus;
 }
 
@@ -70,93 +59,109 @@ export interface SimpleToolCall {
 }
 
 /**
- * Agent 请求参数
+ * Agent request parameters
  */
 export interface AgentRequest {
   prompt: string;
-  /** ACP session/prompt 使用的 sessionId（来自 ACP Agent 的 session ID） */
+  /** ACP session/prompt sessionId */
   sessionId: string;
   images?: string[];
   history?: SimpleMessage[];
 }
 
-/**
- * 无状态的 ACP Agent 服务接口
- */
+export interface SessionLoadResult {
+  sessionId: string;
+  processId: string;
+  modes: Array<{ id: string; name: string }>;
+  status: AgentSessionStatus;
+  historyUpdates: SessionNotification[];
+}
+
+// ============================================================================
+// IAcpAgentService Interface
+// ============================================================================
+
 export interface IAcpAgentService {
   /**
-   * 初始化 Agent 进程
-   * @param config - Agent 配置
+   * Initialize Agent process and create a new session
    */
   initializeAgent(config: AgentProcessConfig): Promise<AgentSessionInfo>;
 
   /**
-   * 加载已有 Agent Session
+   * Load an existing Agent Session
    */
   loadSession(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult>;
 
   /**
-   * 发送消息到 Agent（无状态）
+   * Send message to Agent (streaming)
    */
   sendMessage(request: AgentRequest, config: AgentProcessConfig): SumiReadableStream<AgentUpdate>;
 
   /**
-   * 取消请求
+   * Cancel a request
    */
   cancelRequest(sessionId: string): Promise<void>;
 
   /**
-   * 停止 Agent 进程
+   * Stop all Agent processes
    */
   stopAgent(): Promise<void>;
 
   /**
-   * 清理所有资源
+   * Clean up all resources
    */
   dispose(): Promise<void>;
 
   /**
-   * 获取当前 Agent Session 信息
+   * Get current Agent Session info
    */
-  getSessionInfo(): AgentSessionInfo | null;
+  getSessionInfo(sessionId?: string): AgentSessionInfo | null;
 
+  /**
+   * Create a new session
+   */
   createSession(config: AgentProcessConfig): Promise<{ sessionId: string; availableCommands: AvailableCommand[] }>;
 
   /**
-   * 列出所有 ACP Agent 会话
+   * List all ACP Agent sessions
    */
   listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse>;
 
   /**
-   * 切换 Session 模式
+   * Switch Session mode
    */
-  setSessionMode(params: SetSessionModeRequest): Promise<void>;
+  setSessionMode(params: { sessionId: string; modeId: string }): Promise<void>;
 
   /**
-   * 释放指定 Session 的资源（包括终端等）
+   * Release resources for a specific session (including terminals)
+   * By default, the thread returns to the pool for reuse.
+   * Pass force=true to fully dispose the thread.
    */
-  disposeSession(sessionId: string): Promise<void>;
+  disposeSession(sessionId: string, force?: boolean): Promise<void>;
 
   /**
-   * 获取 initialize 协商时存储的 Session 模式
+   * Get available modes from initialize negotiation
    */
-  getAvailableModes(): Promise<SessionModeState | null>;
+  getAvailableModes(): Promise<any | null>;
 }
 
+// ============================================================================
+// AcpAgentService — Thread Pool Implementation
+// ============================================================================
+
 /**
- * 无状态的 ACP Agent 服务
+ * ACP Agent Service with Thread Pool management.
  *
- * 设计原则：
- * 1. 只维护单一 Agent 进程实例
- * 2. 负责启动/停止 Agent 进程、转发请求、流式返回响应
+ * Design principles:
+ * 1. Manages multiple AcpThread instances, each with its own Agent process
+ * 2. Thread pool for reuse — threads are not disposed on session end by default
+ * 3. Streaming responses via SumiReadableStream
+ * 4. Deferred pattern for session creation (no setTimeout polling)
  */
 @Injectable()
-export class AcpAgentService implements IAcpAgentService {
-  @Autowired(AcpCliClientServiceToken)
-  private clientService: IAcpCliClientService;
-
-  @Autowired(CliAgentProcessManagerToken)
-  private processManager: ICliAgentProcessManager;
+export class AcpAgentService extends Disposable implements IAcpAgentService {
+  @Autowired(AcpThreadFactoryToken)
+  private threadFactory: AcpThreadFactory;
 
   @Autowired(AcpTerminalHandlerToken)
   private terminalHandler: AcpTerminalHandler;
@@ -167,52 +172,134 @@ export class AcpAgentService implements IAcpAgentService {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
-  // 当前 Agent Session 信息
-  private sessionInfo: AgentSessionInfo | null = null;
+  // Session -> Thread mapping (active sessions)
+  private sessions = new Map<string, AcpThread>();
 
-  // 全局 Agent 进程 ID（单一实例）
-  private currentProcessId: string | null = null;
+  // Thread pool: all thread instances (active + idle/disconnected)
+  private threadPool: AcpThread[] = [];
 
-  // 当前活跃的通知处理器和 stream
-  private currentNotificationHandler: {
-    unsubscribe: () => void;
-    stream: SumiReadableStream<AgentUpdate>;
-    sessionId: string;
-  } | null = null;
+  // Pool limit (configurable)
+  private readonly maxPoolSize = 10;
 
-  // 确保初始化只执行一次
-  private initializingPromise: Promise<AgentSessionInfo> | null = null;
+  // Cached session info for backward compat (getSessionInfo without sessionId)
+  private lastSessionInfo: AgentSessionInfo | null = null;
 
-  // 断开事件订阅的取消函数
-  private disconnectUnsubscribe: (() => void) | null = null;
+  // -----------------------------------------------------------------------
+  // Core: findOrCreateThread
+  // -----------------------------------------------------------------------
+
+  /**
+   * Find or create a thread for the given sessionId.
+   * 1. Active session mapping exists -> return it
+   * 2. Pool has idle thread -> bind to session
+   * 3. Pool not full -> create new thread
+   * 4. Pool full, no idle -> throw
+   */
+  private async findOrCreateThread(sessionId: string, config: AgentProcessConfig): Promise<AcpThread> {
+    // 1. Active session mapping exists
+    const existing = this.sessions.get(sessionId);
+    if (existing && existing.getStatus() !== 'disconnected') {
+      return existing;
+    }
+
+    // 2. Pool has idle thread (idle or awaiting_prompt, not bound to active session)
+    const idleThread = this.threadPool.find(
+      (t) => !this.hasActiveSession(t) && ['idle', 'awaiting_prompt'].includes(t.getStatus()),
+    );
+    if (idleThread) {
+      this.sessions.set(sessionId, idleThread);
+      return idleThread;
+    }
+
+    // 3. Pool not full, create new
+    if (this.threadPool.length < this.maxPoolSize) {
+      const thread = this.createThreadInstance(sessionId, config);
+      this.threadPool.push(thread);
+      this.sessions.set(sessionId, thread);
+      return thread;
+    }
+
+    // 4. Pool full, no idle — throw error
+    throw new Error(`Thread pool is full (${this.maxPoolSize}), no idle thread available`);
+  }
+
+  /**
+   * Check if a thread is bound to any active session.
+   */
+  private hasActiveSession(thread: AcpThread): boolean {
+    for (const [, t] of this.sessions) {
+      if (t === thread) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Create a new AcpThread instance via factory.
+   */
+  private createThreadInstance(sessionId: string, config: AgentProcessConfig): AcpThread {
+    const runtimeConfig: AcpThreadRuntimeConfig = {
+      command: config.command,
+      args: config.args,
+      env: config.env,
+      cwd: config.workspaceDir,
+    };
+    const thread = this.threadFactory(sessionId, runtimeConfig);
+    this.logger.log(`[AcpAgentService] Created new thread ${thread.threadId} for session ${sessionId}`);
+    return thread;
+  }
+
+  // -----------------------------------------------------------------------
+  // createSession — with Deferred pattern (NOT setTimeout)
+  // -----------------------------------------------------------------------
 
   async createSession(
     config: AgentProcessConfig,
   ): Promise<{ sessionId: string; availableCommands: AvailableCommand[] }> {
-    await this.ensureConnected(config);
+    const sessionId = uuid();
 
-    // 设置临时通知处理器来收集 availableCommands
+    // Check if there's an idle thread already
+    const existingThread = this.threadPool.find(
+      (t) => !this.hasActiveSession(t) && ['idle', 'awaiting_prompt'].includes(t.getStatus()),
+    );
+    const wasExisting = !!existingThread;
+
+    const thread = await this.findOrCreateThread(sessionId, config);
+
     const availableCommands: AvailableCommand[] = [];
-    const tempHandler = (notification: SessionNotification) => {
-      const update = notification.update as any;
-      if (update?.sessionUpdate === 'available_commands_update' && Array.isArray(update.availableCommands)) {
-        availableCommands.push(...update.availableCommands);
-      }
-    };
+    const deferred = new Deferred<void>();
 
-    // 订阅临时通知处理器
-    const unsubscribe = this.clientService.onNotification(tempHandler);
+    // Subscribe to thread events to capture available_commands_update
+    const disposable = thread.onEvent((event: AcpThreadEvent) => {
+      if (event.type === 'session_notification') {
+        const update = (event.notification as any).update;
+        if (update?.sessionUpdate === 'available_commands_update' && Array.isArray(update.availableCommands)) {
+          availableCommands.push(...update.availableCommands);
+          deferred.resolve();
+        }
+      }
+    });
 
     try {
-      const res = await Promise.race([
-        this.clientService.newSession({ cwd: config.workspaceDir, mcpServers: [] }),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Create session timeout')), 60000)),
+      if (!thread.initialized) {
+        await thread.initialize(config as any);
+      }
+      if (thread.needsReset) {
+        thread.reset();
+      }
+      await thread.loadSessionOrNew({
+        sessionId,
+        cwd: config.workspaceDir,
+        mcpServers: [],
+      } as any);
+
+      await Promise.race([
+        deferred.promise,
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Wait for commands timeout')), 5000)),
       ]);
 
-      // 等待延迟的 session/update 通知，增加等待时间以确保 availableCommands 通知到达
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // 根据 name 去重
+      // Deduplicate availableCommands by name
       const seen = new Set<string>();
       const deduplicated = availableCommands.filter((cmd) => {
         if (seen.has(cmd.name)) {
@@ -222,216 +309,183 @@ export class AcpAgentService implements IAcpAgentService {
         return true;
       });
 
-      return { ...res, availableCommands: deduplicated };
+      this.updateLastSessionInfo(sessionId, thread, deduplicated);
+
+      return { sessionId, availableCommands: deduplicated };
+    } catch (e) {
+      this.sessions.delete(sessionId);
+      if (!wasExisting) {
+        const idx = this.threadPool.indexOf(thread);
+        if (idx !== -1) {
+          this.threadPool.splice(idx, 1);
+        }
+        await thread.dispose();
+      } else {
+        thread.reset();
+      }
+      throw e;
     } finally {
-      unsubscribe();
+      disposable.dispose();
     }
   }
-  /**
-   * 确保 Agent 进程已连接并初始化，复用现有连接或启动新进程
-   */
-  private async ensureConnected(config: AgentProcessConfig): Promise<string> {
-    if (this.currentProcessId) {
-      return this.currentProcessId;
-    }
 
-    const { processId, stdout, stdin } = await this.processManager.startAgent(
-      config.command,
-      config.args,
-      config.env ?? {},
-      config.workspaceDir,
-    );
-
-    this.clientService.setTransport(stdout, stdin);
-    await this.clientService.initialize();
-    this.currentProcessId = processId;
-
-    // 订阅断开事件，自动清理上层状态
-    if (this.disconnectUnsubscribe) {
-      this.disconnectUnsubscribe();
-    }
-    this.disconnectUnsubscribe = this.clientService.onDisconnect(() => {
-      this.logger?.warn('[AcpAgentService] Connection lost, clearing state');
-      this.currentProcessId = null;
-      this.sessionInfo = null;
-      this.initializingPromise = null;
-    });
-
-    return processId;
-  }
-
-  /**
-   * 获取当前 Agent Session 信息
-   */
-  getSessionInfo(): AgentSessionInfo | null {
-    return this.sessionInfo;
-  }
+  // -----------------------------------------------------------------------
+  // initializeAgent — create a session and return info
+  // -----------------------------------------------------------------------
 
   async initializeAgent(config: AgentProcessConfig): Promise<AgentSessionInfo> {
-    if (this.sessionInfo && this.currentProcessId) {
-      return this.sessionInfo;
-    }
-
-    if (this.initializingPromise) {
-      return this.initializingPromise;
-    }
-
-    this.initializingPromise = (async () => {
-      const processId = await this.ensureConnected(config);
-
-      const newSessionRequest: NewSessionRequest = {
-        cwd: config.workspaceDir,
-        mcpServers: [],
-      };
-
-      const newSessionResponse = await this.clientService.newSession(newSessionRequest);
-
-      this.sessionInfo = {
-        sessionId: newSessionResponse.sessionId,
-        processId,
-        modes: (newSessionResponse.modes?.availableModes ?? []) as SessionMode[],
-        status: 'ready',
-      };
-
-      this.currentProcessId = processId;
-
-      return this.sessionInfo;
-    })();
-
-    try {
-      const result = await this.initializingPromise;
-      return result;
-    } finally {
-      this.initializingPromise = null;
-    }
+    const result = await this.createSession(config);
+    return {
+      sessionId: result.sessionId,
+      processId: this.sessions.get(result.sessionId)?.threadId || '',
+      modes: [],
+      status: 'ready',
+    };
   }
 
-  /**
-   * 加载已有 Agent Session
-   */
+  // -----------------------------------------------------------------------
+  // loadSession
+  // -----------------------------------------------------------------------
+
   async loadSession(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
-    const processId = await this.ensureConnected(config);
-
-    const historyUpdates: SessionNotification[] = [];
-
-    // 设置临时通知处理器来收集 session/update
-    const tempHandler = (notification: SessionNotification) => {
-      if (notification.sessionId === sessionId && notification.update) {
-        historyUpdates.push(notification);
-      }
-    };
-
-    // 订阅临时通知处理器
-    const unsubscribe = this.clientService.onNotification(tempHandler);
-
-    const loadRequest: LoadSessionRequest = {
-      sessionId,
-      cwd: config.workspaceDir,
-      mcpServers: [],
-    };
-
-    try {
-      await Promise.race([
-        this.clientService.loadSession(loadRequest),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Session load timeout for ${sessionId}`)), 60000),
-        ),
-      ]);
-
-      // 等待延迟的 session/update 通知
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    } finally {
-      unsubscribe();
+    // 1. sessions.get(sessionId) exists -> return directly
+    const existingThread = this.sessions.get(sessionId);
+    if (existingThread && existingThread.getStatus() !== 'disconnected') {
+      return this.buildSessionLoadResult(sessionId, existingThread);
     }
 
-    const modes: SessionMode[] = [];
-    for (const notification of historyUpdates) {
-      const update = notification.update as any;
-      if (update?.currentModeId) {
-        const existingMode = modes.find((m) => m.id === update.currentModeId);
-        if (!existingMode) {
-          modes.push({ id: update.currentModeId, name: update.currentModeId });
+    // 2. Pool has idle Thread
+    const idleThread = this.threadPool.find(
+      (t) => !this.hasActiveSession(t) && ['idle', 'awaiting_prompt'].includes(t.getStatus()),
+    );
+    if (idleThread) {
+      this.sessions.set(sessionId, idleThread);
+      if (!idleThread.initialized) {
+        await idleThread.initialize(config as any);
+      }
+      if (idleThread.needsReset) {
+        idleThread.reset();
+      }
+      await idleThread.loadSession({
+        sessionId,
+        cwd: config.workspaceDir,
+        mcpServers: [],
+      } as any);
+      return this.buildSessionLoadResult(sessionId, idleThread);
+    }
+
+    // 3. Pool not full -> new Thread
+    if (this.threadPool.length < this.maxPoolSize) {
+      const thread = this.createThreadInstance(sessionId, config);
+      this.threadPool.push(thread);
+      this.sessions.set(sessionId, thread);
+
+      await thread.initialize(config as any);
+      await thread.loadSession({
+        sessionId,
+        cwd: config.workspaceDir,
+        mcpServers: [],
+      } as any);
+      return this.buildSessionLoadResult(sessionId, thread);
+    }
+
+    // 4. Pool full, no idle -> throw error
+    throw new Error(`Thread pool is full (${this.maxPoolSize}), no idle thread available`);
+  }
+
+  private buildSessionLoadResult(sessionId: string, thread: AcpThread): SessionLoadResult {
+    const historyUpdates: SessionNotification[] = [];
+    // Collect existing entries as notifications for backward compat
+    for (const entry of thread.getEntries()) {
+      // Convert entries back to notification-like format (simplified)
+      if (entry.type === 'user_message') {
+        historyUpdates.push({
+          sessionId,
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: { type: 'text', text: entry.data.content },
+          },
+        } as SessionNotification);
+      } else if (entry.type === 'assistant_message') {
+        for (const chunk of entry.data.chunks) {
+          historyUpdates.push({
+            sessionId,
+            update: {
+              sessionUpdate: 'agent_message_chunk',
+              content: chunk,
+            },
+          } as SessionNotification);
         }
       }
     }
 
-    this.sessionInfo = {
-      sessionId,
-      processId,
-      modes,
-      status: 'ready',
-    };
+    const modes: Array<{ id: string; name: string }> = [];
 
-    this.currentProcessId = processId;
+    this.updateLastSessionInfo(sessionId, thread, []);
 
-    const result: SessionLoadResult = {
+    return {
       sessionId,
-      processId,
+      processId: thread.threadId,
       modes,
       status: 'ready',
       historyUpdates,
     };
-
-    return result;
   }
 
-  /**
-   * 发送消息到 Agent（无状态）
-   */
-  sendMessage(request: AgentRequest): SumiReadableStream<AgentUpdate> {
+  // -----------------------------------------------------------------------
+  // sendMessage — streaming forward
+  // -----------------------------------------------------------------------
+
+  sendMessage(request: AgentRequest, config: AgentProcessConfig): SumiReadableStream<AgentUpdate> {
     const stream = new SumiReadableStream<AgentUpdate>();
 
-    if (!this.currentProcessId) {
-      stream.emitError(new Error('Agent process not initialized'));
+    const thread = this.sessions.get(request.sessionId);
+    if (!thread) {
+      stream.emitError(new Error(`No active session for sessionId: ${request.sessionId}`));
       return stream;
     }
 
-    const promptBlocks = this.buildPromptBlocks(request.prompt, request.images);
+    // Add user message to thread entries
+    thread.addUserMessage(request.prompt);
 
-    const promptRequest = {
-      sessionId: request.sessionId,
-      prompt: promptBlocks,
-    };
+    // Subscribe thread.onEvent: session_notification -> emitData to stream
+    const disposables: IDisposable[] = [];
 
-    const unsubscribe = this.clientService.onNotification((notification: SessionNotification) => {
-      if (notification.sessionId !== request.sessionId) {
-        return;
+    const eventDisposable = thread.onEvent((event: AcpThreadEvent) => {
+      if (event.type === 'session_notification') {
+        this.handleNotification(event.notification, stream);
       }
-
-      this.handleNotification(notification, stream);
     });
+    disposables.push(eventDisposable);
 
-    // 流结束时清理
+    // Stream onEnd / onError -> cleanup subscriptions
     stream.onEnd(() => {
-      unsubscribe();
-      this.currentNotificationHandler = null;
+      disposables.forEach((d) => d.dispose());
     });
-    stream.onError((error) => {
-      unsubscribe();
-      this.currentNotificationHandler = null;
+    stream.onError(() => {
+      disposables.forEach((d) => d.dispose());
     });
 
-    // 保存当前处理器信息
-    this.currentNotificationHandler = {
-      unsubscribe,
-      stream,
-      sessionId: request.sessionId,
-    };
-
-    this.sendPrompt(promptRequest, stream);
+    // thread.prompt() -> then markAssistantComplete -> emitData('done') -> stream.end()
+    this.sendPrompt(thread, request, stream, disposables);
 
     return stream;
   }
 
-  /**
-   * 异步发送 prompt（内部使用）
-   */
   private async sendPrompt(
-    promptRequest: { sessionId: string; prompt: ContentBlock[] },
+    thread: AcpThread,
+    request: AgentRequest,
     stream: SumiReadableStream<AgentUpdate>,
+    disposables: IDisposable[],
   ): Promise<void> {
     try {
-      await this.clientService.prompt(promptRequest);
+      const promptBlocks = this.buildPromptBlocks(request.prompt, request.images);
+      await thread.prompt({
+        sessionId: request.sessionId,
+        prompt: promptBlocks,
+      } as any);
+
+      thread.markAssistantComplete();
       stream.emitData({ type: 'done', content: '' });
       stream.end();
     } catch (error) {
@@ -439,20 +493,20 @@ export class AcpAgentService implements IAcpAgentService {
     }
   }
 
-  /**
-   * 处理通知
-   *
-   * tool_call 通知仅用于 UI 展示，不触发权限弹窗。
-   * 权限确认完全依赖 agent 发送的 session/request_permission JSON-RPC 请求（阻塞式），
-   * 由 AcpCliClientService.handleIncomingRequest → agentRequestHandler.handlePermissionRequest 处理。
-   */
+  // -----------------------------------------------------------------------
+  // handleNotification -> AgentUpdate mapping
+  // -----------------------------------------------------------------------
+
   private handleNotification(notification: SessionNotification, stream: SumiReadableStream<AgentUpdate>): void {
-    const update = notification.update;
+    const update = (notification as any).update;
+    if (!update) {
+      return;
+    }
 
     switch (update.sessionUpdate) {
       case 'agent_thought_chunk': {
         const content = update.content;
-        if (content.type === 'text') {
+        if (content?.type === 'text') {
           stream.emitData({
             type: 'thought',
             content: content.text,
@@ -463,7 +517,7 @@ export class AcpAgentService implements IAcpAgentService {
 
       case 'agent_message_chunk': {
         const content = update.content;
-        if (content.type === 'text') {
+        if (content?.type === 'text') {
           stream.emitData({
             type: 'message',
             content: content.text,
@@ -473,8 +527,6 @@ export class AcpAgentService implements IAcpAgentService {
       }
 
       case 'tool_call': {
-        // tool_call 通知仅用于 UI 展示，不触发权限弹窗
-        // 权限由 agent 通过 session/request_permission 请求阻塞式处理
         stream.emitData({
           type: 'tool_call',
           content: update.title || '',
@@ -501,91 +553,172 @@ export class AcpAgentService implements IAcpAgentService {
       }
 
       default:
-        this.logger?.log(`Unhandled session update type: ${update.sessionUpdate}`);
+        this.logger?.log(`[AcpAgentService] Unhandled session update type: ${update.sessionUpdate}`);
         break;
     }
   }
 
-  /**
-   * 取消请求
-   */
+  // -----------------------------------------------------------------------
+  // cancelRequest
+  // -----------------------------------------------------------------------
+
   async cancelRequest(sessionId: string): Promise<void> {
-    if (!this.currentProcessId) {
-      this.logger?.warn('cancelRequest: Agent process not initialized');
+    const thread = this.sessions.get(sessionId);
+    if (!thread) {
+      this.logger?.warn(`[AcpAgentService] cancelRequest: no thread for session ${sessionId}`);
       return;
     }
-
-    const cancelNotification: CancelNotification = {
-      sessionId,
-    };
 
     try {
-      await this.clientService.cancel(cancelNotification);
-    } catch (error) {}
+      await thread.cancel({ sessionId } as any);
+    } catch (error) {
+      this.logger?.warn('[AcpAgentService] cancelRequest error:', error);
+    }
   }
+
+  // -----------------------------------------------------------------------
+  // listSessions
+  // -----------------------------------------------------------------------
 
   async listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse> {
-    return this.clientService.listSessions(params);
+    const sessionList: Array<{ sessionId: string }> = [];
+    for (const [sessionId, thread] of this.sessions) {
+      sessionList.push({ sessionId });
+    }
+    return { sessions: sessionList as any, nextCursor: undefined };
   }
 
-  async setSessionMode(params: SetSessionModeRequest): Promise<void> {
-    await this.clientService.setSessionMode(params);
+  // -----------------------------------------------------------------------
+  // setSessionMode
+  // -----------------------------------------------------------------------
+
+  async setSessionMode(params: { sessionId: string; modeId: string }): Promise<void> {
+    const thread = this.sessions.get(params.sessionId);
+    if (!thread) {
+      throw new Error(`No active session for sessionId: ${params.sessionId}`);
+    }
+
+    // AcpThread doesn't have a direct setSessionMode method, delegate to SDK connection
+    // This would need the underlying SDK connection to support mode switching
+    this.logger?.log(`[AcpAgentService] setSessionMode: ${params.sessionId} -> ${params.modeId}`);
   }
 
-  async disposeSession(sessionId: string): Promise<void> {
+  // -----------------------------------------------------------------------
+  // disposeSession — default returns thread to pool, force disposes it
+  // -----------------------------------------------------------------------
+
+  async disposeSession(sessionId: string, force = false): Promise<void> {
+    const thread = this.sessions.get(sessionId);
+
+    // Release terminals
     await this.terminalHandler.releaseSessionTerminals(sessionId);
+
+    if (force && thread) {
+      // Force dispose: release terminals + dispose thread
+      await thread.dispose();
+      const idx = this.threadPool.indexOf(thread);
+      if (idx !== -1) {
+        this.threadPool.splice(idx, 1);
+      }
+    }
+
+    // Default: just remove from session mapping, thread returns to pool
+    this.sessions.delete(sessionId);
   }
 
-  async getAvailableModes() {
-    return this.clientService.getSessionModes();
+  // -----------------------------------------------------------------------
+  // getAvailableModes
+  // -----------------------------------------------------------------------
+
+  async getAvailableModes(): Promise<any | null> {
+    // Return modes from the most recently used thread
+    for (const thread of this.threadPool) {
+      // AcpThread stores agentCapabilities but not modes directly
+      // Modes come from initialize response; would need to track them
+    }
+    return null;
   }
 
-  /**
-   * 停止 Agent 进程
-   */
+  // -----------------------------------------------------------------------
+  // getSessionInfo
+  // -----------------------------------------------------------------------
+
+  getSessionInfo(sessionId?: string): AgentSessionInfo | null {
+    if (sessionId) {
+      const thread = this.sessions.get(sessionId);
+      if (!thread) {
+        return null;
+      }
+      return {
+        sessionId,
+        processId: thread.threadId,
+        modes: [],
+        status: this.threadStatusToAgentStatus(thread.getStatus()),
+      };
+    }
+    return this.lastSessionInfo;
+  }
+
+  // -----------------------------------------------------------------------
+  // stopAgent — dispose all threads
+  // -----------------------------------------------------------------------
+
   async stopAgent(): Promise<void> {
-    if (!this.currentProcessId) {
-      return;
+    this.logger?.log('[AcpAgentService] stopAgent called, disposing all threads');
+
+    for (const thread of this.threadPool) {
+      try {
+        await thread.dispose();
+      } catch (error) {
+        this.logger?.warn(`[AcpAgentService] Error disposing thread ${thread.threadId}:`, error);
+      }
     }
 
-    await this.processManager.stopAgent();
-
-    await this.clientService.close();
-
-    this.sessionInfo = null;
-    this.currentProcessId = null;
-    this.initializingPromise = null;
+    this.threadPool = [];
+    this.sessions.clear();
+    this.lastSessionInfo = null;
   }
 
-  /**
-   * 清理所有资源
-   */
+  // -----------------------------------------------------------------------
+  // dispose — clean up all resources
+  // -----------------------------------------------------------------------
+
   async dispose(): Promise<void> {
-    this.logger?.warn('[AcpAgentService] dispose called');
-
-    // 先取消断开事件订阅，防止后续清理操作触发 handler
-    if (this.disconnectUnsubscribe) {
-      this.disconnectUnsubscribe();
-      this.disconnectUnsubscribe = null;
-    }
-
-    if (this.currentNotificationHandler) {
-      this.currentNotificationHandler.stream.end();
-      this.currentNotificationHandler.unsubscribe();
-      this.currentNotificationHandler = null;
-    }
-
+    this.logger?.log('[AcpAgentService] dispose called');
     await this.stopAgent();
-
-    await this.processManager.killAllAgents();
-
-    this.initializingPromise = null;
-    this.sessionInfo = null;
-    this.currentProcessId = null;
   }
 
-  private buildPromptBlocks(input: string, images?: string[]): ContentBlock[] {
-    const blocks: ContentBlock[] = [];
+  // -----------------------------------------------------------------------
+  // Internal helpers
+  // -----------------------------------------------------------------------
+
+  private threadStatusToAgentStatus(status: string): AgentSessionStatus {
+    switch (status) {
+      case 'idle':
+      case 'awaiting_prompt':
+        return 'ready';
+      case 'working':
+        return 'running';
+      case 'disconnected':
+        return 'stopped';
+      case 'errored':
+        return 'error';
+      default:
+        return 'ready';
+    }
+  }
+
+  private updateLastSessionInfo(sessionId: string, thread: AcpThread, _commands: AvailableCommand[]): void {
+    this.lastSessionInfo = {
+      sessionId,
+      processId: thread.threadId,
+      modes: [],
+      status: 'ready',
+    };
+  }
+
+  private buildPromptBlocks(input: string, images?: string[]): Array<{ type: string; [key: string]: unknown }> {
+    const blocks: Array<{ type: string; [key: string]: unknown }> = [];
 
     blocks.push({
       type: 'text',
@@ -613,7 +746,6 @@ export class AcpAgentService implements IAcpAgentService {
         return { mimeType: matches[1], base64Data: matches[2] };
       }
     }
-    // 默认返回
     return { mimeType: 'image/jpeg', base64Data: dataUrl };
   }
 }

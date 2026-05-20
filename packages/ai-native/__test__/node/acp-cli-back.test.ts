@@ -385,7 +385,7 @@ describe('AcpCliBackService', () => {
     it('should initialize agent and list sessions', async () => {
       mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
       mockAgentService.listSessions.mockResolvedValue({
-        sessions: [{ sessionId: 's1', cwd: '/test', title: 'Session 1' }],
+        sessions: [{ sessionId: 's1', cwd: '/test', title: 'Session 1' } as any],
         nextCursor: 'cursor-2',
       });
 

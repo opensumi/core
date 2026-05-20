@@ -21,8 +21,11 @@ import {
   AcpPermissionCallerManagerToken,
   AcpTerminalHandler,
   AcpTerminalHandlerToken,
+  AcpThreadFactoryProvider,
   CliAgentProcessManager,
   CliAgentProcessManagerToken,
+  PermissionRoutingService,
+  PermissionRoutingServiceToken,
 } from './acp';
 import { AcpCliBackService } from './acp/acp-cli-back.service';
 import { AcpCliClientService } from './acp/acp-cli-client.service';
@@ -71,6 +74,13 @@ export class AINativeModule extends NodeModule {
     {
       token: AcpAgentRequestHandlerToken,
       useClass: AcpAgentRequestHandler,
+    },
+    // Thread factory for creating AcpThread instances
+    AcpThreadFactoryProvider,
+    // Permission routing for multi-session permission requests
+    {
+      token: PermissionRoutingServiceToken,
+      useClass: PermissionRoutingService,
     },
     // Language models for non-ACP fallback
     OpenAICompatibleModel,
