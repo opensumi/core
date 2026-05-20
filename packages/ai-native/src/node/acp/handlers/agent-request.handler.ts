@@ -101,7 +101,7 @@ export class AcpAgentRequestHandler {
   async handlePermissionRequest(request: RequestPermissionRequest): Promise<RequestPermissionResponse> {
     try {
       // Call browser-side permission dialog via RPC
-      const response = await this.permissionCaller.requestPermission(request);
+      const response = await this.permissionCaller.requestPermission(request, request.sessionId);
 
       return response;
     } catch (error) {
@@ -149,23 +149,26 @@ export class AcpAgentRequestHandler {
   async handleWriteTextFile(request: WriteTextFileRequest): Promise<WriteTextFileResponse> {
     try {
       // For write operations, request permission from user first
-      const permissionResponse = await this.permissionCaller.requestPermission({
-        sessionId: request.sessionId,
-        toolCall: {
-          toolCallId: `write-${Date.now()}`,
-          title: `Write file: ${request.path}`,
-          kind: 'write' as any,
-          status: 'pending',
-          locations: [{ path: request.path }],
-          rawInput: { path: request.path, contentLength: request.content?.length },
+      const permissionResponse = await this.permissionCaller.requestPermission(
+        {
+          sessionId: request.sessionId,
+          toolCall: {
+            toolCallId: `write-${Date.now()}`,
+            title: `Write file: ${request.path}`,
+            kind: 'write' as any,
+            status: 'pending',
+            locations: [{ path: request.path }],
+            rawInput: { path: request.path, contentLength: request.content?.length },
+          },
+          // 默认 options - 实际项目中应根据后端 ACP Agent 传入的 options 为准
+          options: [
+            { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
+            { optionId: 'allow_always', name: 'Allow Always', kind: 'allow_always' },
+            { optionId: 'reject_once', name: 'Reject Once', kind: 'reject_once' },
+          ],
         },
-        // 默认 options - 实际项目中应根据后端 ACP Agent 传入的 options 为准
-        options: [
-          { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
-          { optionId: 'allow_always', name: 'Allow Always', kind: 'allow_always' },
-          { optionId: 'reject_once', name: 'Reject Once', kind: 'reject_once' },
-        ],
-      });
+        request.sessionId,
+      );
 
       if (
         permissionResponse.outcome.outcome !== 'selected' ||
@@ -204,22 +207,25 @@ export class AcpAgentRequestHandler {
     try {
       // For command execution, request permission from user first
       const commandStr = [request.command, ...(request.args || [])].join(' ');
-      const permissionResponse = await this.permissionCaller.requestPermission({
-        sessionId: request.sessionId,
-        toolCall: {
-          toolCallId: `terminal-${Date.now()}`,
-          title: `Run command: ${commandStr}`,
-          kind: 'execute',
-          status: 'pending',
-          rawInput: { command: request.command, args: request.args, cwd: request.cwd },
+      const permissionResponse = await this.permissionCaller.requestPermission(
+        {
+          sessionId: request.sessionId,
+          toolCall: {
+            toolCallId: `terminal-${Date.now()}`,
+            title: `Run command: ${commandStr}`,
+            kind: 'execute',
+            status: 'pending',
+            rawInput: { command: request.command, args: request.args, cwd: request.cwd },
+          },
+          // 默认 options - 实际项目中应根据后端 ACP Agent 传入的 options 为准
+          options: [
+            { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
+            { optionId: 'allow_always', name: 'Allow Always', kind: 'allow_always' },
+            { optionId: 'reject_once', name: 'Reject Once', kind: 'reject_once' },
+          ],
         },
-        // 默认 options - 实际项目中应根据后端 ACP Agent 传入的 options 为准
-        options: [
-          { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
-          { optionId: 'allow_always', name: 'Allow Always', kind: 'allow_always' },
-          { optionId: 'reject_once', name: 'Reject Once', kind: 'reject_once' },
-        ],
-      });
+        request.sessionId,
+      );
 
       if (
         permissionResponse.outcome.outcome !== 'selected' ||

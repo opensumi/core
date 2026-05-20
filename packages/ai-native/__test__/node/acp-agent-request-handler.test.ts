@@ -163,6 +163,7 @@ describe('AcpAgentRequestHandler', () => {
             kind: 'write',
           }),
         }),
+        'sess-1',
       );
     });
 
@@ -214,6 +215,7 @@ describe('AcpAgentRequestHandler', () => {
             title: expect.stringContaining('Run command'),
           }),
         }),
+        'sess-1',
       );
     });
 
