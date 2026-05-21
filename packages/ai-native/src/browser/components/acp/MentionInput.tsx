@@ -466,12 +466,13 @@ export const MentionInput: React.FC<
       });
     }
 
-    // 判断是否刚输入了 /
+    // 判断是否刚输入了 /（仅当 / 是第一个非空白字符时触发）
     if (
       text[cursorPos - 1] === '/' &&
       !mentionState.active &&
       !mentionState.inlineSearchActive &&
-      slashCommands.length > 0
+      slashCommands.length > 0 &&
+      text.substring(0, cursorPos - 1).trim() === ''
     ) {
       setMentionState({
         active: true,
@@ -624,7 +625,7 @@ export const MentionInput: React.FC<
       });
     }
 
-    // 添加对 / 键的监听，支持在任意位置触发 slash command 菜单
+    // 添加对 / 键的监听，仅当 / 是第一个非空白字符时触发 slash command 菜单
     if (
       e.key === '/' &&
       !mentionState.active &&
@@ -633,6 +634,13 @@ export const MentionInput: React.FC<
       slashCommands.length > 0
     ) {
       const cursorPos = getCursorPosition(editorRef.current);
+      const text = editorRef.current.textContent || '';
+
+      // 检查 / 之前的字符是否全是空白
+      if (text.substring(0, cursorPos).trim() !== '') {
+        // 不是第一个非空白字符，不触发 slash 面板，但仍设置状态以支持后续过滤
+        return;
+      }
 
       setMentionState({
         active: true,
