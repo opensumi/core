@@ -703,12 +703,17 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     if (!thread) {
       throw new Error(`No active session for sessionId: ${params.sessionId}`);
     }
-    const response = await thread.unstable_forkSession({
-      sessionId: params.sessionId,
-      cwd: params.cwd,
-      mcpServers: params.mcpServers,
-    } as any);
-    return { sessionId: response.sessionId };
+    try {
+      const response = await thread.unstable_forkSession({
+        sessionId: params.sessionId,
+        cwd: params.cwd,
+        mcpServers: params.mcpServers,
+      } as any);
+      return { sessionId: response.sessionId };
+    } catch (error) {
+      this.logger?.warn(`[AcpAgentService] forkSession error for session ${params.sessionId}:`, error);
+      throw error;
+    }
   }
 
   // -----------------------------------------------------------------------
@@ -720,7 +725,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     if (!thread) {
       throw new Error(`No active session for sessionId: ${params.sessionId}`);
     }
-    await thread.unstable_resumeSession({ sessionId: params.sessionId } as any);
+    try {
+      await thread.unstable_resumeSession({ sessionId: params.sessionId } as any);
+    } catch (error) {
+      this.logger?.warn(`[AcpAgentService] resumeSession error for session ${params.sessionId}:`, error);
+      throw error;
+    }
   }
 
   // -----------------------------------------------------------------------
@@ -732,7 +742,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     if (!thread) {
       throw new Error(`No active session for sessionId: ${params.sessionId}`);
     }
-    await thread.unstable_closeSession({ sessionId: params.sessionId } as any);
+    try {
+      await thread.unstable_closeSession({ sessionId: params.sessionId } as any);
+    } catch (error) {
+      this.logger?.warn(`[AcpAgentService] closeSession error for session ${params.sessionId}:`, error);
+      throw error;
+    }
   }
 
   // -----------------------------------------------------------------------
@@ -744,7 +759,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     if (!thread) {
       throw new Error(`No active session for sessionId: ${params.sessionId}`);
     }
-    await thread.unstable_setSessionModel({ sessionId: params.sessionId, model: params.model } as any);
+    try {
+      await thread.unstable_setSessionModel({ sessionId: params.sessionId, model: params.model } as any);
+    } catch (error) {
+      this.logger?.warn(`[AcpAgentService] setSessionModel error for session ${params.sessionId}:`, error);
+      throw error;
+    }
   }
 
   // -----------------------------------------------------------------------
