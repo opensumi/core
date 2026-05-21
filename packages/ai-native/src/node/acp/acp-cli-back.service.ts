@@ -378,8 +378,8 @@ export class AcpCliBackService implements IAIBackService {
   }
 
   async listSessions(config: AgentProcessConfig): Promise<ListSessionsResponse> {
-    this.logger.log('[ACP Back] listSessions called');
-    return this.agentService.listSessions();
+    this.logger.log(`[ACP Back] listSessions called, cwd=${config?.cwd}`);
+    return this.agentService.listSessions(config?.cwd ? { cwd: config.cwd } : undefined);
   }
 
   async dispose(): Promise<void> {
