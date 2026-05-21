@@ -592,10 +592,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       throw new Error(`No active session for sessionId: ${params.sessionId}`);
     }
 
-    await thread.setSessionMode({
-      sessionId: params.sessionId,
-      modeId: params.modeId,
-    } as any);
+    try {
+      await thread.setSessionMode({
+        sessionId: params.sessionId,
+        modeId: params.modeId,
+      } as any);
+    } catch (error) {
+      this.logger?.warn(`[AcpAgentService] setSessionMode error for session ${params.sessionId}:`, error);
+      throw error;
+    }
   }
 
   // -----------------------------------------------------------------------
