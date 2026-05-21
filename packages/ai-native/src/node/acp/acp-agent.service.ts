@@ -597,8 +597,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
   async listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse> {
     const sessionsMap = new Map<string, SessionInfo>();
+    let lastNextCursor: string | undefined;
+    let activeThreadCount = 0;
+
     for (const [sessionId, thread] of this.sessions) {
       if (thread.getStatus() !== 'disconnected') {
+        activeThreadCount++;
         try {
           const result = await thread.listSessions(params);
           if (result?.sessions) {
@@ -606,13 +610,22 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
               sessionsMap.set(info.sessionId, info);
             }
           }
+          // nextCursor/_meta are thread-specific; only meaningful for single-thread results
+          if (result?.nextCursor) {
+            lastNextCursor = result.nextCursor;
+          }
         } catch (error) {
           this.logger?.warn(`[AcpAgentService] listSessions error for thread ${sessionId}:`, error);
         }
       }
     }
 
-    return { sessions: Array.from(sessionsMap.values()), nextCursor: undefined };
+    // Single active thread: preserve its cursor for pagination
+    // Multiple threads: cursors can't be meaningfully merged, so clear
+    return {
+      sessions: Array.from(sessionsMap.values()),
+      nextCursor: activeThreadCount === 1 ? lastNextCursor : undefined,
+    };
   }
 
   // -----------------------------------------------------------------------
