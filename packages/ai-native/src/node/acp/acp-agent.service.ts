@@ -620,7 +620,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       return this.buildSessionLoadResult(sessionId, existingThread);
     }
 
+    const poolSizeBefore = this.threadPool.length;
     const thread = await this.findOrCreateThread(sessionId, config);
+    const wasExisting = this.threadPool.length === poolSizeBefore;
+
     try {
       if (!thread.initialized) {
         await thread.initialize(config as any);
@@ -636,6 +639,16 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       return this.buildSessionLoadResult(sessionId, thread);
     } catch (e) {
       this.sessions.delete(sessionId);
+      this.logger.error(`[AcpAgentService] loadSessionOrNew() — failed: ${e instanceof Error ? e.message : String(e)}`);
+      if (!wasExisting) {
+        const idx = this.threadPool.indexOf(thread);
+        if (idx !== -1) {
+          this.threadPool.splice(idx, 1);
+        }
+        await thread.dispose();
+      } else {
+        thread.reset();
+      }
       throw e;
     }
   }
