@@ -38,9 +38,8 @@ const mockAppConfig = {};
 const mockAgentProcessConfig = {
   command: 'npx',
   args: ['@anthropic-ai/claude-code@latest'],
-  workspaceDir: '/test/workspace',
-  env: {},
   cwd: '/test/workspace',
+  env: [],
 };
 
 // ---- Mock AcpThread factory ----

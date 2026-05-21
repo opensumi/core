@@ -44,7 +44,14 @@ export interface AgentSessionInfo {
   status: AgentSessionStatus;
 }
 
-export type AgentUpdateType = 'thought' | 'message' | 'tool_call' | 'tool_result' | 'done';
+export type AgentUpdateType =
+  | 'thought'
+  | 'message'
+  | 'tool_call'
+  | 'tool_call_status'
+  | 'tool_result'
+  | 'plan'
+  | 'done';
 
 export interface AgentUpdate {
   type: AgentUpdateType;
@@ -53,8 +60,10 @@ export interface AgentUpdate {
 }
 
 export interface SimpleToolCall {
+  toolCallId: string;
   name: string;
   input: Record<string, unknown>;
+  status?: 'pending' | 'in_progress' | 'completed' | 'failed';
 }
 
 /**
@@ -242,7 +251,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       command: config.command,
       args: config.args,
       env: config.env,
-      cwd: config.workspaceDir,
+      cwd: config.cwd,
     };
     const thread = this.threadFactory(sessionId, runtimeConfig);
     this.logger.log(`[AcpAgentService] Created new thread ${thread.threadId} for session ${sessionId}`);
@@ -265,7 +274,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         command: config.command,
         args: config.args,
         env: config.env,
-        cwd: config.workspaceDir,
+        cwd: config.cwd,
       };
       const thread = this.threadFactory('', runtimeConfig);
       this.threadPool.push(thread);
@@ -282,6 +291,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   async createSession(
     config: AgentProcessConfig,
   ): Promise<{ sessionId: string; availableCommands: AvailableCommand[] }> {
+    this.logger.log(`[AcpAgentService] createSession() — cwd=${config.cwd}, command=${config.command}`);
     const poolSizeBefore = this.threadPool.length;
     const thread = await this.findOrCreateIdleThread(config);
     const wasExisting = this.threadPool.length === poolSizeBefore;
@@ -310,7 +320,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       }
 
       const newSessionResponse = await thread.newSession({
-        cwd: config.workspaceDir,
+        cwd: config.cwd,
         mcpServers: [],
       } as any);
 
@@ -333,11 +343,17 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
       this.updateLastSessionInfo(realSessionId, thread, deduplicated);
 
+      this.logger.log(
+        `[AcpAgentService] createSession() — done, sessionId=${realSessionId}, commands=${deduplicated.length}`,
+      );
+      this.logPoolStatus('after-createSession');
+
       return { sessionId: realSessionId, availableCommands: deduplicated };
     } catch (e) {
       if (realSessionId) {
         this.sessions.delete(realSessionId);
       }
+      this.logger.error(`[AcpAgentService] createSession() — failed: ${e instanceof Error ? e.message : String(e)}`);
       if (!wasExisting) {
         const idx = this.threadPool.indexOf(thread);
         if (idx !== -1) {
@@ -372,9 +388,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // -----------------------------------------------------------------------
 
   async loadSession(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
+    this.logger.log(`[AcpAgentService] loadSession() — sessionId=${sessionId}`);
+
     // 1. sessions.get(sessionId) exists -> return directly
     const existingThread = this.sessions.get(sessionId);
     if (existingThread && existingThread.getStatus() !== 'disconnected') {
+      this.logger.log(`[AcpAgentService] loadSession() — thread already bound, threadId=${existingThread.threadId}`);
       return this.buildSessionLoadResult(sessionId, existingThread);
     }
 
@@ -383,6 +402,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       (t) => !this.hasActiveSession(t) && ['idle', 'awaiting_prompt'].includes(t.getStatus()),
     );
     if (idleThread) {
+      this.logger.log(`[AcpAgentService] loadSession() — reusing idle thread ${idleThread.threadId}`);
       this.sessions.set(sessionId, idleThread);
       try {
         if (!idleThread.initialized) {
@@ -393,12 +413,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         }
         await idleThread.loadSession({
           sessionId,
-          cwd: config.workspaceDir,
+          cwd: config.cwd,
           mcpServers: [],
         } as any);
       } catch (e) {
         this.sessions.delete(sessionId);
         idleThread.reset();
+        this.logger.error(
+          `[AcpAgentService] loadSession() — idle thread reuse failed: ${e instanceof Error ? e.message : String(e)}`,
+        );
         throw e;
       }
       return this.buildSessionLoadResult(sessionId, idleThread);
@@ -406,6 +429,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     // 3. Pool not full -> new Thread
     if (this.threadPool.length < this.maxPoolSize) {
+      this.logger.log(
+        `[AcpAgentService] loadSession() — creating new thread (pool=${this.threadPool.length}/${this.maxPoolSize})`,
+      );
       const thread = this.createThreadInstance(sessionId, config);
       this.threadPool.push(thread);
       this.sessions.set(sessionId, thread);
@@ -414,7 +440,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         await thread.initialize(config as any);
         await thread.loadSession({
           sessionId,
-          cwd: config.workspaceDir,
+          cwd: config.cwd,
           mcpServers: [],
         } as any);
       } catch (e) {
@@ -481,12 +507,19 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     const thread = this.sessions.get(request.sessionId);
     if (!thread) {
+      this.logger.error(`[AcpAgentService] sendMessage() — no thread for sessionId=${request.sessionId}`);
       stream.emitError(new Error(`No active session for sessionId: ${request.sessionId}`));
       return stream;
     }
 
     // Add user message to thread entries
     thread.addUserMessage(request.prompt);
+
+    this.logger.log(
+      `[AcpAgentService] sendMessage() — sessionId=${request.sessionId}, thread=${thread.threadId}, entries=${
+        thread.getEntries().length
+      }`,
+    );
 
     // Subscribe thread.onEvent: session_notification -> emitData to stream
     const disposables: IDisposable[] = [];
@@ -569,25 +602,72 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       case 'tool_call': {
         stream.emitData({
           type: 'tool_call',
-          content: update.title || '',
+          content: update.title || update.toolCallId || '',
           toolCall: {
-            name: update.title || '',
+            toolCallId: update.toolCallId || '',
+            name: update.title || update.toolCallId || '',
             input: (update.rawInput as Record<string, unknown>) || {},
+            status: 'pending' as const,
           },
         });
         break;
       }
 
       case 'tool_call_update': {
+        if (update.status === 'completed' || update.status === 'failed') {
+          // Emit completion/failure as tool_result for backward compat
+          if (update.rawOutput != null) {
+            const outputText =
+              typeof update.rawOutput === 'string' ? update.rawOutput : JSON.stringify(update.rawOutput);
+            stream.emitData({
+              type: 'tool_result',
+              content: outputText.slice(0, 2000),
+              toolCall: {
+                toolCallId: update.toolCallId || '',
+                name: '',
+                input: {},
+                status: update.status as 'completed' | 'failed',
+              },
+            });
+          }
+        } else if (update.status === 'in_progress') {
+          stream.emitData({
+            type: 'tool_call_status',
+            content: update.title || '',
+            toolCall: {
+              toolCallId: update.toolCallId || '',
+              name: update.title || '',
+              input: {},
+              status: 'in_progress' as const,
+            },
+          });
+        }
+        // Also emit diff content if present
         if (update.content) {
-          for (const content of update.content) {
-            if (content.type === 'diff') {
+          for (const item of update.content) {
+            if (item.type === 'diff') {
               stream.emitData({
                 type: 'tool_result',
-                content: `Modified ${content.path}`,
+                content: `Modified ${item.path}`,
               });
             }
           }
+        }
+        break;
+      }
+
+      case 'plan': {
+        const plan = update.plan;
+        if (plan?.entries?.length) {
+          const planText = plan.entries
+            .map((e: { content: string; completed?: boolean; status?: string }) =>
+              e.completed ? `- [x] ${e.content}` : `- [ ] ${e.content}`,
+            )
+            .join('\n');
+          stream.emitData({
+            type: 'plan',
+            content: planText,
+          });
         }
         break;
       }
@@ -623,7 +703,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   async listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse> {
     const sessionList: Array<{ sessionId: string }> = [];
     for (const [sessionId, thread] of this.sessions) {
-      sessionList.push({ sessionId });
+      if (thread.getStatus() !== 'disconnected') {
+        sessionList.push({ sessionId });
+      }
     }
     return { sessions: sessionList as any, nextCursor: undefined };
   }
@@ -649,12 +731,14 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
   async disposeSession(sessionId: string, force = false): Promise<void> {
     const thread = this.sessions.get(sessionId);
+    this.logger.log(`[AcpAgentService] disposeSession() — sessionId=${sessionId}, force=${force}`);
 
     // Release terminals
     await this.terminalHandler.releaseSessionTerminals(sessionId);
 
     if (force && thread) {
       // Force dispose: release terminals + dispose thread
+      this.logger.log(`[AcpAgentService] disposeSession() — force disposing thread ${thread.threadId}`);
       await thread.dispose();
       const idx = this.threadPool.indexOf(thread);
       if (idx !== -1) {
@@ -664,6 +748,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     // Default: just remove from session mapping, thread returns to pool
     this.sessions.delete(sessionId);
+    this.logPoolStatus('after-disposeSession');
   }
 
   // -----------------------------------------------------------------------
@@ -704,7 +789,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // -----------------------------------------------------------------------
 
   async stopAgent(): Promise<void> {
-    this.logger?.log('[AcpAgentService] stopAgent called, disposing all threads');
+    this.logger?.log(
+      `[AcpAgentService] stopAgent() — disposing ${this.threadPool.length} threads, ${this.sessions.size} active sessions`,
+    );
 
     for (const thread of this.threadPool) {
       try {
@@ -717,6 +804,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     this.threadPool = [];
     this.sessions.clear();
     this.lastSessionInfo = null;
+    this.logPoolStatus('after-stopAgent');
   }
 
   // -----------------------------------------------------------------------
@@ -724,13 +812,34 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // -----------------------------------------------------------------------
 
   async dispose(): Promise<void> {
-    this.logger?.log('[AcpAgentService] dispose called');
+    this.logger?.log('[AcpAgentService] dispose() — pool size=' + this.threadPool.length);
     await this.stopAgent();
+    this.logger?.log('[AcpAgentService] dispose() — done');
   }
 
   // -----------------------------------------------------------------------
   // Internal helpers
   // -----------------------------------------------------------------------
+
+  /**
+   * Log pool status summary — call after key pool operations.
+   */
+  private logPoolStatus(context: string): void {
+    const threadsInfo = this.threadPool.map((t) => ({
+      id: t.threadId,
+      status: t.getStatus(),
+      sid: t.sessionId || '-',
+      entries: t.getEntries().length,
+    }));
+    const activeCount = this.sessions.size;
+    this.logger.log(
+      `[AcpAgentService] pool(${context}) — threads:${this.threadPool.length}/${
+        this.maxPoolSize
+      }, active_sessions:${activeCount}, threads=[${threadsInfo
+        .map((t) => `${t.id}(${t.status},sid=${t.sid},entries=${t.entries})`)
+        .join(', ')}]`,
+    );
+  }
 
   private threadStatusToAgentStatus(status: string): AgentSessionStatus {
     switch (status) {

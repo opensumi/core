@@ -31,8 +31,8 @@ import {
 } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
-import { AcpPermissionCallerManagerToken } from '../../acp';
-import { AcpPermissionCallerManager } from '../acp-permission-caller.service';
+import { AcpPermissionCallerManagerToken, AcpPermissionCallerServiceToken } from '../../acp';
+import { AcpPermissionCallerService } from '../acp-permission-caller.service';
 
 import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './file-system.handler';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './terminal.handler';
@@ -54,10 +54,10 @@ export const AcpAgentRequestHandlerToken = Symbol('AcpAgentRequestHandlerToken')
  * ### Injector 层级问题
  *
  * 由于 `AcpAgentRequestHandler` 在主 Injector 中创建，它通过 `@Autowired` 注入的
- * `AcpPermissionCallerManager` 不是 childInjector 中与 RPC 连接关联的实例。
+ * `AcpPermissionCallerService` 不是 childInjector 中与 RPC 连接关联的实例。
  *
- * 解决方案：`AcpPermissionCallerManager` 使用静态变量 `currentRpcClient` 共享 RPC client，
- * 确保权限对话框在用户当前活跃的 Browser Tab 中显示。
+ * 解决方案：`AcpPermissionCallerService` 使用 RPCService 框架自动注入的 `this.client`
+ * 来调用 Browser 端的 `AcpPermissionRpcService`，确保权限对话框在用户当前活跃的 Browser Tab 中显示。
  *
  * @see {@link /docs/ai-native/architecture/injector-hierarchy.md} 详细设计文档
  */
@@ -69,8 +69,8 @@ export class AcpAgentRequestHandler {
   @Autowired(AcpTerminalHandlerToken)
   private terminalHandler: AcpTerminalHandler;
 
-  @Autowired(AcpPermissionCallerManagerToken)
-  private permissionCaller: AcpPermissionCallerManager;
+  @Autowired(AcpPermissionCallerServiceToken)
+  private permissionCaller: AcpPermissionCallerService;
 
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;

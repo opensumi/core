@@ -32,6 +32,10 @@ export class DefaultACPConfigProvider implements IACPConfigProvider {
     const agentType = getDefaultAgentType(this.preferenceService);
     const agentConfig = getAgentConfig(this.preferenceService, agentType);
     const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
-    return { ...agentConfig, workspaceDir };
+    return {
+      command: agentConfig.command,
+      args: agentConfig.args,
+      cwd: workspaceDir,
+    };
   }
 }

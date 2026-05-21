@@ -448,6 +448,7 @@ export class AcpThread extends Disposable implements IAcpThread {
     if (this._status === status) {
       return;
     }
+    this.logger?.log(`[AcpThread:${this.threadId}] setStatus() — ${this._status} → ${status}`);
     this._status = status;
     this.fireEvent({ type: 'status_changed', status } as AcpThreadEvent);
   }
@@ -724,6 +725,9 @@ export class AcpThread extends Disposable implements IAcpThread {
   // Public API — initialize (spec: accepts AgentProcessConfig)
   // -----------------------------------------------------------------------
   async initialize(config: AgentProcessConfig): Promise<InitializeResponse> {
+    this.logger?.log(
+      `[AcpThread:${this.threadId}] initialize() — agent=${config.command || this.options.command}, cwd=${config.cwd}`,
+    );
     await this.ensureSdkConnection();
 
     const initParams: InitializeRequest = {
@@ -766,6 +770,11 @@ export class AcpThread extends Disposable implements IAcpThread {
     }
 
     this._initialized = true;
+    this.logger?.log(
+      `[AcpThread:${this.threadId}] initialize() — done, protocolVersion=${
+        response.protocolVersion
+      }, capabilities=${JSON.stringify(response.agentCapabilities)}`,
+    );
     return response;
   }
 
@@ -774,6 +783,11 @@ export class AcpThread extends Disposable implements IAcpThread {
   // -----------------------------------------------------------------------
   async newSession(params?: Omit<NewSessionRequest, 'sessionId'>): Promise<NewSessionResponse> {
     await this.ensureInitialized();
+    this.logger?.log(
+      `[AcpThread:${this.threadId}] newSession() — cwd=${params?.cwd ?? this.options.cwd}, mcpServers=${
+        params?.mcpServers?.length ?? 0
+      }`,
+    );
 
     const request: NewSessionRequest = {
       cwd: params?.cwd ?? this.options.cwd,
@@ -785,27 +799,38 @@ export class AcpThread extends Disposable implements IAcpThread {
     this._sessionId = response.sessionId;
     this._needsReset = true;
     this.setStatus('awaiting_prompt');
+    this.logger?.log(
+      `[AcpThread:${this.threadId}] newSession() — sessionId=${response.sessionId}, status=awaiting_prompt`,
+    );
     return response;
   }
 
   async loadSession(params: LoadSessionRequest): Promise<LoadSessionResponse> {
     await this.ensureInitialized();
+    this.logger?.log(`[AcpThread:${this.threadId}] loadSession() — sessionId=${params.sessionId}`);
 
     const response: LoadSessionResponse = await this._connection.loadSession(params);
     this._sessionId = params.sessionId;
     this._needsReset = true;
     this.setStatus('awaiting_prompt');
+    this.logger?.log(
+      `[AcpThread:${this.threadId}] loadSession() — loaded sessionId=${params.sessionId}, status=awaiting_prompt`,
+    );
     return response;
   }
 
   async loadSessionOrNew(params: LoadSessionRequest): Promise<NewSessionResponse | LoadSessionResponse> {
     await this.ensureInitialized();
+    this.logger?.log(`[AcpThread:${this.threadId}] loadSessionOrNew() — sessionId=${params.sessionId}`);
 
     // Try loading first; fall back to new session
     try {
       return await this.loadSession(params);
     } catch {
       // Session doesn't exist, create a new one with same cwd/mcpServers
+      this.logger?.log(
+        `[AcpThread:${this.threadId}] loadSessionOrNew() — session not found, falling back to newSession`,
+      );
       return await this.newSession({
         cwd: params.cwd ?? this.options.cwd,
         mcpServers: params.mcpServers ?? [],
@@ -815,6 +840,7 @@ export class AcpThread extends Disposable implements IAcpThread {
 
   async prompt(params: PromptRequest): Promise<PromptResponse> {
     await this.ensureInitialized();
+    this.logger?.log(`[AcpThread:${this.threadId}] prompt() — status→working`);
     this.setStatus('working');
 
     const response: PromptResponse = await this._connection.prompt(params);
@@ -822,46 +848,58 @@ export class AcpThread extends Disposable implements IAcpThread {
     // After prompt completes, transition to awaiting_prompt
     if (this._status === 'working') {
       this.setStatus('awaiting_prompt');
+      this.logger?.log(
+        `[AcpThread:${this.threadId}] prompt() — done, status→awaiting_prompt, entries=${this._entries.length}`,
+      );
     }
     return response;
   }
 
   async cancel(params: CancelNotification): Promise<void> {
+    this.logger?.log(`[AcpThread:${this.threadId}] cancel() — sessionId=${params.sessionId}`);
     await this.ensureInitialized();
     await this._connection.cancel(params);
+    this.logger?.log(`[AcpThread:${this.threadId}] cancel() — done`);
   }
 
   async listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse> {
+    this.logger?.log(`[AcpThread:${this.threadId}] listSessions()`);
     await this.ensureInitialized();
     return this._connection.listSessions(params || {});
   }
 
   async setSessionMode(params: SetSessionModeRequest): Promise<SetSessionModeResponse | void> {
+    this.logger?.log(`[AcpThread:${this.threadId}] setSessionMode() — modeId=${params.modeId}`);
     await this.ensureInitialized();
     return this._connection.setSessionMode(params);
   }
 
   async setSessionConfigOption(params: SetSessionConfigOptionRequest): Promise<SetSessionConfigOptionResponse> {
+    this.logger?.log(`[AcpThread:${this.threadId}] setSessionConfigOption()`);
     await this.ensureInitialized();
     return this._connection.setSessionConfigOption(params);
   }
 
   async unstable_forkSession(params: ForkSessionRequest): Promise<ForkSessionResponse> {
+    this.logger?.log(`[AcpThread:${this.threadId}] unstable_forkSession()`);
     await this.ensureInitialized();
     return this._connection.unstable_forkSession(params);
   }
 
   async unstable_resumeSession(params: ResumeSessionRequest): Promise<ResumeSessionResponse> {
+    this.logger?.log(`[AcpThread:${this.threadId}] unstable_resumeSession()`);
     await this.ensureInitialized();
     return this._connection.unstable_resumeSession(params);
   }
 
   async unstable_closeSession(params: CloseSessionRequest): Promise<CloseSessionResponse> {
+    this.logger?.log(`[AcpThread:${this.threadId}] unstable_closeSession()`);
     await this.ensureInitialized();
     return this._connection.unstable_closeSession(params);
   }
 
   async unstable_setSessionModel(params: SetSessionModelRequest): Promise<SetSessionModelResponse | void> {
+    this.logger?.log(`[AcpThread:${this.threadId}] unstable_setSessionModel()`);
     await this.ensureInitialized();
     return this._connection.unstable_setSessionModel(params);
   }
@@ -870,6 +908,9 @@ export class AcpThread extends Disposable implements IAcpThread {
   // Entry manipulation
   // -----------------------------------------------------------------------
   addUserMessage(content: string): UserMessageEntry {
+    this.logger?.log(
+      `[AcpThread:${this.threadId}] addUserMessage() — content length=${content.length}, entries=${this._entries.length}`,
+    );
     const entry: UserMessageEntry = {
       id: uuid(),
       content,
@@ -941,6 +982,11 @@ export class AcpThread extends Disposable implements IAcpThread {
    * Does NOT clear _initialized — thread remains reusable.
    */
   reset(): void {
+    this.logger?.log(
+      `[AcpThread:${this.threadId}] reset() — clearing ${this._entries.length} entries, sessionId=${this._sessionId}, ${
+        this._needsReset ? 'needsReset' : ''
+      }`,
+    );
     this._entries = [];
     this._sessionId = '';
     this._needsReset = false;
@@ -950,6 +996,9 @@ export class AcpThread extends Disposable implements IAcpThread {
   }
 
   async dispose(): Promise<void> {
+    this.logger?.log(
+      `[AcpThread:${this.threadId}] dispose() — status=${this._status}, entries=${this._entries.length}`,
+    );
     this._eventEmitter.dispose();
     await this.killProcess();
     this._connection = null;
@@ -966,6 +1015,8 @@ export class AcpThread extends Disposable implements IAcpThread {
     if (!update) {
       return;
     }
+
+    this.logger?.log(`[AcpThread:${this.threadId}] handleNotification() — ${update.sessionUpdate}`);
 
     switch (update.sessionUpdate) {
       case 'user_message_chunk': {

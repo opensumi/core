@@ -8,7 +8,12 @@ export const ToolParameterSchema = z.object({
   description: z.string().optional(),
   enum: z.array(z.any()).optional(),
   items: z.lazy(() => ToolParameterSchema).optional(),
-  properties: z.record(z.lazy(() => ToolParameterSchema)).optional(),
+  properties: z
+    .record(
+      z.string(),
+      z.lazy(() => ToolParameterSchema),
+    )
+    .optional(),
   required: z.array(z.string()).optional(),
 });
 

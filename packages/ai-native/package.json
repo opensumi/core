@@ -60,8 +60,8 @@
     "react-highlight": "^0.15.0",
     "tiktoken": "1.0.12",
     "web-tree-sitter": "0.22.6",
-    "zod": "^3.23.8",
-    "zod-to-json-schema": "^3.24.1"
+    "zod": "^3.25.0 || ^4.0.0",
+    "zod-to-json-schema": "^3.25.0"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*"

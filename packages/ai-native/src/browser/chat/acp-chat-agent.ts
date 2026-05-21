@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { ILogger, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancellationToken,
@@ -68,6 +68,9 @@ export class AcpChatAgent implements IChatAgent {
   @Autowired(IACPConfigProvider)
   protected readonly configProvider: IACPConfigProvider;
 
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
+
   public id = AcpChatAgent.AGENT_ID;
 
   public get metadata(): IChatAgentMetadata {
@@ -99,6 +102,12 @@ export class AcpChatAgent implements IChatAgent {
     const maxTokens = this.preferenceService.get<number>(AINativeSettingSectionsId.MaxTokens);
     const agent = this.chatAgentService.getAgent(AcpChatAgent.AGENT_ID);
     const disabledTools = await this.mcpConfigService.getDisabledTools();
+
+    this.logger.log(
+      `[ACP Chat] getRequestOptions: model=${model}, modelId=${modelId}, apiKey=${
+        apiKey ? apiKey.slice(0, 8) + '***' : '(empty)'
+      }, baseURL=${baseURL}, maxTokens=${maxTokens}`,
+    );
 
     return {
       clientId: this.applicationService.clientId,
@@ -152,18 +161,23 @@ export class AcpChatAgent implements IChatAgent {
 
     try {
       const config = await this.configProvider.resolveConfig();
-      const stream = await this.aiBackService.requestStream(
-        prompt,
-        {
-          requestId: request.requestId,
-          sessionId,
-          history: [lastmessage],
-          images: request.images,
-          ...(await this.getRequestOptions()),
-          agentSessionConfig: config,
-        },
-        token,
+      this.logger.log(`[ACP Chat] invoke: sessionId=${sessionId}, config=${JSON.stringify(config)}`);
+
+      const requestOptions = {
+        requestId: request.requestId,
+        sessionId,
+        history: [lastmessage],
+        images: request.images,
+        ...(await this.getRequestOptions()),
+        agentSessionConfig: config,
+      };
+      this.logger.log(
+        `[ACP Chat] invoking aiBackService.requestStream: agentSessionConfig=${!!requestOptions.agentSessionConfig}, apiKey=${
+          requestOptions.apiKey ? requestOptions.apiKey.slice(0, 8) + '***' : '(empty)'
+        }`,
       );
+
+      const stream = await this.aiBackService.requestStream(prompt, requestOptions, token);
 
       listenReadable<IChatProgress>(stream, {
         onData: (data) => {

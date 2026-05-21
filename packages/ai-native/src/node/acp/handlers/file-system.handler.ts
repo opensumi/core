@@ -10,7 +10,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { ILogger, URI } from '@opensumi/ide-core-common';
 import { IFileService } from '@opensumi/ide-file-service';
 
@@ -46,6 +46,7 @@ export interface IAcpFileSystemHandler {
   writeTextFile(req: WriteTextFileRequest): Promise<WriteTextFileResponse>;
 }
 
+@Injectable()
 export class AcpFileSystemHandler implements IAcpFileSystemHandler {
   @Autowired(IFileService)
   private fileService: IFileService;
@@ -66,6 +67,7 @@ export class AcpFileSystemHandler implements IAcpFileSystemHandler {
   }
 
   async readTextFile(request: ReadTextFileRequest): Promise<ReadTextFileResponse> {
+    this.logger?.log(`[AcpFileSystemHandler] readTextFile() — sessionId=${request.sessionId}, path=${request.path}`);
     const filePath = this.resolvePath(request.path);
     if (!filePath) {
       return {
@@ -127,6 +129,9 @@ export class AcpFileSystemHandler implements IAcpFileSystemHandler {
   }
 
   async writeTextFile(request: WriteTextFileRequest): Promise<WriteTextFileResponse> {
+    this.logger?.log(
+      `[AcpFileSystemHandler] writeTextFile() — sessionId=${request.sessionId}, path=${request.path}, size=${request.content.length}`,
+    );
     const filePath = this.resolvePath(request.path);
     if (!filePath) {
       return {

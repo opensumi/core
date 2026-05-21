@@ -52,13 +52,14 @@ jest.mock('node-pty', () => ({
   spawn: jest.fn(),
 }));
 
+import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
+
 import {
   AcpThread,
   AcpThreadFactory,
   AcpThreadFactoryProvider,
   AcpThreadOptions,
   AcpThreadRuntimeConfig,
-  AgentProcessConfig,
   AgentThreadEntry,
   ThreadStatus,
   ToolCallStatus,
@@ -120,10 +121,11 @@ function createTestOptions(): AcpThreadOptions {
     command: 'npx',
     args: ['@anthropic-ai/claude-code@latest', '--print'],
     cwd: '/test/workspace',
-    env: {},
+    env: [],
     fileSystemHandler: mockFileSystemHandler as any,
     terminalHandler: mockTerminalHandler as any,
     permissionRouting: mockPermissionRouting as any,
+    logger: { log: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() } as any,
   };
 }
 
@@ -132,7 +134,6 @@ function createTestConfig(): AgentProcessConfig {
     command: 'npx',
     args: ['@anthropic-ai/claude-code@latest', '--print'],
     cwd: '/test/workspace',
-    workspaceDir: '/test/workspace',
   };
 }
 
@@ -1079,7 +1080,7 @@ describe('AcpThread', () => {
         command: 'npx',
         args: ['@anthropic-ai/claude-code@latest', '--print'],
         cwd: '/test/workspace',
-        env: {},
+        env: [],
       };
 
       const threadInstance = factoryFn('test-session-1', runtimeConfig);
@@ -1116,14 +1117,14 @@ describe('AcpThread', () => {
         command: 'npx',
         args: ['agent'],
         cwd: '/test',
-        env: { FOO: 'bar' },
+        env: [{ name: 'FOO', value: 'bar' }],
       });
 
       // Verify runtime config options are set
       expect((threadInstance as any).options.command).toBe('npx');
       expect((threadInstance as any).options.args).toEqual(['agent']);
       expect((threadInstance as any).options.cwd).toBe('/test');
-      expect((threadInstance as any).options.env).toEqual({ FOO: 'bar' });
+      expect((threadInstance as any).options.env).toEqual([{ name: 'FOO', value: 'bar' }]);
     });
   });
 });

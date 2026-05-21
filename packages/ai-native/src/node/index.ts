@@ -1,10 +1,5 @@
 import { Injectable, Provider } from '@opensumi/di';
-import {
-  AIBackSerivcePath,
-  AIBackSerivceToken,
-  AcpCliClientServiceToken,
-  AcpPermissionServicePath,
-} from '@opensumi/ide-core-common';
+import { AIBackSerivcePath, AIBackSerivceToken, AcpPermissionServicePath } from '@opensumi/ide-core-common';
 import { NodeModule } from '@opensumi/ide-core-node';
 
 import { SumiMCPServerProxyServicePath, TokenMCPServerProxyService } from '../common';
@@ -22,13 +17,10 @@ import {
   AcpTerminalHandler,
   AcpTerminalHandlerToken,
   AcpThreadFactoryProvider,
-  CliAgentProcessManager,
-  CliAgentProcessManagerToken,
   PermissionRoutingService,
   PermissionRoutingServiceToken,
 } from './acp';
 import { AcpCliBackService } from './acp/acp-cli-back.service';
-import { AcpCliClientService } from './acp/acp-cli-client.service';
 import { SumiMCPServerBackend } from './mcp/sumi-mcp-server';
 import { OpenAICompatibleModel } from './openai-compatible/openai-compatible-language-model';
 
@@ -38,14 +30,6 @@ export class AINativeModule extends NodeModule {
     {
       token: AIBackSerivceToken,
       useClass: AcpCliBackService,
-    },
-    {
-      token: AcpCliClientServiceToken,
-      useClass: AcpCliClientService,
-    },
-    {
-      token: CliAgentProcessManagerToken,
-      useClass: CliAgentProcessManager,
     },
     {
       token: AcpAgentServiceToken,

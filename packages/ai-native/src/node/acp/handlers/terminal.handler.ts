@@ -10,7 +10,7 @@
  */
 import * as pty from 'node-pty';
 
-import { Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { uuid } from '@opensumi/ide-core-common';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
@@ -68,6 +68,7 @@ interface TerminalSession {
   startTime: number;
 }
 
+@Injectable()
 export class AcpTerminalHandler implements IAcpTerminalHandler {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
@@ -287,6 +288,7 @@ export class AcpTerminalHandler implements IAcpTerminalHandler {
   }
 
   async killTerminal(terminalId: string, sessionId: string): Promise<{ error?: { message: string } }> {
+    this.logger?.log(`[AcpTerminalHandler] killTerminal() — terminalId=${terminalId}`);
     const terminalSession = this.terminals.get(terminalId);
     if (!terminalSession) {
       return {
@@ -350,6 +352,7 @@ export class AcpTerminalHandler implements IAcpTerminalHandler {
   }
 
   async releaseTerminal(terminalId: string, sessionId: string): Promise<{ error?: { message: string } }> {
+    this.logger?.log(`[AcpTerminalHandler] releaseTerminal() — terminalId=${terminalId}`);
     const terminalSession = this.terminals.get(terminalId);
     if (!terminalSession) {
       // Already released or doesn't exist

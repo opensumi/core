@@ -3,6 +3,8 @@
  * Centralized configuration for supported CLI agents
  */
 
+import type { EnvVariable } from './acp-types';
+
 // ACP Agent 类型
 export type ACPAgentType = 'qwen' | 'claude-agent-acp';
 
@@ -55,6 +57,7 @@ export function getSupportedAgentTypes(): ACPAgentType[] {
 /**
  * Configuration for spawning and running the ACP CLI agent process.
  * Used to initialize the agent connection and process, not to configure individual sessions.
+ * Field names and env structure are aligned with @agentclientprotocol/sdk conventions.
  */
 export interface AgentProcessConfig {
   /**
@@ -65,9 +68,16 @@ export interface AgentProcessConfig {
    * Arguments passed to the agent
    */
   args: string[];
-  workspaceDir: string;
-  env?: Record<string, string>;
-  enablePermissionConfirmation?: boolean;
+  /**
+   * Working directory (absolute path).
+   * Named `cwd` to match ACP SDK CreateTerminalRequest.
+   */
+  cwd: string;
+  /**
+   * Environment variables for the agent process.
+   * Structure matches ACP SDK EnvVariable (array of {name, value}).
+   */
+  env?: EnvVariable[];
 }
 
 /**
@@ -76,6 +86,8 @@ export interface AgentProcessConfig {
  * (e.g., inject custom env vars, override command paths, add validation).
  */
 export const IACPConfigProvider = Symbol('IACPConfigProvider');
+
+export { EnvVariable } from './acp-types';
 
 export interface IACPConfigProvider {
   /**

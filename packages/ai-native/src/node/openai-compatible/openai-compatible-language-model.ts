@@ -11,6 +11,11 @@ import { BaseLanguageModel } from '../base-language-model';
 export class OpenAICompatibleModel extends BaseLanguageModel {
   protected initializeProvider(options: IAIBackServiceOption): OpenAICompatibleProvider {
     const apiKey = options.apiKey;
+    this.logger?.log(
+      `[OpenAICompatibleModel] initializeProvider: apiKey=${apiKey ? apiKey.slice(0, 8) + '***' : '(empty)'}, baseURL=${
+        options.baseURL || 'default'
+      }`,
+    );
     if (!apiKey) {
       throw new Error(`Please provide OpenAI API Key in preferences (${AINativeSettingSectionsId.OpenaiApiKey})`);
     }

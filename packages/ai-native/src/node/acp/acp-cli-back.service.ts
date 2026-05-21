@@ -8,7 +8,8 @@ import {
   IChatContent,
   IChatProgress,
   IChatReasoning,
-  ListSessionsRequest,
+  IChatToolCall,
+  IChatToolContent,
   ListSessionsResponse,
   SessionNotification,
   SetSessionModeRequest,
@@ -20,14 +21,7 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { BaseLanguageModel } from '../base-language-model';
 import { OpenAICompatibleModel } from '../openai-compatible/openai-compatible-language-model';
 
-import {
-  AcpAgentServiceToken,
-  AgentRequest,
-  AgentSessionInfo,
-  AgentUpdate,
-  IAcpAgentService,
-  SimpleMessage,
-} from './acp-agent.service';
+import { AcpAgentServiceToken, AgentRequest, AgentUpdate, IAcpAgentService, SimpleMessage } from './acp-agent.service';
 
 import type { CoreMessage } from 'ai';
 
@@ -102,7 +96,7 @@ export class AcpCliBackService implements IAIBackService {
 
   private isDisposing = false;
 
-  // private registerProcessExitHandlers(): void {
+  // registerProcessExitHandlers(): void {
   //   process.once('SIGTERM', () => {
   //     this.dispose().then(() => {
   //       process.exit(0);
@@ -115,21 +109,6 @@ export class AcpCliBackService implements IAIBackService {
   //     });
   //   });
   // }
-
-  async createSession(
-    config: AgentProcessConfig,
-  ): Promise<{ sessionId: string; availableCommands: AvailableCommand[] }> {
-    await this.ensureAgentInitialized(config);
-    return this.agentService.createSession(config);
-  }
-
-  private async ensureAgentInitialized(config: AgentProcessConfig): Promise<AgentSessionInfo> {
-    const existingSession = this.agentService.getSessionInfo();
-    if (existingSession) {
-      return existingSession;
-    }
-    return this.agentService.initializeAgent(config);
-  }
 
   async request(
     input: string,
@@ -147,10 +126,17 @@ export class AcpCliBackService implements IAIBackService {
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<SumiReadableStream<IChatProgress>> {
+    this.logger.log(
+      `[ACP Back] requestStream: hasAgentSessionConfig=${!!options.agentSessionConfig}, apiKey=${
+        options.apiKey ? options.apiKey.slice(0, 8) + '***' : '(empty)'
+      }, baseURL=${options.baseURL}, sessionId=${options.sessionId}`,
+    );
     // Fallback to OpenAI-compatible API when ACP agent is not configured
     if (!options.agentSessionConfig) {
+      this.logger.log('[ACP Back] No agentSessionConfig, falling back to OpenAI-compatible');
       return this.openAIRequestStream(input, options, cancelToken);
     }
+    this.logger.log('[ACP Back] Using agent request stream');
     return this.agentRequestStream(input, options, cancelToken);
   }
 
@@ -159,6 +145,11 @@ export class AcpCliBackService implements IAIBackService {
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<ChatReadableStream> {
+    this.logger.log(
+      `[ACP Back] openAIRequestStream: apiKey=${
+        options.apiKey ? options.apiKey.slice(0, 8) + '***' : '(empty)'
+      }, baseURL=${options.baseURL}`,
+    );
     const stream = new ChatReadableStream();
     try {
       await this.openAICompatibleModel.request(input, stream, options, cancelToken);
@@ -173,6 +164,7 @@ export class AcpCliBackService implements IAIBackService {
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): SumiReadableStream<IChatProgress> {
+    this.logger.log('[ACP Back] agentRequestStream: setting up agent stream');
     const stream = new SumiReadableStream<IChatProgress>();
     this.setupAgentStream(options.agentSessionConfig!, input, options, stream, cancelToken);
     return stream;
@@ -186,12 +178,13 @@ export class AcpCliBackService implements IAIBackService {
     cancelToken?: CancellationToken,
   ): Promise<void> {
     try {
-      if (!options.agentSessionConfig) {
-        throw Error('agentSessionConfig is required');
-      }
+      this.logger.log(`[ACP Back] setupAgentStream: config=${JSON.stringify(config)}, sessionId=${options.sessionId}`);
 
-      const sessionInfo = await this.ensureAgentInitialized(options.agentSessionConfig);
-      const sessionId = options.sessionId || sessionInfo.sessionId;
+      let sessionId = options.sessionId;
+      if (!sessionId) {
+        const result = await this.agentService.createSession(config);
+        sessionId = result.sessionId;
+      }
 
       const request: AgentRequest = {
         sessionId,
@@ -199,6 +192,8 @@ export class AcpCliBackService implements IAIBackService {
         images: options.images,
         history: convertMessageHistory(options.history),
       };
+
+      this.logger.log(`[ACP Back] setupAgentStream: sending message, prompt=${input.slice(0, 100)}...`);
 
       const agentStream = this.agentService.sendMessage(request, config);
 
@@ -208,6 +203,7 @@ export class AcpCliBackService implements IAIBackService {
       });
 
       agentStream.onData((update: AgentUpdate) => {
+        this.logger.log(`[ACP Back] agentStream onData: type=${update.type}`);
         const progress = this.convertAgentUpdateToChatProgress(update);
         if (progress) {
           stream.emitData(progress);
@@ -218,9 +214,11 @@ export class AcpCliBackService implements IAIBackService {
       });
 
       agentStream.onError((error) => {
+        this.logger.error('[ACP Back] agentStream onError:', error);
         stream.emitError(error instanceof Error ? error : new Error(String(error)));
       });
     } catch (error) {
+      this.logger.error('[ACP Back] setupAgentStream catch:', error);
       stream.emitError(error instanceof Error ? error : new Error(String(error)));
     }
   }
@@ -237,9 +235,36 @@ export class AcpCliBackService implements IAIBackService {
           kind: 'content',
           content: update.content,
         } as IChatContent;
-      case 'tool_call':
-        return null;
-      case 'tool_result':
+      case 'tool_call': {
+        const toolCall: IChatToolCall = {
+          id: update.toolCall?.toolCallId || '',
+          type: 'function',
+          function: {
+            name: update.toolCall?.name || update.content,
+            arguments: update.toolCall?.input ? JSON.stringify(update.toolCall.input) : '',
+          },
+        };
+        return {
+          kind: 'toolCall',
+          content: toolCall,
+        } as IChatToolContent;
+      }
+      case 'tool_call_status': {
+        const label = update.toolCall?.name || 'tool';
+        const statusLabel = update.toolCall?.status === 'in_progress' ? `${label} is running...` : update.content;
+        return {
+          kind: 'content',
+          content: statusLabel,
+        } as IChatContent;
+      }
+      case 'tool_result': {
+        // If toolCall info is available, use it; otherwise just show content
+        return {
+          kind: 'content',
+          content: update.content,
+        } as IChatContent;
+      }
+      case 'plan':
         return {
           kind: 'content',
           content: update.content,
@@ -344,22 +369,17 @@ export class AcpCliBackService implements IAIBackService {
     }
   }
 
-  async listSessions(config: AgentProcessConfig): Promise<ListSessionsResponse> {
-    const listParams: ListSessionsRequest = {
-      cwd: config.workspaceDir,
-    };
-    await this.ensureAgentInitialized(config);
+  async createSession(config: AgentProcessConfig): Promise<{
+    sessionId: string;
+    availableCommands: AvailableCommand[];
+  }> {
+    this.logger.log('[ACP Back] createSession called');
+    return this.agentService.createSession(config);
+  }
 
-    try {
-      const response = await this.agentService.listSessions(listParams);
-      return {
-        sessions: response.sessions,
-        nextCursor: response.nextCursor,
-      };
-    } catch (error) {
-      this.logger.error('Failed to list sessions:', error);
-      throw error;
-    }
+  async listSessions(config: AgentProcessConfig): Promise<ListSessionsResponse> {
+    this.logger.log('[ACP Back] listSessions called');
+    return this.agentService.listSessions();
   }
 
   async dispose(): Promise<void> {
