@@ -64,6 +64,8 @@ import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './handlers/file
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
 import { PermissionRoutingService, PermissionRoutingServiceToken } from './permission-routing.service';
 
+import type { AgentUpdate, SimpleToolCall } from './acp-update-types';
+
 // ---------------------------------------------------------------------------
 // Polyfill Web Streams for Node 16
 // ---------------------------------------------------------------------------
@@ -1046,6 +1048,112 @@ export class AcpThread extends Disposable implements IAcpThread {
       }
       default:
         this.logger?.debug(`[AcpThread:${this.threadId}] Unknown session update: ${update.sessionUpdate}`);
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Notification → AgentUpdate translation
+  // -----------------------------------------------------------------------
+
+  /**
+   * Translate a SessionNotification into the legacy AgentUpdate format
+   * for stream consumption by AcpAgentService.
+   */
+  toAgentUpdate(notification: SessionNotification): AgentUpdate | null {
+    const update = (notification as any).update;
+    if (!update) {
+      return null;
+    }
+
+    switch (update.sessionUpdate) {
+      case 'agent_thought_chunk': {
+        const content = update.content;
+        if (content?.type === 'text') {
+          return { type: 'thought', content: content.text };
+        }
+        return null;
+      }
+
+      case 'agent_message_chunk': {
+        const content = update.content;
+        if (content?.type === 'text') {
+          return { type: 'message', content: content.text };
+        }
+        return null;
+      }
+
+      case 'tool_call': {
+        return {
+          type: 'tool_call',
+          content: update.title || update.toolCallId || '',
+          toolCall: {
+            toolCallId: update.toolCallId || '',
+            name: update.title || update.toolCallId || '',
+            input: (update.rawInput as Record<string, unknown>) || {},
+            status: 'pending' as const,
+          },
+        };
+      }
+
+      case 'tool_call_update': {
+        if (update.status === 'completed' || update.status === 'failed') {
+          if (update.rawOutput != null) {
+            const outputText =
+              typeof update.rawOutput === 'string' ? update.rawOutput : JSON.stringify(update.rawOutput);
+            return {
+              type: 'tool_result',
+              content: outputText.slice(0, 2000),
+              toolCall: {
+                toolCallId: update.toolCallId || '',
+                name: '',
+                input: {},
+                status: update.status as 'completed' | 'failed',
+              },
+            };
+          }
+          return null;
+        }
+        if (update.status === 'in_progress') {
+          return {
+            type: 'tool_call_status',
+            content: update.title || '',
+            toolCall: {
+              toolCallId: update.toolCallId || '',
+              name: update.title || '',
+              input: {},
+              status: 'in_progress' as const,
+            },
+          };
+        }
+        // Emit diff content if present
+        if (update.content) {
+          for (const item of update.content) {
+            if (item.type === 'diff') {
+              return {
+                type: 'tool_result',
+                content: `Modified ${item.path}`,
+              };
+            }
+          }
+        }
+        return null;
+      }
+
+      case 'plan': {
+        const plan = update.plan;
+        if (plan?.entries?.length) {
+          const planText = plan.entries
+            .map((e: { content: string; completed?: boolean; status?: string }) =>
+              e.completed ? `- [x] ${e.content}` : `- [ ] ${e.content}`,
+            )
+            .join('\n');
+          return { type: 'plan', content: planText };
+        }
+        return null;
+      }
+
+      default:
+        return null;
     }
   }
 

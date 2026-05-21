@@ -19,6 +19,9 @@ import {
 } from './acp-thread';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
 
+import type { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types';
+export { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types';
+
 // ============================================================================
 // DI Token
 // ============================================================================
@@ -42,28 +45,6 @@ export interface AgentSessionInfo {
   processId: string;
   modes: Array<{ id: string; name: string }>;
   status: AgentSessionStatus;
-}
-
-export type AgentUpdateType =
-  | 'thought'
-  | 'message'
-  | 'tool_call'
-  | 'tool_call_status'
-  | 'tool_result'
-  | 'plan'
-  | 'done';
-
-export interface AgentUpdate {
-  type: AgentUpdateType;
-  content: string;
-  toolCall?: SimpleToolCall;
-}
-
-export interface SimpleToolCall {
-  toolCallId: string;
-  name: string;
-  input: Record<string, unknown>;
-  status?: 'pending' | 'in_progress' | 'completed' | 'failed';
 }
 
 /**
@@ -526,7 +507,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     const eventDisposable = thread.onEvent((event: AcpThreadEvent) => {
       if (event.type === 'session_notification') {
-        this.handleNotification(event.notification, stream);
+        const agentUpdate = thread.toAgentUpdate(event.notification);
+        if (agentUpdate) {
+          stream.emitData(agentUpdate);
+        }
       }
     });
     disposables.push(eventDisposable);
@@ -563,118 +547,6 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       stream.end();
     } catch (error) {
       stream.emitError(error instanceof Error ? error : new Error(String(error)));
-    }
-  }
-
-  // -----------------------------------------------------------------------
-  // handleNotification -> AgentUpdate mapping
-  // -----------------------------------------------------------------------
-
-  private handleNotification(notification: SessionNotification, stream: SumiReadableStream<AgentUpdate>): void {
-    const update = (notification as any).update;
-    if (!update) {
-      return;
-    }
-
-    switch (update.sessionUpdate) {
-      case 'agent_thought_chunk': {
-        const content = update.content;
-        if (content?.type === 'text') {
-          stream.emitData({
-            type: 'thought',
-            content: content.text,
-          });
-        }
-        break;
-      }
-
-      case 'agent_message_chunk': {
-        const content = update.content;
-        if (content?.type === 'text') {
-          stream.emitData({
-            type: 'message',
-            content: content.text,
-          });
-        }
-        break;
-      }
-
-      case 'tool_call': {
-        stream.emitData({
-          type: 'tool_call',
-          content: update.title || update.toolCallId || '',
-          toolCall: {
-            toolCallId: update.toolCallId || '',
-            name: update.title || update.toolCallId || '',
-            input: (update.rawInput as Record<string, unknown>) || {},
-            status: 'pending' as const,
-          },
-        });
-        break;
-      }
-
-      case 'tool_call_update': {
-        if (update.status === 'completed' || update.status === 'failed') {
-          // Emit completion/failure as tool_result for backward compat
-          if (update.rawOutput != null) {
-            const outputText =
-              typeof update.rawOutput === 'string' ? update.rawOutput : JSON.stringify(update.rawOutput);
-            stream.emitData({
-              type: 'tool_result',
-              content: outputText.slice(0, 2000),
-              toolCall: {
-                toolCallId: update.toolCallId || '',
-                name: '',
-                input: {},
-                status: update.status as 'completed' | 'failed',
-              },
-            });
-          }
-        } else if (update.status === 'in_progress') {
-          stream.emitData({
-            type: 'tool_call_status',
-            content: update.title || '',
-            toolCall: {
-              toolCallId: update.toolCallId || '',
-              name: update.title || '',
-              input: {},
-              status: 'in_progress' as const,
-            },
-          });
-        }
-        // Also emit diff content if present
-        if (update.content) {
-          for (const item of update.content) {
-            if (item.type === 'diff') {
-              stream.emitData({
-                type: 'tool_result',
-                content: `Modified ${item.path}`,
-              });
-            }
-          }
-        }
-        break;
-      }
-
-      case 'plan': {
-        const plan = update.plan;
-        if (plan?.entries?.length) {
-          const planText = plan.entries
-            .map((e: { content: string; completed?: boolean; status?: string }) =>
-              e.completed ? `- [x] ${e.content}` : `- [ ] ${e.content}`,
-            )
-            .join('\n');
-          stream.emitData({
-            type: 'plan',
-            content: planText,
-          });
-        }
-        break;
-      }
-
-      default:
-        this.logger?.log(`[AcpAgentService] Unhandled session update type: ${update.sessionUpdate}`);
-        break;
     }
   }
 
