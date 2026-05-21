@@ -4,6 +4,7 @@ import {
   AvailableCommand,
   ListSessionsRequest,
   ListSessionsResponse,
+  SessionInfo,
   SessionNotification,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
@@ -595,14 +596,14 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // -----------------------------------------------------------------------
 
   async listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse> {
-    const sessionIds = new Set<string>();
+    const sessionsMap = new Map<string, SessionInfo>();
     for (const [sessionId, thread] of this.sessions) {
       if (thread.getStatus() !== 'disconnected') {
         try {
           const result = await thread.listSessions(params);
           if (result?.sessions) {
-            for (const s of result.sessions as Array<{ sessionId: string }>) {
-              sessionIds.add(s.sessionId);
+            for (const info of result.sessions) {
+              sessionsMap.set(info.sessionId, info);
             }
           }
         } catch (error) {
@@ -611,8 +612,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       }
     }
 
-    const sessionList = Array.from(sessionIds).map((sessionId) => ({ sessionId }));
-    return { sessions: sessionList as any, nextCursor: undefined };
+    return { sessions: Array.from(sessionsMap.values()), nextCursor: undefined };
   }
 
   // -----------------------------------------------------------------------
