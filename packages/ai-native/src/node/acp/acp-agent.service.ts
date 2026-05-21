@@ -258,7 +258,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       cwd: config.cwd,
     };
     const thread = this.threadFactory(sessionId, runtimeConfig);
-    this.logger.log(`[AcpAgentService] Created new thread ${thread.threadId} for session ${sessionId}`);
+    this.logger.log(
+      `[AcpAgentService] Created new thread ${thread.threadId} for session ${sessionId}, cwd=${config.cwd}`,
+    );
     return thread;
   }
 
@@ -397,7 +399,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     // 1. sessions.get(sessionId) exists -> return directly
     const existingThread = this.sessions.get(sessionId);
     if (existingThread && existingThread.getStatus() !== 'disconnected') {
-      this.logger.log(`[AcpAgentService] loadSession() — thread already bound, threadId=${existingThread.threadId}`);
+      this.logger.log(
+        `[AcpAgentService] loadSession() — thread already bound, threadId=${existingThread.threadId}, cwd=${existingThread.cwd}`,
+      );
       return this.buildSessionLoadResult(sessionId, existingThread);
     }
 
@@ -406,7 +410,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       (t) => !this.hasActiveSession(t) && ['idle', 'awaiting_prompt'].includes(t.getStatus()),
     );
     if (idleThread) {
-      this.logger.log(`[AcpAgentService] loadSession() — reusing idle thread ${idleThread.threadId}`);
+      this.logger.log(
+        `[AcpAgentService] loadSession() — reusing idle thread ${idleThread.threadId}, cwd=${idleThread.cwd}`,
+      );
       this.sessions.set(sessionId, idleThread);
       try {
         if (!idleThread.initialized) {
@@ -615,7 +621,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
             lastNextCursor = result.nextCursor;
           }
         } catch (error) {
-          this.logger?.warn(`[AcpAgentService] listSessions error for thread ${sessionId}:`, error);
+          this.logger?.warn(`[AcpAgentService] listSessions error for thread ${sessionId}, cwd=${thread.cwd}:`, error);
         }
       }
     }
@@ -804,7 +810,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     if (force && thread) {
       // Force dispose: release terminals + dispose thread
-      this.logger.log(`[AcpAgentService] disposeSession() — force disposing thread ${thread.threadId}`);
+      this.logger.log(
+        `[AcpAgentService] disposeSession() — force disposing thread ${thread.threadId}, cwd=${thread.cwd}`,
+      );
       await thread.dispose();
       const idx = this.threadPool.indexOf(thread);
       if (idx !== -1) {
@@ -863,7 +871,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       try {
         await thread.dispose();
       } catch (error) {
-        this.logger?.warn(`[AcpAgentService] Error disposing thread ${thread.threadId}:`, error);
+        this.logger?.warn(`[AcpAgentService] Error disposing thread ${thread.threadId}, cwd=${thread.cwd}:`, error);
       }
     }
 

@@ -370,6 +370,11 @@ export const AcpThreadFactoryProvider: Provider = {
 export class AcpThread extends Disposable implements IAcpThread {
   readonly threadId: string = uuid();
 
+  /** Working directory of the thread's agent process */
+  get cwd(): string {
+    return this.options.cwd;
+  }
+
   // State
   private _status: ThreadStatus = 'idle';
   private _entries: AgentThreadEntry[] = [];
