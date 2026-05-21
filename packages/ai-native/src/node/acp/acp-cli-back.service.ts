@@ -396,4 +396,39 @@ export class AcpCliBackService implements IAIBackService {
   async ready(): Promise<boolean> {
     return true;
   }
+
+  async loadSessionOrNew(
+    config: AgentProcessConfig,
+    sessionId: string,
+  ): Promise<{
+    sessionId: string;
+    messages: Array<{ role: 'user' | 'assistant'; content: string; timestamp?: number }>;
+  }> {
+    const result = await this.agentService.loadSessionOrNew(sessionId, config);
+    const messages = this.convertSessionUpdatesToMessages(result.historyUpdates);
+    return { sessionId, messages };
+  }
+
+  async setSessionConfigOption(sessionId: string, options: Record<string, unknown>): Promise<void> {
+    await this.agentService.setSessionConfigOption({ sessionId, options });
+  }
+
+  async forkSession(
+    sessionId: string,
+    options?: { cwd?: string; mcpServers?: string[] },
+  ): Promise<{ sessionId: string }> {
+    return this.agentService.forkSession({ sessionId, ...options });
+  }
+
+  async resumeSession(sessionId: string): Promise<void> {
+    await this.agentService.resumeSession({ sessionId });
+  }
+
+  async closeSession(sessionId: string): Promise<void> {
+    await this.agentService.closeSession({ sessionId });
+  }
+
+  async setSessionModel(sessionId: string, model: string): Promise<void> {
+    await this.agentService.setSessionModel({ sessionId, model });
+  }
 }
