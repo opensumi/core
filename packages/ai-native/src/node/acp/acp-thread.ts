@@ -20,7 +20,12 @@ import { Deferred, Disposable, Emitter, Event, ILogger, URI, uuid } from '@opens
 import {
   AgentCapabilities,
   CancelNotification,
+  CloseSessionRequest,
+  CloseSessionResponse,
   ContentBlock,
+  EnvVariable,
+  ForkSessionRequest,
+  ForkSessionResponse,
   InitializeRequest,
   InitializeResponse,
   ListSessionsRequest,
@@ -38,12 +43,21 @@ import {
   ReadTextFileResponse,
   RequestPermissionRequest,
   RequestPermissionResponse,
+  ResumeSessionRequest,
+  ResumeSessionResponse,
   SessionNotification,
+  SetSessionConfigOptionRequest,
+  SetSessionConfigOptionResponse,
+  SetSessionModeRequest,
+  SetSessionModeResponse,
+  SetSessionModelRequest,
+  SetSessionModelResponse,
   ToolCall,
   ToolCallUpdate,
   WriteTextFileRequest,
   WriteTextFileResponse,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
+import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
 import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './handlers/file-system.handler';
@@ -199,18 +213,6 @@ export type AcpThreadEvent =
   | { type: 'process_stopped' };
 
 // ---------------------------------------------------------------------------
-// AgentProcessConfig — initialize parameter (spec)
-// ---------------------------------------------------------------------------
-export interface AgentProcessConfig {
-  command: string;
-  args: string[];
-  env?: Record<string, string>;
-  cwd: string;
-  workspaceDir: string;
-  [key: string]: unknown;
-}
-
-// ---------------------------------------------------------------------------
 // DI Token and Interface
 // ---------------------------------------------------------------------------
 export const AcpThreadToken = Symbol('AcpThreadToken');
@@ -255,6 +257,16 @@ export interface IAcpThread {
   cancel(params: CancelNotification): Promise<void>;
   listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse>;
 
+  // Session mode & config
+  setSessionMode(params: SetSessionModeRequest): Promise<SetSessionModeResponse | void>;
+  setSessionConfigOption(params: SetSessionConfigOptionRequest): Promise<SetSessionConfigOptionResponse>;
+
+  // Unstable session operations
+  unstable_forkSession(params: ForkSessionRequest): Promise<ForkSessionResponse>;
+  unstable_resumeSession(params: ResumeSessionRequest): Promise<ResumeSessionResponse>;
+  unstable_closeSession(params: CloseSessionRequest): Promise<CloseSessionResponse>;
+  unstable_setSessionModel(params: SetSessionModelRequest): Promise<SetSessionModelResponse | void>;
+
   // State management (internal + testing)
   getEntries(): ReadonlyArray<AgentThreadEntry>;
   getStatus(): ThreadStatus;
@@ -281,11 +293,12 @@ export interface IAcpThread {
 export interface AcpThreadOptions {
   command: string;
   args: string[];
-  env?: Record<string, string>;
+  env?: EnvVariable[];
   cwd: string;
   fileSystemHandler: AcpFileSystemHandler;
   terminalHandler: AcpTerminalHandler;
   permissionRouting: PermissionRoutingService;
+  logger: INodeLogger;
 }
 
 // ---------------------------------------------------------------------------
@@ -299,7 +312,7 @@ export interface AcpThreadOptions {
 export interface AcpThreadRuntimeConfig {
   command: string;
   args: string[];
-  env?: Record<string, string>;
+  env?: EnvVariable[];
   cwd: string;
 }
 
@@ -333,6 +346,7 @@ export const AcpThreadFactoryProvider: Provider = {
     const fileSystemHandler = injector.get(AcpFileSystemHandlerToken);
     const terminalHandler = injector.get(AcpTerminalHandlerToken);
     const permissionRouting = injector.get(PermissionRoutingServiceToken);
+    const logger = injector.get(INodeLogger);
 
     return (sessionId: string, config: AcpThreadRuntimeConfig) =>
       new AcpThread({
@@ -343,6 +357,7 @@ export const AcpThreadFactoryProvider: Provider = {
         fileSystemHandler,
         terminalHandler,
         permissionRouting,
+        logger,
       });
   },
 };
@@ -459,9 +474,14 @@ export class AcpThread extends Disposable implements IAcpThread {
     const nodePath = process.env.SUMI_ACP_NODE_PATH || this.options.command;
     const nodeBinDir = nodePath.substring(0, nodePath.lastIndexOf('/'));
 
+    const spawnEnv: Record<string, string> = {};
+    for (const v of this.options.env || []) {
+      spawnEnv[v.name] = v.value;
+    }
+
     const newEnv = {
       ...process.env,
-      ...this.options.env,
+      ...spawnEnv,
       NODE: `${nodeBinDir}/node`,
       PATH: `${nodeBinDir}:${process.env.PATH || ''}`,
     };
@@ -756,8 +776,10 @@ export class AcpThread extends Disposable implements IAcpThread {
     await this.ensureInitialized();
 
     const request: NewSessionRequest = {
-      ...(params || {}),
-    } as NewSessionRequest;
+      cwd: params?.cwd ?? this.options.cwd,
+      mcpServers: params?.mcpServers ?? [],
+      ...(params?._meta ? { _meta: params._meta } : {}),
+    };
 
     const response: NewSessionResponse = await this._connection.newSession(request);
     this._sessionId = response.sessionId;
@@ -783,8 +805,11 @@ export class AcpThread extends Disposable implements IAcpThread {
     try {
       return await this.loadSession(params);
     } catch {
-      // Session doesn't exist, create a new one
-      return await this.newSession();
+      // Session doesn't exist, create a new one with same cwd/mcpServers
+      return await this.newSession({
+        cwd: params.cwd ?? this.options.cwd,
+        mcpServers: params.mcpServers ?? [],
+      });
     }
   }
 
@@ -802,15 +827,43 @@ export class AcpThread extends Disposable implements IAcpThread {
   }
 
   async cancel(params: CancelNotification): Promise<void> {
-    if (!this._connection) {
-      return;
-    }
+    await this.ensureInitialized();
     await this._connection.cancel(params);
   }
 
   async listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse> {
     await this.ensureInitialized();
     return this._connection.listSessions(params || {});
+  }
+
+  async setSessionMode(params: SetSessionModeRequest): Promise<SetSessionModeResponse | void> {
+    await this.ensureInitialized();
+    return this._connection.setSessionMode(params);
+  }
+
+  async setSessionConfigOption(params: SetSessionConfigOptionRequest): Promise<SetSessionConfigOptionResponse> {
+    await this.ensureInitialized();
+    return this._connection.setSessionConfigOption(params);
+  }
+
+  async unstable_forkSession(params: ForkSessionRequest): Promise<ForkSessionResponse> {
+    await this.ensureInitialized();
+    return this._connection.unstable_forkSession(params);
+  }
+
+  async unstable_resumeSession(params: ResumeSessionRequest): Promise<ResumeSessionResponse> {
+    await this.ensureInitialized();
+    return this._connection.unstable_resumeSession(params);
+  }
+
+  async unstable_closeSession(params: CloseSessionRequest): Promise<CloseSessionResponse> {
+    await this.ensureInitialized();
+    return this._connection.unstable_closeSession(params);
+  }
+
+  async unstable_setSessionModel(params: SetSessionModelRequest): Promise<SetSessionModelResponse | void> {
+    await this.ensureInitialized();
+    return this._connection.unstable_setSessionModel(params);
   }
 
   // -----------------------------------------------------------------------
@@ -1202,7 +1255,20 @@ export class AcpThread extends Disposable implements IAcpThread {
     return err;
   }
 
-  // Logger via DI (set by factory after construction)
-  @Autowired(INodeLogger)
-  private readonly logger: INodeLogger;
+  // Logger passed via factory options (AcpThread is not @Injectable)
+  private get logger(): INodeLogger {
+    return this.options.logger;
+  }
+
+  private get fileSystemHandler(): AcpFileSystemHandler {
+    return this.options.fileSystemHandler;
+  }
+
+  private get terminalHandler(): AcpTerminalHandler {
+    return this.options.terminalHandler;
+  }
+
+  private get permissionRouting(): PermissionRoutingService {
+    return this.options.permissionRouting;
+  }
 }

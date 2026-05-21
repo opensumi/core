@@ -42,9 +42,14 @@ export type {
   AvailableCommandsUpdate,
   CancelNotification,
   ClientCapabilities,
+  CloseSessionRequest,
+  CloseSessionResponse,
   ContentBlock,
   CreateTerminalRequest,
   CreateTerminalResponse,
+  EnvVariable,
+  ForkSessionRequest,
+  ForkSessionResponse,
   Implementation,
   InitializeRequest,
   InitializeResponse,
@@ -70,13 +75,19 @@ export type {
   ReleaseTerminalResponse,
   RequestPermissionRequest,
   RequestPermissionResponse,
+  ResumeSessionRequest,
+  ResumeSessionResponse,
   SessionCapabilities,
   SessionInfo,
   SessionMode,
   SessionModeState,
   SessionNotification,
+  SetSessionConfigOptionRequest,
+  SetSessionConfigOptionResponse,
   SetSessionModeRequest,
   SetSessionModeResponse,
+  SetSessionModelRequest,
+  SetSessionModelResponse,
   TerminalOutputRequest,
   TerminalOutputResponse,
   ToolCall,
@@ -130,130 +141,3 @@ export interface IAcpPermissionService {
 }
 
 export const AcpPermissionServiceToken = Symbol('AcpPermissionServiceToken');
-
-/**
- * Node-side caller interface (for internal use)
- * This is what Node layer uses to call browser
- * Implemented by AcpPermissionCallerService (singleton)
- */
-export interface IAcpPermissionCaller {
-  requestPermission(request: RequestPermissionRequest, sessionId: string): Promise<RequestPermissionResponse>;
-  cancelRequest(requestId: string): Promise<void>;
-}
-
-// ACP CLI Client Service Types
-
-/**
- * Connection state for ACP CLI client
- * Represents the lifecycle states of the JSON-RPC connection
- */
-export type ConnectionState = 'disconnected' | 'connecting' | 'connected';
-
-/**
- * ACP CLI 客户端服务接口 - 基于 JSON-RPC 2.0 协议的传输层
- */
-export interface IAcpCliClientService {
-  /**
-   * Set up transport streams for JSON-RPC communication
-   * @param stdout - Readable stream from agent process
-   * @param stdin - Writable stream to agent process
-   */
-  setTransport(stdout: NodeJS.ReadableStream, stdin: NodeJS.WritableStream): void;
-
-  /**
-   * Initialize the ACP connection
-   */
-  initialize(params?: InitializeRequest): Promise<InitializeResponse>;
-
-  /**
-   * Authenticate with the agent
-   */
-  authenticate(params: AuthenticateRequest): Promise<AuthenticateResponse>;
-
-  /**
-   * Create a new session
-   */
-  newSession(params: NewSessionRequest): Promise<NewSessionResponse>;
-
-  /**
-   * Load an existing session
-   */
-  loadSession(params: LoadSessionRequest): Promise<LoadSessionResponse>;
-
-  /**
-   * List all sessions
-   */
-  listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse>;
-
-  /**
-   * Send a prompt to the session
-   */
-  prompt(params: PromptRequest): Promise<PromptResponse>;
-
-  /**
-   * Cancel an ongoing operation
-   */
-  cancel(params: CancelNotification): Promise<void>;
-
-  /**
-   * Change the session mode
-   */
-  setSessionMode(params: SetSessionModeRequest): Promise<SetSessionModeResponse>;
-
-  /**
-   * Register a notification handler
-   * @returns Unsubscribe function
-   */
-  onNotification(handler: (notification: SessionNotification) => void): () => void;
-
-  /**
-   * Close the connection and cleanup resources
-   */
-  close(): Promise<void>;
-
-  /**
-   * Check if currently connected
-   */
-  isConnected(): boolean;
-
-  /**
-   * Handle unexpected disconnect
-   */
-  handleDisconnect(): void;
-
-  /**
-   * Register a disconnect handler, called when the connection is lost
-   * @returns Unsubscribe function
-   */
-  onDisconnect(handler: () => void): () => void;
-
-  /**
-   * Get the negotiated protocol version
-   */
-  getNegotiatedProtocolVersion(): number | null;
-
-  /**
-   * Get agent capabilities from initialize response
-   */
-  getAgentCapabilities(): AgentCapabilities | null;
-
-  /**
-   * Get agent info from initialize response
-   */
-  getAgentInfo(): Implementation | null;
-
-  /**
-   * Get available authentication methods
-   */
-  getAuthMethods(): AuthMethod[];
-
-  /**
-   * Get available session modes
-   */
-  getSessionModes(): SessionModeState | null;
-}
-
-/**
- * Symbol token for dependency injection
- */
-export const AcpCliClientServiceToken = Symbol('AcpCliClientServiceToken');
