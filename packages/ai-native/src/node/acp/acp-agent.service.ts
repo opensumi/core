@@ -127,6 +127,11 @@ export interface IAcpAgentService {
   loadSessionOrNew(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult>;
 
   /**
+   * Set session configuration options (e.g. permission levels).
+   */
+  setSessionConfigOption(params: { sessionId: string; options: Record<string, unknown> }): Promise<void>;
+
+  /**
    * Release resources for a specific session (including terminals)
    * By default, the thread returns to the pool for reuse.
    * Pass force=true to fully dispose the thread.
@@ -651,6 +656,21 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       }
       throw e;
     }
+  }
+
+  // -----------------------------------------------------------------------
+  // setSessionConfigOption
+  // -----------------------------------------------------------------------
+
+  async setSessionConfigOption(params: { sessionId: string; options: Record<string, unknown> }): Promise<void> {
+    const thread = this.sessions.get(params.sessionId);
+    if (!thread) {
+      throw new Error(`No active session for sessionId: ${params.sessionId}`);
+    }
+    await thread.setSessionConfigOption({
+      sessionId: params.sessionId,
+      options: params.options,
+    } as any);
   }
 
   // -----------------------------------------------------------------------
