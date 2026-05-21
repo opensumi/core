@@ -122,6 +122,11 @@ export interface IAcpAgentService {
   setSessionMode(params: { sessionId: string; modeId: string }): Promise<void>;
 
   /**
+   * Load existing session, fallback to new session if load fails.
+   */
+  loadSessionOrNew(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult>;
+
+  /**
    * Release resources for a specific session (including terminals)
    * By default, the thread returns to the pool for reuse.
    * Pass force=true to fully dispose the thread.
@@ -600,6 +605,38 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     } catch (error) {
       this.logger?.warn(`[AcpAgentService] setSessionMode error for session ${params.sessionId}:`, error);
       throw error;
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // loadSessionOrNew — with fallback
+  // -----------------------------------------------------------------------
+
+  async loadSessionOrNew(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
+    this.logger.log(`[AcpAgentService] loadSessionOrNew() — sessionId=${sessionId}`);
+
+    const existingThread = this.sessions.get(sessionId);
+    if (existingThread && existingThread.getStatus() !== 'disconnected') {
+      return this.buildSessionLoadResult(sessionId, existingThread);
+    }
+
+    const thread = await this.findOrCreateThread(sessionId, config);
+    try {
+      if (!thread.initialized) {
+        await thread.initialize(config as any);
+      }
+      if (thread.needsReset) {
+        thread.reset();
+      }
+      await thread.loadSessionOrNew({
+        sessionId,
+        cwd: config.cwd,
+        mcpServers: [],
+      } as any);
+      return this.buildSessionLoadResult(sessionId, thread);
+    } catch (e) {
+      this.sessions.delete(sessionId);
+      throw e;
     }
   }
 
