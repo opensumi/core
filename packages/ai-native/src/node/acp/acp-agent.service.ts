@@ -595,12 +595,23 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // -----------------------------------------------------------------------
 
   async listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse> {
-    const sessionList: Array<{ sessionId: string }> = [];
+    const sessionIds = new Set<string>();
     for (const [sessionId, thread] of this.sessions) {
       if (thread.getStatus() !== 'disconnected') {
-        sessionList.push({ sessionId });
+        try {
+          const result = await thread.listSessions(params);
+          if (result?.sessions) {
+            for (const s of result.sessions as Array<{ sessionId: string }>) {
+              sessionIds.add(s.sessionId);
+            }
+          }
+        } catch (error) {
+          this.logger?.warn(`[AcpAgentService] listSessions error for thread ${sessionId}:`, error);
+        }
       }
     }
+
+    const sessionList = Array.from(sessionIds).map((sessionId) => ({ sessionId }));
     return { sessions: sessionList as any, nextCursor: undefined };
   }
 
