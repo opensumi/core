@@ -131,6 +131,18 @@ export interface IAcpAgentService {
    */
   setSessionConfigOption(params: { sessionId: string; options: Record<string, unknown> }): Promise<void>;
 
+  /** Fork a session (create a copy based on existing session state) */
+  forkSession(params: { sessionId: string; cwd?: string; mcpServers?: string[] }): Promise<{ sessionId: string }>;
+
+  /** Resume a closed session */
+  resumeSession(params: { sessionId: string }): Promise<void>;
+
+  /** Close a session without disposing the thread */
+  closeSession(params: { sessionId: string }): Promise<void>;
+
+  /** Switch the AI model for the session */
+  setSessionModel(params: { sessionId: string; model: string }): Promise<void>;
+
   /**
    * Release resources for a specific session (including terminals)
    * By default, the thread returns to the pool for reuse.
@@ -676,6 +688,63 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.logger?.warn(`[AcpAgentService] setSessionConfigOption error for session ${params.sessionId}:`, error);
       throw error;
     }
+  }
+
+  // -----------------------------------------------------------------------
+  // forkSession
+  // -----------------------------------------------------------------------
+
+  async forkSession(params: {
+    sessionId: string;
+    cwd?: string;
+    mcpServers?: string[];
+  }): Promise<{ sessionId: string }> {
+    const thread = this.sessions.get(params.sessionId);
+    if (!thread) {
+      throw new Error(`No active session for sessionId: ${params.sessionId}`);
+    }
+    const response = await thread.unstable_forkSession({
+      sessionId: params.sessionId,
+      cwd: params.cwd,
+      mcpServers: params.mcpServers,
+    } as any);
+    return { sessionId: response.sessionId };
+  }
+
+  // -----------------------------------------------------------------------
+  // resumeSession
+  // -----------------------------------------------------------------------
+
+  async resumeSession(params: { sessionId: string }): Promise<void> {
+    const thread = this.sessions.get(params.sessionId);
+    if (!thread) {
+      throw new Error(`No active session for sessionId: ${params.sessionId}`);
+    }
+    await thread.unstable_resumeSession({ sessionId: params.sessionId } as any);
+  }
+
+  // -----------------------------------------------------------------------
+  // closeSession
+  // -----------------------------------------------------------------------
+
+  async closeSession(params: { sessionId: string }): Promise<void> {
+    const thread = this.sessions.get(params.sessionId);
+    if (!thread) {
+      throw new Error(`No active session for sessionId: ${params.sessionId}`);
+    }
+    await thread.unstable_closeSession({ sessionId: params.sessionId } as any);
+  }
+
+  // -----------------------------------------------------------------------
+  // setSessionModel
+  // -----------------------------------------------------------------------
+
+  async setSessionModel(params: { sessionId: string; model: string }): Promise<void> {
+    const thread = this.sessions.get(params.sessionId);
+    if (!thread) {
+      throw new Error(`No active session for sessionId: ${params.sessionId}`);
+    }
+    await thread.unstable_setSessionModel({ sessionId: params.sessionId, model: params.model } as any);
   }
 
   // -----------------------------------------------------------------------
