@@ -68,6 +68,22 @@ export interface SessionLoadResult {
 }
 
 // ============================================================================
+// SDK type aliases (SDK is ESM, can't use static imports in this CJS file)
+// ============================================================================
+
+/**
+ * Minimal shape matching the SDK's SetSessionConfigOptionRequest:
+ * ({ type: "boolean"; value: boolean } | { value: string }) & { sessionId, configId, _meta? }
+ */
+interface SetSessionConfigOptionRequest {
+  sessionId: string;
+  configId: string;
+  value: boolean | string;
+  type?: 'boolean';
+  _meta?: { [key: string]: unknown } | null;
+}
+
+// ============================================================================
 // IAcpAgentService Interface
 // ============================================================================
 
@@ -130,13 +146,13 @@ export interface IAcpAgentService {
   /**
    * Set session configuration options (e.g. permission levels).
    */
-  setSessionConfigOption(params: { sessionId: string; options: Record<string, unknown> }): Promise<void>;
+  setSessionConfigOption(params: { sessionId: string; configId: string; value: boolean | string }): Promise<void>;
 
   /** Fork a session (create a copy based on existing session state) */
   forkSession(params: { sessionId: string; cwd?: string; mcpServers?: string[] }): Promise<{ sessionId: string }>;
 
   /** Resume a closed session */
-  resumeSession(params: { sessionId: string }): Promise<void>;
+  resumeSession(params: { sessionId: string; cwd?: string }): Promise<void>;
 
   /** Close a session without disposing the thread */
   closeSession(params: { sessionId: string }): Promise<void>;
@@ -704,16 +720,28 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // setSessionConfigOption
   // -----------------------------------------------------------------------
 
-  async setSessionConfigOption(params: { sessionId: string; options: Record<string, unknown> }): Promise<void> {
+  async setSessionConfigOption(params: {
+    sessionId: string;
+    configId: string;
+    value: boolean | string;
+  }): Promise<void> {
     const thread = this.sessions.get(params.sessionId);
     if (!thread) {
       throw new Error(`No active session for sessionId: ${params.sessionId}`);
     }
     try {
-      await thread.setSessionConfigOption({
+      // SDK uses a discriminated union: { type: "boolean"; value: boolean } | { value: string }
+      // We infer the correct variant from the value's runtime type.
+      const request: SetSessionConfigOptionRequest = {
         sessionId: params.sessionId,
-        options: params.options,
-      } as any);
+        configId: params.configId,
+        value: params.value,
+      };
+      if (typeof params.value === 'boolean') {
+        request.type = 'boolean';
+      }
+
+      await thread.setSessionConfigOption(request as any);
     } catch (error) {
       this.logger?.warn(`[AcpAgentService] setSessionConfigOption error for session ${params.sessionId}:`, error);
       throw error;
@@ -750,13 +778,13 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // resumeSession
   // -----------------------------------------------------------------------
 
-  async resumeSession(params: { sessionId: string }): Promise<void> {
+  async resumeSession(params: { sessionId: string; cwd?: string }): Promise<void> {
     const thread = this.sessions.get(params.sessionId);
     if (!thread) {
       throw new Error(`No active session for sessionId: ${params.sessionId}`);
     }
     try {
-      await thread.unstable_resumeSession({ sessionId: params.sessionId } as any);
+      await thread.unstable_resumeSession({ sessionId: params.sessionId, cwd: params.cwd ?? thread.cwd });
     } catch (error) {
       this.logger?.warn(`[AcpAgentService] resumeSession error for session ${params.sessionId}:`, error);
       throw error;

@@ -409,8 +409,8 @@ export class AcpCliBackService implements IAIBackService {
     return { sessionId, messages };
   }
 
-  async setSessionConfigOption(sessionId: string, options: Record<string, unknown>): Promise<void> {
-    await this.agentService.setSessionConfigOption({ sessionId, options });
+  async setSessionConfigOption(sessionId: string, configId: string, value: boolean | string): Promise<void> {
+    await this.agentService.setSessionConfigOption({ sessionId, configId, value });
   }
 
   async forkSession(
@@ -420,8 +420,8 @@ export class AcpCliBackService implements IAIBackService {
     return this.agentService.forkSession({ sessionId, ...options });
   }
 
-  async resumeSession(sessionId: string): Promise<void> {
-    await this.agentService.resumeSession({ sessionId });
+  async resumeSession(sessionId: string, cwd?: string): Promise<void> {
+    await this.agentService.resumeSession({ sessionId, cwd });
   }
 
   async closeSession(sessionId: string): Promise<void> {
