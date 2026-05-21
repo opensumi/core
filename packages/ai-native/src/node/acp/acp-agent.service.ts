@@ -592,9 +592,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       throw new Error(`No active session for sessionId: ${params.sessionId}`);
     }
 
-    // AcpThread doesn't have a direct setSessionMode method, delegate to SDK connection
-    // This would need the underlying SDK connection to support mode switching
-    this.logger?.log(`[AcpAgentService] setSessionMode: ${params.sessionId} -> ${params.modeId}`);
+    await thread.setSessionMode({
+      sessionId: params.sessionId,
+      modeId: params.modeId,
+    } as any);
   }
 
   // -----------------------------------------------------------------------
