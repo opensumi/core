@@ -892,7 +892,7 @@ export const AIChatViewACPContent = () => {
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>
           <div className={styles.chat_container} ref={containerRef}>
-            {!hasUserSentMessage && chatRenderRegistry.chatWelcomePageRender ? (
+            {!hasUserSentMessage && messageListData.length <= 1 && chatRenderRegistry.chatWelcomePageRender ? (
               React.createElement(chatRenderRegistry.chatWelcomePageRender, {
                 onSend: handleSend,
                 agentId,
