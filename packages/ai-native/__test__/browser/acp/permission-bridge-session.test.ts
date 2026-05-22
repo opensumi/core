@@ -1,5 +1,3 @@
-import { Emitter } from '@opensumi/ide-core-common';
-
 import {
   AcpPermissionBridgeService,
   ShowPermissionDialogParams,

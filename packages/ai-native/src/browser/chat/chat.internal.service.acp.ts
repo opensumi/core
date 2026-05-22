@@ -154,6 +154,7 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   override dispose(): void {
+    this.permissionBridgeService.setActiveSession(undefined);
     this._onModeChange.dispose();
     this._onSessionLoadingChange.dispose();
     this._onSessionModelChange.dispose();

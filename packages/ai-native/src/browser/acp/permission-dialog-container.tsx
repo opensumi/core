@@ -182,6 +182,7 @@ const AcpPermissionDialogContainer: React.FC = () => {
   useEffect(() => {
     const disposable = permissionBridgeService.onActiveSessionChange((sessionId) => {
       setActiveSessionId(sessionId);
+      setFocusedIndex(0);
     });
     // Initialize with current session
     setActiveSessionId(permissionBridgeService.getActiveSession());
