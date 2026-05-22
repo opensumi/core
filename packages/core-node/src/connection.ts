@@ -149,6 +149,12 @@ export function bindModuleBackService(
           if (!serviceInstance.rpcClient) {
             serviceInstance.rpcClient = [stub];
           }
+          // Allow services to expose a static method for sharing the RPC stub
+          // with parent-injector consumers (e.g. PermissionRoutingService).
+          const ctor = serviceInstance.constructor as any;
+          if (typeof ctor?.setStaticRpcClient === 'function') {
+            ctor.setStaticRpcClient(stub);
+          }
         }
       }
 

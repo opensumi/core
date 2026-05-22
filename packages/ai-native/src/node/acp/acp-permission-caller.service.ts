@@ -17,15 +17,46 @@ export const AcpPermissionCallerServiceToken = Symbol('AcpPermissionCallerServic
  * ACP Permission Caller Service
  *
  * Node-side singleton that calls the browser-side permission dialog via RPC.
- * Extends RPCService<IAcpPermissionService> so the DI framework sets up
- * rpcClient[] / this.client with the browser-side AcpPermissionRpcService.
+ *
+ * IMPORTANT: This service exists in BOTH the parent injector (providers) AND the
+ * child injector per connection (backServices). The child instance gets rpcClient
+ * set by bindModuleBackService, but the parent instance does not. To bridge this,
+ * the child instance stores its RPC stub in staticRpcClient so all instances
+ * can use it.
  *
  * Each call to requestPermission() independently invokes
- * this.client.$showPermissionDialog(params) — no global lock,
+ * this.client or the shared static RPC stub — no global lock,
  * concurrent requests run independently.
  */
 @Injectable()
 export class AcpPermissionCallerService extends RPCService<IAcpPermissionService> {
+  /**
+   * Shared RPC stub for the current browser connection.
+   * Populated by setStaticRpcClient() after bindModuleBackService
+   * assigns serviceInstance.rpcClient = [stub].
+   * This allows parent-injector consumers (e.g. PermissionRoutingService)
+   * to reach the browser-side dialog via static access.
+   */
+  static staticRpcClient: IAcpPermissionService | undefined;
+
+  /**
+   * Set the shared static RPC client.
+   * Called by bindModuleBackService (or equivalent) after setting rpcClient
+   * on the child-injector instance, so that parent-injector consumers
+   * can also reach the browser-side permission dialog.
+   */
+  static setStaticRpcClient(client: IAcpPermissionService | undefined): void {
+    AcpPermissionCallerService.staticRpcClient = client;
+  }
+
+  /**
+   * Get the RPC client from the shared static set by
+   * bindModuleBackService on the child-injector instance.
+   */
+  private getRpcClient(): IAcpPermissionService | undefined {
+    return this.client ?? AcpPermissionCallerService.staticRpcClient;
+  }
+
   /**
    * Request permission from the user via browser dialog.
    *
@@ -45,7 +76,7 @@ export class AcpPermissionCallerService extends RPCService<IAcpPermissionService
       };
     }
 
-    const rpcClient = this.client;
+    const rpcClient = this.getRpcClient();
     if (!rpcClient) {
       throw new Error('[ACP Permission Caller] No active RPC client available');
     }
@@ -74,7 +105,7 @@ export class AcpPermissionCallerService extends RPCService<IAcpPermissionService
    */
   async cancelRequest(requestId: string): Promise<void> {
     try {
-      const rpcClient = this.client;
+      const rpcClient = this.getRpcClient();
       if (rpcClient) {
         await rpcClient.$cancelRequest(requestId);
       }
