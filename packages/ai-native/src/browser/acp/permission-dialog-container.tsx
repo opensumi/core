@@ -50,6 +50,17 @@ class PermissionDialogManager {
     return [...this.dialogs];
   }
 
+  getDialogsForSession(sessionId: string | undefined): DialogState[] {
+    if (!sessionId) {return [];}
+    return this.dialogs.filter((d) => d.params.sessionId === sessionId);
+  }
+
+  clearDialogsForSession(sessionId: string | undefined): void {
+    if (!sessionId) {return;}
+    this.dialogs = this.dialogs.filter((d) => d.params.sessionId !== sessionId);
+    this.notifyListeners();
+  }
+
   subscribe(listener: (dialogs: DialogState[]) => void) {
     this.listeners.push(listener);
     return () => {
