@@ -3,6 +3,8 @@ import { AINativeConfigService } from '@opensumi/ide-core-browser';
 import { AvailableCommand, Emitter, Event } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 
+import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
+
 import { AcpChatManagerService } from './chat-manager.service.acp';
 import { ChatModel } from './chat-model';
 import { ChatInternalService } from './chat.internal.service';
@@ -14,6 +16,9 @@ export class AcpChatInternalService extends ChatInternalService {
 
   @Autowired(IMessageService)
   private messageService: IMessageService;
+
+  @Autowired(AcpPermissionBridgeService)
+  private permissionBridgeService: AcpPermissionBridgeService;
 
   private readonly _onModeChange = new Emitter<string>();
   public readonly onModeChange: Event<string> = this._onModeChange.event;
@@ -76,6 +81,11 @@ export class AcpChatInternalService extends ChatInternalService {
     const acpManager = this.chatManagerService as AcpChatManagerService;
     this.setAvailableCommands(acpManager.getAvailableCommands());
     this._onSessionModelChange.fire(this._sessionModel);
+    // Notify permission bridge of session change
+    const rawSessionId = this._sessionModel.sessionId.startsWith('acp:')
+      ? this._sessionModel.sessionId.slice(4)
+      : this._sessionModel.sessionId;
+    this.permissionBridgeService.setActiveSession(rawSessionId);
     this._onChangeSession.fire(this._sessionModel.sessionId);
     this._onSessionLoadingChange.fire(false);
   }
@@ -124,6 +134,9 @@ export class AcpChatInternalService extends ChatInternalService {
         return;
       }
       this._sessionModel = updatedSession;
+      // Notify permission bridge of session change
+      const rawSessionId = sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
+      this.permissionBridgeService.setActiveSession(rawSessionId);
       this.setAvailableCommands(acpManager.getAvailableCommands());
       this._onSessionModelChange.fire(this._sessionModel);
       this._onChangeSession.fire(this._sessionModel.sessionId);
