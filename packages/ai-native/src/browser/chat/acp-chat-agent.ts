@@ -11,6 +11,7 @@ import {
   IApplicationService,
   IChatProgress,
   MCPConfigServiceToken,
+  ThreadStatus,
 } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
@@ -29,6 +30,7 @@ import {
 } from '../../common/index';
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
+import { ChatManagerService } from './chat-manager.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
 
 /**
@@ -70,6 +72,9 @@ export class AcpChatAgent implements IChatAgent {
 
   @Autowired(ILogger)
   protected readonly logger: ILogger;
+
+  @Autowired(ChatManagerService)
+  protected readonly chatManagerService: ChatManagerService;
 
   public id = AcpChatAgent.AGENT_ID;
 
@@ -181,7 +186,11 @@ export class AcpChatAgent implements IChatAgent {
 
       listenReadable<IChatProgress>(stream, {
         onData: (data) => {
-          progress(data);
+          if (data.kind === 'threadStatus') {
+            this.handleThreadStatusUpdate(data.threadStatus, data.sessionId);
+          } else {
+            progress(data);
+          }
         },
         onEnd: () => {
           chatDeferred.resolve();
@@ -203,6 +212,13 @@ export class AcpChatAgent implements IChatAgent {
       chatDeferred.reject(e);
     }
     return {};
+  }
+
+  private handleThreadStatusUpdate(status: ThreadStatus, sessionId: string): void {
+    const model = this.chatManagerService.getSession(sessionId);
+    if (model) {
+      model.setThreadStatus(status);
+    }
   }
 
   async provideSlashCommands(): Promise<IChatAgentCommand[]> {
