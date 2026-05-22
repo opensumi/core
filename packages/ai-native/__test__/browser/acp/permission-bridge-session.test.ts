@@ -230,3 +230,79 @@ describe('PermissionDialogManager - session-scoped dialogs', () => {
     });
   });
 });
+
+describe('AcpPermissionBridgeService - clearSessionDialogs', () => {
+  let service: AcpPermissionBridgeService;
+
+  const mockParams: ShowPermissionDialogParams = {
+    requestId: 'session-1:tool-1',
+    sessionId: 'session-1',
+    title: 'Test permission',
+    kind: 'write',
+    content: 'Edit file.txt',
+    locations: [{ path: '/workspace/file.txt' }],
+    options: [
+      { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
+      { optionId: 'reject_once', name: 'Reject', kind: 'reject_once' },
+    ],
+    timeout: 5000,
+  };
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+
+    service = new AcpPermissionBridgeService();
+    Object.defineProperty(service, 'logger', { value: mockLogger, writable: true });
+    Object.defineProperty(service, 'mainLayoutService', { value: mockMainLayoutService, writable: true });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('should clear active dialogs for the given session', () => {
+    service.showPermissionDialog({
+      ...mockParams,
+      requestId: 'session-1:tool-1',
+    });
+    service.showPermissionDialog({
+      ...mockParams,
+      requestId: 'session-2:tool-2',
+      sessionId: 'session-2',
+    });
+
+    expect(service.getActiveDialogCount()).toBe(2);
+    service.clearSessionDialogs('session-1');
+    expect(service.getActiveDialogCount()).toBe(1);
+  });
+
+  it('should clear pending decisions for the given session with cancelled result', async () => {
+    const promise1 = service.showPermissionDialog({
+      ...mockParams,
+      requestId: 'session-1:tool-1',
+    });
+    const promise2 = service.showPermissionDialog({
+      ...mockParams,
+      requestId: 'session-2:tool-2',
+      sessionId: 'session-2',
+    });
+
+    expect(service.getActiveDialogCount()).toBe(2);
+
+    service.clearSessionDialogs('session-1');
+
+    expect(service.getActiveDialogCount()).toBe(1);
+    expect(await promise1).toEqual({ type: 'cancelled' });
+    expect((service as any).pendingDecisions.has('session-2:tool-2')).toBe(true);
+
+    service.handleDialogClose('session-2:tool-2');
+    expect(await promise2).toEqual({ type: 'timeout' });
+  });
+
+  it('should do nothing for sessions with no dialogs', () => {
+    service.showPermissionDialog(mockParams);
+    service.clearSessionDialogs('non-existent-session');
+    expect(service.getActiveDialogCount()).toBe(1);
+  });
+});

@@ -98,7 +98,12 @@ export class AcpChatInternalService extends ChatInternalService {
       throw new Error('No active session');
     }
     this._onWillClearSession.fire(sessionId);
+    const clearedSessionId =
+      this._sessionModel && sessionId === this._sessionModel.sessionId ? this.stripAcpPrefix(sessionId) : undefined;
     this.chatManagerService.clearSession(sessionId);
+    if (clearedSessionId) {
+      this.permissionBridgeService.clearSessionDialogs(clearedSessionId);
+    }
     if (this._sessionModel && sessionId === this._sessionModel.sessionId) {
       this._sessionModel = await this.chatManagerService.startSession();
       const acpManager = this.chatManagerService as AcpChatManagerService;

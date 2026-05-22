@@ -185,4 +185,30 @@ export class AcpPermissionBridgeService {
   getActiveDialogs(): PermissionDialogProps[] {
     return Array.from(this.activeDialogs.values());
   }
+
+  /**
+   * Clear all dialogs and pending decisions for a given session.
+   * Called when a session is permanently deleted (clearSessionModel).
+   */
+  clearSessionDialogs(sessionId: string): void {
+    const prefix = `${sessionId}:`;
+    // Clear active dialogs
+    for (const [requestId, dialog] of this.activeDialogs.entries()) {
+      if (requestId === sessionId || requestId.startsWith(prefix)) {
+        this.activeDialogs.delete(requestId);
+      }
+    }
+    // Clear pending decisions (resolve as cancelled)
+    for (const [requestId, pending] of this.pendingDecisions.entries()) {
+      if (requestId === sessionId || requestId.startsWith(prefix)) {
+        if (pending.timeout) {
+          clearTimeout(pending.timeout);
+        }
+        this.pendingDecisions.delete(requestId);
+        const decision: PermissionDecision = { type: 'cancelled' };
+        this.onPermissionResult.fire({ requestId, decision });
+        pending.resolve(decision);
+      }
+    }
+  }
 }
