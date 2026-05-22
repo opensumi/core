@@ -34,6 +34,10 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private availableCommands: AvailableCommand[] = [];
 
+  private stripAcpPrefix(sessionId: string): string {
+    return sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
+  }
+
   getAvailableCommands(): AvailableCommand[] {
     return this.availableCommands;
   }
@@ -82,9 +86,7 @@ export class AcpChatInternalService extends ChatInternalService {
     this.setAvailableCommands(acpManager.getAvailableCommands());
     this._onSessionModelChange.fire(this._sessionModel);
     // Notify permission bridge of session change
-    const rawSessionId = this._sessionModel.sessionId.startsWith('acp:')
-      ? this._sessionModel.sessionId.slice(4)
-      : this._sessionModel.sessionId;
+    const rawSessionId = this.stripAcpPrefix(this._sessionModel.sessionId);
     this.permissionBridgeService.setActiveSession(rawSessionId);
     this._onChangeSession.fire(this._sessionModel.sessionId);
     this._onSessionLoadingChange.fire(false);
@@ -102,6 +104,8 @@ export class AcpChatInternalService extends ChatInternalService {
       const acpManager = this.chatManagerService as AcpChatManagerService;
       this.setAvailableCommands(acpManager.getAvailableCommands());
       this._onSessionModelChange.fire(this._sessionModel);
+      const rawSessionId = this.stripAcpPrefix(this._sessionModel.sessionId);
+      this.permissionBridgeService.setActiveSession(rawSessionId);
     }
     if (this._sessionModel) {
       this._onChangeSession.fire(this._sessionModel.sessionId);
@@ -135,7 +139,7 @@ export class AcpChatInternalService extends ChatInternalService {
       }
       this._sessionModel = updatedSession;
       // Notify permission bridge of session change
-      const rawSessionId = sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
+      const rawSessionId = this.stripAcpPrefix(sessionId);
       this.permissionBridgeService.setActiveSession(rawSessionId);
       this.setAvailableCommands(acpManager.getAvailableCommands());
       this._onSessionModelChange.fire(this._sessionModel);
