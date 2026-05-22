@@ -61,11 +61,6 @@ export class AINativeModule extends NodeModule {
     },
     // Thread factory for creating AcpThread instances
     AcpThreadFactoryProvider,
-    // Permission routing for multi-session permission requests
-    {
-      token: PermissionRoutingServiceToken,
-      useClass: PermissionRoutingService,
-    },
     // Language models for non-ACP fallback
     OpenAICompatibleModel,
   ];
@@ -86,6 +81,13 @@ export class AINativeModule extends NodeModule {
     {
       servicePath: AcpPermissionServicePath,
       token: AcpPermissionCallerServiceToken,
+    },
+    // Permission routing must be in backServices (not providers) so it
+    // receives the child-injector AcpPermissionCallerService instance
+    // that has rpcClient set by the RPC connection.
+    {
+      token: PermissionRoutingServiceToken,
+      useClass: PermissionRoutingService,
     },
   ];
 }
