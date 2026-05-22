@@ -8,11 +8,13 @@ import {
   IChatContent,
   IChatProgress,
   IChatReasoning,
+  IChatThreadStatus,
   IChatToolCall,
   IChatToolContent,
   ListSessionsResponse,
   SessionNotification,
   SetSessionModeRequest,
+  ThreadStatus,
 } from '@opensumi/ide-core-common';
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { ChatReadableStream, INodeLogger } from '@opensumi/ide-core-node';
@@ -207,6 +209,13 @@ export class AcpCliBackService implements IAIBackService {
         const progress = this.convertAgentUpdateToChatProgress(update);
         if (progress) {
           stream.emitData(progress);
+        }
+        if (update.threadStatus) {
+          stream.emitData({
+            kind: 'threadStatus',
+            threadStatus: update.threadStatus,
+            sessionId: request.sessionId,
+          } as IChatThreadStatus);
         }
         if (update.type === 'done') {
           stream.end();
