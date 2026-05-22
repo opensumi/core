@@ -1339,7 +1339,8 @@ export class AcpThread extends Disposable implements IAcpThread {
   // Internal — permission request handling
   // -----------------------------------------------------------------------
   private async handlePermissionRequest(params: RequestPermissionRequest): Promise<RequestPermissionResponse> {
-    const requestId = params.toolCall.toolCallId;
+    const sessionId = params.sessionId || this._sessionId;
+    const requestId = `${sessionId}:${params.toolCall.toolCallId}`;
 
     return new Promise<RequestPermissionResponse>((resolve, reject) => {
       const timeout = setTimeout(() => {

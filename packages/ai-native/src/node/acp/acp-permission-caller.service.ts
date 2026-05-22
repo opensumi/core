@@ -125,7 +125,7 @@ export class AcpPermissionCallerService extends RPCService<IAcpPermissionService
     switch (decision.type) {
       case 'allow':
       case 'reject': {
-        const optionId = decision.optionId || this.findOptionId(decision.type, options);
+        const optionId = decision.optionId ?? this.findOptionId(decision.type, options);
         return {
           outcome: {
             outcome: 'selected' as const,

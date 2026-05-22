@@ -19,6 +19,7 @@ import {
   AcpThreadRuntimeConfig,
 } from './acp-thread';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
+import { PermissionRoutingService, PermissionRoutingServiceToken } from './permission-routing.service';
 
 import type { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types';
 export { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types';
@@ -194,6 +195,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   @Autowired(AcpTerminalHandlerToken)
   private terminalHandler: AcpTerminalHandler;
 
+  @Autowired(PermissionRoutingServiceToken)
+  private permissionRouting: PermissionRoutingService;
+
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -348,6 +352,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
       realSessionId = newSessionResponse.sessionId;
       this.sessions.set(realSessionId, thread);
+      this.permissionRouting.registerSession(realSessionId);
 
       await Promise.race([
         deferred.promise,
@@ -374,6 +379,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     } catch (e) {
       if (realSessionId) {
         this.sessions.delete(realSessionId);
+        this.permissionRouting.unregisterSession(realSessionId);
       }
       this.logger.error(`[AcpAgentService] createSession() — failed: ${e instanceof Error ? e.message : String(e)}`);
       if (!wasExisting) {
@@ -415,6 +421,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     // 1. sessions.get(sessionId) exists -> return directly
     const existingThread = this.sessions.get(sessionId);
     if (existingThread && existingThread.getStatus() !== 'disconnected') {
+      this.permissionRouting.registerSession(sessionId);
       this.logger.log(
         `[AcpAgentService] loadSession() — thread already bound, threadId=${existingThread.threadId}, cwd=${existingThread.cwd}`,
       );
@@ -430,6 +437,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         `[AcpAgentService] loadSession() — reusing idle thread ${idleThread.threadId}, cwd=${idleThread.cwd}`,
       );
       this.sessions.set(sessionId, idleThread);
+      this.permissionRouting.registerSession(sessionId);
       try {
         if (!idleThread.initialized) {
           await idleThread.initialize(config as any);
@@ -444,6 +452,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         } as any);
       } catch (e) {
         this.sessions.delete(sessionId);
+        this.permissionRouting.unregisterSession(sessionId);
         idleThread.reset();
         this.logger.error(
           `[AcpAgentService] loadSession() — idle thread reuse failed: ${e instanceof Error ? e.message : String(e)}`,
@@ -461,6 +470,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       const thread = this.createThreadInstance(sessionId, config);
       this.threadPool.push(thread);
       this.sessions.set(sessionId, thread);
+      this.permissionRouting.registerSession(sessionId);
 
       try {
         await thread.initialize(config as any);
@@ -475,6 +485,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
           this.threadPool.splice(idx, 1);
         }
         this.sessions.delete(sessionId);
+        this.permissionRouting.unregisterSession(sessionId);
         await thread.dispose();
         throw e;
       }
@@ -685,6 +696,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     const poolSizeBefore = this.threadPool.length;
     const thread = await this.findOrCreateThread(sessionId, config);
+    this.permissionRouting.registerSession(sessionId);
     const wasExisting = this.threadPool.length === poolSizeBefore;
 
     try {
@@ -702,6 +714,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       return this.buildSessionLoadResult(sessionId, thread);
     } catch (e) {
       this.sessions.delete(sessionId);
+      this.permissionRouting.unregisterSession(sessionId);
       this.logger.error(`[AcpAgentService] loadSessionOrNew() — failed: ${e instanceof Error ? e.message : String(e)}`);
       if (!wasExisting) {
         const idx = this.threadPool.indexOf(thread);
@@ -849,6 +862,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
 
     // Default: just remove from session mapping, thread returns to pool
+    this.permissionRouting.unregisterSession(sessionId);
     this.sessions.delete(sessionId);
     this.logPoolStatus('after-disposeSession');
   }
@@ -903,6 +917,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       }
     }
 
+    for (const sessionId of this.sessions.keys()) {
+      this.permissionRouting.unregisterSession(sessionId);
+    }
     this.threadPool = [];
     this.sessions.clear();
     this.lastSessionInfo = null;
