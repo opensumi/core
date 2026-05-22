@@ -172,18 +172,18 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
                 case 'working':
                   return <Loading />;
                 case 'awaiting_prompt':
-                  return <Icon icon="success" style={{ width: '16px', height: '16px', marginRight: 4 }} />;
+                  return <Icon icon='success' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
                 case 'errored':
-                  return <Icon icon="error" style={{ width: '16px', height: '16px', marginRight: 4 }} />;
+                  return <Icon icon='error' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
                 case 'auth_required':
-                  return <Icon icon="key" style={{ width: '16px', height: '16px', marginRight: 4 }} />;
+                  return <Icon icon='key' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
                 case 'disconnected':
-                  return <Icon icon="disconnect" style={{ width: '16px', height: '16px', marginRight: 4 }} />;
+                  return <Icon icon='disconnect' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
                 default:
                   return item.loading ? (
                     <Loading />
                   ) : (
-                    <Icon icon="message" style={{ width: '16px', height: '16px', marginRight: 4 }} />
+                    <Icon icon='message' style={{ width: '16px', height: '16px', marginRight: 4 }} />
                   );
               }
             })()}
