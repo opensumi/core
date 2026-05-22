@@ -3,6 +3,8 @@
  * and AcpAgentService (stream consumption).
  */
 
+import type { ThreadStatus } from './acp-thread';
+
 export type AgentUpdateType =
   | 'thought'
   | 'message'
@@ -10,7 +12,8 @@ export type AgentUpdateType =
   | 'tool_call_status'
   | 'tool_result'
   | 'plan'
-  | 'done';
+  | 'done'
+  | 'thread_status';
 
 export interface SimpleToolCall {
   toolCallId: string;
@@ -23,4 +26,5 @@ export interface AgentUpdate {
   type: AgentUpdateType;
   content: string;
   toolCall?: SimpleToolCall;
+  threadStatus?: ThreadStatus;
 }
