@@ -32,7 +32,7 @@ export class AcpPermissionBridgeService {
     string,
     {
       resolve: (decision: PermissionDecision) => void;
-      timeout: NodeJS.Timeout;
+      timeout: NodeJS.Timeout | undefined;
     }
   >();
 
@@ -47,6 +47,34 @@ export class AcpPermissionBridgeService {
     requestId: string;
     decision: PermissionDecision;
   }> = this.onPermissionResult.event;
+
+  // ---------------------------------------------------------------------------
+  // Active session tracking
+  // ---------------------------------------------------------------------------
+
+  private activeSessionId: string | undefined;
+
+  private readonly onActiveSessionChangeEmitter = new Emitter<string | undefined>();
+  readonly onActiveSessionChange: Event<string | undefined> = this.onActiveSessionChangeEmitter.event;
+
+  /**
+   * Set the currently active session.
+   * Fires event to notify UI to re-render session-scoped dialogs.
+   */
+  setActiveSession(sessionId: string | undefined): void {
+    if (this.activeSessionId === sessionId) {
+      return;
+    }
+    this.activeSessionId = sessionId;
+    this.onActiveSessionChangeEmitter.fire(sessionId);
+  }
+
+  /**
+   * Get the currently active session ID.
+   */
+  getActiveSession(): string | undefined {
+    return this.activeSessionId;
+  }
 
   /**
    * Show permission dialog and wait for user response
@@ -79,16 +107,11 @@ export class AcpPermissionBridgeService {
     // Emit event to show dialog
     this.onPermissionRequest.fire(params);
 
-    // Set up timeout
-    const timeout = setTimeout(() => {
-      this.handleDialogClose(requestId);
-    }, params.timeout);
-
-    // Wait for decision
+    // Wait for decision (no auto-timeout)
     return new Promise((resolve) => {
       this.pendingDecisions.set(requestId, {
         resolve,
-        timeout,
+        timeout: undefined,
       });
     });
   }
@@ -102,7 +125,9 @@ export class AcpPermissionBridgeService {
       return;
     }
 
-    clearTimeout(pending.timeout);
+    if (pending.timeout) {
+      clearTimeout(pending.timeout);
+    }
     this.pendingDecisions.delete(requestId);
 
     const always = optionKind === 'allow_always' || optionKind === 'reject_always';
@@ -128,7 +153,9 @@ export class AcpPermissionBridgeService {
       return;
     }
 
-    clearTimeout(pending.timeout);
+    if (pending.timeout) {
+      clearTimeout(pending.timeout);
+    }
     this.pendingDecisions.delete(requestId);
 
     const decision: PermissionDecision = { type: 'timeout' };
