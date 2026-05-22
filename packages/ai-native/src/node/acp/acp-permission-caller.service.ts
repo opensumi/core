@@ -1,5 +1,6 @@
-import { Injectable } from '@opensumi/di';
+import { Autowired, Injectable, Injector } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
+import { AcpPermissionServicePath } from '@opensumi/ide-core-common';
 
 import type {
   AcpPermissionDecision,
@@ -26,6 +27,9 @@ export const AcpPermissionCallerServiceToken = Symbol('AcpPermissionCallerServic
  */
 @Injectable()
 export class AcpPermissionCallerService extends RPCService<IAcpPermissionService> {
+  @Autowired(Injector)
+  private injector: Injector;
+
   /**
    * Request permission from the user via browser dialog.
    *
@@ -45,7 +49,7 @@ export class AcpPermissionCallerService extends RPCService<IAcpPermissionService
       };
     }
 
-    const rpcClient = this.client;
+    const rpcClient = this.getRpcClient();
     if (!rpcClient) {
       throw new Error('[ACP Permission Caller] No active RPC client available');
     }
@@ -74,13 +78,22 @@ export class AcpPermissionCallerService extends RPCService<IAcpPermissionService
    */
   async cancelRequest(requestId: string): Promise<void> {
     try {
-      const rpcClient = this.client;
+      const rpcClient = this.getRpcClient();
       if (rpcClient) {
         await rpcClient.$cancelRequest(requestId);
       }
     } catch {
       // Silently ignore cancellation errors
     }
+  }
+
+  /**
+   * Get the RPC client, falling back to the servicePath proxy if
+   * this.client is undefined (e.g. when this instance was created in
+   * the parent injector before bindModuleBackService ran).
+   */
+  private getRpcClient(): IAcpPermissionService | undefined {
+    return this.client ?? this.injector.get(AcpPermissionServicePath);
   }
 
   /**

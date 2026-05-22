@@ -10,6 +10,8 @@ jest.mock('@opensumi/di', () => {
   };
 });
 
+import { AcpPermissionServicePath } from '@opensumi/ide-core-common';
+
 import {
   AcpPermissionCallerManagerToken,
   AcpPermissionCallerService,
@@ -21,6 +23,13 @@ const mockRpcClient = {
   $cancelRequest: jest.fn(),
 };
 
+const mockInjector = {
+  get: jest.fn(),
+  createChild: jest.fn(),
+  addProviders: jest.fn(),
+  disposeAll: jest.fn(),
+};
+
 describe('AcpPermissionCallerService', () => {
   let service: AcpPermissionCallerService;
 
@@ -29,6 +38,8 @@ describe('AcpPermissionCallerService', () => {
 
     service = new AcpPermissionCallerService();
     Object.defineProperty(service, 'rpcClient', { value: [mockRpcClient], writable: true });
+    Object.defineProperty(service, 'injector', { value: mockInjector, writable: true });
+    mockInjector.get.mockReturnValue(undefined);
   });
 
   describe('requestPermission() - skip mode', () => {
