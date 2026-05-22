@@ -31,6 +31,7 @@ import {
   IAIReporter,
   IChatComponent,
   IChatContent,
+  ThreadStatus,
   URI,
   formatLocalize,
   localize,
@@ -992,6 +993,7 @@ export function DefaultChatViewHeaderACP({
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
+  const threadStatusRef = React.useRef<Record<string, ThreadStatus>>({});
   const handleNewChat = React.useCallback(() => {
     if (aiChatService.sessionModel?.history.getMessages().length > 0) {
       try {
@@ -1106,6 +1108,19 @@ export function DefaultChatViewHeaderACP({
     toDispose.push(
       aiChatService.sessionModel?.history.onMessageChange(() => {
         getHistoryList();
+      }),
+    );
+    toDispose.push(
+      aiChatService.sessionModel?.onThreadStatusChange((status) => {
+        threadStatusRef.current = {
+          ...threadStatusRef.current,
+          [aiChatService.sessionModel!.sessionId]: status,
+        };
+        setHistoryList((prev) =>
+          prev.map((item) =>
+            item.id === aiChatService.sessionModel?.sessionId ? { ...item, threadStatus: status } : item,
+          ),
+        );
       }),
     );
     return () => {
