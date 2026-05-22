@@ -1,4 +1,4 @@
-import { Autowired, Injectable, Injector, Provider } from '@opensumi/di';
+import { Autowired, IDisposable, Injectable, Injector, Provider } from '@opensumi/di';
 import {
   AIBackSerivcePath,
   AIBackSerivceToken,
@@ -108,6 +108,7 @@ import { AINativeCoreContribution, MCPServerContribution, TokenMCPServerRegistry
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatService } from './widget/inline-chat/inline-chat.service';
 import { InlineDiffService } from './widget/inline-diff';
+import { registerAcpWebMCPTools } from './acp/webmcp-tools.registry';
 
 @Injectable()
 export class AINativeModule extends BrowserModule {
@@ -344,4 +345,14 @@ export class AINativeModule extends BrowserModule {
       clientToken: AcpPermissionServiceToken,
     },
   ];
+
+  private webMCPDisposable: IDisposable | undefined;
+
+  async onDidStart() {
+    this.webMCPDisposable = registerAcpWebMCPTools(this.app.injector);
+  }
+
+  onWillStop() {
+    this.webMCPDisposable?.dispose();
+  }
 }

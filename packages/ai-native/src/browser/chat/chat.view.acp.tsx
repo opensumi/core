@@ -34,7 +34,6 @@ import {
   ThreadStatus,
   URI,
   formatLocalize,
-  localize,
   path,
   uuid,
 } from '@opensumi/ide-core-common';
@@ -66,7 +65,7 @@ import { WelcomeMessage } from '../components/WelcomeMsg';
 import { BaseApplyService } from '../mcp/base-apply.service';
 import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
-import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
+import { ChatModel, ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
 import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
@@ -1078,12 +1077,14 @@ export function DefaultChatViewHeaderACP({
             messages.length > 0 ? cleanAttachedTextWrapper(messages[0].content).slice(0, MAX_TITLE_LENGTH) : '';
           const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
           // const loading = session.requests[session.requests.length - 1]?.response.isComplete;
+          const existingItem = historyList.find((h) => h.id === session.sessionId);
           return {
             id: session.sessionId,
             title,
             updatedAt,
             // TODO: 后续支持
             loading: false,
+            threadStatus: existingItem?.threadStatus,
           };
         }),
       );
@@ -1091,6 +1092,27 @@ export function DefaultChatViewHeaderACP({
     getHistoryList();
     const toDispose = new DisposableCollection();
     const sessionListenIds = new Set<string>();
+
+    // Subscribe to thread status changes for the current session.
+    // Re-subscribe when the session changes so we always listen to the active model.
+    const subscribeThreadStatus = (model: ChatModel | undefined) => {
+      if (!model) return;
+      toDispose.push(
+        model.onThreadStatusChange((status) => {
+          threadStatusRef.current = {
+            ...threadStatusRef.current,
+            [model.sessionId]: status,
+          };
+          setHistoryList((prev) =>
+            prev.map((item) =>
+              item.id === model.sessionId ? { ...item, threadStatus: status } : item,
+            ),
+          );
+        }),
+      );
+    };
+    subscribeThreadStatus(aiChatService.sessionModel);
+
     toDispose.push(
       aiChatService.onChangeSession((sessionId) => {
         getHistoryList();
@@ -1103,24 +1125,13 @@ export function DefaultChatViewHeaderACP({
             getHistoryList();
           }),
         );
+        // Subscribe to the new session's thread status changes
+        subscribeThreadStatus(aiChatService.sessionModel);
       }),
     );
     toDispose.push(
       aiChatService.sessionModel?.history.onMessageChange(() => {
         getHistoryList();
-      }),
-    );
-    toDispose.push(
-      aiChatService.sessionModel?.onThreadStatusChange((status) => {
-        threadStatusRef.current = {
-          ...threadStatusRef.current,
-          [aiChatService.sessionModel!.sessionId]: status,
-        };
-        setHistoryList((prev) =>
-          prev.map((item) =>
-            item.id === aiChatService.sessionModel?.sessionId ? { ...item, threadStatus: status } : item,
-          ),
-        );
       }),
     );
     return () => {

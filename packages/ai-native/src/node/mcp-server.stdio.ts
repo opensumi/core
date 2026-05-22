@@ -91,7 +91,7 @@ export class StdioMCPServer implements IMCPServer {
     this.started = true;
   }
 
-  async callTool(toolName: string, toolCallId: string, arg_string: string) {
+  async callTool(toolName: string, toolCallId: string, arg_string: string): Promise<any> {
     let args;
     try {
       args = JSON.parse(arg_string);
@@ -112,7 +112,7 @@ export class StdioMCPServer implements IMCPServer {
     return this.client.callTool(params);
   }
 
-  async getTools() {
+  async getTools(): Promise<any> {
     const originalTools = await this.client.listTools();
     this.toolNameMap.clear();
     // Process tool names to remove Chinese characters and create mapping
