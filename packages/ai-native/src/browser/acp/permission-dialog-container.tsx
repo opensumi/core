@@ -51,12 +51,16 @@ class PermissionDialogManager {
   }
 
   getDialogsForSession(sessionId: string | undefined): DialogState[] {
-    if (!sessionId) {return [];}
+    if (!sessionId) {
+      return [];
+    }
     return this.dialogs.filter((d) => d.params.sessionId === sessionId);
   }
 
   clearDialogsForSession(sessionId: string | undefined): void {
-    if (!sessionId) {return;}
+    if (!sessionId) {
+      return;
+    }
     this.dialogs = this.dialogs.filter((d) => d.params.sessionId !== sessionId);
     this.notifyListeners();
   }
@@ -152,6 +156,7 @@ export class AcpPermissionDialogContribution implements ComponentContribution {
 const AcpPermissionDialogContainer: React.FC = () => {
   // 状态管理
   const [dialogs, setDialogs] = useState<DialogState[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | undefined>();
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   const functionComponentDialogManager = useInjectable<PermissionDialogManager>(PermissionDialogManager);
@@ -173,12 +178,25 @@ const AcpPermissionDialogContainer: React.FC = () => {
     return unsubscribe;
   }, []);
 
+  // Subscribe to active session changes
+  useEffect(() => {
+    const disposable = permissionBridgeService.onActiveSessionChange((sessionId) => {
+      setActiveSessionId(sessionId);
+    });
+    // Initialize with current session
+    setActiveSessionId(permissionBridgeService.getActiveSession());
+    return () => disposable.dispose();
+  }, []);
+
+  // Filter dialogs for active session only
+  const sessionDialogs = functionComponentDialogManager.getDialogsForSession(activeSessionId);
+
   // 键盘导航处理函数（使用 useCallback 优化性能）
   const handleKeyboardNavigation = useCallback(
     (e: KeyboardEvent) => {
-      const options = dialogs[0]?.params.options || [];
+      const options = sessionDialogs[0]?.params.options || [];
 
-      if (dialogs.length === 0) {
+      if (sessionDialogs.length === 0) {
         return;
       }
 
@@ -216,12 +234,12 @@ const AcpPermissionDialogContainer: React.FC = () => {
         handleDialogClose();
       }
     },
-    [dialogs, focusedIndex],
+    [sessionDialogs, focusedIndex],
   );
 
   // 组件更新：动态添加/移除键盘监听
   useEffect(() => {
-    if (dialogs.length > 0) {
+    if (sessionDialogs.length > 0) {
       window.addEventListener('keydown', handleKeyboardNavigation);
       // 添加焦点
       if (containerRef.current) {
@@ -234,16 +252,16 @@ const AcpPermissionDialogContainer: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyboardNavigation);
     };
-  }, [dialogs.length, handleKeyboardNavigation]);
+  }, [sessionDialogs.length, handleKeyboardNavigation]);
 
   // 处理用户选择
   const handleDialogSelect = useCallback(
     (_optionId: string) => {
-      if (dialogs.length === 0) {
+      if (sessionDialogs.length === 0) {
         return;
       }
-      const requestId = dialogs[0].requestId;
-      const params = dialogs[0].params;
+      const requestId = sessionDialogs[0].requestId;
+      const params = sessionDialogs[0].params;
 
       // Find the selected option to get its kind
       const selectedOption = params.options.find((opt) => opt.optionId === _optionId);
@@ -260,27 +278,27 @@ const AcpPermissionDialogContainer: React.FC = () => {
       // Close dialog
       functionComponentDialogManager.removeDialog(requestId);
     },
-    [dialogs, permissionBridgeService],
+    [sessionDialogs, permissionBridgeService],
   );
 
   // 处理对话框关闭
   const handleDialogClose = useCallback(() => {
-    if (dialogs.length === 0) {
+    if (sessionDialogs.length === 0) {
       return;
     }
-    const requestId = dialogs[0].requestId;
+    const requestId = sessionDialogs[0].requestId;
     // Notify the permission bridge service that the dialog was cancelled
     permissionBridgeService.handleDialogClose(requestId);
     // Close dialog
     functionComponentDialogManager.removeDialog(requestId);
-  }, [dialogs, permissionBridgeService]);
+  }, [sessionDialogs, permissionBridgeService]);
 
   // 如果没有对话框，返回null
-  if (dialogs.length === 0) {
+  if (sessionDialogs.length === 0) {
     return null;
   }
 
-  const currentDialog = dialogs[0];
+  const currentDialog = sessionDialogs[0];
   const params = currentDialog.params;
   const smartTitle = getSmartTitle(params);
   const shouldShowDescription =
