@@ -3,13 +3,16 @@ import { Injectable } from '@opensumi/di';
 import {
   Disposable,
   Emitter,
+  Event,
   IChatAsyncContent,
   IChatComponent,
   IChatMarkdownContent,
   IChatProgress,
   IChatReasoning,
+  IChatThreadStatus,
   IChatToolContent,
   IChatTreeData,
+  ThreadStatus,
   uuid,
 } from '@opensumi/ide-core-common';
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
@@ -347,6 +350,23 @@ export class ChatModel extends Disposable implements IChatModel {
     this.#modelId = modelId;
   }
 
+  #threadStatus: ThreadStatus = 'idle';
+
+  get threadStatus(): ThreadStatus {
+    return this.#threadStatus;
+  }
+
+  setThreadStatus(status: ThreadStatus): void {
+    if (this.#threadStatus === status) {
+      return;
+    }
+    this.#threadStatus = status;
+    this._onThreadStatusChange.fire(status);
+  }
+
+  private _onThreadStatusChange = new Emitter<ThreadStatus>();
+  public readonly onThreadStatusChange: Event<ThreadStatus> = this._onThreadStatusChange.event;
+
   private processMemorySummaries(): CoreMessage[] {
     const memorySummaries = this.history.getMemorySummaries();
     if (memorySummaries.length === 0) {
@@ -520,6 +540,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
   override dispose(): void {
     super.dispose();
+    this._onThreadStatusChange.dispose();
     this.#requests.forEach((r) => r.response.dispose());
   }
 

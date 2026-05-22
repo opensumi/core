@@ -4,6 +4,7 @@ import React, { FC, memo, useCallback, useEffect, useRef, useState } from 'react
 import { Icon, Input, Loading, Popover, PopoverPosition, PopoverTriggerType, getIcon } from '@opensumi/ide-components';
 import { localize } from '@opensumi/ide-core-browser';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { ThreadStatus } from '@opensumi/ide-core-common';
 
 import styles from './acp/chat-history.module.less';
 
@@ -12,6 +13,7 @@ export interface IChatHistoryItem {
   title: string;
   updatedAt: number;
   loading: boolean;
+  threadStatus?: ThreadStatus;
 }
 
 export interface IChatHistoryProps {
@@ -171,11 +173,26 @@ const ChatHistoryACP: FC<IChatHistoryProps> = memo(
           onClick={() => handleHistoryItemSelect(item)}
         >
           <div className={styles.chat_history_item_content}>
-            {item.loading ? (
-              <Loading />
-            ) : (
-              <Icon icon='message' style={{ width: '16px', height: '16px', marginRight: 4 }} />
-            )}
+            {(() => {
+              switch (item.threadStatus) {
+                case 'working':
+                  return <Loading />;
+                case 'awaiting_prompt':
+                  return <Icon icon="success" style={{ width: '16px', height: '16px', marginRight: 4 }} />;
+                case 'errored':
+                  return <Icon icon="error" style={{ width: '16px', height: '16px', marginRight: 4 }} />;
+                case 'auth_required':
+                  return <Icon icon="key" style={{ width: '16px', height: '16px', marginRight: 4 }} />;
+                case 'disconnected':
+                  return <Icon icon="disconnect" style={{ width: '16px', height: '16px', marginRight: 4 }} />;
+                default:
+                  return item.loading ? (
+                    <Loading />
+                  ) : (
+                    <Icon icon="message" style={{ width: '16px', height: '16px', marginRight: 4 }} />
+                  );
+              }
+            })()}
             {!historyTitleEditable?.[item.id] ? (
               <span id={`chat-history-item-title-${item.id}`} className={styles.chat_history_item_title}>
                 {item.title}
