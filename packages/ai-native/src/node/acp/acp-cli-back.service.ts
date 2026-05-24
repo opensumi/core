@@ -24,6 +24,7 @@ import { BaseLanguageModel } from '../base-language-model';
 import { OpenAICompatibleModel } from '../openai-compatible/openai-compatible-language-model';
 
 import { AcpAgentServiceToken, AgentRequest, AgentUpdate, IAcpAgentService, SimpleMessage } from './acp-agent.service';
+import { AcpThreadStatusCallerServiceToken } from './acp-thread-status-caller.service';
 
 import type { CoreMessage } from 'ai';
 
@@ -96,7 +97,27 @@ export class AcpCliBackService implements IAIBackService {
   @Autowired(OpenAICompatibleModel)
   private openAICompatibleModel: OpenAICompatibleModel;
 
+  @Autowired(AcpThreadStatusCallerServiceToken)
+  private threadStatusCaller: any;
+
   private isDisposing = false;
+
+  private threadStatusDisposable: any;
+
+  /**
+   * Lazily subscribe to thread status changes from AcpAgentService
+   * and forward them to the browser via RPC.
+   */
+  private ensureThreadStatusSubscription(): void {
+    if (this.threadStatusDisposable) {
+      return;
+    }
+    this.threadStatusDisposable = this.agentService.onThreadStatusChange(({ sessionId, status }) => {
+      if (this.threadStatusCaller?.notifyThreadStatusChange) {
+        this.threadStatusCaller.notifyThreadStatusChange(sessionId, status);
+      }
+    });
+  }
 
   // registerProcessExitHandlers(): void {
   //   process.once('SIGTERM', () => {
@@ -167,6 +188,7 @@ export class AcpCliBackService implements IAIBackService {
     cancelToken?: CancellationToken,
   ): SumiReadableStream<IChatProgress> {
     this.logger.log('[ACP Back] agentRequestStream: setting up agent stream');
+    this.ensureThreadStatusSubscription();
     const stream = new SumiReadableStream<IChatProgress>();
     this.setupAgentStream(options.agentSessionConfig!, input, options, stream, cancelToken);
     return stream;
@@ -279,6 +301,9 @@ export class AcpCliBackService implements IAIBackService {
           content: update.content,
         } as IChatContent;
       case 'done':
+        return null;
+      case 'thread_status':
+        // Handled separately via update.threadStatus below
         return null;
       default:
         return null;

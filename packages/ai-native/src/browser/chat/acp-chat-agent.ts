@@ -215,7 +215,10 @@ export class AcpChatAgent implements IChatAgent {
   }
 
   private handleThreadStatusUpdate(status: ThreadStatus, sessionId: string): void {
-    const model = this.chatManagerService.getSession(sessionId);
+    // The node layer receives sessionId without the 'acp:' prefix (stripped in invoke()),
+    // but sessionModels map keys include the prefix. Re-add it for lookup.
+    const lookupKey = sessionId.startsWith('acp:') ? sessionId : `acp:${sessionId}`;
+    const model = this.chatManagerService.getSession(lookupKey);
     if (model) {
       model.setThreadStatus(status);
     }

@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Deferred, Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { Deferred, Disposable, Emitter, Event, IDisposable } from '@opensumi/ide-core-common';
 import {
   AvailableCommand,
   ListSessionsRequest,
@@ -17,6 +17,7 @@ import {
   AcpThreadFactory,
   AcpThreadFactoryToken,
   AcpThreadRuntimeConfig,
+  ThreadStatus,
 } from './acp-thread';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
 import { PermissionRoutingService, PermissionRoutingServiceToken } from './permission-routing.service';
@@ -172,6 +173,13 @@ export interface IAcpAgentService {
    * Get available modes from initialize negotiation
    */
   getAvailableModes(): Promise<any | null>;
+
+  /**
+   * Event fired when any session's thread status changes.
+   * Persists across sendMessage() calls — unlike onEvent listeners
+   * that only exist during stream lifetime.
+   */
+  readonly onThreadStatusChange: Event<{ sessionId: string; status: ThreadStatus }>;
 }
 
 // ============================================================================
@@ -215,6 +223,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
   // Cached session info for backward compat (getSessionInfo without sessionId)
   private lastSessionInfo: AgentSessionInfo | null = null;
+
+  // Persistent thread status change listeners (survives across sendMessage streams)
+  private threadStatusDisposables = new Map<string, IDisposable>();
+
+  private _onThreadStatusChange = new Emitter<{ sessionId: string; status: ThreadStatus }>();
+  readonly onThreadStatusChange: Event<{ sessionId: string; status: ThreadStatus }> = this._onThreadStatusChange.event;
 
   // -----------------------------------------------------------------------
   // Core: findOrCreateThread
@@ -353,6 +367,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       realSessionId = newSessionResponse.sessionId;
       this.sessions.set(realSessionId, thread);
       this.permissionRouting.registerSession(realSessionId);
+      this.registerThreadStatusListener(realSessionId, thread);
 
       await Promise.race([
         deferred.promise,
@@ -380,6 +395,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       if (realSessionId) {
         this.sessions.delete(realSessionId);
         this.permissionRouting.unregisterSession(realSessionId);
+        this.unregisterThreadStatusListener(realSessionId);
       }
       this.logger.error(`[AcpAgentService] createSession() — failed: ${e instanceof Error ? e.message : String(e)}`);
       if (!wasExisting) {
@@ -422,6 +438,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     const existingThread = this.sessions.get(sessionId);
     if (existingThread && existingThread.getStatus() !== 'disconnected') {
       this.permissionRouting.registerSession(sessionId);
+      this.registerThreadStatusListener(sessionId, existingThread);
       this.logger.log(
         `[AcpAgentService] loadSession() — thread already bound, threadId=${existingThread.threadId}, cwd=${existingThread.cwd}`,
       );
@@ -438,6 +455,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       );
       this.sessions.set(sessionId, idleThread);
       this.permissionRouting.registerSession(sessionId);
+      this.registerThreadStatusListener(sessionId, idleThread);
       try {
         if (!idleThread.initialized) {
           await idleThread.initialize(config as any);
@@ -453,6 +471,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       } catch (e) {
         this.sessions.delete(sessionId);
         this.permissionRouting.unregisterSession(sessionId);
+        this.unregisterThreadStatusListener(sessionId);
         idleThread.reset();
         this.logger.error(
           `[AcpAgentService] loadSession() — idle thread reuse failed: ${e instanceof Error ? e.message : String(e)}`,
@@ -471,9 +490,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.threadPool.push(thread);
       this.sessions.set(sessionId, thread);
       this.permissionRouting.registerSession(sessionId);
+      this.registerThreadStatusListener(sessionId, thread);
 
       try {
-        await thread.initialize(config as any);
         await thread.loadSession({
           sessionId,
           cwd: config.cwd,
@@ -486,6 +505,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         }
         this.sessions.delete(sessionId);
         this.permissionRouting.unregisterSession(sessionId);
+        this.unregisterThreadStatusListener(sessionId);
         await thread.dispose();
         throw e;
       }
@@ -552,6 +572,14 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     // Add user message to thread entries
     thread.addUserMessage(request.prompt);
 
+    // Emit the current thread status as the first update so the browser
+    // always receives the status even if no status_changed event fires
+    // during this prompt (e.g. session was already awaiting_prompt).
+    const currentStatus = thread.getStatus();
+    if (currentStatus) {
+      stream.emitData({ type: 'thread_status', content: '', threadStatus: currentStatus });
+    }
+
     this.logger.log(
       `[AcpAgentService] sendMessage() — sessionId=${request.sessionId}, thread=${thread.threadId}, entries=${
         thread.getEntries().length
@@ -568,6 +596,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
           agentUpdate.threadStatus = thread.getStatus();
           stream.emitData(agentUpdate);
         }
+      } else if (event.type === 'status_changed') {
+        // Emit standalone threadStatus update for status transitions that don't
+        // coincide with a session_notification (e.g. disconnected, errored, idle).
+        stream.emitData({ type: 'thread_status', content: '', threadStatus: event.status });
       }
     });
     disposables.push(eventDisposable);
@@ -698,6 +730,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     const poolSizeBefore = this.threadPool.length;
     const thread = await this.findOrCreateThread(sessionId, config);
     this.permissionRouting.registerSession(sessionId);
+    this.registerThreadStatusListener(sessionId, thread);
     const wasExisting = this.threadPool.length === poolSizeBefore;
 
     try {
@@ -716,7 +749,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     } catch (e) {
       this.sessions.delete(sessionId);
       this.permissionRouting.unregisterSession(sessionId);
-      this.logger.error(`[AcpAgentService] loadSessionOrNew() — failed: ${e instanceof Error ? e.message : String(e)}`);
+      this.unregisterThreadStatusListener(sessionId);
       if (!wasExisting) {
         const idx = this.threadPool.indexOf(thread);
         if (idx !== -1) {
@@ -864,6 +897,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     // Default: just remove from session mapping, thread returns to pool
     this.permissionRouting.unregisterSession(sessionId);
+    this.unregisterThreadStatusListener(sessionId);
     this.sessions.delete(sessionId);
     this.logPoolStatus('after-disposeSession');
   }
@@ -920,6 +954,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     for (const sessionId of this.sessions.keys()) {
       this.permissionRouting.unregisterSession(sessionId);
+      this.unregisterThreadStatusListener(sessionId);
     }
     this.threadPool = [];
     this.sessions.clear();
@@ -934,7 +969,34 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   async dispose(): Promise<void> {
     this.logger?.log('[AcpAgentService] dispose() — pool size=' + this.threadPool.length);
     await this.stopAgent();
+    this._onThreadStatusChange.dispose();
     this.logger?.log('[AcpAgentService] dispose() — done');
+  }
+
+  // -----------------------------------------------------------------------
+  // Thread status change tracking
+  // -----------------------------------------------------------------------
+
+  /**
+   * Register a persistent listener for thread status changes.
+   * Fires onThreadStatusChange for every status transition, even outside sendMessage streams.
+   */
+  private registerThreadStatusListener(sessionId: string, thread: AcpThread): void {
+    this.unregisterThreadStatusListener(sessionId);
+    const disposable = thread.onEvent((event: AcpThreadEvent) => {
+      if (event.type === 'status_changed') {
+        this._onThreadStatusChange.fire({ sessionId, status: event.status });
+      }
+    });
+    this.threadStatusDisposables.set(sessionId, disposable);
+  }
+
+  private unregisterThreadStatusListener(sessionId: string): void {
+    const disposable = this.threadStatusDisposables.get(sessionId);
+    if (disposable) {
+      disposable.dispose();
+      this.threadStatusDisposables.delete(sessionId);
+    }
   }
 
   // -----------------------------------------------------------------------

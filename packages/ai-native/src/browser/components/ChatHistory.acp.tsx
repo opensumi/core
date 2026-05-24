@@ -166,62 +166,93 @@ const ChatHistoryACP: FC<IChatHistoryProps> = memo(
 
     // 渲染历史记录项
     const renderHistoryItem = useCallback(
-      (item: IChatHistoryItem) => (
-        <div
-          key={item.id}
-          className={cls(styles.chat_history_item, item.id === currentId ? styles.chat_history_item_selected : '')}
-          onClick={() => handleHistoryItemSelect(item)}
-        >
-          <div className={styles.chat_history_item_content}>
-            {(() => {
-              switch (item.threadStatus) {
-                case 'working':
-                  return <Loading />;
-                case 'awaiting_prompt':
-                  return <Icon icon='success' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
-                case 'errored':
-                  return <Icon icon='error' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
-                case 'auth_required':
-                  return <Icon icon='key' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
-                case 'disconnected':
-                  return <Icon icon='disconnect' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
-                default:
-                  return item.loading ? (
-                    <Loading />
-                  ) : (
-                    <Icon icon='message' style={{ width: '16px', height: '16px', marginRight: 4 }} />
-                  );
-              }
-            })()}
-            {!historyTitleEditable?.[item.id] ? (
-              <span id={`chat-history-item-title-${item.id}`} className={styles.chat_history_item_title}>
-                {item.title}
-              </span>
-            ) : (
-              <Input
-                className={styles.chat_history_item_title}
-                defaultValue={item.title}
-                ref={inputRef}
-                onPressEnter={(e: any) => {
-                  handleTitleEditComplete(item, e.target.value);
+      (item: IChatHistoryItem) => {
+        const threadStatusTestId = item.threadStatus
+          ? `acp-thread-status-${item.id}-${item.threadStatus}`
+          : `acp-thread-status-${item.id}-default`;
+
+        return (
+          <div
+            key={item.id}
+            data-testid={`acp-chat-history-item-${item.id}`}
+            className={cls(styles.chat_history_item, item.id === currentId ? styles.chat_history_item_selected : '')}
+            onClick={() => handleHistoryItemSelect(item)}
+          >
+            <div className={styles.chat_history_item_content}>
+              {(() => {
+                switch (item.threadStatus) {
+                  case 'working':
+                    return (
+                      <span data-testid={threadStatusTestId}>
+                        <Loading />
+                      </span>
+                    );
+                  case 'awaiting_prompt':
+                    return (
+                      <span data-testid={threadStatusTestId}>
+                        <Icon icon='success' style={{ width: '16px', height: '16px', marginRight: 4 }} />
+                      </span>
+                    );
+                  case 'errored':
+                    return (
+                      <span data-testid={threadStatusTestId}>
+                        <Icon icon='error' style={{ width: '16px', height: '16px', marginRight: 4 }} />
+                      </span>
+                    );
+                  case 'auth_required':
+                    return (
+                      <span data-testid={threadStatusTestId}>
+                        <Icon icon='key' style={{ width: '16px', height: '16px', marginRight: 4 }} />
+                      </span>
+                    );
+                  case 'disconnected':
+                    return (
+                      <span data-testid={threadStatusTestId}>
+                        <Icon icon='disconnect' style={{ width: '16px', height: '16px', marginRight: 4 }} />
+                      </span>
+                    );
+                  default:
+                    return item.loading ? (
+                      <span data-testid={threadStatusTestId}>
+                        <Loading />
+                      </span>
+                    ) : (
+                      <span data-testid={threadStatusTestId}>
+                        <Icon icon='message' style={{ width: '16px', height: '16px', marginRight: 4 }} />
+                      </span>
+                    );
+                }
+              })()}
+              {!historyTitleEditable?.[item.id] ? (
+                <span id={`chat-history-item-title-${item.id}`} className={styles.chat_history_item_title}>
+                  {item.title}
+                </span>
+              ) : (
+                <Input
+                  className={styles.chat_history_item_title}
+                  defaultValue={item.title}
+                  ref={inputRef}
+                  onPressEnter={(e: any) => {
+                    handleTitleEditComplete(item, e.target.value);
+                  }}
+                  onBlur={() => handleTitleEditCancel(item)}
+                />
+              )}
+            </div>
+            <div className={styles.chat_history_item_actions}>
+              <EnhanceIcon
+                className={cls(styles.chat_history_item_actions_delete, getIcon('delete'))}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleHistoryItemDelete(item);
                 }}
-                onBlur={() => handleTitleEditCancel(item)}
+                ariaLabel={localize('aiNative.operate.chatHistory.delete')}
               />
-            )}
+            </div>
           </div>
-          <div className={styles.chat_history_item_actions}>
-            <EnhanceIcon
-              className={cls(styles.chat_history_item_actions_delete, getIcon('delete'))}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleHistoryItemDelete(item);
-              }}
-              ariaLabel={localize('aiNative.operate.chatHistory.delete')}
-            />
-          </div>
-        </div>
-      ),
+        );
+      },
       [
         historyTitleEditable,
         handleHistoryItemSelect,
@@ -299,6 +330,7 @@ const ChatHistoryACP: FC<IChatHistoryProps> = memo(
             title={localize('aiNative.operate.newChat.title')}
           >
             <EnhanceIcon
+              data-testid='acp-new-chat-button'
               className={cls(styles.chat_history_header_actions_new, getIcon('plus'))}
               onClick={handleNewChat}
             />

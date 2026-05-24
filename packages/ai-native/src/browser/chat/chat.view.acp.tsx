@@ -1096,7 +1096,9 @@ export function DefaultChatViewHeaderACP({
     // Subscribe to thread status changes for the current session.
     // Re-subscribe when the session changes so we always listen to the active model.
     const subscribeThreadStatus = (model: ChatModel | undefined) => {
-      if (!model) return;
+      if (!model) {
+        return;
+      }
       toDispose.push(
         model.onThreadStatusChange((status) => {
           threadStatusRef.current = {
@@ -1104,9 +1106,7 @@ export function DefaultChatViewHeaderACP({
             [model.sessionId]: status,
           };
           setHistoryList((prev) =>
-            prev.map((item) =>
-              item.id === model.sessionId ? { ...item, threadStatus: status } : item,
-            ),
+            prev.map((item) => (item.id === model.sessionId ? { ...item, threadStatus: status } : item)),
           );
         }),
       );

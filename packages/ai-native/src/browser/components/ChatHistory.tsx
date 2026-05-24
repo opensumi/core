@@ -4,6 +4,7 @@ import React, { FC, memo, useCallback, useEffect, useRef, useState } from 'react
 import { Icon, Input, Loading, Popover, PopoverPosition, PopoverTriggerType, getIcon } from '@opensumi/ide-components';
 import { localize } from '@opensumi/ide-core-browser';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { ThreadStatus } from '@opensumi/ide-core-common';
 
 import styles from './chat-history.module.less';
 
@@ -12,6 +13,7 @@ export interface IChatHistoryItem {
   title: string;
   updatedAt: number;
   loading: boolean;
+  threadStatus?: ThreadStatus;
 }
 
 export interface IChatHistoryProps {
