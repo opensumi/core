@@ -69,7 +69,7 @@ return { available: true, toolCount: tools.length, tools: tools.map((t) => t.nam
 
 1. **Exact filename match:** User mentions a scenario name → load `test/bdd/<name>.scenario.md`.
 2. **List & ask:** If no clear match, list existing scenarios in `test/bdd/` → "Use which? [1/2/3/new]".
-3. **Auto-generate:** User selects "new" → generate from description, save to `test/bdd/<kebab-case-name>.scenario.md`, present for confirmation.
+3. **Auto-generate:** User selects "new" → generate from description using the template below, save to `test/bdd/<kebab-case-name>.scenario.md`, present for confirmation before proceeding.
 
 ### Contract Design
 
@@ -127,8 +127,8 @@ Only runs if Phase 2 produced FAIL results.
 
 ### Exit Conditions
 
-- **All pass** → Phase 4
-- **3 cycles exhausted** → stop, show all failures with diagnostics, ask user
+- **All pass** → run full regression (all scenarios) → if all pass, Phase 4
+- **Partial pass after 3 cycles** → Phase 4 with diagnostics (list remaining failures)
 - **Never retry without a code change**
 
 ### Context Management
@@ -173,3 +173,11 @@ All scenarios in `test/bdd/`:
 ```
 
 Step types: `webmcp`, `cdp-click`, `cdp-wait`, `cdp-evaluate`, `cdp-snapshot`
+
+**Auto-generated scenario template:** When generating scenarios from a description, follow this structure:
+
+1. **Given** always includes browser URL and WebMCP availability check
+2. **When** starts with contract-related WebMCP calls (e.g., `acp_createSession`), followed by CDP verification steps (`cdp-wait`, `cdp-evaluate`)
+3. **Then** lists observable outcomes that match the contract's promised behavior
+4. Use `data-testid` attributes from the cdp-verification-scenarios skill's reference table for CDP steps
+5. Reference the scenario format from `cdp-verification-scenarios` skill — use `## Given` / `## When` / `## Then` heading style consistently
