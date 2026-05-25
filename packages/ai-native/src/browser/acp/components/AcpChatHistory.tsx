@@ -8,6 +8,28 @@ import { ThreadStatus } from '@opensumi/ide-core-common';
 
 import styles from '../../components/acp/chat-history.module.less';
 
+const threadStatusIcon: Record<ThreadStatus, string> = {
+  idle: 'disconnect',
+  working: 'loading',
+  awaiting_prompt: 'disconnect',
+  auth_required: 'disconnect',
+  errored: 'error',
+  disconnected: 'disconnect',
+};
+
+function renderThreadStatusIcon(status: ThreadStatus | undefined, loading: boolean, testId: string) {
+  const effectiveStatus: ThreadStatus = status ?? (loading ? 'working' : 'idle');
+  const iconName = threadStatusIcon[effectiveStatus] || threadStatusIcon.idle;
+  return (
+    <Icon
+      data-testid={testId}
+      iconClass={getIcon(iconName)}
+      animate={effectiveStatus === 'working' ? 'spin' : undefined}
+      style={{ fontSize: 14, marginRight: 4, flexShrink: 0, opacity: 0.6 }}
+    />
+  );
+}
+
 export interface IChatHistoryItem {
   id: string;
   title: string;
@@ -161,51 +183,43 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     // 渲染历史记录项
     const renderHistoryItem = useCallback(
       (item: IChatHistoryItem) => (
-          <div
-            key={item.id}
-            className={cls(styles.chat_history_item, item.id === currentId ? styles.chat_history_item_selected : '')}
-            onClick={() => handleHistoryItemSelect(item)}
-          >
-            <div className={styles.chat_history_item_content}>
-              {(() => {
-                switch (item.threadStatus) {
-                  case 'working':
-                    return <Loading />;
-                  case 'awaiting_prompt':
-                    return <Icon icon='success' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
-                  case 'errored':
-                    return <Icon icon='error' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
-                  case 'auth_required':
-                    return <Icon icon='key' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
-                  case 'disconnected':
-                    return <Icon icon='disconnect' style={{ width: '16px', height: '16px', marginRight: 4 }} />;
-                  default:
-                    return item.loading ? (
-                      <Loading />
-                    ) : (
-                      <Icon icon='message' style={{ width: '16px', height: '16px', marginRight: 4 }} />
-                    );
-                }
-              })()}
-              {!historyTitleEditable?.[item.id] ? (
-                <span id={`chat-history-item-title-${item.id}`} className={styles.chat_history_item_title}>
-                  {item.title}
-                </span>
-              ) : (
-                <Input
-                  className={styles.chat_history_item_title}
-                  defaultValue={item.title}
-                  ref={inputRef}
-                  onPressEnter={(e: any) => {
-                    handleTitleEditComplete(item, e.target.value);
-                  }}
-                  onBlur={() => handleTitleEditCancel(item)}
-                />
-              )}
-            </div>
-            {/* ACP 模式：不显示删除按钮，会话由服务端管理 */}
+        <div
+          key={item.id}
+          data-testid={`chat-history-item-${item.id}`}
+          className={cls(styles.chat_history_item, item.id === currentId ? styles.chat_history_item_selected : '')}
+          onClick={() => handleHistoryItemSelect(item)}
+        >
+          <div className={styles.chat_history_item_content}>
+            {renderThreadStatusIcon(
+              item.threadStatus,
+              item.loading,
+              `acp-thread-status-${item.id}-${item.threadStatus || 'default'}`,
+            )}
+            <span
+              data-testid={`thread-status-${item.id}`}
+              style={{ fontSize: 11, marginRight: 4, color: '#888', flexShrink: 0 }}
+            >
+              [{item.threadStatus ?? (item.loading ? 'working' : 'idle')}]
+            </span>
+            {!historyTitleEditable?.[item.id] ? (
+              <span id={`chat-history-item-title-${item.id}`} className={styles.chat_history_item_title}>
+                {item.title || 'Untitled'}
+              </span>
+            ) : (
+              <Input
+                className={styles.chat_history_item_title}
+                defaultValue={item.title}
+                ref={inputRef}
+                onPressEnter={(e: any) => {
+                  handleTitleEditComplete(item, e.target.value);
+                }}
+                onBlur={() => handleTitleEditCancel(item)}
+              />
+            )}
           </div>
-        ),
+          {/* ACP 模式：不显示删除按钮，会话由服务端管理 */}
+        </div>
+      ),
       [
         historyTitleEditable,
         handleHistoryItemSelect,
@@ -221,7 +235,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
       const filteredList = historyList
         .slice(-MAX_HISTORY_LIST)
         .reverse()
-        .filter((item) => item.title && item.title.includes(searchValue));
+        .filter((item) => item.title !== undefined && item.title.includes(searchValue));
 
       const groupedHistoryList = formatHistory(filteredList);
 
@@ -233,7 +247,10 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
             value={searchValue}
             onChange={handleSearchChange}
           />
-          <div className={cls(styles.chat_history_list, disabled && styles.chat_history_list_disabled)}>
+          <div
+            data-testid='acp-chat-history-popover'
+            className={cls(styles.chat_history_list, disabled && styles.chat_history_list_disabled)}
+          >
             {historyLoading ? (
               <div className={styles.chat_history_loading}>
                 <Loading />
@@ -269,6 +286,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
             onVisibleChange={onHistoryPopoverVisibleChange}
           >
             <div
+              data-testid='acp-chat-history-button'
               className={styles.chat_history_header_actions_history}
               title={localize('aiNative.operate.chatHistory.title')}
             >
