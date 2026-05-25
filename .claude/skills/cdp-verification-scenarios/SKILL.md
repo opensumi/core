@@ -125,7 +125,7 @@ digraph failure_loop {
 
 ## Scenario Definition Format
 
-Scenarios use a simple BDD format. Place in `docs/superpowers/specs/` or similar:
+Scenarios use a simple BDD format. Place in `test/bdd/`:
 
 ```
 Scenario: <short description>
