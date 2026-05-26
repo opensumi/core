@@ -286,10 +286,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
    */
   private createThreadInstance(sessionId: string, config: AgentProcessConfig): AcpThread {
     const runtimeConfig: AcpThreadRuntimeConfig = {
+      agentId: config.agentId,
       command: config.command,
       args: config.args,
       env: config.env,
       cwd: config.cwd,
+      nodePath: config.nodePath,
     };
     const thread = this.threadFactory(sessionId, runtimeConfig);
     this.logger.log(
@@ -311,10 +313,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     if (this.threadPool.length < this.maxPoolSize) {
       const runtimeConfig: AcpThreadRuntimeConfig = {
+        agentId: config.agentId,
         command: config.command,
         args: config.args,
         env: config.env,
         cwd: config.cwd,
+        nodePath: config.nodePath,
       };
       const thread = this.threadFactory('', runtimeConfig);
       this.threadPool.push(thread);
@@ -493,6 +497,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.registerThreadStatusListener(sessionId, thread);
 
       try {
+        if (!thread.initialized) {
+          await thread.initialize(config as any);
+        }
         await thread.loadSession({
           sessionId,
           cwd: config.cwd,
@@ -983,8 +990,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
    */
   private registerThreadStatusListener(sessionId: string, thread: AcpThread): void {
     this.unregisterThreadStatusListener(sessionId);
+    this.logger.log(`[AcpAgentService] registerThreadStatusListener: sessionId=${sessionId}`);
     const disposable = thread.onEvent((event: AcpThreadEvent) => {
       if (event.type === 'status_changed') {
+        this.logger.log(`[AcpAgentService] thread status_changed: sessionId=${sessionId}, status=${event.status}`);
         this._onThreadStatusChange.fire({ sessionId, status: event.status });
       }
     });
@@ -994,6 +1003,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   private unregisterThreadStatusListener(sessionId: string): void {
     const disposable = this.threadStatusDisposables.get(sessionId);
     if (disposable) {
+      this.logger.log(`[AcpAgentService] unregisterThreadStatusListener: sessionId=${sessionId}`);
       disposable.dispose();
       this.threadStatusDisposables.delete(sessionId);
     }
