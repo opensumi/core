@@ -165,18 +165,7 @@ export class AcpPermissionBridgeService {
     };
 
     // Clean up pending index
-    const sessionId = this.requestIdToSessionId.get(requestId);
-    if (sessionId) {
-      const sessionSet = this.pendingBySessionId.get(sessionId);
-      if (sessionSet) {
-        sessionSet.delete(requestId);
-        if (sessionSet.size === 0) {
-          this.pendingBySessionId.delete(sessionId);
-        }
-      }
-      this.requestIdToSessionId.delete(requestId);
-      this.onPendingCountChangeEmitter.fire();
-    }
+    this.cleanupPendingIndex(requestId);
 
     this.activeDialogs.delete(requestId);
     this.onPermissionResult.fire({ requestId, decision });
@@ -200,6 +189,19 @@ export class AcpPermissionBridgeService {
     const decision: PermissionDecision = { type: 'timeout' };
 
     // Clean up pending index
+    this.cleanupPendingIndex(requestId);
+
+    this.activeDialogs.delete(requestId);
+    this.onPermissionResult.fire({ requestId, decision });
+    pending.resolve(decision);
+  }
+
+  /**
+   * Clean up the pending index for a given requestId.
+   * Removes the request from the session set, prunes empty sets,
+   * deletes the reverse mapping, and fires the count-change event.
+   */
+  private cleanupPendingIndex(requestId: string): void {
     const sessionId = this.requestIdToSessionId.get(requestId);
     if (sessionId) {
       const sessionSet = this.pendingBySessionId.get(sessionId);
@@ -212,10 +214,6 @@ export class AcpPermissionBridgeService {
       this.requestIdToSessionId.delete(requestId);
       this.onPendingCountChangeEmitter.fire();
     }
-
-    this.activeDialogs.delete(requestId);
-    this.onPermissionResult.fire({ requestId, decision });
-    pending.resolve(decision);
   }
 
   /**
@@ -268,10 +266,15 @@ export class AcpPermissionBridgeService {
       this.onPendingCountChangeEmitter.fire();
     }
     // Also clean up the requestIdToSessionId map for this session's requests
+    let cleanedReverse = false;
     for (const [rid, sid] of this.requestIdToSessionId.entries()) {
       if (sid === sessionId) {
         this.requestIdToSessionId.delete(rid);
+        cleanedReverse = true;
       }
+    }
+    if (cleanedReverse) {
+      this.onPendingCountChangeEmitter.fire();
     }
   }
 
