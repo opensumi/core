@@ -31,7 +31,6 @@ import {
   IAIReporter,
   IChatComponent,
   IChatContent,
-  ThreadStatus,
   URI,
   formatLocalize,
   path,
@@ -53,6 +52,7 @@ import {
 import { CodeBlockData } from '../../common/types';
 import { cleanAttachedTextWrapper } from '../../common/utils';
 import { AcpChatViewWrapper } from '../acp/components/AcpChatViewWrapper';
+import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
 import { FileChange, FileListDisplay } from '../components/ChangeList';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
@@ -989,10 +989,11 @@ export function DefaultChatViewHeaderACP({
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const chatHistoryRegistry = useInjectable<IChatHistoryRegistry>(ChatHistoryRegistryToken);
+  const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
-  const threadStatusRef = React.useRef<Record<string, ThreadStatus>>({});
+  const [pendingPermissionBadge, setPendingPermissionBadge] = React.useState(0);
   const handleNewChat = React.useCallback(() => {
     if (aiChatService.sessionModel?.history.getMessages().length > 0) {
       try {
@@ -1040,6 +1041,24 @@ export function DefaultChatViewHeaderACP({
   const latestSummaryRequestRef = React.useRef<number>(0);
 
   React.useEffect(() => {
+    const toDispose = new DisposableCollection();
+    const sessionListenIds = new Set<string>();
+    const subscribedSessionIds = new Set<string>();
+
+    const subscribeThreadStatus = (model: ChatModel) => {
+      if (subscribedSessionIds.has(model.sessionId)) {
+        return;
+      }
+      subscribedSessionIds.add(model.sessionId);
+      toDispose.push(
+        model.onThreadStatusChange((status) => {
+          setHistoryList((prev) =>
+            prev.map((item) => (item.id === model.sessionId ? { ...item, threadStatus: status } : item)),
+          );
+        }),
+      );
+    };
+
     const getHistoryList = async () => {
       const currentMessages = aiChatService.sessionModel?.history.getMessages();
       const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
@@ -1069,49 +1088,47 @@ export function DefaultChatViewHeaderACP({
         }
       }
 
+      const sessions = aiChatService.getSessions();
+      for (const session of sessions) {
+        subscribeThreadStatus(session);
+      }
+
       setHistoryList(
-        aiChatService.getSessions().map((session) => {
+        sessions.map((session) => {
           const history = session.history;
           const messages = history.getMessages();
           const title =
             messages.length > 0 ? cleanAttachedTextWrapper(messages[0].content).slice(0, MAX_TITLE_LENGTH) : '';
           const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
-          // const loading = session.requests[session.requests.length - 1]?.response.isComplete;
-          const existingItem = historyList.find((h) => h.id === session.sessionId);
           return {
             id: session.sessionId,
             title,
             updatedAt,
-            // TODO: 后续支持
             loading: false,
-            threadStatus: existingItem?.threadStatus,
+            threadStatus: session.threadStatus,
+            hasPendingPermission: permissionBridgeService.hasPendingForSession(session.sessionId),
           };
         }),
       );
     };
     getHistoryList();
-    const toDispose = new DisposableCollection();
-    const sessionListenIds = new Set<string>();
 
-    // Subscribe to thread status changes for the current session.
-    // Re-subscribe when the session changes so we always listen to the active model.
-    const subscribeThreadStatus = (model: ChatModel | undefined) => {
-      if (!model) {
-        return;
-      }
-      toDispose.push(
-        model.onThreadStatusChange((status) => {
-          threadStatusRef.current = {
-            ...threadStatusRef.current,
-            [model.sessionId]: status,
-          };
-          setHistoryList((prev) =>
-            prev.map((item) => (item.id === model.sessionId ? { ...item, threadStatus: status } : item)),
-          );
-        }),
-      );
+    // Subscribe to pending permission count changes
+    const refreshBadge = () => {
+      setPendingPermissionBadge(permissionBridgeService.getPendingCountExcludingActive());
     };
-    subscribeThreadStatus(aiChatService.sessionModel);
+    toDispose.push(
+      permissionBridgeService.onPendingCountChange(() => {
+        refreshBadge();
+        getHistoryList();
+      }),
+    );
+    toDispose.push(
+      permissionBridgeService.onActiveSessionChange(() => {
+        refreshBadge();
+      }),
+    );
+    refreshBadge();
 
     toDispose.push(
       aiChatService.onChangeSession((sessionId) => {
@@ -1125,8 +1142,6 @@ export function DefaultChatViewHeaderACP({
             getHistoryList();
           }),
         );
-        // Subscribe to the new session's thread status changes
-        subscribeThreadStatus(aiChatService.sessionModel);
       }),
     );
     toDispose.push(
@@ -1152,6 +1167,7 @@ export function DefaultChatViewHeaderACP({
               currentId={aiChatService.sessionModel?.sessionId}
               title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
               historyList={historyList}
+              pendingPermissionBadge={pendingPermissionBadge}
               onNewChat={handleNewChat}
               onHistoryItemSelect={handleHistoryItemSelect}
               onHistoryItemDelete={handleHistoryItemDelete}
@@ -1166,6 +1182,7 @@ export function DefaultChatViewHeaderACP({
             currentId={aiChatService.sessionModel?.sessionId}
             title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
             historyList={historyList}
+            pendingPermissionBadge={pendingPermissionBadge}
             onNewChat={handleNewChat}
             onHistoryItemSelect={handleHistoryItemSelect}
             onHistoryItemDelete={handleHistoryItemDelete}
