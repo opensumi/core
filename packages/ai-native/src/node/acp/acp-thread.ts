@@ -60,6 +60,7 @@ import {
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
+import { resolveAgentSpawnConfig } from './acp-spawn-config';
 import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './handlers/file-system.handler';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
 import { PermissionRoutingService, PermissionRoutingServiceToken } from './permission-routing.service';
@@ -484,32 +485,28 @@ export class AcpThread extends Disposable implements IAcpThread {
     this._childProcess = null;
     this._processRunning = false;
 
-    const agentPath = process.env.SUMI_ACP_AGENT_PATH || this.options.command;
-    const nodePath = process.env.SUMI_ACP_NODE_PATH || this.options.command;
-    const nodeBinDir = nodePath.substring(0, nodePath.lastIndexOf('/'));
-
-    const spawnEnv: Record<string, string> = {};
-    for (const v of this.options.env || []) {
-      spawnEnv[v.name] = v.value;
-    }
-
-    const newEnv = {
-      ...process.env,
-      ...spawnEnv,
-      NODE: `${nodeBinDir}/node`,
-      PATH: `${nodeBinDir}:${process.env.PATH || ''}`,
-      // CLAUDE_CODE_EXECUTABLE: '/Users/lujunsheng/ant/github/opensumi/core/packages/ai-native/src/node/acp/wrapper.sh',
-    };
+    const resolved = resolveAgentSpawnConfig({
+      config: {
+        agentId: this.options.agentId,
+        command: this.options.command,
+        args: this.options.args,
+        env: this.options.env,
+        cwd: this.options.cwd,
+        nodePath: this.options.nodePath,
+      },
+      processEnv: process.env,
+      processExecPath: process.execPath,
+    });
 
     return new Promise<void>((resolve, reject) => {
       let startupError: Error | null = null;
 
-      const childProcess = spawn(agentPath, this.options.args, {
+      const childProcess = spawn(resolved.command, resolved.args, {
         cwd: this.options.cwd,
         stdio: ['pipe', 'pipe', 'pipe'],
         detached: false,
         shell: false,
-        env: newEnv,
+        env: resolved.env,
       });
 
       childProcess.on('error', (err: Error) => {
