@@ -61,11 +61,16 @@ export function getSupportedAgentTypes(): ACPAgentType[] {
  */
 export interface AgentProcessConfig {
   /**
-   * CLI command to start the agent
+   * Stable agent identifier (e.g., 'claude-agent-acp').
+   * Used for per-agent preference lookup and diagnostics.
+   */
+  agentId: string;
+  /**
+   * CLI command to start the agent (already resolved by browser).
    */
   command: string;
   /**
-   * Arguments passed to the agent
+   * Arguments passed to the agent.
    */
   args: string[];
   /**
@@ -78,6 +83,10 @@ export interface AgentProcessConfig {
    * Structure matches ACP SDK EnvVariable (array of {name, value}).
    */
   env?: EnvVariable[];
+  /**
+   * Node.js executable path from preference. Node layer continues fallback.
+   */
+  nodePath?: string;
 }
 
 /**
