@@ -202,7 +202,12 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
               <Icon
                 data-testid={`acp-permission-pending-${item.id}`}
                 iconClass={getIcon('key')}
-                style={{ fontSize: 14, marginRight: 4, flexShrink: 0, color: 'var(--notification-foreground)' }}
+                style={{
+                  fontSize: 14,
+                  marginRight: 4,
+                  flexShrink: 0,
+                  color: 'var(--notificationsErrorIcon-foreground, #e74c3c)',
+                }}
                 title={localize('aiNative.acp.permissionPending')}
               />
             )}
