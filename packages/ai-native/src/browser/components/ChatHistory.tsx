@@ -22,7 +22,6 @@ export interface IChatHistoryProps {
   historyList: IChatHistoryItem[];
   currentId?: string;
   className?: string;
-  pendingPermissionBadge?: number;
   onNewChat: () => void;
   onHistoryItemSelect: (item: IChatHistoryItem) => void;
   onHistoryItemDelete: (item: IChatHistoryItem) => void;
