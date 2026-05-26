@@ -113,6 +113,22 @@
     margin-top: 2px;
     border-radius: 3px;
 
+    &.chat_history_item_pending {
+      .chat_history_item_pending_icon {
+        background: var(--notificationsWarningIcon-foreground, #e6a817);
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: var(--editor-background, #1e1e1e);
+        font-size: 11px;
+        line-height: 1;
+      }
+    }
+
     .chat_history_item_content {
       display: flex;
       align-items: center;

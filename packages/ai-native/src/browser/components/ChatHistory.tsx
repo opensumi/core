@@ -174,23 +174,17 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
           onClick={() => handleHistoryItemSelect(item)}
         >
           <div className={styles.chat_history_item_content}>
-            {item.loading ? (
+            {item.hasPendingPermission && item.id !== currentId ? (
+              <span
+                data-testid={`acp-permission-pending-${item.id}`}
+                className={cls(styles.chat_history_item_pending_icon, getIcon('bell'))}
+                style={{ width: 18, height: 18, marginRight: 6, flexShrink: 0 }}
+                title={localize('aiNative.acp.permissionPending')}
+              />
+            ) : item.loading ? (
               <Loading />
             ) : (
               <Icon icon='message' style={{ width: '16px', height: '16px', marginRight: 4 }} />
-            )}
-            {item.hasPendingPermission && item.id !== currentId && (
-              <Icon
-                data-testid={`acp-permission-pending-${item.id}`}
-                iconClass={getIcon('key')}
-                style={{
-                  fontSize: 14,
-                  marginRight: 4,
-                  flexShrink: 0,
-                  color: 'var(--notificationsErrorIcon-foreground, #e74c3c)',
-                }}
-                title={localize('aiNative.acp.permissionPending')}
-              />
             )}
             {!historyTitleEditable?.[item.id] ? (
               <span id={`chat-history-item-title-${item.id}`} className={styles.chat_history_item_title}>

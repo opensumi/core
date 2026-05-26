@@ -20,6 +20,7 @@ import { ChatInternalService } from '../../chat/chat.internal.service';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
 import { getCachedWorkspaceDir, switchWorkspaceDir } from '../../chat/pick-workspace-dir';
+import { AcpPermissionBridgeService } from '../permission-bridge.service';
 
 import AcpChatHistory, { IChatHistoryItem } from './AcpChatHistory';
 
@@ -42,11 +43,13 @@ export function AcpChatViewHeader({
   const messageService = useInjectable<IMessageService>(IMessageService);
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const quickPick = useInjectable<QuickPickService>(QuickPickService);
+  const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const [historyLoading, setHistoryLoading] = React.useState(false);
   const [sessionSwitching, setSessionSwitching] = React.useState(false);
+  const [pendingPermissionBadge, setPendingPermissionBadge] = React.useState(0);
   const isMultiRoot = workspaceService.isMultiRootWorkspaceOpened;
 
   const subscribedSessionIdsRef = React.useRef<Set<string>>(new Set());
@@ -158,6 +161,7 @@ export function AcpChatViewHeader({
           updatedAt,
           loading: false,
           threadStatus: (session as ChatModel).threadStatus,
+          hasPendingPermission: permissionBridgeService.hasPendingForSession(session.sessionId),
         };
       }),
     );
@@ -184,6 +188,22 @@ export function AcpChatViewHeader({
 
     const toDispose = toDisposeRef.current;
     let previousMessageChangeDisposable: IDisposable | undefined;
+
+    const refreshBadge = () => {
+      setPendingPermissionBadge(permissionBridgeService.getPendingCountExcludingActive());
+    };
+    refreshBadge();
+    toDispose.push(
+      permissionBridgeService.onPendingCountChange(() => {
+        refreshBadge();
+        getHistoryList();
+      }),
+    );
+    toDispose.push(
+      permissionBridgeService.onActiveSessionChange(() => {
+        refreshBadge();
+      }),
+    );
 
     toDispose.push(
       aiChatService.onChangeSession(() => {
@@ -222,6 +242,7 @@ export function AcpChatViewHeader({
         historyList={historyList}
         historyLoading={historyLoading}
         disabled={sessionSwitching}
+        pendingPermissionBadge={pendingPermissionBadge}
         onNewChat={handleNewChat}
         onHistoryItemSelect={handleHistoryItemSelect}
         onHistoryItemDelete={() => {}}

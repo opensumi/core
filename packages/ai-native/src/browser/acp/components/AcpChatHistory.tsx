@@ -189,25 +189,25 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
         <div
           key={item.id}
           data-testid={`chat-history-item-${item.id}`}
-          className={cls(styles.chat_history_item, item.id === currentId ? styles.chat_history_item_selected : '')}
+          className={cls(
+            styles.chat_history_item,
+            item.id === currentId ? styles.chat_history_item_selected : '',
+            item.hasPendingPermission ? styles.chat_history_item_pending : '',
+          )}
           onClick={() => handleHistoryItemSelect(item)}
         >
           <div className={styles.chat_history_item_content}>
-            {renderThreadStatusIcon(
-              item.threadStatus,
-              item.loading,
-              `acp-thread-status-${item.id}-${item.threadStatus || 'default'}`,
-            )}
+            {!item.hasPendingPermission &&
+              renderThreadStatusIcon(
+                item.threadStatus,
+                item.loading,
+                `acp-thread-status-${item.id}-${item.threadStatus || 'default'}`,
+              )}
             {item.hasPendingPermission && item.id !== currentId && (
-              <Icon
+              <span
                 data-testid={`acp-permission-pending-${item.id}`}
-                iconClass={getIcon('key')}
-                style={{
-                  fontSize: 14,
-                  marginRight: 4,
-                  flexShrink: 0,
-                  color: 'var(--notificationsErrorIcon-foreground, #e74c3c)',
-                }}
+                className={cls(styles.chat_history_item_pending_icon, getIcon('bell'))}
+                style={{ marginRight: 6, flexShrink: 0 }}
                 title={localize('aiNative.acp.permissionPending')}
               />
             )}
