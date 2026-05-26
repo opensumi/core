@@ -57,6 +57,21 @@ export class AcpPermissionBridgeService {
   private readonly onActiveSessionChangeEmitter = new Emitter<string | undefined>();
   readonly onActiveSessionChange: Event<string | undefined> = this.onActiveSessionChangeEmitter.event;
 
+  // ---------------------------------------------------------------------------
+  // Pending permission index (session-scoped)
+  // ---------------------------------------------------------------------------
+
+  private pendingBySessionId = new Map<string, Set<string>>();
+
+  private readonly onPendingCountChangeEmitter = new Emitter<void>();
+  readonly onPendingCountChange: Event<void> = this.onPendingCountChangeEmitter.event;
+
+  /**
+   * Maps requestId → sessionId so we can clean up the pending index
+   * when handleUserDecision/handleDialogClose fires.
+   */
+  private requestIdToSessionId = new Map<string, string>();
+
   /**
    * Set the currently active session.
    * Fires event to notify UI to re-render session-scoped dialogs.
@@ -104,6 +119,16 @@ export class AcpPermissionBridgeService {
 
     this.activeDialogs.set(requestId, dialogProps);
 
+    // Register in pending index
+    this.requestIdToSessionId.set(requestId, params.sessionId);
+    let pendingSet = this.pendingBySessionId.get(params.sessionId);
+    if (!pendingSet) {
+      pendingSet = new Set();
+      this.pendingBySessionId.set(params.sessionId, pendingSet);
+    }
+    pendingSet.add(requestId);
+    this.onPendingCountChangeEmitter.fire();
+
     // Emit event to show dialog
     this.onPermissionRequest.fire(params);
 
@@ -139,6 +164,20 @@ export class AcpPermissionBridgeService {
       always,
     };
 
+    // Clean up pending index
+    const sessionId = this.requestIdToSessionId.get(requestId);
+    if (sessionId) {
+      const sessionSet = this.pendingBySessionId.get(sessionId);
+      if (sessionSet) {
+        sessionSet.delete(requestId);
+        if (sessionSet.size === 0) {
+          this.pendingBySessionId.delete(sessionId);
+        }
+      }
+      this.requestIdToSessionId.delete(requestId);
+      this.onPendingCountChangeEmitter.fire();
+    }
+
     this.activeDialogs.delete(requestId);
     this.onPermissionResult.fire({ requestId, decision });
     pending.resolve(decision);
@@ -159,6 +198,20 @@ export class AcpPermissionBridgeService {
     this.pendingDecisions.delete(requestId);
 
     const decision: PermissionDecision = { type: 'timeout' };
+
+    // Clean up pending index
+    const sessionId = this.requestIdToSessionId.get(requestId);
+    if (sessionId) {
+      const sessionSet = this.pendingBySessionId.get(sessionId);
+      if (sessionSet) {
+        sessionSet.delete(requestId);
+        if (sessionSet.size === 0) {
+          this.pendingBySessionId.delete(sessionId);
+        }
+      }
+      this.requestIdToSessionId.delete(requestId);
+      this.onPendingCountChangeEmitter.fire();
+    }
 
     this.activeDialogs.delete(requestId);
     this.onPermissionResult.fire({ requestId, decision });
@@ -210,5 +263,35 @@ export class AcpPermissionBridgeService {
         pending.resolve(decision);
       }
     }
+    // Drop pending index entry for this session
+    if (this.pendingBySessionId.delete(sessionId)) {
+      this.onPendingCountChangeEmitter.fire();
+    }
+    // Also clean up the requestIdToSessionId map for this session's requests
+    for (const [rid, sid] of this.requestIdToSessionId.entries()) {
+      if (sid === sessionId) {
+        this.requestIdToSessionId.delete(rid);
+      }
+    }
+  }
+
+  /**
+   * Count of pending permission requests across all sessions EXCEPT the active one.
+   */
+  getPendingCountExcludingActive(): number {
+    let count = 0;
+    for (const [sid, set] of this.pendingBySessionId) {
+      if (sid !== this.activeSessionId) {
+        count += set.size;
+      }
+    }
+    return count;
+  }
+
+  /**
+   * Whether a specific session has any pending permission requests.
+   */
+  hasPendingForSession(sessionId: string): boolean {
+    return (this.pendingBySessionId.get(sessionId)?.size ?? 0) > 0;
   }
 }
