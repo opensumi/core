@@ -219,5 +219,40 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       default: '',
       description: '%preference.ai.native.globalRules.description%',
     },
+    [AINativeSettingSectionsId.NodePath]: {
+      type: 'string',
+      default: '',
+      description: '%preference.ai-native.acp.nodePath.description%',
+    },
+    [AINativeSettingSectionsId.AgentConfigsOverride]: {
+      type: 'object',
+      description: '%preference.ai-native.acp.agents.description%',
+      markdownDescription: '%preference.ai-native.acp.agents.markdownDescription%',
+      additionalProperties: {
+        type: 'object',
+        properties: {
+          command: {
+            type: 'string',
+            description: '%preference.ai-native.acp.agentConfigsOverride.command.description%',
+          },
+          args: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+            default: [],
+            description: '%preference.ai-native.acp.agentConfigsOverride.args.description%',
+          },
+          env: {
+            type: 'object',
+            additionalProperties: {
+              type: 'string',
+            },
+            description: '%preference.ai-native.acp.agentConfigsOverride.env.description%',
+            default: {},
+          },
+        },
+      },
+    },
   },
 };

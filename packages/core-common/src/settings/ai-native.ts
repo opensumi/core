@@ -48,6 +48,16 @@ export enum AINativeSettingSectionsId {
   AgentConfigs = 'ai.native.agent.configs',
 
   /**
+   * ACP: Node.js runtime path for agent subprocesses
+   */
+  NodePath = 'ai-native.acp.nodePath',
+
+  /**
+   * ACP: Per-agent spawn parameter overrides (command/args/env)
+   */
+  AgentConfigsOverride = 'ai-native.acp.agents',
+
+  /**
    * Default Agent Type
    */
   DefaultAgentType = 'ai.native.agent.defaultType',
