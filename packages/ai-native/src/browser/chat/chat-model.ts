@@ -358,8 +358,17 @@ export class ChatModel extends Disposable implements IChatModel {
 
   setThreadStatus(status: ThreadStatus): void {
     if (this.#threadStatus === status) {
+      console.log('[ACP ThreadStatus RPC] setThreadStatus: skipped (same status)', {
+        sessionId: this.sessionId,
+        status,
+      });
       return;
     }
+    console.log('[ACP ThreadStatus RPC] setThreadStatus:', {
+      sessionId: this.sessionId,
+      from: this.#threadStatus,
+      to: status,
+    });
     this.#threadStatus = status;
     this._onThreadStatusChange.fire(status);
   }

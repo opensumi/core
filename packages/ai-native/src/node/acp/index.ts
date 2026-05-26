@@ -8,6 +8,7 @@ export {
   AcpPermissionCallerServiceToken,
   AcpPermissionCallerManagerToken,
 } from './acp-permission-caller.service';
+export { AcpThreadStatusCallerService, AcpThreadStatusCallerServiceToken } from './acp-thread-status-caller.service';
 export {
   PermissionRoutingService,
   PermissionRoutingServiceToken,

@@ -153,7 +153,7 @@ export class AcpChatManagerService extends ChatManagerService {
           sessionId: item.sessionId,
           history: new MsgHistoryManager(this.chatFeatureRegistry, item.history),
           modelId: item.modelId,
-          title: item?.title,
+          title: item?.title || 'New Session',
         });
         const requests = item.requests.map(
           (request) =>

@@ -118,6 +118,7 @@ function createMockChildProcess(pid = 12345) {
 
 function createTestOptions(): AcpThreadOptions {
   return {
+    agentId: 'test-agent',
     command: 'npx',
     args: ['@anthropic-ai/claude-code@latest', '--print'],
     cwd: '/test/workspace',
@@ -131,6 +132,7 @@ function createTestOptions(): AcpThreadOptions {
 
 function createTestConfig(): AgentProcessConfig {
   return {
+    agentId: 'test-agent',
     command: 'npx',
     args: ['@anthropic-ai/claude-code@latest', '--print'],
     cwd: '/test/workspace',
@@ -1077,6 +1079,7 @@ describe('AcpThread', () => {
 
       // Since we can't easily match tokens, test the returned function directly
       const runtimeConfig: AcpThreadRuntimeConfig = {
+        agentId: 'test-agent',
         command: 'npx',
         args: ['@anthropic-ai/claude-code@latest', '--print'],
         cwd: '/test/workspace',
@@ -1100,6 +1103,7 @@ describe('AcpThread', () => {
       // Verify it's a factory function
       const typedFactory: AcpThreadFactory = factoryFn;
       const thread = typedFactory('session-2', {
+        agentId: 'test-agent',
         command: 'node',
         args: ['agent.js'],
         cwd: '/tmp',

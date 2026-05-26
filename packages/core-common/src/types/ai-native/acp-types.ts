@@ -141,3 +141,9 @@ export interface IAcpPermissionService {
 }
 
 export const AcpPermissionServiceToken = Symbol('AcpPermissionServiceToken');
+
+export const AcpThreadStatusServicePath = 'AcpThreadStatusServicePath';
+
+export interface IAcpThreadStatusService {
+  $onThreadStatusChange(sessionId: string, status: string): Promise<void>;
+}

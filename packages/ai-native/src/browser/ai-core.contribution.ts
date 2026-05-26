@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, IDisposable, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   AINativeConfigService,
   AINativeSettingSectionsId,
@@ -111,6 +111,8 @@ import { MCP_SERVER_TYPE } from '../common/types';
 
 import { AcpChatInput } from './acp/components/AcpChatInput';
 import { AcpChatMentionInput } from './acp/components/AcpChatMentionInput';
+import { registerFileWebMCPTools } from './acp/webmcp-file-tools.registry';
+import { registerAcpWebMCPTools } from './acp/webmcp-tools.registry';
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
@@ -329,6 +331,9 @@ export class AINativeBrowserContribution
   @Autowired()
   private readonly chatMultiDiffResolver: ChatMultiDiffResolver;
 
+  private webMCPDisposable: IDisposable | undefined;
+  private fileWebMCPDisposable: IDisposable | undefined;
+
   constructor() {
     this.registerFeature();
   }
@@ -490,6 +495,11 @@ export class AINativeBrowserContribution
       if (supportsMCP) {
         this.initMCPServers();
       }
+
+      // Register WebMCP tools — must be in a contribution's onDidStart
+      // so it's actually called by the ClientApp lifecycle
+      this.webMCPDisposable = registerAcpWebMCPTools(this.injector);
+      this.fileWebMCPDisposable = registerFileWebMCPTools(this.injector);
     });
   }
 

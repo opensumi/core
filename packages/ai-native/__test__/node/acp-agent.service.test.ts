@@ -35,7 +35,15 @@ const mockTerminalHandler = {
 
 const mockAppConfig = {};
 
+const mockPermissionRouting = {
+  registerSession: jest.fn(),
+  unregisterSession: jest.fn(),
+  routePermissionRequest: jest.fn(),
+  registeredSessions: new Map(),
+};
+
 const mockAgentProcessConfig = {
+  agentId: 'test-agent',
   command: 'npx',
   args: ['@anthropic-ai/claude-code@latest'],
   cwd: '/test/workspace',
@@ -65,6 +73,8 @@ interface MockThread {
   markAssistantComplete: jest.Mock;
   markToolCallWaiting: jest.Mock;
   respondToToolCall: jest.Mock;
+  toAgentUpdate: jest.Mock;
+  setSessionMode: jest.Mock;
   reset: jest.Mock;
   dispose: jest.Mock;
   onEvent: jest.Mock;
@@ -95,6 +105,8 @@ function createMockThread(overrides: Record<string, any> = {}): MockThread {
     markAssistantComplete: jest.fn(),
     markToolCallWaiting: jest.fn(),
     respondToToolCall: jest.fn(),
+    toAgentUpdate: jest.fn().mockReturnValue({}),
+    setSessionMode: jest.fn().mockResolvedValue(undefined),
     reset: jest.fn(),
     dispose: jest.fn().mockResolvedValue(undefined),
     onEvent: jest.fn((cb: any) => {
@@ -115,6 +127,7 @@ function setupServiceWithMockFactory(mockFactory: jest.Mock) {
   (service as any).terminalHandler = mockTerminalHandler;
   (service as any).appConfig = mockAppConfig;
   (service as any).logger = mockLogger;
+  (service as any).permissionRouting = mockPermissionRouting;
   return service;
 }
 

@@ -25,9 +25,6 @@ export const ExampleWelcomePage: React.FC<IWelcomePageProps> = ({ onSend }) => {
       <div className={styles.welcome_header}>
         <Icon className={getIcon('ai')} style={{ fontSize: '48px', color: 'var(--design-text-foreground)' }} />
         <h2 className={styles.welcome_title}>{localize('aiNative.chat.ai.assistant.name')}</h2>
-        <p className={styles.welcome_desc}>
-          {localize('aiNative.chat.welcome.loading.text') || 'Your AI-powered coding assistant'}
-        </p>
       </div>
 
       <div className={styles.sample_questions}>

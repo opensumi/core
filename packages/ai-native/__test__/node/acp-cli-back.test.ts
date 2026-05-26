@@ -4,6 +4,7 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { AgentSessionInfo, AgentUpdate, IAcpAgentService } from '../../src/node/acp/acp-agent.service';
 import { AcpCliBackService } from '../../src/node/acp/acp-cli-back.service';
+import { AcpThreadStatusCallerService } from '../../src/node/acp/acp-thread-status-caller.service';
 import { OpenAICompatibleModel } from '../../src/node/openai-compatible/openai-compatible-language-model';
 
 // Mock dependencies
@@ -20,9 +21,10 @@ describe('AcpCliBackService', () => {
   let mockOpenAIModel: jest.Mocked<OpenAICompatibleModel>;
 
   const mockAgentSessionConfig: AgentProcessConfig = {
+    agentId: 'test-agent',
     command: 'npx',
     args: ['@anthropic-ai/claude-code@latest'],
-    workspaceDir: '/test/workspace',
+    cwd: '/test/workspace',
   };
 
   const mockSessionInfo: AgentSessionInfo = {
@@ -34,6 +36,8 @@ describe('AcpCliBackService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    const mockOnThreadStatusChange = new Emitter<{ sessionId: string; status: string }>();
 
     mockAgentService = {
       createSession: jest.fn(),
@@ -48,6 +52,7 @@ describe('AcpCliBackService', () => {
       setSessionMode: jest.fn(),
       stopAgent: jest.fn(),
       getAvailableModes: jest.fn(),
+      onThreadStatusChange: mockOnThreadStatusChange.event,
     } as unknown as jest.Mocked<IAcpAgentService>;
 
     mockLogger = {
@@ -70,6 +75,10 @@ describe('AcpCliBackService', () => {
     Object.defineProperty(service, 'agentService', { value: mockAgentService, writable: true });
     Object.defineProperty(service, 'logger', { value: mockLogger, writable: true });
     Object.defineProperty(service, 'openAICompatibleModel', { value: mockOpenAIModel, writable: true });
+    Object.defineProperty(service, 'threadStatusCaller', {
+      value: { notifyThreadStatusChange: jest.fn() },
+      writable: true,
+    });
   });
 
   describe('ready()', () => {
@@ -97,26 +106,6 @@ describe('AcpCliBackService', () => {
       expect(result).toEqual(expected);
       expect(mockAgentService.createSession).toHaveBeenCalledWith(mockAgentSessionConfig);
     });
-
-    it('should ensure agent initialized before creating session', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
-      mockAgentService.createSession.mockResolvedValue({ sessionId: 's1', availableCommands: [] });
-
-      await service.createSession(mockAgentSessionConfig);
-
-      expect(mockAgentService.getSessionInfo).toHaveBeenCalled();
-      expect(mockAgentService.initializeAgent).not.toHaveBeenCalled();
-    });
-
-    it('should initialize agent when no existing session', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(null);
-      mockAgentService.initializeAgent.mockResolvedValue(mockSessionInfo);
-      mockAgentService.createSession.mockResolvedValue({ sessionId: 's1', availableCommands: [] });
-
-      await service.createSession(mockAgentSessionConfig);
-
-      expect(mockAgentService.initializeAgent).toHaveBeenCalledWith(mockAgentSessionConfig);
-    });
   });
 
   describe('requestStream() - fallback to OpenAI', () => {
@@ -135,20 +124,18 @@ describe('AcpCliBackService', () => {
 
   describe('requestStream() - agent mode', () => {
     it('should use agent stream when agentSessionConfig is provided', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
-
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
       const stream = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
 
       expect(stream).toBeInstanceOf(SumiReadableStream);
-      expect(mockAgentService.getSessionInfo).toHaveBeenCalled();
+      expect(mockAgentService.createSession).toHaveBeenCalledWith(mockAgentSessionConfig);
     });
 
     it('should forward agent updates to the output stream', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
-
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -168,8 +155,7 @@ describe('AcpCliBackService', () => {
     });
 
     it('should emit error when agent stream fails', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
-
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -185,8 +171,7 @@ describe('AcpCliBackService', () => {
     });
 
     it('should handle cancellation token', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
-
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -200,12 +185,10 @@ describe('AcpCliBackService', () => {
 
       cancelEmitter.fire();
 
-      expect(mockAgentService.cancelRequest).toHaveBeenCalledWith(mockSessionInfo.sessionId);
+      expect(mockAgentService.cancelRequest).toHaveBeenCalledWith('new-session');
     });
 
-    it('should use provided sessionId from options instead of sessionInfo', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
-
+    it('should use provided sessionId from options instead of creating new session', async () => {
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -223,7 +206,7 @@ describe('AcpCliBackService', () => {
 
   describe('convertAgentUpdateToChatProgress()', () => {
     it('should convert "thought" update to reasoning progress', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -238,7 +221,7 @@ describe('AcpCliBackService', () => {
     });
 
     it('should convert "message" update to content progress', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -253,7 +236,7 @@ describe('AcpCliBackService', () => {
     });
 
     it('should convert "tool_result" update to content progress', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -267,8 +250,8 @@ describe('AcpCliBackService', () => {
       expect(receivedData).toEqual([{ kind: 'content', content: 'Modified file.ts' }]);
     });
 
-    it('should ignore "tool_call" and "done" updates', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
+    it('should convert "tool_call" update to toolCall progress and ignore "done"', async () => {
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -276,10 +259,23 @@ describe('AcpCliBackService', () => {
       const receivedData: any[] = [];
       output.onData((data) => receivedData.push(data));
 
-      agentStream.emitData({ type: 'tool_call', content: 'read_file' });
+      agentStream.emitData({
+        type: 'tool_call',
+        content: 'read_file',
+        toolCall: { toolCallId: 'tc-1', name: 'read_file', input: {} },
+      });
       agentStream.emitData({ type: 'done', content: '' });
 
-      expect(receivedData).toEqual([]);
+      expect(receivedData).toEqual([
+        {
+          kind: 'toolCall',
+          content: {
+            id: 'tc-1',
+            type: 'function',
+            function: { name: 'read_file', arguments: '{}' },
+          },
+        },
+      ]);
     });
   });
 
@@ -382,8 +378,7 @@ describe('AcpCliBackService', () => {
   });
 
   describe('listSessions()', () => {
-    it('should initialize agent and list sessions', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
+    it('should list sessions via agentService', async () => {
       mockAgentService.listSessions.mockResolvedValue({
         sessions: [{ sessionId: 's1', cwd: '/test', title: 'Session 1' } as any],
         nextCursor: 'cursor-2',
@@ -391,29 +386,17 @@ describe('AcpCliBackService', () => {
 
       const result = await service.listSessions(mockAgentSessionConfig);
 
-      expect(mockAgentService.getSessionInfo).toHaveBeenCalled();
       expect(mockAgentService.listSessions).toHaveBeenCalledWith({
-        cwd: mockAgentSessionConfig.workspaceDir,
+        cwd: mockAgentSessionConfig.cwd,
       });
       expect(result.sessions).toHaveLength(1);
       expect(result.nextCursor).toBe('cursor-2');
     });
 
     it('should re-throw error from listSessions', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
       mockAgentService.listSessions.mockRejectedValue(new Error('List failed'));
 
       await expect(service.listSessions(mockAgentSessionConfig)).rejects.toThrow('List failed');
-    });
-
-    it('should initialize agent when no existing session', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(null);
-      mockAgentService.initializeAgent.mockResolvedValue(mockSessionInfo);
-      mockAgentService.listSessions.mockResolvedValue({ sessions: [], nextCursor: undefined });
-
-      await service.listSessions(mockAgentSessionConfig);
-
-      expect(mockAgentService.initializeAgent).toHaveBeenCalledWith(mockAgentSessionConfig);
     });
   });
 
@@ -464,8 +447,7 @@ describe('AcpCliBackService', () => {
 
   describe('requestStream() - with history and images', () => {
     it('should forward history to agentService.sendMessage', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
-
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -488,8 +470,7 @@ describe('AcpCliBackService', () => {
     });
 
     it('should handle empty history array', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
-
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -505,8 +486,7 @@ describe('AcpCliBackService', () => {
     });
 
     it('should forward images to agentService.sendMessage', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
-
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -525,9 +505,8 @@ describe('AcpCliBackService', () => {
   });
 
   describe('setupAgentStream error handling', () => {
-    it('should emit error when ensureAgentInitialized throws', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(null);
-      mockAgentService.initializeAgent.mockRejectedValue(new Error('Init failed'));
+    it('should emit error when createSession throws', async () => {
+      mockAgentService.createSession.mockRejectedValue(new Error('Session creation failed'));
 
       const stream = await service.requestStream('prompt', {
         agentSessionConfig: mockAgentSessionConfig,
@@ -539,14 +518,13 @@ describe('AcpCliBackService', () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(errors.length).toBe(1);
-      expect(errors[0].message).toBe('Init failed');
+      expect(errors[0].message).toBe('Session creation failed');
     });
   });
 
   describe('convertToSimpleMessage helper (indirect)', () => {
     it('should convert CoreMessage with array content to SimpleMessage', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
-
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -574,8 +552,7 @@ describe('AcpCliBackService', () => {
     });
 
     it('should filter non-text content parts from array content', async () => {
-      mockAgentService.getSessionInfo.mockReturnValue(mockSessionInfo);
-
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
@@ -601,6 +578,75 @@ describe('AcpCliBackService', () => {
         }),
         expect.any(Object),
       );
+    });
+  });
+
+  describe('thread status subscription', () => {
+    let mockOnThreadStatusChange: Emitter<{ sessionId: string; status: string }>;
+    let mockThreadStatusCaller: { notifyThreadStatusChange: jest.Mock };
+
+    beforeEach(() => {
+      mockOnThreadStatusChange = new Emitter<{ sessionId: string; status: string }>();
+      mockThreadStatusCaller = { notifyThreadStatusChange: jest.fn() };
+
+      (mockAgentService as any).onThreadStatusChange = mockOnThreadStatusChange.event;
+      Object.defineProperty(service, 'threadStatusCaller', { value: mockThreadStatusCaller, writable: true });
+    });
+
+    afterEach(() => {
+      mockOnThreadStatusChange.dispose();
+    });
+
+    it('should subscribe to onThreadStatusChange on first agentRequestStream', async () => {
+      const stream = new SumiReadableStream();
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'sess-1', availableCommands: [] });
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      await service.requestStream('hello', {
+        agentSessionConfig: mockAgentSessionConfig,
+        sessionId: 'sess-1',
+      });
+
+      // Fire a thread status event
+      mockOnThreadStatusChange.fire({ sessionId: 'sess-1', status: 'idle' });
+
+      expect(mockThreadStatusCaller.notifyThreadStatusChange).toHaveBeenCalledWith('sess-1', 'idle');
+    });
+
+    it('should not create duplicate subscriptions on subsequent calls', async () => {
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      await service.requestStream('hello', {
+        agentSessionConfig: mockAgentSessionConfig,
+        sessionId: 'sess-1',
+      });
+
+      await service.requestStream('hello again', {
+        agentSessionConfig: mockAgentSessionConfig,
+        sessionId: 'sess-1',
+      });
+
+      // Fire one event — should only be forwarded once
+      mockOnThreadStatusChange.fire({ sessionId: 'sess-1', status: 'working' });
+
+      expect(mockThreadStatusCaller.notifyThreadStatusChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('should silently skip if threadStatusCaller is unavailable', async () => {
+      Object.defineProperty(service, 'threadStatusCaller', { value: undefined, writable: true });
+
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      await service.requestStream('hello', {
+        agentSessionConfig: mockAgentSessionConfig,
+        sessionId: 'sess-1',
+      });
+
+      // Should not throw
+      mockOnThreadStatusChange.fire({ sessionId: 'sess-1', status: 'idle' });
     });
   });
 });

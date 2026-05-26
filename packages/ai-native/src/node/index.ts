@@ -1,5 +1,10 @@
 import { Injectable, Provider } from '@opensumi/di';
-import { AIBackSerivcePath, AIBackSerivceToken, AcpPermissionServicePath } from '@opensumi/ide-core-common';
+import {
+  AIBackSerivcePath,
+  AIBackSerivceToken,
+  AcpPermissionServicePath,
+  AcpThreadStatusServicePath,
+} from '@opensumi/ide-core-common';
 import { NodeModule } from '@opensumi/ide-core-node';
 
 import { SumiMCPServerProxyServicePath, TokenMCPServerProxyService } from '../common';
@@ -17,6 +22,8 @@ import {
   AcpTerminalHandler,
   AcpTerminalHandlerToken,
   AcpThreadFactoryProvider,
+  AcpThreadStatusCallerService,
+  AcpThreadStatusCallerServiceToken,
   PermissionRoutingService,
   PermissionRoutingServiceToken,
 } from './acp';
@@ -61,6 +68,16 @@ export class AINativeModule extends NodeModule {
     },
     // Thread factory for creating AcpThread instances
     AcpThreadFactoryProvider,
+    // Permission routing for multi-session permission requests
+    {
+      token: PermissionRoutingServiceToken,
+      useClass: PermissionRoutingService,
+    },
+    // Thread status notification caller (Node → Browser)
+    {
+      token: AcpThreadStatusCallerServiceToken,
+      useClass: AcpThreadStatusCallerService,
+    },
     // Language models for non-ACP fallback
     OpenAICompatibleModel,
   ];
@@ -82,12 +99,9 @@ export class AINativeModule extends NodeModule {
       servicePath: AcpPermissionServicePath,
       token: AcpPermissionCallerServiceToken,
     },
-    // Permission routing must be in backServices (not providers) so it
-    // receives the child-injector AcpPermissionCallerService instance
-    // that has rpcClient set by the RPC connection.
     {
-      token: PermissionRoutingServiceToken,
-      useClass: PermissionRoutingService,
+      servicePath: AcpThreadStatusServicePath,
+      token: AcpThreadStatusCallerServiceToken,
     },
   ];
 }

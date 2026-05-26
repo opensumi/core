@@ -112,9 +112,13 @@ export class AcpCliBackService implements IAIBackService {
     if (this.threadStatusDisposable) {
       return;
     }
+    this.logger.log('[ACP Back] ensureThreadStatusSubscription: subscribing to onThreadStatusChange');
     this.threadStatusDisposable = this.agentService.onThreadStatusChange(({ sessionId, status }) => {
+      this.logger.log(`[ACP Back] onThreadStatusChange: sessionId=${sessionId}, status=${status}`);
       if (this.threadStatusCaller?.notifyThreadStatusChange) {
         this.threadStatusCaller.notifyThreadStatusChange(sessionId, status);
+      } else {
+        this.logger.warn('[ACP Back] onThreadStatusChange: threadStatusCaller not available');
       }
     });
   }
@@ -233,6 +237,9 @@ export class AcpCliBackService implements IAIBackService {
           stream.emitData(progress);
         }
         if (update.threadStatus) {
+          this.logger.log(
+            `[ACP Back] agentStream threadStatus via stream: sessionId=${request.sessionId}, status=${update.threadStatus}`,
+          );
           stream.emitData({
             kind: 'threadStatus',
             threadStatus: update.threadStatus,

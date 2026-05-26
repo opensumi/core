@@ -1,4 +1,4 @@
-import { Autowired, IDisposable, Injectable, Injector, Provider } from '@opensumi/di';
+import { Autowired, Injectable, Injector, Provider } from '@opensumi/di';
 import {
   AIBackSerivcePath,
   AIBackSerivceToken,
@@ -20,6 +20,7 @@ import {
 import {
   AcpPermissionServicePath,
   AcpPermissionServiceToken,
+  AcpThreadStatusServicePath,
   IACPConfigProvider,
   IntelligentCompletionsRegistryToken,
   MCPConfigServiceToken,
@@ -45,7 +46,7 @@ import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-man
 import { ChatAgentPromptProvider, DefaultChatAgentPromptProvider } from '../common/prompts/context-prompt-provider';
 import { ACPChatAgentPromptProvider } from '../common/prompts/empty-prompt-provider';
 
-import { AcpPermissionBridgeService, AcpPermissionRpcService } from './acp';
+import { AcpPermissionBridgeService, AcpPermissionRpcService, AcpThreadStatusRpcService } from './acp';
 import { AcpFooterContribution } from './acp/components/AcpFooterContribution';
 import { AcpPermissionDialogContribution, PermissionDialogManager } from './acp/permission-dialog-container';
 import { AINativeBrowserContribution } from './ai-core.contribution';
@@ -108,7 +109,6 @@ import { AINativeCoreContribution, MCPServerContribution, TokenMCPServerRegistry
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatService } from './widget/inline-chat/inline-chat.service';
 import { InlineDiffService } from './widget/inline-diff';
-import { registerAcpWebMCPTools } from './acp/webmcp-tools.registry';
 
 @Injectable()
 export class AINativeModule extends BrowserModule {
@@ -324,6 +324,10 @@ export class AINativeModule extends BrowserModule {
       token: AcpPermissionServiceToken,
       useClass: AcpPermissionRpcService,
     },
+    {
+      token: AcpThreadStatusServicePath,
+      useClass: AcpThreadStatusRpcService,
+    },
   ];
 
   backServices = [
@@ -344,15 +348,9 @@ export class AINativeModule extends BrowserModule {
       servicePath: AcpPermissionServicePath,
       clientToken: AcpPermissionServiceToken,
     },
+    {
+      servicePath: AcpThreadStatusServicePath,
+      clientToken: AcpThreadStatusServicePath,
+    },
   ];
-
-  private webMCPDisposable: IDisposable | undefined;
-
-  async onDidStart() {
-    this.webMCPDisposable = registerAcpWebMCPTools(this.app.injector);
-  }
-
-  onWillStop() {
-    this.webMCPDisposable?.dispose();
-  }
 }

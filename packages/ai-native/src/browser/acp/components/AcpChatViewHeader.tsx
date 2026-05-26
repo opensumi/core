@@ -15,6 +15,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../../common';
 import { cleanAttachedTextWrapper } from '../../../common/utils';
+import { ChatModel } from '../../chat/chat-model';
 import { ChatInternalService } from '../../chat/chat.internal.service';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
@@ -47,6 +48,9 @@ export function AcpChatViewHeader({
   const [historyLoading, setHistoryLoading] = React.useState(false);
   const [sessionSwitching, setSessionSwitching] = React.useState(false);
   const isMultiRoot = workspaceService.isMultiRootWorkspaceOpened;
+
+  const subscribedSessionIdsRef = React.useRef<Set<string>>(new Set());
+  const toDisposeRef = React.useRef<DisposableCollection>(new DisposableCollection());
 
   const [currentWorkspaceDir, setCurrentWorkspaceDir] = React.useState<string>(getCachedWorkspaceDir());
 
@@ -111,6 +115,21 @@ export function AcpChatViewHeader({
   const getHistoryList = React.useCallback(async () => {
     const sessions = aiChatService.getSessions();
 
+    // Subscribe to thread status changes for any new sessions
+    for (const session of sessions) {
+      const model = session as ChatModel;
+      if (!subscribedSessionIdsRef.current.has(model.sessionId)) {
+        subscribedSessionIdsRef.current.add(model.sessionId);
+        toDisposeRef.current.push(
+          model.onThreadStatusChange((status) => {
+            setHistoryList((prev) =>
+              prev.map((item) => (item.id === model.sessionId ? { ...item, threadStatus: status } : item)),
+            );
+          }),
+        );
+      }
+    }
+
     // 当前会话标题
     const currentMessages = aiChatService.sessionModel?.history.getMessages() || [];
     const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
@@ -138,6 +157,7 @@ export function AcpChatViewHeader({
           title: sessionTitle,
           updatedAt,
           loading: false,
+          threadStatus: (session as ChatModel).threadStatus,
         };
       }),
     );
@@ -162,7 +182,7 @@ export function AcpChatViewHeader({
   React.useEffect(() => {
     getHistoryList();
 
-    const toDispose = new DisposableCollection();
+    const toDispose = toDisposeRef.current;
     let previousMessageChangeDisposable: IDisposable | undefined;
 
     toDispose.push(
@@ -189,6 +209,7 @@ export function AcpChatViewHeader({
 
     return () => {
       toDispose.dispose();
+      subscribedSessionIdsRef.current.clear();
     };
   }, [aiChatService]);
 

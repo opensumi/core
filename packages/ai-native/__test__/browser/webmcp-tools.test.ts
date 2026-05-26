@@ -1,4 +1,5 @@
 import { ensureModelContext } from '@opensumi/ide-core-browser/lib/webmcp-polyfill';
+
 import { registerAcpWebMCPTools } from '../../src/browser/acp/webmcp-tools.registry';
 
 describe('WebMCP Tools - ACP', () => {
@@ -108,10 +109,32 @@ describe('WebMCP Tools - ACP', () => {
     });
   });
 
+  describe('acp_handlePermissionDialog', () => {
+    it('returns error when requestId is missing', async () => {
+      const result = await navigator.modelContext!.executeTool('acp_handlePermissionDialog', {
+        optionId: 'allow_once',
+      });
+      expect(result).toMatchObject({ success: false, error: 'INVALID_INPUT' });
+    });
+
+    it('returns error when optionId is missing', async () => {
+      const result = await navigator.modelContext!.executeTool('acp_handlePermissionDialog', { requestId: 'req-1' });
+      expect(result).toMatchObject({ success: false, error: 'INVALID_INPUT' });
+    });
+
+    it('returns error when service unavailable', async () => {
+      const result = await navigator.modelContext!.executeTool('acp_handlePermissionDialog', {
+        requestId: 'req-1',
+        optionId: 'allow_once',
+      });
+      expect(result).toMatchObject({ success: false, error: 'SERVICE_UNAVAILABLE' });
+    });
+  });
+
   describe('getTools', () => {
     it('returns all registered tools without execute functions', () => {
       const tools = navigator.modelContext!.getTools();
-      expect(tools.length).toBe(11);
+      expect(tools.length).toBe(12); // 12 ACP tools
       for (const tool of tools) {
         expect(tool).not.toHaveProperty('execute');
         expect(tool.name).toMatch(/^acp_\w+$/);
@@ -131,12 +154,14 @@ describe('WebMCP Tools - ACP', () => {
       expect(toolNames).toContain('acp_setSessionMode');
       expect(toolNames).toContain('acp_showChatView');
       expect(toolNames).toContain('acp_getPermissionDialogState');
+      expect(toolNames).toContain('acp_handlePermissionDialog');
     });
   });
 });
 
 describe('WebMCP Tools - ACP (happy path)', () => {
   let disposable: { dispose: () => void };
+  let mockPermissionBridge: any;
 
   const mockSessions = [
     { sessionId: 'sess-1', title: 'Test Session', modelId: 'claude', threadStatus: 'idle', requests: [] },
@@ -156,9 +181,7 @@ describe('WebMCP Tools - ACP (happy path)', () => {
       createSessionModel: jest.fn().mockResolvedValue(undefined),
       activateSession: jest.fn().mockResolvedValue(undefined),
       clearSessionModel: jest.fn().mockResolvedValue(undefined),
-      getAvailableCommands: jest.fn().mockReturnValue([
-        { name: '/explain', description: 'Explain code' },
-      ]),
+      getAvailableCommands: jest.fn().mockReturnValue([{ name: '/explain', description: 'Explain code' }]),
       setSessionMode: jest.fn().mockResolvedValue(undefined),
       sessionModel: mockSessionModel,
     };
@@ -172,18 +195,27 @@ describe('WebMCP Tools - ACP (happy path)', () => {
       cancelRequest: jest.fn(),
     };
 
-    const mockPermissionBridge = {
+    mockPermissionBridge = {
       getActiveDialogCount: jest.fn().mockReturnValue(0),
       getActiveSession: jest.fn().mockReturnValue('sess-2'),
+      handleUserDecision: jest.fn(),
     };
 
     return {
       get: jest.fn().mockImplementation((token) => {
         const tokenName = token?.toString?.() || String(token);
-        if (tokenName.includes('ChatInternalService')) return mockInternalService;
-        if (tokenName.includes('ChatService')) return mockChatService;
-        if (tokenName.includes('ChatManagerService')) return mockManagerService;
-        if (tokenName.includes('PermissionBridge')) return mockPermissionBridge;
+        if (tokenName.includes('ChatInternalService')) {
+          return mockInternalService;
+        }
+        if (tokenName.includes('ChatService')) {
+          return mockChatService;
+        }
+        if (tokenName.includes('ChatManagerService')) {
+          return mockManagerService;
+        }
+        if (tokenName.includes('PermissionBridge')) {
+          return mockPermissionBridge;
+        }
         throw new Error('DI token not mocked');
       }),
     } as any;
@@ -302,6 +334,31 @@ describe('WebMCP Tools - ACP (happy path)', () => {
       expect(result).toMatchObject({
         success: true,
         result: { activeDialogCount: 0, activeSessionId: 'sess-2' },
+      });
+    });
+  });
+
+  describe('acp_handlePermissionDialog', () => {
+    it('handles permission approval', async () => {
+      const result = await navigator.modelContext!.executeTool('acp_handlePermissionDialog', {
+        requestId: 'req-1',
+        optionId: 'allow_once',
+      });
+      expect(result).toMatchObject({
+        success: true,
+        result: { requestId: 'req-1', optionId: 'allow_once' },
+      });
+      expect(mockPermissionBridge.handleUserDecision).toHaveBeenCalledWith('req-1', 'allow_once', 'allow_once');
+    });
+
+    it('handles permission rejection', async () => {
+      const result = await navigator.modelContext!.executeTool('acp_handlePermissionDialog', {
+        requestId: 'req-2',
+        optionId: 'reject',
+      });
+      expect(result).toMatchObject({
+        success: true,
+        result: { requestId: 'req-2', optionId: 'reject' },
       });
     });
   });

@@ -459,7 +459,7 @@ export const AcpChatInput = React.forwardRef((props: IAcpChatInputProps, ref) =>
   }, [isExpand]);
 
   return (
-    <div className={cls(styles.chat_input_container, focus ? styles.active : null)}>
+    <div data-testid='acp-chat-input' className={cls(styles.chat_input_container, focus ? styles.active : null)}>
       {isShowOptions && (
         <div ref={instructionRef}>
           <InstructionOptions
