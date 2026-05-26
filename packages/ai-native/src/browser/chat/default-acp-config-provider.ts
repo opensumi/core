@@ -4,6 +4,8 @@ import { AgentProcessConfig, IACPConfigProvider } from '@opensumi/ide-core-commo
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { buildAcpAgentProcessConfig } from '../acp/build-agent-process-config';
+
 import { getAgentConfig, getDefaultAgentType } from './get-default-agent-type';
 import { pickWorkspaceDir } from './pick-workspace-dir';
 
@@ -32,10 +34,18 @@ export class DefaultACPConfigProvider implements IACPConfigProvider {
     const agentType = getDefaultAgentType(this.preferenceService);
     const agentConfig = getAgentConfig(this.preferenceService, agentType);
     const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
-    return {
-      command: agentConfig.command,
-      args: agentConfig.args,
-      cwd: workspaceDir,
-    };
+
+    return buildAcpAgentProcessConfig({
+      agentId: agentType,
+      registration: {
+        command: agentConfig.command,
+        args: agentConfig.args,
+        cwd: workspaceDir,
+      },
+      userPreferences: {
+        nodePath: this.preferenceService.get('ai-native.acp.nodePath', ''),
+        agents: this.preferenceService.get('ai-native.acp.agents', {}),
+      },
+    });
   }
 }
