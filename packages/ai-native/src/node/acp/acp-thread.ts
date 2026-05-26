@@ -293,10 +293,12 @@ export interface IAcpThread {
 // Constructor options
 // ---------------------------------------------------------------------------
 export interface AcpThreadOptions {
+  agentId: string;
   command: string;
   args: string[];
   env?: EnvVariable[];
   cwd: string;
+  nodePath?: string;
   fileSystemHandler: AcpFileSystemHandler;
   terminalHandler: AcpTerminalHandler;
   permissionRouting: PermissionRoutingService;
@@ -312,10 +314,12 @@ export interface AcpThreadOptions {
  * Provided by the caller (e.g., AcpAgentService) at thread creation time.
  */
 export interface AcpThreadRuntimeConfig {
+  agentId: string;
   command: string;
   args: string[];
   env?: EnvVariable[];
   cwd: string;
+  nodePath?: string;
 }
 
 /**
@@ -352,10 +356,12 @@ export const AcpThreadFactoryProvider: Provider = {
 
     return (sessionId: string, config: AcpThreadRuntimeConfig) =>
       new AcpThread({
+        agentId: config.agentId,
         command: config.command,
         args: config.args,
         env: config.env,
         cwd: config.cwd,
+        nodePath: config.nodePath,
         fileSystemHandler,
         terminalHandler,
         permissionRouting,
@@ -492,6 +498,7 @@ export class AcpThread extends Disposable implements IAcpThread {
       ...spawnEnv,
       NODE: `${nodeBinDir}/node`,
       PATH: `${nodeBinDir}:${process.env.PATH || ''}`,
+      // CLAUDE_CODE_EXECUTABLE: '/Users/lujunsheng/ant/github/opensumi/core/packages/ai-native/src/node/acp/wrapper.sh',
     };
 
     return new Promise<void>((resolve, reject) => {
