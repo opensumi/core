@@ -36,6 +36,7 @@ export interface IChatHistoryItem {
   updatedAt: number;
   loading: boolean;
   threadStatus?: ThreadStatus;
+  hasPendingPermission?: boolean;
 }
 
 export interface IChatHistoryProps {
@@ -45,6 +46,7 @@ export interface IChatHistoryProps {
   className?: string;
   historyLoading?: boolean;
   disabled?: boolean;
+  pendingPermissionBadge?: number;
   onNewChat: () => void;
   onHistoryItemSelect: (item: IChatHistoryItem) => void;
   onHistoryItemDelete?: (item: IChatHistoryItem) => void;
@@ -71,6 +73,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     historyLoading,
     disabled,
     className,
+    pendingPermissionBadge,
   }) => {
     const [historyTitleEditable, setHistoryTitleEditable] = useState<{
       [key: string]: boolean;
@@ -195,6 +198,14 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
               item.loading,
               `acp-thread-status-${item.id}-${item.threadStatus || 'default'}`,
             )}
+            {item.hasPendingPermission && item.id !== currentId && (
+              <Icon
+                data-testid={`acp-permission-pending-${item.id}`}
+                iconClass={getIcon('key')}
+                style={{ fontSize: 14, marginRight: 4, flexShrink: 0, color: 'var(--notification-foreground)' }}
+                title={localize('aiNative.acp.permissionPending')}
+              />
+            )}
             <span
               data-testid={`thread-status-${item.id}`}
               style={{ fontSize: 11, marginRight: 4, color: '#888', flexShrink: 0 }}
@@ -285,12 +296,19 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
             getPopupContainer={getPopupContainer}
             onVisibleChange={onHistoryPopoverVisibleChange}
           >
-            <div
-              data-testid='acp-chat-history-button'
-              className={styles.chat_history_header_actions_history}
-              title={localize('aiNative.operate.chatHistory.title')}
-            >
-              <EnhanceIcon className={cls(styles.chat_history_header_actions_history, 'codicon codicon-history')} />
+            <div className={styles.chat_history_button_wrapper}>
+              <div
+                data-testid='acp-chat-history-button'
+                className={styles.chat_history_header_actions_history}
+                title={localize('aiNative.operate.chatHistory.title')}
+              >
+                <EnhanceIcon className={cls(styles.chat_history_header_actions_history, 'codicon codicon-history')} />
+                {pendingPermissionBadge && pendingPermissionBadge > 0 ? (
+                  <span data-testid='acp-pending-permission-badge' className={styles.pending_permission_badge}>
+                    {pendingPermissionBadge > 99 ? '99+' : pendingPermissionBadge}
+                  </span>
+                ) : null}
+              </div>
             </div>
           </Popover>
           <Popover
