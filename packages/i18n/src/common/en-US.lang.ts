@@ -1510,6 +1510,7 @@ export const localizationBundle = {
 
     'aiNative.chat.welcome.loading.text': 'Initializing...',
     'aiNative.chat.acp.initializing.text': 'Initializing ACP service...',
+    'aiNative.acp.permissionPending': 'Permission pending',
     'aiNative.chat.ai.assistant.limit.message': '{0} earliest messages are dropped due to the input token limit',
     'aiNative.inlineDiff.acceptAll': 'Accept All',
     'aiNative.inlineDiff.rejectAll': 'Reject All',

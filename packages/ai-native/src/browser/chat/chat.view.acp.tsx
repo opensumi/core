@@ -1182,6 +1182,7 @@ export function DefaultChatViewHeaderACP({
             currentId={aiChatService.sessionModel?.sessionId}
             title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
             historyList={historyList}
+            pendingPermissionBadge={pendingPermissionBadge}
             onNewChat={handleNewChat}
             onHistoryItemSelect={handleHistoryItemSelect}
             onHistoryItemDelete={handleHistoryItemDelete}
