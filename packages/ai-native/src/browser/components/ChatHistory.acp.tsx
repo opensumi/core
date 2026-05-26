@@ -8,12 +8,34 @@ import { ThreadStatus } from '@opensumi/ide-core-common';
 
 import styles from './acp/chat-history.module.less';
 
+const threadStatusIcon: Record<ThreadStatus, string> = {
+  idle: 'circle-pause',
+  working: 'loading',
+  awaiting_prompt: 'wait',
+  auth_required: 'warning-circle',
+  errored: 'error',
+  disconnected: 'disconnect',
+};
+
+function renderThreadStatusIcon(status: ThreadStatus | undefined, loading: boolean, testId: string) {
+  const effectiveStatus: ThreadStatus = status ?? (loading ? 'working' : 'idle');
+  const iconName = threadStatusIcon[effectiveStatus] || threadStatusIcon.idle;
+  return (
+    <Icon
+      data-testid={testId}
+      iconClass={getIcon(iconName)}
+      style={{ fontSize: 14, marginRight: 4, flexShrink: 0, opacity: 0.6 }}
+    />
+  );
+}
+
 export interface IChatHistoryItem {
   id: string;
   title: string;
   updatedAt: number;
   loading: boolean;
   threadStatus?: ThreadStatus;
+  hasPendingPermission?: boolean;
 }
 
 export interface IChatHistoryProps {
@@ -22,9 +44,11 @@ export interface IChatHistoryProps {
   currentId?: string;
   className?: string;
   historyLoading?: boolean;
+  disabled?: boolean;
+  pendingPermissionBadge?: number;
   onNewChat: () => void;
   onHistoryItemSelect: (item: IChatHistoryItem) => void;
-  onHistoryItemDelete: (item: IChatHistoryItem) => void;
+  onHistoryItemDelete?: (item: IChatHistoryItem) => void;
   onHistoryItemChange: (item: IChatHistoryItem, title: string) => void;
   onHistoryPopoverVisibleChange?: (visible: boolean) => void;
 }
@@ -43,6 +67,8 @@ const ChatHistoryACP: FC<IChatHistoryProps> = memo(
     onHistoryItemDelete,
     onHistoryPopoverVisibleChange,
     historyLoading,
+    disabled,
+    pendingPermissionBadge,
     className,
   }) => {
     const [historyTitleEditable, setHistoryTitleEditable] = useState<{
@@ -171,6 +197,8 @@ const ChatHistoryACP: FC<IChatHistoryProps> = memo(
           ? `acp-thread-status-${item.id}-${item.threadStatus}`
           : `acp-thread-status-${item.id}-default`;
 
+        const effectiveStatus: ThreadStatus = item.threadStatus ?? (item.loading ? 'working' : 'idle');
+
         return (
           <div
             key={item.id}
@@ -179,50 +207,26 @@ const ChatHistoryACP: FC<IChatHistoryProps> = memo(
             onClick={() => handleHistoryItemSelect(item)}
           >
             <div className={styles.chat_history_item_content}>
-              {(() => {
-                switch (item.threadStatus) {
-                  case 'working':
-                    return (
-                      <span data-testid={threadStatusTestId}>
-                        <Loading />
-                      </span>
-                    );
-                  case 'awaiting_prompt':
-                    return (
-                      <span data-testid={threadStatusTestId}>
-                        <Icon icon='success' style={{ width: '16px', height: '16px', marginRight: 4 }} />
-                      </span>
-                    );
-                  case 'errored':
-                    return (
-                      <span data-testid={threadStatusTestId}>
-                        <Icon icon='error' style={{ width: '16px', height: '16px', marginRight: 4 }} />
-                      </span>
-                    );
-                  case 'auth_required':
-                    return (
-                      <span data-testid={threadStatusTestId}>
-                        <Icon icon='key' style={{ width: '16px', height: '16px', marginRight: 4 }} />
-                      </span>
-                    );
-                  case 'disconnected':
-                    return (
-                      <span data-testid={threadStatusTestId}>
-                        <Icon icon='disconnect' style={{ width: '16px', height: '16px', marginRight: 4 }} />
-                      </span>
-                    );
-                  default:
-                    return item.loading ? (
-                      <span data-testid={threadStatusTestId}>
-                        <Loading />
-                      </span>
-                    ) : (
-                      <span data-testid={threadStatusTestId}>
-                        <Icon icon='message' style={{ width: '16px', height: '16px', marginRight: 4 }} />
-                      </span>
-                    );
-                }
-              })()}
+              {renderThreadStatusIcon(item.threadStatus, item.loading, threadStatusTestId)}
+              {item.hasPendingPermission && item.id !== currentId && (
+                <Icon
+                  data-testid={`acp-permission-pending-${item.id}`}
+                  iconClass={getIcon('key')}
+                  style={{
+                    fontSize: 14,
+                    marginRight: 4,
+                    flexShrink: 0,
+                    color: 'var(--notificationsErrorIcon-foreground, #e74c3c)',
+                  }}
+                  title={localize('aiNative.acp.permissionPending')}
+                />
+              )}
+              <span
+                data-testid={`thread-status-${item.id}`}
+                style={{ fontSize: 11, marginRight: 4, color: '#888', flexShrink: 0 }}
+              >
+                [{effectiveStatus}]
+              </span>
               {!historyTitleEditable?.[item.id] ? (
                 <span id={`chat-history-item-title-${item.id}`} className={styles.chat_history_item_title}>
                   {item.title}
@@ -282,7 +286,7 @@ const ChatHistoryACP: FC<IChatHistoryProps> = memo(
             value={searchValue}
             onChange={handleSearchChange}
           />
-          <div className={styles.chat_history_list}>
+          <div data-testid='acp-chat-history-popover' className={styles.chat_history_list}>
             {historyLoading ? (
               <div className={styles.chat_history_loading}>
                 <Loading />
@@ -317,11 +321,19 @@ const ChatHistoryACP: FC<IChatHistoryProps> = memo(
             getPopupContainer={getPopupContainer}
             onVisibleChange={onHistoryPopoverVisibleChange}
           >
-            <div
-              className={styles.chat_history_header_actions_history}
-              title={localize('aiNative.operate.chatHistory.title')}
-            >
-              <EnhanceIcon className={cls(styles.chat_history_header_actions_history, 'codicon codicon-history')} />
+            <div className={styles.chat_history_button_wrapper}>
+              <div
+                data-testid='acp-chat-history-button'
+                className={styles.chat_history_header_actions_history}
+                title={localize('aiNative.operate.chatHistory.title')}
+              >
+                <EnhanceIcon className={cls(styles.chat_history_header_actions_history, 'codicon codicon-history')} />
+                {pendingPermissionBadge && pendingPermissionBadge > 0 ? (
+                  <span data-testid='acp-pending-permission-badge' className={styles.pending_permission_badge}>
+                    {pendingPermissionBadge > 99 ? '99+' : pendingPermissionBadge}
+                  </span>
+                ) : null}
+              </div>
             </div>
           </Popover>
           <Popover
