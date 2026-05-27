@@ -123,7 +123,7 @@ export class AcpWebMcpHandler {
 
     try {
       const result = await this.caller.executeTool(groupName, toolAction, params);
-      return result as Record<string, unknown>;
+      return result as unknown as Record<string, unknown>;
     } catch (err) {
       return { success: false, error: 'EXECUTION_ERROR', details: String(err) };
     }
