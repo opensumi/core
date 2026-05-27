@@ -69,6 +69,7 @@ import {
   StorageProvider,
   TerminalRegistryToken,
   URI,
+  WebMcpGroupRegistryToken,
   isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
@@ -111,6 +112,10 @@ import { MCP_SERVER_TYPE } from '../common/types';
 import { AcpChatInput } from './acp/components/AcpChatInput';
 import { AcpChatMentionInput } from './acp/components/AcpChatMentionInput';
 import { registerFileWebMCPTools } from './acp/webmcp-file-tools.registry';
+import { WebMcpGroupRegistry } from './acp/webmcp-group-registry';
+import { createEditorGroup } from './acp/webmcp-groups/editor.webmcp-group';
+import { createFileGroup } from './acp/webmcp-groups/file.webmcp-group';
+import { createTerminalGroup } from './acp/webmcp-groups/terminal.webmcp-group';
 import { registerAcpWebMCPTools } from './acp/webmcp-tools.registry';
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
@@ -494,6 +499,12 @@ export class AINativeBrowserContribution
       // so it's actually called by the ClientApp lifecycle
       this.webMCPDisposable = registerAcpWebMCPTools(this.injector);
       this.fileWebMCPDisposable = registerFileWebMCPTools(this.injector);
+
+      // Register WebMCP groups for ACP extension methods
+      const groupRegistry = this.injector.get(WebMcpGroupRegistryToken);
+      groupRegistry.registerGroup(createFileGroup(this.injector));
+      groupRegistry.registerGroup(createTerminalGroup(this.injector));
+      groupRegistry.registerGroup(createEditorGroup(this.injector));
     });
   }
 
