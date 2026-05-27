@@ -644,10 +644,10 @@ export class AcpThread extends Disposable implements IAcpThread {
     this._connected = true;
 
     // Initialize WebMCP handler if caller service is available
+    // Handler uses lazy initialization — group definitions are fetched on first _opensumi/* call
     const webmcpCaller = this.options.webmcpCallerService;
     if (webmcpCaller) {
       this.webmcpHandler = new AcpWebMcpHandler(webmcpCaller, this.logger);
-      await this.webmcpHandler.initialize();
     }
   }
 

@@ -9,13 +9,26 @@ export class AcpWebMcpHandler {
   private loadedGroups = new Set<string>();
   private groupDefs: WebMcpGroupDef[] | null = null;
   private totalLoadedToolCount = 0;
+  private initPromise: Promise<void> | null = null;
 
   constructor(
     private readonly caller: AcpWebMcpCallerService,
     private readonly logger: { warn?: (...args: unknown[]) => void; debug?: (...args: unknown[]) => void } | undefined,
   ) {}
 
-  async initialize(): Promise<void> {
+  /**
+   * Lazily initialize group definitions from the browser-side registry.
+   * Safe to call multiple times — subsequent calls await the same promise.
+   */
+  ensureInitialized(): Promise<void> {
+    if (this.groupDefs !== null) {return Promise.resolve();}
+    if (this.initPromise) {return this.initPromise;}
+
+    this.initPromise = this.doInitialize();
+    return this.initPromise;
+  }
+
+  private async doInitialize(): Promise<void> {
     try {
       this.groupDefs = await this.caller.getGroupDefinitions();
       // Auto-load default groups
@@ -32,6 +45,8 @@ export class AcpWebMcpHandler {
   }
 
   async handleExtMethod(method: string, params: Record<string, unknown>): Promise<Record<string, unknown>> {
+    await this.ensureInitialized();
+
     // Meta methods
     if (method === '_opensumi/webmcp/list_groups') {
       return this.listGroups();

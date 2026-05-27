@@ -53,12 +53,12 @@ describe('AcpWebMcpHandler', () => {
 
   describe('initialize()', () => {
     it('should load group definitions from caller', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       expect(mockCaller.getGroupDefinitions).toHaveBeenCalledTimes(1);
     });
 
     it('should auto-load default groups', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       const result = await handler.handleExtMethod('_opensumi/webmcp/list_groups', {});
       const groups = (result as any).groups;
       const fileGroup = groups.find((g: any) => g.name === 'file');
@@ -68,7 +68,7 @@ describe('AcpWebMcpHandler', () => {
     });
 
     it('should count tools from default groups', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       const result = await handler.handleExtMethod('_opensumi/webmcp/load_group', { name: 'git' });
       // file group has 2 tools (auto-loaded), git has 1 tool (just loaded) = 3
       expect((result as any).totalLoadedToolCount).toBe(3);
@@ -79,7 +79,7 @@ describe('AcpWebMcpHandler', () => {
       const warn = jest.fn();
       const handlerWithLogger = createHandler({ warn });
 
-      await handlerWithLogger.initialize();
+      await handlerWithLogger.ensureInitialized();
 
       expect(warn).toHaveBeenCalledWith(
         '[AcpWebMcpHandler] Failed to initialize group definitions:',
@@ -92,7 +92,7 @@ describe('AcpWebMcpHandler', () => {
 
   describe('handleExtMethod("_opensumi/webmcp/list_groups")', () => {
     it('should return all groups with loaded state', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       const result = await handler.handleExtMethod('_opensumi/webmcp/list_groups', {});
 
       expect(result).toEqual({
@@ -103,15 +103,17 @@ describe('AcpWebMcpHandler', () => {
       });
     });
 
-    it('should return empty groups before initialize', async () => {
+    it('should auto-initialize on first handleExtMethod call', async () => {
+      // handleExtMethod calls ensureInitialized() lazily, so it auto-initializes
       const result = await handler.handleExtMethod('_opensumi/webmcp/list_groups', {});
-      expect((result as any).groups).toEqual([]);
+      expect((result as any).groups.length).toBeGreaterThan(0);
+      expect(mockCaller.getGroupDefinitions).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('handleExtMethod("_opensumi/webmcp/load_group")', () => {
     it('should load a non-default group and return its methods', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       const result = await handler.handleExtMethod('_opensumi/webmcp/load_group', { name: 'git' });
 
       expect(result).toEqual({
@@ -122,7 +124,7 @@ describe('AcpWebMcpHandler', () => {
     });
 
     it('should return current state if group is already loaded', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       // file is default-loaded, loading again should return without error
       const result = await handler.handleExtMethod('_opensumi/webmcp/load_group', { name: 'file' });
 
@@ -134,7 +136,7 @@ describe('AcpWebMcpHandler', () => {
     });
 
     it('should return GROUP_NOT_FOUND for unknown group', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       const result = await handler.handleExtMethod('_opensumi/webmcp/load_group', { name: 'unknown' });
 
       expect(result).toEqual({
@@ -146,7 +148,7 @@ describe('AcpWebMcpHandler', () => {
 
   describe('handleExtMethod("_opensumi/webmcp/unload_group")', () => {
     it('should unload a loaded group and decrement tool count', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       // First load git
       await handler.handleExtMethod('_opensumi/webmcp/load_group', { name: 'git' });
       // Then unload it
@@ -160,7 +162,7 @@ describe('AcpWebMcpHandler', () => {
     });
 
     it('should return empty unloadedMethods for already-unloaded group', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       // git is not loaded by default
       const result = await handler.handleExtMethod('_opensumi/webmcp/unload_group', { name: 'git' });
 
@@ -172,7 +174,7 @@ describe('AcpWebMcpHandler', () => {
     });
 
     it('should return GROUP_NOT_FOUND for unknown group', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       const result = await handler.handleExtMethod('_opensumi/webmcp/unload_group', { name: 'nonexistent' });
 
       expect(result).toEqual({
@@ -182,7 +184,7 @@ describe('AcpWebMcpHandler', () => {
     });
 
     it('should decrement totalLoadedToolCount when unloading a default group', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       const result = await handler.handleExtMethod('_opensumi/webmcp/unload_group', { name: 'file' });
 
       expect(result).toEqual({
@@ -195,7 +197,7 @@ describe('AcpWebMcpHandler', () => {
 
   describe('handleExtMethod("_opensumi/{group}/{action}")', () => {
     it('should execute a tool in a loaded group via caller', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       mockCaller.executeTool.mockResolvedValue({ success: true, result: { content: 'hello' } });
 
       const result = await handler.handleExtMethod('_opensumi/file/read', { path: '/tmp/test.txt' });
@@ -205,7 +207,7 @@ describe('AcpWebMcpHandler', () => {
     });
 
     it('should execute a tool in a manually loaded group', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       await handler.handleExtMethod('_opensumi/webmcp/load_group', { name: 'git' });
       mockCaller.executeTool.mockResolvedValue({ success: true, result: { branch: 'main' } });
 
@@ -216,7 +218,7 @@ describe('AcpWebMcpHandler', () => {
     });
 
     it('should return TOOL_NOT_LOADED for unloaded group', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       // git is not loaded by default
       const result = await handler.handleExtMethod('_opensumi/git/status', {});
 
@@ -229,7 +231,7 @@ describe('AcpWebMcpHandler', () => {
     });
 
     it('should return TOOL_NOT_LOADED after unloading a group', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       await handler.handleExtMethod('_opensumi/webmcp/load_group', { name: 'git' });
       await handler.handleExtMethod('_opensumi/webmcp/unload_group', { name: 'git' });
 
@@ -243,7 +245,7 @@ describe('AcpWebMcpHandler', () => {
     });
 
     it('should return EXECUTION_ERROR when caller throws', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       mockCaller.executeTool.mockRejectedValue(new Error('tool crashed'));
 
       const result = await handler.handleExtMethod('_opensumi/file/read', { path: '/bad' });
@@ -256,7 +258,7 @@ describe('AcpWebMcpHandler', () => {
     });
 
     it('should return TOOL_NOT_FOUND for invalid method format', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       const result = await handler.handleExtMethod('_opensumi/invalid', {});
 
       expect(result).toEqual({
@@ -284,7 +286,7 @@ describe('AcpWebMcpHandler', () => {
 
   describe('getCapabilityMeta()', () => {
     it('should return capability metadata with groups and defaults', async () => {
-      await handler.initialize();
+      await handler.ensureInitialized();
       const meta = handler.getCapabilityMeta();
 
       expect(meta).toEqual({
