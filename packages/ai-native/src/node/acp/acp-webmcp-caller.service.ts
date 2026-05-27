@@ -14,10 +14,10 @@ import type {
 @Injectable()
 export class AcpWebMcpCallerService extends RPCService<IAcpWebMcpBridgeService> {
   async getGroupDefinitions(): Promise<WebMcpGroupDef[]> {
-    return this.client.$getGroupDefinitions();
+    return this.client!.$getGroupDefinitions();
   }
 
   async executeTool(group: string, tool: string, params: Record<string, unknown>): Promise<WebMcpToolResult> {
-    return this.client.$executeTool(group, tool, params);
+    return this.client!.$executeTool(group, tool, params);
   }
 }

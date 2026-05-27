@@ -19,7 +19,9 @@ import { classifyError, errorResult, serviceUnavailableResult, successResult, tr
 // ---------------------------------------------------------------------------
 
 function resolveWorkspacePath(workspaceDir: string, relativePath: string): string {
-  if (relativePath.startsWith('/')) {return relativePath;}
+  if (relativePath.startsWith('/')) {
+    return relativePath;
+  }
   return `${workspaceDir}/${relativePath}`.replace(/\/+/g, '/');
 }
 
@@ -245,7 +247,7 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
               path: filePath,
               isDirectory: fileStat.isDirectory,
               size: fileStat.size,
-              lastModified: fileStat.mtime,
+              lastModified: fileStat.lastModification,
               isReadonly: fileStat.readonly,
             });
           } catch (err) {
@@ -390,7 +392,7 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
                 new Error('Path is a directory. Use recursive: true to delete directories.'),
               );
             }
-            await fileService.delete(uri, { recursive });
+            await fileService.delete(uri);
             return successResult({ path: filePath, deleted: true });
           } catch (err) {
             return errorResult(classifyError(err), err);

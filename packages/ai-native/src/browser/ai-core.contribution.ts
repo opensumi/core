@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Autowired, IDisposable, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   AINativeConfigService,
   AINativeSettingSectionsId,

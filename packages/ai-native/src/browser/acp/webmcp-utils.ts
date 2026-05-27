@@ -1,4 +1,4 @@
-import { Injector } from '@opensumi/di';
+import { Injector, Token } from '@opensumi/di';
 
 export type ErrorCode =
   | 'SERVICE_UNAVAILABLE'
@@ -10,6 +10,9 @@ export type ErrorCode =
   | 'DI_ERROR'
   | 'FILE_NOT_FOUND'
   | 'FILE_EXISTS'
+  | 'INVALID_INPUT'
+  | 'IS_DIRECTORY'
+  | 'NOT_A_DIRECTORY'
   | 'EXECUTION_ERROR';
 
 export interface WebMcpToolResult {
@@ -19,7 +22,7 @@ export interface WebMcpToolResult {
   details?: string;
 }
 
-export function tryGetService<T>(container: Injector, token: unknown): T | null {
+export function tryGetService<T>(container: Injector, token: Token | symbol): T | null {
   try {
     return container.get(token) as T;
   } catch {
@@ -30,12 +33,24 @@ export function tryGetService<T>(container: Injector, token: unknown): T | null 
 export function classifyError(err: unknown): ErrorCode {
   if (err instanceof Error) {
     const msg = err.message.toLowerCase();
-    if (msg.includes('timeout') || msg.includes('timed out')) {return 'RPC_TIMEOUT';}
-    if (msg.includes('permission') || msg.includes('forbidden')) {return 'PERMISSION_DENIED';}
-    if (msg.includes('abort')) {return 'ABORTED';}
-    if (msg.includes('not found') || msg.includes('enoent')) {return 'FILE_NOT_FOUND';}
-    if (msg.includes('already exists') || msg.includes('eexist')) {return 'FILE_EXISTS';}
-    if (msg.includes('di') || msg.includes('injector')) {return 'DI_ERROR';}
+    if (msg.includes('timeout') || msg.includes('timed out')) {
+      return 'RPC_TIMEOUT';
+    }
+    if (msg.includes('permission') || msg.includes('forbidden')) {
+      return 'PERMISSION_DENIED';
+    }
+    if (msg.includes('abort')) {
+      return 'ABORTED';
+    }
+    if (msg.includes('not found') || msg.includes('enoent')) {
+      return 'FILE_NOT_FOUND';
+    }
+    if (msg.includes('already exists') || msg.includes('eexist')) {
+      return 'FILE_EXISTS';
+    }
+    if (msg.includes('di') || msg.includes('injector')) {
+      return 'DI_ERROR';
+    }
   }
   return 'EXECUTION_ERROR';
 }
