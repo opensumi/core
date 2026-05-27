@@ -57,6 +57,7 @@ import {
   WriteTextFileRequest,
   WriteTextFileResponse,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
+import { AcpWebMcpCallerServiceToken } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
@@ -357,6 +358,7 @@ export const AcpThreadFactoryProvider: Provider = {
     const terminalHandler = injector.get(AcpTerminalHandlerToken);
     const permissionRouting = injector.get(PermissionRoutingServiceToken);
     const logger = injector.get(INodeLogger);
+    const webmcpCallerService = injector.get(AcpWebMcpCallerServiceToken) as AcpWebMcpCallerService;
 
     return (sessionId: string, config: AcpThreadRuntimeConfig) =>
       new AcpThread({
@@ -370,6 +372,7 @@ export const AcpThreadFactoryProvider: Provider = {
         terminalHandler,
         permissionRouting,
         logger,
+        webmcpCallerService,
       });
   },
 };

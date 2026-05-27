@@ -21,12 +21,14 @@ import {
   AcpPermissionServicePath,
   AcpPermissionServiceToken,
   AcpThreadStatusServicePath,
+  AcpWebMcpBridgePath,
   IACPConfigProvider,
   IntelligentCompletionsRegistryToken,
   MCPConfigServiceToken,
   ProblemFixRegistryToken,
   RulesServiceToken,
   TerminalRegistryToken,
+  WebMcpGroupRegistryToken,
 } from '@opensumi/ide-core-common';
 import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
 
@@ -46,7 +48,13 @@ import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-man
 import { ChatAgentPromptProvider, DefaultChatAgentPromptProvider } from '../common/prompts/context-prompt-provider';
 import { ACPChatAgentPromptProvider } from '../common/prompts/empty-prompt-provider';
 
-import { AcpPermissionBridgeService, AcpPermissionRpcService, AcpThreadStatusRpcService } from './acp';
+import {
+  AcpPermissionBridgeService,
+  AcpPermissionRpcService,
+  AcpThreadStatusRpcService,
+  AcpWebMcpRpcService,
+  WebMcpGroupRegistry,
+} from './acp';
 import { AcpFooterContribution } from './acp/components/AcpFooterContribution';
 import { AcpPermissionDialogContribution, PermissionDialogManager } from './acp/permission-dialog-container';
 import { AINativeBrowserContribution } from './ai-core.contribution';
@@ -328,6 +336,15 @@ export class AINativeModule extends BrowserModule {
       token: AcpThreadStatusServicePath,
       useClass: AcpThreadStatusRpcService,
     },
+    // WebMCP group registry and RPC bridge
+    {
+      token: WebMcpGroupRegistryToken,
+      useClass: WebMcpGroupRegistry,
+    },
+    {
+      token: AcpWebMcpBridgePath,
+      useClass: AcpWebMcpRpcService,
+    },
   ];
 
   backServices = [
@@ -351,6 +368,10 @@ export class AINativeModule extends BrowserModule {
     {
       servicePath: AcpThreadStatusServicePath,
       clientToken: AcpThreadStatusServicePath,
+    },
+    {
+      servicePath: AcpWebMcpBridgePath,
+      clientToken: AcpWebMcpBridgePath,
     },
   ];
 }

@@ -31,3 +31,5 @@ export {
   AcpThreadFactoryProvider,
   AcpThreadRuntimeConfig,
 } from './acp-thread';
+export { AcpWebMcpCallerService } from './acp-webmcp-caller.service';
+export { AcpWebMcpHandler } from './acp-webmcp-handler';

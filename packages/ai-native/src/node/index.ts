@@ -4,6 +4,8 @@ import {
   AIBackSerivceToken,
   AcpPermissionServicePath,
   AcpThreadStatusServicePath,
+  AcpWebMcpBridgePath,
+  AcpWebMcpCallerServiceToken,
 } from '@opensumi/ide-core-common';
 import { NodeModule } from '@opensumi/ide-core-node';
 
@@ -24,6 +26,7 @@ import {
   AcpThreadFactoryProvider,
   AcpThreadStatusCallerService,
   AcpThreadStatusCallerServiceToken,
+  AcpWebMcpCallerService,
   PermissionRoutingService,
   PermissionRoutingServiceToken,
 } from './acp';
@@ -78,6 +81,11 @@ export class AINativeModule extends NodeModule {
       token: AcpThreadStatusCallerServiceToken,
       useClass: AcpThreadStatusCallerService,
     },
+    // WebMCP bridge caller (Node → Browser)
+    {
+      token: AcpWebMcpCallerServiceToken,
+      useClass: AcpWebMcpCallerService,
+    },
     // Language models for non-ACP fallback
     OpenAICompatibleModel,
   ];
@@ -102,6 +110,10 @@ export class AINativeModule extends NodeModule {
     {
       servicePath: AcpThreadStatusServicePath,
       token: AcpThreadStatusCallerServiceToken,
+    },
+    {
+      servicePath: AcpWebMcpBridgePath,
+      token: AcpWebMcpCallerServiceToken,
     },
   ];
 }
