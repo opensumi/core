@@ -601,6 +601,53 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(errors[0].message).toBe('Prompt failed');
     });
 
+    it('should preserve message from JSON-RPC error objects when prompt fails', async () => {
+      const eventListeners: Array<(event: any) => void> = [];
+      const thread = createMockThread({
+        onEvent: jest.fn((cb: any) => {
+          eventListeners.push(cb);
+          return { dispose: jest.fn() };
+        }),
+        _fireEvent(event: any) {
+          eventListeners.forEach((cb) => cb(event));
+        },
+        _eventListeners: eventListeners,
+        prompt: jest.fn().mockRejectedValue({
+          code: -32603,
+          message: 'Internal error: API Error: 422 provider config not found',
+          data: { errorKind: 'unknown' },
+        }),
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+
+      setTimeout(() => {
+        thread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'session-1',
+            update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+          },
+        });
+      }, 10);
+
+      const createResult = await service.createSession(mockAgentProcessConfig);
+
+      const errors: Error[] = [];
+      const stream = service.sendMessage(
+        { prompt: 'Hello', sessionId: createResult.sessionId },
+        mockAgentProcessConfig,
+      );
+      stream.onError((e) => errors.push(e));
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(errors.length).toBe(1);
+      expect(errors[0].message).toBe('Internal error: API Error: 422 provider config not found');
+      expect((errors[0] as any).code).toBe(-32603);
+      expect((errors[0] as any).data).toEqual({ errorKind: 'unknown' });
+    });
+
     it('should include images in prompt', async () => {
       const { service, thread } = createServiceWithAutoEvents();
 

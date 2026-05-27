@@ -170,6 +170,28 @@ describe('AcpCliBackService', () => {
       expect(receivedError[0].message).toBe('Agent connection lost');
     });
 
+    it('should preserve message from agent stream error objects', async () => {
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+
+      const receivedError: Error[] = [];
+      output.onError((err) => receivedError.push(err));
+
+      agentStream.emitError({
+        code: -32603,
+        message: 'Internal error: API Error: 422 provider config not found',
+        data: { errorKind: 'unknown' },
+      } as any);
+
+      expect(receivedError.length).toBe(1);
+      expect(receivedError[0].message).toBe('Internal error: API Error: 422 provider config not found');
+      expect((receivedError[0] as any).code).toBe(-32603);
+      expect((receivedError[0] as any).data).toEqual({ errorKind: 'unknown' });
+    });
+
     it('should handle cancellation token', async () => {
       mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();

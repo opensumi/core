@@ -11,6 +11,7 @@ import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-nativ
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
+import { normalizeAcpError } from './acp-error';
 import {
   AcpThread,
   AcpThreadEvent,
@@ -642,7 +643,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       stream.emitData({ type: 'done', content: '' });
       stream.end();
     } catch (error) {
-      stream.emitError(error instanceof Error ? error : new Error(String(error)));
+      stream.emitError(normalizeAcpError(error));
     }
   }
 

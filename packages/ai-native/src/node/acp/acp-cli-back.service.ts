@@ -24,6 +24,7 @@ import { BaseLanguageModel } from '../base-language-model';
 import { OpenAICompatibleModel } from '../openai-compatible/openai-compatible-language-model';
 
 import { AcpAgentServiceToken, AgentRequest, AgentUpdate, IAcpAgentService, SimpleMessage } from './acp-agent.service';
+import { normalizeAcpError } from './acp-error';
 import { AcpThreadStatusCallerServiceToken } from './acp-thread-status-caller.service';
 
 import type { CoreMessage } from 'ai';
@@ -253,11 +254,11 @@ export class AcpCliBackService implements IAIBackService {
 
       agentStream.onError((error) => {
         this.logger.error('[ACP Back] agentStream onError:', error);
-        stream.emitError(error instanceof Error ? error : new Error(String(error)));
+        stream.emitError(normalizeAcpError(error));
       });
     } catch (error) {
       this.logger.error('[ACP Back] setupAgentStream catch:', error);
-      stream.emitError(error instanceof Error ? error : new Error(String(error)));
+      stream.emitError(normalizeAcpError(error));
     }
   }
 
