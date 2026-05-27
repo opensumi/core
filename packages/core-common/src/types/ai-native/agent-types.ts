@@ -3,7 +3,7 @@
  * Centralized configuration for supported CLI agents
  */
 
-import type { EnvVariable } from './acp-types';
+import type { EnvVariable, McpServer } from './acp-types';
 
 // ACP Agent 类型
 export type ACPAgentType = 'qwen' | 'claude-agent-acp';
@@ -87,6 +87,10 @@ export interface AgentProcessConfig {
    * Node.js executable path from preference. Node layer continues fallback.
    */
   nodePath?: string;
+  /**
+   * MCP servers to pass into ACP session/new, session/load, and related session operations.
+   */
+  mcpServers?: McpServer[];
 }
 
 /**

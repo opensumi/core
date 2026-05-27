@@ -12,6 +12,7 @@ import {
   IChatToolCall,
   IChatToolContent,
   ListSessionsResponse,
+  McpServer,
   SessionNotification,
   SetSessionModeRequest,
   ThreadStatus,
@@ -457,7 +458,7 @@ export class AcpCliBackService implements IAIBackService {
 
   async forkSession(
     sessionId: string,
-    options?: { cwd?: string; mcpServers?: string[] },
+    options?: { cwd?: string; mcpServers?: McpServer[] },
   ): Promise<{ sessionId: string }> {
     return this.agentService.forkSession({ sessionId, ...options });
   }

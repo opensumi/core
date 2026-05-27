@@ -11,6 +11,7 @@ import {
   StorageProvider,
   localize,
 } from '@opensumi/ide-core-common';
+import { EnvVariable, McpServer } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMessageService } from '@opensumi/ide-overlay';
 
@@ -273,6 +274,53 @@ export class MCPConfigService extends Disposable {
       }
     }
     return undefined;
+  }
+
+  async getACPServers(): Promise<McpServer[]> {
+    await this.whenReady;
+    const { value: mcpConfig, scope } = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
+      'mcp',
+      { mcpServers: {} },
+      undefined,
+    );
+
+    if (scope === PreferenceScope.Default) {
+      return [];
+    }
+
+    const serverNames = Object.keys(mcpConfig?.mcpServers ?? {});
+    const serverConfigs = await Promise.all(serverNames.map((name) => this.getServerConfigByName(name)));
+
+    return serverConfigs
+      .filter((server): server is MCPServerDescription => !!server && server.enabled !== false)
+      .map((server) => this.toACPServer(server))
+      .filter((server): server is McpServer => !!server);
+  }
+
+  private toACPServer(server: MCPServerDescription): McpServer | undefined {
+    if (server.type === MCP_SERVER_TYPE.SSE) {
+      return {
+        type: 'sse',
+        name: server.name,
+        url: server.url,
+        headers: [],
+      };
+    }
+
+    if (server.type === MCP_SERVER_TYPE.STDIO) {
+      return {
+        name: server.name,
+        command: server.command,
+        args: server.args ?? [],
+        env: this.toACPEnv(server.env),
+      };
+    }
+
+    return undefined;
+  }
+
+  private toACPEnv(env?: Record<string, string>): EnvVariable[] {
+    return Object.entries(env ?? {}).map(([name, value]) => ({ name, value }));
   }
 
   getReadableServerType(type: string): string {

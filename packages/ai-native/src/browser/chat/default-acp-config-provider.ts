@@ -1,10 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService, QuickPickService } from '@opensumi/ide-core-browser';
-import { AgentProcessConfig, IACPConfigProvider } from '@opensumi/ide-core-common';
+import { AgentProcessConfig, IACPConfigProvider, MCPConfigServiceToken } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { buildAcpAgentProcessConfig } from '../acp/build-agent-process-config';
+import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
 import { getAgentConfig, getDefaultAgentType } from './get-default-agent-type';
 import { pickWorkspaceDir } from './pick-workspace-dir';
@@ -29,11 +30,15 @@ export class DefaultACPConfigProvider implements IACPConfigProvider {
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;
 
+  @Autowired(MCPConfigServiceToken)
+  protected readonly mcpConfigService: MCPConfigService;
+
   async resolveConfig(): Promise<AgentProcessConfig> {
     await this.workspaceService.whenReady;
     const agentType = getDefaultAgentType(this.preferenceService);
     const agentConfig = getAgentConfig(this.preferenceService, agentType);
     const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
+    const mcpServers = await this.mcpConfigService.getACPServers();
 
     return buildAcpAgentProcessConfig({
       agentId: agentType,
@@ -46,6 +51,7 @@ export class DefaultACPConfigProvider implements IACPConfigProvider {
         nodePath: this.preferenceService.get('ai-native.acp.nodePath', ''),
         agents: this.preferenceService.get('ai-native.acp.agents', {}),
       },
+      mcpServers,
     });
   }
 }

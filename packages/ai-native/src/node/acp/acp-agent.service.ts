@@ -4,6 +4,7 @@ import {
   AvailableCommand,
   ListSessionsRequest,
   ListSessionsResponse,
+  McpServer,
   SessionInfo,
   SessionNotification,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
@@ -152,7 +153,7 @@ export interface IAcpAgentService {
   setSessionConfigOption(params: { sessionId: string; configId: string; value: boolean | string }): Promise<void>;
 
   /** Fork a session (create a copy based on existing session state) */
-  forkSession(params: { sessionId: string; cwd?: string; mcpServers?: string[] }): Promise<{ sessionId: string }>;
+  forkSession(params: { sessionId: string; cwd?: string; mcpServers?: McpServer[] }): Promise<{ sessionId: string }>;
 
   /** Resume a closed session */
   resumeSession(params: { sessionId: string; cwd?: string }): Promise<void>;
@@ -329,6 +330,33 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     throw new Error(`Thread pool is full (${this.maxPoolSize}), no idle thread available`);
   }
 
+  private getSessionMcpServers(thread: AcpThread, config: AgentProcessConfig): McpServer[] {
+    const mcpServers = config.mcpServers ?? [];
+    if (mcpServers.length === 0) {
+      return [];
+    }
+
+    const mcpCapabilities = thread.agentCapabilities?.mcpCapabilities;
+    return mcpServers.filter((server) => {
+      const type = (server as { type?: string }).type;
+      if (type === 'http') {
+        const supported = mcpCapabilities?.http === true;
+        if (!supported) {
+          this.logger.warn(`[AcpAgentService] Skipping HTTP MCP server "${server.name}"; agent does not support it`);
+        }
+        return supported;
+      }
+      if (type === 'sse') {
+        const supported = mcpCapabilities?.sse === true;
+        if (!supported) {
+          this.logger.warn(`[AcpAgentService] Skipping SSE MCP server "${server.name}"; agent does not support it`);
+        }
+        return supported;
+      }
+      return true;
+    });
+  }
+
   // -----------------------------------------------------------------------
   // createSession — with Deferred pattern (NOT setTimeout)
   // -----------------------------------------------------------------------
@@ -366,7 +394,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
       const newSessionResponse = await thread.newSession({
         cwd: config.cwd,
-        mcpServers: [],
+        mcpServers: this.getSessionMcpServers(thread, config),
       } as any);
 
       realSessionId = newSessionResponse.sessionId;
@@ -471,7 +499,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         await idleThread.loadSession({
           sessionId,
           cwd: config.cwd,
-          mcpServers: [],
+          mcpServers: this.getSessionMcpServers(idleThread, config),
         } as any);
       } catch (e) {
         this.sessions.delete(sessionId);
@@ -504,7 +532,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         await thread.loadSession({
           sessionId,
           cwd: config.cwd,
-          mcpServers: [],
+          mcpServers: this.getSessionMcpServers(thread, config),
         } as any);
       } catch (e) {
         const idx = this.threadPool.indexOf(thread);
@@ -751,7 +779,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       await thread.loadSessionOrNew({
         sessionId,
         cwd: config.cwd,
-        mcpServers: [],
+        mcpServers: this.getSessionMcpServers(thread, config),
       } as any);
       return this.buildSessionLoadResult(sessionId, thread);
     } catch (e) {
@@ -810,7 +838,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   async forkSession(params: {
     sessionId: string;
     cwd?: string;
-    mcpServers?: string[];
+    mcpServers?: McpServer[];
   }): Promise<{ sessionId: string }> {
     const thread = this.sessions.get(params.sessionId);
     if (!thread) {

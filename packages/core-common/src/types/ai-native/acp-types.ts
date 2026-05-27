@@ -102,6 +102,11 @@ export type {
   WriteTextFileResponse,
   KillTerminalCommandResponse,
   KillTerminalCommandRequest,
+  HttpHeader,
+  McpServer,
+  McpServerHttp,
+  McpServerSse,
+  McpServerStdio,
   ToolKind,
 } from '@agentclientprotocol/sdk';
 

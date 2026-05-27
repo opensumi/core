@@ -1,4 +1,4 @@
-import { EnvVariable } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
+import { EnvVariable, McpServer } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 import { buildAcpAgentProcessConfig } from '../../../lib/browser/acp/build-agent-process-config';
 
@@ -108,5 +108,23 @@ describe('buildAcpAgentProcessConfig', () => {
       userPreferences: { nodePath: '', agents: {} },
     });
     expect(result.nodePath).toBeUndefined();
+  });
+
+  it('includes ACP MCP servers when provided', () => {
+    const mcpServers: McpServer[] = [
+      {
+        name: 'filesystem',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-filesystem', '/workspace'],
+        env: [],
+      },
+    ];
+    const result = buildAcpAgentProcessConfig({
+      agentId: 'test-agent',
+      registration: defaultRegistration,
+      userPreferences: defaultPrefs,
+      mcpServers,
+    });
+    expect(result.mcpServers).toBe(mcpServers);
   });
 });
