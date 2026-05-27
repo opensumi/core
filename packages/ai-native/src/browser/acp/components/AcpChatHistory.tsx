@@ -187,7 +187,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     const renderHistoryItem = useCallback(
       (item: IChatHistoryItem) => (
         <div
-          key={item.id}
+          key={item.updatedAt}
           data-testid={`chat-history-item-${item.id}`}
           className={cls(
             styles.chat_history_item,
@@ -196,6 +196,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
           )}
           onClick={() => handleHistoryItemSelect(item)}
         >
+          {item.hasPendingPermission}
           <div className={styles.chat_history_item_content}>
             {!item.hasPendingPermission &&
               renderThreadStatusIcon(
@@ -203,7 +204,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
                 item.loading,
                 `acp-thread-status-${item.id}-${item.threadStatus || 'default'}`,
               )}
-            {item.hasPendingPermission && item.id !== currentId && (
+            {item.hasPendingPermission && (
               <span
                 data-testid={`acp-permission-pending-${item.id}`}
                 className={cls(styles.chat_history_item_pending_icon, getIcon('bell'))}
@@ -211,12 +212,12 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
                 title={localize('aiNative.acp.permissionPending')}
               />
             )}
-            <span
+            {/*<span
               data-testid={`thread-status-${item.id}`}
               style={{ fontSize: 11, marginRight: 4, color: '#888', flexShrink: 0 }}
             >
               [{item.threadStatus ?? (item.loading ? 'working' : 'idle')}]
-            </span>
+            </span>*/}
             {!historyTitleEditable?.[item.id] ? (
               <span id={`chat-history-item-title-${item.id}`} className={styles.chat_history_item_title}>
                 {item.title || 'Untitled'}

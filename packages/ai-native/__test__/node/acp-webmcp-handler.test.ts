@@ -91,14 +91,31 @@ describe('AcpWebMcpHandler', () => {
   });
 
   describe('handleExtMethod("_opensumi/webmcp/list_groups")', () => {
-    it('should return all groups with loaded state', async () => {
+    it('should return all groups with tools details', async () => {
       await handler.ensureInitialized();
       const result = await handler.handleExtMethod('_opensumi/webmcp/list_groups', {});
 
       expect(result).toEqual({
         groups: [
-          { name: 'file', description: 'File operations', toolCount: 2, loaded: true },
-          { name: 'git', description: 'Git operations', toolCount: 1, loaded: false },
+          {
+            name: 'file',
+            description: 'File operations',
+            defaultLoaded: true,
+            loaded: true,
+            tools: [
+              { method: '_opensumi/file/read', description: 'Read file', inputSchema: { type: 'object', properties: { path: { type: 'string' } } } },
+              { method: '_opensumi/file/write', description: 'Write file', inputSchema: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' } } } },
+            ],
+          },
+          {
+            name: 'git',
+            description: 'Git operations',
+            defaultLoaded: false,
+            loaded: false,
+            tools: [
+              { method: '_opensumi/git/status', description: 'Git status', inputSchema: { type: 'object', properties: {} } },
+            ],
+          },
         ],
       });
     });
@@ -112,13 +129,15 @@ describe('AcpWebMcpHandler', () => {
   });
 
   describe('handleExtMethod("_opensumi/webmcp/load_group")', () => {
-    it('should load a non-default group and return its methods', async () => {
+    it('should load a non-default group and return its tools', async () => {
       await handler.ensureInitialized();
       const result = await handler.handleExtMethod('_opensumi/webmcp/load_group', { name: 'git' });
 
       expect(result).toEqual({
         group: 'git',
-        methods: ['_opensumi/git/status'],
+        tools: [
+          { method: '_opensumi/git/status', description: 'Git status', inputSchema: { type: 'object', properties: {} } },
+        ],
         totalLoadedToolCount: 3,
       });
     });
@@ -130,7 +149,10 @@ describe('AcpWebMcpHandler', () => {
 
       expect(result).toEqual({
         group: 'file',
-        methods: ['_opensumi/file/read', '_opensumi/file/write'],
+        tools: [
+          { method: '_opensumi/file/read', description: 'Read file', inputSchema: { type: 'object', properties: { path: { type: 'string' } } } },
+          { method: '_opensumi/file/write', description: 'Write file', inputSchema: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' } } } },
+        ],
         totalLoadedToolCount: 2,
       });
     });
@@ -292,8 +314,15 @@ describe('AcpWebMcpHandler', () => {
       expect(meta).toEqual({
         opensumi: {
           version: '1.0',
-          webmcpGroups: ['file', 'git'],
-          defaultLoadedGroups: ['file'],
+          webmcp: {
+            methods: [
+              '_opensumi/webmcp/list_groups',
+              '_opensumi/webmcp/load_group',
+              '_opensumi/webmcp/unload_group',
+            ],
+            groups: ['file', 'git'],
+            defaultLoadedGroups: ['file'],
+          },
         },
       });
     });
@@ -304,8 +333,15 @@ describe('AcpWebMcpHandler', () => {
       expect(meta).toEqual({
         opensumi: {
           version: '1.0',
-          webmcpGroups: [],
-          defaultLoadedGroups: [],
+          webmcp: {
+            methods: [
+              '_opensumi/webmcp/list_groups',
+              '_opensumi/webmcp/load_group',
+              '_opensumi/webmcp/unload_group',
+            ],
+            groups: [],
+            defaultLoadedGroups: [],
+          },
         },
       });
     });

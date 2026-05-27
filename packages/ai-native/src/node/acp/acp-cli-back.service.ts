@@ -233,15 +233,15 @@ export class AcpCliBackService implements IAIBackService {
       });
 
       agentStream.onData((update: AgentUpdate) => {
-        this.logger.log(`[ACP Back] agentStream onData: type=${update.type}`);
+        // this.logger.log(`[ACP Back] agentStream onData: type=${update.type}`);
         const progress = this.convertAgentUpdateToChatProgress(update);
         if (progress) {
           stream.emitData(progress);
         }
         if (update.threadStatus) {
-          this.logger.log(
-            `[ACP Back] agentStream threadStatus via stream: sessionId=${request.sessionId}, status=${update.threadStatus}`,
-          );
+          // this.logger.log(
+          //   `[ACP Back] agentStream threadStatus via stream: sessionId=${request.sessionId}, status=${update.threadStatus}`,
+          // );
           stream.emitData({
             kind: 'threadStatus',
             threadStatus: update.threadStatus,

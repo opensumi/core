@@ -738,19 +738,35 @@ export class AcpThread extends Disposable implements IAcpThread {
       },
 
       async extMethod(method: string, params: Record<string, unknown>): Promise<Record<string, unknown>> {
-        if (method.startsWith('_opensumi/') && self.webmcpHandler) {
-          return self.webmcpHandler.handleExtMethod(method, params);
+        self.logger?.log(
+          `[AcpThread:${self.threadId}] extMethod() — method=${method}, params=${JSON.stringify(params)}`,
+        );
+        if (method.startsWith('_opensumi/')) {
+          if (self.webmcpHandler) {
+            const result = await self.webmcpHandler.handleExtMethod(method, params);
+            self.logger?.log(
+              `[AcpThread:${self.threadId}] extMethod() — method=${method}, result=${JSON.stringify(result)}`,
+            );
+            return result;
+          }
+          self.logger?.warn(
+            `[AcpThread:${self.threadId}] extMethod() — method=${method}, WebMCP handler not available`,
+          );
+          throw Object.assign(new Error(`Method not found: ${method} (WebMCP not available)`), { code: -32601 });
         }
-        self.logger?.warn(`[AcpThread:${self.threadId}] extMethod called: ${method} — not implemented`);
-        return {};
+        self.logger?.warn(`[AcpThread:${self.threadId}] extMethod() — method=${method} not implemented`);
+        throw Object.assign(new Error(`Method not found: ${method}`), { code: -32601 });
       },
 
       async extNotification(method: string, params: Record<string, unknown>): Promise<void> {
+        self.logger?.log(
+          `[AcpThread:${self.threadId}] extNotification() — method=${method}, params=${JSON.stringify(params)}`,
+        );
         if (method.startsWith('_opensumi/') && self.webmcpHandler) {
           self.webmcpHandler.handleExtNotification(method, params);
           return;
         }
-        self.logger?.debug(`[AcpThread:${self.threadId}] extNotification: ${method}`, params);
+        self.logger?.debug(`[AcpThread:${self.threadId}] extNotification: ${method} — unhandled`, params);
       },
     };
   }
@@ -763,6 +779,12 @@ export class AcpThread extends Disposable implements IAcpThread {
       `[AcpThread:${this.threadId}] initialize() — agent=${config.command || this.options.command}, cwd=${config.cwd}`,
     );
     await this.ensureSdkConnection();
+
+    // Eagerly initialize WebMCP handler so group definitions are available
+    // for the capability metadata sent in initParams.
+    if (this.webmcpHandler) {
+      await this.webmcpHandler.ensureInitialized();
+    }
 
     const initParams: InitializeRequest = {
       protocolVersion: ACP_PROTOCOL_VERSION,
@@ -788,6 +810,12 @@ export class AcpThread extends Disposable implements IAcpThread {
         ...((config as any).clientCapabilities || {}),
       };
     }
+
+    this.logger?.log(
+      `[AcpThread:${this.threadId}] initialize() — initParams.clientCapabilities._meta=${JSON.stringify(
+        initParams.clientCapabilities?._meta ?? {},
+      )}`,
+    );
 
     const response: InitializeResponse = await this._connection.initialize(initParams);
 
@@ -1051,7 +1079,7 @@ export class AcpThread extends Disposable implements IAcpThread {
       return;
     }
 
-    this.logger?.log(`[AcpThread:${this.threadId}] handleNotification() — ${update.sessionUpdate}`);
+    // this.logger?.log(`[AcpThread:${this.threadId}] handleNotification() — ${update.sessionUpdate}`);
 
     switch (update.sessionUpdate) {
       case 'user_message_chunk': {
