@@ -212,7 +212,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
                 title={localize('aiNative.acp.permissionPending')}
               />
             )}
-            {/*<span
+            {/* <span
               data-testid={`thread-status-${item.id}`}
               style={{ fontSize: 11, marginRight: 4, color: '#888', flexShrink: 0 }}
             >

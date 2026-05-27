@@ -103,8 +103,16 @@ describe('AcpWebMcpHandler', () => {
             defaultLoaded: true,
             loaded: true,
             tools: [
-              { method: '_opensumi/file/read', description: 'Read file', inputSchema: { type: 'object', properties: { path: { type: 'string' } } } },
-              { method: '_opensumi/file/write', description: 'Write file', inputSchema: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' } } } },
+              {
+                method: '_opensumi/file/read',
+                description: 'Read file',
+                inputSchema: { type: 'object', properties: { path: { type: 'string' } } },
+              },
+              {
+                method: '_opensumi/file/write',
+                description: 'Write file',
+                inputSchema: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' } } },
+              },
             ],
           },
           {
@@ -113,7 +121,11 @@ describe('AcpWebMcpHandler', () => {
             defaultLoaded: false,
             loaded: false,
             tools: [
-              { method: '_opensumi/git/status', description: 'Git status', inputSchema: { type: 'object', properties: {} } },
+              {
+                method: '_opensumi/git/status',
+                description: 'Git status',
+                inputSchema: { type: 'object', properties: {} },
+              },
             ],
           },
         ],
@@ -136,7 +148,11 @@ describe('AcpWebMcpHandler', () => {
       expect(result).toEqual({
         group: 'git',
         tools: [
-          { method: '_opensumi/git/status', description: 'Git status', inputSchema: { type: 'object', properties: {} } },
+          {
+            method: '_opensumi/git/status',
+            description: 'Git status',
+            inputSchema: { type: 'object', properties: {} },
+          },
         ],
         totalLoadedToolCount: 3,
       });
@@ -150,8 +166,16 @@ describe('AcpWebMcpHandler', () => {
       expect(result).toEqual({
         group: 'file',
         tools: [
-          { method: '_opensumi/file/read', description: 'Read file', inputSchema: { type: 'object', properties: { path: { type: 'string' } } } },
-          { method: '_opensumi/file/write', description: 'Write file', inputSchema: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' } } } },
+          {
+            method: '_opensumi/file/read',
+            description: 'Read file',
+            inputSchema: { type: 'object', properties: { path: { type: 'string' } } },
+          },
+          {
+            method: '_opensumi/file/write',
+            description: 'Write file',
+            inputSchema: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' } } },
+          },
         ],
         totalLoadedToolCount: 2,
       });
@@ -315,11 +339,7 @@ describe('AcpWebMcpHandler', () => {
         opensumi: {
           version: '1.0',
           webmcp: {
-            methods: [
-              '_opensumi/webmcp/list_groups',
-              '_opensumi/webmcp/load_group',
-              '_opensumi/webmcp/unload_group',
-            ],
+            methods: ['_opensumi/webmcp/list_groups', '_opensumi/webmcp/load_group', '_opensumi/webmcp/unload_group'],
             groups: ['file', 'git'],
             defaultLoadedGroups: ['file'],
           },
@@ -334,11 +354,7 @@ describe('AcpWebMcpHandler', () => {
         opensumi: {
           version: '1.0',
           webmcp: {
-            methods: [
-              '_opensumi/webmcp/list_groups',
-              '_opensumi/webmcp/load_group',
-              '_opensumi/webmcp/unload_group',
-            ],
+            methods: ['_opensumi/webmcp/list_groups', '_opensumi/webmcp/load_group', '_opensumi/webmcp/unload_group'],
             groups: [],
             defaultLoadedGroups: [],
           },

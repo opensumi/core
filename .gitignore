@@ -103,3 +103,4 @@ tools/workspace
 
 # Claude Code
 .claude/
+.claudebak

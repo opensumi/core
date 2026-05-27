@@ -73,7 +73,9 @@ function createMockDialogManager(initialDialogs: any[] = []) {
       listeners.forEach((fn) => fn([]));
     }),
     getDialogsForSession: jest.fn((sessionId: string | undefined) => {
-      if (!sessionId) return [];
+      if (!sessionId) {
+        return [];
+      }
       return dialogs.filter((d) => d.params.sessionId === sessionId);
     }),
     clearDialogsForSession: jest.fn(),
@@ -157,9 +159,7 @@ describe('PermissionDialogWidget - Rendering', () => {
   });
 
   it('renders dialog with all data-testid attributes', () => {
-    dialogManager = createMockDialogManager([
-      { requestId: editDialogParams.requestId, params: editDialogParams },
-    ]);
+    dialogManager = createMockDialogManager([{ requestId: editDialogParams.requestId, params: editDialogParams }]);
     act(() => {
       render(React.createElement(PermissionDialogWidget, { dialogManager, bottom: 40 }), container);
     });
@@ -172,9 +172,7 @@ describe('PermissionDialogWidget - Rendering', () => {
   });
 
   it('renders option buttons with indexed data-testid', () => {
-    dialogManager = createMockDialogManager([
-      { requestId: editDialogParams.requestId, params: editDialogParams },
-    ]);
+    dialogManager = createMockDialogManager([{ requestId: editDialogParams.requestId, params: editDialogParams }]);
     act(() => {
       render(React.createElement(PermissionDialogWidget, { dialogManager, bottom: 40 }), container);
     });
@@ -185,9 +183,7 @@ describe('PermissionDialogWidget - Rendering', () => {
   });
 
   it('renders correct title for edit kind', () => {
-    dialogManager = createMockDialogManager([
-      { requestId: editDialogParams.requestId, params: editDialogParams },
-    ]);
+    dialogManager = createMockDialogManager([{ requestId: editDialogParams.requestId, params: editDialogParams }]);
     act(() => {
       render(React.createElement(PermissionDialogWidget, { dialogManager, bottom: 40 }), container);
     });
@@ -210,9 +206,7 @@ describe('PermissionDialogWidget - Rendering', () => {
   });
 
   it('shows option names from params', () => {
-    dialogManager = createMockDialogManager([
-      { requestId: editDialogParams.requestId, params: editDialogParams },
-    ]);
+    dialogManager = createMockDialogManager([{ requestId: editDialogParams.requestId, params: editDialogParams }]);
     act(() => {
       render(React.createElement(PermissionDialogWidget, { dialogManager, bottom: 40 }), container);
     });
@@ -266,9 +260,7 @@ describe('PermissionDialogWidget - Keyboard Navigation', () => {
   }
 
   it('ArrowDown moves focus to next option', () => {
-    dialogManager = createMockDialogManager([
-      { requestId: editDialogParams.requestId, params: editDialogParams },
-    ]);
+    dialogManager = createMockDialogManager([{ requestId: editDialogParams.requestId, params: editDialogParams }]);
     act(() => {
       render(React.createElement(PermissionDialogWidget, { dialogManager, bottom: 40 }), container);
     });
@@ -285,9 +277,7 @@ describe('PermissionDialogWidget - Keyboard Navigation', () => {
   });
 
   it('ArrowUp at first option stays at first', () => {
-    dialogManager = createMockDialogManager([
-      { requestId: editDialogParams.requestId, params: editDialogParams },
-    ]);
+    dialogManager = createMockDialogManager([{ requestId: editDialogParams.requestId, params: editDialogParams }]);
     act(() => {
       render(React.createElement(PermissionDialogWidget, { dialogManager, bottom: 40 }), container);
     });
@@ -301,9 +291,7 @@ describe('PermissionDialogWidget - Keyboard Navigation', () => {
   });
 
   it('ArrowDown at last option stays at last', () => {
-    dialogManager = createMockDialogManager([
-      { requestId: editDialogParams.requestId, params: editDialogParams },
-    ]);
+    dialogManager = createMockDialogManager([{ requestId: editDialogParams.requestId, params: editDialogParams }]);
     act(() => {
       render(React.createElement(PermissionDialogWidget, { dialogManager, bottom: 40 }), container);
     });
@@ -325,9 +313,7 @@ describe('PermissionDialogWidget - Keyboard Navigation', () => {
   });
 
   it('Enter triggers user decision on focused option', () => {
-    dialogManager = createMockDialogManager([
-      { requestId: editDialogParams.requestId, params: editDialogParams },
-    ]);
+    dialogManager = createMockDialogManager([{ requestId: editDialogParams.requestId, params: editDialogParams }]);
     act(() => {
       render(React.createElement(PermissionDialogWidget, { dialogManager, bottom: 40 }), container);
     });
@@ -341,18 +327,12 @@ describe('PermissionDialogWidget - Keyboard Navigation', () => {
       fireEventKeyDown('Enter');
     });
 
-    expect(mockPermissionBridge.handleUserDecision).toHaveBeenCalledWith(
-      'req-edit-1',
-      'allow_always',
-      'allow_always',
-    );
+    expect(mockPermissionBridge.handleUserDecision).toHaveBeenCalledWith('req-edit-1', 'allow_always', 'allow_always');
     expect(dialogManager.removeDialog).toHaveBeenCalledWith('req-edit-1');
   });
 
   it('Escape triggers dialog close', () => {
-    dialogManager = createMockDialogManager([
-      { requestId: editDialogParams.requestId, params: editDialogParams },
-    ]);
+    dialogManager = createMockDialogManager([{ requestId: editDialogParams.requestId, params: editDialogParams }]);
     act(() => {
       render(React.createElement(PermissionDialogWidget, { dialogManager, bottom: 40 }), container);
     });
@@ -366,9 +346,7 @@ describe('PermissionDialogWidget - Keyboard Navigation', () => {
   });
 
   it('close button click triggers dialog close', () => {
-    dialogManager = createMockDialogManager([
-      { requestId: editDialogParams.requestId, params: editDialogParams },
-    ]);
+    dialogManager = createMockDialogManager([{ requestId: editDialogParams.requestId, params: editDialogParams }]);
     act(() => {
       render(React.createElement(PermissionDialogWidget, { dialogManager, bottom: 40 }), container);
     });
@@ -383,9 +361,7 @@ describe('PermissionDialogWidget - Keyboard Navigation', () => {
   });
 
   it('mouse enter changes focused option', () => {
-    dialogManager = createMockDialogManager([
-      { requestId: editDialogParams.requestId, params: editDialogParams },
-    ]);
+    dialogManager = createMockDialogManager([{ requestId: editDialogParams.requestId, params: editDialogParams }]);
     act(() => {
       render(React.createElement(PermissionDialogWidget, { dialogManager, bottom: 40 }), container);
     });

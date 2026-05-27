@@ -1,8 +1,5 @@
 import type { AcpWebMcpCallerService } from './acp-webmcp-caller.service';
-import type {
-  WebMcpGroupDef,
-  WebMcpToolResult,
-} from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
+import type { WebMcpGroupDef, WebMcpToolResult } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 export class AcpWebMcpHandler {
   private loadedGroups = new Set<string>();
@@ -20,8 +17,12 @@ export class AcpWebMcpHandler {
    * Safe to call multiple times — subsequent calls await the same promise.
    */
   ensureInitialized(): Promise<void> {
-    if (this.groupDefs !== null) {return Promise.resolve();}
-    if (this.initPromise) {return this.initPromise;}
+    if (this.groupDefs !== null) {
+      return Promise.resolve();
+    }
+    if (this.initPromise) {
+      return this.initPromise;
+    }
 
     this.initPromise = this.doInitialize();
     return this.initPromise;
@@ -59,19 +60,29 @@ export class AcpWebMcpHandler {
     }
     if (method === '_opensumi/webmcp/load_group') {
       const result = this.loadGroup(params);
-      this.logger?.debug?.(`[AcpWebMcpHandler] load_group(${params.name}) — loaded=${!(result as any).error}, totalLoadedToolCount=${(result as any).totalLoadedToolCount}`);
+      this.logger?.debug?.(
+        `[AcpWebMcpHandler] load_group(${params.name}) — loaded=${!(result as any).error}, totalLoadedToolCount=${
+          (result as any).totalLoadedToolCount
+        }`,
+      );
       return result;
     }
     if (method === '_opensumi/webmcp/unload_group') {
       const result = this.unloadGroup(params);
-      this.logger?.debug?.(`[AcpWebMcpHandler] unload_group(${params.name}) — unloadedMethods=${JSON.stringify((result as any).unloadedMethods)}, totalLoadedToolCount=${(result as any).totalLoadedToolCount}`);
+      this.logger?.debug?.(
+        `[AcpWebMcpHandler] unload_group(${params.name}) — unloadedMethods=${JSON.stringify(
+          (result as any).unloadedMethods,
+        )}, totalLoadedToolCount=${(result as any).totalLoadedToolCount}`,
+      );
       return result;
     }
 
     // Group tool methods: _opensumi/{group}/{action}
     if (method.startsWith('_opensumi/')) {
       const result = await this.executeGroupTool(method, params);
-      this.logger?.debug?.(`[AcpWebMcpHandler] executeGroupTool(${method}) — success=${(result as any).error ? false : true}`);
+      this.logger?.debug?.(
+        `[AcpWebMcpHandler] executeGroupTool(${method}) — success=${(result as any).error ? false : true}`,
+      );
       return result;
     }
 
@@ -149,7 +160,11 @@ export class AcpWebMcpHandler {
     const toolAction = parts[2];
 
     if (!this.loadedGroups.has(groupName)) {
-      this.logger?.warn?.(`[AcpWebMcpHandler] executeGroupTool(${method}) — group "${groupName}" not loaded. Loaded groups: ${[...this.loadedGroups].join(',')}`);
+      this.logger?.warn?.(
+        `[AcpWebMcpHandler] executeGroupTool(${method}) — group "${groupName}" not loaded. Loaded groups: ${[
+          ...this.loadedGroups,
+        ].join(',')}`,
+      );
       return {
         success: false,
         error: 'TOOL_NOT_LOADED',
@@ -158,9 +173,13 @@ export class AcpWebMcpHandler {
     }
 
     try {
-      this.logger?.debug?.(`[AcpWebMcpHandler] executeGroupTool() — calling browser: group=${groupName}, action=${toolAction}`);
+      this.logger?.debug?.(
+        `[AcpWebMcpHandler] executeGroupTool() — calling browser: group=${groupName}, action=${toolAction}`,
+      );
       const result = await this.caller.executeTool(groupName, toolAction, params);
-      this.logger?.debug?.(`[AcpWebMcpHandler] executeGroupTool() — browser returned: group=${groupName}, action=${toolAction}, success=${result.success}`);
+      this.logger?.debug?.(
+        `[AcpWebMcpHandler] executeGroupTool() — browser returned: group=${groupName}, action=${toolAction}, success=${result.success}`,
+      );
       return result as unknown as Record<string, unknown>;
     } catch (err) {
       this.logger?.warn?.(`[AcpWebMcpHandler] executeGroupTool(${method}) — execution error:`, err);
@@ -173,11 +192,7 @@ export class AcpWebMcpHandler {
       opensumi: {
         version: '1.0',
         webmcp: {
-          methods: [
-            '_opensumi/webmcp/list_groups',
-            '_opensumi/webmcp/load_group',
-            '_opensumi/webmcp/unload_group',
-          ],
+          methods: ['_opensumi/webmcp/list_groups', '_opensumi/webmcp/load_group', '_opensumi/webmcp/unload_group'],
           groups: (this.groupDefs ?? []).map((g) => g.name),
           defaultLoadedGroups: (this.groupDefs ?? []).filter((g) => g.defaultLoaded).map((g) => g.name),
         },

@@ -10,7 +10,7 @@
  * PHASE 1: Register core terminal operations with hand-crafted schemas.
  * Phase 2: Later, add more granular tools and refine descriptions.
  */
-import { Injector, IDisposable } from '@opensumi/di';
+import { IDisposable, Injector } from '@opensumi/di';
 import { ensureModelContext } from '@opensumi/ide-core-browser/lib/webmcp-polyfill';
 
 import { ITerminalService } from '../common';
@@ -32,10 +32,18 @@ function tryGetService<T>(container: Injector, token: symbol): T | null {
 function classifyError(err: unknown): string {
   if (typeof err === 'object' && err !== null) {
     const name = (err as Error).name || '';
-    if (name.includes('Timeout') || name.includes('timeout')) return 'RPC_TIMEOUT';
-    if (name.includes('Injector') || name.includes('DI')) return 'DI_ERROR';
-    if (name.includes('Permission') || name.includes('denied')) return 'PERMISSION_DENIED';
-    if (name.includes('Abort')) return 'ABORTED';
+    if (name.includes('Timeout') || name.includes('timeout')) {
+      return 'RPC_TIMEOUT';
+    }
+    if (name.includes('Injector') || name.includes('DI')) {
+      return 'DI_ERROR';
+    }
+    if (name.includes('Permission') || name.includes('denied')) {
+      return 'PERMISSION_DENIED';
+    }
+    if (name.includes('Abort')) {
+      return 'ABORTED';
+    }
   }
   return 'EXECUTION_ERROR';
 }
@@ -364,8 +372,7 @@ export function registerTerminalWebMCPTools(container: Injector): IDisposable {
   ctx.registerTool(
     {
       name: 'terminal_resize',
-      description:
-        'Resize a terminal session to the specified number of columns (width) and rows (height).',
+      description: 'Resize a terminal session to the specified number of columns (width) and rows (height).',
       inputSchema: {
         type: 'object',
         properties: {
