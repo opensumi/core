@@ -61,11 +61,13 @@ import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-nativ
 import { INodeLogger } from '@opensumi/ide-core-node';
 
 import { resolveAgentSpawnConfig } from './acp-spawn-config';
+import { AcpWebMcpHandler } from './acp-webmcp-handler';
 import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './handlers/file-system.handler';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
 import { PermissionRoutingService, PermissionRoutingServiceToken } from './permission-routing.service';
 
 import type { AgentUpdate, SimpleToolCall } from './acp-update-types';
+import type { AcpWebMcpCallerService } from './acp-webmcp-caller.service';
 
 // ---------------------------------------------------------------------------
 // Polyfill Web Streams for Node 16
@@ -304,6 +306,7 @@ export interface AcpThreadOptions {
   terminalHandler: AcpTerminalHandler;
   permissionRouting: PermissionRoutingService;
   logger: INodeLogger;
+  webmcpCallerService?: AcpWebMcpCallerService;
 }
 
 // ---------------------------------------------------------------------------
@@ -397,6 +400,9 @@ export class AcpThread extends Disposable implements IAcpThread {
   // SDK
   private _connection: any = null; // ClientSideConnection instance
   private _connected = false;
+
+  // WebMCP handler
+  private webmcpHandler: AcpWebMcpHandler | null = null;
 
   // Permission request tracking
   private _pendingPermissionRequests = new Map<
@@ -633,6 +639,13 @@ export class AcpThread extends Disposable implements IAcpThread {
     this._connection = new ClientSideConnection((_agent: any) => clientImpl, stream);
 
     this._connected = true;
+
+    // Initialize WebMCP handler if caller service is available
+    const webmcpCaller = this.options.webmcpCallerService;
+    if (webmcpCaller) {
+      this.webmcpHandler = new AcpWebMcpHandler(webmcpCaller, this.logger);
+      await this.webmcpHandler.initialize();
+    }
   }
 
   private createClientImpl(): any {
@@ -722,11 +735,18 @@ export class AcpThread extends Disposable implements IAcpThread {
       },
 
       async extMethod(method: string, params: Record<string, unknown>): Promise<Record<string, unknown>> {
+        if (method.startsWith('_opensumi/') && self.webmcpHandler) {
+          return self.webmcpHandler.handleExtMethod(method, params);
+        }
         self.logger?.warn(`[AcpThread:${self.threadId}] extMethod called: ${method} — not implemented`);
         return {};
       },
 
       async extNotification(method: string, params: Record<string, unknown>): Promise<void> {
+        if (method.startsWith('_opensumi/') && self.webmcpHandler) {
+          self.webmcpHandler.handleExtNotification(method, params);
+          return;
+        }
         self.logger?.debug(`[AcpThread:${self.threadId}] extNotification: ${method}`, params);
       },
     };
@@ -749,6 +769,7 @@ export class AcpThread extends Disposable implements IAcpThread {
           writeTextFile: true,
         },
         terminal: true,
+        _meta: this.webmcpHandler?.getCapabilityMeta() ?? {},
       },
       clientInfo: {
         name: 'opensumi',
