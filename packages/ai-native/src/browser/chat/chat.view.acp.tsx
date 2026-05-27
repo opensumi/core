@@ -20,7 +20,6 @@ import {
   CancellationToken,
   CancellationTokenSource,
   ChatFeatureRegistryToken,
-  ChatHistoryRegistryToken,
   ChatInputRegistryToken,
   ChatMessageRole,
   ChatRenderRegistryToken,
@@ -51,11 +50,11 @@ import {
 } from '../../common/llm-context';
 import { CodeBlockData } from '../../common/types';
 import { cleanAttachedTextWrapper } from '../../common/utils';
+import ChatHistory, { IChatHistoryItem } from '../acp/components/AcpChatHistory';
 import { AcpChatViewWrapper } from '../acp/components/AcpChatViewWrapper';
 import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
 import { FileChange, FileListDisplay } from '../components/ChangeList';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
-import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
@@ -987,8 +986,6 @@ export function DefaultChatViewHeaderACP({
   const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
-  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
-  const chatHistoryRegistry = useInjectable<IChatHistoryRegistry>(ChatHistoryRegistryToken);
   const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
@@ -1156,40 +1153,17 @@ export function DefaultChatViewHeaderACP({
 
   return (
     <div className={styles.header}>
-      {(() => {
-        // 1. 优先使用 ChatHistoryRegistry 注册的历史组件（按优先级 + when 条件匹配）
-        const activeHistory = chatHistoryRegistry.getActiveChatHistory();
-        if (activeHistory) {
-          const ChatHistoryComponent = activeHistory.component;
-          return (
-            <ChatHistoryComponent
-              className={styles.chat_history}
-              currentId={aiChatService.sessionModel?.sessionId}
-              title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
-              historyList={historyList}
-              pendingPermissionBadge={pendingPermissionBadge}
-              onNewChat={handleNewChat}
-              onHistoryItemSelect={handleHistoryItemSelect}
-              onHistoryItemDelete={handleHistoryItemDelete}
-              onHistoryItemChange={() => {}}
-            />
-          );
-        }
-        // 2. 降级使用默认 ChatHistory 组件
-        return (
-          <ChatHistory
-            className={styles.chat_history}
-            currentId={aiChatService.sessionModel?.sessionId}
-            title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
-            historyList={historyList}
-            pendingPermissionBadge={pendingPermissionBadge}
-            onNewChat={handleNewChat}
-            onHistoryItemSelect={handleHistoryItemSelect}
-            onHistoryItemDelete={handleHistoryItemDelete}
-            onHistoryItemChange={() => {}}
-          />
-        );
-      })()}
+      <ChatHistory
+        className={styles.chat_history}
+        currentId={aiChatService.sessionModel?.sessionId}
+        title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
+        historyList={historyList}
+        pendingPermissionBadge={pendingPermissionBadge}
+        onNewChat={handleNewChat}
+        onHistoryItemSelect={handleHistoryItemSelect}
+        onHistoryItemDelete={handleHistoryItemDelete}
+        onHistoryItemChange={() => {}}
+      />
       <Popover
         overlayClassName={styles.popover_icon}
         id={'ai-chat-header-clear'}

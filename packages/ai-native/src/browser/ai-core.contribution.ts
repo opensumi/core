@@ -52,7 +52,6 @@ import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/render
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
-  ChatHistoryRegistryToken,
   ChatInputRegistryToken,
   ChatRenderRegistryToken,
   ChatServiceToken,
@@ -118,13 +117,11 @@ import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatService } from './chat/chat.api.service';
-import { IChatHistoryRegistry } from './chat/chat.history.registry';
 import { IChatInputRegistry } from './chat/chat.input.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { AIChatView } from './chat/chat.view';
 import { AIChatViewACP } from './chat/chat.view.acp';
 import { IChatViewRegistry } from './chat/chat.view.registry';
-import ChatHistoryACP from './components/ChatHistory.acp';
 import { ChatInput } from './components/ChatInput';
 import { ChatMentionInput } from './components/ChatMentionInput';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
@@ -234,9 +231,6 @@ export class AINativeBrowserContribution
 
   @Autowired(ChatViewRegistryToken)
   private readonly chatViewRegistry: IChatViewRegistry;
-
-  @Autowired(ChatHistoryRegistryToken)
-  private readonly chatHistoryRegistry: IChatHistoryRegistry;
 
   @Autowired(ResolveConflictRegistryToken)
   private readonly resolveConflictRegistry: IResolveConflictRegistry;
@@ -666,13 +660,6 @@ export class AINativeBrowserContribution
     this.chatViewRegistry.registerChatView({
       id: 'acp-chat-view',
       component: AIChatViewACP,
-      priority: 200,
-      when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
-    });
-
-    this.chatHistoryRegistry.registerChatHistory({
-      id: 'acp-chat-history',
-      component: ChatHistoryACP,
       priority: 200,
       when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
     });

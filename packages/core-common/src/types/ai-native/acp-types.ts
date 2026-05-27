@@ -147,3 +147,42 @@ export const AcpThreadStatusServicePath = 'AcpThreadStatusServicePath';
 export interface IAcpThreadStatusService {
   $onThreadStatusChange(sessionId: string, status: string): Promise<void>;
 }
+
+// WebMCP Group types for ACP extension methods
+export const AcpWebMcpBridgePath = 'AcpWebMcpBridgePath';
+
+export interface WebMcpToolDef {
+  method: string; // "_opensumi/file/read"
+  description: string;
+  inputSchema: Record<string, unknown>;
+}
+
+export interface WebMcpGroupDef {
+  name: string;
+  description: string;
+  defaultLoaded: boolean;
+  tools: WebMcpToolDef[];
+}
+
+export interface WebMcpToolResult {
+  success: boolean;
+  result?: unknown;
+  error?: string; // machine-readable error code
+  details?: string; // human-readable error description
+}
+
+export interface WebMcpGroupInfo {
+  name: string;
+  description: string;
+  toolCount: number;
+  loaded: boolean;
+}
+
+export interface IAcpWebMcpBridgeService {
+  $getGroupDefinitions(): Promise<WebMcpGroupDef[]>;
+  $executeTool(group: string, tool: string, params: Record<string, unknown>): Promise<WebMcpToolResult>;
+}
+
+export const AcpWebMcpCallerServiceToken = Symbol('AcpWebMcpCallerServiceToken');
+export const AcpWebMcpHandlerToken = Symbol('AcpWebMcpHandlerToken');
+export const WebMcpGroupRegistryToken = Symbol('WebMcpGroupRegistryToken');
