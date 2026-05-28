@@ -293,8 +293,12 @@ export class AcpPermissionBridgeService {
 
   /**
    * Whether a specific session has any pending permission requests.
+   * Accepts both `acp:<id>` and raw `<id>` — the pending index is keyed
+   * by raw id (as supplied by the agent), so callers passing the ChatModel
+   * sessionId (prefixed) would otherwise silently miss.
    */
   hasPendingForSession(sessionId: string): boolean {
-    return (this.pendingBySessionId.get(sessionId)?.size ?? 0) > 0;
+    const rawId = sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
+    return (this.pendingBySessionId.get(rawId)?.size ?? 0) > 0;
   }
 }

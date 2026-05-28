@@ -187,7 +187,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     const renderHistoryItem = useCallback(
       (item: IChatHistoryItem) => (
         <div
-          key={item.updatedAt}
+          key={item.id}
           data-testid={`chat-history-item-${item.id}`}
           className={cls(
             styles.chat_history_item,
