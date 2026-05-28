@@ -10,6 +10,8 @@ import { IMCPServer } from '../common/mcp-server-manager';
 import { SSEClientTransportOptions } from '../common/types';
 import { toClaudeToolName } from '../common/utils';
 
+import { summarizeMcpTools } from './mcp-log-utils';
+
 global.EventSource = EventSource as any;
 export class SSEMCPServer implements IMCPServer {
   private name: string;
@@ -114,8 +116,15 @@ export class SSEMCPServer implements IMCPServer {
       ...originalTools,
       tools: sanitizedToolsArray,
     };
-    this.logger?.log(`Got tools from MCP server "${this.name}" with url "${this.url}":`, sanitizedTools);
-    this.logger?.log('Tool name mapping: ', Object.fromEntries(this.toolNameMap));
+    this.logger?.log(
+      `Got tools from MCP server "${this.name}" with url "${this.url}": ${JSON.stringify({
+        ...summarizeMcpTools(sanitizedTools),
+        renamedTools: this.toolNameMap.size,
+      })}`,
+    );
+    if (this.toolNameMap.size > 0) {
+      this.logger?.debug?.('Tool name mapping: ', Object.fromEntries(this.toolNameMap));
+    }
     return sanitizedTools;
   }
 

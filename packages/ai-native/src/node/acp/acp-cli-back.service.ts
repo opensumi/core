@@ -226,6 +226,7 @@ export class AcpCliBackService implements IAIBackService {
       this.logger.log(`[ACP Back] setupAgentStream: sending message, prompt=${input.slice(0, 100)}...`);
 
       const agentStream = this.agentService.sendMessage(request, config);
+      const toolCallCache = new Map<string, IChatToolCall>();
 
       cancelToken?.onCancellationRequested(async () => {
         await this.agentService.cancelRequest(sessionId);
@@ -234,7 +235,7 @@ export class AcpCliBackService implements IAIBackService {
 
       agentStream.onData((update: AgentUpdate) => {
         // this.logger.log(`[ACP Back] agentStream onData: type=${update.type}`);
-        const progress = this.convertAgentUpdateToChatProgress(update);
+        const progress = this.convertAgentUpdateToChatProgress(update, toolCallCache);
         if (progress) {
           stream.emitData(progress);
         }
@@ -263,7 +264,10 @@ export class AcpCliBackService implements IAIBackService {
     }
   }
 
-  private convertAgentUpdateToChatProgress(update: AgentUpdate): IChatProgress | null {
+  private convertAgentUpdateToChatProgress(
+    update: AgentUpdate,
+    toolCallCache: Map<string, IChatToolCall>,
+  ): IChatProgress | null {
     switch (update.type) {
       case 'thought':
         return {
@@ -281,9 +285,13 @@ export class AcpCliBackService implements IAIBackService {
           type: 'function',
           function: {
             name: update.toolCall?.name || update.content,
-            arguments: update.toolCall?.input ? JSON.stringify(update.toolCall.input) : '',
+            arguments: update.toolCall?.input !== undefined ? JSON.stringify(update.toolCall.input) ?? '' : '',
           },
+          state: 'complete',
         };
+        if (toolCall.id) {
+          toolCallCache.set(toolCall.id, toolCall);
+        }
         return {
           kind: 'toolCall',
           content: toolCall,
@@ -297,8 +305,51 @@ export class AcpCliBackService implements IAIBackService {
           content: statusLabel,
         } as IChatContent;
       }
+      case 'tool_call_args': {
+        const toolCallId = update.toolCall?.toolCallId;
+        const cached = toolCallId ? toolCallCache.get(toolCallId) : undefined;
+        if (!toolCallId || !cached) {
+          return null;
+        }
+        const updated: IChatToolCall = {
+          ...cached,
+          function: {
+            ...cached.function,
+            arguments: JSON.stringify(update.toolCall?.input) ?? '',
+          },
+        };
+        toolCallCache.set(toolCallId, updated);
+        return {
+          kind: 'toolCall',
+          content: updated,
+        } as IChatToolContent;
+      }
       case 'tool_result': {
-        // If toolCall info is available, use it; otherwise just show content
+        const toolCallId = update.toolCall?.toolCallId;
+        if (toolCallId) {
+          const cached = toolCallCache.get(toolCallId);
+          const updated: IChatToolCall = cached
+            ? {
+                ...cached,
+                result: update.content,
+                state: 'result',
+              }
+            : {
+                id: toolCallId,
+                type: 'function',
+                function: {
+                  name: update.toolCall?.name || '',
+                  arguments: '',
+                },
+                result: update.content,
+                state: 'result',
+              };
+          toolCallCache.set(toolCallId, updated);
+          return {
+            kind: 'toolCall',
+            content: updated,
+          } as IChatToolContent;
+        }
         return {
           kind: 'content',
           content: update.content,

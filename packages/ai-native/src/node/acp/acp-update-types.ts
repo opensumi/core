@@ -9,6 +9,7 @@ export type AgentUpdateType =
   | 'thought'
   | 'message'
   | 'tool_call'
+  | 'tool_call_args'
   | 'tool_call_status'
   | 'tool_result'
   | 'plan'
@@ -18,7 +19,7 @@ export type AgentUpdateType =
 export interface SimpleToolCall {
   toolCallId: string;
   name: string;
-  input: Record<string, unknown>;
+  input?: unknown;
   status?: 'pending' | 'in_progress' | 'completed' | 'failed';
 }
 

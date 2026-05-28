@@ -65,6 +65,11 @@ export enum AINativeSettingSectionsId {
   TerminalAutoRun = 'ai.native.terminal.autorun',
 
   /**
+   * WebMCP tool exposure profile for ACP agents.
+   */
+  WebMcpProfile = 'ai.native.webmcp.profile',
+
+  /**
    * Rules settings
    */
   GlobalRules = 'ai.native.globalRules',

@@ -13,6 +13,15 @@ export enum ETerminalAutoExecutionPolicy {
   always = 'always',
 }
 
+export enum EWebMcpProfile {
+  minimal = 'minimal',
+  default = 'default',
+  interactive = 'interactive',
+  full = 'full',
+}
+
+export const WEBMCP_PROFILE_SETTING_ID = 'ai.native.webmcp.profile';
+
 export const aiNativePreferenceSchema: PreferenceSchema = {
   properties: {
     [AINativeSettingSectionsId.InlineDiffPreviewMode]: {
@@ -205,6 +214,12 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       enum: [ETerminalAutoExecutionPolicy.off, ETerminalAutoExecutionPolicy.auto, ETerminalAutoExecutionPolicy.always],
       default: ETerminalAutoExecutionPolicy.auto,
       markdownDescription: '%ai.native.terminal.autorun.description%',
+    },
+    [WEBMCP_PROFILE_SETTING_ID]: {
+      type: 'string',
+      enum: [EWebMcpProfile.minimal, EWebMcpProfile.default, EWebMcpProfile.interactive, EWebMcpProfile.full],
+      default: EWebMcpProfile.default,
+      description: 'Controls which OpenSumi WebMCP tools are exposed to ACP agents.',
     },
     [AINativeSettingSectionsId.CodeEditsTyping]: {
       type: 'boolean',

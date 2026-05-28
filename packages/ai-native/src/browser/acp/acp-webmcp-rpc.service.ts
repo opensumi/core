@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection/lib/common/rpc-service';
 import { WebMcpGroupRegistryToken } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
-import type { WebMcpGroupRegistry } from './webmcp-group-registry';
+import type { WebMcpGroupDefinitionOptions, WebMcpGroupRegistry } from './webmcp-group-registry';
 import type {
   IAcpWebMcpBridgeService,
   WebMcpGroupDef,
@@ -18,8 +18,8 @@ export class AcpWebMcpRpcService extends RPCService implements IAcpWebMcpBridgeS
   @Autowired(WebMcpGroupRegistryToken)
   private readonly registry: WebMcpGroupRegistry;
 
-  async $getGroupDefinitions(): Promise<WebMcpGroupDef[]> {
-    return this.registry.getGroupDefinitions();
+  async $getGroupDefinitions(options?: WebMcpGroupDefinitionOptions): Promise<WebMcpGroupDef[]> {
+    return this.registry.getGroupDefinitions(options);
   }
 
   async $executeTool(group: string, tool: string, params: Record<string, unknown>): Promise<WebMcpToolResult> {

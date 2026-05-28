@@ -7,8 +7,11 @@
  * Tools follow the naming convention: _opensumi/editor/{action}
  */
 import { Injector } from '@opensumi/di';
+import { AppConfig } from '@opensumi/ide-core-browser';
 import { CommandService, URI } from '@opensumi/ide-core-common';
-import { IEditor, IResourceOpenOptions, WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IEditor, IEditorDocumentModel, IResourceOpenOptions, WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/doc-model/types';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { WebMcpGroupRegistration } from '../webmcp-group-registry';
 import { classifyError, errorResult, serviceUnavailableResult, successResult, tryGetService } from '../webmcp-utils';
@@ -19,6 +22,7 @@ import { classifyError, errorResult, serviceUnavailableResult, successResult, tr
 
 interface ActiveEditorInfo {
   path: string | null;
+  uri: string | null;
   selection: {
     startLine: number;
     startCol: number;
@@ -38,6 +42,7 @@ function getActiveEditorInfo(editorService: WorkbenchEditorService): ActiveEdito
 
   return {
     path: uri ? uri.codeUri.fsPath : null,
+    uri: uri ? uri.toString() : null,
     selection: primarySelection
       ? {
           startLine: primarySelection.selectionStartLineNumber,
@@ -46,6 +51,79 @@ function getActiveEditorInfo(editorService: WorkbenchEditorService): ActiveEdito
           endCol: primarySelection.positionColumn,
         }
       : null,
+  };
+}
+
+function resolveEditorUri(container: Injector, pathOrUri: string): URI {
+  if (pathOrUri.startsWith('file://')) {
+    return URI.parse(pathOrUri);
+  }
+  if (pathOrUri.startsWith('/')) {
+    return URI.file(pathOrUri);
+  }
+  const appConfig = tryGetService<AppConfig>(container, AppConfig);
+  const workspaceDir = appConfig?.workspaceDir;
+  return URI.file(workspaceDir ? `${workspaceDir}/${pathOrUri}`.replace(/\/+/g, '/') : pathOrUri);
+}
+
+function toPositiveCappedNumber(value: unknown, fallback: number, cap: number): number {
+  return Math.min(Math.max(Number(value) || fallback, 1), cap);
+}
+
+async function withDocumentModel<T>(
+  container: Injector,
+  uri: URI,
+  fn: (model: IEditorDocumentModel) => T | Promise<T>,
+): Promise<T | null> {
+  const documentModelService = tryGetService<IEditorDocumentModelService>(container, IEditorDocumentModelService);
+  if (!documentModelService) {
+    return null;
+  }
+  const existingRef = documentModelService.getModelReference(uri, 'webmcp');
+  if (existingRef) {
+    try {
+      return await fn(existingRef.instance);
+    } finally {
+      existingRef.dispose();
+    }
+  }
+  const ref = await documentModelService.createModelReference(uri, 'webmcp');
+  try {
+    return await fn(ref.instance);
+  } finally {
+    ref.dispose();
+  }
+}
+
+function createSimpleDiff(original: string, modified: string, maxLines: number): { diff: string; truncated: boolean } {
+  const originalLines = original.split(/\r?\n/);
+  const modifiedLines = modified.split(/\r?\n/);
+  let prefix = 0;
+  while (
+    prefix < originalLines.length &&
+    prefix < modifiedLines.length &&
+    originalLines[prefix] === modifiedLines[prefix]
+  ) {
+    prefix++;
+  }
+  let suffix = 0;
+  while (
+    suffix + prefix < originalLines.length &&
+    suffix + prefix < modifiedLines.length &&
+    originalLines[originalLines.length - 1 - suffix] === modifiedLines[modifiedLines.length - 1 - suffix]
+  ) {
+    suffix++;
+  }
+  const removed = originalLines.slice(prefix, originalLines.length - suffix);
+  const added = modifiedLines.slice(prefix, modifiedLines.length - suffix);
+  const lines = [
+    `@@ -${prefix + 1},${removed.length} +${prefix + 1},${added.length} @@`,
+    ...removed.map((line) => `-${line}`),
+    ...added.map((line) => `+${line}`),
+  ];
+  return {
+    diff: lines.slice(0, maxLines).join('\n'),
+    truncated: lines.length > maxLines,
   };
 }
 
@@ -64,6 +142,7 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         method: '_opensumi/editor/open',
         description:
           'Open a file in the editor. Optionally specify a line and column to scroll to. Returns the editor info for the opened file.',
+        riskLevel: 'ui',
         inputSchema: {
           type: 'object',
           properties: {
@@ -118,6 +197,8 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
       {
         method: '_opensumi/editor/close',
         description: 'Close the editor tab for the given file path.',
+        riskLevel: 'ui',
+        profiles: ['interactive', 'full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -151,6 +232,7 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
       {
         method: '_opensumi/editor/getActive',
         description: 'Get information about the currently active editor, including file path and selection range.',
+        riskLevel: 'read',
         inputSchema: {
           type: 'object',
           properties: {},
@@ -172,11 +254,345 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
+      // ----- _opensumi/editor/listOpenFiles -----
+      {
+        method: '_opensumi/editor/listOpenFiles',
+        description: 'List files currently opened in editor groups, including dirty and active state.',
+        riskLevel: 'read',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+        execute: async () => {
+          const editorService = tryGetService<WorkbenchEditorService>(container, WorkbenchEditorService);
+          if (!editorService) {
+            return serviceUnavailableResult('WorkbenchEditorService');
+          }
+          const documentModelService = tryGetService<IEditorDocumentModelService>(
+            container,
+            IEditorDocumentModelService,
+          );
+          try {
+            const activeUri = editorService.currentEditor?.currentUri?.toString();
+            const files = editorService.editorGroups.flatMap((group, groupIndex) =>
+              group.resources.map((resource) => {
+                const ref = documentModelService?.getModelReference(resource.uri, 'webmcp');
+                try {
+                  const model = ref?.instance;
+                  return {
+                    uri: resource.uri.toString(),
+                    path: resource.uri.codeUri.fsPath,
+                    name: resource.name,
+                    groupIndex,
+                    active: resource.uri.toString() === activeUri,
+                    dirty: Boolean(model?.dirty),
+                    languageId: model?.languageId,
+                  };
+                } finally {
+                  ref?.dispose();
+                }
+              }),
+            );
+            return successResult({ files, total: files.length });
+          } catch (err) {
+            return errorResult(classifyError(err), err);
+          }
+        },
+      },
+
+      // ----- _opensumi/editor/getSelection -----
+      {
+        method: '_opensumi/editor/getSelection',
+        description: 'Get the active editor selection range and selected text.',
+        riskLevel: 'read',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            maxChars: {
+              type: 'number',
+              description: 'Maximum selected characters to return. Defaults to 20000, capped at 100000.',
+            },
+          },
+        },
+        execute: async (params: Record<string, unknown>) => {
+          const editorService = tryGetService<WorkbenchEditorService>(container, WorkbenchEditorService);
+          if (!editorService) {
+            return serviceUnavailableResult('WorkbenchEditorService');
+          }
+          try {
+            const editor = editorService.currentEditor;
+            const uri = editor?.currentUri;
+            const selection = editor?.getSelections()?.[0];
+            if (!editor || !uri || !selection) {
+              return successResult({ active: false, selection: null, text: '' });
+            }
+            const maxChars = toPositiveCappedNumber(params.maxChars, 20_000, 100_000);
+            const text =
+              editor.currentDocumentModel?.getText({
+                startLineNumber: selection.selectionStartLineNumber,
+                startColumn: selection.selectionStartColumn,
+                endLineNumber: selection.positionLineNumber,
+                endColumn: selection.positionColumn,
+              }) ?? '';
+            return successResult({
+              active: true,
+              uri: uri.toString(),
+              path: uri.codeUri.fsPath,
+              selection: {
+                startLine: selection.selectionStartLineNumber,
+                startColumn: selection.selectionStartColumn,
+                endLine: selection.positionLineNumber,
+                endColumn: selection.positionColumn,
+              },
+              text: text.slice(0, maxChars),
+              truncated: text.length > maxChars,
+            });
+          } catch (err) {
+            return errorResult(classifyError(err), err);
+          }
+        },
+      },
+
+      // ----- _opensumi/editor/readBuffer -----
+      {
+        method: '_opensumi/editor/readBuffer',
+        description: 'Read an editor buffer, including unsaved content. Defaults to the active editor.',
+        riskLevel: 'read',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            path: {
+              type: 'string',
+              description: 'Optional file path or file URI. Defaults to the active editor.',
+            },
+            maxChars: {
+              type: 'number',
+              description: 'Maximum characters to return. Defaults to 100000, capped at 500000.',
+            },
+          },
+        },
+        execute: async (params: Record<string, unknown>) => {
+          const editorService = tryGetService<WorkbenchEditorService>(container, WorkbenchEditorService);
+          if (!editorService) {
+            return serviceUnavailableResult('WorkbenchEditorService');
+          }
+          try {
+            const uri =
+              typeof params.path === 'string' && params.path
+                ? resolveEditorUri(container, params.path)
+                : editorService.currentEditor?.currentUri;
+            if (!uri) {
+              return errorResult('INVALID_INPUT', new Error('path is required when no active editor exists'));
+            }
+            const maxChars = toPositiveCappedNumber(params.maxChars, 100_000, 500_000);
+            const data = await withDocumentModel(container, uri, (model) => {
+              const text = model.getText();
+              return {
+                uri: uri.toString(),
+                path: uri.codeUri.fsPath,
+                languageId: model.languageId,
+                dirty: model.dirty,
+                text: text.slice(0, maxChars),
+                size: text.length,
+                truncated: text.length > maxChars,
+              };
+            });
+            if (!data) {
+              return serviceUnavailableResult('IEditorDocumentModelService');
+            }
+            return successResult(data);
+          } catch (err) {
+            return errorResult(classifyError(err), err);
+          }
+        },
+      },
+
+      // ----- _opensumi/editor/readRangeFromBuffer -----
+      {
+        method: '_opensumi/editor/readRangeFromBuffer',
+        description: 'Read a line range from an editor buffer, including unsaved content.',
+        riskLevel: 'read',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            path: {
+              type: 'string',
+              description: 'Optional file path or file URI. Defaults to the active editor.',
+            },
+            startLine: {
+              type: 'number',
+              description: 'Start line, 1-based.',
+            },
+            endLine: {
+              type: 'number',
+              description: 'End line, 1-based. Defaults to startLine.',
+            },
+            maxChars: {
+              type: 'number',
+              description: 'Maximum characters to return. Defaults to 50000, capped at 200000.',
+            },
+          },
+          required: ['startLine'],
+        },
+        execute: async (params: Record<string, unknown>) => {
+          const startLine = Number(params.startLine);
+          const endLine = Number(params.endLine) || startLine;
+          if (!startLine || startLine < 1 || endLine < startLine) {
+            return errorResult('INVALID_INPUT', new Error('valid startLine and endLine are required'));
+          }
+          const editorService = tryGetService<WorkbenchEditorService>(container, WorkbenchEditorService);
+          if (!editorService) {
+            return serviceUnavailableResult('WorkbenchEditorService');
+          }
+          try {
+            const uri =
+              typeof params.path === 'string' && params.path
+                ? resolveEditorUri(container, params.path)
+                : editorService.currentEditor?.currentUri;
+            if (!uri) {
+              return errorResult('INVALID_INPUT', new Error('path is required when no active editor exists'));
+            }
+            const maxChars = toPositiveCappedNumber(params.maxChars, 50_000, 200_000);
+            const data = await withDocumentModel(container, uri, (model) => {
+              const lineCount = model.getMonacoModel().getLineCount();
+              if (startLine > lineCount) {
+                return {
+                  uri: uri.toString(),
+                  path: uri.codeUri.fsPath,
+                  startLine,
+                  endLine: lineCount,
+                  lineCount,
+                  text: '',
+                  truncated: false,
+                };
+              }
+              const safeEndLine = Math.min(endLine, lineCount);
+              const text = model.getText({
+                startLineNumber: startLine,
+                startColumn: 1,
+                endLineNumber: safeEndLine,
+                endColumn: model.getMonacoModel().getLineMaxColumn(safeEndLine),
+              });
+              return {
+                uri: uri.toString(),
+                path: uri.codeUri.fsPath,
+                startLine,
+                endLine: safeEndLine,
+                lineCount,
+                text: text.slice(0, maxChars),
+                truncated: text.length > maxChars,
+              };
+            });
+            if (!data) {
+              return serviceUnavailableResult('IEditorDocumentModelService');
+            }
+            return successResult(data);
+          } catch (err) {
+            return errorResult(classifyError(err), err);
+          }
+        },
+      },
+
+      // ----- _opensumi/editor/listDirtyFiles -----
+      {
+        method: '_opensumi/editor/listDirtyFiles',
+        description: 'List unsaved editor buffers.',
+        riskLevel: 'read',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+        execute: async () => {
+          const documentModelService = tryGetService<IEditorDocumentModelService>(
+            container,
+            IEditorDocumentModelService,
+          );
+          if (!documentModelService) {
+            return serviceUnavailableResult('IEditorDocumentModelService');
+          }
+          try {
+            const files = documentModelService
+              .getAllModels()
+              .filter((model) => model.dirty)
+              .map((model) => ({
+                uri: model.uri.toString(),
+                path: model.uri.codeUri.fsPath,
+                languageId: model.languageId,
+                savable: model.savable,
+                readonly: model.readonly,
+              }));
+            return successResult({ files, total: files.length });
+          } catch (err) {
+            return errorResult(classifyError(err), err);
+          }
+        },
+      },
+
+      // ----- _opensumi/editor/getDirtyDiff -----
+      {
+        method: '_opensumi/editor/getDirtyDiff',
+        description: 'Return a compact diff between disk content and an unsaved editor buffer.',
+        riskLevel: 'read',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            path: {
+              type: 'string',
+              description: 'Optional file path or file URI. Defaults to the active editor.',
+            },
+            maxLines: {
+              type: 'number',
+              description: 'Maximum diff lines to return. Defaults to 200, capped at 1000.',
+            },
+          },
+        },
+        execute: async (params: Record<string, unknown>) => {
+          const editorService = tryGetService<WorkbenchEditorService>(container, WorkbenchEditorService);
+          if (!editorService) {
+            return serviceUnavailableResult('WorkbenchEditorService');
+          }
+          const fileService = tryGetService<IFileServiceClient>(container, IFileServiceClient);
+          if (!fileService) {
+            return serviceUnavailableResult('IFileServiceClient');
+          }
+          try {
+            const uri =
+              typeof params.path === 'string' && params.path
+                ? resolveEditorUri(container, params.path)
+                : editorService.currentEditor?.currentUri;
+            if (!uri) {
+              return errorResult('INVALID_INPUT', new Error('path is required when no active editor exists'));
+            }
+            const maxLines = toPositiveCappedNumber(params.maxLines, 200, 1000);
+            const fileStat = await fileService.getFileStat(uri.toString());
+            const diskText = fileStat ? (await fileService.readFile(uri.toString())).content.toString() : '';
+            const data = await withDocumentModel(container, uri, (model) => {
+              const bufferText = model.getText();
+              const { diff, truncated } = createSimpleDiff(diskText, bufferText, maxLines);
+              return {
+                uri: uri.toString(),
+                path: uri.codeUri.fsPath,
+                dirty: model.dirty,
+                diff,
+                truncated,
+              };
+            });
+            if (!data) {
+              return serviceUnavailableResult('IEditorDocumentModelService');
+            }
+            return successResult(data);
+          } catch (err) {
+            return errorResult(classifyError(err), err);
+          }
+        },
+      },
+
       // ----- _opensumi/editor/setSelection -----
       {
         method: '_opensumi/editor/setSelection',
         description:
           'Set the selection range in the editor. Opens the file first if it is not already open, then sets the selection to the specified line range.',
+        riskLevel: 'ui',
         inputSchema: {
           type: 'object',
           properties: {
@@ -231,6 +647,8 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
       {
         method: '_opensumi/editor/format',
         description: 'Format the document at the given path using the editor format command.',
+        riskLevel: 'write',
+        exposedByDefault: false,
         inputSchema: {
           type: 'object',
           properties: {
@@ -270,6 +688,8 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
       {
         method: '_opensumi/editor/fold',
         description: 'Fold code at the specified line in the editor. Opens the file first if needed.',
+        riskLevel: 'ui',
+        profiles: ['interactive', 'full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -316,6 +736,8 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
       {
         method: '_opensumi/editor/unfold',
         description: 'Unfold code at the specified line in the editor. Opens the file first if needed.',
+        riskLevel: 'ui',
+        profiles: ['interactive', 'full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -362,6 +784,8 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
       {
         method: '_opensumi/editor/save',
         description: 'Save the file at the given path.',
+        riskLevel: 'write',
+        exposedByDefault: false,
         inputSchema: {
           type: 'object',
           properties: {

@@ -1107,8 +1107,18 @@ export class AcpThread extends Disposable implements IAcpThread {
         this.updatePlanEntry(update);
         break;
       }
+      case 'usage_update':
+      case 'current_mode_update':
+      case 'config_option_update':
+      case 'session_info_update': {
+        break;
+      }
       default:
-        this.logger?.debug(`[AcpThread:${this.threadId}] Unknown session update: ${update.sessionUpdate}`);
+        this.logger?.debug(
+          `[AcpThread:${this.threadId}] Unknown session update: ${
+            (update as { sessionUpdate?: unknown }).sessionUpdate
+          }`,
+        );
     }
   }
 
@@ -1120,7 +1130,7 @@ export class AcpThread extends Disposable implements IAcpThread {
    * Translate a SessionNotification into the legacy AgentUpdate format
    * for stream consumption by AcpAgentService.
    */
-  toAgentUpdate(notification: SessionNotification): AgentUpdate | null {
+  toAgentUpdate(notification: SessionNotification): AgentUpdate | AgentUpdate[] | null {
     const update = (notification as any).update;
     if (!update) {
       return null;
@@ -1150,54 +1160,66 @@ export class AcpThread extends Disposable implements IAcpThread {
           toolCall: {
             toolCallId: update.toolCallId || '',
             name: update.title || update.toolCallId || '',
-            input: (update.rawInput as Record<string, unknown>) || {},
+            input: update.rawInput !== undefined ? update.rawInput : {},
             status: 'pending' as const,
           },
         };
       }
 
       case 'tool_call_update': {
+        const updates: AgentUpdate[] = [];
+        if (update.rawInput !== undefined) {
+          updates.push({
+            type: 'tool_call_args',
+            content: '',
+            toolCall: {
+              toolCallId: update.toolCallId || '',
+              name: update.title || '',
+              input: update.rawInput,
+            },
+          });
+        }
         if (update.status === 'completed' || update.status === 'failed') {
           if (update.rawOutput != null) {
             const outputText =
               typeof update.rawOutput === 'string' ? update.rawOutput : JSON.stringify(update.rawOutput);
-            return {
+            updates.push({
               type: 'tool_result',
               content: outputText.slice(0, 2000),
               toolCall: {
                 toolCallId: update.toolCallId || '',
                 name: '',
-                input: {},
                 status: update.status as 'completed' | 'failed',
               },
-            };
+            });
           }
-          return null;
+          return updates.length ? updates : null;
         }
         if (update.status === 'in_progress') {
-          return {
+          updates.push({
             type: 'tool_call_status',
             content: update.title || '',
             toolCall: {
               toolCallId: update.toolCallId || '',
               name: update.title || '',
-              input: {},
               status: 'in_progress' as const,
             },
-          };
+          });
+          return updates;
         }
         // Emit diff content if present
         if (update.content) {
           for (const item of update.content) {
             if (item.type === 'diff') {
-              return {
+              updates.push({
                 type: 'tool_result',
                 content: `Modified ${item.path}`,
-              };
+              });
+              break;
             }
           }
         }
-        return null;
+        return updates.length ? updates : null;
       }
 
       case 'plan': {
@@ -1306,7 +1328,7 @@ export class AcpThread extends Disposable implements IAcpThread {
       toolCallId: update.toolCallId,
       title: update.toolName || update.title || update.toolCallId,
       kind: update.kind,
-      rawInput: update.input,
+      rawInput: update.rawInput,
       status: 'pending',
     };
 
@@ -1330,6 +1352,10 @@ export class AcpThread extends Disposable implements IAcpThread {
       const e = this._entries[i];
       if (e.type === 'tool_call' && e.data.toolCall.toolCallId === update.toolCallId) {
         const entry = e.data as ToolCallEntry;
+
+        if (update.rawInput !== undefined) {
+          entry.toolCall.rawInput = update.rawInput;
+        }
 
         if (update.status === 'completed') {
           entry.status = 'completed';

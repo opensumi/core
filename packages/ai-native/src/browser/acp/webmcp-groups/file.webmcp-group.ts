@@ -11,7 +11,7 @@ import { AppConfig } from '@opensumi/ide-core-browser';
 import { URI } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { WebMcpGroupRegistration, WebMcpToolExecute } from '../webmcp-group-registry';
+import { WebMcpGroupRegistration } from '../webmcp-group-registry';
 import { classifyError, errorResult, serviceUnavailableResult, successResult, tryGetService } from '../webmcp-utils';
 
 // ---------------------------------------------------------------------------
@@ -44,6 +44,8 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         method: '_opensumi/file/getWorkspaceRoot',
         description:
           'Get the absolute path of the current workspace root directory. Use this to understand the base path for relative file operations.',
+        riskLevel: 'read',
+        profiles: ['interactive', 'full'],
         inputSchema: {
           type: 'object',
           properties: {},
@@ -66,6 +68,8 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         method: '_opensumi/file/read',
         description:
           'Read the contents of a file. Returns the file content as text. Use relative paths from the workspace root.',
+        riskLevel: 'read',
+        profiles: ['interactive', 'full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -113,6 +117,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         method: '_opensumi/file/write',
         description:
           'Write content to a file. Creates the file if it does not exist, overwrites if it does. Creates parent directories automatically.',
+        riskLevel: 'write',
+        exposedByDefault: false,
+        profiles: ['full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -162,6 +169,8 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         method: '_opensumi/file/list',
         description:
           'List the contents of a directory. Returns an array of file/directory entries with metadata. Use "." for the workspace root.',
+        riskLevel: 'read',
+        profiles: ['interactive', 'full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -213,6 +222,8 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         method: '_opensumi/file/stat',
         description:
           'Get metadata about a file or directory. Returns size, isDirectory, lastModified, and other stat info.',
+        riskLevel: 'read',
+        profiles: ['interactive', 'full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -260,6 +271,8 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
       {
         method: '_opensumi/file/exists',
         description: 'Check whether a file or directory exists at the given path. Returns true or false.',
+        riskLevel: 'read',
+        profiles: ['interactive', 'full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -299,6 +312,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         method: '_opensumi/file/create',
         description:
           'Create an empty file or a new directory. Use "type: directory" to create a folder instead of a file.',
+        riskLevel: 'write',
+        exposedByDefault: false,
+        profiles: ['full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -351,6 +367,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
       {
         method: '_opensumi/file/delete',
         description: 'Delete a file or directory. Use recursive: true to delete a directory and its contents.',
+        riskLevel: 'destructive',
+        exposedByDefault: false,
+        profiles: ['full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -404,6 +423,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
       {
         method: '_opensumi/file/move',
         description: 'Move or rename a file or directory from source to destination.',
+        riskLevel: 'write',
+        exposedByDefault: false,
+        profiles: ['full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -449,6 +471,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
       {
         method: '_opensumi/file/copy',
         description: 'Copy a file or directory from source to destination.',
+        riskLevel: 'write',
+        exposedByDefault: false,
+        profiles: ['full'],
         inputSchema: {
           type: 'object',
           properties: {

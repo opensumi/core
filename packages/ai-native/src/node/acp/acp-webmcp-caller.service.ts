@@ -7,6 +7,10 @@ import type {
   WebMcpToolResult,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
+interface WebMcpGroupDefinitionOptions {
+  includeAllTools?: boolean;
+}
+
 /**
  * Node-side RPC caller service for WebMCP bridge calls.
  * Calls browser-side methods via RPC to retrieve group definitions and execute tools.
@@ -28,12 +32,14 @@ export class AcpWebMcpCallerService extends RPCService<IAcpWebMcpBridgeService> 
     return this.client ?? AcpWebMcpCallerService.staticRpcClient;
   }
 
-  async getGroupDefinitions(): Promise<WebMcpGroupDef[]> {
+  async getGroupDefinitions(options?: WebMcpGroupDefinitionOptions): Promise<WebMcpGroupDef[]> {
     const rpcClient = this.getRpcClient();
     if (!rpcClient) {
       throw new Error('[AcpWebMcpCallerService] RPC client not available — browser connection not established');
     }
-    return rpcClient.$getGroupDefinitions();
+    return (rpcClient.$getGroupDefinitions as (options?: WebMcpGroupDefinitionOptions) => Promise<WebMcpGroupDef[]>)(
+      options,
+    );
   }
 
   async executeTool(group: string, tool: string, params: Record<string, unknown>): Promise<WebMcpToolResult> {

@@ -156,16 +156,23 @@ export interface IAcpThreadStatusService {
 // WebMCP Group types for ACP extension methods
 export const AcpWebMcpBridgePath = 'AcpWebMcpBridgePath';
 
+export type WebMcpToolRiskLevel = 'read' | 'write' | 'destructive' | 'shell' | 'ui';
+export type WebMcpProfile = 'minimal' | 'default' | 'interactive' | 'full';
+
 export interface WebMcpToolDef {
   method: string; // "_opensumi/file/read"
   description: string;
   inputSchema: Record<string, unknown>;
+  riskLevel?: WebMcpToolRiskLevel;
+  exposedByDefault?: boolean;
+  profiles?: WebMcpProfile[];
 }
 
 export interface WebMcpGroupDef {
   name: string;
   description: string;
   defaultLoaded: boolean;
+  profile?: WebMcpProfile;
   tools: WebMcpToolDef[];
 }
 
@@ -183,8 +190,12 @@ export interface WebMcpGroupInfo {
   loaded: boolean;
 }
 
+export interface WebMcpGroupDefinitionOptions {
+  includeAllTools?: boolean;
+}
+
 export interface IAcpWebMcpBridgeService {
-  $getGroupDefinitions(): Promise<WebMcpGroupDef[]>;
+  $getGroupDefinitions(options?: WebMcpGroupDefinitionOptions): Promise<WebMcpGroupDef[]>;
   $executeTool(group: string, tool: string, params: Record<string, unknown>): Promise<WebMcpToolResult>;
 }
 

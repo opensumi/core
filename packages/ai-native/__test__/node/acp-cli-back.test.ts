@@ -295,6 +295,65 @@ describe('AcpCliBackService', () => {
             id: 'tc-1',
             type: 'function',
             function: { name: 'read_file', arguments: '{}' },
+            state: 'complete',
+          },
+        },
+      ]);
+    });
+
+    it('should update cached tool_call arguments from "tool_call_args" updates', async () => {
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+      const receivedData: any[] = [];
+      output.onData((data) => receivedData.push(data));
+
+      agentStream.emitData({
+        type: 'tool_call',
+        content: 'read_file',
+        toolCall: { toolCallId: 'tc-1', name: 'read_file', input: {} },
+      });
+      agentStream.emitData({
+        type: 'tool_call_args',
+        content: '',
+        toolCall: { toolCallId: 'tc-1', name: 'read_file', input: { path: '/test/file.ts' } },
+      });
+      agentStream.emitData({
+        type: 'tool_result',
+        content: 'file contents',
+        toolCall: { toolCallId: 'tc-1', name: 'read_file', status: 'completed' },
+      });
+      agentStream.emitData({ type: 'done', content: '' });
+
+      expect(receivedData).toEqual([
+        {
+          kind: 'toolCall',
+          content: {
+            id: 'tc-1',
+            type: 'function',
+            function: { name: 'read_file', arguments: '{}' },
+            state: 'complete',
+          },
+        },
+        {
+          kind: 'toolCall',
+          content: {
+            id: 'tc-1',
+            type: 'function',
+            function: { name: 'read_file', arguments: '{"path":"/test/file.ts"}' },
+            state: 'complete',
+          },
+        },
+        {
+          kind: 'toolCall',
+          content: {
+            id: 'tc-1',
+            type: 'function',
+            function: { name: 'read_file', arguments: '{"path":"/test/file.ts"}' },
+            result: 'file contents',
+            state: 'result',
           },
         },
       ]);

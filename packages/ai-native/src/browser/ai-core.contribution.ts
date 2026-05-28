@@ -113,10 +113,13 @@ import { AcpChatInput } from './acp/components/AcpChatInput';
 import { AcpChatMentionInput } from './acp/components/AcpChatMentionInput';
 import { registerFileWebMCPTools } from './acp/webmcp-file-tools.registry';
 import { WebMcpGroupRegistry } from './acp/webmcp-group-registry';
+import { createAcpChatGroup } from './acp/webmcp-groups/acp-chat.webmcp-group';
+import { createDiagnosticsGroup } from './acp/webmcp-groups/diagnostics.webmcp-group';
 import { createEditorGroup } from './acp/webmcp-groups/editor.webmcp-group';
 import { createFileGroup } from './acp/webmcp-groups/file.webmcp-group';
+import { createSearchGroup } from './acp/webmcp-groups/search.webmcp-group';
 import { createTerminalGroup } from './acp/webmcp-groups/terminal.webmcp-group';
-import { registerAcpWebMCPTools } from './acp/webmcp-tools.registry';
+import { createWorkspaceGroup } from './acp/webmcp-groups/workspace.webmcp-group';
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
@@ -171,6 +174,7 @@ import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stre
 import { SumiLightBulbWidget } from './widget/light-bulb';
 
 export const INLINE_DIFF_MANAGER_WIDGET_ID = 'inline-diff-manager-widget';
+const WEBMCP_PROFILE_SETTING_ID = 'ai.native.webmcp.profile';
 
 const DynamicChatViewWrapper: React.FC = () => {
   const chatViewRegistry = useInjectable<IChatViewRegistry>(ChatViewRegistryToken);
@@ -330,7 +334,6 @@ export class AINativeBrowserContribution
   @Autowired()
   private readonly chatMultiDiffResolver: ChatMultiDiffResolver;
 
-  private webMCPDisposable: IDisposable | undefined;
   private fileWebMCPDisposable: IDisposable | undefined;
 
   constructor() {
@@ -497,14 +500,17 @@ export class AINativeBrowserContribution
 
       // Register WebMCP tools — must be in a contribution's onDidStart
       // so it's actually called by the ClientApp lifecycle
-      this.webMCPDisposable = registerAcpWebMCPTools(this.injector);
       this.fileWebMCPDisposable = registerFileWebMCPTools(this.injector);
 
       // Register WebMCP groups for ACP extension methods
       const groupRegistry = this.injector.get(WebMcpGroupRegistryToken);
+      groupRegistry.registerGroup(createWorkspaceGroup(this.injector));
+      groupRegistry.registerGroup(createSearchGroup(this.injector));
+      groupRegistry.registerGroup(createDiagnosticsGroup(this.injector));
       groupRegistry.registerGroup(createFileGroup(this.injector));
       groupRegistry.registerGroup(createTerminalGroup(this.injector));
       groupRegistry.registerGroup(createEditorGroup(this.injector));
+      groupRegistry.registerGroup(createAcpChatGroup(this.injector));
     });
   }
 
@@ -811,6 +817,10 @@ export class AINativeBrowserContribution
           {
             id: AINativeSettingSectionsId.TerminalAutoRun,
             localized: 'ai.native.terminal.autorun',
+          },
+          {
+            id: WEBMCP_PROFILE_SETTING_ID,
+            localized: 'preference.ai.native.webmcp.profile',
           },
         ],
       });

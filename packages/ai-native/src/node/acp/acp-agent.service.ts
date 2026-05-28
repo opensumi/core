@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Deferred, Disposable, Emitter, Event, IDisposable } from '@opensumi/ide-core-common';
 import {
+  AcpWebMcpCallerServiceToken,
   AvailableCommand,
   ListSessionsRequest,
   ListSessionsResponse,
@@ -22,9 +23,12 @@ import {
   ThreadStatus,
 } from './acp-thread';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
+import { OpenSumiMcpHttpServer } from './opensumi-mcp-http-server';
 import { PermissionRoutingService, PermissionRoutingServiceToken } from './permission-routing.service';
 
 import type { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types';
+import type { AcpWebMcpCallerService } from './acp-webmcp-caller.service';
+import type { WebMcpGroupDef, WebMcpToolDef } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 export { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types';
 
 // ============================================================================
@@ -32,6 +36,24 @@ export { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types
 // ============================================================================
 
 export const AcpAgentServiceToken = Symbol('AcpAgentServiceToken');
+
+const WEBMCP_CAPABILITY_HINT =
+  'OpenSumi WebMCP exposes a narrow default IDE tool set. If you need additional IDE capabilities that are not listed, call opensumi_discoverCapabilities first, then opensumi_enableCapabilityGroup for the relevant group. If the MCP client does not refresh tools/list after enabling, use opensumi_invokeCapabilityTool as the fallback broker.';
+const WEBMCP_CAPABILITY_QUESTION_HINT =
+  'When the user asks what IDE/OpenSumi/WebMCP capabilities or tools are available, answer from the live OpenSumi WebMCP metadata below. If you need current per-session enabled/disabled state, call opensumi_discoverCapabilities with includeDisabled=true. Do not answer only from memory.';
+const WEBMCP_TERMINAL_CAPABILITY_HINT =
+  'For requests to create an OpenSumi IDE terminal or type/run a command in an IDE terminal, use OpenSumi WebMCP: call opensumi_enableCapabilityGroup with group "terminal", refresh tools/list if possible, then use terminal_create and terminal_runCommand. If tools/list is not refreshed, call opensumi_invokeCapabilityTool for terminal_create and terminal_runCommand.';
+
+type WebMcpToolWithMeta = WebMcpToolDef & {
+  riskLevel?: string;
+  exposedByDefault?: boolean;
+  profiles?: string[];
+};
+
+type WebMcpGroupWithMeta = Omit<WebMcpGroupDef, 'tools'> & {
+  profile?: string;
+  tools: WebMcpToolWithMeta[];
+};
 
 // ============================================================================
 // Agent Session Types
@@ -214,6 +236,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
+  @Autowired(OpenSumiMcpHttpServer)
+  private readonly opensumiMcpHttpServer: OpenSumiMcpHttpServer | undefined;
+
+  @Autowired(AcpWebMcpCallerServiceToken)
+  private readonly webmcpCallerService: AcpWebMcpCallerService | undefined;
+
   // Session -> Thread mapping (active sessions)
   private sessions = new Map<string, AcpThread>();
 
@@ -330,14 +358,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     throw new Error(`Thread pool is full (${this.maxPoolSize}), no idle thread available`);
   }
 
-  private getSessionMcpServers(thread: AcpThread, config: AgentProcessConfig): McpServer[] {
+  private async getSessionMcpServers(thread: AcpThread, config: AgentProcessConfig): Promise<McpServer[]> {
     const mcpServers = config.mcpServers ?? [];
-    if (mcpServers.length === 0) {
-      return [];
-    }
 
     const mcpCapabilities = thread.agentCapabilities?.mcpCapabilities;
-    return mcpServers.filter((server) => {
+    const configuredServers = mcpServers.filter((server) => {
       const type = (server as { type?: string }).type;
       if (type === 'http') {
         const supported = mcpCapabilities?.http === true;
@@ -355,6 +380,32 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       }
       return true;
     });
+
+    if (mcpCapabilities?.http !== true || !this.opensumiMcpHttpServer) {
+      return configuredServers;
+    }
+
+    const serverName = this.opensumiMcpHttpServer.getServerName();
+    if (configuredServers.some((server) => server.name === serverName)) {
+      this.logger.warn(`[AcpAgentService] Skipping built-in MCP server "${serverName}"; name already configured`);
+      return configuredServers;
+    }
+
+    try {
+      await this.opensumiMcpHttpServer.start();
+      return [
+        ...configuredServers,
+        {
+          name: serverName,
+          type: 'http',
+          url: this.opensumiMcpHttpServer.getUrl(),
+          headers: [],
+        },
+      ];
+    } catch (error) {
+      this.logger.warn(`[AcpAgentService] Skipping built-in MCP server "${serverName}"; failed to start`, error);
+      return configuredServers;
+    }
   }
 
   // -----------------------------------------------------------------------
@@ -394,7 +445,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
       const newSessionResponse = await thread.newSession({
         cwd: config.cwd,
-        mcpServers: this.getSessionMcpServers(thread, config),
+        mcpServers: await this.getSessionMcpServers(thread, config),
       } as any);
 
       realSessionId = newSessionResponse.sessionId;
@@ -499,7 +550,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         await idleThread.loadSession({
           sessionId,
           cwd: config.cwd,
-          mcpServers: this.getSessionMcpServers(idleThread, config),
+          mcpServers: await this.getSessionMcpServers(idleThread, config),
         } as any);
       } catch (e) {
         this.sessions.delete(sessionId);
@@ -532,7 +583,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         await thread.loadSession({
           sessionId,
           cwd: config.cwd,
-          mcpServers: this.getSessionMcpServers(thread, config),
+          mcpServers: await this.getSessionMcpServers(thread, config),
         } as any);
       } catch (e) {
         const idx = this.threadPool.indexOf(thread);
@@ -627,8 +678,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     const eventDisposable = thread.onEvent((event: AcpThreadEvent) => {
       if (event.type === 'session_notification') {
-        const agentUpdate = thread.toAgentUpdate(event.notification);
-        if (agentUpdate) {
+        const agentUpdates = thread.toAgentUpdate(event.notification);
+        const normalizedUpdates = Array.isArray(agentUpdates) ? agentUpdates : [];
+        if (agentUpdates && !Array.isArray(agentUpdates)) {
+          normalizedUpdates.push(agentUpdates);
+        }
+        for (const agentUpdate of normalizedUpdates) {
           agentUpdate.threadStatus = thread.getStatus();
           stream.emitData(agentUpdate);
         }
@@ -661,7 +716,17 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     disposables: IDisposable[],
   ): Promise<void> {
     try {
-      const promptBlocks = this.buildPromptBlocks(request.prompt, request.images);
+      const promptForAgent = await this.withWebMcpCapabilityHint(request.prompt, thread.getEntries().length <= 1);
+      const promptBlocks = this.buildPromptBlocks(promptForAgent, request.images);
+      this.logger.log(
+        `[AcpAgentService] sendPrompt() — sessionId=${request.sessionId}, promptChars=${
+          request.prompt.length
+        }, promptBytes=${Buffer.byteLength(request.prompt, 'utf8')}, sentPromptChars=${
+          promptForAgent.length
+        }, sentPromptBytes=${Buffer.byteLength(promptForAgent, 'utf8')}, images=${
+          request.images?.length ?? 0
+        }, blocks=${promptBlocks.length}, entries=${thread.getEntries().length}`,
+      );
       await thread.prompt({
         sessionId: request.sessionId,
         prompt: promptBlocks,
@@ -779,7 +844,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       await thread.loadSessionOrNew({
         sessionId,
         cwd: config.cwd,
-        mcpServers: this.getSessionMcpServers(thread, config),
+        mcpServers: await this.getSessionMcpServers(thread, config),
       } as any);
       return this.buildSessionLoadResult(sessionId, thread);
     } catch (e) {
@@ -1107,6 +1172,81 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
 
     return blocks;
+  }
+
+  private async withWebMcpCapabilityHint(input: string, includeHint: boolean): Promise<string> {
+    const hints: string[] = [];
+    if (includeHint) {
+      hints.push(WEBMCP_CAPABILITY_HINT);
+    }
+    if (this.needsWebMcpCapabilityQuestionHint(input)) {
+      hints.push(WEBMCP_CAPABILITY_QUESTION_HINT);
+      const liveSummary = await this.getWebMcpCapabilitySummary();
+      if (liveSummary) {
+        hints.push(liveSummary);
+      }
+    }
+    if (this.needsWebMcpTerminalHint(input)) {
+      hints.push(WEBMCP_TERMINAL_CAPABILITY_HINT);
+    }
+    if (hints.length === 0) {
+      return input;
+    }
+    return `${hints.join('\n')}\n\n${input}`;
+  }
+
+  private needsWebMcpTerminalHint(input: string): boolean {
+    const normalized = input.toLowerCase();
+    const hasTerminalIntent = /终端|terminal/.test(normalized);
+    const hasInteractionIntent = /新建|创建|create|打开|open|输入|运行|执行|run|type|command|命令/.test(normalized);
+    return hasTerminalIntent && hasInteractionIntent;
+  }
+
+  private needsWebMcpCapabilityQuestionHint(input: string): boolean {
+    const normalized = input.toLowerCase();
+    const hasIdeSubject = /ide|opensumi|webmcp|mcp|工具|tool|能力|capabilit/.test(normalized);
+    const asksCapabilities =
+      /提供.*能力|有什么能力|哪些能力|能力.*有哪些|有哪些.*能力|提供.*工具|有什么工具|哪些工具|工具.*有哪些|available.*tools|available.*capabilit/.test(
+        normalized,
+      );
+    return hasIdeSubject && asksCapabilities;
+  }
+
+  private async getWebMcpCapabilitySummary(): Promise<string | undefined> {
+    if (!this.webmcpCallerService) {
+      return undefined;
+    }
+    try {
+      const groups = (await this.webmcpCallerService.getGroupDefinitions({
+        includeAllTools: true,
+      })) as WebMcpGroupWithMeta[];
+      const profile = groups.find((group) => group.profile)?.profile ?? 'unknown';
+      const lines = groups.map((group) => {
+        const tools = group.tools
+          .filter((tool) => tool.exposedByDefault !== false)
+          .map((tool) => this.toMcpToolName(group.name, tool.method))
+          .slice(0, 12);
+        const suffix =
+          group.tools.length > tools.length ? `, +${group.tools.length - tools.length} hidden/protected` : '';
+        return `- ${group.name}: defaultLoaded=${group.defaultLoaded}, profile=${
+          group.profile ?? profile
+        }, tools=${tools.join(', ')}${suffix}`;
+      });
+      return [
+        'Live OpenSumi WebMCP registered capability metadata:',
+        `profile=${profile}, groupCount=${groups.length}`,
+        ...lines,
+        'This metadata is the registered capability catalog, not the current per-session enabledGroups state.',
+      ].join('\n');
+    } catch (error) {
+      this.logger.warn('[AcpAgentService] Failed to build WebMCP capability summary', error);
+      return undefined;
+    }
+  }
+
+  private toMcpToolName(groupName: string, method: string): string {
+    const action = method.split('/').pop() ?? method;
+    return `${groupName}_${action}`.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 64);
   }
 
   private parseDataUrl(dataUrl: string): { mimeType: string; base64Data: string } {

@@ -82,6 +82,40 @@ interface MockThread {
   _eventListeners: Array<(event: any) => void>;
 }
 
+function flushAsyncWork(): Promise<void> {
+  return new Promise((resolve) => setImmediate(resolve));
+}
+
+function toAgentUpdateForTest(notification: any): any {
+  const update = notification?.update;
+  switch (update?.sessionUpdate) {
+    case 'agent_thought_chunk':
+      return { type: 'thought', content: update.content?.text ?? '' };
+    case 'agent_message_chunk':
+      return { type: 'message', content: update.content?.text ?? '' };
+    case 'tool_call':
+      return {
+        type: 'tool_call',
+        content: update.title || update.toolName || update.toolCallId || '',
+        toolCall: {
+          toolCallId: update.toolCallId || '',
+          name: update.title || update.toolName || update.toolCallId || '',
+          input: update.rawInput ?? {},
+        },
+      };
+    case 'tool_call_update':
+      if (Array.isArray(update.content)) {
+        const diff = update.content.find((item: any) => item?.type === 'diff');
+        if (diff?.path) {
+          return { type: 'tool_result', content: `Modified ${diff.path}` };
+        }
+      }
+      return null;
+    default:
+      return null;
+  }
+}
+
 function createMockThread(overrides: Record<string, any> = {}): MockThread {
   const eventListeners: Array<(event: any) => void> = [];
   const base: MockThread = {
@@ -105,7 +139,7 @@ function createMockThread(overrides: Record<string, any> = {}): MockThread {
     markAssistantComplete: jest.fn(),
     markToolCallWaiting: jest.fn(),
     respondToToolCall: jest.fn(),
-    toAgentUpdate: jest.fn().mockReturnValue({}),
+    toAgentUpdate: jest.fn(toAgentUpdateForTest),
     setSessionMode: jest.fn().mockResolvedValue(undefined),
     reset: jest.fn(),
     dispose: jest.fn().mockResolvedValue(undefined),
@@ -172,6 +206,82 @@ describe('AcpAgentService (Thread Pool)', () => {
     });
   });
 
+  describe('getSessionMcpServers()', () => {
+    it('should append the built-in OpenSumi MCP server when the agent supports HTTP MCP', async () => {
+      const thread = createMockThread({
+        agentCapabilities: {
+          mcpCapabilities: {
+            http: true,
+            sse: true,
+          },
+        },
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+      const opensumiMcpHttpServer = {
+        getServerName: jest.fn().mockReturnValue('opensumi-ide'),
+        start: jest.fn().mockResolvedValue(undefined),
+        getUrl: jest.fn().mockReturnValue('http://127.0.0.1:12345/mcp/token'),
+      };
+      (service as any).opensumiMcpHttpServer = opensumiMcpHttpServer;
+
+      const servers = await (service as any).getSessionMcpServers(thread, {
+        ...mockAgentProcessConfig,
+        mcpServers: [
+          {
+            name: 'external-http',
+            type: 'http',
+            url: 'http://127.0.0.1:9999/mcp',
+            headers: [],
+          },
+        ],
+      });
+
+      expect(opensumiMcpHttpServer.start).toHaveBeenCalled();
+      expect(servers).toEqual([
+        {
+          name: 'external-http',
+          type: 'http',
+          url: 'http://127.0.0.1:9999/mcp',
+          headers: [],
+        },
+        {
+          name: 'opensumi-ide',
+          type: 'http',
+          url: 'http://127.0.0.1:12345/mcp/token',
+          headers: [],
+        },
+      ]);
+    });
+
+    it('should not append the built-in OpenSumi MCP server without HTTP MCP support', async () => {
+      const thread = createMockThread({
+        agentCapabilities: {
+          mcpCapabilities: {
+            http: false,
+            sse: true,
+          },
+        },
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+      const opensumiMcpHttpServer = {
+        getServerName: jest.fn().mockReturnValue('opensumi-ide'),
+        start: jest.fn().mockResolvedValue(undefined),
+        getUrl: jest.fn().mockReturnValue('http://127.0.0.1:12345/mcp/token'),
+      };
+      (service as any).opensumiMcpHttpServer = opensumiMcpHttpServer;
+
+      const servers = await (service as any).getSessionMcpServers(thread, {
+        ...mockAgentProcessConfig,
+        mcpServers: [],
+      });
+
+      expect(opensumiMcpHttpServer.start).not.toHaveBeenCalled();
+      expect(servers).toEqual([]);
+    });
+  });
+
   // -----------------------------------------------------------------------
   // createSession
   // -----------------------------------------------------------------------
@@ -203,7 +313,7 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(result.availableCommands).toHaveLength(2);
       expect(result.availableCommands[0].name).toBe('ReadFile');
       expect(thread.initialize).toHaveBeenCalled();
-      expect(thread.loadSessionOrNew).toHaveBeenCalled();
+      expect(thread.newSession).toHaveBeenCalled();
     });
 
     it('should throw when thread pool is full and no idle threads', async () => {
@@ -376,6 +486,7 @@ describe('AcpAgentService (Thread Pool)', () => {
 
       const createResult = await service.createSession(mockAgentProcessConfig);
       service.sendMessage({ prompt: 'Hello world', sessionId: createResult.sessionId }, mockAgentProcessConfig);
+      await flushAsyncWork();
 
       expect(thread.addUserMessage).toHaveBeenCalledWith('Hello world');
       expect(thread.prompt).toHaveBeenCalled();
@@ -415,7 +526,7 @@ describe('AcpAgentService (Thread Pool)', () => {
         },
       });
 
-      expect(updates).toContainEqual({ type: 'thought', content: 'I am thinking...' });
+      expect(updates).toContainEqual(expect.objectContaining({ type: 'thought', content: 'I am thinking...' }));
     });
 
     it('should emit message updates from session_notification events', async () => {
@@ -451,7 +562,7 @@ describe('AcpAgentService (Thread Pool)', () => {
         },
       });
 
-      expect(updates).toContainEqual({ type: 'message', content: 'Here is my answer.' });
+      expect(updates).toContainEqual(expect.objectContaining({ type: 'message', content: 'Here is my answer.' }));
     });
 
     it('should emit tool_call updates', async () => {
@@ -488,11 +599,13 @@ describe('AcpAgentService (Thread Pool)', () => {
         },
       });
 
-      expect(updates).toContainEqual({
-        type: 'tool_call',
-        content: 'ReadFile',
-        toolCall: { name: 'ReadFile', input: { path: '/test/file.ts' } },
-      });
+      expect(updates).toContainEqual(
+        expect.objectContaining({
+          type: 'tool_call',
+          content: 'ReadFile',
+          toolCall: expect.objectContaining({ name: 'ReadFile', input: { path: '/test/file.ts' } }),
+        }),
+      );
     });
 
     it('should emit tool_result updates from tool_call_update with diff', async () => {
@@ -528,7 +641,9 @@ describe('AcpAgentService (Thread Pool)', () => {
         },
       });
 
-      expect(updates).toContainEqual({ type: 'tool_result', content: 'Modified src/index.ts' });
+      expect(updates).toContainEqual(
+        expect.objectContaining({ type: 'tool_result', content: 'Modified src/index.ts' }),
+      );
     });
 
     it('should emit done and end stream after prompt completes', (done) => {
@@ -668,11 +783,12 @@ describe('AcpAgentService (Thread Pool)', () => {
         { prompt: 'Look at this', sessionId: createResult.sessionId, images: [imageData] },
         mockAgentProcessConfig,
       );
+      await flushAsyncWork();
 
       expect(thread.prompt).toHaveBeenCalledWith(
         expect.objectContaining({
           prompt: expect.arrayContaining([
-            { type: 'text', text: 'Look at this' },
+            { type: 'text', text: expect.stringContaining('Look at this') },
             { type: 'image', data: 'iVBORw0KGgo=', mimeType: 'image/png' },
           ]),
         }),
@@ -790,6 +906,7 @@ describe('AcpAgentService (Thread Pool)', () => {
       const threads: MockThread[] = [];
       for (let i = 0; i < 3; i++) {
         const t = createMockThread({
+          newSession: jest.fn().mockResolvedValue({ sessionId: `session-${i}` }),
           onEvent: jest.fn((cb: any) => {
             setTimeout(() => {
               cb({
@@ -898,6 +1015,10 @@ describe('AcpAgentService (Thread Pool)', () => {
 
       for (let i = 0; i < 2; i++) {
         const t = createMockThread({
+          newSession: jest.fn().mockResolvedValue({ sessionId: `session-${i}` }),
+          listSessions: jest.fn().mockResolvedValue({
+            sessions: [{ sessionId: `session-${i}`, cwd: mockAgentProcessConfig.cwd, title: `Session ${i}` }],
+          }),
           onEvent: jest.fn((cb: any) => {
             setTimeout(() => {
               cb({

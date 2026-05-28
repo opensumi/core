@@ -423,7 +423,7 @@ describe('AcpThread', () => {
           sessionUpdate: 'tool_call',
           toolCallId: 'tc-1',
           toolName: 'Read',
-          input: { path: 'test.txt' },
+          rawInput: { path: 'test.txt' },
         },
       } as any);
 
@@ -431,6 +431,7 @@ describe('AcpThread', () => {
       const data = getToolCallData(thread.entries[0])!;
       expect(data.toolCall.toolCallId).toBe('tc-1');
       expect(data.toolCall.title).toBe('Read');
+      expect(data.toolCall.rawInput).toEqual({ path: 'test.txt' });
       expect(data.status).toBe('pending');
     });
 
@@ -455,6 +456,29 @@ describe('AcpThread', () => {
 
       const data = getToolCallData(thread.entries[0])!;
       expect(data.status).toBe('in_progress');
+    });
+
+    it('should update tool call rawInput on tool_call_update', () => {
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'tool_call',
+          toolCallId: 'tc-1',
+          toolName: 'Read',
+        },
+      } as any);
+
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'tool_call_update',
+          toolCallId: 'tc-1',
+          rawInput: { path: 'updated.txt' },
+        },
+      } as any);
+
+      const data = getToolCallData(thread.entries[0])!;
+      expect(data.toolCall.rawInput).toEqual({ path: 'updated.txt' });
     });
 
     it('should mark tool call as completed on tool_call_update with status=completed', () => {

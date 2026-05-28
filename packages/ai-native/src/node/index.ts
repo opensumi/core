@@ -27,6 +27,7 @@ import {
   AcpThreadStatusCallerService,
   AcpThreadStatusCallerServiceToken,
   AcpWebMcpCallerService,
+  OpenSumiMcpHttpServer,
   PermissionRoutingService,
   PermissionRoutingServiceToken,
 } from './acp';
@@ -86,6 +87,8 @@ export class AINativeModule extends NodeModule {
       token: AcpWebMcpCallerServiceToken,
       useClass: AcpWebMcpCallerService,
     },
+    // Built-in HTTP MCP server for exposing WebMCP tools to ACP agents
+    OpenSumiMcpHttpServer,
     // Language models for non-ACP fallback
     OpenAICompatibleModel,
   ];

@@ -7,6 +7,40 @@ import { ImageCompressionOptions, compressToolResultSmart } from '../../common/i
 import { IMCPServerProxyService, IMCPToolResult } from '../../common/types';
 import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
 
+function getJsonSchemaSourceSchema(inputSchema: any): any {
+  const def = inputSchema?._def ?? inputSchema?.def;
+  if (def?.type === 'pipe' && def.in) {
+    return getJsonSchemaSourceSchema(def.in);
+  }
+  if (def?.typeName === 'ZodEffects' && def.schema) {
+    return getJsonSchemaSourceSchema(def.schema);
+  }
+  return inputSchema;
+}
+
+function toJSONSchema(inputSchema: any): any {
+  const sourceSchema = getJsonSchemaSourceSchema(inputSchema);
+  if (typeof sourceSchema?.toJSONSchema === 'function') {
+    return sourceSchema.toJSONSchema();
+  }
+  return sourceSchema;
+}
+
+function summarizeMCPTools(tools: Array<{ name: string; inputSchema: any }>) {
+  const toolStats = tools.map((tool) => {
+    const schemaBytes = Buffer.byteLength(JSON.stringify(tool.inputSchema ?? null), 'utf8');
+    return {
+      name: tool.name,
+      schemaBytes,
+    };
+  });
+  return {
+    toolCount: tools.length,
+    schemaBytes: toolStats.reduce((total, tool) => total + tool.schemaBytes, 0),
+    largestSchemas: [...toolStats].sort((a, b) => b.schemaBytes - a.schemaBytes).slice(0, 5),
+  };
+}
+
 @Injectable()
 export class MCPServerProxyService implements IMCPServerProxyService {
   @Autowired(TokenMCPServerRegistry)
@@ -29,11 +63,7 @@ export class MCPServerProxyService implements IMCPServerProxyService {
   // 获取 OpenSumi 内部注册的 MCP tools
   async $getBuiltinMCPTools() {
     const tools = await this.mcpServerRegistry.getMCPTools().map((tool) => {
-      // Use Zod v4's built-in toJSONSchema() instead of zodToJsonSchema (v3-only)
-      const jsonSchema =
-        typeof (tool.inputSchema as any).toJSONSchema === 'function'
-          ? (tool.inputSchema as any).toJSONSchema()
-          : tool.inputSchema;
+      const jsonSchema = toJSONSchema(tool.inputSchema);
 
       return {
         name: tool.name,
@@ -43,7 +73,7 @@ export class MCPServerProxyService implements IMCPServerProxyService {
       };
     });
 
-    this.logger.log('SUMI MCP tools', tools);
+    this.logger.log('SUMI MCP tools', summarizeMCPTools(tools));
 
     return tools;
   }
