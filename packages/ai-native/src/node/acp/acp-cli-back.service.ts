@@ -144,10 +144,192 @@ export class AcpCliBackService implements IAIBackService {
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<IAIBackServiceResponse> {
-    return {
-      errorCode: -1,
-      errorMsg: 'request() is not supported. ',
-    } as IAIBackServiceResponse;
+    this.logger.log(
+      `[ACP Back] request: type=${
+        options.type ?? '(empty)'
+      }, hasAgentSessionConfig=${!!options.agentSessionConfig}, noTool=${options.noTool === true}`,
+    );
+    if (!options.agentSessionConfig) {
+      return this.openAIRequest(input, options, cancelToken);
+    }
+    return this.agentRequest(input, options, cancelToken);
+  }
+
+  private async openAIRequest(
+    input: string,
+    options: IAIBackServiceOption,
+    cancelToken?: CancellationToken,
+  ): Promise<IAIBackServiceResponse<string>> {
+    const stream = new ChatReadableStream();
+    const responsePromise = this.collectChatProgressStream(stream);
+    try {
+      await this.openAICompatibleModel.request(input, stream, options, cancelToken);
+      return responsePromise;
+    } catch (error) {
+      const normalizedError = normalizeAcpError(error);
+      return {
+        errorCode: -1,
+        errorMsg: normalizedError.message,
+      };
+    }
+  }
+
+  private async agentRequest(
+    input: string,
+    options: IAIBackServiceOption,
+    cancelToken?: CancellationToken,
+  ): Promise<IAIBackServiceResponse<string>> {
+    let sessionId: string | undefined;
+    try {
+      this.ensureThreadStatusSubscription();
+      const config: AgentProcessConfig = {
+        ...options.agentSessionConfig!,
+        mcpServers: options.noTool ? [] : options.agentSessionConfig!.mcpServers,
+      };
+      const result = await this.agentService.createSession(config);
+      sessionId = result.sessionId;
+      this.logger.log(
+        `[ACP Back] request: created ephemeral session sessionId=${sessionId}, type=${options.type ?? '(empty)'}`,
+      );
+
+      const stream = this.agentService.sendMessage(
+        {
+          sessionId,
+          prompt: this.buildNonStreamingAgentPrompt(input, options),
+          images: options.images,
+          history: convertMessageHistory(options.history),
+        },
+        config,
+      );
+
+      return await this.collectAgentRequestStream(stream, sessionId, cancelToken);
+    } catch (error) {
+      if (sessionId) {
+        await this.disposeEphemeralSession(sessionId);
+      }
+      const normalizedError = normalizeAcpError(error);
+      return {
+        errorCode: -1,
+        errorMsg: normalizedError.message,
+      };
+    }
+  }
+
+  private collectAgentRequestStream(
+    stream: SumiReadableStream<AgentUpdate>,
+    sessionId: string,
+    cancelToken?: CancellationToken,
+  ): Promise<IAIBackServiceResponse<string>> {
+    let content = '';
+    let settled = false;
+    const disposables: Array<{ dispose(): void }> = [];
+
+    return new Promise((resolve) => {
+      const finish = async (response: IAIBackServiceResponse<string>) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        disposables.forEach((disposable) => disposable.dispose());
+        await this.disposeEphemeralSession(sessionId);
+        resolve(response);
+      };
+
+      disposables.push(
+        stream.onData((update) => {
+          if (update.type === 'message') {
+            content += update.content;
+            return;
+          }
+          if (update.type === 'done') {
+            finish({
+              errorCode: 0,
+              data: content,
+            });
+          }
+        }),
+      );
+      disposables.push(
+        stream.onEnd(() => {
+          finish({
+            errorCode: 0,
+            data: content,
+          });
+        }),
+      );
+      disposables.push(
+        stream.onError((error) => {
+          const normalizedError = normalizeAcpError(error);
+          finish({
+            errorCode: -1,
+            errorMsg: normalizedError.message,
+          });
+        }),
+      );
+      if (cancelToken) {
+        disposables.push(
+          cancelToken.onCancellationRequested(() => {
+            this.agentService.cancelRequest(sessionId).finally(() => {
+              finish({
+                errorCode: -1,
+                errorMsg: 'Request canceled',
+                isCancel: true,
+              });
+            });
+          }),
+        );
+      }
+    });
+  }
+
+  private collectChatProgressStream(
+    stream: SumiReadableStream<IChatProgress>,
+  ): Promise<IAIBackServiceResponse<string>> {
+    let content = '';
+    return new Promise((resolve) => {
+      stream.onData((progress) => {
+        if (progress.kind === 'content') {
+          content += progress.content;
+        }
+      });
+      stream.onEnd(() => {
+        resolve({
+          errorCode: 0,
+          data: content,
+        });
+      });
+      stream.onError((error) => {
+        const normalizedError = normalizeAcpError(error);
+        resolve({
+          errorCode: -1,
+          errorMsg: normalizedError.message,
+        });
+      });
+    });
+  }
+
+  private buildNonStreamingAgentPrompt(input: string, options: IAIBackServiceOption): string {
+    if (!options.noTool) {
+      return input;
+    }
+    return `You are running in a temporary background session for a non-interactive OpenSumi request.
+Do not call tools, do not inspect files, and do not ask follow-up questions. Return only the final answer text.
+
+${input}`;
+  }
+
+  private async disposeEphemeralSession(sessionId: string): Promise<void> {
+    try {
+      await this.agentService.closeSession({ sessionId });
+    } catch (error) {
+      this.logger.warn(`[ACP Back] request: failed to close ephemeral session sessionId=${sessionId}`, error);
+    }
+    try {
+      await this.agentService.disposeSession(sessionId, true);
+      this.logger.log(`[ACP Back] request: disposed ephemeral session sessionId=${sessionId}`);
+    } catch (error) {
+      this.logger.warn(`[ACP Back] request: failed to dispose ephemeral session sessionId=${sessionId}`, error);
+    }
   }
 
   async requestStream(

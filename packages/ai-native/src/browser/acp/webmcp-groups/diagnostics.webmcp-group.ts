@@ -72,7 +72,7 @@ export function createDiagnosticsGroup(container: Injector): WebMcpGroupRegistra
     defaultLoaded: true,
     tools: [
       {
-        method: '_opensumi/diagnostics/list',
+        name: 'diagnostics_list',
         description:
           'List current IDE diagnostics. Use this after edits or validation commands to inspect errors and warnings.',
         riskLevel: 'read',
@@ -140,7 +140,7 @@ export function createDiagnosticsGroup(container: Injector): WebMcpGroupRegistra
         },
       },
       {
-        method: '_opensumi/diagnostics/getStats',
+        name: 'diagnostics_getStats',
         description: 'Get diagnostic counts by severity for the current workspace.',
         riskLevel: 'read',
         inputSchema: {
@@ -160,7 +160,7 @@ export function createDiagnosticsGroup(container: Injector): WebMcpGroupRegistra
         },
       },
       {
-        method: '_opensumi/diagnostics/open',
+        name: 'diagnostics_open',
         description: 'Open a file and reveal the given diagnostic location.',
         riskLevel: 'ui',
         inputSchema: {

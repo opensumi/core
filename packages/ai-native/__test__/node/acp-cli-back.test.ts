@@ -45,6 +45,7 @@ describe('AcpCliBackService', () => {
       sendMessage: jest.fn(),
       cancelRequest: jest.fn(),
       disposeSession: jest.fn(),
+      closeSession: jest.fn(),
       dispose: jest.fn(),
       getSessionInfo: jest.fn(),
       loadSession: jest.fn(),
@@ -90,10 +91,80 @@ describe('AcpCliBackService', () => {
   });
 
   describe('request()', () => {
-    it('should return error code -1 indicating not supported', async () => {
+    it('should collect OpenAI-compatible stream content when agent config is not provided', async () => {
+      (mockOpenAIModel.request as jest.Mock).mockImplementation(async (_input, stream: ChatReadableStream) => {
+        stream.emitData({ kind: 'content', content: 'hello' });
+        stream.emitData({ kind: 'content', content: ' world' });
+        stream.end();
+      });
+
       const result = await service.request('hello', {});
-      expect(result.errorCode).toBe(-1);
-      expect(result.errorMsg).toContain('not supported');
+
+      expect(result).toEqual({
+        errorCode: 0,
+        data: 'hello world',
+      });
+      expect(mockOpenAIModel.request).toHaveBeenCalled();
+    });
+
+    it('should create an ephemeral ACP session, collect message updates, and force dispose it', async () => {
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'summary-session', availableCommands: [] });
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      const resultPromise = service.request('summarize this', {
+        agentSessionConfig: mockAgentSessionConfig,
+        noTool: true,
+        type: 'acp_chat_relay_summary',
+      });
+
+      agentStream.emitData({ type: 'thought', content: 'thinking' });
+      agentStream.emitData({ type: 'message', content: 'summary ' });
+      agentStream.emitData({ type: 'message', content: 'text' });
+      agentStream.emitData({ type: 'done', content: '' });
+
+      await expect(resultPromise).resolves.toEqual({
+        errorCode: 0,
+        data: 'summary text',
+      });
+      expect(mockAgentService.createSession).toHaveBeenCalledWith({
+        ...mockAgentSessionConfig,
+        mcpServers: [],
+      });
+      expect(mockAgentService.sendMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: 'summary-session',
+          prompt: expect.stringContaining('summarize this'),
+        }),
+        expect.any(Object),
+      );
+      expect(mockAgentService.closeSession).toHaveBeenCalledWith({ sessionId: 'summary-session' });
+      expect(mockAgentService.disposeSession).toHaveBeenCalledWith('summary-session', true);
+    });
+
+    it('should strip MCP servers for no-tool ACP requests', async () => {
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'summary-session', availableCommands: [] });
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      const resultPromise = service.request('summarize this', {
+        agentSessionConfig: {
+          ...mockAgentSessionConfig,
+          mcpServers: [{ name: 'test', command: 'node', args: ['server.js'], env: [] }],
+        },
+        noTool: true,
+      });
+
+      agentStream.emitData({ type: 'message', content: 'summary' });
+      agentStream.emitData({ type: 'done', content: '' });
+
+      await resultPromise;
+
+      expect(mockAgentService.createSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mcpServers: [],
+        }),
+      );
     });
   });
 

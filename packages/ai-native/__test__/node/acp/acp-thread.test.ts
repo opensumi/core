@@ -796,6 +796,23 @@ describe('AcpThread', () => {
       expect(thread.entries).toEqual([]);
     });
 
+    it('should ignore notifications from a different bound session', () => {
+      (thread as any)._sessionId = 'current-session';
+
+      thread.handleNotification({
+        sessionId: 'stale-session',
+        update: {
+          sessionUpdate: 'agent_message_chunk',
+          content: { type: 'text', text: 'stale answer' },
+        },
+      } as any);
+
+      expect(thread.entries).toEqual([]);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Ignoring session notification for stale-session'),
+      );
+    });
+
     it('should create/replace plan entry on plan notification', () => {
       thread.handleNotification({
         sessionId: 's1',

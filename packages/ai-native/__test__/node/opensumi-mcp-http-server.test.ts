@@ -26,7 +26,7 @@ const testGroupDefs = [
     profile: 'default',
     tools: [
       {
-        method: '_opensumi/file/read',
+        name: 'file_read',
         description: 'Read file',
         riskLevel: 'read',
         inputSchema: {
@@ -40,7 +40,7 @@ const testGroupDefs = [
         },
       },
       {
-        method: '_opensumi/file/delete',
+        name: 'file_delete',
         description: 'Delete file',
         riskLevel: 'destructive',
         exposedByDefault: false,
@@ -63,7 +63,7 @@ const testGroupDefs = [
     profile: 'default',
     tools: [
       {
-        method: '_opensumi/search/text',
+        name: 'search_text',
         description: 'Search text',
         riskLevel: 'read',
         profiles: ['interactive', 'full'],
@@ -86,7 +86,7 @@ const testGroupDefs = [
     profile: 'default',
     tools: [
       {
-        method: '_opensumi/terminal/create',
+        name: 'terminal_create',
         description: 'Create terminal',
         riskLevel: 'shell',
         profiles: ['interactive', 'full'],
@@ -100,7 +100,7 @@ const testGroupDefs = [
         },
       },
       {
-        method: '_opensumi/terminal/runCommand',
+        name: 'terminal_runCommand',
         description: 'Run command',
         riskLevel: 'shell',
         profiles: ['interactive', 'full'],
@@ -126,7 +126,7 @@ const testGroupDefs = [
     profile: 'default',
     tools: [
       {
-        method: '_opensumi/acp_chat/getSessionState',
+        name: 'acp_chat_getSessionState',
         description: 'Get ACP chat session state',
         riskLevel: 'read',
         inputSchema: {
@@ -135,7 +135,7 @@ const testGroupDefs = [
         },
       },
       {
-        method: '_opensumi/acp_chat/setSessionMode',
+        name: 'acp_chat_setSessionMode',
         description: 'Set ACP session mode',
         riskLevel: 'write',
         profiles: ['full'],
@@ -276,6 +276,35 @@ describe('OpenSumiMcpHttpServer', () => {
         ]),
       );
 
+      const describeGroupResult = await client.callTool({
+        name: 'opensumi_describeCapabilityGroup',
+        arguments: { group: 'search' },
+      });
+      expect(describeGroupResult.isError).toBe(false);
+      const describedGroup = JSON.parse((describeGroupResult.content as any)[0].text).result;
+      expect(describedGroup.tools[0]).toEqual(
+        expect.objectContaining({
+          name: 'search_text',
+          description: 'Search text',
+        }),
+      );
+      expect(describedGroup.tools[0]).not.toHaveProperty('method');
+
+      const describeToolResult = await client.callTool({
+        name: 'opensumi_describeTool',
+        arguments: { tool: 'search_text' },
+      });
+      expect(describeToolResult.isError).toBe(false);
+      const describedTool = JSON.parse((describeToolResult.content as any)[0].text).result;
+      expect(describedTool).toEqual(
+        expect.objectContaining({
+          name: 'search_text',
+          group: 'search',
+          description: 'Search text',
+        }),
+      );
+      expect(describedTool).not.toHaveProperty('method');
+
       const enableTerminalResult = await client.callTool({
         name: 'opensumi_enableCapabilityGroup',
         arguments: { group: 'terminal' },
@@ -299,7 +328,7 @@ describe('OpenSumiMcpHttpServer', () => {
         arguments: { path: 'README.md' },
       });
 
-      expect(caller.executeTool).toHaveBeenCalledWith('file', 'read', { path: 'README.md' });
+      expect(caller.executeTool).toHaveBeenCalledWith('file', 'file_read', { path: 'README.md' });
       expect(result.isError).toBe(false);
       expect(result.content).toEqual([
         {
@@ -315,12 +344,23 @@ describe('OpenSumiMcpHttpServer', () => {
       expect(hiddenResult.isError).toBe(true);
       expect(caller.executeTool).toHaveBeenCalledTimes(1);
 
+      const invalidToolResult = await client.callTool({
+        name: 'opensumi_invokeCapabilityTool',
+        arguments: { tool: 'search_text_typo', arguments: { query: 'foo' } },
+      });
+      expect(invalidToolResult.isError).toBe(true);
+      expect(JSON.parse((invalidToolResult.content as any)[0].text)).toMatchObject({
+        success: false,
+        error: 'TOOL_NOT_FOUND',
+      });
+      expect(caller.executeTool).toHaveBeenCalledTimes(1);
+
       const fallbackResult = await client.callTool({
         name: 'opensumi_invokeCapabilityTool',
         arguments: { tool: 'search_text', arguments: { query: 'foo' } },
       });
       expect(fallbackResult.isError).toBe(false);
-      expect(caller.executeTool).toHaveBeenCalledWith('search', 'text', { query: 'foo' });
+      expect(caller.executeTool).toHaveBeenCalledWith('search', 'search_text', { query: 'foo' });
     } finally {
       await client.close();
       await server.dispose();

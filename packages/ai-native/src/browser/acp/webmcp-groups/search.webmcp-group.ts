@@ -88,7 +88,7 @@ export function createSearchGroup(container: Injector): WebMcpGroupRegistration 
     defaultLoaded: true,
     tools: [
       {
-        method: '_opensumi/search/files',
+        name: 'search_files',
         description:
           'Search workspace files by fuzzy filename or path. Prefer this before reading files when the exact path is unknown.',
         riskLevel: 'read',
@@ -158,7 +158,7 @@ export function createSearchGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
       {
-        method: '_opensumi/search/text',
+        name: 'search_text',
         description:
           'Search text across workspace files. Returns matching file path, line, column, and a shortened line preview.',
         riskLevel: 'read',
@@ -251,7 +251,7 @@ export function createSearchGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
       {
-        method: '_opensumi/search/symbols',
+        name: 'search_symbols',
         description: 'Search workspace symbols through registered language providers.',
         riskLevel: 'read',
         profiles: ['interactive', 'full'],

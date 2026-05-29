@@ -57,18 +57,15 @@ import {
   WriteTextFileRequest,
   WriteTextFileResponse,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
-import { AcpWebMcpCallerServiceToken } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
 import { resolveAgentSpawnConfig } from './acp-spawn-config';
-import { AcpWebMcpHandler } from './acp-webmcp-handler';
 import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './handlers/file-system.handler';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
 import { PermissionRoutingService, PermissionRoutingServiceToken } from './permission-routing.service';
 
 import type { AgentUpdate, SimpleToolCall } from './acp-update-types';
-import type { AcpWebMcpCallerService } from './acp-webmcp-caller.service';
 
 // ---------------------------------------------------------------------------
 // Polyfill Web Streams for Node 16
@@ -307,7 +304,6 @@ export interface AcpThreadOptions {
   terminalHandler: AcpTerminalHandler;
   permissionRouting: PermissionRoutingService;
   logger: INodeLogger;
-  webmcpCallerService?: AcpWebMcpCallerService;
 }
 
 // ---------------------------------------------------------------------------
@@ -358,7 +354,6 @@ export const AcpThreadFactoryProvider: Provider = {
     const terminalHandler = injector.get(AcpTerminalHandlerToken);
     const permissionRouting = injector.get(PermissionRoutingServiceToken);
     const logger = injector.get(INodeLogger);
-    const webmcpCallerService = injector.get(AcpWebMcpCallerServiceToken) as AcpWebMcpCallerService;
 
     return (sessionId: string, config: AcpThreadRuntimeConfig) =>
       new AcpThread({
@@ -372,7 +367,6 @@ export const AcpThreadFactoryProvider: Provider = {
         terminalHandler,
         permissionRouting,
         logger,
-        webmcpCallerService,
       });
   },
 };
@@ -403,9 +397,6 @@ export class AcpThread extends Disposable implements IAcpThread {
   // SDK
   private _connection: any = null; // ClientSideConnection instance
   private _connected = false;
-
-  // WebMCP handler
-  private webmcpHandler: AcpWebMcpHandler | null = null;
 
   // Permission request tracking
   private _pendingPermissionRequests = new Map<
@@ -642,13 +633,6 @@ export class AcpThread extends Disposable implements IAcpThread {
     this._connection = new ClientSideConnection((_agent: any) => clientImpl, stream);
 
     this._connected = true;
-
-    // Initialize WebMCP handler if caller service is available
-    // Handler uses lazy initialization — group definitions are fetched on first _opensumi/* call
-    const webmcpCaller = this.options.webmcpCallerService;
-    if (webmcpCaller) {
-      this.webmcpHandler = new AcpWebMcpHandler(webmcpCaller, this.logger);
-    }
   }
 
   private createClientImpl(): any {
@@ -660,6 +644,9 @@ export class AcpThread extends Disposable implements IAcpThread {
       },
 
       async sessionUpdate(params: SessionNotification): Promise<void> {
+        if (!self.isCurrentSessionNotification(params)) {
+          return;
+        }
         self.handleNotification(params);
         self.fireEvent({
           type: 'session_notification',
@@ -736,38 +723,6 @@ export class AcpThread extends Disposable implements IAcpThread {
           throw new Error(result.error.message);
         }
       },
-
-      async extMethod(method: string, params: Record<string, unknown>): Promise<Record<string, unknown>> {
-        self.logger?.log(
-          `[AcpThread:${self.threadId}] extMethod() — method=${method}, params=${JSON.stringify(params)}`,
-        );
-        if (method.startsWith('_opensumi/')) {
-          if (self.webmcpHandler) {
-            const result = await self.webmcpHandler.handleExtMethod(method, params);
-            self.logger?.log(
-              `[AcpThread:${self.threadId}] extMethod() — method=${method}, result=${JSON.stringify(result)}`,
-            );
-            return result;
-          }
-          self.logger?.warn(
-            `[AcpThread:${self.threadId}] extMethod() — method=${method}, WebMCP handler not available`,
-          );
-          throw Object.assign(new Error(`Method not found: ${method} (WebMCP not available)`), { code: -32601 });
-        }
-        self.logger?.warn(`[AcpThread:${self.threadId}] extMethod() — method=${method} not implemented`);
-        throw Object.assign(new Error(`Method not found: ${method}`), { code: -32601 });
-      },
-
-      async extNotification(method: string, params: Record<string, unknown>): Promise<void> {
-        self.logger?.log(
-          `[AcpThread:${self.threadId}] extNotification() — method=${method}, params=${JSON.stringify(params)}`,
-        );
-        if (method.startsWith('_opensumi/') && self.webmcpHandler) {
-          self.webmcpHandler.handleExtNotification(method, params);
-          return;
-        }
-        self.logger?.debug(`[AcpThread:${self.threadId}] extNotification: ${method} — unhandled`, params);
-      },
     };
   }
 
@@ -780,12 +735,6 @@ export class AcpThread extends Disposable implements IAcpThread {
     );
     await this.ensureSdkConnection();
 
-    // Eagerly initialize WebMCP handler so group definitions are available
-    // for the capability metadata sent in initParams.
-    if (this.webmcpHandler) {
-      await this.webmcpHandler.ensureInitialized();
-    }
-
     const initParams: InitializeRequest = {
       protocolVersion: ACP_PROTOCOL_VERSION,
       clientCapabilities: {
@@ -794,7 +743,6 @@ export class AcpThread extends Disposable implements IAcpThread {
           writeTextFile: true,
         },
         terminal: true,
-        _meta: this.webmcpHandler?.getCapabilityMeta() ?? {},
       },
       clientInfo: {
         name: 'opensumi',
@@ -810,12 +758,6 @@ export class AcpThread extends Disposable implements IAcpThread {
         ...((config as any).clientCapabilities || {}),
       };
     }
-
-    this.logger?.log(
-      `[AcpThread:${this.threadId}] initialize() — initParams.clientCapabilities._meta=${JSON.stringify(
-        initParams.clientCapabilities?._meta ?? {},
-      )}`,
-    );
 
     const response: InitializeResponse = await this._connection.initialize(initParams);
 
@@ -1074,6 +1016,10 @@ export class AcpThread extends Disposable implements IAcpThread {
   // Public — notification handling (spec: must be public)
   // -----------------------------------------------------------------------
   handleNotification(params: SessionNotification): void {
+    if (!this.isCurrentSessionNotification(params)) {
+      return;
+    }
+
     const update = params.update;
     if (!update) {
       return;
@@ -1120,6 +1066,17 @@ export class AcpThread extends Disposable implements IAcpThread {
           }`,
         );
     }
+  }
+
+  private isCurrentSessionNotification(params: SessionNotification): boolean {
+    if (!params.sessionId || !this._sessionId || params.sessionId === this._sessionId) {
+      return true;
+    }
+
+    this.logger?.warn(
+      `[AcpThread:${this.threadId}] Ignoring session notification for ${params.sessionId}; current session is ${this._sessionId}`,
+    );
+    return false;
   }
 
   // -----------------------------------------------------------------------

@@ -1,10 +1,10 @@
 /**
  * WebMCP group definition for file management.
  *
- * Mirrors the file_* tools from webmcp-file-tools.registry.ts but wrapped
- * in the WebMcpGroupRegistration interface for the ACP channel.
+ * Defines file_* capabilities once for both navigator.modelContext and
+ * the Node-side MCP server.
  *
- * Tools follow the naming convention: _opensumi/file/{action}
+ * Tools follow the naming convention: file_{action}
  */
 import { Injector } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
@@ -39,9 +39,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
     description: '文件读写和管理操作',
     defaultLoaded: true,
     tools: [
-      // ----- _opensumi/file/getWorkspaceRoot -----
+      // ----- file_getWorkspaceRoot -----
       {
-        method: '_opensumi/file/getWorkspaceRoot',
+        name: 'file_getWorkspaceRoot',
         description:
           'Get the absolute path of the current workspace root directory. Use this to understand the base path for relative file operations.',
         riskLevel: 'read',
@@ -63,9 +63,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         },
       },
 
-      // ----- _opensumi/file/read -----
+      // ----- file_read -----
       {
-        method: '_opensumi/file/read',
+        name: 'file_read',
         description:
           'Read the contents of a file. Returns the file content as text. Use relative paths from the workspace root.',
         riskLevel: 'read',
@@ -112,9 +112,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         },
       },
 
-      // ----- _opensumi/file/write -----
+      // ----- file_write -----
       {
-        method: '_opensumi/file/write',
+        name: 'file_write',
         description:
           'Write content to a file. Creates the file if it does not exist, overwrites if it does. Creates parent directories automatically.',
         riskLevel: 'write',
@@ -164,9 +164,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         },
       },
 
-      // ----- _opensumi/file/list -----
+      // ----- file_list -----
       {
-        method: '_opensumi/file/list',
+        name: 'file_list',
         description:
           'List the contents of a directory. Returns an array of file/directory entries with metadata. Use "." for the workspace root.',
         riskLevel: 'read',
@@ -217,9 +217,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         },
       },
 
-      // ----- _opensumi/file/stat -----
+      // ----- file_stat -----
       {
-        method: '_opensumi/file/stat',
+        name: 'file_stat',
         description:
           'Get metadata about a file or directory. Returns size, isDirectory, lastModified, and other stat info.',
         riskLevel: 'read',
@@ -267,9 +267,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         },
       },
 
-      // ----- _opensumi/file/exists -----
+      // ----- file_exists -----
       {
-        method: '_opensumi/file/exists',
+        name: 'file_exists',
         description: 'Check whether a file or directory exists at the given path. Returns true or false.',
         riskLevel: 'read',
         profiles: ['interactive', 'full'],
@@ -307,9 +307,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         },
       },
 
-      // ----- _opensumi/file/create -----
+      // ----- file_create -----
       {
-        method: '_opensumi/file/create',
+        name: 'file_create',
         description:
           'Create an empty file or a new directory. Use "type: directory" to create a folder instead of a file.',
         riskLevel: 'write',
@@ -363,9 +363,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         },
       },
 
-      // ----- _opensumi/file/delete -----
+      // ----- file_delete -----
       {
-        method: '_opensumi/file/delete',
+        name: 'file_delete',
         description: 'Delete a file or directory. Use recursive: true to delete a directory and its contents.',
         riskLevel: 'destructive',
         exposedByDefault: false,
@@ -419,9 +419,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         },
       },
 
-      // ----- _opensumi/file/move -----
+      // ----- file_move -----
       {
-        method: '_opensumi/file/move',
+        name: 'file_move',
         description: 'Move or rename a file or directory from source to destination.',
         riskLevel: 'write',
         exposedByDefault: false,
@@ -467,9 +467,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         },
       },
 
-      // ----- _opensumi/file/copy -----
+      // ----- file_copy -----
       {
-        method: '_opensumi/file/copy',
+        name: 'file_copy',
         description: 'Copy a file or directory from source to destination.',
         riskLevel: 'write',
         exposedByDefault: false,

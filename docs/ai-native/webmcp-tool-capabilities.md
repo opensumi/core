@@ -44,6 +44,8 @@ Claude Code agent 通常已经具备：
 
 ## 默认暴露策略
 
+当前阶段采用轻量曝光策略，而不是完整权限系统。`profile`、`riskLevel` 和 `exposedByDefault` 用来控制初始工具面、描述风险和支撑日志观测；真正的高风险操作仍应在具体 tool 执行时走权限确认或业务校验。
+
 HTTP MCP 入口只暴露：
 
 - `defaultLoaded` group
@@ -71,6 +73,8 @@ HTTP MCP 入口只暴露：
 | 直接命令执行      | configurable/no | Claude Code 已有 bash；IDE terminal 执行用于用户可见交互场景 |
 | 文件系统写入      | no/compat       | Claude Code 已有文件写入；仅为兼容保留                       |
 | destructive 操作  | no              | 删除、kill、dispose 等默认关闭或强确认                       |
+
+当前先按以上规则上线观察，不提前把 `exposedByDefault` 设计成复杂的长期权限模型。如果真实使用中发现 agent 能稳定理解 catalog、权限确认体验清晰、误调用风险可控，可以再考虑放宽或移除部分保留字段。
 
 ## Capability Catalog 与自主探索
 
@@ -154,6 +158,8 @@ HTTP MCP 入口只暴露：
 5. Claude Code 重新 `tools/list` 后看到新增 group 的 tools。
 
 `opensumi_enableCapabilityGroup` 本身不执行 IDE 动作，只改变当前 session 的工具暴露状态，因此不应触发权限确认。高风险 tool 的权限仍在具体 tool call 上处理。
+
+MVP 语义：`enableCapabilityGroup` 表示 agent 在当前 MCP session 内显式展开某个 capability group。它不是权限授予，也不执行 IDE 动作；它只是让后续 `tools/list` 或 fallback broker 能看到更多已注册工具。是否需要用户确认，应由被调用的具体工具决定。
 
 如果 Claude Code 不会重新 `tools/list`，使用 fallback：
 
@@ -576,26 +582,113 @@ HTTP MCP 入口只暴露：
 
 建议新增工具：
 
-| Tool                           | Risk    | Default                | 用途                                            |
-| ------------------------------ | ------- | ---------------------- | ----------------------------------------------- |
-| `acp_chat_readSessionDigest`   | `read`  | on enable              | 读取指定会话的摘要和元信息，不返回完整历史      |
-| `acp_chat_readSessionMessages` | `read`  | full only              | 读取指定会话最近 N 条消息，强限制数量和总字符数 |
-| `acp_chat_postToSession`       | `write` | full only + permission | 向指定会话投递一条文本消息                      |
+| Tool | Risk | Default | 用途 |
+| --- | --- | --- | --- |
+| `acp_chat_prepareSessionDigest` | `read` | on enable | 在后台为指定会话准备摘要，返回 `digestId` 和短 preview，不把源会话原文返回给当前 agent |
+| `acp_chat_postPreparedRelay` | `write` | full only + permission | 将已准备好的 digest 投递到目标会话 |
+| `acp_chat_readSessionMessages` | `read` | full only | 调试/兜底能力：读取指定会话最近 N 条消息，强限制数量和总字符数 |
 
 优先实现顺序：
 
-1. `acp_chat_readSessionDigest`
-2. `acp_chat_postToSession`
+1. `acp_chat_prepareSessionDigest`
+2. `acp_chat_postPreparedRelay`
 3. `acp_chat_readSessionMessages`
 
-`readSessionMessages` 最容易撑爆 context，也更容易带出敏感内容，因此不作为第一阶段必需能力。
+`readSessionMessages` 最容易撑爆 context，也更容易带出敏感内容，因此不作为第一阶段必需能力。正常 relay 流程中，当前主会话 agent 不应该直接看到源会话 recent excerpts，只应该看到 digest metadata、短 preview 和投递结果。
 
-`acp_chat_readSessionDigest` 建议 schema：
+`acp_chat_prepareSessionDigest` 建议 schema：
+
+```ts
+{
+  sourceSessionId: string;
+  maxSourceChars?: number; // default 12000, cap 30000
+  maxDigestChars?: number; // default 2000, cap 6000
+}
+```
+
+返回给当前 agent：
+
+```ts
+{
+  digestId: string;
+  sourceSessionId: string;
+  sourceTitle: string;
+  digestSource: 'memory_summary' | 'background_summary' | 'empty';
+  preview: string; // short preview only, e.g. first 300 chars of digest
+  digestChars: number;
+  sourceChars: number;
+  sourceTruncated: boolean;
+  expiresAt: number;
+}
+```
+
+浏览器侧 relay store 缓存完整 digest：
+
+```ts
+{
+  digestId: string;
+  sourceSessionId: string;
+  sourceTitle: string;
+  digest: string;
+  createdAt: number;
+  expiresAt: number;
+}
+```
+
+`digestId` 缓存在浏览器侧 ACP Chat relay store 中，TTL 建议 10 分钟。当前主会话 agent 只拿到 `digestId` 和短 preview，拿不到源会话原文，也拿不到完整 digest，避免污染主会话上下文。
+
+后台摘要生成策略：
+
+1. 优先使用 `session.history.getMemorySummaries()`。
+2. 如果已有 memory summary，按时间顺序合并并裁剪到 `maxDigestChars`，`digestSource='memory_summary'`。
+3. 如果没有 memory summary，从源会话提取受限 source material：
+   - 最近少量 user/assistant 消息。
+   - 每条内容截断，例如 800 chars。
+   - 总输入限制，例如 default 12000 chars、cap 30000 chars。
+   - 不包含 tool result 原文。
+   - tool call 只保留工具名、状态、错误码，不保留结果内容。
+4. 使用独立 summarizer 在后台生成 digest，不把 source material 返回给当前 agent，不写入当前主会话 history。
+5. 如果 summarizer 不可用，返回 `digestSource='empty'` 或空摘要，不降级为把源会话摘录返回给当前 agent。
+
+后台 summarizer 实现建议：
+
+- 使用独立的 `AcpChatRelaySummaryProvider`，不要复用面向 chat title 的 `MessageSummaryProvider` 作为主路径。
+- Provider 优先读取 `session.history.getMemorySummaries()`，已有 memory summary 时不再调用模型。
+- 没有 memory summary 时，Provider 从源会话构造受限 messages，再调用 `AIBackService.request`。
+- 请求 `type` 使用 `acp_chat_relay_summary`，并设置 `noTool: true`，避免后台摘要触发工具调用。
+- summarizer 调用使用独立 request id 和日志标签，例如 `acp_chat_prepare_digest`。
+- summarizer 结果只写入 relay store，不追加到任何 ChatModel 的 `history`。
+- relay 链路日志记录 `prepare start/done/miss/error`、`summary request start/done/error`、`post start/miss/permission request/permission result/denied/session switch/message sent/session restored/done/error`。
+- 日志字段只记录 `sourceSessionId`、`targetSessionId`、`digestId`、`requestId`、`digestSource`、`historyMessages`、`memorySummaries`、`sourceChars`、`digestChars`、`sourceTruncated`、`messageChars`、`switchedSession`、`durationMs`、`reason/errorName`，不打印摘要内容、prompt、源消息正文或投递正文。
+- 如果 `AIBackService.request` 在当前 ACP agent 后端不可用，Provider 返回 `digestSource='empty'`，不要降级为把源会话摘录返回给当前 agent。
+
+伪代码：
+
+```ts
+async function prepareSessionDigest(sourceSessionId, limits) {
+  const session = await loadAcpSession(sourceSessionId);
+  const summaryProvider = injector.get(AcpChatRelaySummaryProvider);
+  const summary = await summaryProvider.prepareSessionDigest(session, limits);
+
+  return relayStore.put({
+    sourceSessionId,
+    digestSource: summary.digestSource,
+    digest: summary.digest,
+    sourceChars: summary.sourceChars,
+    digestChars: summary.digestChars,
+    sourceTruncated: summary.sourceTruncated,
+  });
+}
+```
+
+`acp_chat_readSessionMessages` 建议 schema：
 
 ```ts
 {
   sessionId: string;
-  maxChars?: number; // default 2000, cap 6000
+  maxMessages?: number; // default 10, cap 30
+  maxChars?: number; // default 4000, cap 12000
+  sinceRequestId?: string;
 }
 ```
 
@@ -605,44 +698,41 @@ HTTP MCP 入口只暴露：
 {
   sessionId: string;
   title: string;
-  threadStatus: string;
   requestCount: number;
   historyMessageCount: number;
-  digest: string;
+  messages: Array<{
+    role: 'user' | 'assistant';
+    contentPreview: string;
+    chars: number;
+    truncated: boolean;
+  }>;
   truncated: boolean;
 }
 ```
 
-摘要生成策略：
+`readSessionMessages` 只能作为 full profile 下的显式调试/兜底工具，不参与默认 relay 流程。
 
-- 优先使用 session memory summary。
-- 没有 summary 时，只抽取最近少量 user prompt / assistant response 的短摘要。
-- 不返回 tool result 原文。
-- 单条内容截断，例如 500 chars。
-- 总长度限制，例如 default 2000 chars、cap 6000 chars。
-
-`acp_chat_postToSession` 建议 schema：
+`acp_chat_postPreparedRelay` 建议 schema：
 
 ```ts
 {
+  digestId: string;
   targetSessionId: string;
-  content: string;
-  sourceSessionId?: string;
-  sourceTitle?: string;
 }
 ```
 
 执行策略：
 
 - 必须触发权限确认。
+- 从 relay store 读取 `digestId` 对应的完整 digest。
 - 只投递文本，不支持 images。
-- `content` 限制长度，例如 cap 8000 chars。
+- digest 长度限制，例如 cap 6000 chars。
 - 自动包装来源说明：
 
 ```md
 [Forwarded from ACP session: <sourceTitle or sourceSessionId>]
 
-<content>
+<digest>
 ```
 
 如果目标 session 不是当前 active session，第一阶段建议采用“临时切换目标会话、发送后切回原会话”的实现，改动较小；实现时必须用 `finally` 保证切回原 session。
@@ -651,8 +741,8 @@ HTTP MCP 入口只暴露：
 
 - source session
 - target session
-- content 字符数
-- 内容预览前 500 chars
+- digest 字符数
+- digest preview 前 500 chars
 - 是否会临时切换会话
 
 用户选项只提供：
@@ -664,17 +754,17 @@ HTTP MCP 入口只暴露：
 
 Profile 策略：
 
-- `acp_chat_readSessionDigest`: `profiles: ['interactive', 'full']`
+- `acp_chat_prepareSessionDigest`: `profiles: ['interactive', 'full']`
+- `acp_chat_postPreparedRelay`: `riskLevel: 'write'`、`profiles: ['full']`、执行时强 permission
 - `acp_chat_readSessionMessages`: `profiles: ['full']`
-- `acp_chat_postToSession`: `riskLevel: 'write'`、`profiles: ['full']`、执行时强 permission
 
 典型流程：
 
 1. 用户在主会话说：“把会话 2 的进展同步过来。”
 2. agent 调用 `acp_chat_listSessions`。
-3. agent 调用 `acp_chat_readSessionDigest({ sessionId })`。
-4. agent 整理要转发到主会话的摘要。
-5. agent 调用 `acp_chat_postToSession({ targetSessionId, sourceSessionId, content })`。
+3. agent 调用 `acp_chat_prepareSessionDigest({ sourceSessionId })`。
+4. 工具在后台准备摘要，返回 `digestId` 和短 preview。
+5. agent 调用 `acp_chat_postPreparedRelay({ digestId, targetSessionId })`。
 6. OpenSumi 弹出权限确认。
 7. 用户确认后，内容投递到主会话。
 
@@ -698,13 +788,13 @@ Profile 策略：
 | `file` | read/write/list/stat/exists/create/delete/move/copy | 已补 `riskLevel`；写入和 destructive 工具默认不暴露 |
 | `editor` | open/close/getActive/listOpenFiles/getSelection/readBuffer/readRangeFromBuffer/listDirtyFiles/getDirtyDiff/setSelection/format/fold/unfold/save | 保留 read/UI 能力；format/save 默认不暴露 |
 | `terminal` | list/getActive/readOutput/tail/getProcessInfo/create/executeCommand/sendText/sendControl/runCommand/waitForPattern/show/getProcessId/dispose/resize/getOS/getProfiles/showPanel | 已拆成 observation + interaction；dispose 默认不暴露 |
-| `acp_chat` | getSessionState/getPermissionState/showChatView/listSessions/getAvailableCommands/setSessionMode | 新增；默认只暴露安全观测和 chat panel 展示，不暴露 sendMessage/permission 决策；跨会话 relay 设计已补充，待实现 |
+| `acp_chat` | getSessionState/getPermissionState/showChatView/listSessions/getAvailableCommands/prepareSessionDigest/postPreparedRelay/readSessionMessages/setSessionMode | 已补跨会话 relay；默认只暴露安全观测和 chat panel 展示，不暴露 sendMessage/permission 决策；prepare 仅 interactive/full，post/read 仅 full |
 | `opensumi` | discoverCapabilities/describeCapabilityGroup/describeTool/enableCapabilityGroup/invokeCapabilityTool | Capability Catalog 已实现，用于默认小工具集下的自主发现、按需启用和 fallback broker |
 
 兼容说明：
 
-- 旧的 `registerAcpWebMCPTools` 实现仍保留在代码中，便于兼容既有单测和后续迁移参考。
-- AINative 启动流程不再注册旧 ACP Chat 直连 WebMCP tools；运行时注册以 `acp_chat` group 为准。
+- 旧的 `registerAcpWebMCPTools` 直连注册实现已删除。
+- ACP Chat 运行时 WebMCP 能力统一由 `acp_chat` group 注册和暴露。
 
 ## Priority Plan
 
@@ -758,8 +848,10 @@ Profile 策略：
 
 - HTTP MCP server 以每个 MCP session 为单位维护 `enabledGroups`。
 - `tools/list` 默认只暴露 `defaultLoaded` 且符合当前 profile 的工具，以及 catalog 元工具。
-- `opensumi_enableCapabilityGroup` 会把 group 记录到当前 session，下一次 `tools/list` 会额外暴露该 group 的可用 read/ui 工具。
-- `default` profile 下，按需启用可以暴露 search/file 这类 read 工具；shell/write/destructive 仍受 profile 和 `exposedByDefault` 约束。
+- `opensumi_enableCapabilityGroup` 会把 group 记录到当前 session，下一次 `tools/list` 会额外暴露该 group 在当前轻量规则下可见的工具。
+- `default` profile 下，按需启用可以暴露默认列表中没有出现的工具，例如 search 或 terminal interaction；具体高风险动作仍应在工具执行时处理权限。
+- `riskLevel` 目前主要用于描述、推荐、日志和后续策略演进，不应被理解为已经完成了一套强权限系统。
+- `exposedByDefault` 当前是保留的隐藏开关，适合临时保护明显不希望进入普通 `tools/list` 的工具；是否长期保留，等真实调用数据稳定后再决定。
 - `tools/list` 通过 browser RPC 获取 `includeAllTools` 定义，因此 catalog 能描述 default profile 未直接暴露的工具。
 
 ### P5: 验证动态启用和 fallback（已实现，待真实 Claude Code 行为验证）

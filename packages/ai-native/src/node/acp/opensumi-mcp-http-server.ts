@@ -43,12 +43,10 @@ interface WebMcpSessionState {
 interface ResolvedWebMcpTool {
   group: WebMcpGroupDefWithMeta;
   tool: WebMcpToolDefWithMeta;
-  action: string;
   name: string;
 }
 
 const CATALOG_GROUP_NAME = 'opensumi';
-const CATALOG_METHOD_PREFIX = '_opensumi/capabilities/';
 
 @Injectable()
 export class OpenSumiMcpHttpServer {
@@ -170,7 +168,7 @@ export class OpenSumiMcpHttpServer {
       return {
         tools: exposedGroupDefs.flatMap((group) =>
           group.tools.map((tool) => ({
-            name: this.toMcpToolName(group.name, tool.method),
+            name: tool.name,
             description: tool.description,
             inputSchema: tool.inputSchema,
           })),
@@ -203,13 +201,13 @@ export class OpenSumiMcpHttpServer {
 
         const result = await this.caller.executeTool(
           target.group.name,
-          target.action,
+          target.name,
           (request.params.arguments ?? {}) as Record<string, unknown>,
         );
         this.logger?.log?.(
-          `[OpenSumiMcpHttpServer] tools/call — tool=${request.params.name}, group=${target.group.name}, action=${
-            target.action
-          }, riskLevel=${target.tool.riskLevel ?? 'unknown'}, success=${result.success}`,
+          `[OpenSumiMcpHttpServer] tools/call — tool=${request.params.name}, group=${target.group.name}, riskLevel=${
+            target.tool.riskLevel ?? 'unknown'
+          }, success=${result.success}`,
         );
         return {
           content: [{ type: 'text', text: JSON.stringify(result) }],
@@ -301,18 +299,12 @@ export class OpenSumiMcpHttpServer {
   private resolveTool(groupDefs: WebMcpGroupDefWithMeta[], toolName: string): ResolvedWebMcpTool | undefined {
     for (const group of groupDefs) {
       for (const tool of group.tools) {
-        const action = tool.method.split('/').pop();
-        if (action && this.toMcpToolName(group.name, tool.method) === toolName) {
-          return { group, tool, action, name: toolName };
+        if (tool.name === toolName) {
+          return { group, tool, name: toolName };
         }
       }
     }
     return undefined;
-  }
-
-  private toMcpToolName(groupName: string, method: string): string {
-    const action = method.split('/').pop() ?? method;
-    return `${groupName}_${action}`.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 64);
   }
 
   private getExposedGroupDefs(
@@ -334,6 +326,10 @@ export class OpenSumiMcpHttpServer {
   }
 
   private isToolExposed(group: WebMcpGroupDefWithMeta, tool: WebMcpToolDefWithMeta, groupEnabled: boolean): boolean {
+    // This is an MCP visibility rule, not a full authorization layer. The
+    // catalog starts small, then enableCapabilityGroup expands the current MCP
+    // session's tool surface. Concrete tools still own permission prompts and
+    // business-specific safety checks at execution time.
     if ((tool as ExposableWebMcpToolDef).exposedByDefault === false) {
       return false;
     }
@@ -347,6 +343,9 @@ export class OpenSumiMcpHttpServer {
   }
 
   private isToolAllowedAfterEnable(tool: WebMcpToolDefWithMeta, profile: WebMcpProfile): boolean {
+    // Keep this lightweight until real agent behavior is observed. Risk/profile
+    // metadata mainly shapes exposure and telemetry; do not treat it as the
+    // final long-term permission model.
     if (tool.riskLevel === 'destructive' || tool.riskLevel === 'write') {
       return profile === 'full';
     }
@@ -380,7 +379,7 @@ export class OpenSumiMcpHttpServer {
       defaultLoaded: true,
       tools: [
         {
-          method: `${CATALOG_METHOD_PREFIX}discoverCapabilities`,
+          name: 'opensumi_discoverCapabilities',
           description:
             'Discover hidden OpenSumi IDE capability groups. Call this when you need search, file read, language navigation, SCM, debug, tasks, output logs, ACP chat state, permissions, or terminal interaction tools that are not currently listed.',
           riskLevel: 'read',
@@ -400,7 +399,7 @@ export class OpenSumiMcpHttpServer {
           },
         },
         {
-          method: `${CATALOG_METHOD_PREFIX}describeCapabilityGroup`,
+          name: 'opensumi_describeCapabilityGroup',
           description:
             'Describe one OpenSumi capability group and its tools. Use includeSchemas only when you need exact parameters.',
           riskLevel: 'read',
@@ -422,7 +421,7 @@ export class OpenSumiMcpHttpServer {
           },
         },
         {
-          method: `${CATALOG_METHOD_PREFIX}describeTool`,
+          name: 'opensumi_describeTool',
           description: 'Return one OpenSumi WebMCP tool description and full input schema.',
           riskLevel: 'read',
           inputSchema: {
@@ -430,7 +429,7 @@ export class OpenSumiMcpHttpServer {
             properties: {
               tool: {
                 type: 'string',
-                description: 'MCP tool name such as search_text, or internal method such as _opensumi/search/text.',
+                description: 'MCP tool name such as search_text.',
               },
             },
             required: ['tool'],
@@ -438,7 +437,7 @@ export class OpenSumiMcpHttpServer {
           },
         },
         {
-          method: `${CATALOG_METHOD_PREFIX}enableCapabilityGroup`,
+          name: 'opensumi_enableCapabilityGroup',
           description:
             'Enable an OpenSumi capability group for this MCP session. This only changes tool visibility; it does not execute IDE actions.',
           riskLevel: 'read',
@@ -455,7 +454,7 @@ export class OpenSumiMcpHttpServer {
           },
         },
         {
-          method: `${CATALOG_METHOD_PREFIX}invokeCapabilityTool`,
+          name: 'opensumi_invokeCapabilityTool',
           description:
             'Fallback broker for calling an enabled OpenSumi capability tool when the MCP client does not refresh tools/list after enabling a group.',
           riskLevel: 'read',
@@ -464,7 +463,7 @@ export class OpenSumiMcpHttpServer {
             properties: {
               tool: {
                 type: 'string',
-                description: 'MCP tool name such as search_text, or internal method such as _opensumi/search/text.',
+                description: 'MCP tool name such as search_text.',
               },
               arguments: {
                 type: 'object',
@@ -536,7 +535,7 @@ export class OpenSumiMcpHttpServer {
           defaultToolCount: defaultTools.length,
           availableAfterEnableToolCount: toolsAfterEnable.length,
           toolCount: currentTools.length,
-          estimatedBytes: this.getGroupToolBytes(group.name, currentTools),
+          estimatedBytes: this.getGroupToolBytes(currentTools),
         };
       })
       .filter(
@@ -563,8 +562,7 @@ export class OpenSumiMcpHttpServer {
     }
 
     const tools = this.getToolsAvailableAfterEnable(group).map((tool) => ({
-      name: this.toMcpToolName(group.name, tool.method),
-      method: tool.method,
+      name: tool.name,
       description: tool.description,
       riskLevel: tool.riskLevel ?? 'read',
       ...(includeSchemas
@@ -604,7 +602,6 @@ export class OpenSumiMcpHttpServer {
       success: true,
       result: {
         name: target.name,
-        method: target.tool.method,
         group: target.group.name,
         description: target.tool.description,
         riskLevel: target.tool.riskLevel ?? 'read',
@@ -642,7 +639,7 @@ export class OpenSumiMcpHttpServer {
           ? {
               tool: 'opensumi_invokeCapabilityTool',
               arguments: {
-                tool: this.toMcpToolName(group.name, firstTool.method),
+                tool: firstTool.name,
                 arguments: {},
               },
             }
@@ -672,7 +669,7 @@ export class OpenSumiMcpHttpServer {
     }
 
     const toolArgs = this.asRecord(args.arguments);
-    const result = await this.caller.executeTool(target.group.name, target.action, toolArgs);
+    const result = await this.caller.executeTool(target.group.name, target.name, toolArgs);
     this.logger?.log?.(
       `[OpenSumiMcpHttpServer] capabilities/invokeTool — tool=${target.name}, group=${target.group.name}, riskLevel=${
         target.tool.riskLevel ?? 'unknown'
@@ -684,10 +681,8 @@ export class OpenSumiMcpHttpServer {
   private resolveAnyTool(groupDefs: WebMcpGroupDefWithMeta[], toolName: string): ResolvedWebMcpTool | undefined {
     for (const group of groupDefs) {
       for (const tool of group.tools) {
-        const action = tool.method.split('/').pop();
-        const mcpName = this.toMcpToolName(group.name, tool.method);
-        if (action && (mcpName === toolName || tool.method === toolName)) {
-          return { group, tool, action, name: mcpName };
+        if (tool.name === toolName) {
+          return { group, tool, name: tool.name };
         }
       }
     }
@@ -798,12 +793,12 @@ export class OpenSumiMcpHttpServer {
     };
   }
 
-  private getGroupToolBytes(groupName: string, tools: WebMcpToolDefWithMeta[]): number {
+  private getGroupToolBytes(tools: WebMcpToolDefWithMeta[]): number {
     return tools.reduce(
       (total, tool) =>
         total +
         this.getJsonByteLength({
-          name: this.toMcpToolName(groupName, tool.method),
+          name: tool.name,
           description: tool.description,
           inputSchema: tool.inputSchema,
         }),
@@ -845,7 +840,7 @@ export class OpenSumiMcpHttpServer {
           const schemaBytes = this.getJsonByteLength(tool.inputSchema);
           const descriptionBytes = this.getStringByteLength(tool.description);
           const totalToolBytes = this.getJsonByteLength({
-            name: this.toMcpToolName(group.name, tool.method),
+            name: tool.name,
             description: tool.description,
             inputSchema: tool.inputSchema,
           });
@@ -853,7 +848,7 @@ export class OpenSumiMcpHttpServer {
           total.descriptionBytes += descriptionBytes;
           total.totalToolBytes += totalToolBytes;
           largest.push({
-            name: this.toMcpToolName(group.name, tool.method),
+            name: tool.name,
             schemaBytes,
             descriptionBytes,
             totalToolBytes,

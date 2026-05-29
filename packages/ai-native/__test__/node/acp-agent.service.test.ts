@@ -86,6 +86,20 @@ function flushAsyncWork(): Promise<void> {
   return new Promise((resolve) => setImmediate(resolve));
 }
 
+function createDeferred<T = void>(): {
+  promise: Promise<T>;
+  resolve: (value?: T | PromiseLike<T>) => void;
+  reject: (reason?: unknown) => void;
+} {
+  let resolve!: (value?: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
 function toAgentUpdateForTest(notification: any): any {
   const update = notification?.update;
   switch (update?.sessionUpdate) {
@@ -333,9 +347,10 @@ describe('AcpAgentService (Thread Pool)', () => {
     it('should throw when thread pool is full and no idle threads', async () => {
       const { service, thread } = createServiceWithAutoEvents();
 
-      // Fill the pool with max threads (10)
+      const maxPoolSize = (service as any).maxPoolSize;
+      // Fill the pool with max threads
       const createdThreads: MockThread[] = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < maxPoolSize; i++) {
         const t = createMockThread({
           getStatus: jest.fn().mockReturnValue('working'),
           onEvent: jest.fn((cb: any) => {
@@ -441,11 +456,65 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(thread.loadSession).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 'existing-session-id' }));
     });
 
+    it('should join an in-flight load instead of returning a half-loaded thread', async () => {
+      const loadGate = createDeferred<void>();
+      let loaded = false;
+      const thread = createMockThread({
+        initialized: true,
+        getStatus: jest.fn().mockReturnValue('idle'),
+        loadSession: jest.fn(async () => {
+          await loadGate.promise;
+          loaded = true;
+          return { sessionId: 'shared-session' };
+        }),
+        getEntries: jest.fn(() =>
+          loaded
+            ? [
+                {
+                  type: 'assistant_message',
+                  data: { chunks: [{ type: 'text', text: 'Loaded history' }] },
+                },
+              ]
+            : [],
+        ),
+        onEvent: jest.fn(() => ({ dispose: jest.fn() })),
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+
+      const firstLoad = service.loadSession('shared-session', mockAgentProcessConfig);
+      await flushAsyncWork();
+      expect(thread.loadSession).toHaveBeenCalledTimes(1);
+
+      let secondResolved = false;
+      const secondLoad = service.loadSession('shared-session', mockAgentProcessConfig).then((result) => {
+        secondResolved = true;
+        return result;
+      });
+
+      await flushAsyncWork();
+      expect(thread.loadSession).toHaveBeenCalledTimes(1);
+      expect(secondResolved).toBe(false);
+
+      loadGate.resolve();
+      const [firstResult, secondResult] = await Promise.all([firstLoad, secondLoad]);
+
+      expect(firstResult.historyUpdates).toHaveLength(1);
+      expect(secondResult.historyUpdates).toHaveLength(1);
+      expect(secondResult.historyUpdates[0].update).toEqual(
+        expect.objectContaining({
+          sessionUpdate: 'agent_message_chunk',
+          content: { type: 'text', text: 'Loaded history' },
+        }),
+      );
+    });
+
     it('should throw when pool is full and no idle thread', async () => {
       const { service } = createServiceWithAutoEvents();
 
+      const maxPoolSize = (service as any).maxPoolSize;
       // Fill the pool
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < maxPoolSize; i++) {
         const t = createMockThread({
           getStatus: jest.fn().mockReturnValue('working'),
           onEvent: jest.fn((cb: any) => {
@@ -598,6 +667,43 @@ describe('AcpAgentService (Thread Pool)', () => {
       });
 
       expect(updates).toContainEqual(expect.objectContaining({ type: 'message', content: 'Here is my answer.' }));
+    });
+
+    it('should ignore stream updates from a different session', async () => {
+      const { service, thread } = createServiceWithAutoEvents();
+
+      setTimeout(() => {
+        thread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'session-1',
+            update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+          },
+        });
+      }, 10);
+
+      const createResult = await service.createSession(mockAgentProcessConfig);
+
+      const updates: any[] = [];
+      const stream = service.sendMessage(
+        { prompt: 'Hello', sessionId: createResult.sessionId },
+        mockAgentProcessConfig,
+      );
+      stream.onData((data) => updates.push(data));
+
+      thread._fireEvent({
+        type: 'session_notification',
+        notification: {
+          sessionId: 'stale-session',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: 'stale answer' },
+          },
+        },
+      });
+
+      expect(updates).not.toContainEqual(expect.objectContaining({ type: 'message', content: 'stale answer' }));
+      expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('ignoring notification for stale-session'));
     });
 
     it('should emit tool_call updates', async () => {
@@ -928,6 +1034,33 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(thread.dispose).toHaveBeenCalled();
       expect(service.getSessionInfo(result.sessionId)).toBeNull();
     });
+
+    it('should release a loaded session only after the final retained reference is disposed', async () => {
+      const thread = createMockThread({
+        initialized: true,
+        getStatus: jest.fn().mockReturnValue('idle'),
+        onEvent: jest.fn(() => ({ dispose: jest.fn() })),
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+
+      await Promise.all([
+        service.loadSession('shared-session', mockAgentProcessConfig),
+        service.loadSession('shared-session', mockAgentProcessConfig),
+      ]);
+
+      mockTerminalHandler.releaseSessionTerminals.mockClear();
+
+      await service.disposeSession('shared-session');
+
+      expect(mockTerminalHandler.releaseSessionTerminals).not.toHaveBeenCalled();
+      expect((service as any).sessions.get('shared-session')).toBe(thread);
+
+      await service.disposeSession('shared-session');
+
+      expect(mockTerminalHandler.releaseSessionTerminals).toHaveBeenCalledWith('shared-session');
+      expect((service as any).sessions.has('shared-session')).toBe(false);
+    });
   });
 
   // -----------------------------------------------------------------------
@@ -1174,7 +1307,7 @@ describe('AcpAgentService (Thread Pool)', () => {
 
     it('should track maxPoolSize correctly', async () => {
       const { service } = createService();
-      expect((service as any).maxPoolSize).toBe(10);
+      expect((service as any).maxPoolSize).toBe(3);
     });
   });
 

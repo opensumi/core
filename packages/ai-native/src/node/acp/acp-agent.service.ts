@@ -38,11 +38,11 @@ export { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types
 export const AcpAgentServiceToken = Symbol('AcpAgentServiceToken');
 
 const WEBMCP_CAPABILITY_HINT =
-  'OpenSumi WebMCP exposes a narrow default IDE tool set. If you need additional IDE capabilities that are not listed, call opensumi_discoverCapabilities first, then opensumi_enableCapabilityGroup for the relevant group. If the MCP client does not refresh tools/list after enabling, use opensumi_invokeCapabilityTool as the fallback broker.';
+  'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server. Start with opensumi_discoverCapabilities, then call opensumi_enableCapabilityGroup for the relevant group. If the MCP client does not refresh tools/list after enabling, use opensumi_invokeCapabilityTool as the fallback broker.';
 const WEBMCP_CAPABILITY_QUESTION_HINT =
-  'When the user asks what IDE/OpenSumi/WebMCP capabilities or tools are available, answer from the live OpenSumi WebMCP metadata below. If you need current per-session enabled/disabled state, call opensumi_discoverCapabilities with includeDisabled=true. Do not answer only from memory.';
+  'When the user asks what IDE/OpenSumi capabilities or tools are available, answer from the live opensumi-ide MCP metadata below. If you need current per-session enabled/disabled state, call opensumi_discoverCapabilities with includeDisabled=true. Do not answer only from memory.';
 const WEBMCP_TERMINAL_CAPABILITY_HINT =
-  'For requests to create an OpenSumi IDE terminal or type/run a command in an IDE terminal, use OpenSumi WebMCP: call opensumi_enableCapabilityGroup with group "terminal", refresh tools/list if possible, then use terminal_create and terminal_runCommand. If tools/list is not refreshed, call opensumi_invokeCapabilityTool for terminal_create and terminal_runCommand.';
+  'For requests to create an OpenSumi IDE terminal or type/run a command in an IDE terminal, use the opensumi-ide MCP server: call opensumi_enableCapabilityGroup with group "terminal", refresh tools/list if possible, then use terminal_create and terminal_runCommand. If tools/list is not refreshed, call opensumi_invokeCapabilityTool for terminal_create and terminal_runCommand.';
 
 type WebMcpToolWithMeta = WebMcpToolDef & {
   riskLevel?: string;
@@ -91,6 +91,13 @@ export interface SessionLoadResult {
   modes: Array<{ id: string; name: string }>;
   status: AgentSessionStatus;
   historyUpdates: SessionNotification[];
+}
+
+interface PendingSessionLoad {
+  promise: Promise<SessionLoadResult>;
+  refCount: number;
+  thread: AcpThread;
+  closeRequested: boolean;
 }
 
 // ============================================================================
@@ -245,11 +252,18 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // Session -> Thread mapping (active sessions)
   private sessions = new Map<string, AcpThread>();
 
+  // Session -> in-flight load task. Prevents concurrent loadSession calls
+  // from observing a pre-registered but not-yet-loaded thread.
+  private pendingSessionLoads = new Map<string, PendingSessionLoad>();
+
+  // Session -> number of UI/callers currently holding this loaded session.
+  private sessionRefCounts = new Map<string, number>();
+
   // Thread pool: all thread instances (active + idle/disconnected)
   private threadPool: AcpThread[] = [];
 
   // Pool limit (configurable)
-  private readonly maxPoolSize = 10;
+  private readonly maxPoolSize = 3;
 
   // Cached session info for backward compat (getSessionInfo without sessionId)
   private lastSessionInfo: AgentSessionInfo | null = null;
@@ -450,6 +464,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
       realSessionId = newSessionResponse.sessionId;
       this.sessions.set(realSessionId, thread);
+      this.sessionRefCounts.set(realSessionId, 1);
       this.permissionRouting.registerSession(realSessionId);
       this.registerThreadStatusListener(realSessionId, thread);
 
@@ -475,6 +490,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     } catch (e) {
       if (realSessionId) {
         this.sessions.delete(realSessionId);
+        this.sessionRefCounts.delete(realSessionId);
         this.permissionRouting.unregisterSession(realSessionId);
         this.unregisterThreadStatusListener(realSessionId);
       }
@@ -515,9 +531,22 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   async loadSession(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
     this.logger.log(`[AcpAgentService] loadSession() — sessionId=${sessionId}`);
 
-    // 1. sessions.get(sessionId) exists -> return directly
+    // 1. If a load for this session is already in flight, join it. The
+    // sessions map may already contain a pre-registered thread at this point,
+    // but that thread is not safe to expose until the load RPC completes.
+    const pendingLoad = this.pendingSessionLoads.get(sessionId);
+    if (pendingLoad) {
+      pendingLoad.refCount += 1;
+      this.logger.log(
+        `[AcpAgentService] loadSession() — joining pending load, sessionId=${sessionId}, refs=${pendingLoad.refCount}`,
+      );
+      return pendingLoad.promise;
+    }
+
+    // 2. sessions.get(sessionId) exists and no pending load -> already loaded
     const existingThread = this.sessions.get(sessionId);
     if (existingThread && existingThread.getStatus() !== 'disconnected') {
+      this.retainSession(sessionId);
       this.permissionRouting.registerSession(sessionId);
       this.registerThreadStatusListener(sessionId, existingThread);
       this.logger.log(
@@ -526,7 +555,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       return this.buildSessionLoadResult(sessionId, existingThread);
     }
 
-    // 2. Pool has idle Thread
+    // 3. Pool has idle Thread
     const idleThread = this.threadPool.find(
       (t) => !this.hasActiveSession(t) && ['idle', 'awaiting_prompt'].includes(t.getStatus()),
     );
@@ -537,32 +566,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.sessions.set(sessionId, idleThread);
       this.permissionRouting.registerSession(sessionId);
       this.registerThreadStatusListener(sessionId, idleThread);
-      try {
-        if (!idleThread.initialized) {
-          await idleThread.initialize(config as any);
-        }
-        if (idleThread.needsReset) {
-          idleThread.reset();
-        }
-        await idleThread.loadSession({
-          sessionId,
-          cwd: config.cwd,
-          mcpServers: await this.getSessionMcpServers(idleThread, config),
-        } as any);
-      } catch (e) {
-        this.sessions.delete(sessionId);
-        this.permissionRouting.unregisterSession(sessionId);
-        this.unregisterThreadStatusListener(sessionId);
-        idleThread.reset();
-        this.logger.error(
-          `[AcpAgentService] loadSession() — idle thread reuse failed: ${e instanceof Error ? e.message : String(e)}`,
-        );
-        throw e;
-      }
-      return this.buildSessionLoadResult(sessionId, idleThread);
+      return this.startPendingLoadSession(sessionId, idleThread, config, false);
     }
 
-    // 3. Pool not full -> new Thread
+    // 4. Pool not full -> new Thread
     if (this.threadPool.length < this.maxPoolSize) {
       this.logger.log(
         `[AcpAgentService] loadSession() — creating new thread (pool=${this.threadPool.length}/${this.maxPoolSize})`,
@@ -572,32 +579,72 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.sessions.set(sessionId, thread);
       this.permissionRouting.registerSession(sessionId);
       this.registerThreadStatusListener(sessionId, thread);
-
-      try {
-        if (!thread.initialized) {
-          await thread.initialize(config as any);
-        }
-        await thread.loadSession({
-          sessionId,
-          cwd: config.cwd,
-          mcpServers: await this.getSessionMcpServers(thread, config),
-        } as any);
-      } catch (e) {
-        const idx = this.threadPool.indexOf(thread);
-        if (idx !== -1) {
-          this.threadPool.splice(idx, 1);
-        }
-        this.sessions.delete(sessionId);
-        this.permissionRouting.unregisterSession(sessionId);
-        this.unregisterThreadStatusListener(sessionId);
-        await thread.dispose();
-        throw e;
-      }
-      return this.buildSessionLoadResult(sessionId, thread);
+      return this.startPendingLoadSession(sessionId, thread, config, true);
     }
 
-    // 4. Pool full, no idle -> throw error
+    // 5. Pool full, no idle -> throw error
     throw new Error(`Thread pool is full (${this.maxPoolSize}), no idle thread available`);
+  }
+
+  private startPendingLoadSession(
+    sessionId: string,
+    thread: AcpThread,
+    config: AgentProcessConfig,
+    shouldDisposeThreadOnFailure: boolean,
+  ): Promise<SessionLoadResult> {
+    const pending: PendingSessionLoad = {
+      promise: Promise.resolve(null as unknown as SessionLoadResult),
+      refCount: 1,
+      thread,
+      closeRequested: false,
+    };
+
+    const promise = this.doLoadSession(sessionId, thread, config)
+      .then(() => {
+        if (pending.closeRequested) {
+          throw new Error(`Session load was disposed before completion: ${sessionId}`);
+        }
+        this.sessionRefCounts.set(sessionId, pending.refCount);
+        return this.buildSessionLoadResult(sessionId, thread);
+      })
+      .catch(async (e) => {
+        this.sessions.delete(sessionId);
+        this.sessionRefCounts.delete(sessionId);
+        this.permissionRouting.unregisterSession(sessionId);
+        this.unregisterThreadStatusListener(sessionId);
+        if (shouldDisposeThreadOnFailure) {
+          const idx = this.threadPool.indexOf(thread);
+          if (idx !== -1) {
+            this.threadPool.splice(idx, 1);
+          }
+          await thread.dispose();
+        } else {
+          thread.reset();
+        }
+        this.logger.error(`[AcpAgentService] loadSession() — failed: ${e instanceof Error ? e.message : String(e)}`);
+        throw e;
+      })
+      .finally(() => {
+        this.pendingSessionLoads.delete(sessionId);
+      });
+
+    pending.promise = promise;
+    this.pendingSessionLoads.set(sessionId, pending);
+    return promise;
+  }
+
+  private async doLoadSession(sessionId: string, thread: AcpThread, config: AgentProcessConfig): Promise<void> {
+    if (!thread.initialized) {
+      await thread.initialize(config as any);
+    }
+    if (thread.needsReset) {
+      thread.reset();
+    }
+    await thread.loadSession({
+      sessionId,
+      cwd: config.cwd,
+      mcpServers: await this.getSessionMcpServers(thread, config),
+    } as any);
   }
 
   private buildSessionLoadResult(sessionId: string, thread: AcpThread): SessionLoadResult {
@@ -675,6 +722,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     const eventDisposable = thread.onEvent((event: AcpThreadEvent) => {
       if (event.type === 'session_notification') {
+        if (event.notification.sessionId && event.notification.sessionId !== request.sessionId) {
+          this.logger.warn(
+            `[AcpAgentService] sendMessage() — ignoring notification for ${event.notification.sessionId}; current session is ${request.sessionId}`,
+          );
+          return;
+        }
         const agentUpdates = thread.toAgentUpdate(event.notification);
         const normalizedUpdates = Array.isArray(agentUpdates) ? agentUpdates : [];
         if (agentUpdates && !Array.isArray(agentUpdates)) {
@@ -820,8 +873,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   async loadSessionOrNew(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
     this.logger.log(`[AcpAgentService] loadSessionOrNew() — sessionId=${sessionId}`);
 
+    const pendingLoad = this.pendingSessionLoads.get(sessionId);
+    if (pendingLoad) {
+      pendingLoad.refCount += 1;
+      return pendingLoad.promise;
+    }
+
     const existingThread = this.sessions.get(sessionId);
     if (existingThread && existingThread.getStatus() !== 'disconnected') {
+      this.retainSession(sessionId);
       return this.buildSessionLoadResult(sessionId, existingThread);
     }
 
@@ -846,15 +906,20 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       const actualSessionId = (loadResult as { sessionId?: string }).sessionId || sessionId;
       if (actualSessionId !== sessionId) {
         this.sessions.delete(sessionId);
+        this.sessionRefCounts.delete(sessionId);
         this.permissionRouting.unregisterSession(sessionId);
         this.unregisterThreadStatusListener(sessionId);
         this.sessions.set(actualSessionId, thread);
+        this.sessionRefCounts.set(actualSessionId, 1);
         this.permissionRouting.registerSession(actualSessionId);
         this.registerThreadStatusListener(actualSessionId, thread);
+      } else {
+        this.sessionRefCounts.set(sessionId, 1);
       }
       return this.buildSessionLoadResult(actualSessionId, thread);
     } catch (e) {
       this.sessions.delete(sessionId);
+      this.sessionRefCounts.delete(sessionId);
       this.permissionRouting.unregisterSession(sessionId);
       this.unregisterThreadStatusListener(sessionId);
       if (!wasExisting) {
@@ -984,8 +1049,39 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // -----------------------------------------------------------------------
 
   async disposeSession(sessionId: string, force = false): Promise<void> {
-    const thread = this.sessions.get(sessionId);
+    let thread = this.sessions.get(sessionId);
     this.logger.log(`[AcpAgentService] disposeSession() — sessionId=${sessionId}, force=${force}`);
+
+    const pendingLoad = this.pendingSessionLoads.get(sessionId);
+    if (pendingLoad) {
+      pendingLoad.closeRequested = true;
+      if (!force) {
+        pendingLoad.refCount = Math.max(0, pendingLoad.refCount - 1);
+        if (pendingLoad.refCount > 0) {
+          pendingLoad.closeRequested = false;
+          this.logger.log(
+            `[AcpAgentService] disposeSession() — pending load still retained, sessionId=${sessionId}, refs=${pendingLoad.refCount}`,
+          );
+          return;
+        }
+        try {
+          await pendingLoad.promise;
+        } catch {
+          // The pending load path owns its failure cleanup. Continue with the
+          // normal release path to keep terminal/session cleanup idempotent.
+        }
+      }
+      thread = this.sessions.get(sessionId) ?? pendingLoad.thread;
+    }
+
+    const refCount = this.sessionRefCounts.get(sessionId) ?? (thread ? 1 : 0);
+    if (!force && refCount > 1) {
+      this.sessionRefCounts.set(sessionId, refCount - 1);
+      this.logger.log(
+        `[AcpAgentService] disposeSession() — session still retained, sessionId=${sessionId}, refs=${refCount - 1}`,
+      );
+      return;
+    }
 
     // Release terminals
     await this.terminalHandler.releaseSessionTerminals(sessionId);
@@ -1006,6 +1102,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     this.permissionRouting.unregisterSession(sessionId);
     this.unregisterThreadStatusListener(sessionId);
     this.sessions.delete(sessionId);
+    this.sessionRefCounts.delete(sessionId);
     this.logPoolStatus('after-disposeSession');
   }
 
@@ -1065,6 +1162,8 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
     this.threadPool = [];
     this.sessions.clear();
+    this.pendingSessionLoads.clear();
+    this.sessionRefCounts.clear();
     this.lastSessionInfo = null;
     this.logPoolStatus('after-stopAgent');
   }
@@ -1158,6 +1257,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     };
   }
 
+  private retainSession(sessionId: string): void {
+    this.sessionRefCounts.set(sessionId, (this.sessionRefCounts.get(sessionId) ?? 1) + 1);
+  }
+
   private buildPromptBlocks(input: string, images?: string[]): Array<{ type: string; [key: string]: unknown }> {
     const blocks: Array<{ type: string; [key: string]: unknown }> = [];
 
@@ -1230,7 +1333,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       const lines = groups.map((group) => {
         const tools = group.tools
           .filter((tool) => tool.exposedByDefault !== false)
-          .map((tool) => this.toMcpToolName(group.name, tool.method))
+          .map((tool) => tool.name)
           .slice(0, 12);
         const suffix =
           group.tools.length > tools.length ? `, +${group.tools.length - tools.length} hidden/protected` : '';
@@ -1239,7 +1342,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         }, tools=${tools.join(', ')}${suffix}`;
       });
       return [
-        'Live OpenSumi WebMCP registered capability metadata:',
+        'Live OpenSumi opensumi-ide MCP registered capability metadata:',
         `profile=${profile}, groupCount=${groups.length}`,
         ...lines,
         'This metadata is the registered capability catalog, not the current per-session enabledGroups state.',
@@ -1248,11 +1351,6 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.logger.warn('[AcpAgentService] Failed to build WebMCP capability summary', error);
       return undefined;
     }
-  }
-
-  private toMcpToolName(groupName: string, method: string): string {
-    const action = method.split('/').pop() ?? method;
-    return `${groupName}_${action}`.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 64);
   }
 
   private parseDataUrl(dataUrl: string): { mimeType: string; base64Data: string } {

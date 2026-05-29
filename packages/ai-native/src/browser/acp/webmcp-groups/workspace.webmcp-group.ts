@@ -21,7 +21,7 @@ export function createWorkspaceGroup(container: Injector): WebMcpGroupRegistrati
     defaultLoaded: true,
     tools: [
       {
-        method: '_opensumi/workspace/getInfo',
+        name: 'workspace_getInfo',
         description:
           'Get workspace metadata, including root folders, workspace name, multi-root state, and the configured workspace directory.',
         riskLevel: 'read',
@@ -55,7 +55,7 @@ export function createWorkspaceGroup(container: Injector): WebMcpGroupRegistrati
         },
       },
       {
-        method: '_opensumi/workspace/listOpenFiles',
+        name: 'workspace_listOpenFiles',
         description:
           'List files currently opened in editor groups. Use this to understand the user visible editing context.',
         riskLevel: 'read',
@@ -86,7 +86,7 @@ export function createWorkspaceGroup(container: Injector): WebMcpGroupRegistrati
         },
       },
       {
-        method: '_opensumi/workspace/listRecentWorkspaces',
+        name: 'workspace_listRecentWorkspaces',
         description: 'List recently used workspaces known to the IDE.',
         riskLevel: 'read',
         inputSchema: {

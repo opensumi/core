@@ -121,6 +121,12 @@ export class AcpChatInternalService extends ChatInternalService {
     return this.chatManagerService.getSessions();
   }
 
+  async loadSessionModel(sessionId: string) {
+    const acpManager = this.chatManagerService as AcpChatManagerService;
+    await acpManager.loadSession(sessionId);
+    return this.chatManagerService.getSession(sessionId);
+  }
+
   async getSessionsByAcp() {
     const acpManager = this.chatManagerService as AcpChatManagerService;
     await acpManager.loadSessionList();

@@ -49,6 +49,8 @@ import { ChatAgentPromptProvider, DefaultChatAgentPromptProvider } from '../comm
 import { ACPChatAgentPromptProvider } from '../common/prompts/empty-prompt-provider';
 
 import {
+  AcpChatRelayStore,
+  AcpChatRelaySummaryProvider,
   AcpPermissionBridgeService,
   AcpPermissionRpcService,
   AcpThreadStatusRpcService,
@@ -143,6 +145,8 @@ export class AINativeModule extends BrowserModule {
     AcpPermissionDialogContribution,
     PermissionDialogManager,
     AcpPermissionBridgeService,
+    AcpChatRelayStore,
+    AcpChatRelaySummaryProvider,
     {
       token: ISessionProviderRegistry,
       useClass: SessionProviderRegistry,

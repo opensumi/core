@@ -4,7 +4,7 @@
  * Provides tools for AI agents to open, close, navigate, and manipulate
  * editor tabs and selections within the IDE.
  *
- * Tools follow the naming convention: _opensumi/editor/{action}
+ * Tools follow the naming convention: editor_{action}
  */
 import { Injector } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
@@ -137,9 +137,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
     description: '编辑器操作（打开、关闭、跳转、格式化等）',
     defaultLoaded: true,
     tools: [
-      // ----- _opensumi/editor/open -----
+      // ----- editor_open -----
       {
-        method: '_opensumi/editor/open',
+        name: 'editor_open',
         description:
           'Open a file in the editor. Optionally specify a line and column to scroll to. Returns the editor info for the opened file.',
         riskLevel: 'ui',
@@ -193,9 +193,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/close -----
+      // ----- editor_close -----
       {
-        method: '_opensumi/editor/close',
+        name: 'editor_close',
         description: 'Close the editor tab for the given file path.',
         riskLevel: 'ui',
         profiles: ['interactive', 'full'],
@@ -228,9 +228,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/getActive -----
+      // ----- editor_getActive -----
       {
-        method: '_opensumi/editor/getActive',
+        name: 'editor_getActive',
         description: 'Get information about the currently active editor, including file path and selection range.',
         riskLevel: 'read',
         inputSchema: {
@@ -254,9 +254,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/listOpenFiles -----
+      // ----- editor_listOpenFiles -----
       {
-        method: '_opensumi/editor/listOpenFiles',
+        name: 'editor_listOpenFiles',
         description: 'List files currently opened in editor groups, including dirty and active state.',
         riskLevel: 'read',
         inputSchema: {
@@ -300,9 +300,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/getSelection -----
+      // ----- editor_getSelection -----
       {
-        method: '_opensumi/editor/getSelection',
+        name: 'editor_getSelection',
         description: 'Get the active editor selection range and selected text.',
         riskLevel: 'read',
         inputSchema: {
@@ -353,9 +353,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/readBuffer -----
+      // ----- editor_readBuffer -----
       {
-        method: '_opensumi/editor/readBuffer',
+        name: 'editor_readBuffer',
         description: 'Read an editor buffer, including unsaved content. Defaults to the active editor.',
         riskLevel: 'read',
         inputSchema: {
@@ -407,9 +407,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/readRangeFromBuffer -----
+      // ----- editor_readRangeFromBuffer -----
       {
-        method: '_opensumi/editor/readRangeFromBuffer',
+        name: 'editor_readRangeFromBuffer',
         description: 'Read a line range from an editor buffer, including unsaved content.',
         riskLevel: 'read',
         inputSchema: {
@@ -493,9 +493,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/listDirtyFiles -----
+      // ----- editor_listDirtyFiles -----
       {
-        method: '_opensumi/editor/listDirtyFiles',
+        name: 'editor_listDirtyFiles',
         description: 'List unsaved editor buffers.',
         riskLevel: 'read',
         inputSchema: {
@@ -528,9 +528,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/getDirtyDiff -----
+      // ----- editor_getDirtyDiff -----
       {
-        method: '_opensumi/editor/getDirtyDiff',
+        name: 'editor_getDirtyDiff',
         description: 'Return a compact diff between disk content and an unsaved editor buffer.',
         riskLevel: 'read',
         inputSchema: {
@@ -587,9 +587,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/setSelection -----
+      // ----- editor_setSelection -----
       {
-        method: '_opensumi/editor/setSelection',
+        name: 'editor_setSelection',
         description:
           'Set the selection range in the editor. Opens the file first if it is not already open, then sets the selection to the specified line range.',
         riskLevel: 'ui',
@@ -643,9 +643,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/format -----
+      // ----- editor_format -----
       {
-        method: '_opensumi/editor/format',
+        name: 'editor_format',
         description: 'Format the document at the given path using the editor format command.',
         riskLevel: 'write',
         exposedByDefault: false,
@@ -684,9 +684,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/fold -----
+      // ----- editor_fold -----
       {
-        method: '_opensumi/editor/fold',
+        name: 'editor_fold',
         description: 'Fold code at the specified line in the editor. Opens the file first if needed.',
         riskLevel: 'ui',
         profiles: ['interactive', 'full'],
@@ -732,9 +732,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/unfold -----
+      // ----- editor_unfold -----
       {
-        method: '_opensumi/editor/unfold',
+        name: 'editor_unfold',
         description: 'Unfold code at the specified line in the editor. Opens the file first if needed.',
         riskLevel: 'ui',
         profiles: ['interactive', 'full'],
@@ -780,9 +780,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- _opensumi/editor/save -----
+      // ----- editor_save -----
       {
-        method: '_opensumi/editor/save',
+        name: 'editor_save',
         description: 'Save the file at the given path.',
         riskLevel: 'write',
         exposedByDefault: false,

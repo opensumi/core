@@ -17,11 +17,24 @@ export interface WebMcpGroupDefinitionOptions {
 }
 
 export interface WebMcpToolExecute {
-  method: string;
+  name: string;
   description: string;
   inputSchema: Record<string, unknown>;
+  /**
+   * Risk metadata is used for discovery, logging, and future policy tuning.
+   * It does not replace permission checks inside the concrete tool handler.
+   */
   riskLevel?: WebMcpToolRiskLevel;
+  /**
+   * Temporary visibility escape hatch for tools that should not enter the
+   * ordinary MCP tool surface while the capability set is being validated.
+   */
   exposedByDefault?: boolean;
+  /**
+   * Profile metadata controls the default browser-side catalog surface.
+   * The HTTP MCP server can request includeAllTools and apply session-level
+   * visibility rules for catalog enablement.
+   */
   profiles?: WebMcpProfile[];
   execute: (params: Record<string, unknown>) => Promise<WebMcpToolResult>;
 }
@@ -56,9 +69,12 @@ export class WebMcpGroupRegistry {
       defaultLoaded: g.defaultLoaded,
       profile,
       tools: g.tools
+        // By default this registry returns the profile-sized tool surface.
+        // HTTP MCP catalog discovery asks for includeAllTools so it can expose
+        // hidden groups lazily per MCP session without changing this registry.
         .filter((t) => options?.includeAllTools || this.isToolInProfile(t, profile))
         .map((t) => ({
-          method: t.method,
+          name: t.name,
           description: t.description,
           inputSchema: t.inputSchema,
           riskLevel: t.riskLevel,
@@ -77,7 +93,7 @@ export class WebMcpGroupRegistry {
     }));
   }
 
-  executeTool(groupName: string, toolAction: string, params: Record<string, unknown>): Promise<WebMcpToolResult> {
+  executeTool(groupName: string, toolName: string, params: Record<string, unknown>): Promise<WebMcpToolResult> {
     const group = this.groups.get(groupName);
     if (!group) {
       return Promise.resolve({
@@ -86,13 +102,12 @@ export class WebMcpGroupRegistry {
         details: `Group "${groupName}" not found`,
       });
     }
-    const method = `_opensumi/${groupName}/${toolAction}`;
-    const tool = group.tools.find((t) => t.method === method);
+    const tool = group.tools.find((t) => t.name === toolName);
     if (!tool) {
       return Promise.resolve({
         success: false,
         error: 'TOOL_NOT_FOUND',
-        details: `Tool "${method}" not found in group "${groupName}"`,
+        details: `Tool "${toolName}" not found in group "${groupName}"`,
       });
     }
     return tool.execute(params);

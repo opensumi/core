@@ -153,18 +153,32 @@ export interface IAcpThreadStatusService {
   $onThreadStatusChange(sessionId: string, status: string): Promise<void>;
 }
 
-// WebMCP Group types for ACP extension methods
+// WebMCP Group types for OpenSumi IDE capability tools
 export const AcpWebMcpBridgePath = 'AcpWebMcpBridgePath';
 
 export type WebMcpToolRiskLevel = 'read' | 'write' | 'destructive' | 'shell' | 'ui';
 export type WebMcpProfile = 'minimal' | 'default' | 'interactive' | 'full';
 
 export interface WebMcpToolDef {
-  method: string; // "_opensumi/file/read"
+  name: string; // "file_read"
   description: string;
   inputSchema: Record<string, unknown>;
+  /**
+   * Describes the tool's operational risk for catalog output, logging, and
+   * future policy evolution. It is not a complete authorization decision by
+   * itself; concrete tools still own their permission checks.
+   */
   riskLevel?: WebMcpToolRiskLevel;
+  /**
+   * Lightweight escape hatch for tools that should stay out of normal MCP
+   * exposure while the capability model is still being validated in practice.
+   */
   exposedByDefault?: boolean;
+  /**
+   * Controls the default tool surface for each WebMCP profile. Session-level
+   * capability enablement may reveal additional tools, but execution-time
+   * safety must still live in the target tool.
+   */
   profiles?: WebMcpProfile[];
 }
 

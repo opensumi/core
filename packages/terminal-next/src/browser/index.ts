@@ -1,4 +1,4 @@
-import { IDisposable, Injectable, Provider } from '@opensumi/di';
+import { Injectable, Provider } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 
 import {
@@ -49,12 +49,9 @@ import { TerminalSearchService } from './terminal.search';
 import { NodePtyTerminalService } from './terminal.service';
 import { TerminalTheme } from './terminal.theme';
 import { TerminalGroupViewService } from './terminal.view';
-import { registerTerminalWebMCPTools } from './webmcp-tools.registry';
 
 @Injectable()
 export class TerminalNextModule extends BrowserModule {
-  private webMCPDisposable: IDisposable;
-
   providers: Provider[] = [
     TerminalLifeCycleContribution,
     TerminalRenderContribution,
@@ -143,12 +140,4 @@ export class TerminalNextModule extends BrowserModule {
       clientToken: EnvironmentVariableServiceToken,
     },
   ];
-
-  async onDidStart() {
-    this.webMCPDisposable = registerTerminalWebMCPTools(this.app.injector);
-  }
-
-  onWillStop() {
-    this.webMCPDisposable?.dispose();
-  }
 }

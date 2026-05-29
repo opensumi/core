@@ -1,10 +1,10 @@
 /**
  * Terminal WebMCP group definition for the ACP channel.
  *
- * Mirrors the terminal_* WebMCP tools from packages/terminal-next/src/browser/webmcp-tools.registry.ts
- * but wrapped in the WebMcpGroupRegistration interface used by the group-based ACP tool system.
+ * Defines terminal_* capabilities once for both navigator.modelContext and
+ * the Node-side MCP server.
  *
- * Tools follow the naming convention: _opensumi/terminal/{action}
+ * Tools follow the naming convention: terminal_{action}
  */
 import { Injector } from '@opensumi/di';
 import { ITerminalClient, ITerminalService } from '@opensumi/ide-terminal-next/lib/common';
@@ -86,9 +86,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
     description: '终端操作',
     defaultLoaded: true,
     tools: [
-      // ----- _opensumi/terminal/list -----
+      // ----- terminal_list -----
       {
-        method: '_opensumi/terminal/list',
+        name: 'terminal_list',
         description:
           'List all open terminal sessions. Returns an array of terminal info objects including id, name, and isActive. Use this to discover existing terminals before sending commands.',
         riskLevel: 'read',
@@ -116,9 +116,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/getActive -----
+      // ----- terminal_getActive -----
       {
-        method: '_opensumi/terminal/getActive',
+        name: 'terminal_getActive',
         description: 'Get the active IDE terminal session.',
         riskLevel: 'read',
         inputSchema: {
@@ -150,9 +150,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/readOutput -----
+      // ----- terminal_readOutput -----
       {
-        method: '_opensumi/terminal/readOutput',
+        name: 'terminal_readOutput',
         description: 'Read recent output lines from an IDE terminal.',
         riskLevel: 'read',
         inputSchema: {
@@ -191,9 +191,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/tail -----
+      // ----- terminal_tail -----
       {
-        method: '_opensumi/terminal/tail',
+        name: 'terminal_tail',
         description: 'Read output lines after a cursor from an IDE terminal.',
         riskLevel: 'read',
         inputSchema: {
@@ -241,9 +241,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/getProcessInfo -----
+      // ----- terminal_getProcessInfo -----
       {
-        method: '_opensumi/terminal/getProcessInfo',
+        name: 'terminal_getProcessInfo',
         description: 'Get process metadata for an IDE terminal.',
         riskLevel: 'read',
         inputSchema: {
@@ -284,9 +284,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/create -----
+      // ----- terminal_create -----
       {
-        method: '_opensumi/terminal/create',
+        name: 'terminal_create',
         description:
           'Create a new terminal session. Optionally specify a shell path or working directory. Returns the terminal id. Use this to open a new terminal for running commands.',
         riskLevel: 'shell',
@@ -329,11 +329,11 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/executeCommand -----
+      // ----- terminal_executeCommand -----
       {
-        method: '_opensumi/terminal/executeCommand',
+        name: 'terminal_executeCommand',
         description:
-          'Send a text command to a specific terminal session identified by id. The text is typed into the terminal as-is. To execute the command, include a trailing newline (\\n). Get valid ids from _opensumi/terminal/list.',
+          'Send a text command to a specific terminal session identified by id. The text is typed into the terminal as-is. To execute the command, include a trailing newline (\\n). Get valid ids from terminal_list.',
         riskLevel: 'shell',
         profiles: ['interactive', 'full'],
         inputSchema: {
@@ -341,7 +341,7 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
           properties: {
             id: {
               type: 'string',
-              description: 'The terminal session ID. Get valid IDs from _opensumi/terminal/list.',
+              description: 'The terminal session ID. Get valid IDs from terminal_list.',
             },
             command: {
               type: 'string',
@@ -373,9 +373,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/sendText -----
+      // ----- terminal_sendText -----
       {
-        method: '_opensumi/terminal/sendText',
+        name: 'terminal_sendText',
         description: 'Type text into an IDE terminal without pressing Enter.',
         riskLevel: 'shell',
         profiles: ['interactive', 'full'],
@@ -412,9 +412,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/sendControl -----
+      // ----- terminal_sendControl -----
       {
-        method: '_opensumi/terminal/sendControl',
+        name: 'terminal_sendControl',
         description: 'Send an allowlisted control key to an IDE terminal.',
         riskLevel: 'shell',
         profiles: ['interactive', 'full'],
@@ -453,9 +453,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/runCommand -----
+      // ----- terminal_runCommand -----
       {
-        method: '_opensumi/terminal/runCommand',
+        name: 'terminal_runCommand',
         description: 'Type a command into an IDE terminal and press Enter.',
         riskLevel: 'shell',
         profiles: ['interactive', 'full'],
@@ -492,9 +492,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/waitForPattern -----
+      // ----- terminal_waitForPattern -----
       {
-        method: '_opensumi/terminal/waitForPattern',
+        name: 'terminal_waitForPattern',
         description: 'Wait until terminal output contains a string or regular expression.',
         riskLevel: 'read',
         profiles: ['default', 'interactive', 'full'],
@@ -558,9 +558,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/show -----
+      // ----- terminal_show -----
       {
-        method: '_opensumi/terminal/show',
+        name: 'terminal_show',
         description:
           'Show/focus a specific terminal session in the terminal panel. Use this to bring a terminal into view.',
         riskLevel: 'ui',
@@ -569,7 +569,7 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
           properties: {
             id: {
               type: 'string',
-              description: 'The terminal session ID to show. Get valid IDs from _opensumi/terminal/list.',
+              description: 'The terminal session ID to show. Get valid IDs from terminal_list.',
             },
           },
           required: ['id'],
@@ -592,9 +592,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/getProcessId -----
+      // ----- terminal_getProcessId -----
       {
-        method: '_opensumi/terminal/getProcessId',
+        name: 'terminal_getProcessId',
         description:
           'Get the OS process ID (PID) of the shell process running in a terminal session. Returns null if the process has exited.',
         riskLevel: 'read',
@@ -603,7 +603,7 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
           properties: {
             id: {
               type: 'string',
-              description: 'The terminal session ID. Get valid IDs from _opensumi/terminal/list.',
+              description: 'The terminal session ID. Get valid IDs from terminal_list.',
             },
           },
           required: ['id'],
@@ -629,9 +629,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/dispose -----
+      // ----- terminal_dispose -----
       {
-        method: '_opensumi/terminal/dispose',
+        name: 'terminal_dispose',
         description:
           'Close/kill a terminal session and its underlying shell process. Use this to clean up terminals that are no longer needed.',
         riskLevel: 'destructive',
@@ -641,7 +641,7 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
           properties: {
             id: {
               type: 'string',
-              description: 'The terminal session ID to close. Get valid IDs from _opensumi/terminal/list.',
+              description: 'The terminal session ID to close. Get valid IDs from terminal_list.',
             },
           },
           required: ['id'],
@@ -664,9 +664,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/resize -----
+      // ----- terminal_resize -----
       {
-        method: '_opensumi/terminal/resize',
+        name: 'terminal_resize',
         description: 'Resize a terminal session to the specified number of columns (width) and rows (height).',
         riskLevel: 'ui',
         inputSchema: {
@@ -674,7 +674,7 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
           properties: {
             id: {
               type: 'string',
-              description: 'The terminal session ID. Get valid IDs from _opensumi/terminal/list.',
+              description: 'The terminal session ID. Get valid IDs from terminal_list.',
             },
             cols: {
               type: 'number',
@@ -707,9 +707,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/getOS -----
+      // ----- terminal_getOS -----
       {
-        method: '_opensumi/terminal/getOS',
+        name: 'terminal_getOS',
         description:
           'Get the operating system type of the terminal backend (e.g. "Linux", "macOS", "Windows"). Useful for writing platform-specific commands.',
         riskLevel: 'read',
@@ -731,11 +731,11 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/getProfiles -----
+      // ----- terminal_getProfiles -----
       {
-        method: '_opensumi/terminal/getProfiles',
+        name: 'terminal_getProfiles',
         description:
-          'Get the list of available terminal shell profiles (e.g. bash, zsh, PowerShell). Use the profile name with _opensumi/terminal/create to open a specific shell.',
+          'Get the list of available terminal shell profiles (e.g. bash, zsh, PowerShell). Use the profile name with terminal_create to open a specific shell.',
         riskLevel: 'read',
         profiles: ['interactive', 'full'],
         inputSchema: {
@@ -768,9 +768,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- _opensumi/terminal/showPanel -----
+      // ----- terminal_showPanel -----
       {
-        method: '_opensumi/terminal/showPanel',
+        name: 'terminal_showPanel',
         description:
           'Show/open the terminal panel in the IDE. Use this to ensure the terminal panel is visible before interacting with terminals.',
         riskLevel: 'ui',

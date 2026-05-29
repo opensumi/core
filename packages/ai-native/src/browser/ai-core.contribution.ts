@@ -111,7 +111,6 @@ import { MCP_SERVER_TYPE } from '../common/types';
 
 import { AcpChatInput } from './acp/components/AcpChatInput';
 import { AcpChatMentionInput } from './acp/components/AcpChatMentionInput';
-import { registerFileWebMCPTools } from './acp/webmcp-file-tools.registry';
 import { WebMcpGroupRegistry } from './acp/webmcp-group-registry';
 import { createAcpChatGroup } from './acp/webmcp-groups/acp-chat.webmcp-group';
 import { createDiagnosticsGroup } from './acp/webmcp-groups/diagnostics.webmcp-group';
@@ -120,6 +119,7 @@ import { createFileGroup } from './acp/webmcp-groups/file.webmcp-group';
 import { createSearchGroup } from './acp/webmcp-groups/search.webmcp-group';
 import { createTerminalGroup } from './acp/webmcp-groups/terminal.webmcp-group';
 import { createWorkspaceGroup } from './acp/webmcp-groups/workspace.webmcp-group';
+import { registerWebMcpModelContextTools } from './acp/webmcp-model-context-adapter';
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
@@ -334,7 +334,7 @@ export class AINativeBrowserContribution
   @Autowired()
   private readonly chatMultiDiffResolver: ChatMultiDiffResolver;
 
-  private fileWebMCPDisposable: IDisposable | undefined;
+  private webMcpModelContextDisposable: IDisposable | undefined;
 
   constructor() {
     this.registerFeature();
@@ -498,11 +498,8 @@ export class AINativeBrowserContribution
         this.initMCPServers();
       }
 
-      // Register WebMCP tools — must be in a contribution's onDidStart
-      // so it's actually called by the ClientApp lifecycle
-      this.fileWebMCPDisposable = registerFileWebMCPTools(this.injector);
-
-      // Register WebMCP groups for ACP extension methods
+      // Register WebMCP groups once, then expose the same registry through
+      // navigator.modelContext and the Node-side HTTP MCP server.
       const groupRegistry = this.injector.get(WebMcpGroupRegistryToken);
       groupRegistry.registerGroup(createWorkspaceGroup(this.injector));
       groupRegistry.registerGroup(createSearchGroup(this.injector));
@@ -511,7 +508,12 @@ export class AINativeBrowserContribution
       groupRegistry.registerGroup(createTerminalGroup(this.injector));
       groupRegistry.registerGroup(createEditorGroup(this.injector));
       groupRegistry.registerGroup(createAcpChatGroup(this.injector));
+      this.webMcpModelContextDisposable = registerWebMcpModelContextTools(groupRegistry);
     });
+  }
+
+  onStop() {
+    this.webMcpModelContextDisposable?.dispose();
   }
 
   private async initMCPServers() {
