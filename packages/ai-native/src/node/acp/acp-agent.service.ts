@@ -259,6 +259,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // Session -> number of UI/callers currently holding this loaded session.
   private sessionRefCounts = new Map<string, number>();
 
+  // Sessions that actually received the built-in opensumi-ide MCP server.
+  private builtInMcpSessionIds = new Set<string>();
+
   // Thread pool: all thread instances (active + idle/disconnected)
   private threadPool: AcpThread[] = [];
 
@@ -395,6 +398,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       return true;
     });
 
+    if (config.webMcp?.enabled === false) {
+      this.logger.log('[AcpAgentService] Skipping built-in MCP server; WebMCP is disabled by configuration');
+      return configuredServers;
+    }
+
     if (mcpCapabilities?.http !== true || !this.opensumiMcpHttpServer) {
       return configuredServers;
     }
@@ -419,6 +427,22 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     } catch (error) {
       this.logger.warn(`[AcpAgentService] Skipping built-in MCP server "${serverName}"; failed to start`, error);
       return configuredServers;
+    }
+  }
+
+  private didAppendBuiltInMcpServer(config: AgentProcessConfig, mcpServers: McpServer[]): boolean {
+    const serverName = this.opensumiMcpHttpServer?.getServerName();
+    if (!serverName || (config.mcpServers ?? []).some((server) => server.name === serverName)) {
+      return false;
+    }
+    return mcpServers.some((server) => server.name === serverName);
+  }
+
+  private setBuiltInMcpSessionState(sessionId: string, enabled: boolean): void {
+    if (enabled) {
+      this.builtInMcpSessionIds.add(sessionId);
+    } else {
+      this.builtInMcpSessionIds.delete(sessionId);
     }
   }
 
@@ -457,12 +481,14 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         thread.reset();
       }
 
+      const mcpServers = await this.getSessionMcpServers(thread, config);
       const newSessionResponse = await thread.newSession({
         cwd: config.cwd,
-        mcpServers: await this.getSessionMcpServers(thread, config),
+        mcpServers,
       } as any);
 
       realSessionId = newSessionResponse.sessionId;
+      this.setBuiltInMcpSessionState(realSessionId, this.didAppendBuiltInMcpServer(config, mcpServers));
       this.sessions.set(realSessionId, thread);
       this.sessionRefCounts.set(realSessionId, 1);
       this.permissionRouting.registerSession(realSessionId);
@@ -491,6 +517,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       if (realSessionId) {
         this.sessions.delete(realSessionId);
         this.sessionRefCounts.delete(realSessionId);
+        this.builtInMcpSessionIds.delete(realSessionId);
         this.permissionRouting.unregisterSession(realSessionId);
         this.unregisterThreadStatusListener(realSessionId);
       }
@@ -610,6 +637,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       .catch(async (e) => {
         this.sessions.delete(sessionId);
         this.sessionRefCounts.delete(sessionId);
+        this.builtInMcpSessionIds.delete(sessionId);
         this.permissionRouting.unregisterSession(sessionId);
         this.unregisterThreadStatusListener(sessionId);
         if (shouldDisposeThreadOnFailure) {
@@ -640,11 +668,13 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     if (thread.needsReset) {
       thread.reset();
     }
+    const mcpServers = await this.getSessionMcpServers(thread, config);
     await thread.loadSession({
       sessionId,
       cwd: config.cwd,
-      mcpServers: await this.getSessionMcpServers(thread, config),
+      mcpServers,
     } as any);
+    this.setBuiltInMcpSessionState(sessionId, this.didAppendBuiltInMcpServer(config, mcpServers));
   }
 
   private buildSessionLoadResult(sessionId: string, thread: AcpThread): SessionLoadResult {
@@ -754,7 +784,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     });
 
     // thread.prompt() -> then markAssistantComplete -> emitData('done') -> stream.end()
-    this.sendPrompt(thread, request, stream, disposables);
+    this.sendPrompt(thread, request, config, stream, disposables);
 
     return stream;
   }
@@ -762,11 +792,17 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   private async sendPrompt(
     thread: AcpThread,
     request: AgentRequest,
+    config: AgentProcessConfig,
     stream: SumiReadableStream<AgentUpdate>,
     disposables: IDisposable[],
   ): Promise<void> {
     try {
-      const promptForAgent = await this.withWebMcpCapabilityHint(request.prompt, thread.getEntries().length <= 1);
+      const webMcpHintsEnabled = config.webMcp?.enabled !== false && this.builtInMcpSessionIds.has(request.sessionId);
+      const promptForAgent = await this.withWebMcpCapabilityHint(
+        request.prompt,
+        webMcpHintsEnabled && thread.getEntries().length <= 1,
+        webMcpHintsEnabled,
+      );
       const promptBlocks = this.buildPromptBlocks(promptForAgent, request.images);
       this.logger.log(
         `[AcpAgentService] sendPrompt() — sessionId=${request.sessionId}, promptChars=${
@@ -898,27 +934,32 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       if (thread.needsReset) {
         thread.reset();
       }
+      const mcpServers = await this.getSessionMcpServers(thread, config);
       const loadResult = await thread.loadSessionOrNew({
         sessionId,
         cwd: config.cwd,
-        mcpServers: await this.getSessionMcpServers(thread, config),
+        mcpServers,
       } as any);
       const actualSessionId = (loadResult as { sessionId?: string }).sessionId || sessionId;
       if (actualSessionId !== sessionId) {
         this.sessions.delete(sessionId);
+        this.builtInMcpSessionIds.delete(sessionId);
         this.sessionRefCounts.delete(sessionId);
         this.permissionRouting.unregisterSession(sessionId);
         this.unregisterThreadStatusListener(sessionId);
         this.sessions.set(actualSessionId, thread);
+        this.setBuiltInMcpSessionState(actualSessionId, this.didAppendBuiltInMcpServer(config, mcpServers));
         this.sessionRefCounts.set(actualSessionId, 1);
         this.permissionRouting.registerSession(actualSessionId);
         this.registerThreadStatusListener(actualSessionId, thread);
       } else {
+        this.setBuiltInMcpSessionState(sessionId, this.didAppendBuiltInMcpServer(config, mcpServers));
         this.sessionRefCounts.set(sessionId, 1);
       }
       return this.buildSessionLoadResult(actualSessionId, thread);
     } catch (e) {
       this.sessions.delete(sessionId);
+      this.builtInMcpSessionIds.delete(sessionId);
       this.sessionRefCounts.delete(sessionId);
       this.permissionRouting.unregisterSession(sessionId);
       this.unregisterThreadStatusListener(sessionId);
@@ -1102,6 +1143,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     this.permissionRouting.unregisterSession(sessionId);
     this.unregisterThreadStatusListener(sessionId);
     this.sessions.delete(sessionId);
+    this.builtInMcpSessionIds.delete(sessionId);
     this.sessionRefCounts.delete(sessionId);
     this.logPoolStatus('after-disposeSession');
   }
@@ -1163,6 +1205,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     this.threadPool = [];
     this.sessions.clear();
     this.pendingSessionLoads.clear();
+    this.builtInMcpSessionIds.clear();
     this.sessionRefCounts.clear();
     this.lastSessionInfo = null;
     this.logPoolStatus('after-stopAgent');
@@ -1283,7 +1326,14 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     return blocks;
   }
 
-  private async withWebMcpCapabilityHint(input: string, includeHint: boolean): Promise<string> {
+  private async withWebMcpCapabilityHint(
+    input: string,
+    includeHint: boolean,
+    webMcpHintsEnabled = true,
+  ): Promise<string> {
+    if (!webMcpHintsEnabled) {
+      return input;
+    }
     const hints: string[] = [];
     if (includeHint) {
       hints.push(WEBMCP_CAPABILITY_HINT);

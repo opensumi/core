@@ -821,6 +821,10 @@ export class AINativeBrowserContribution
             localized: 'ai.native.terminal.autorun',
           },
           {
+            id: AINativeSettingSectionsId.WebMcpEnabled,
+            localized: 'preference.ai.native.webmcp.enabled',
+          },
+          {
             id: WEBMCP_PROFILE_SETTING_ID,
             localized: 'preference.ai.native.webmcp.profile',
           },

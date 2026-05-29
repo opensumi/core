@@ -67,6 +67,7 @@ export enum AINativeSettingSectionsId {
   /**
    * WebMCP tool exposure profile for ACP agents.
    */
+  WebMcpEnabled = 'ai.native.webmcp.enabled',
   WebMcpProfile = 'ai.native.webmcp.profile',
 
   /**

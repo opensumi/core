@@ -1,6 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService, QuickPickService } from '@opensumi/ide-core-browser';
-import { AgentProcessConfig, IACPConfigProvider, MCPConfigServiceToken } from '@opensumi/ide-core-common';
+import {
+  AINativeSettingSectionsId,
+  AgentProcessConfig,
+  IACPConfigProvider,
+  MCPConfigServiceToken,
+} from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -50,6 +55,7 @@ export class DefaultACPConfigProvider implements IACPConfigProvider {
       userPreferences: {
         nodePath: this.preferenceService.get('ai-native.acp.nodePath', ''),
         agents: this.preferenceService.get('ai-native.acp.agents', {}),
+        webMcpEnabled: this.preferenceService.get(AINativeSettingSectionsId.WebMcpEnabled, true),
       },
       mcpServers,
     });

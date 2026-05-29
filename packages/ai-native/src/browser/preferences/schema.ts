@@ -215,6 +215,11 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       default: ETerminalAutoExecutionPolicy.auto,
       markdownDescription: '%ai.native.terminal.autorun.description%',
     },
+    [AINativeSettingSectionsId.WebMcpEnabled]: {
+      type: 'boolean',
+      default: true,
+      description: 'Controls whether OpenSumi built-in WebMCP IDE capabilities are exposed to ACP agents.',
+    },
     [WEBMCP_PROFILE_SETTING_ID]: {
       type: 'string',
       enum: [EWebMcpProfile.minimal, EWebMcpProfile.default, EWebMcpProfile.interactive, EWebMcpProfile.full],

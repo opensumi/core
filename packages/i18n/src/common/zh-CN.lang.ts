@@ -1407,6 +1407,8 @@ export const localizationBundle = {
     'ai.native.terminal.autorun': '终端命令自动执行策略',
     'ai.native.terminal.autorun.description':
       'Agent终端命令的自动执行策略。`off` 表示永远不自动执行，`auto` 表示模型将根据命令决定是否自动执行（只适用于高级模型），`always` 表示永远自动执行。',
+    'preference.ai.native.webmcp.enabled': '向 Agent 暴露 OpenSumi IDE 能力',
+    'preference.ai.native.webmcp.profile': 'OpenSumi IDE 能力范围',
 
     'ai.native.terminal.autorun.denied': '默认情况下拒绝自动运行',
     'ai.native.terminal.autorun.question': '希望自动运行?',

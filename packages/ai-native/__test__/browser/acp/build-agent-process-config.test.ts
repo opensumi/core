@@ -1,6 +1,6 @@
 import { EnvVariable, McpServer } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
-import { buildAcpAgentProcessConfig } from '../../../lib/browser/acp/build-agent-process-config';
+import { buildAcpAgentProcessConfig } from '../../../src/browser/acp/build-agent-process-config';
 
 describe('buildAcpAgentProcessConfig', () => {
   const defaultRegistration = {
@@ -126,5 +126,17 @@ describe('buildAcpAgentProcessConfig', () => {
       mcpServers,
     });
     expect(result.mcpServers).toBe(mcpServers);
+  });
+
+  it('includes WebMCP enabled preference when provided', () => {
+    const result = buildAcpAgentProcessConfig({
+      agentId: 'test-agent',
+      registration: defaultRegistration,
+      userPreferences: {
+        ...defaultPrefs,
+        webMcpEnabled: false,
+      },
+    });
+    expect(result.webMcp).toEqual({ enabled: false });
   });
 });

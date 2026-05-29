@@ -91,6 +91,12 @@ export interface AgentProcessConfig {
    * MCP servers to pass into ACP session/new, session/load, and related session operations.
    */
   mcpServers?: McpServer[];
+  /**
+   * OpenSumi built-in WebMCP exposure options for ACP sessions.
+   */
+  webMcp?: {
+    enabled?: boolean;
+  };
 }
 
 /**

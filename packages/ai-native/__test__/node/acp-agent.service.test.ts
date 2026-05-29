@@ -294,6 +294,42 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(opensumiMcpHttpServer.start).not.toHaveBeenCalled();
       expect(servers).toEqual([]);
     });
+
+    it('should not append the built-in OpenSumi MCP server when WebMCP is disabled', async () => {
+      const thread = createMockThread({
+        agentCapabilities: {
+          mcpCapabilities: {
+            http: true,
+            sse: true,
+          },
+        },
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+      const opensumiMcpHttpServer = {
+        getServerName: jest.fn().mockReturnValue('opensumi-ide'),
+        start: jest.fn().mockResolvedValue(undefined),
+        getUrl: jest.fn().mockReturnValue('http://127.0.0.1:12345/mcp/token'),
+      };
+      (service as any).opensumiMcpHttpServer = opensumiMcpHttpServer;
+
+      const externalServer = {
+        name: 'external-http',
+        type: 'http',
+        url: 'http://127.0.0.1:9999/mcp',
+        headers: [],
+      };
+      const servers = await (service as any).getSessionMcpServers(thread, {
+        ...mockAgentProcessConfig,
+        webMcp: {
+          enabled: false,
+        },
+        mcpServers: [externalServer],
+      });
+
+      expect(opensumiMcpHttpServer.start).not.toHaveBeenCalled();
+      expect(servers).toEqual([externalServer]);
+    });
   });
 
   // -----------------------------------------------------------------------

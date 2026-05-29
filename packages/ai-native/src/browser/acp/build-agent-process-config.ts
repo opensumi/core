@@ -16,6 +16,7 @@ export function buildAcpAgentProcessConfig(input: {
   userPreferences: {
     nodePath: string;
     agents: Record<string, { command?: string; args?: string[]; env?: Record<string, string> }>;
+    webMcpEnabled?: boolean;
   };
   mcpServers?: McpServer[];
 }): AgentProcessConfig {
@@ -30,6 +31,11 @@ export function buildAcpAgentProcessConfig(input: {
   };
   if (input.mcpServers) {
     config.mcpServers = input.mcpServers;
+  }
+  if (typeof input.userPreferences.webMcpEnabled === 'boolean') {
+    config.webMcp = {
+      enabled: input.userPreferences.webMcpEnabled,
+    };
   }
   return config;
 }
