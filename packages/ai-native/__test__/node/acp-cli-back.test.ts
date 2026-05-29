@@ -48,6 +48,7 @@ describe('AcpCliBackService', () => {
       dispose: jest.fn(),
       getSessionInfo: jest.fn(),
       loadSession: jest.fn(),
+      loadSessionOrNew: jest.fn(),
       listSessions: jest.fn(),
       setSessionMode: jest.fn(),
       stopAgent: jest.fn(),
@@ -105,6 +106,23 @@ describe('AcpCliBackService', () => {
 
       expect(result).toEqual(expected);
       expect(mockAgentService.createSession).toHaveBeenCalledWith(mockAgentSessionConfig);
+    });
+  });
+
+  describe('loadSessionOrNew()', () => {
+    it('should return the session id resolved by agentService', async () => {
+      mockAgentService.loadSessionOrNew.mockResolvedValue({
+        sessionId: 'actual-session-id',
+        processId: 'proc-1',
+        modes: [],
+        status: 'ready',
+        historyUpdates: [],
+      });
+
+      const result = await service.loadSessionOrNew(mockAgentSessionConfig, 'requested-session-id');
+
+      expect(result.sessionId).toBe('actual-session-id');
+      expect(mockAgentService.loadSessionOrNew).toHaveBeenCalledWith('requested-session-id', mockAgentSessionConfig);
     });
   });
 

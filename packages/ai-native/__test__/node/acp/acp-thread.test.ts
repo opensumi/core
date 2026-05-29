@@ -1022,6 +1022,31 @@ describe('AcpThread', () => {
     });
   });
 
+  describe('permission request handling', () => {
+    it('should clear the pending request and update the raw tool call id on approval', async () => {
+      (thread as any)._sessionId = 's1';
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'tool_call',
+          toolCallId: 'tc-1',
+          toolName: 'Write',
+        },
+      } as any);
+
+      const response = await (thread as any).handlePermissionRequest({
+        sessionId: 's1',
+        toolCall: {
+          toolCallId: 'tc-1',
+        },
+      });
+
+      expect(response).toEqual({ outcome: { outcome: 'allowed' } });
+      expect((thread as any)._pendingPermissionRequests.size).toBe(0);
+      expect(getToolCallData(thread.entries[0])!.status).toBe('completed');
+    });
+  });
+
   // ===================================================================
   // setError — new method (spec)
   // ===================================================================

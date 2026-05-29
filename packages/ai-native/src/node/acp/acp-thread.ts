@@ -1422,7 +1422,8 @@ export class AcpThread extends Disposable implements IAcpThread {
   // -----------------------------------------------------------------------
   private async handlePermissionRequest(params: RequestPermissionRequest): Promise<RequestPermissionResponse> {
     const sessionId = params.sessionId || this._sessionId;
-    const requestId = `${sessionId}:${params.toolCall.toolCallId}`;
+    const toolCallId = params.toolCall.toolCallId;
+    const requestId = `${sessionId}:${toolCallId}`;
 
     return new Promise<RequestPermissionResponse>((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -1446,20 +1447,25 @@ export class AcpThread extends Disposable implements IAcpThread {
       });
 
       // Forward to browser via permission caller
-      this.forwardPermissionRequest(params, requestId);
+      this.forwardPermissionRequest(params, requestId, toolCallId);
     });
   }
 
-  private async forwardPermissionRequest(params: RequestPermissionRequest, requestId: string): Promise<void> {
+  private async forwardPermissionRequest(
+    params: RequestPermissionRequest,
+    requestId: string,
+    toolCallId: string,
+  ): Promise<void> {
     try {
       const sessionId = params.sessionId || this._sessionId;
       const response = await this.options.permissionRouting.routePermissionRequest(params, sessionId);
       // Resolve the pending request
       const pending = this._pendingPermissionRequests.get(requestId);
       if (pending) {
+        this._pendingPermissionRequests.delete(requestId);
         pending.resolve(response);
       }
-      this.respondToToolCall(requestId, response.outcome.outcome !== 'cancelled');
+      this.respondToToolCall(toolCallId, response.outcome.outcome !== 'cancelled');
     } catch (err) {
       const pending = this._pendingPermissionRequests.get(requestId);
       if (pending) {

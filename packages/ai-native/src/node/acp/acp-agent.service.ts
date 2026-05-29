@@ -453,10 +453,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.permissionRouting.registerSession(realSessionId);
       this.registerThreadStatusListener(realSessionId, thread);
 
-      await Promise.race([
-        deferred.promise,
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Wait for commands timeout')), 5000)),
-      ]);
+      await Promise.race([deferred.promise, new Promise<void>((resolve) => setTimeout(resolve, 5000))]);
 
       const seen = new Set<string>();
       const deduplicated = availableCommands.filter((cmd) => {
@@ -841,12 +838,21 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       if (thread.needsReset) {
         thread.reset();
       }
-      await thread.loadSessionOrNew({
+      const loadResult = await thread.loadSessionOrNew({
         sessionId,
         cwd: config.cwd,
         mcpServers: await this.getSessionMcpServers(thread, config),
       } as any);
-      return this.buildSessionLoadResult(sessionId, thread);
+      const actualSessionId = (loadResult as { sessionId?: string }).sessionId || sessionId;
+      if (actualSessionId !== sessionId) {
+        this.sessions.delete(sessionId);
+        this.permissionRouting.unregisterSession(sessionId);
+        this.unregisterThreadStatusListener(sessionId);
+        this.sessions.set(actualSessionId, thread);
+        this.permissionRouting.registerSession(actualSessionId);
+        this.registerThreadStatusListener(actualSessionId, thread);
+      }
+      return this.buildSessionLoadResult(actualSessionId, thread);
     } catch (e) {
       this.sessions.delete(sessionId);
       this.permissionRouting.unregisterSession(sessionId);

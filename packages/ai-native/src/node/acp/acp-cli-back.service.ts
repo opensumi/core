@@ -500,7 +500,7 @@ export class AcpCliBackService implements IAIBackService {
   }> {
     const result = await this.agentService.loadSessionOrNew(sessionId, config);
     const messages = this.convertSessionUpdatesToMessages(result.historyUpdates);
-    return { sessionId, messages };
+    return { sessionId: result.sessionId, messages };
   }
 
   async setSessionConfigOption(sessionId: string, configId: string, value: boolean | string): Promise<void> {

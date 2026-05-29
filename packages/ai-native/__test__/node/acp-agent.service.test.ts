@@ -316,6 +316,20 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(thread.newSession).toHaveBeenCalled();
     });
 
+    it('should create a session with empty commands when available_commands_update times out', async () => {
+      jest.useFakeTimers();
+      const { service, thread } = createServiceWithAutoEvents();
+
+      const resultPromise = service.createSession(mockAgentProcessConfig);
+      await jest.advanceTimersByTimeAsync(5000);
+
+      const result = await resultPromise;
+
+      expect(result.sessionId).toBe('new-session-1');
+      expect(result.availableCommands).toEqual([]);
+      expect(thread.dispose).not.toHaveBeenCalled();
+    });
+
     it('should throw when thread pool is full and no idle threads', async () => {
       const { service, thread } = createServiceWithAutoEvents();
 
@@ -452,6 +466,27 @@ describe('AcpAgentService (Thread Pool)', () => {
       }
 
       await expect(service.loadSession('new-session', mockAgentProcessConfig)).rejects.toThrow('Thread pool is full');
+    });
+  });
+
+  describe('loadSessionOrNew()', () => {
+    it('should rebind service state when fallback creates a different session id', async () => {
+      const thread = createMockThread({
+        initialized: true,
+        getStatus: jest.fn().mockReturnValue('idle'),
+        loadSessionOrNew: jest.fn().mockResolvedValue({ sessionId: 'actual-session-id' }),
+        onEvent: jest.fn(() => ({ dispose: jest.fn() })),
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+
+      const result = await service.loadSessionOrNew('missing-session-id', mockAgentProcessConfig);
+
+      expect(result.sessionId).toBe('actual-session-id');
+      expect((service as any).sessions.has('missing-session-id')).toBe(false);
+      expect((service as any).sessions.get('actual-session-id')).toBe(thread);
+      expect(mockPermissionRouting.unregisterSession).toHaveBeenCalledWith('missing-session-id');
+      expect(mockPermissionRouting.registerSession).toHaveBeenCalledWith('actual-session-id');
     });
   });
 
