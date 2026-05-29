@@ -46,6 +46,17 @@ interface ResolvedWebMcpTool {
   name: string;
 }
 
+type NormalizedInvokeCapabilityToolArgs =
+  | {
+      ok: true;
+      toolName: string;
+      toolArgs: Record<string, unknown>;
+    }
+  | {
+      ok: false;
+      response: Record<string, unknown>;
+    };
+
 const CATALOG_GROUP_NAME = 'opensumi';
 
 @Injectable()
@@ -87,7 +98,7 @@ export class OpenSumiMcpHttpServer {
           return;
         }
         this.port = address.port;
-        this.logger?.log?.(`[OpenSumiMcpHttpServer] Listening on ${this.getUrl()}`);
+        this.logger?.log?.(`[OpenSumiMcpHttpServer] Listening on ${this.getRedactedUrl()}`);
         resolve();
       });
     });
@@ -102,6 +113,13 @@ export class OpenSumiMcpHttpServer {
       throw new Error('[OpenSumiMcpHttpServer] Server is not started');
     }
     return `http://${LOOPBACK_HOST}:${this.port}${MCP_PATH_PREFIX}${this.token}`;
+  }
+
+  private getRedactedUrl(): string {
+    if (!this.port) {
+      throw new Error('[OpenSumiMcpHttpServer] Server is not started');
+    }
+    return `http://${LOOPBACK_HOST}:${this.port}${MCP_PATH_PREFIX}<redacted>`;
   }
 
   async dispose(): Promise<void> {
@@ -653,7 +671,12 @@ export class OpenSumiMcpHttpServer {
     sessionState: WebMcpSessionState,
     args: Record<string, unknown>,
   ): Promise<{ content: Array<{ type: 'text'; text: string }>; isError: boolean }> {
-    const toolName = typeof args.tool === 'string' ? args.tool : '';
+    const normalized = this.normalizeInvokeCapabilityToolArgs(args);
+    if (!normalized.ok) {
+      return this.toToolResponse(normalized.response);
+    }
+
+    const { toolName, toolArgs } = normalized;
     const target = this.resolveAnyTool(groupDefs, toolName);
     if (!target) {
       return this.toToolResponse({ success: false, error: 'TOOL_NOT_FOUND', details: `Tool "${toolName}" not found` });
@@ -668,7 +691,6 @@ export class OpenSumiMcpHttpServer {
       });
     }
 
-    const toolArgs = this.asRecord(args.arguments);
     const result = await this.caller.executeTool(target.group.name, target.name, toolArgs);
     this.logger?.log?.(
       `[OpenSumiMcpHttpServer] capabilities/invokeTool — tool=${target.name}, group=${target.group.name}, riskLevel=${
@@ -676,6 +698,45 @@ export class OpenSumiMcpHttpServer {
       }, success=${result.success}`,
     );
     return this.toToolResponse(result as unknown as Record<string, unknown>);
+  }
+
+  private normalizeInvokeCapabilityToolArgs(args: Record<string, unknown>): NormalizedInvokeCapabilityToolArgs {
+    const nested = this.asRecord(args.arguments);
+    const invocationArgs = typeof args.tool === 'string' ? args : this.isInvokeCapabilityArgs(nested) ? nested : args;
+    const toolName = typeof invocationArgs.tool === 'string' ? invocationArgs.tool : '';
+
+    if (!toolName) {
+      return {
+        ok: false,
+        response: {
+          success: false,
+          error: 'INVALID_ARGUMENTS',
+          details:
+            'Invalid arguments for opensumi_invokeCapabilityTool. Expected { tool: string, arguments?: object }.',
+        },
+      };
+    }
+
+    const rawToolArgs = this.asRecord(invocationArgs.arguments);
+    const toolArgs = this.shouldUnwrapNestedArguments(rawToolArgs) ? this.asRecord(rawToolArgs.arguments) : rawToolArgs;
+
+    return {
+      ok: true,
+      toolName,
+      toolArgs,
+    };
+  }
+
+  private isInvokeCapabilityArgs(value: Record<string, unknown>): boolean {
+    return typeof value.tool === 'string' || Object.prototype.hasOwnProperty.call(value, 'arguments');
+  }
+
+  private shouldUnwrapNestedArguments(value: Record<string, unknown>): boolean {
+    return (
+      Object.keys(value).length === 1 &&
+      Object.prototype.hasOwnProperty.call(value, 'arguments') &&
+      this.isRecordValue(value.arguments)
+    );
   }
 
   private resolveAnyTool(groupDefs: WebMcpGroupDefWithMeta[], toolName: string): ResolvedWebMcpTool | undefined {
@@ -817,7 +878,11 @@ export class OpenSumiMcpHttpServer {
   }
 
   private asRecord(value: unknown): Record<string, unknown> {
-    return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+    return this.isRecordValue(value) ? value : {};
+  }
+
+  private isRecordValue(value: unknown): value is Record<string, unknown> {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
   private getToolDefinitionStats(groupDefs: WebMcpGroupDefWithMeta[]): {

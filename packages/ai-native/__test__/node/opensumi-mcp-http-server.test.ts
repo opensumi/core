@@ -190,6 +190,14 @@ describe('OpenSumiMcpHttpServer', () => {
     };
     const server = createServer(caller);
     await server.start();
+    const fullUrl = server.getUrl();
+    const token = fullUrl.slice(fullUrl.lastIndexOf('/') + 1);
+    const listeningLog = (mockLogger.log as jest.Mock).mock.calls.find(([message]) =>
+      String(message).includes('[OpenSumiMcpHttpServer] Listening on '),
+    )?.[0];
+    expect(listeningLog).toContain('/mcp/<redacted>');
+    expect(listeningLog).not.toContain(token);
+    expect(listeningLog).not.toContain(fullUrl);
 
     const client = new Client(
       {
@@ -361,6 +369,30 @@ describe('OpenSumiMcpHttpServer', () => {
       });
       expect(fallbackResult.isError).toBe(false);
       expect(caller.executeTool).toHaveBeenCalledWith('search', 'search_text', { query: 'foo' });
+
+      const nestedFallbackResult = await client.callTool({
+        name: 'opensumi_invokeCapabilityTool',
+        arguments: { tool: 'search_text', arguments: { arguments: { query: 'bar' } } },
+      });
+      expect(nestedFallbackResult.isError).toBe(false);
+      expect(caller.executeTool).toHaveBeenLastCalledWith('search', 'search_text', { query: 'bar' });
+
+      const nestedInvocationResult = await client.callTool({
+        name: 'opensumi_invokeCapabilityTool',
+        arguments: { arguments: { tool: 'search_text', arguments: { query: 'baz' } } },
+      });
+      expect(nestedInvocationResult.isError).toBe(false);
+      expect(caller.executeTool).toHaveBeenLastCalledWith('search', 'search_text', { query: 'baz' });
+
+      const invalidInvocationResult = await client.callTool({
+        name: 'opensumi_invokeCapabilityTool',
+        arguments: { arguments: { query: 'missing tool' } },
+      });
+      expect(invalidInvocationResult.isError).toBe(true);
+      expect(JSON.parse((invalidInvocationResult.content as any)[0].text)).toMatchObject({
+        success: false,
+        error: 'INVALID_ARGUMENTS',
+      });
     } finally {
       await client.close();
       await server.dispose();
