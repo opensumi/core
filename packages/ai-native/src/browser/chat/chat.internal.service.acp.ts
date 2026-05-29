@@ -81,15 +81,21 @@ export class AcpChatInternalService extends ChatInternalService {
 
   override async createSessionModel() {
     this._onSessionLoadingChange.fire(true);
-    this._sessionModel = await this.chatManagerService.startSession();
-    const acpManager = this.chatManagerService as AcpChatManagerService;
-    this.setAvailableCommands(acpManager.getAvailableCommands());
-    this._onSessionModelChange.fire(this._sessionModel);
-    // Notify permission bridge of session change
-    const rawSessionId = this.stripAcpPrefix(this._sessionModel.sessionId);
-    this.permissionBridgeService.setActiveSession(rawSessionId);
-    this._onChangeSession.fire(this._sessionModel.sessionId);
-    this._onSessionLoadingChange.fire(false);
+    try {
+      this._sessionModel = await this.chatManagerService.startSession();
+      const acpManager = this.chatManagerService as AcpChatManagerService;
+      this.setAvailableCommands(acpManager.getAvailableCommands());
+      this._onSessionModelChange.fire(this._sessionModel);
+      // Notify permission bridge of session change
+      const rawSessionId = this.stripAcpPrefix(this._sessionModel.sessionId);
+      this.permissionBridgeService.setActiveSession(rawSessionId);
+      this._onChangeSession.fire(this._sessionModel.sessionId);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.messageService.error(`Failed to create session. (${errorMessage})`);
+    } finally {
+      this._onSessionLoadingChange.fire(false);
+    }
   }
 
   override async clearSessionModel(sessionId?: string) {

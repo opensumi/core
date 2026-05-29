@@ -389,6 +389,89 @@ describe('AcpAgentService (Thread Pool)', () => {
       await expect(service.createSession(mockAgentProcessConfig)).rejects.toThrow('Thread pool is full');
     });
 
+    it('should recycle the least recently used reusable thread when pool is full', async () => {
+      const { service, mockFactory } = createServiceWithAutoEvents();
+      const threads: MockThread[] = [];
+
+      for (let i = 0; i < 3; i++) {
+        const t = createMockThread({
+          threadId: `thread-${i}`,
+          getStatus: jest.fn().mockReturnValue('awaiting_prompt'),
+          newSession: jest.fn().mockResolvedValue({ sessionId: `session-${i}` }),
+          onEvent: jest.fn((cb: any) => {
+            setTimeout(() => {
+              cb({
+                type: 'session_notification',
+                notification: {
+                  sessionId: `session-${i}`,
+                  update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+                },
+              });
+            }, 10);
+            return { dispose: jest.fn() };
+          }),
+        });
+        threads.push(t);
+        mockFactory.mockReturnValueOnce(t);
+        await service.createSession(mockAgentProcessConfig);
+      }
+
+      threads[0].newSession.mockResolvedValueOnce({ sessionId: 'session-3' });
+      const result = await service.createSession(mockAgentProcessConfig);
+
+      expect(result.sessionId).toBe('session-3');
+      expect(mockFactory).toHaveBeenCalledTimes(3);
+      expect(threads[0].newSession).toHaveBeenCalledTimes(2);
+      expect((service as any).sessions.has('session-0')).toBe(false);
+      expect((service as any).sessions.get('session-3')).toBe(threads[0]);
+    });
+
+    it('should not let loadSession reuse a thread reserved by createSession', async () => {
+      const initializeGate = createDeferred<any>();
+      const creatingThread = createMockThread({
+        threadId: 'creating-thread',
+        initialize: jest.fn().mockReturnValue(initializeGate.promise),
+        newSession: jest.fn().mockResolvedValue({ sessionId: 'created-session' }),
+        getStatus: jest.fn().mockReturnValue('idle'),
+      });
+      const loadingThread = createMockThread({
+        threadId: 'loading-thread',
+        getStatus: jest.fn().mockReturnValue('idle'),
+        loadSession: jest.fn().mockResolvedValue({ sessionId: 'loaded-session' }),
+      });
+      const mockFactory = jest.fn().mockReturnValueOnce(creatingThread).mockReturnValueOnce(loadingThread);
+      const service = setupServiceWithMockFactory(mockFactory);
+
+      const createPromise = service.createSession(mockAgentProcessConfig);
+      await flushAsyncWork();
+
+      const loadPromise = service.loadSession('loaded-session', mockAgentProcessConfig);
+      await flushAsyncWork();
+
+      expect(mockFactory).toHaveBeenCalledTimes(2);
+      expect((service as any).sessions.get('loaded-session')).toBe(loadingThread);
+      expect(creatingThread.loadSession).not.toHaveBeenCalled();
+
+      initializeGate.resolve({ protocolVersion: 1, agentCapabilities: {} });
+      creatingThread._fireEvent({
+        type: 'session_notification',
+        notification: {
+          sessionId: 'created-session',
+          update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+        },
+      });
+
+      const [createResult, loadResult] = await Promise.all([createPromise, loadPromise]);
+
+      expect(loadingThread.loadSession).toHaveBeenCalledWith(
+        expect.objectContaining({ sessionId: 'loaded-session', cwd: mockAgentProcessConfig.cwd }),
+      );
+      expect(createResult.sessionId).toBe('created-session');
+      expect(loadResult.sessionId).toBe('loaded-session');
+      expect((service as any).sessions.get('created-session')).toBe(creatingThread);
+      expect((service as any).sessions.get('loaded-session')).toBe(loadingThread);
+    });
+
     it('should clean up on error when thread was newly created', async () => {
       const thread = createMockThread({
         onEvent: jest.fn(() => ({ dispose: jest.fn() })),
@@ -607,6 +690,45 @@ describe('AcpAgentService (Thread Pool)', () => {
 
       await expect(service.loadSession('new-session', mockAgentProcessConfig)).rejects.toThrow('Thread pool is full');
     });
+
+    it('should load a new session by recycling the least recently used reusable thread', async () => {
+      const { service, mockFactory } = createServiceWithAutoEvents();
+      const threads: MockThread[] = [];
+
+      for (let i = 0; i < 3; i++) {
+        const t = createMockThread({
+          threadId: `thread-${i}`,
+          getStatus: jest.fn().mockReturnValue('awaiting_prompt'),
+          newSession: jest.fn().mockResolvedValue({ sessionId: `session-${i}` }),
+          loadSession: jest.fn().mockResolvedValue({ sessionId: 'session-3' }),
+          onEvent: jest.fn((cb: any) => {
+            setTimeout(() => {
+              cb({
+                type: 'session_notification',
+                notification: {
+                  sessionId: `session-${i}`,
+                  update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+                },
+              });
+            }, 10);
+            return { dispose: jest.fn() };
+          }),
+        });
+        threads.push(t);
+        mockFactory.mockReturnValueOnce(t);
+        await service.createSession(mockAgentProcessConfig);
+      }
+
+      const result = await service.loadSession('session-3', mockAgentProcessConfig);
+
+      expect(result.sessionId).toBe('session-3');
+      expect(mockFactory).toHaveBeenCalledTimes(3);
+      expect(threads[0].loadSession).toHaveBeenCalledWith(
+        expect.objectContaining({ sessionId: 'session-3', cwd: mockAgentProcessConfig.cwd }),
+      );
+      expect((service as any).sessions.has('session-0')).toBe(false);
+      expect((service as any).sessions.get('session-3')).toBe(threads[0]);
+    });
   });
 
   describe('loadSessionOrNew()', () => {
@@ -635,15 +757,69 @@ describe('AcpAgentService (Thread Pool)', () => {
   // -----------------------------------------------------------------------
 
   describe('sendMessage()', () => {
-    it('should return stream with error if session not found', () => {
-      const { service } = createService();
+    it('should return stream with error if session cannot be loaded', async () => {
+      const thread = createMockThread({
+        loadSession: jest.fn().mockRejectedValue(new Error('Session not found')),
+      });
+      const service = setupServiceWithMockFactory(jest.fn().mockReturnValue(thread));
       const stream = service.sendMessage({ prompt: 'hello', sessionId: 'nonexistent' }, mockAgentProcessConfig);
 
       const errors: Error[] = [];
       stream.onError((e) => errors.push(e));
+      await flushAsyncWork();
 
       expect(errors.length).toBe(1);
-      expect(errors[0].message).toContain('No active session');
+      expect(errors[0].message).toContain('Session not found');
+    });
+
+    it('should reload an LRU-evicted session before sending a message', async () => {
+      const { service, mockFactory } = createServiceWithAutoEvents();
+      const threads: MockThread[] = [];
+
+      for (let i = 0; i < 3; i++) {
+        const threadIndex = i;
+        const t = createMockThread({
+          threadId: `thread-${threadIndex}`,
+          getStatus: jest.fn().mockReturnValue('awaiting_prompt'),
+          newSession: jest.fn().mockResolvedValue({ sessionId: `session-${threadIndex}` }),
+          loadSession: jest.fn().mockResolvedValue({ sessionId: 'session-0' }),
+          onEvent: jest.fn((cb: any) => {
+            setTimeout(() => {
+              cb({
+                type: 'session_notification',
+                notification: {
+                  sessionId: `session-${threadIndex}`,
+                  update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+                },
+              });
+            }, 10);
+            return { dispose: jest.fn() };
+          }),
+        });
+        threads.push(t);
+        mockFactory.mockReturnValueOnce(t);
+        await service.createSession(mockAgentProcessConfig);
+      }
+
+      threads[0].newSession.mockResolvedValueOnce({ sessionId: 'session-3' });
+      await service.createSession(mockAgentProcessConfig);
+
+      expect((service as any).sessions.has('session-0')).toBe(false);
+
+      const stream = service.sendMessage({ prompt: 'Hello again', sessionId: 'session-0' }, mockAgentProcessConfig);
+      const updates: any[] = [];
+      stream.onData((data) => updates.push(data));
+      await flushAsyncWork();
+
+      expect((service as any).sessions.get('session-0')).toBe(threads[1]);
+      expect(threads[1].loadSession).toHaveBeenCalledWith(
+        expect.objectContaining({ sessionId: 'session-0', cwd: mockAgentProcessConfig.cwd }),
+      );
+      expect(threads[1].addUserMessage).toHaveBeenCalledWith('Hello again');
+      expect(threads[1].prompt).toHaveBeenCalledWith(
+        expect.objectContaining({ sessionId: 'session-0', prompt: expect.any(Array) }),
+      );
+      expect(updates).toContainEqual(expect.objectContaining({ type: 'thread_status' }));
     });
 
     it('should add user message and prompt the thread', async () => {
