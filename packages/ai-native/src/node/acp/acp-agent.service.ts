@@ -13,6 +13,7 @@ import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-nativ
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
+import { toAgentUpdate } from './acp-agent-update-adapter';
 import { normalizeAcpError } from './acp-error';
 import {
   AcpThread,
@@ -505,7 +506,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         return true;
       });
 
-      this.updateLastSessionInfo(realSessionId, thread, deduplicated);
+      const sessionState = thread.getSessionState();
+      const modes = sessionState.modes ? sessionState.modes.map(({ id, name }) => ({ id, name })) : [];
+      this.updateLastSessionInfo(realSessionId, thread, modes);
 
       this.logger.log(
         `[AcpAgentService] createSession() — done, sessionId=${realSessionId}, commands=${deduplicated.length}`,
@@ -678,34 +681,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   }
 
   private buildSessionLoadResult(sessionId: string, thread: AcpThread): SessionLoadResult {
-    const historyUpdates: SessionNotification[] = [];
-    // Collect existing entries as notifications for backward compat
-    for (const entry of thread.getEntries()) {
-      // Convert entries back to notification-like format (simplified)
-      if (entry.type === 'user_message') {
-        historyUpdates.push({
-          sessionId,
-          update: {
-            sessionUpdate: 'user_message_chunk',
-            content: { type: 'text', text: entry.data.content },
-          },
-        } as SessionNotification);
-      } else if (entry.type === 'assistant_message') {
-        for (const chunk of entry.data.chunks) {
-          historyUpdates.push({
-            sessionId,
-            update: {
-              sessionUpdate: 'agent_message_chunk',
-              content: chunk,
-            },
-          } as SessionNotification);
-        }
-      }
-    }
+    const historyUpdates = [...thread.getSessionNotifications()];
+    const sessionState = thread.getSessionState();
+    const modes = sessionState.modes ? sessionState.modes.map(({ id, name }) => ({ id, name })) : [];
 
-    const modes: Array<{ id: string; name: string }> = [];
-
-    this.updateLastSessionInfo(sessionId, thread, []);
+    this.updateLastSessionInfo(sessionId, thread, modes);
 
     return {
       sessionId,
@@ -758,7 +738,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
           );
           return;
         }
-        const agentUpdates = thread.toAgentUpdate(event.notification);
+        const agentUpdates = toAgentUpdate(event.notification);
         const normalizedUpdates = Array.isArray(agentUpdates) ? agentUpdates : [];
         if (agentUpdates && !Array.isArray(agentUpdates)) {
           normalizedUpdates.push(agentUpdates);
@@ -1291,11 +1271,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
   }
 
-  private updateLastSessionInfo(sessionId: string, thread: AcpThread, _commands: AvailableCommand[]): void {
+  private updateLastSessionInfo(
+    sessionId: string,
+    thread: AcpThread,
+    modes: Array<{ id: string; name: string }>,
+  ): void {
     this.lastSessionInfo = {
       sessionId,
       processId: thread.threadId,
-      modes: [],
+      modes,
       status: 'ready',
     };
   }

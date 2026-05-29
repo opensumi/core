@@ -24,6 +24,8 @@ export {
   AssistantMessageEntry,
   ToolCallEntry,
   AgentThreadEntry,
+  AcpSessionInfoState,
+  AcpSessionState,
   AcpThreadEvent,
   AcpThreadOptions,
   AcpThreadFactory,

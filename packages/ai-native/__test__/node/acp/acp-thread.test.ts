@@ -855,6 +855,178 @@ describe('AcpThread', () => {
   });
 
   // ===================================================================
+  // Native SessionNotification history and session state
+  // ===================================================================
+  describe('native session state', () => {
+    it('should record native notifications received from the ACP client', async () => {
+      (thread as any)._sessionId = 's1';
+      const client = (thread as any).createClientImpl();
+
+      await client.sessionUpdate({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'tool_call_update',
+          toolCallId: 'tc-1',
+          status: 'completed',
+          content: [{ type: 'diff', path: 'src/index.ts' }],
+          rawOutput: { changedFiles: ['src/index.ts'] },
+        },
+      });
+
+      expect(thread.getSessionNotifications()).toEqual([
+        expect.objectContaining({
+          sessionId: 's1',
+          update: expect.objectContaining({
+            sessionUpdate: 'tool_call_update',
+            rawOutput: { changedFiles: ['src/index.ts'] },
+            content: [{ type: 'diff', path: 'src/index.ts' }],
+          }),
+        }),
+      ]);
+    });
+
+    it('should not record stale session notifications', async () => {
+      (thread as any)._sessionId = 'current-session';
+      const client = (thread as any).createClientImpl();
+
+      await client.sessionUpdate({
+        sessionId: 'stale-session',
+        update: {
+          sessionUpdate: 'agent_message_chunk',
+          content: { type: 'text', text: 'stale answer' },
+        },
+      });
+
+      expect(thread.getSessionNotifications()).toEqual([]);
+      expect(thread.entries).toEqual([]);
+    });
+
+    it('should return a cloned notification history', async () => {
+      (thread as any)._sessionId = 's1';
+      const client = (thread as any).createClientImpl();
+
+      await client.sessionUpdate({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'agent_message_chunk',
+          content: { type: 'text', text: 'answer' },
+        },
+      });
+
+      const notifications = thread.getSessionNotifications() as any[];
+      notifications[0].update.content.text = 'mutated';
+
+      expect((thread.getSessionNotifications()[0].update as any).content.text).toBe('answer');
+    });
+
+    it('should apply initial modes, config options, and models from session responses', async () => {
+      const connection = {
+        loadSession: jest.fn().mockResolvedValue({
+          modes: {
+            availableModes: [{ id: 'code', name: 'Code' }],
+            currentModeId: 'code',
+          },
+          configOptions: [{ id: 'permission', name: 'Permission' }],
+          models: {
+            availableModels: [{ modelId: 'sonnet', name: 'Sonnet' }],
+            currentModelId: 'sonnet',
+          },
+        }),
+      };
+      (thread as any)._initialized = true;
+      (thread as any)._connection = connection;
+
+      await thread.loadSession({ sessionId: 's1' } as any);
+
+      expect(thread.getSessionState()).toEqual(
+        expect.objectContaining({
+          currentModeId: 'code',
+          modes: [{ id: 'code', name: 'Code' }],
+          currentModelId: 'sonnet',
+          models: [{ modelId: 'sonnet', name: 'Sonnet' }],
+          configOptions: [{ id: 'permission', name: 'Permission' }],
+        }),
+      );
+    });
+
+    it('should update ACP-derived session state from notifications', () => {
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'current_mode_update',
+          currentModeId: 'code',
+        },
+      } as any);
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'config_option_update',
+          configOptions: [{ id: 'permission', name: 'Permission' }],
+        },
+      } as any);
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'usage_update',
+          used: 42,
+          size: 100,
+        },
+      } as any);
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'session_info_update',
+          title: 'Loaded session',
+        },
+      } as any);
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'session_info_update',
+          updatedAt: '2026-05-29T00:00:00.000Z',
+        },
+      } as any);
+
+      expect(thread.getSessionState()).toEqual(
+        expect.objectContaining({
+          currentModeId: 'code',
+          configOptions: [{ id: 'permission', name: 'Permission' }],
+          usage: { used: 42, size: 100 },
+          sessionInfo: {
+            title: 'Loaded session',
+            updatedAt: '2026-05-29T00:00:00.000Z',
+          },
+        }),
+      );
+    });
+
+    it('should clear native history and session state on reset', async () => {
+      (thread as any)._sessionId = 's1';
+      const client = (thread as any).createClientImpl();
+
+      await client.sessionUpdate({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'current_mode_update',
+          currentModeId: 'code',
+        },
+      });
+
+      thread.reset();
+
+      expect(thread.getSessionNotifications()).toEqual([]);
+      expect(thread.getSessionState()).toEqual(
+        expect.objectContaining({
+          notifications: [],
+          entries: [],
+          currentModeId: undefined,
+          modes: undefined,
+        }),
+      );
+    });
+  });
+
+  // ===================================================================
   // Event emission — granular events
   // ===================================================================
   describe('onEvent', () => {

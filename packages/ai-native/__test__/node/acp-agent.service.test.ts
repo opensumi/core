@@ -65,6 +65,8 @@ interface MockThread {
   cancel: jest.Mock;
   listSessions: jest.Mock;
   getEntries: jest.Mock;
+  getSessionNotifications: jest.Mock;
+  getSessionState: jest.Mock;
   getStatus: jest.Mock;
   setStatus: jest.Mock;
   setError: jest.Mock;
@@ -73,7 +75,6 @@ interface MockThread {
   markAssistantComplete: jest.Mock;
   markToolCallWaiting: jest.Mock;
   respondToToolCall: jest.Mock;
-  toAgentUpdate: jest.Mock;
   setSessionMode: jest.Mock;
   reset: jest.Mock;
   dispose: jest.Mock;
@@ -100,36 +101,6 @@ function createDeferred<T = void>(): {
   return { promise, resolve, reject };
 }
 
-function toAgentUpdateForTest(notification: any): any {
-  const update = notification?.update;
-  switch (update?.sessionUpdate) {
-    case 'agent_thought_chunk':
-      return { type: 'thought', content: update.content?.text ?? '' };
-    case 'agent_message_chunk':
-      return { type: 'message', content: update.content?.text ?? '' };
-    case 'tool_call':
-      return {
-        type: 'tool_call',
-        content: update.title || update.toolName || update.toolCallId || '',
-        toolCall: {
-          toolCallId: update.toolCallId || '',
-          name: update.title || update.toolName || update.toolCallId || '',
-          input: update.rawInput ?? {},
-        },
-      };
-    case 'tool_call_update':
-      if (Array.isArray(update.content)) {
-        const diff = update.content.find((item: any) => item?.type === 'diff');
-        if (diff?.path) {
-          return { type: 'tool_result', content: `Modified ${diff.path}` };
-        }
-      }
-      return null;
-    default:
-      return null;
-  }
-}
-
 function createMockThread(overrides: Record<string, any> = {}): MockThread {
   const eventListeners: Array<(event: any) => void> = [];
   const base: MockThread = {
@@ -145,6 +116,12 @@ function createMockThread(overrides: Record<string, any> = {}): MockThread {
     cancel: jest.fn().mockResolvedValue(undefined),
     listSessions: jest.fn().mockResolvedValue({ sessions: [] }),
     getEntries: jest.fn().mockReturnValue([]),
+    getSessionNotifications: jest.fn().mockReturnValue([]),
+    getSessionState: jest.fn().mockReturnValue({
+      notifications: [],
+      entries: [],
+      modes: [],
+    }),
     getStatus: jest.fn().mockReturnValue('idle'),
     setStatus: jest.fn(),
     setError: jest.fn(),
@@ -153,7 +130,6 @@ function createMockThread(overrides: Record<string, any> = {}): MockThread {
     markAssistantComplete: jest.fn(),
     markToolCallWaiting: jest.fn(),
     respondToToolCall: jest.fn(),
-    toAgentUpdate: jest.fn(toAgentUpdateForTest),
     setSessionMode: jest.fn().mockResolvedValue(undefined),
     reset: jest.fn(),
     dispose: jest.fn().mockResolvedValue(undefined),
@@ -492,6 +468,62 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(thread.loadSession).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 'existing-session-id' }));
     });
 
+    it('should return native agent replay notifications as historyUpdates', async () => {
+      const nativeHistory = [
+        {
+          sessionId: 'existing-session-id',
+          update: {
+            sessionUpdate: 'tool_call_update',
+            toolCallId: 'edit-1',
+            status: 'completed',
+            content: [{ type: 'diff', path: 'src/index.ts' }],
+            rawOutput: { changedFiles: ['src/index.ts'] },
+          },
+        },
+        {
+          sessionId: 'existing-session-id',
+          update: {
+            sessionUpdate: 'usage_update',
+            used: 120,
+            size: 2000,
+          },
+        },
+      ];
+      const thread = createMockThread({
+        initialized: true,
+        getStatus: jest.fn().mockReturnValue('idle'),
+        getSessionNotifications: jest.fn().mockReturnValue(nativeHistory),
+        onEvent: jest.fn(() => ({ dispose: jest.fn() })),
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+
+      const result = await service.loadSession('existing-session-id', mockAgentProcessConfig);
+
+      expect(result.historyUpdates).toEqual(nativeHistory);
+    });
+
+    it('should not synthesize historyUpdates from local entries', async () => {
+      const thread = createMockThread({
+        initialized: true,
+        getStatus: jest.fn().mockReturnValue('idle'),
+        getEntries: jest.fn().mockReturnValue([
+          {
+            type: 'user_message',
+            data: { id: 'msg-1', content: 'local prompt', timestamp: 1 },
+          },
+        ]),
+        getSessionNotifications: jest.fn().mockReturnValue([]),
+        onEvent: jest.fn(() => ({ dispose: jest.fn() })),
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+
+      const result = await service.loadSession('existing-session-id', mockAgentProcessConfig);
+
+      expect(result.historyUpdates).toEqual([]);
+    });
+
     it('should join an in-flight load instead of returning a half-loaded thread', async () => {
       const loadGate = createDeferred<void>();
       let loaded = false;
@@ -503,12 +535,15 @@ describe('AcpAgentService (Thread Pool)', () => {
           loaded = true;
           return { sessionId: 'shared-session' };
         }),
-        getEntries: jest.fn(() =>
+        getSessionNotifications: jest.fn(() =>
           loaded
             ? [
                 {
-                  type: 'assistant_message',
-                  data: { chunks: [{ type: 'text', text: 'Loaded history' }] },
+                  sessionId: 'shared-session',
+                  update: {
+                    sessionUpdate: 'agent_message_chunk',
+                    content: { type: 'text', text: 'Loaded history' },
+                  },
                 },
               ]
             : [],

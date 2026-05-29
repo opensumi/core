@@ -1,6 +1,6 @@
 /**
- * Agent update types — shared format used by both AcpThread (translation)
- * and AcpAgentService (stream consumption).
+ * Agent update types — legacy stream format used by AcpAgentService
+ * and compatibility adapters.
  */
 
 import type { ThreadStatus } from './acp-thread';

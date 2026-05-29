@@ -485,6 +485,42 @@ describe('AcpCliBackService', () => {
       ]);
     });
 
+    it('should ignore non-message native history updates when restoring messages', async () => {
+      mockAgentService.loadSession.mockResolvedValue({
+        sessionId: 'sess-1',
+        processId: 'proc-1',
+        modes: [],
+        status: 'ready',
+        historyUpdates: [
+          ...mockSessionNotifications,
+          {
+            sessionId: 'sess-1',
+            update: {
+              sessionUpdate: 'tool_call_update',
+              toolCallId: 'tc-1',
+              status: 'completed',
+              content: [{ type: 'diff', path: 'src/index.ts' }],
+            },
+          },
+          {
+            sessionId: 'sess-1',
+            update: {
+              sessionUpdate: 'usage_update',
+              used: 10,
+              size: 100,
+            },
+          },
+        ],
+      });
+
+      const result = await service.loadAgentSession(mockAgentSessionConfig, 'sess-1');
+
+      expect(result.messages).toEqual([
+        { role: 'user', content: 'Hello agent' },
+        { role: 'assistant', content: 'Hi there!' },
+      ]);
+    });
+
     it('should handle load session error', async () => {
       mockAgentService.loadSession.mockRejectedValue(new Error('Session not found'));
 

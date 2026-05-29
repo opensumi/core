@@ -19,6 +19,7 @@ import { Autowired, Injectable, Injector, Provider } from '@opensumi/di';
 import { Deferred, Disposable, Emitter, Event, ILogger, URI, uuid } from '@opensumi/ide-core-common';
 import {
   AgentCapabilities,
+  AvailableCommand,
   CancelNotification,
   CloseSessionRequest,
   CloseSessionResponse,
@@ -64,8 +65,6 @@ import { resolveAgentSpawnConfig } from './acp-spawn-config';
 import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './handlers/file-system.handler';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
 import { PermissionRoutingService, PermissionRoutingServiceToken } from './permission-routing.service';
-
-import type { AgentUpdate, SimpleToolCall } from './acp-update-types';
 
 // ---------------------------------------------------------------------------
 // Polyfill Web Streams for Node 16
@@ -193,6 +192,25 @@ export interface ToolCallEntry {
   result?: unknown;
 }
 
+export interface AcpSessionInfoState {
+  _meta?: { [key: string]: unknown } | null;
+  title?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface AcpSessionState {
+  notifications: ReadonlyArray<SessionNotification>;
+  entries: ReadonlyArray<AgentThreadEntry>;
+  modes?: ReadonlyArray<{ id: string; name: string; description?: string | null }>;
+  currentModeId?: string;
+  models?: ReadonlyArray<{ modelId: string; name: string; description?: string | null }>;
+  currentModelId?: string;
+  configOptions?: ReadonlyArray<unknown>;
+  usage?: unknown;
+  sessionInfo?: AcpSessionInfoState;
+  availableCommands?: ReadonlyArray<AvailableCommand>;
+}
+
 /** Plan — SDK type directly, no wrapper needed */
 // Plan = { entries: Array<{ content: string; completed: boolean }> }
 
@@ -272,6 +290,8 @@ export interface IAcpThread {
 
   // State management (internal + testing)
   getEntries(): ReadonlyArray<AgentThreadEntry>;
+  getSessionNotifications(): ReadonlyArray<SessionNotification>;
+  getSessionState(): AcpSessionState;
   getStatus(): ThreadStatus;
   setStatus(status: ThreadStatus): void;
   setError(error: Error): void;
@@ -385,10 +405,19 @@ export class AcpThread extends Disposable implements IAcpThread {
   // State
   private _status: ThreadStatus = 'idle';
   private _entries: AgentThreadEntry[] = [];
+  private _sessionNotifications: SessionNotification[] = [];
   private _sessionId: string = '';
   private _needsReset = false;
   private _agentCapabilities: AgentCapabilities | null = null;
   private _initialized = false;
+  private _modes: Array<{ id: string; name: string; description?: string | null }> | undefined;
+  private _currentModeId: string | undefined;
+  private _models: Array<{ modelId: string; name: string; description?: string | null }> | undefined;
+  private _currentModelId: string | undefined;
+  private _configOptions: unknown[] | undefined;
+  private _usage: unknown;
+  private _sessionInfo: AcpSessionInfoState | undefined;
+  private _availableCommands: AvailableCommand[] | undefined;
 
   // Process
   private _childProcess: ChildProcess | null = null;
@@ -452,6 +481,25 @@ export class AcpThread extends Disposable implements IAcpThread {
   // -----------------------------------------------------------------------
   getEntries(): ReadonlyArray<AgentThreadEntry> {
     return this._entries;
+  }
+
+  getSessionNotifications(): ReadonlyArray<SessionNotification> {
+    return this._sessionNotifications.map((notification) => this.cloneSessionNotification(notification));
+  }
+
+  getSessionState(): AcpSessionState {
+    return {
+      notifications: this.getSessionNotifications(),
+      entries: this._entries,
+      modes: this._modes ? [...this._modes] : undefined,
+      currentModeId: this._currentModeId,
+      models: this._models ? [...this._models] : undefined,
+      currentModelId: this._currentModelId,
+      configOptions: this._configOptions ? [...this._configOptions] : undefined,
+      usage: this._usage,
+      sessionInfo: this._sessionInfo ? { ...this._sessionInfo } : undefined,
+      availableCommands: this._availableCommands ? [...this._availableCommands] : undefined,
+    };
   }
 
   getStatus(): ThreadStatus {
@@ -647,6 +695,7 @@ export class AcpThread extends Disposable implements IAcpThread {
         if (!self.isCurrentSessionNotification(params)) {
           return;
         }
+        self.recordSessionNotification(params);
         self.handleNotification(params);
         self.fireEvent({
           type: 'session_notification',
@@ -803,6 +852,7 @@ export class AcpThread extends Disposable implements IAcpThread {
     const response: NewSessionResponse = await this._connection.newSession(request);
     this._sessionId = response.sessionId;
     this._needsReset = true;
+    this.applySessionInitialState(response);
     this.setStatus('awaiting_prompt');
     this.logger?.log(
       `[AcpThread:${this.threadId}] newSession() — sessionId=${response.sessionId}, status=awaiting_prompt`,
@@ -814,9 +864,10 @@ export class AcpThread extends Disposable implements IAcpThread {
     await this.ensureInitialized();
     this.logger?.log(`[AcpThread:${this.threadId}] loadSession() — sessionId=${params.sessionId}`);
 
-    const response: LoadSessionResponse = await this._connection.loadSession(params);
     this._sessionId = params.sessionId;
+    const response: LoadSessionResponse = await this._connection.loadSession(params);
     this._needsReset = true;
+    this.applySessionInitialState(response);
     this.setStatus('awaiting_prompt');
     this.logger?.log(
       `[AcpThread:${this.threadId}] loadSession() — loaded sessionId=${params.sessionId}, status=awaiting_prompt`,
@@ -993,8 +1044,10 @@ export class AcpThread extends Disposable implements IAcpThread {
       }`,
     );
     this._entries = [];
+    this._sessionNotifications = [];
     this._sessionId = '';
     this._needsReset = false;
+    this.clearSessionState();
     // NOTE: Do NOT clear _initialized — thread remains initialized and reusable
     this._pendingPermissionRequests.clear();
     this.setStatus('idle');
@@ -1046,17 +1099,34 @@ export class AcpThread extends Disposable implements IAcpThread {
         break;
       }
       case 'available_commands_update': {
-        // No entry change needed, just emit event (already done by sessionUpdate)
+        if (Array.isArray((update as any).availableCommands)) {
+          this._availableCommands = [...(update as any).availableCommands];
+        }
         break;
       }
       case 'plan': {
         this.updatePlanEntry(update);
         break;
       }
-      case 'usage_update':
-      case 'current_mode_update':
-      case 'config_option_update':
+      case 'usage_update': {
+        this._usage = this.omitSessionUpdate(update);
+        break;
+      }
+      case 'current_mode_update': {
+        this._currentModeId = (update as any).currentModeId;
+        break;
+      }
+      case 'config_option_update': {
+        if (Array.isArray((update as any).configOptions)) {
+          this._configOptions = [...(update as any).configOptions];
+        }
+        break;
+      }
       case 'session_info_update': {
+        this._sessionInfo = {
+          ...(this._sessionInfo || {}),
+          ...(this.omitSessionUpdate(update) as AcpSessionInfoState),
+        };
         break;
       }
       default:
@@ -1077,124 +1147,6 @@ export class AcpThread extends Disposable implements IAcpThread {
       `[AcpThread:${this.threadId}] Ignoring session notification for ${params.sessionId}; current session is ${this._sessionId}`,
     );
     return false;
-  }
-
-  // -----------------------------------------------------------------------
-  // Notification → AgentUpdate translation
-  // -----------------------------------------------------------------------
-
-  /**
-   * Translate a SessionNotification into the legacy AgentUpdate format
-   * for stream consumption by AcpAgentService.
-   */
-  toAgentUpdate(notification: SessionNotification): AgentUpdate | AgentUpdate[] | null {
-    const update = (notification as any).update;
-    if (!update) {
-      return null;
-    }
-
-    switch (update.sessionUpdate) {
-      case 'agent_thought_chunk': {
-        const content = update.content;
-        if (content?.type === 'text') {
-          return { type: 'thought', content: content.text };
-        }
-        return null;
-      }
-
-      case 'agent_message_chunk': {
-        const content = update.content;
-        if (content?.type === 'text') {
-          return { type: 'message', content: content.text };
-        }
-        return null;
-      }
-
-      case 'tool_call': {
-        return {
-          type: 'tool_call',
-          content: update.title || update.toolCallId || '',
-          toolCall: {
-            toolCallId: update.toolCallId || '',
-            name: update.title || update.toolCallId || '',
-            input: update.rawInput !== undefined ? update.rawInput : {},
-            status: 'pending' as const,
-          },
-        };
-      }
-
-      case 'tool_call_update': {
-        const updates: AgentUpdate[] = [];
-        if (update.rawInput !== undefined) {
-          updates.push({
-            type: 'tool_call_args',
-            content: '',
-            toolCall: {
-              toolCallId: update.toolCallId || '',
-              name: update.title || '',
-              input: update.rawInput,
-            },
-          });
-        }
-        if (update.status === 'completed' || update.status === 'failed') {
-          if (update.rawOutput != null) {
-            const outputText =
-              typeof update.rawOutput === 'string' ? update.rawOutput : JSON.stringify(update.rawOutput);
-            updates.push({
-              type: 'tool_result',
-              content: outputText.slice(0, 2000),
-              toolCall: {
-                toolCallId: update.toolCallId || '',
-                name: '',
-                status: update.status as 'completed' | 'failed',
-              },
-            });
-          }
-          return updates.length ? updates : null;
-        }
-        if (update.status === 'in_progress') {
-          updates.push({
-            type: 'tool_call_status',
-            content: update.title || '',
-            toolCall: {
-              toolCallId: update.toolCallId || '',
-              name: update.title || '',
-              status: 'in_progress' as const,
-            },
-          });
-          return updates;
-        }
-        // Emit diff content if present
-        if (update.content) {
-          for (const item of update.content) {
-            if (item.type === 'diff') {
-              updates.push({
-                type: 'tool_result',
-                content: `Modified ${item.path}`,
-              });
-              break;
-            }
-          }
-        }
-        return updates.length ? updates : null;
-      }
-
-      case 'plan': {
-        const plan = update.plan;
-        if (plan?.entries?.length) {
-          const planText = plan.entries
-            .map((e: { content: string; completed?: boolean; status?: string }) =>
-              e.completed ? `- [x] ${e.content}` : `- [ ] ${e.content}`,
-            )
-            .join('\n');
-          return { type: 'plan', content: planText };
-        }
-        return null;
-      }
-
-      default:
-        return null;
-    }
   }
 
   private mergeUserMessageChunk(update: any): void {
@@ -1372,6 +1324,78 @@ export class AcpThread extends Disposable implements IAcpThread {
       return contentBlock.text;
     }
     return undefined;
+  }
+
+  private recordSessionNotification(notification: SessionNotification): void {
+    this._sessionNotifications.push(this.cloneSessionNotification(notification));
+  }
+
+  private cloneSessionNotification(notification: SessionNotification): SessionNotification {
+    return this.cloneJson(notification);
+  }
+
+  private cloneJson<T>(value: T): T {
+    if (value === undefined || value === null) {
+      return value;
+    }
+    const structuredCloneFn = (globalThis as any).structuredClone;
+    if (typeof structuredCloneFn === 'function') {
+      return structuredCloneFn(value);
+    }
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  private applySessionInitialState(
+    response: { modes?: any; configOptions?: unknown[] | null; models?: any } | null,
+  ): void {
+    if (!response) {
+      return;
+    }
+    this.applyModeState(response.modes);
+    this.applyModelState(response.models);
+    if (Array.isArray(response.configOptions)) {
+      this._configOptions = [...response.configOptions];
+    }
+  }
+
+  private applyModeState(modes: any): void {
+    if (!modes) {
+      return;
+    }
+    if (Array.isArray(modes.availableModes)) {
+      this._modes = [...modes.availableModes];
+    }
+    if (typeof modes.currentModeId === 'string') {
+      this._currentModeId = modes.currentModeId;
+    }
+  }
+
+  private applyModelState(models: any): void {
+    if (!models) {
+      return;
+    }
+    if (Array.isArray(models.availableModels)) {
+      this._models = [...models.availableModels];
+    }
+    if (typeof models.currentModelId === 'string') {
+      this._currentModelId = models.currentModelId;
+    }
+  }
+
+  private omitSessionUpdate(update: unknown): Record<string, unknown> {
+    const { sessionUpdate, ...rest } = (update || {}) as Record<string, unknown>;
+    return rest;
+  }
+
+  private clearSessionState(): void {
+    this._modes = undefined;
+    this._currentModeId = undefined;
+    this._models = undefined;
+    this._currentModelId = undefined;
+    this._configOptions = undefined;
+    this._usage = undefined;
+    this._sessionInfo = undefined;
+    this._availableCommands = undefined;
   }
 
   // -----------------------------------------------------------------------
