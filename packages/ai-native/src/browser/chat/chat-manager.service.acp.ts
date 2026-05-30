@@ -11,6 +11,7 @@ import { ISessionModel, ISessionProvider } from './session-provider';
 import { ISessionProviderRegistry } from './session-provider-registry';
 
 const MAX_SESSION_COUNT = 20;
+const DEFAULT_ACP_SESSION_TITLE = 'New Session';
 
 @Injectable()
 export class AcpChatManagerService extends ChatManagerService {
@@ -102,7 +103,14 @@ export class AcpChatManagerService extends ChatManagerService {
       if (this.mainProvider?.loadSession && sessionId) {
         return this.mainProvider.loadSession(sessionId).then((sessionData) => {
           if (sessionData) {
-            const sessions = this.fromAcpJSON([sessionData]);
+            const sessionDataWithTitle =
+              !sessionData.title && existingSession?.title && existingSession.title !== DEFAULT_ACP_SESSION_TITLE
+                ? {
+                    ...sessionData,
+                    title: existingSession.title,
+                  }
+                : sessionData;
+            const sessions = this.fromAcpJSON([sessionDataWithTitle]);
             if (sessions.length > 0) {
               const session = sessions[0];
               this.sessionModels.set(sessionId, session);
@@ -153,7 +161,7 @@ export class AcpChatManagerService extends ChatManagerService {
           sessionId: item.sessionId,
           history: new MsgHistoryManager(this.chatFeatureRegistry, item.history),
           modelId: item.modelId,
-          title: item?.title || 'New Session',
+          title: item?.title || (item.history.messages.length > 0 ? '' : DEFAULT_ACP_SESSION_TITLE),
         });
         const requests = item.requests.map(
           (request) =>
