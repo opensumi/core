@@ -134,4 +134,31 @@ describe('WebMCP modelContext adapter', () => {
     disposable.dispose();
     expect(modelContext.registerTool.mock.results[0].value.dispose).toHaveBeenCalled();
   });
+
+  it('registers browser catalog tools on the default modelContext surface', () => {
+    const registry = createRegistry();
+
+    registerWebMcpModelContextTools(registry);
+    const modelContext = (global as any).navigator.modelContext;
+    const registeredToolNames = modelContext.registerTool.mock.calls.map(([tool]) => tool.name);
+
+    expect(registeredToolNames).toEqual(
+      expect.arrayContaining([
+        'opensumi_discover_capabilities',
+        'opensumi_describe_capability_group',
+        'opensumi_describe_tool',
+        'opensumi_enable_capability_group',
+        'opensumi_invoke_capability_tool',
+      ]),
+    );
+    expect(registeredToolNames).toEqual(
+      expect.not.arrayContaining([
+        'opensumi_discoverCapabilities',
+        'opensumi_describeCapabilityGroup',
+        'opensumi_describeTool',
+        'opensumi_enableCapabilityGroup',
+        'opensumi_invokeCapabilityTool',
+      ]),
+    );
+  });
 });

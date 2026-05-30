@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 import { URI } from '@opensumi/ide-core-browser';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkerExtProcessService } from '@opensumi/ide-extension/lib/browser/extension-worker.service';
@@ -5,6 +8,14 @@ import { WorkerExtProcessService } from '@opensumi/ide-extension/lib/browser/ext
 import { IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../src/common';
 
 import { MOCK_EXTENSIONS, setupExtensionServiceInjector } from './extension-service-mock-helper';
+
+const workerHostPath = path.resolve(__dirname, '../../../lib/worker-host.js');
+
+function expectWorkerHostArtifact() {
+  if (!fs.existsSync(workerHostPath)) {
+    throw new Error(`Missing worker-host artifact: ${workerHostPath}. Run yarn build:worker-host before E2E tests.`);
+  }
+}
 
 describe('Extension service', () => {
   jest.setTimeout(20 * 1000);
@@ -24,6 +35,7 @@ describe('Extension service', () => {
   });
 
   it('activate worker host should be work', async () => {
+    expectWorkerHostArtifact();
     await workerService.activate(true);
     expect(workerService.protocol).toBeDefined();
     const proxy = workerService.protocol.getProxy<IExtensionWorkerHost>(
@@ -32,7 +44,12 @@ describe('Extension service', () => {
     expect(proxy).toBeDefined();
   });
 
+  it('should have the default dev worker-host artifact before activation', () => {
+    expectWorkerHostArtifact();
+  });
+
   it('activate extension should be work', async () => {
+    expectWorkerHostArtifact();
     await workerService.activeExtension(MOCK_EXTENSIONS[0], true);
     const activated = await workerService.getActivatedExtensions.bind(workerService)();
     expect(activated.find((e) => e.id === MOCK_EXTENSIONS[0].id)).toBeTruthy();

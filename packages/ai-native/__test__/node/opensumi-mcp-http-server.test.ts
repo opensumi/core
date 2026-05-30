@@ -18,6 +18,8 @@ import type { WebMcpGroupDef, WebMcpToolResult } from '@opensumi/ide-core-common
 
 (global as any).fetch = require('node-fetch');
 
+const LOWER_SNAKE_TOOL_NAME = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/;
+
 const testGroupDefs = [
   {
     name: 'file',
@@ -100,7 +102,7 @@ const testGroupDefs = [
         },
       },
       {
-        name: 'terminal_runCommand',
+        name: 'terminal_run_command',
         description: 'Run command',
         riskLevel: 'shell',
         profiles: ['interactive', 'full'],
@@ -126,7 +128,7 @@ const testGroupDefs = [
     profile: 'default',
     tools: [
       {
-        name: 'acp_chat_getSessionState',
+        name: 'acp_chat_get_session_state',
         description: 'Get ACP chat session state',
         riskLevel: 'read',
         inputSchema: {
@@ -135,7 +137,7 @@ const testGroupDefs = [
         },
       },
       {
-        name: 'acp_chat_setSessionMode',
+        name: 'acp_chat_set_session_mode',
         description: 'Set ACP session mode',
         riskLevel: 'write',
         profiles: ['full'],
@@ -213,13 +215,14 @@ describe('OpenSumiMcpHttpServer', () => {
     try {
       await client.connect(transport);
       const tools = await client.listTools();
+      expect(tools.tools.filter((tool) => !LOWER_SNAKE_TOOL_NAME.test(tool.name)).map((tool) => tool.name)).toEqual([]);
       expect(tools.tools).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            name: 'opensumi_discoverCapabilities',
+            name: 'opensumi_discover_capabilities',
           }),
           expect.objectContaining({
-            name: 'opensumi_enableCapabilityGroup',
+            name: 'opensumi_enable_capability_group',
           }),
           expect.objectContaining({
             name: 'file_read',
@@ -229,7 +232,7 @@ describe('OpenSumiMcpHttpServer', () => {
             }),
           }),
           expect.objectContaining({
-            name: 'acp_chat_getSessionState',
+            name: 'acp_chat_get_session_state',
           }),
         ]),
       );
@@ -253,13 +256,13 @@ describe('OpenSumiMcpHttpServer', () => {
             name: 'terminal_create',
           }),
           expect.objectContaining({
-            name: 'acp_chat_setSessionMode',
+            name: 'acp_chat_set_session_mode',
           }),
         ]),
       );
 
       const discoverResult = await client.callTool({
-        name: 'opensumi_discoverCapabilities',
+        name: 'opensumi_discover_capabilities',
         arguments: { task: 'search for a symbol' },
       });
       expect(discoverResult.isError).toBe(false);
@@ -270,7 +273,7 @@ describe('OpenSumiMcpHttpServer', () => {
       );
 
       const enableResult = await client.callTool({
-        name: 'opensumi_enableCapabilityGroup',
+        name: 'opensumi_enable_capability_group',
         arguments: { group: 'search' },
       });
       expect(enableResult.isError).toBe(false);
@@ -285,7 +288,7 @@ describe('OpenSumiMcpHttpServer', () => {
       );
 
       const describeGroupResult = await client.callTool({
-        name: 'opensumi_describeCapabilityGroup',
+        name: 'opensumi_describe_capability_group',
         arguments: { group: 'search' },
       });
       expect(describeGroupResult.isError).toBe(false);
@@ -299,7 +302,7 @@ describe('OpenSumiMcpHttpServer', () => {
       expect(describedGroup.tools[0]).not.toHaveProperty('method');
 
       const describeToolResult = await client.callTool({
-        name: 'opensumi_describeTool',
+        name: 'opensumi_describe_tool',
         arguments: { tool: 'search_text' },
       });
       expect(describeToolResult.isError).toBe(false);
@@ -314,7 +317,7 @@ describe('OpenSumiMcpHttpServer', () => {
       expect(describedTool).not.toHaveProperty('method');
 
       const enableTerminalResult = await client.callTool({
-        name: 'opensumi_enableCapabilityGroup',
+        name: 'opensumi_enable_capability_group',
         arguments: { group: 'terminal' },
       });
       expect(enableTerminalResult.isError).toBe(false);
@@ -326,7 +329,7 @@ describe('OpenSumiMcpHttpServer', () => {
             name: 'terminal_create',
           }),
           expect.objectContaining({
-            name: 'terminal_runCommand',
+            name: 'terminal_run_command',
           }),
         ]),
       );
@@ -353,7 +356,7 @@ describe('OpenSumiMcpHttpServer', () => {
       expect(caller.executeTool).toHaveBeenCalledTimes(1);
 
       const invalidToolResult = await client.callTool({
-        name: 'opensumi_invokeCapabilityTool',
+        name: 'opensumi_invoke_capability_tool',
         arguments: { tool: 'search_text_typo', arguments: { query: 'foo' } },
       });
       expect(invalidToolResult.isError).toBe(true);
@@ -364,28 +367,28 @@ describe('OpenSumiMcpHttpServer', () => {
       expect(caller.executeTool).toHaveBeenCalledTimes(1);
 
       const fallbackResult = await client.callTool({
-        name: 'opensumi_invokeCapabilityTool',
+        name: 'opensumi_invoke_capability_tool',
         arguments: { tool: 'search_text', arguments: { query: 'foo' } },
       });
       expect(fallbackResult.isError).toBe(false);
       expect(caller.executeTool).toHaveBeenCalledWith('search', 'search_text', { query: 'foo' });
 
       const nestedFallbackResult = await client.callTool({
-        name: 'opensumi_invokeCapabilityTool',
+        name: 'opensumi_invoke_capability_tool',
         arguments: { tool: 'search_text', arguments: { arguments: { query: 'bar' } } },
       });
       expect(nestedFallbackResult.isError).toBe(false);
       expect(caller.executeTool).toHaveBeenLastCalledWith('search', 'search_text', { query: 'bar' });
 
       const nestedInvocationResult = await client.callTool({
-        name: 'opensumi_invokeCapabilityTool',
+        name: 'opensumi_invoke_capability_tool',
         arguments: { arguments: { tool: 'search_text', arguments: { query: 'baz' } } },
       });
       expect(nestedInvocationResult.isError).toBe(false);
       expect(caller.executeTool).toHaveBeenLastCalledWith('search', 'search_text', { query: 'baz' });
 
       const invalidInvocationResult = await client.callTool({
-        name: 'opensumi_invokeCapabilityTool',
+        name: 'opensumi_invoke_capability_tool',
         arguments: { arguments: { query: 'missing tool' } },
       });
       expect(invalidInvocationResult.isError).toBe(true);
