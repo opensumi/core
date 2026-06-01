@@ -51,6 +51,9 @@ jest.mock('@opensumi/ide-core-browser/lib/components', () => {
               'data-resize-child': true,
               'data-child-id': child?.props?.id,
               'data-child-slot': child?.props?.slot,
+              'data-child-flex': child?.props?.flex,
+              'data-child-flex-grow': child?.props?.flexGrow,
+              'data-child-min-resize': child?.props?.minResize,
             },
             child,
           ),
@@ -78,6 +81,13 @@ describe('AILayout', () => {
     Array.from(container.querySelectorAll(`[data-split="${id}"] > [data-resize-child]`)).map(
       (node) => node.getAttribute('data-child-id') || node.getAttribute('data-child-slot'),
     );
+  const getSplitChildProps = (id: string) =>
+    Array.from(container.querySelectorAll(`[data-split="${id}"] > [data-resize-child]`)).map((node) => ({
+      id: node.getAttribute('data-child-id') || node.getAttribute('data-child-slot'),
+      flex: node.getAttribute('data-child-flex'),
+      flexGrow: node.getAttribute('data-child-flex-grow'),
+      minResize: node.getAttribute('data-child-min-resize'),
+    }));
 
   beforeEach(() => {
     panelLayoutMode = 'classic';
@@ -106,7 +116,7 @@ describe('AILayout', () => {
     expect(getSplitChildIds('main-horizontal')).toEqual(['view', 'main-vertical', 'extendView']);
   });
 
-  it('should render AI chat before the workbench in agentic layout', async () => {
+  it('Given agentic layout, when it renders, then AI chat is before the workbench', async () => {
     panelLayoutMode = 'agentic';
     const { AILayout } = await import('../../src/browser/layout/ai-layout');
 
@@ -118,5 +128,19 @@ describe('AILayout', () => {
     expect(container.querySelector('[data-split="main-horizontal-ai-agentic"]')).toBeTruthy();
     expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat', 'main-horizontal-agentic']);
     expect(getSplitChildIds('main-horizontal-agentic')).toEqual(['main-vertical-agentic', 'view', 'extendView']);
+  });
+
+  it('Given agentic layout, when dragging the AI split handle, then the workbench is the flex-grow resize target', async () => {
+    panelLayoutMode = 'agentic';
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    act(() => {
+      root.render(<AILayout />);
+    });
+
+    expect(getSplitChildProps('main-horizontal-ai-agentic')).toEqual([
+      { id: 'AI-Chat', flex: null, flexGrow: null, minResize: '280' },
+      { id: 'main-horizontal-agentic', flex: null, flexGrow: '1', minResize: '300' },
+    ]);
   });
 });
