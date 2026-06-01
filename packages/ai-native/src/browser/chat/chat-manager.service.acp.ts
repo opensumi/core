@@ -12,7 +12,6 @@ import {
 import { cleanAttachedTextWrapper } from '../../common/utils';
 import { MsgHistoryManager } from '../model/msg-history-manager';
 
-
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel, ChatResponseModel } from './chat-model';
 import { ChatFeatureRegistry } from './chat.feature.registry';
@@ -402,6 +401,10 @@ export class AcpChatManagerService extends ChatManagerService {
           history: new MsgHistoryManager(this.chatFeatureRegistry, item.history),
           modelId: item.modelId,
           title: this.resolveAcpSessionTitle(item),
+          agentModes: item.agentModes,
+          currentModeId: item.currentModeId,
+          agentModels: item.agentModels,
+          configOptions: item.configOptions,
         });
         const requests = item.requests.map(
           (request) =>

@@ -10,6 +10,10 @@ import { IChatProgressResponseContent } from './chat-model';
 export interface ISessionModel {
   sessionId: string;
   modelId?: string;
+  agentModes?: AcpSessionModeOption[];
+  currentModeId?: string;
+  agentModels?: AcpSessionModelOption[];
+  configOptions?: AcpSessionConfigOption[];
   history: { additional: Record<string, any>; messages: IHistoryChatMessage[] };
   requests: {
     requestId: string;
@@ -33,6 +37,20 @@ export interface ISessionModel {
 export interface ISessionModelExtension {
   availableCommands: AvailableCommand[];
 }
+
+export interface AcpSessionModeOption {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export interface AcpSessionModelOption {
+  modelId: string;
+  name: string;
+  description?: string | null;
+}
+
+export type AcpSessionConfigOption = Record<string, any>;
 
 /**
  * Session Provider 接口

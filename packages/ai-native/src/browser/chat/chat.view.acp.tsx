@@ -234,6 +234,7 @@ export const AIChatViewACPContent = () => {
   }, [chatFeatureRegistry, chatAgentService]);
 
   useUpdateOnEvent(aiChatService.onChangeSession);
+  useUpdateOnEvent(aiChatService.onSessionModelChange);
 
   const ChatInputWrapperRender = React.useMemo(() => {
     // 1. 优先使用 ChatInputRegistry 注册的输入组件（按优先级 + when 条件匹配）
@@ -964,8 +965,15 @@ export const AIChatViewACPContent = () => {
               setCommand={setCommand}
               contextService={llmContextService}
               ref={chatInputRef}
-              disableModelSelector={sessionModelId !== undefined || loading}
+              disableModelSelector={
+                aiNativeConfigService.capabilities.supportsAgentMode ? loading : sessionModelId !== undefined || loading
+              }
               sessionModelId={sessionModelId}
+              agentModes={aiChatService.sessionModel?.agentModes}
+              currentModeId={aiChatService.sessionModel?.currentModeId}
+              agentModels={aiChatService.sessionModel?.agentModels}
+              currentModelId={aiChatService.sessionModel?.modelId}
+              configOptions={aiChatService.sessionModel?.configOptions}
               agentCwd={appConfig.workspaceDir}
               placeholder={localize('aiNative.chat.input.placeholder.acp')}
             />

@@ -49,6 +49,26 @@ export function formatAcpLoadSessionFallbackMessage(error: unknown): string {
   return ACP_LOAD_SESSION_FALLBACK_MESSAGE;
 }
 
+function updateConfigOptionValue(option: Record<string, any>, value: boolean | string): Record<string, any> {
+  const next = { ...option };
+  if (next.kind && typeof next.kind === 'object') {
+    next.kind = { ...next.kind };
+    if ('currentValue' in next.kind) {
+      next.kind.currentValue = value;
+    }
+  }
+  if ('currentValue' in next) {
+    next.currentValue = value;
+  }
+  if ('value' in next) {
+    next.value = value;
+  }
+  if ('current_value' in next) {
+    next.current_value = value;
+  }
+  return next;
+}
+
 @Injectable()
 export class AcpChatInternalService extends ChatInternalService {
   @Autowired(AINativeConfigService)
@@ -106,14 +126,55 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   async setSessionMode(modeId: string): Promise<void> {
-    const sessionId = this._sessionModel?.sessionId;
+    const sessionId = this._sessionModel ? this.stripAcpPrefix(this._sessionModel.sessionId) : undefined;
     if (!sessionId) {
       throw new Error('No active session');
     }
 
     try {
       await this.aiBackService.setSessionMode?.(sessionId, modeId);
+      if (this._sessionModel) {
+        this._sessionModel.currentModeId = modeId;
+        this._onSessionModelChange.fire(this._sessionModel);
+      }
       this._onModeChange.fire(modeId);
+    } catch (e) {
+      this.messageService.error((e as Error).message);
+    }
+  }
+
+  async setSessionModel(modelId: string): Promise<void> {
+    const sessionId = this._sessionModel ? this.stripAcpPrefix(this._sessionModel.sessionId) : undefined;
+    if (!sessionId) {
+      throw new Error('No active session');
+    }
+
+    try {
+      await this.aiBackService.setSessionModel?.(sessionId, modelId);
+      if (this._sessionModel) {
+        this._sessionModel.modelId = modelId;
+        this._onSessionModelChange.fire(this._sessionModel);
+      }
+    } catch (e) {
+      this.messageService.error((e as Error).message);
+    }
+  }
+
+  async setSessionConfigOption(configId: string, value: boolean | string): Promise<void> {
+    const sessionId = this._sessionModel ? this.stripAcpPrefix(this._sessionModel.sessionId) : undefined;
+    if (!sessionId) {
+      throw new Error('No active session');
+    }
+
+    try {
+      await this.aiBackService.setSessionConfigOption?.(sessionId, configId, value);
+      if (this._sessionModel) {
+        this._sessionModel.configOptions = this._sessionModel.configOptions.map((option) => {
+          const optionId = option.id || option.configId;
+          return optionId === configId ? updateConfigOptionValue(option, value) : option;
+        });
+        this._onSessionModelChange.fire(this._sessionModel);
+      }
     } catch (e) {
       this.messageService.error((e as Error).message);
     }

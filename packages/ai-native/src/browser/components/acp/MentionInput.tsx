@@ -23,16 +23,119 @@ import { PermissionDialogWidget } from '../permission-dialog-widget';
 import styles from './mention-input.module.less';
 import { ModeOption } from './types';
 
+import type { AcpSessionConfigOption } from '../../chat/session-provider';
+
 export const WHITE_SPACE_TEXT = '&nbsp;';
+
+interface NormalizedConfigOption {
+  id: string;
+  name: string;
+  description?: string;
+  currentValue: string;
+  isBoolean: boolean;
+  options: ExtendedModelOption[];
+}
+
+function readConfigId(option: AcpSessionConfigOption): string | undefined {
+  const rawId = option.id || option.configId;
+  if (typeof rawId === 'string') {
+    return rawId;
+  }
+  if (rawId && typeof rawId === 'object' && typeof (rawId as { id?: unknown }).id === 'string') {
+    return (rawId as { id: string }).id;
+  }
+  return undefined;
+}
+
+function readConfigCurrentValue(option: AcpSessionConfigOption): boolean | string | undefined {
+  const kind = option.kind && typeof option.kind === 'object' ? option.kind : undefined;
+  const value = kind?.currentValue ?? option.currentValue ?? option.current_value ?? option.value;
+  return typeof value === 'boolean' || typeof value === 'string' ? value : undefined;
+}
+
+function isBooleanConfig(option: AcpSessionConfigOption): boolean {
+  const kind = option.kind;
+  return (
+    kind === 'boolean' ||
+    option.type === 'boolean' ||
+    (kind && typeof kind === 'object' && kind.type === 'boolean') ||
+    typeof readConfigCurrentValue(option) === 'boolean'
+  );
+}
+
+function readConfigValueOptions(option: AcpSessionConfigOption): ExtendedModelOption[] {
+  if (isBooleanConfig(option)) {
+    return [
+      { label: 'On', value: 'true' },
+      { label: 'Off', value: 'false' },
+    ];
+  }
+
+  const roots = [
+    option.kind && typeof option.kind === 'object' ? option.kind.options : undefined,
+    option.options,
+    option.values,
+  ];
+  const values = roots.find((root) => Array.isArray(root)) || [];
+
+  return values
+    .map((item: any) => {
+      const value = item?.value ?? item?.id;
+      if (typeof value !== 'string') {
+        return undefined;
+      }
+      const label = item?.name || item?.label || value;
+      return {
+        label,
+        value,
+        description: item?.description || undefined,
+      };
+    })
+    .filter(Boolean) as ExtendedModelOption[];
+}
+
+function normalizeConfigOptions(configOptions?: AcpSessionConfigOption[]): NormalizedConfigOption[] {
+  return (configOptions || [])
+    .map((option) => {
+      const id = readConfigId(option);
+      if (!id) {
+        return undefined;
+      }
+
+      const options = readConfigValueOptions(option);
+      if (options.length === 0) {
+        return undefined;
+      }
+
+      const rawCurrentValue = readConfigCurrentValue(option);
+      const currentValue =
+        rawCurrentValue === undefined
+          ? options[0].value
+          : typeof rawCurrentValue === 'boolean'
+          ? String(rawCurrentValue)
+          : rawCurrentValue;
+      return {
+        id,
+        name: option.name || option.label || id,
+        description: option.description,
+        currentValue,
+        isBoolean: isBooleanConfig(option),
+        options: options.map((item) => ({ ...item, selected: item.value === currentValue })),
+      };
+    })
+    .filter(Boolean) as NormalizedConfigOption[];
+}
 
 export const MentionInput: React.FC<
   MentionInputProps & {
     defaultInput?: string;
     onDefaultInputConsumed?: () => void;
     onModeChange?: (modeId: string) => void;
+    onConfigOptionChange?: (configId: string, value: boolean | string) => void;
     onAgentChange?: (agentId: string) => void;
     modeOptions?: ModeOption[];
     currentMode?: string;
+    configOptions?: AcpSessionConfigOption[];
     slashCommands?: Array<{ nameWithSlash: string; icon?: string; name?: string; description?: string }>;
   }
 > = ({
@@ -56,8 +159,10 @@ export const MentionInput: React.FC<
   defaultInput,
   onDefaultInputConsumed,
   onModeChange,
+  onConfigOptionChange,
   modeOptions,
   currentMode,
+  configOptions,
   slashCommands = [],
 }) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
@@ -1304,6 +1409,18 @@ export const MentionInput: React.FC<
     [onModeChange],
   );
 
+  const normalizedConfigOptions = React.useMemo(
+    () => normalizeConfigOptions(configOptions || footerConfig.configOptions),
+    [configOptions, footerConfig.configOptions],
+  );
+
+  const handleConfigOptionChange = React.useCallback(
+    (config: NormalizedConfigOption, value: string) => {
+      onConfigOptionChange?.(config.id, config.isBoolean ? value === 'true' : value);
+    },
+    [onConfigOptionChange],
+  );
+
   // 修改 handleSend 函数
   const handleSend = () => {
     if (!editorRef.current) {
@@ -1636,7 +1753,12 @@ export const MentionInput: React.FC<
               const Component = item.component;
               return <Component key={item.id} />;
             })}
+          {renderButtons(FooterButtonPosition.LEFT)}
+          {renderContextPreview()}
+        </div>
+        <div className={styles.right_control}>
           {footerConfig.showModelSelector &&
+            normalizedConfigOptions.length === 0 &&
             renderModelSelectorTip(
               <MentionSelect
                 options={getExtendedModelOptions}
@@ -1653,6 +1775,7 @@ export const MentionInput: React.FC<
 
           {modeOptions &&
             modeOptions.length > 0 &&
+            normalizedConfigOptions.length === 0 &&
             renderModelSelectorTip(
               <MentionSelect
                 options={modeOptions.map((opt) => ({
@@ -1667,10 +1790,21 @@ export const MentionInput: React.FC<
               />,
             )}
 
-          {renderButtons(FooterButtonPosition.LEFT)}
-        </div>
-        {renderContextPreview()}
-        <div className={styles.right_control}>
+          <div className={styles.config_controls}>
+            {normalizedConfigOptions.map((config) =>
+              renderModelSelectorTip(
+                <MentionSelect
+                  key={config.id}
+                  options={config.options}
+                  value={config.currentValue}
+                  onChange={(value) => handleConfigOptionChange(config, value)}
+                  className={styles.config_selector}
+                  size='small'
+                />,
+              ),
+            )}
+          </div>
+
           {footerItems
             .filter((item) => item.position === FooterButtonPosition.RIGHT)
             .map((item) => {
@@ -1696,11 +1830,11 @@ export const MentionInput: React.FC<
             ) : (
               <EnhanceIcon
                 wrapperClassName={styles.stop_logo}
-                className={cls(getIcon('stop'), styles.stop_logo_icon)}
+                className={cls(getIcon('close'), styles.stop_logo_icon)}
+                onClick={handleStop}
                 tabIndex={0}
                 role='button'
                 ariaLabel={'Stop'}
-                onClick={handleStop}
               />
             )}
           </Popover>

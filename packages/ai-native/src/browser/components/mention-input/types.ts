@@ -104,6 +104,7 @@ export interface FooterConfig {
   showThinking?: boolean;
   thinkingEnabled?: boolean;
   onThinkingChange?: (enabled: boolean) => void;
+  configOptions?: Record<string, any>[];
 }
 
 export interface MentionInputProps {

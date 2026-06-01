@@ -37,7 +37,7 @@ export class ACPSessionProvider implements ISessionProvider {
 
     try {
       const config = await this.configProvider.resolveConfig();
-      const result = await this.aiBackService.createSession(config);
+      const result = (await this.aiBackService.createSession(config)) as any;
 
       if (!result?.sessionId) {
         throw new Error('createSession did not return a valid sessionId');
@@ -49,6 +49,11 @@ export class ACPSessionProvider implements ISessionProvider {
       // 构造空壳会话模型
       const sessionModel: ISessionModel & { extension?: ISessionModelExtension } = {
         sessionId,
+        modelId: result.currentModelId,
+        agentModes: result.modes,
+        currentModeId: result.currentModeId,
+        agentModels: result.models,
+        configOptions: result.configOptions,
         history: {
           additional: {},
           messages: [],
@@ -127,7 +132,7 @@ export class ACPSessionProvider implements ISessionProvider {
 
     try {
       const config = await this.configProvider.resolveConfig();
-      const agentSession = await this.aiBackService.loadAgentSession(config, agentSessionId);
+      const agentSession = (await this.aiBackService.loadAgentSession(config, agentSessionId)) as any;
 
       if (!agentSession) {
         return undefined;
@@ -150,6 +155,11 @@ export class ACPSessionProvider implements ISessionProvider {
     sessionId: string,
     agentSession: {
       sessionId: string;
+      modes?: ISessionModel['agentModes'];
+      currentModeId?: string;
+      models?: ISessionModel['agentModels'];
+      currentModelId?: string;
+      configOptions?: ISessionModel['configOptions'];
       messages: Array<{
         role: 'user' | 'assistant';
         content: string;
@@ -177,6 +187,11 @@ export class ACPSessionProvider implements ISessionProvider {
 
     const result = {
       sessionId,
+      modelId: agentSession.currentModelId,
+      agentModes: agentSession.modes,
+      currentModeId: agentSession.currentModeId,
+      agentModels: agentSession.models,
+      configOptions: agentSession.configOptions,
       history: {
         additional: {},
         messages,

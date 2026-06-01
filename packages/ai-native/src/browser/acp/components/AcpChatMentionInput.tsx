@@ -45,6 +45,8 @@ import { MCPConfigCommands } from '../../mcp/config/mcp-config.commands';
 import { RulesCommands } from '../../rules/rules.contribution';
 import { RulesService } from '../../rules/rules.service';
 
+import type { AcpSessionConfigOption, AcpSessionModelOption } from '../../chat/session-provider';
+
 export interface IChatMentionInputProps {
   onSend: (
     value: string,
@@ -72,6 +74,10 @@ export interface IChatMentionInputProps {
   setCommand: (command: string) => void;
   disableModelSelector?: boolean;
   sessionModelId?: string;
+  currentModeId?: string;
+  agentModels?: AcpSessionModelOption[];
+  currentModelId?: string;
+  configOptions?: AcpSessionConfigOption[];
   contextService?: LLMContextService;
   agentModes?: Array<{ id: string; name: string; description?: string }>;
   agentCwd?: string;
@@ -88,7 +94,7 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
 
   const [value, setValue] = useState(props.value || '');
   const [images, setImages] = useState(props.images || []);
-  const [currentMode, setCurrentMode] = useState<string>(props.agentModes?.[0]?.id || 'default');
+  const [currentMode, setCurrentMode] = useState<string>(props.currentModeId || props.agentModes?.[0]?.id || 'default');
   const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const commandService = useInjectable<CommandService>(CommandService);
@@ -130,10 +136,14 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
 
   // 当 agentModes 变化时，更新 currentMode 为第一个 mode
   useEffect(() => {
+    if (props.currentModeId) {
+      setCurrentMode(props.currentModeId);
+      return;
+    }
     if (props.agentModes?.length && !props.agentModes.find((m) => m.id === currentMode)) {
       setCurrentMode(props.agentModes[0].id);
     }
-  }, [props.agentModes]);
+  }, [props.agentModes, props.currentModeId]);
 
   // 当 slash command 变化时，更新 placeholder 和 defaultInput
   useEffect(() => {
@@ -550,13 +560,24 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
     },
   ];
 
+  const hasConfigOptions = (props.configOptions?.length || 0) > 0;
+
   // Mode 选项
   const modeOptions: ModeOption[] = useMemo(
+    () => (hasConfigOptions ? [] : props.agentModes || []),
+    [hasConfigOptions, props.agentModes],
+  );
+
+  const modelOptions = useMemo(
     () =>
-      props.agentModes?.length
-        ? props.agentModes
-        : [{ id: 'default', name: 'Default', description: 'Require approval for edits' }],
-    [props.agentModes],
+      hasConfigOptions
+        ? []
+        : props.agentModels?.map((model) => ({
+            value: model.modelId,
+            label: model.name || model.modelId,
+            description: model.description || undefined,
+          })) || [],
+    [hasConfigOptions, props.agentModels],
   );
 
   const slashCommands = useMemo(
@@ -601,43 +622,48 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
       defaultMode: modeOptions[0]?.id || 'default',
       currentMode,
       showModeSelector: modeOptions.length > 1,
-      modelOptions: [
-        {
-          value: 'qwen-plus-latest',
-          label: 'Qwen 3',
-          iconClass: iconService.fromIcon(
-            '',
-            'https://img.alicdn.com/imgextra/i3/O1CN01LFMrZj28YrnrzeebY_!!6000000007945-55-tps-16-16.svg',
-            IconType.Background,
-          ),
-          tags: ['思考链', '擅长代码'],
-          description: '高性能代码模型，支持思考链',
-        },
-        {
-          label: 'Claude 4 Sonnet',
-          value: 'claude_sonnet4',
-          iconClass: iconService.fromIcon(
-            '',
-            'https://img.alicdn.com/imgextra/i3/O1CN01p0mziz1Nsl40lp1HO_!!6000000001626-55-tps-92-65.svg',
-            IconType.Background,
-          ),
-          tags: ['多模态', '长上下文理解', '思考模式'],
-          description: '高性能模型，支持多模态输入',
-        },
-        {
-          label: 'DeepSeek R1',
-          value: 'DeepSeek-R1-0528',
-          iconClass: iconService.fromIcon(
-            '',
-            'https://img.alicdn.com/imgextra/i3/O1CN01ClcK2w1JwdxcbAB3a_!!6000000001093-55-tps-30-30.svg',
-            IconType.Background,
-          ),
-          tags: ['思考模式', '长上下文理解'],
-          description: '专业创作，支持多模态输入',
-        },
-      ],
+      modelOptions: aiNativeConfigService.capabilities.supportsAgentMode
+        ? modelOptions
+        : [
+            {
+              value: 'qwen-plus-latest',
+              label: 'Qwen 3',
+              iconClass: iconService.fromIcon(
+                '',
+                'https://img.alicdn.com/imgextra/i3/O1CN01LFMrZj28YrnrzeebY_!!6000000007945-55-tps-16-16.svg',
+                IconType.Background,
+              ),
+              tags: ['思考链', '擅长代码'],
+              description: '高性能代码模型，支持思考链',
+            },
+            {
+              label: 'Claude 4 Sonnet',
+              value: 'claude_sonnet4',
+              iconClass: iconService.fromIcon(
+                '',
+                'https://img.alicdn.com/imgextra/i3/O1CN01p0mziz1Nsl40lp1HO_!!6000000001626-55-tps-92-65.svg',
+                IconType.Background,
+              ),
+              tags: ['多模态', '长上下文理解', '思考模式'],
+              description: '高性能模型，支持多模态输入',
+            },
+            {
+              label: 'DeepSeek R1',
+              value: 'DeepSeek-R1-0528',
+              iconClass: iconService.fromIcon(
+                '',
+                'https://img.alicdn.com/imgextra/i3/O1CN01ClcK2w1JwdxcbAB3a_!!6000000001093-55-tps-30-30.svg',
+                IconType.Background,
+              ),
+              tags: ['思考模式', '长上下文理解'],
+              description: '专业创作，支持多模态输入',
+            },
+          ],
       defaultModel:
-        props.sessionModelId || preferenceService.get<string>(AINativeSettingSectionsId.ModelID) || 'deepseek-r1',
+        props.currentModelId ||
+        props.sessionModelId ||
+        preferenceService.get<string>(AINativeSettingSectionsId.ModelID) ||
+        'deepseek-r1',
       buttons: aiNativeConfigService.capabilities.supportsAgentMode
         ? []
         : [
@@ -674,8 +700,9 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
               position: FooterButtonPosition.LEFT,
             },
           ],
-      showModelSelector: aiNativeConfigService.capabilities.supportsAgentMode ? false : true,
+      showModelSelector: aiNativeConfigService.capabilities.supportsAgentMode ? modelOptions.length > 0 : true,
       disableModelSelector: props.disableModelSelector,
+      configOptions: props.configOptions,
     }),
     [
       iconService,
@@ -683,8 +710,11 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
       handleShowRules,
       props.disableModelSelector,
       props.sessionModelId,
+      props.currentModelId,
+      props.configOptions,
       currentMode,
       modeOptions,
+      modelOptions,
       aiNativeConfigService.capabilities.supportsAgentMode,
       preferenceService,
     ],
@@ -768,6 +798,30 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
     [aiChatService, messageService],
   );
 
+  const handleModelChange = useCallback(
+    async (modelId: string) => {
+      try {
+        await aiChatService.setSessionModel(modelId);
+      } catch (error) {
+        messageService.error('Failed to switch model: ' + (error instanceof Error ? error.message : String(error)));
+      }
+    },
+    [aiChatService, messageService],
+  );
+
+  const handleConfigOptionChange = useCallback(
+    async (configId: string, value: boolean | string) => {
+      try {
+        await aiChatService.setSessionConfigOption(configId, value);
+      } catch (error) {
+        messageService.error(
+          'Failed to update ACP config: ' + (error instanceof Error ? error.message : String(error)),
+        );
+      }
+    },
+    [aiChatService, messageService],
+  );
+
   const handleDeleteImage = useCallback(
     (index: number) => {
       setImages(images.filter((_, i) => i !== index));
@@ -821,8 +875,13 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
           placeholder={placeholder}
           footerConfig={defaultMentionInputFooterOptions}
           onImageUpload={handleImageUpload}
+          modeOptions={modeOptions}
+          currentMode={currentMode}
+          configOptions={props.configOptions}
+          onSelectionChange={handleModelChange}
           contextService={contextService}
           onModeChange={handleModeChange}
+          onConfigOptionChange={handleConfigOptionChange}
           defaultInput={defaultInput}
           onDefaultInputConsumed={() => setDefaultInput('')}
           onSlashSelect={handleSlashSelect}
