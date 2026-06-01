@@ -52,6 +52,7 @@ export const MentionInput: React.FC<
     showModelSelector: false,
   },
   contextService,
+  expanded = false,
   defaultInput,
   onDefaultInputConsumed,
   onModeChange,
@@ -1600,7 +1601,7 @@ export const MentionInput: React.FC<
   );
 
   return (
-    <div className={styles.input_container}>
+    <div className={cls(styles.input_container, expanded && styles.input_container_expanded)}>
       <PermissionDialogWidget dialogManager={permissionDialogManager} bottom={optionsBottomPosition} />
       {mentionState.active && (
         <div ref={mentionPanelContainerRef} className={styles.mention_panel_container}>

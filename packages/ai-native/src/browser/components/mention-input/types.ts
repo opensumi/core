@@ -120,6 +120,7 @@ export interface MentionInputProps {
   labelService?: LabelService;
   workspaceService?: IWorkspaceService;
   contextService?: LLMContextService;
+  expanded?: boolean;
 }
 
 export const MENTION_KEYWORD = '@';

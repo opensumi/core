@@ -1,4 +1,5 @@
 import { DataContent } from 'ai';
+import cls from 'classnames';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Image } from '@opensumi/ide-components/lib/image';
@@ -9,7 +10,7 @@ import {
   getSymbolIcon,
   useInjectable,
 } from '@opensumi/ide-core-browser';
-import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import {
   AINativeSettingSectionsId,
   ChatFeatureRegistryToken,
@@ -82,7 +83,7 @@ export interface IChatMentionInputProps {
  * - 文件选择器：无搜索词时递归加载工作区文件（限制 50 个）
  * - 文件夹选择器：无搜索词时加载工作区根目录下的文件夹
  */
-export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
+export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputProps, ref) => {
   const { onSend, disabled = false, contextService, agentCwd } = props;
 
   const [value, setValue] = useState(props.value || '');
@@ -107,6 +108,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
     props.placeholder || localize('aiNative.chat.input.placeholder.default'),
   );
   const [defaultInput, setDefaultInput] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const rulesService = useInjectable<RulesService>(RulesServiceToken);
 
@@ -160,6 +162,18 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
       setValue(props.value || '');
     }
   }, [props.value]);
+
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      setInputValue: (inputValue: string) => {
+        setDefaultInput(inputValue);
+        setValue(inputValue);
+        props.onValueChange?.(inputValue);
+      },
+    }),
+    [props.onValueChange],
+  );
 
   const resolveSymbols = useCallback(
     async (parent?: OutlineCompositeTreeNode, symbols: (OutlineTreeNode | OutlineCompositeTreeNode)[] = []) => {
@@ -773,33 +787,51 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
     [chatFeatureRegistry],
   );
 
+  const handleExpandClick = useCallback(() => {
+    const nextExpanded = !isExpanded;
+    setIsExpanded(nextExpanded);
+    props.onExpand?.(nextExpanded);
+  }, [isExpanded, props.onExpand]);
+
   return (
-    <div className={styles.chat_input_container}>
+    <div className={cls(styles.chat_input_container, isExpanded && styles.chat_input_container_expanded)}>
+      <div className={styles.expand_icon} onClick={handleExpandClick}>
+        <Popover
+          id={'ai_chat_input_expand'}
+          title={localize(isExpanded ? 'aiNative.chat.expand.unfullscreen' : 'aiNative.chat.expand.fullescreen')}
+          position={PopoverPosition.top}
+        >
+          <Icon className={cls(isExpanded ? getIcon('unfullscreen') : getIcon('fullescreen'))} />
+        </Popover>
+      </div>
       {images.length > 0 && <ImagePreviewer images={images} onDelete={handleDeleteImage} />}
-      <MentionInput
-        mentionItems={
-          chatRenderRegistry.enabledMentionTypes
-            ? defaultMenuItems.filter((item) => chatRenderRegistry.enabledMentionTypes!.includes(item.id))
-            : defaultMenuItems
-        }
-        slashCommands={[...slashCommands, ...acpSlashCommands]}
-        onSend={handleSend}
-        onStop={handleStop}
-        loading={disabled}
-        labelService={labelService}
-        workspaceService={workspaceService}
-        placeholder={placeholder}
-        footerConfig={defaultMentionInputFooterOptions}
-        onImageUpload={handleImageUpload}
-        contextService={contextService}
-        onModeChange={handleModeChange}
-        defaultInput={defaultInput}
-        onDefaultInputConsumed={() => setDefaultInput('')}
-        onSlashSelect={handleSlashSelect}
-      />
+      <div className={styles.chat_input_body}>
+        <MentionInput
+          mentionItems={
+            chatRenderRegistry.enabledMentionTypes
+              ? defaultMenuItems.filter((item) => chatRenderRegistry.enabledMentionTypes!.includes(item.id))
+              : defaultMenuItems
+          }
+          slashCommands={[...slashCommands, ...acpSlashCommands]}
+          onSend={handleSend}
+          onStop={handleStop}
+          loading={disabled}
+          labelService={labelService}
+          workspaceService={workspaceService}
+          placeholder={placeholder}
+          footerConfig={defaultMentionInputFooterOptions}
+          onImageUpload={handleImageUpload}
+          contextService={contextService}
+          onModeChange={handleModeChange}
+          defaultInput={defaultInput}
+          onDefaultInputConsumed={() => setDefaultInput('')}
+          onSlashSelect={handleSlashSelect}
+          expanded={isExpanded}
+        />
+      </div>
     </div>
   );
-};
+});
 
 const ImagePreviewer = ({
   images,

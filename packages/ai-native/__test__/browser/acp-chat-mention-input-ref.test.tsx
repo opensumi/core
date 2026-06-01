@@ -12,7 +12,12 @@ jest.mock('@opensumi/ide-core-browser', () => {
 });
 
 jest.mock('@opensumi/ide-core-browser/lib/components', () => ({
-  Icon: () => require('react').createElement('span'),
+  Icon: ({ className }: { className?: string }) => require('react').createElement('span', { className }),
+  Popover: ({ children, title }: { children: React.ReactNode; title?: string }) =>
+    require('react').createElement('div', { title }, children),
+  PopoverPosition: {
+    top: 'top',
+  },
   getIcon: (name: string) => `icon-${name}`,
 }));
 
@@ -21,9 +26,10 @@ jest.mock('@opensumi/ide-components/lib/image', () => ({
 }));
 
 jest.mock('../../src/browser/components/acp/MentionInput', () => ({
-  MentionInput: ({ defaultInput }: { defaultInput?: string }) =>
+  MentionInput: ({ defaultInput, expanded }: { defaultInput?: string; expanded?: boolean }) =>
     require('react').createElement('textarea', {
       'data-testid': 'acp-mention-input',
+      'data-expanded': expanded ? 'true' : 'false',
       readOnly: true,
       value: defaultInput || '',
     }),
@@ -31,6 +37,9 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => ({
 
 jest.mock('../../src/browser/components/components.module.less', () => ({
   chat_input_container: 'chat_input_container',
+  chat_input_container_expanded: 'chat_input_container_expanded',
+  chat_input_body: 'chat_input_body',
+  expand_icon: 'expand_icon',
   thumbnail_container: 'thumbnail_container',
   thumbnail: 'thumbnail',
   delete_button: 'delete_button',
@@ -115,5 +124,50 @@ describe('AcpChatMentionInput ref contract', () => {
     expect((container.querySelector('[data-testid="acp-mention-input"]') as HTMLTextAreaElement).value).toBe(
       'hello from ref',
     );
+  });
+
+  it('toggles expanded state and notifies onExpand', () => {
+    const onExpand = jest.fn();
+
+    act(() => {
+      render(
+        React.createElement(AcpChatMentionInput, {
+          onSend: jest.fn(),
+          onExpand,
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+        } as any),
+        container,
+      );
+    });
+
+    const input = () => container.querySelector('[data-testid="acp-mention-input"]') as HTMLTextAreaElement;
+    const expandButton = container.querySelector('.expand_icon') as HTMLElement;
+    const root = container.querySelector('.chat_input_container') as HTMLElement;
+    expect(input().getAttribute('data-expanded')).toBe('false');
+    expect(root.className).not.toContain('chat_input_container_expanded');
+    expect(expandButton.querySelector('span')!.className).toContain('icon-fullescreen');
+
+    act(() => {
+      expandButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(input().getAttribute('data-expanded')).toBe('true');
+    expect(root.className).toContain('chat_input_container_expanded');
+    expect(expandButton.querySelector('span')!.className).toContain('icon-unfullscreen');
+    expect(onExpand).toHaveBeenLastCalledWith(true);
+
+    act(() => {
+      expandButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(input().getAttribute('data-expanded')).toBe('false');
+    expect(root.className).not.toContain('chat_input_container_expanded');
+    expect(expandButton.querySelector('span')!.className).toContain('icon-fullescreen');
+    expect(onExpand).toHaveBeenLastCalledWith(false);
+    expect(onExpand).toHaveBeenCalledTimes(2);
   });
 });
