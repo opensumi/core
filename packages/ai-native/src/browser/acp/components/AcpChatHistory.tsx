@@ -44,6 +44,7 @@ export interface IChatHistoryProps {
   historyList: IChatHistoryItem[];
   currentId?: string;
   className?: string;
+  variant?: 'popover' | 'inline';
   historyLoading?: boolean;
   disabled?: boolean;
   pendingPermissionBadge?: number;
@@ -73,6 +74,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     historyLoading,
     disabled,
     className,
+    variant = 'popover',
     pendingPermissionBadge,
   }) => {
     const [historyTitleEditable, setHistoryTitleEditable] = useState<{
@@ -136,6 +138,12 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
         inputRef.current?.focus({ cursor: 'end' });
       }
     }, [historyTitleEditable]);
+
+    useEffect(() => {
+      if (variant === 'inline') {
+        onHistoryPopoverVisibleChange?.(true);
+      }
+    }, [onHistoryPopoverVisibleChange, variant]);
 
     // 获取时间标签
     const getTimeKey = useCallback((diff: number): string => {
@@ -257,7 +265,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
       const groupedHistoryList = formatHistory(filteredList);
 
       return (
-        <div>
+        <div className={cls(variant === 'inline' && styles.chat_history_inline_content)}>
           <Input
             placeholder={localize('aiNative.operate.chatHistory.searchPlaceholder')}
             className={styles.chat_history_search}
@@ -265,8 +273,12 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
             onChange={handleSearchChange}
           />
           <div
-            data-testid='acp-chat-history-popover'
-            className={cls(styles.chat_history_list, disabled && styles.chat_history_list_disabled)}
+            data-testid={variant === 'inline' ? 'acp-chat-history-inline' : 'acp-chat-history-popover'}
+            className={cls(
+              styles.chat_history_list,
+              variant === 'inline' && styles.chat_history_inline_list,
+              disabled && styles.chat_history_list_disabled,
+            )}
           >
             {historyLoading ? (
               <div className={styles.chat_history_loading}>
@@ -282,41 +294,57 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
           </div>
         </div>
       );
-    }, [historyList, searchValue, formatHistory, handleSearchChange, renderHistoryItem, historyLoading, disabled]);
+    }, [
+      historyList,
+      searchValue,
+      formatHistory,
+      handleSearchChange,
+      renderHistoryItem,
+      historyLoading,
+      disabled,
+      variant,
+    ]);
 
     // getPopupContainer 处理函数
     const getPopupContainer = useCallback((triggerNode: HTMLElement) => triggerNode.parentElement!, []);
 
-    return (
-      <div className={cls(styles.chat_history_header, className)}>
+    const renderHeader = () => (
+      <div className={styles.chat_history_header_bar}>
         <div className={styles.chat_history_header_title}>
           <span>{title}</span>
+          {variant === 'inline' && pendingPermissionBadge && pendingPermissionBadge > 0 ? (
+            <span data-testid='acp-pending-permission-badge' className={styles.pending_permission_badge_inline}>
+              {pendingPermissionBadge > 99 ? '99+' : pendingPermissionBadge}
+            </span>
+          ) : null}
         </div>
         <div className={styles.chat_history_header_actions}>
-          <Popover
-            id='chat-history-header-actions-history'
-            content={renderHistory()}
-            trigger={PopoverTriggerType.click}
-            position={PopoverPosition.bottomRight}
-            title={localize('aiNative.operate.chatHistory.title')}
-            getPopupContainer={getPopupContainer}
-            onVisibleChange={onHistoryPopoverVisibleChange}
-          >
-            <div className={styles.chat_history_button_wrapper}>
-              <div
-                data-testid='acp-chat-history-button'
-                className={styles.chat_history_header_actions_history}
-                title={localize('aiNative.operate.chatHistory.title')}
-              >
-                <EnhanceIcon className={cls(styles.chat_history_header_actions_history, 'codicon codicon-history')} />
-                {pendingPermissionBadge && pendingPermissionBadge > 0 ? (
-                  <span data-testid='acp-pending-permission-badge' className={styles.pending_permission_badge}>
-                    {pendingPermissionBadge > 99 ? '99+' : pendingPermissionBadge}
-                  </span>
-                ) : null}
+          {variant === 'popover' && (
+            <Popover
+              id='chat-history-header-actions-history'
+              content={renderHistory()}
+              trigger={PopoverTriggerType.click}
+              position={PopoverPosition.bottomRight}
+              title={localize('aiNative.operate.chatHistory.title')}
+              getPopupContainer={getPopupContainer}
+              onVisibleChange={onHistoryPopoverVisibleChange}
+            >
+              <div className={styles.chat_history_button_wrapper}>
+                <div
+                  data-testid='acp-chat-history-button'
+                  className={styles.chat_history_header_actions_history}
+                  title={localize('aiNative.operate.chatHistory.title')}
+                >
+                  <EnhanceIcon className={cls(styles.chat_history_header_actions_history, 'codicon codicon-history')} />
+                  {pendingPermissionBadge && pendingPermissionBadge > 0 ? (
+                    <span data-testid='acp-pending-permission-badge' className={styles.pending_permission_badge}>
+                      {pendingPermissionBadge > 99 ? '99+' : pendingPermissionBadge}
+                    </span>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          </Popover>
+            </Popover>
+          )}
           <Popover
             id={'ai-chat-header-new'}
             position={PopoverPosition.top}
@@ -338,6 +366,17 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
         </div>
       </div>
     );
+
+    if (variant === 'inline') {
+      return (
+        <div className={cls(styles.chat_history_header, styles.chat_history_inline, className)}>
+          {renderHeader()}
+          {renderHistory()}
+        </div>
+      );
+    }
+
+    return <div className={cls(styles.chat_history_header, className)}>{renderHeader()}</div>;
   },
 );
 

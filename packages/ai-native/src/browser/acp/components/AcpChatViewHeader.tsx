@@ -1,3 +1,4 @@
+import cls from 'classnames';
 import React from 'react';
 
 import { QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
@@ -20,6 +21,7 @@ import { ChatInternalService } from '../../chat/chat.internal.service';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
 import { getCachedWorkspaceDir, switchWorkspaceDir } from '../../chat/pick-workspace-dir';
+import { AIPanelLayoutService } from '../../layout/panel-layout.service';
 import { AcpPermissionBridgeService } from '../permission-bridge.service';
 
 import AcpChatHistory, { IChatHistoryItem } from './AcpChatHistory';
@@ -38,12 +40,14 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const quickPick = useInjectable<QuickPickService>(QuickPickService);
   const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const [historyLoading, setHistoryLoading] = React.useState(false);
   const [sessionSwitching, setSessionSwitching] = React.useState(false);
   const [pendingPermissionBadge, setPendingPermissionBadge] = React.useState(0);
+  const [panelLayout, setPanelLayout] = React.useState(() => panelLayoutService.getLayoutMode());
   const isMultiRoot = workspaceService.isMultiRootWorkspaceOpened;
 
   const subscribedSessionIdsRef = React.useRef<Set<string>>(new Set());
@@ -79,6 +83,15 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
     });
     return () => dispose.dispose();
   }, [aiChatService]);
+
+  React.useEffect(() => {
+    const disposable = panelLayoutService.onDidChangePanelLayout((mode) => {
+      setPanelLayout(mode);
+    });
+    setPanelLayout(panelLayoutService.getLayoutMode());
+
+    return () => disposable.dispose();
+  }, [panelLayoutService]);
 
   const handleNewChat = React.useCallback(() => {
     if (sessionSwitching) {
@@ -227,13 +240,16 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
     };
   }, [aiChatService]);
 
+  const isAgenticLayout = panelLayout === 'agentic';
+
   return (
-    <div className={styles.header}>
+    <div className={cls(styles.header, isAgenticLayout && styles.header_agentic)}>
       <AcpChatHistory
-        className={styles.chat_history}
+        className={cls(styles.chat_history, isAgenticLayout && styles.chat_history_agentic)}
         currentId={aiChatService.sessionModel?.sessionId}
         title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
         historyList={historyList}
+        variant={isAgenticLayout ? 'inline' : 'popover'}
         historyLoading={historyLoading}
         disabled={sessionSwitching}
         pendingPermissionBadge={pendingPermissionBadge}

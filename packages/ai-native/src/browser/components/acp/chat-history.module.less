@@ -1,5 +1,84 @@
 @import '../chat-history.module.less';
 
+.chat_history_header_bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+}
+
+.chat_history_inline {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 8px 8px 12px;
+  box-sizing: border-box;
+
+  .chat_history_header_title {
+    gap: 6px;
+  }
+
+  .chat_history_header_actions {
+    flex-shrink: 0;
+  }
+
+  .chat_history_search {
+    box-sizing: border-box;
+  }
+
+  .chat_history_inline_list {
+    flex: 1 1 auto;
+    width: 100%;
+    max-height: none;
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 2px 0 6px;
+    overflow-y: auto;
+  }
+
+  .chat_history_item {
+    padding: 6px 8px;
+    border-radius: 4px;
+  }
+
+  .chat_history_item_content {
+    min-width: 0;
+  }
+
+  .chat_history_item_title {
+    min-width: 0;
+  }
+}
+
+.chat_history_inline_content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pending_permission_badge_inline {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background-color: var(--notificationsErrorIcon-foreground, #e74c3c);
+  color: #fff;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  font-weight: 600;
+  pointer-events: none;
+}
+
 .chat_history_list_disabled {
   pointer-events: none;
   opacity: 0.5;

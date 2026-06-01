@@ -8,14 +8,6 @@ import { AI_CHAT_VIEW_ID } from '../../common';
 
 import { AIPanelLayoutService } from './panel-layout.service';
 
-// 使用 UA 判断是否为移动设备
-const isMobileDevice = () => {
-  if (typeof navigator === 'undefined') {
-    return false;
-  }
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-};
-
 export const AILayout = () => {
   const { layout } = getStorageValue();
   const designLayoutConfig = useInjectable(DesignLayoutConfig);
@@ -31,24 +23,6 @@ export const AILayout = () => {
     return () => disposable.dispose();
   }, [panelLayoutService]);
 
-  // 判断是否应该显示完整布局
-  const shouldShowFullLayout = !isMobileDevice();
-
-  // 移动端模式：只渲染 AI_CHAT_VIEW_ID，添加 mobile class
-  if (!shouldShowFullLayout) {
-    return (
-      <SlotRenderer
-        slot={AI_CHAT_VIEW_ID}
-        isTabbar={true}
-        defaultSize={layout['AI-Chat']?.currentId ? layout['AI-Chat']?.size || 360 : 0}
-        maxResize={420}
-        minResize={280}
-        minSize={0}
-      />
-    );
-  }
-
-  // 正常模式：渲染完整布局
   const defaultRightSize = useMemo(
     () => (designLayoutConfig.useMergeRightWithLeftPanel ? 0 : 49),
     [designLayoutConfig.useMergeRightWithLeftPanel],

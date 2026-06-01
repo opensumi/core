@@ -277,6 +277,46 @@
       }
     }
   }
+
+  &:has([data-testid='acp-chat-history-inline']) {
+    flex-direction: row;
+
+    .header_container {
+      flex: 0 0 224px;
+      width: 224px;
+      height: 100%;
+      max-height: none;
+      min-width: 0;
+      padding: 0;
+      border-right: 1px solid var(--panel-border);
+      background-color: var(--panel-background);
+
+      .header_agentic {
+        position: relative;
+        display: block;
+        height: 100%;
+        min-height: 0;
+
+        .action_btn {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          z-index: 1;
+        }
+      }
+    }
+
+    .body_container {
+      flex: 1 1 auto;
+      height: 100%;
+      min-height: 0;
+      min-width: 0;
+
+      .left_bar {
+        min-width: 0;
+      }
+    }
+  }
 }
 
 .chat_tips_container {
@@ -290,6 +330,13 @@
 
 .chat_history {
   width: calc(100% - 40px);
+  color: var(--design-text-foreground);
+}
+
+.chat_history_agentic {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   color: var(--design-text-foreground);
 }
 

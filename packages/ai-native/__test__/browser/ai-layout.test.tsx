@@ -71,7 +71,6 @@ jest.mock('../../src/browser/layout/panel-layout.service', () => ({
 describe('AILayout', () => {
   let container: HTMLDivElement;
   let root: Root;
-  let originalUserAgent: string;
 
   const getSlots = () =>
     Array.from(container.querySelectorAll('[data-slot]')).map((node) => node.getAttribute('data-slot'));
@@ -81,11 +80,6 @@ describe('AILayout', () => {
     );
 
   beforeEach(() => {
-    originalUserAgent = window.navigator.userAgent;
-    Object.defineProperty(window.navigator, 'userAgent', {
-      value: 'Mozilla/5.0',
-      configurable: true,
-    });
     panelLayoutMode = 'classic';
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -97,10 +91,6 @@ describe('AILayout', () => {
       root.unmount();
     });
     container.remove();
-    Object.defineProperty(window.navigator, 'userAgent', {
-      value: originalUserAgent,
-      configurable: true,
-    });
   });
 
   it('should render AI chat after the workbench in classic layout', async () => {
@@ -128,19 +118,5 @@ describe('AILayout', () => {
     expect(container.querySelector('[data-split="main-horizontal-ai-agentic"]')).toBeTruthy();
     expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat', 'main-horizontal-agentic']);
     expect(getSplitChildIds('main-horizontal-agentic')).toEqual(['main-vertical-agentic', 'view', 'extendView']);
-  });
-
-  it('should keep the mobile layout chat-only', async () => {
-    Object.defineProperty(window.navigator, 'userAgent', {
-      value: 'iPhone',
-      configurable: true,
-    });
-    const { AILayout } = await import('../../src/browser/layout/ai-layout');
-
-    act(() => {
-      root.render(<AILayout />);
-    });
-
-    expect(getSlots()).toEqual(['AI-Chat']);
   });
 });

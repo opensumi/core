@@ -66,8 +66,13 @@ jest.mock('../../src/browser/components/acp/chat-history.module.less', () => ({
   chat_history_header_actions_history: 'chat_history_header_actions_history',
   chat_history_button_wrapper: 'chat_history_button_wrapper',
   pending_permission_badge: 'pending_permission_badge',
+  pending_permission_badge_inline: 'pending_permission_badge_inline',
   chat_history_header_actions_new: 'chat_history_header_actions_new',
   chat_history_header_actions_new_disabled: 'chat_history_header_actions_new_disabled',
+  chat_history_header_bar: 'chat_history_header_bar',
+  chat_history_inline: 'chat_history_inline',
+  chat_history_inline_content: 'chat_history_inline_content',
+  chat_history_inline_list: 'chat_history_inline_list',
   chat_history_search: 'chat_history_search',
   chat_history_list: 'chat_history_list',
   chat_history_list_disabled: 'chat_history_list_disabled',
@@ -162,8 +167,27 @@ describe('AcpChatHistory BDD', () => {
   it('Given manager order puts the current empty session last, when the popover renders, then the current session appears first', () => {
     renderHistory();
 
+    expect(container.querySelector('[data-testid="acp-chat-history-button"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history-popover"]')).not.toBeNull();
     expect(getRenderedItemIds()).toEqual(['acp:current', 'acp:middle', 'acp:oldest']);
     expect(getHistoryItem('acp:current').className).toContain('chat_history_item_selected');
+  });
+
+  it('Given inline variant, when it renders, then it shows the history list directly without the popover trigger', () => {
+    renderHistory({ variant: 'inline' });
+
+    expect(container.querySelector('[data-testid="acp-chat-history-button"]')).toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history-popover"]')).toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history-inline"]')).not.toBeNull();
+    expect(getRenderedItemIds()).toEqual(['acp:current', 'acp:middle', 'acp:oldest']);
+  });
+
+  it('Given inline variant mounts, when a visible-change callback is provided, then it refreshes history once', () => {
+    const onHistoryPopoverVisibleChange = jest.fn();
+
+    renderHistory({ variant: 'inline', onHistoryPopoverVisibleChange });
+
+    expect(onHistoryPopoverVisibleChange).toHaveBeenCalledWith(true);
   });
 
   it('Given a selected history item changes, when the component rerenders, then selection changes without moving the item to the top', () => {
@@ -222,6 +246,31 @@ describe('AcpChatHistory BDD', () => {
     expect(container.querySelector('[data-testid="acp-chat-history-popover"]')?.className).toContain(
       'chat_history_list_disabled',
     );
+  });
+
+  it('Given inline history is disabled, when it renders, then disabled styling still applies to the inline list', () => {
+    renderHistory({ variant: 'inline', disabled: true });
+
+    expect(container.querySelector('[data-testid="acp-chat-history-inline"]')?.className).toContain(
+      'chat_history_list_disabled',
+    );
+  });
+
+  it('Given inline history has pending permissions, when it renders, then the inline header keeps the badge visible', () => {
+    renderHistory({ variant: 'inline', pendingPermissionBadge: 3 });
+
+    const badge = container.querySelector('[data-testid="acp-pending-permission-badge"]');
+    expect(badge).not.toBeNull();
+    expect(badge?.className).toContain('pending_permission_badge_inline');
+    expect(badge?.textContent).toBe('3');
+  });
+
+  it('Given inline history is loading, when it renders, then the inline list shows the loading state', () => {
+    renderHistory({ variant: 'inline', historyLoading: true });
+
+    expect(container.querySelector('[data-testid="acp-chat-history-inline"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history-loading"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="chat-history-item-acp:current"]')).toBeNull();
   });
 
   it('Given a session has pending permission, when it renders, then it shows the pending icon instead of the thread status icon', () => {

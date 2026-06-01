@@ -53,8 +53,8 @@ jest.mock('@opensumi/ide-workspace', () => ({
 
 jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
   __esModule: true,
-  default: ({ title }: { title: string }) =>
-    require('react').createElement('div', { 'data-testid': 'acp-chat-history' }, title),
+  default: ({ title, variant }: { title: string; variant?: string }) =>
+    require('react').createElement('div', { 'data-testid': 'acp-chat-history', 'data-variant': variant }, title),
 }));
 
 jest.mock('../../src/browser/acp/components/AcpChatViewWrapper', () => ({
@@ -64,6 +64,10 @@ jest.mock('../../src/browser/acp/components/AcpChatViewWrapper', () => ({
 
 jest.mock('../../src/browser/acp/permission-bridge.service', () => ({
   AcpPermissionBridgeService: class AcpPermissionBridgeService {},
+}));
+
+jest.mock('../../src/browser/layout/panel-layout.service', () => ({
+  AIPanelLayoutService: class AIPanelLayoutService {},
 }));
 
 jest.mock('../../src/browser/chat/pick-workspace-dir', () => ({
@@ -175,8 +179,13 @@ function createMockSession() {
   };
 }
 
-function createMockServices({ isMultiRoot = false }: { isMultiRoot?: boolean } = {}) {
+function createMockServices({
+  isMultiRoot = false,
+  panelLayout = 'classic',
+}: { isMultiRoot?: boolean; panelLayout?: 'classic' | 'agentic' } = {}) {
   const session = createMockSession();
+  const panelLayoutListeners = new Set<(mode: 'classic' | 'agentic') => void>();
+  let currentPanelLayout = panelLayout;
   const aiChatService = {
     sessionModel: session,
     activateSession: jest.fn(),
@@ -201,6 +210,21 @@ function createMockServices({ isMultiRoot = false }: { isMultiRoot?: boolean } =
       hasPendingForSession: jest.fn(() => false),
       onActiveSessionChange: jest.fn(() => disposable()),
       onPendingCountChange: jest.fn(() => disposable()),
+    },
+    panelLayoutService: {
+      getLayoutMode: jest.fn(() => currentPanelLayout),
+      onDidChangePanelLayout: jest.fn((listener: (mode: 'classic' | 'agentic') => void) => {
+        panelLayoutListeners.add(listener);
+        return {
+          dispose: jest.fn(() => {
+            panelLayoutListeners.delete(listener);
+          }),
+        };
+      }),
+      setLayoutModeForTest: (mode: 'classic' | 'agentic') => {
+        currentPanelLayout = mode;
+        panelLayoutListeners.forEach((listener) => listener(mode));
+      },
     },
     quickPick: {},
     workspaceService: {
@@ -236,6 +260,10 @@ function installInjectableMocks(services: ReturnType<typeof createMockServices>)
 
     if (name === 'AcpPermissionBridgeService') {
       return services.permissionBridgeService;
+    }
+
+    if (name === 'AIPanelLayoutService') {
+      return services.panelLayoutService;
     }
 
     return {};
@@ -296,5 +324,52 @@ describe('ACP chat view headers', () => {
     expect(container.querySelector('#ai-chat-header-switch-cwd')).not.toBeNull();
     expect(container.querySelector('#ai-chat-header-close')).not.toBeNull();
     expect(container.querySelector('[data-testid="acp-chat-history"]')).not.toBeNull();
+  });
+
+  it('uses popover history in the ACP-specific header when panel layout is classic', async () => {
+    installInjectableMocks(createMockServices({ panelLayout: 'classic' }));
+
+    await renderHeader(
+      React.createElement(AcpChatViewHeader, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('popover');
+  });
+
+  it('uses inline history in the ACP-specific header when panel layout is agentic', async () => {
+    installInjectableMocks(createMockServices({ panelLayout: 'agentic' }));
+
+    await renderHeader(
+      React.createElement(AcpChatViewHeader, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('inline');
+  });
+
+  it('updates the ACP-specific history variant when panel layout changes at runtime', async () => {
+    const services = createMockServices({ panelLayout: 'classic' });
+    installInjectableMocks(services);
+
+    await renderHeader(
+      React.createElement(AcpChatViewHeader, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('popover');
+
+    await act(async () => {
+      services.panelLayoutService.setLayoutModeForTest('agentic');
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('inline');
   });
 });
