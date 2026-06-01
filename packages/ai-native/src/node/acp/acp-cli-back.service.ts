@@ -25,7 +25,7 @@ import { BaseLanguageModel } from '../base-language-model';
 import { OpenAICompatibleModel } from '../openai-compatible/openai-compatible-language-model';
 
 import { AcpAgentServiceToken, AgentRequest, AgentUpdate, IAcpAgentService, SimpleMessage } from './acp-agent.service';
-import { normalizeAcpError } from './acp-error';
+import { getAcpErrorMessage, normalizeAcpError } from './acp-error';
 import { AcpThreadStatusCallerServiceToken } from './acp-thread-status-caller.service';
 
 import type { CoreMessage } from 'ai';
@@ -571,7 +571,7 @@ ${input}`;
         messages,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = getAcpErrorMessage(error);
       this.logger.error(`Failed to load session ${sessionId}:`, errorMessage);
 
       // 抛出错误，让调用方感知实际错误

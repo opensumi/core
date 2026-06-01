@@ -14,7 +14,7 @@ import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { toAgentUpdate } from './acp-agent-update-adapter';
-import { normalizeAcpError } from './acp-error';
+import { getAcpErrorMessage, normalizeAcpError } from './acp-error';
 import {
   AcpThread,
   AcpThreadEvent,
@@ -374,18 +374,24 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         continue;
       }
 
+      this.reservedThreads.add(thread);
       this.logger.log(
         `[AcpAgentService] thread-pool-switch — reason=${reason}, evictSessionId=${sessionId}, nextSessionId=${nextSessionId}, threadId=${
           thread.threadId
         }, status=${thread.getStatus()}, pool=${this.threadPool.length}/${this.maxPoolSize}`,
       );
-      await this.terminalHandler.releaseSessionTerminals(sessionId);
-      this.permissionRouting.unregisterSession(sessionId);
-      this.unregisterThreadStatusListener(sessionId);
-      this.sessions.delete(sessionId);
-      this.sessionRefCounts.delete(sessionId);
-      this.builtInMcpSessionIds.delete(sessionId);
-      return thread;
+      try {
+        await this.terminalHandler.releaseSessionTerminals(sessionId);
+        this.permissionRouting.unregisterSession(sessionId);
+        this.unregisterThreadStatusListener(sessionId);
+        this.sessions.delete(sessionId);
+        this.sessionRefCounts.delete(sessionId);
+        this.builtInMcpSessionIds.delete(sessionId);
+        return thread;
+      } catch (error) {
+        this.reservedThreads.delete(thread);
+        throw error;
+      }
     }
 
     const candidates = this.threadPool.map((thread) => {
@@ -610,7 +616,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         this.permissionRouting.unregisterSession(realSessionId);
         this.unregisterThreadStatusListener(realSessionId);
       }
-      this.logger.error(`[AcpAgentService] createSession() — failed: ${e instanceof Error ? e.message : String(e)}`);
+      this.logger.error(`[AcpAgentService] createSession() — failed: ${getAcpErrorMessage(e)}`);
       if (!wasExisting) {
         const idx = this.threadPool.indexOf(thread);
         if (idx !== -1) {
@@ -684,10 +690,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.logger.log(
         `[AcpAgentService] loadSession() — reusing idle thread ${idleThread.threadId}, cwd=${idleThread.cwd}`,
       );
+      this.reservedThreads.add(idleThread);
       this.bindSession(sessionId, idleThread);
       this.permissionRouting.registerSession(sessionId);
       this.registerThreadStatusListener(sessionId, idleThread);
-      return this.startPendingLoadSession(sessionId, idleThread, config, false);
+      return this.startPendingLoadSessionAndReleaseReservation(sessionId, idleThread, config, false);
     }
 
     // 4. Pool not full -> new Thread
@@ -708,7 +715,18 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     this.bindSession(sessionId, recycledThread);
     this.permissionRouting.registerSession(sessionId);
     this.registerThreadStatusListener(sessionId, recycledThread);
-    return this.startPendingLoadSession(sessionId, recycledThread, config, false);
+    return this.startPendingLoadSessionAndReleaseReservation(sessionId, recycledThread, config, false);
+  }
+
+  private startPendingLoadSessionAndReleaseReservation(
+    sessionId: string,
+    thread: AcpThread,
+    config: AgentProcessConfig,
+    shouldDisposeThreadOnFailure: boolean,
+  ): Promise<SessionLoadResult> {
+    const promise = this.startPendingLoadSession(sessionId, thread, config, shouldDisposeThreadOnFailure);
+    this.reservedThreads.delete(thread);
+    return promise;
   }
 
   private startPendingLoadSession(
@@ -747,7 +765,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         } else {
           thread.reset();
         }
-        this.logger.error(`[AcpAgentService] loadSession() — failed: ${e instanceof Error ? e.message : String(e)}`);
+        this.logger.error(`[AcpAgentService] loadSession() — failed: ${getAcpErrorMessage(e)}`);
         throw e;
       })
       .finally(() => {
@@ -1021,52 +1039,72 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     this.registerThreadStatusListener(sessionId, thread);
     const wasExisting = this.threadPool.length === poolSizeBefore;
 
-    try {
-      if (!thread.initialized) {
-        await thread.initialize(config as any);
-      }
-      if (thread.needsReset) {
-        thread.reset();
-      }
-      const mcpServers = await this.getSessionMcpServers(thread, config);
-      const loadResult = await thread.loadSessionOrNew({
-        sessionId,
-        cwd: config.cwd,
-        mcpServers,
-      } as any);
-      const actualSessionId = (loadResult as { sessionId?: string }).sessionId || sessionId;
-      if (actualSessionId !== sessionId) {
+    const pending: PendingSessionLoad = {
+      promise: Promise.resolve(null as unknown as SessionLoadResult),
+      refCount: 1,
+      thread,
+      closeRequested: false,
+    };
+
+    const promise = Promise.resolve()
+      .then(async (): Promise<SessionLoadResult> => {
+        if (!thread.initialized) {
+          await thread.initialize(config as any);
+        }
+        if (thread.needsReset) {
+          thread.reset();
+        }
+        const mcpServers = await this.getSessionMcpServers(thread, config);
+        const loadResult = await thread.loadSessionOrNew({
+          sessionId,
+          cwd: config.cwd,
+          mcpServers,
+        } as any);
+        const actualSessionId = (loadResult as { sessionId?: string }).sessionId || sessionId;
+        if (pending.closeRequested) {
+          throw new Error(`Session load was disposed before completion: ${sessionId}`);
+        }
+        if (actualSessionId !== sessionId) {
+          this.sessions.delete(sessionId);
+          this.sessionRefCounts.delete(sessionId);
+          this.permissionRouting.unregisterSession(sessionId);
+          this.builtInMcpSessionIds.delete(sessionId);
+          this.unregisterThreadStatusListener(sessionId);
+          this.bindSession(actualSessionId, thread);
+          this.sessionRefCounts.set(actualSessionId, pending.refCount);
+          this.permissionRouting.registerSession(actualSessionId);
+          this.registerThreadStatusListener(actualSessionId, thread);
+        } else {
+          this.sessionRefCounts.set(sessionId, pending.refCount);
+        }
+        this.setBuiltInMcpSessionState(actualSessionId, this.didAppendBuiltInMcpServer(config, mcpServers));
+        return this.buildSessionLoadResult(actualSessionId, thread);
+      })
+      .catch(async (e) => {
         this.sessions.delete(sessionId);
         this.sessionRefCounts.delete(sessionId);
         this.permissionRouting.unregisterSession(sessionId);
         this.builtInMcpSessionIds.delete(sessionId);
         this.unregisterThreadStatusListener(sessionId);
-        this.bindSession(actualSessionId, thread);
-        this.sessionRefCounts.set(actualSessionId, 1);
-        this.permissionRouting.registerSession(actualSessionId);
-        this.registerThreadStatusListener(actualSessionId, thread);
-      } else {
-        this.sessionRefCounts.set(sessionId, 1);
-      }
-      this.setBuiltInMcpSessionState(actualSessionId, this.didAppendBuiltInMcpServer(config, mcpServers));
-      return this.buildSessionLoadResult(actualSessionId, thread);
-    } catch (e) {
-      this.sessions.delete(sessionId);
-      this.sessionRefCounts.delete(sessionId);
-      this.permissionRouting.unregisterSession(sessionId);
-      this.builtInMcpSessionIds.delete(sessionId);
-      this.unregisterThreadStatusListener(sessionId);
-      if (!wasExisting) {
-        const idx = this.threadPool.indexOf(thread);
-        if (idx !== -1) {
-          this.threadPool.splice(idx, 1);
+        if (!wasExisting) {
+          const idx = this.threadPool.indexOf(thread);
+          if (idx !== -1) {
+            this.threadPool.splice(idx, 1);
+          }
+          await thread.dispose();
+        } else {
+          thread.reset();
         }
-        await thread.dispose();
-      } else {
-        thread.reset();
-      }
-      throw e;
-    }
+        throw e;
+      })
+      .finally(() => {
+        this.pendingSessionLoads.delete(sessionId);
+      });
+
+    pending.promise = promise;
+    this.pendingSessionLoads.set(sessionId, pending);
+    this.reservedThreads.delete(thread);
+    return promise;
   }
 
   // -----------------------------------------------------------------------

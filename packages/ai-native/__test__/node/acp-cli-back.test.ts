@@ -537,6 +537,19 @@ describe('AcpCliBackService', () => {
         'Failed to load session sess-1: string error',
       );
     });
+
+    it('should stringify object-shaped load session errors', async () => {
+      mockAgentService.loadSession.mockRejectedValue({
+        code: -32603,
+        error: {
+          message: 'Session load failed',
+        },
+      });
+
+      await expect(service.loadAgentSession(mockAgentSessionConfig, 'sess-1')).rejects.toThrow(
+        'Failed to load session sess-1: Session load failed',
+      );
+    });
   });
 
   describe('disposeSession()', () => {

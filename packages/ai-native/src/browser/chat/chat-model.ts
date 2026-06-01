@@ -317,6 +317,10 @@ export class ChatModel extends Disposable implements IChatModel {
     return this.#title;
   }
 
+  setTitle(title: string): void {
+    this.#title = title;
+  }
+
   #sessionId: string;
   get sessionId(): string {
     return this.#sessionId;

@@ -11,6 +11,9 @@ describe('AcpChatManagerService', () => {
       chatFeatureRegistry: ChatFeatureRegistry;
       sessionModels: Map<string, ChatModel>;
       mainProvider: any;
+      acpTitleStorage: any;
+      acpSessionDisplayTitleOverrides: Record<string, string>;
+      storageInitEmitter: any;
       listenSession: jest.Mock;
       fromAcpJSON(data: any[]): ChatModel[];
     };
@@ -28,11 +31,88 @@ describe('AcpChatManagerService', () => {
     Object.defineProperty(service, 'sessionModels', {
       value: new Map(),
     });
+    Object.defineProperty(service, 'acpSessionDisplayTitleOverrides', {
+      value: {},
+      writable: true,
+    });
+    Object.defineProperty(service, 'acpTitleStorage', {
+      value: undefined,
+      writable: true,
+    });
+    Object.defineProperty(service, 'storageInitEmitter', {
+      value: {
+        fireAndAwait: jest.fn().mockResolvedValue(undefined),
+      },
+    });
     Object.defineProperty(service, 'listenSession', {
       value: jest.fn(),
     });
 
     return service;
+  };
+
+  const createConstructedService = () => {
+    const aiNativeConfig = {
+      capabilities: {
+        supportsAgentMode: true,
+      },
+    };
+    const prototype = AcpChatManagerService.prototype as any;
+    const originalAiNativeConfig = Object.getOwnPropertyDescriptor(prototype, 'aiNativeConfig');
+    const originalSessionProviderRegistry = Object.getOwnPropertyDescriptor(prototype, 'sessionProviderRegistry');
+
+    Object.defineProperty(prototype, 'aiNativeConfig', {
+      configurable: true,
+      get: () => aiNativeConfig,
+    });
+    Object.defineProperty(prototype, 'sessionProviderRegistry', {
+      configurable: true,
+      get: () => ({
+        getAllProviders: () => [],
+      }),
+    });
+
+    let service!: AcpChatManagerService & {
+      chatFeatureRegistry: ChatFeatureRegistry;
+      acpTitleStorage: any;
+      acpSessionDisplayTitleOverrides: Record<string, string>;
+    };
+
+    try {
+      service = new AcpChatManagerService() as typeof service;
+    } finally {
+      if (originalAiNativeConfig) {
+        Object.defineProperty(prototype, 'aiNativeConfig', originalAiNativeConfig);
+      } else {
+        delete prototype.aiNativeConfig;
+      }
+      if (originalSessionProviderRegistry) {
+        Object.defineProperty(prototype, 'sessionProviderRegistry', originalSessionProviderRegistry);
+      } else {
+        delete prototype.sessionProviderRegistry;
+      }
+    }
+
+    Object.defineProperty(service, 'aiNativeConfig', {
+      value: aiNativeConfig,
+    });
+    Object.defineProperty(service, 'chatFeatureRegistry', {
+      value: new ChatFeatureRegistry(),
+    });
+    Object.defineProperty(service, 'acpSessionDisplayTitleOverrides', {
+      value: {},
+      writable: true,
+    });
+
+    const storage = {
+      set: jest.fn(),
+    };
+    Object.defineProperty(service, 'acpTitleStorage', {
+      value: storage,
+      writable: true,
+    });
+
+    return { service, storage };
   };
 
   it('preserves metadata title when loading a full ACP session without title', async () => {
@@ -78,7 +158,299 @@ describe('AcpChatManagerService', () => {
     expect(loadedModel?.history.getMessages()).toHaveLength(1);
   });
 
-  it('does not default loaded ACP sessions with messages to New Session', () => {
+  it('keeps existing list title when a full ACP session is loaded', async () => {
+    const service = createService();
+    const sessionId = 'acp:s1';
+    const metadataModel = service.fromAcpJSON([
+      {
+        sessionId,
+        history: {
+          additional: {},
+          messages: [],
+        },
+        requests: [],
+        title: 'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server.',
+      },
+    ])[0];
+    service.acpTitleStorage = {
+      set: jest.fn(),
+    };
+
+    service.sessionModels.set(sessionId, metadataModel);
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue({
+          sessionId,
+          history: {
+            additional: {},
+            messages: [
+              {
+                id: `${sessionId}-msg-0`,
+                role: ChatMessageRole.User,
+                content: 'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server.\n\n---\n\n3',
+                order: 0,
+              },
+            ],
+          },
+          requests: [],
+        }),
+      },
+    });
+
+    await service.loadSession(sessionId);
+
+    expect(service.sessionModels.get(sessionId)?.title).toBe('Session s1');
+    expect(service.acpTitleStorage.set).not.toHaveBeenCalled();
+  });
+
+  it('uses local display title override before polluted agent title', () => {
+    const service = createService();
+    service.acpSessionDisplayTitleOverrides = {
+      'acp:s1': '3',
+    };
+
+    const [model] = service.fromAcpJSON([
+      {
+        sessionId: 'acp:s1',
+        history: {
+          additional: {},
+          messages: [],
+        },
+        requests: [],
+        title: 'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server.',
+      },
+    ]);
+
+    expect(model.title).toBe('3');
+  });
+
+  it('does not load full sessions when rendering the history list', async () => {
+    const service = createService();
+    service.mainProvider = {
+      loadSessions: jest.fn().mockResolvedValue([
+        {
+          sessionId: 'acp:s1',
+          history: {
+            additional: {},
+            messages: [],
+          },
+          requests: [],
+          title: 'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server.',
+        },
+      ]),
+      loadSession: jest.fn().mockResolvedValue({
+        sessionId: 'acp:s1',
+        history: {
+          additional: {},
+          messages: [
+            {
+              id: 'acp:s1-msg-0',
+              role: ChatMessageRole.User,
+              content: 'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server.\n\n---\n\n3',
+              order: 0,
+            },
+          ],
+        },
+        requests: [],
+      }),
+    };
+
+    await service.loadSessionList();
+
+    expect(service.mainProvider.loadSession).not.toHaveBeenCalled();
+    expect(service.sessionModels.get('acp:s1')?.title).toBe('Session s1');
+  });
+
+  it('uses local override on history list without loading full session data', async () => {
+    const service = createService();
+    service.acpSessionDisplayTitleOverrides = {
+      'acp:s1': '3',
+    };
+    service.mainProvider = {
+      loadSessions: jest.fn().mockResolvedValue([
+        {
+          sessionId: 'acp:s1',
+          history: {
+            additional: {},
+            messages: [],
+          },
+          requests: [],
+          title: 'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server.',
+        },
+      ]),
+      loadSession: jest.fn().mockResolvedValue({
+        sessionId: 'acp:s1',
+        history: {
+          additional: {},
+          messages: [
+            {
+              id: 'acp:s1-msg-0',
+              role: ChatMessageRole.User,
+              content: 'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server.\n\n---\n\n3',
+              order: 0,
+            },
+          ],
+        },
+        requests: [],
+      }),
+    };
+
+    await service.loadSessionList();
+
+    expect(service.sessionModels.get('acp:s1')?.title).toBe('3');
+    expect(service.mainProvider.loadSession).not.toHaveBeenCalled();
+  });
+
+  it('extracts list title from ACP prompt separator in metadata title', async () => {
+    const service = createService();
+    service.mainProvider = {
+      loadSessions: jest.fn().mockResolvedValue([
+        {
+          sessionId: 'acp:s1',
+          history: {
+            additional: {},
+            messages: [],
+          },
+          requests: [],
+          title: 'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server.\n\n---\n\n3',
+        },
+      ]),
+    };
+
+    await service.loadSessionList();
+
+    expect(service.sessionModels.get('acp:s1')?.title).toBe('3');
+  });
+
+  it('keeps the current empty ACP session last in manager order after loading history list', async () => {
+    const service = createService();
+    const currentSession = new ChatModel(new ChatFeatureRegistry(), {
+      sessionId: 'acp:current',
+      title: 'New Session',
+    });
+    service.sessionModels.set(currentSession.sessionId, currentSession);
+    service.mainProvider = {
+      loadSessions: jest.fn().mockResolvedValue([
+        {
+          sessionId: 'acp:s1',
+          history: {
+            additional: {},
+            messages: [],
+          },
+          requests: [],
+          title: 'history session',
+        },
+      ]),
+    };
+
+    await service.loadSessionList();
+
+    expect(service.getSessions().map((session) => session.sessionId)).toEqual(['acp:s1', 'acp:current']);
+  });
+
+  it('keeps ACP session order stable when loading a clicked history item', async () => {
+    const { service } = createConstructedService();
+    const firstSession = new ChatModel(new ChatFeatureRegistry(), {
+      sessionId: 'acp:first',
+      title: 'First Session',
+    });
+    const secondSession = new ChatModel(new ChatFeatureRegistry(), {
+      sessionId: 'acp:second',
+      title: 'Second Session',
+    });
+
+    (service as any).sessionModels.set(firstSession.sessionId, firstSession);
+    (service as any).sessionModels.set(secondSession.sessionId, secondSession);
+    (service as any).mainProvider = {
+      loadSession: jest.fn().mockResolvedValue({
+        sessionId: 'acp:first',
+        history: {
+          additional: {},
+          messages: [
+            {
+              id: 'acp:first-msg-0',
+              role: ChatMessageRole.User,
+              content: 'loaded first prompt',
+              order: 0,
+            },
+          ],
+        },
+        requests: [],
+      }),
+    };
+
+    await service.loadSession('acp:first');
+    service.getSession('acp:first');
+
+    expect(service.getSessions().map((session) => session.sessionId)).toEqual(['acp:first', 'acp:second']);
+    expect(service.getSession('acp:first')?.history.getMessages()).toHaveLength(1);
+  });
+
+  it('stores raw first user message as ACP display title when creating request', () => {
+    const { service, storage } = createConstructedService();
+    const sessionId = 'acp:s1';
+    const model = new ChatModel(new ChatFeatureRegistry(), { sessionId });
+
+    (service as any).sessionModels.set(sessionId, model);
+
+    const request = service.createRequest(sessionId, '3', 'agentId', undefined, undefined);
+
+    expect(request?.message.prompt).toBe('3');
+    expect(model.title).toBe('3');
+    expect(storage.set).toHaveBeenCalledWith('acpSessionDisplayTitleOverrides', {
+      [sessionId]: '3',
+    });
+  });
+
+  it('stores raw follow-up message as display title for old polluted ACP sessions', () => {
+    const { service, storage } = createConstructedService();
+    const sessionId = 'acp:s1';
+    const model = new ChatModel(new ChatFeatureRegistry(), {
+      sessionId,
+      title: 'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server.',
+    });
+
+    model.history.addUserMessage({
+      agentId: 'agentId',
+      agentCommand: '',
+      content: 'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server.',
+      relationId: '',
+      images: [],
+    });
+    (service as any).sessionModels.set(sessionId, model);
+
+    service.createRequest(sessionId, '3', 'agentId', undefined, undefined);
+
+    expect(model.title).toBe('3');
+    expect(storage.set).toHaveBeenCalledWith('acpSessionDisplayTitleOverrides', {
+      [sessionId]: '3',
+    });
+  });
+
+  it('extracts display title from ACP prompt separator when no override exists', () => {
+    const service = createService();
+    const [model] = service.fromAcpJSON([
+      {
+        sessionId: 'acp:s4',
+        history: {
+          additional: {},
+          messages: [
+            {
+              id: 'acp:s4-msg-0',
+              role: ChatMessageRole.User,
+              content: 'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server.\n\n---\n\n3',
+              order: 0,
+            },
+          ],
+        },
+        requests: [],
+      },
+    ]);
+
+    expect(model.title).toBe('3');
+  });
+
+  it('falls back to first user message for ACP sessions with messages and no title', () => {
     const service = createService();
     const [model] = service.fromAcpJSON([
       {
@@ -98,10 +470,10 @@ describe('AcpChatManagerService', () => {
       },
     ]);
 
-    expect(model.title).toBe('');
+    expect(model.title).toBe('fallback title source');
   });
 
-  it('does not preserve synthetic New Session title when full session has messages', async () => {
+  it('preserves synthetic New Session title when an existing list item loads full messages', async () => {
     const service = createService();
     const sessionId = 'acp:s2';
     const metadataModel = service.fromAcpJSON([
@@ -140,7 +512,7 @@ describe('AcpChatManagerService', () => {
 
     await service.loadSession(sessionId);
 
-    expect(service.sessionModels.get(sessionId)?.title).toBe('');
+    expect(service.sessionModels.get(sessionId)?.title).toBe('New Session');
   });
 
   it('keeps New Session as the default for empty ACP sessions', () => {

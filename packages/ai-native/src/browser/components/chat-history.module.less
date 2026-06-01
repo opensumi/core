@@ -148,11 +148,6 @@
       display: none;
     }
 
-    &.chat_history_item_selected {
-      background: var(--list-activeSelectionBackground, var(--textPreformat-background));
-      color: var(--list-activeSelectionForeground, inherit);
-    }
-
     &:hover {
       background: var(--textPreformat-background);
 
@@ -162,6 +157,12 @@
       .chat_history_item_content {
         max-width: calc(100% - 50px);
       }
+    }
+
+    &.chat_history_item_selected,
+    &.chat_history_item_selected:hover {
+      background: var(--list-activeSelectionBackground, var(--textPreformat-background));
+      color: var(--list-activeSelectionForeground, inherit);
     }
   }
 

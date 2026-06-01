@@ -9,6 +9,46 @@ import { AcpChatManagerService } from './chat-manager.service.acp';
 import { ChatModel } from './chat-model';
 import { ChatInternalService } from './chat.internal.service';
 
+const ACP_LOAD_SESSION_FALLBACK_MESSAGE = 'Unable to open this chat history. A new session has been created.';
+const ACP_LOAD_SESSION_NOT_FOUND_MESSAGE = 'This chat history is no longer available. A new session has been created.';
+
+function getReadableErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  if (error && typeof error === 'object') {
+    const errorRecord = error as Record<string, unknown>;
+    const message = errorRecord.message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+
+    const nestedError = errorRecord.error;
+    if (nestedError && typeof nestedError === 'object') {
+      const nestedMessage = (nestedError as Record<string, unknown>).message;
+      if (typeof nestedMessage === 'string' && nestedMessage.trim()) {
+        return nestedMessage;
+      }
+    }
+  }
+
+  return '';
+}
+
+export function formatAcpLoadSessionFallbackMessage(error: unknown): string {
+  const errorMessage = getReadableErrorMessage(error);
+  if (/session .*not found|not found|does not exist|no session/i.test(errorMessage)) {
+    return ACP_LOAD_SESSION_NOT_FOUND_MESSAGE;
+  }
+
+  return ACP_LOAD_SESSION_FALLBACK_MESSAGE;
+}
+
 @Injectable()
 export class AcpChatInternalService extends ChatInternalService {
   @Autowired(AINativeConfigService)
@@ -162,8 +202,7 @@ export class AcpChatInternalService extends ChatInternalService {
       this._onSessionModelChange.fire(this._sessionModel);
       this._onChangeSession.fire(this._sessionModel.sessionId);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      this.messageService.info(`Failed to load session, creating a new session. (${errorMessage})`);
+      this.messageService.info(formatAcpLoadSessionFallbackMessage(error));
       await this.createSessionModel();
     } finally {
       this._onSessionLoadingChange.fire(false);

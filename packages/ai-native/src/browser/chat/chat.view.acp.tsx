@@ -1094,8 +1094,9 @@ export function DefaultChatViewHeaderACP({
         sessions.map((session) => {
           const history = session.history;
           const messages = history.getMessages();
-          const title =
+          const messageTitle =
             messages.length > 0 ? cleanAttachedTextWrapper(messages[0].content).slice(0, MAX_TITLE_LENGTH) : '';
+          const title = session.title || messageTitle;
           const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
           return {
             id: session.sessionId,
