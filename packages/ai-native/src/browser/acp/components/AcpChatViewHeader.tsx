@@ -28,6 +28,10 @@ import AcpChatHistory, { IChatHistoryItem } from './AcpChatHistory';
 
 const MAX_TITLE_LENGTH = 100;
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 /**
  * ACP 专属的 ChatViewHeader
  * 与 DefaultChatViewHeader 的区别：
@@ -52,8 +56,36 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
 
   const subscribedSessionIdsRef = React.useRef<Set<string>>(new Set());
   const toDisposeRef = React.useRef<DisposableCollection>(new DisposableCollection());
+  const sessionSwitchingRef = React.useRef(false);
 
   const [currentWorkspaceDir, setCurrentWorkspaceDir] = React.useState<string>(getCachedWorkspaceDir());
+
+  const createSessionModel = React.useCallback(
+    async ({ skipEmptySession = true }: { skipEmptySession?: boolean } = {}) => {
+      if (sessionSwitchingRef.current) {
+        return;
+      }
+
+      if (skipEmptySession) {
+        const currentMessages = aiChatService.sessionModel?.history.getMessages() || [];
+        if (currentMessages.length === 0) {
+          return;
+        }
+      }
+
+      sessionSwitchingRef.current = true;
+      setSessionSwitching(true);
+      try {
+        await aiChatService.createSessionModel();
+      } catch (error) {
+        messageService.error(getErrorMessage(error));
+      } finally {
+        sessionSwitchingRef.current = false;
+        setSessionSwitching(false);
+      }
+    },
+    [aiChatService, messageService],
+  );
 
   // Sync state when cache is updated externally (e.g. by session provider on first init)
   React.useEffect(() => {
@@ -69,16 +101,13 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
     setCurrentWorkspaceDir(newDir);
     // Create new session with new cwd if path actually changed
     if (newDir && newDir !== oldDir) {
-      try {
-        aiChatService.createSessionModel();
-      } catch (error) {
-        messageService.error(error.message);
-      }
+      await createSessionModel({ skipEmptySession: false });
     }
-  }, [workspaceService, quickPick, messageService, aiChatService]);
+  }, [workspaceService, quickPick, messageService, createSessionModel]);
 
   React.useEffect(() => {
     const dispose = aiChatService.onSessionLoadingChange((loading) => {
+      sessionSwitchingRef.current = loading;
       setSessionSwitching(loading);
     });
     return () => dispose.dispose();
@@ -94,17 +123,8 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
   }, [panelLayoutService]);
 
   const handleNewChat = React.useCallback(() => {
-    if (sessionSwitching) {
-      return;
-    }
-    if (aiChatService.sessionModel && aiChatService.sessionModel.history.getMessages().length > 0) {
-      try {
-        aiChatService.createSessionModel();
-      } catch (error) {
-        messageService.error(error.message);
-      }
-    }
-  }, [aiChatService, sessionSwitching]);
+    createSessionModel();
+  }, [createSessionModel]);
 
   const handleHistoryItemSelect = React.useCallback(
     (item: IChatHistoryItem) => {

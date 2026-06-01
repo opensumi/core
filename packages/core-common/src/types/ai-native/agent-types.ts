@@ -97,6 +97,18 @@ export interface AgentProcessConfig {
   webMcp?: {
     enabled?: boolean;
   };
+  /**
+   * Default ACP session model id to apply after session creation/loading.
+   */
+  defaultModel?: string;
+  /**
+   * Default ACP session mode id to apply after session creation/loading.
+   */
+  defaultMode?: string;
+  /**
+   * Default ACP session config option values keyed by config option id.
+   */
+  defaultConfigOptions?: Record<string, string | boolean>;
 }
 
 /**

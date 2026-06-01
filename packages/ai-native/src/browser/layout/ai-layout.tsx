@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { SlotLocation, SlotRenderer, useInjectable } from '@opensumi/ide-core-browser';
+import { IClientApp, SlotLocation, SlotRenderer, runWhenIdle, useInjectable } from '@opensumi/ide-core-browser';
 import { BoxPanel, SplitPanel, getStorageValue } from '@opensumi/ide-core-browser/lib/components';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_CHAT_VIEW_ID } from '../../common';
 
@@ -12,6 +13,9 @@ export const AILayout = () => {
   const { layout } = getStorageValue();
   const designLayoutConfig = useInjectable(DesignLayoutConfig);
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
+  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+  const clientApp = useInjectable<IClientApp>(IClientApp);
+  const didDefaultOpenAIChat = useRef(false);
   const [panelLayout, setPanelLayout] = useState(() => panelLayoutService.getLayoutMode());
 
   useEffect(() => {
@@ -27,13 +31,44 @@ export const AILayout = () => {
     () => (designLayoutConfig.useMergeRightWithLeftPanel ? 0 : 49),
     [designLayoutConfig.useMergeRightWithLeftPanel],
   );
+  const aiChatLayout = layout[AI_CHAT_VIEW_ID];
+  const hasCachedAIChatLayout = Object.prototype.hasOwnProperty.call(layout, AI_CHAT_VIEW_ID);
+  const shouldDefaultOpenAIChat = panelLayout === 'agentic' && !hasCachedAIChatLayout;
+  const defaultAIChatSize = panelLayout === 'agentic' ? 1080 : 360;
+
+  useEffect(() => {
+    if (!shouldDefaultOpenAIChat || didDefaultOpenAIChat.current) {
+      return;
+    }
+
+    didDefaultOpenAIChat.current = true;
+    let disposed = false;
+    const aiChatReady = layoutService.getTabbarService(AI_CHAT_VIEW_ID).viewReady.promise;
+    Promise.all([clientApp.appInitialized.promise, aiChatReady]).then(() => {
+      runWhenIdle(() => {
+        if (!disposed) {
+          layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, defaultAIChatSize);
+        }
+      });
+    });
+
+    return () => {
+      disposed = true;
+    };
+  }, [clientApp, defaultAIChatSize, layoutService, shouldDefaultOpenAIChat]);
 
   const aiChatSlot = (
     <SlotRenderer
       key='ai-chat'
       slot={AI_CHAT_VIEW_ID}
       isTabbar={true}
-      defaultSize={layout['AI-Chat']?.currentId ? layout['AI-Chat']?.size || 360 : 0}
+      defaultSize={
+        aiChatLayout?.currentId
+          ? aiChatLayout.size || defaultAIChatSize
+          : shouldDefaultOpenAIChat
+          ? defaultAIChatSize
+          : 0
+      }
       maxResize={1080}
       minResize={280}
       minSize={0}
@@ -86,7 +121,8 @@ export const AILayout = () => {
     <SplitPanel
       key='workbench'
       id={panelLayout === 'agentic' ? 'main-horizontal-agentic' : 'main-horizontal'}
-      flex={1}
+      minResize={300}
+      flexGrow={1}
       direction={'left-to-right'}
       resizeHandleClassName={'design-slot_resize_horizontal'}
     >
@@ -104,6 +140,7 @@ export const AILayout = () => {
         flex={1}
         direction={'left-to-right'}
         resizeHandleClassName={'design-slot_resize_horizontal'}
+        initialResizeOnMount={panelLayout === 'agentic'}
       >
         {layoutChildren}
       </SplitPanel>

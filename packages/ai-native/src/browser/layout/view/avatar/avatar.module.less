@@ -1,3 +1,16 @@
+.ai_actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 16px;
+}
+
+.avatar_icon_large {
+  width: 16px;
+  height: 16px;
+  font-size: 16px !important;
+}
+
 .ai_switch {
   height: 16px;
   width: 16px;
@@ -6,9 +19,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  .avatar_icon_large {
-    width: 16px;
-    height: 16px;
-    font-size: 16px !important;
+}
+
+.layout_switch {
+  height: 16px;
+  width: 16px;
+  min-width: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .layout_icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url(../../../../../../core-browser/src/components/ai-native/enhanceIcon/background-logo-icon.svg) center /
+      100% no-repeat;
+    color: #fff;
+
+    &::before {
+      transform: scale(0.7);
+    }
   }
 }

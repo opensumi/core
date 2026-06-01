@@ -15,7 +15,17 @@ export function buildAcpAgentProcessConfig(input: {
   };
   userPreferences: {
     nodePath: string;
-    agents: Record<string, { command?: string; args?: string[]; env?: Record<string, string> }>;
+    agents: Record<
+      string,
+      {
+        command?: string;
+        args?: string[];
+        env?: Record<string, string>;
+        defaultModel?: string;
+        defaultMode?: string;
+        defaultConfigOptions?: Record<string, string | boolean>;
+      }
+    >;
     webMcpEnabled?: boolean;
   };
   mcpServers?: McpServer[];
@@ -36,6 +46,15 @@ export function buildAcpAgentProcessConfig(input: {
     config.webMcp = {
       enabled: input.userPreferences.webMcpEnabled,
     };
+  }
+  if (override.defaultModel) {
+    config.defaultModel = override.defaultModel;
+  }
+  if (override.defaultMode) {
+    config.defaultMode = override.defaultMode;
+  }
+  if (override.defaultConfigOptions) {
+    config.defaultConfigOptions = override.defaultConfigOptions;
   }
   return config;
 }

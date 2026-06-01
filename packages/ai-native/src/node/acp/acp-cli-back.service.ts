@@ -552,23 +552,18 @@ ${input}`;
     }
   }
 
-  async loadAgentSession(
-    config: AgentProcessConfig,
-    sessionId: string,
-  ): Promise<{
-    sessionId: string;
-    messages: Array<{
-      role: 'user' | 'assistant';
-      content: string;
-      timestamp?: number;
-    }>;
-  }> {
+  async loadAgentSession(config: AgentProcessConfig, sessionId: string) {
     try {
       const result = await this.agentService.loadSession(sessionId, config);
       const messages = this.convertSessionUpdatesToMessages(result.historyUpdates);
       return {
-        sessionId,
+        sessionId: result.sessionId,
         messages,
+        modes: result.modes,
+        currentModeId: result.currentModeId,
+        models: result.models,
+        currentModelId: result.currentModelId,
+        configOptions: result.configOptions,
       };
     } catch (error) {
       const errorMessage = getAcpErrorMessage(error);
@@ -645,10 +640,7 @@ ${input}`;
     }
   }
 
-  async createSession(config: AgentProcessConfig): Promise<{
-    sessionId: string;
-    availableCommands: AvailableCommand[];
-  }> {
+  async createSession(config: AgentProcessConfig) {
     this.logger.log('[ACP Back] createSession called');
     return this.agentService.createSession(config);
   }
@@ -673,16 +665,18 @@ ${input}`;
     return true;
   }
 
-  async loadSessionOrNew(
-    config: AgentProcessConfig,
-    sessionId: string,
-  ): Promise<{
-    sessionId: string;
-    messages: Array<{ role: 'user' | 'assistant'; content: string; timestamp?: number }>;
-  }> {
+  async loadSessionOrNew(config: AgentProcessConfig, sessionId: string) {
     const result = await this.agentService.loadSessionOrNew(sessionId, config);
     const messages = this.convertSessionUpdatesToMessages(result.historyUpdates);
-    return { sessionId: result.sessionId, messages };
+    return {
+      sessionId: result.sessionId,
+      messages,
+      modes: result.modes,
+      currentModeId: result.currentModeId,
+      models: result.models,
+      currentModelId: result.currentModelId,
+      configOptions: result.configOptions,
+    };
   }
 
   async setSessionConfigOption(sessionId: string, configId: string, value: boolean | string): Promise<void> {
@@ -706,5 +700,13 @@ ${input}`;
 
   async setSessionModel(sessionId: string, model: string): Promise<void> {
     await this.agentService.setSessionModel({ sessionId, model });
+  }
+
+  async getAcpDebugLog() {
+    return this.agentService.getAcpDebugLog();
+  }
+
+  async clearAcpDebugLog(): Promise<void> {
+    await this.agentService.clearAcpDebugLog();
   }
 }

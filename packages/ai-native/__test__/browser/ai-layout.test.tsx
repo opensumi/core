@@ -3,6 +3,8 @@ import { Root, createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
 let panelLayoutMode: 'classic' | 'agentic' = 'classic';
+let storedLayout: Record<string, { currentId?: string; size?: number }> = {};
+const mockToggleSlot = jest.fn();
 
 jest.mock('@opensumi/ide-core-browser', () => {
   const React = require('react');
@@ -15,10 +17,30 @@ jest.mock('@opensumi/ide-core-browser', () => {
       statusBar: 'statusBar',
       panel: 'panel',
     },
-    SlotRenderer: ({ slot, id }: { slot: string; id?: string }) =>
+    IClientApp: Symbol('CLIENT_APP_TOKEN'),
+    runWhenIdle: (callback: () => void) => {
+      callback();
+      return { dispose: jest.fn() };
+    },
+    SlotRenderer: ({
+      slot,
+      id,
+      defaultSize,
+      maxResize,
+      minSize,
+    }: {
+      slot: string;
+      id?: string;
+      defaultSize?: number;
+      maxResize?: number;
+      minSize?: number;
+    }) =>
       React.createElement('div', {
         'data-slot': slot,
         'data-id': id,
+        'data-default-size': defaultSize,
+        'data-max-resize': maxResize,
+        'data-min-size': minSize,
       }),
     useInjectable: (token: any) => {
       if (token.name === 'DesignLayoutConfig') {
@@ -30,19 +52,44 @@ jest.mock('@opensumi/ide-core-browser', () => {
           onDidChangePanelLayout: () => ({ dispose: jest.fn() }),
         };
       }
+      if (String(token) === 'Symbol(CLIENT_APP_TOKEN)') {
+        return {
+          appInitialized: {
+            promise: new Promise(() => {}),
+          },
+        };
+      }
+      if (String(token) === 'Symbol(IMainLayoutService)') {
+        return {
+          toggleSlot: mockToggleSlot,
+          getTabbarService: () => ({
+            viewReady: {
+              promise: new Promise(() => {}),
+            },
+          }),
+        };
+      }
       return {};
     },
   };
 });
 
+jest.mock('@opensumi/ide-main-layout', () => ({
+  IMainLayoutService: Symbol('IMainLayoutService'),
+}));
+
 jest.mock('@opensumi/ide-core-browser/lib/components', () => {
   const React = require('react');
   return {
     BoxPanel: ({ children }: React.PropsWithChildren) => React.createElement('div', { 'data-box': true }, children),
-    SplitPanel: ({ id, children }: React.PropsWithChildren<{ id: string }>) =>
+    SplitPanel: ({
+      id,
+      children,
+      initialResizeOnMount,
+    }: React.PropsWithChildren<{ id: string; initialResizeOnMount?: boolean }>) =>
       React.createElement(
         'div',
-        { 'data-split': id },
+        { 'data-split': id, 'data-initial-resize-on-mount': initialResizeOnMount ? 'true' : 'false' },
         React.Children.toArray(children).map((child: React.ReactElement, index: number) =>
           React.createElement(
             'div',
@@ -59,7 +106,7 @@ jest.mock('@opensumi/ide-core-browser/lib/components', () => {
           ),
         ),
       ),
-    getStorageValue: () => ({ layout: {} }),
+    getStorageValue: () => ({ layout: storedLayout }),
   };
 });
 
@@ -71,7 +118,7 @@ jest.mock('../../src/browser/layout/panel-layout.service', () => ({
   AIPanelLayoutService: class AIPanelLayoutService {},
 }));
 
-describe('AILayout', () => {
+describe('AILayout BDD', () => {
   let container: HTMLDivElement;
   let root: Root;
 
@@ -88,9 +135,25 @@ describe('AILayout', () => {
       flexGrow: node.getAttribute('data-child-flex-grow'),
       minResize: node.getAttribute('data-child-min-resize'),
     }));
+  const getSlotProps = (slot: string) => {
+    const node = container.querySelector(`[data-slot="${slot}"]`);
+    return {
+      defaultSize: node?.getAttribute('data-default-size'),
+      maxResize: node?.getAttribute('data-max-resize'),
+      minSize: node?.getAttribute('data-min-size'),
+    };
+  };
+  const getSplitProps = (id: string) => {
+    const node = container.querySelector(`[data-split="${id}"]`);
+    return {
+      initialResizeOnMount: node?.getAttribute('data-initial-resize-on-mount'),
+    };
+  };
 
   beforeEach(() => {
     panelLayoutMode = 'classic';
+    storedLayout = {};
+    mockToggleSlot.mockClear();
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -103,7 +166,7 @@ describe('AILayout', () => {
     container.remove();
   });
 
-  it('should render AI chat after the workbench in classic layout', async () => {
+  it('Given classic layout, when it renders, then the workbench appears before AI chat', async () => {
     const { AILayout } = await import('../../src/browser/layout/ai-layout');
 
     act(() => {
@@ -112,8 +175,34 @@ describe('AILayout', () => {
 
     expect(getSlots()).toEqual(['top', 'view', 'main', 'panel', 'extendView', 'AI-Chat', 'statusBar']);
     expect(container.querySelector('[data-split="main-horizontal-ai"]')).toBeTruthy();
+    expect(getSplitProps('main-horizontal-ai')).toEqual({ initialResizeOnMount: 'false' });
     expect(getSplitChildIds('main-horizontal-ai')).toEqual(['main-horizontal', 'AI-Chat']);
     expect(getSplitChildIds('main-horizontal')).toEqual(['view', 'main-vertical', 'extendView']);
+  });
+
+  it('Given classic layout, when dragging the AI split handle, then the workbench is the flex-grow resize target', async () => {
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    act(() => {
+      root.render(<AILayout />);
+    });
+
+    expect(getSplitChildProps('main-horizontal-ai')).toEqual([
+      { id: 'main-horizontal', flex: null, flexGrow: '1', minResize: '300' },
+      { id: 'AI-Chat', flex: null, flexGrow: null, minResize: '280' },
+    ]);
+  });
+
+  it('Given classic layout has no cached active containers, when it renders, then side slots keep their collapsed defaults', async () => {
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    act(() => {
+      root.render(<AILayout />);
+    });
+
+    expect(getSlotProps('view')).toEqual({ defaultSize: '49', maxResize: null, minSize: '49' });
+    expect(getSlotProps('extendView')).toEqual({ defaultSize: '49', maxResize: null, minSize: '49' });
+    expect(getSlotProps('AI-Chat')).toEqual({ defaultSize: '0', maxResize: '1080', minSize: '0' });
   });
 
   it('Given agentic layout, when it renders, then AI chat is before the workbench', async () => {
@@ -126,6 +215,7 @@ describe('AILayout', () => {
 
     expect(getSlots()).toEqual(['top', 'AI-Chat', 'main', 'panel', 'view', 'extendView', 'statusBar']);
     expect(container.querySelector('[data-split="main-horizontal-ai-agentic"]')).toBeTruthy();
+    expect(getSplitProps('main-horizontal-ai-agentic')).toEqual({ initialResizeOnMount: 'true' });
     expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat', 'main-horizontal-agentic']);
     expect(getSplitChildIds('main-horizontal-agentic')).toEqual(['main-vertical-agentic', 'view', 'extendView']);
   });
@@ -142,5 +232,68 @@ describe('AILayout', () => {
       { id: 'AI-Chat', flex: null, flexGrow: null, minResize: '280' },
       { id: 'main-horizontal-agentic', flex: null, flexGrow: '1', minResize: '300' },
     ]);
+  });
+
+  it('Given agentic layout has no AI chat cache, when it renders, then AI chat opens with the agentic default size', async () => {
+    panelLayoutMode = 'agentic';
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    act(() => {
+      root.render(<AILayout />);
+    });
+
+    expect(getSlotProps('view')).toEqual({ defaultSize: '49', maxResize: null, minSize: '49' });
+    expect(getSlotProps('extendView')).toEqual({ defaultSize: '49', maxResize: null, minSize: '49' });
+    expect(getSlotProps('AI-Chat')).toEqual({ defaultSize: '1080', maxResize: '1080', minSize: '0' });
+  });
+
+  it('Given agentic layout has cached collapsed AI chat, when it renders, then AI chat stays collapsed', async () => {
+    panelLayoutMode = 'agentic';
+    storedLayout = {
+      'AI-Chat': {
+        currentId: '',
+        size: 750,
+      },
+    };
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    act(() => {
+      root.render(<AILayout />);
+    });
+
+    expect(getSlotProps('AI-Chat')).toEqual({ defaultSize: '0', maxResize: '1080', minSize: '0' });
+  });
+
+  it('Given agentic layout has cached active AI chat, when it renders, then AI chat restores the cached size', async () => {
+    panelLayoutMode = 'agentic';
+    storedLayout = {
+      'AI-Chat': {
+        currentId: 'AI-Chat-Container',
+        size: 640,
+      },
+    };
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    act(() => {
+      root.render(<AILayout />);
+    });
+
+    expect(getSlotProps('AI-Chat')).toEqual({ defaultSize: '640', maxResize: '1080', minSize: '0' });
+  });
+
+  it('Given agentic layout has cached active AI chat without size, when it renders, then AI chat falls back to the agentic default size', async () => {
+    panelLayoutMode = 'agentic';
+    storedLayout = {
+      'AI-Chat': {
+        currentId: 'AI-Chat-Container',
+      },
+    };
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    act(() => {
+      root.render(<AILayout />);
+    });
+
+    expect(getSlotProps('AI-Chat')).toEqual({ defaultSize: '1080', maxResize: '1080', minSize: '0' });
   });
 });

@@ -53,8 +53,22 @@ jest.mock('@opensumi/ide-workspace', () => ({
 
 jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
   __esModule: true,
-  default: ({ title, variant }: { title: string; variant?: string }) =>
-    require('react').createElement('div', { 'data-testid': 'acp-chat-history', 'data-variant': variant }, title),
+  default: ({ title, variant, disabled, onNewChat }: any) =>
+    require('react').createElement(
+      'div',
+      { 'data-testid': 'acp-chat-history', 'data-variant': variant },
+      title,
+      require('react').createElement(
+        'button',
+        {
+          'data-testid': 'acp-chat-history-new',
+          disabled,
+          onClick: onNewChat,
+          type: 'button',
+        },
+        'new',
+      ),
+    ),
 }));
 
 jest.mock('../../src/browser/acp/components/AcpChatViewWrapper', () => ({
@@ -182,7 +196,12 @@ function createMockSession() {
 function createMockServices({
   isMultiRoot = false,
   panelLayout = 'classic',
-}: { isMultiRoot?: boolean; panelLayout?: 'classic' | 'agentic' } = {}) {
+  createSessionModel,
+}: {
+  isMultiRoot?: boolean;
+  panelLayout?: 'classic' | 'agentic';
+  createSessionModel?: jest.Mock;
+} = {}) {
   const session = createMockSession();
   const panelLayoutListeners = new Set<(mode: 'classic' | 'agentic') => void>();
   let currentPanelLayout = panelLayout;
@@ -190,7 +209,7 @@ function createMockServices({
     sessionModel: session,
     activateSession: jest.fn(),
     clearSessionModel: jest.fn(),
-    createSessionModel: jest.fn(),
+    createSessionModel: createSessionModel || jest.fn(),
     getSessions: jest.fn(() => [session]),
     getSessionsByAcp: jest.fn(() => Promise.resolve([session])),
     onChangeSession: jest.fn(() => disposable()),
@@ -371,5 +390,43 @@ describe('ACP chat view headers', () => {
     });
 
     expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('inline');
+  });
+
+  it('keeps agentic new-chat clicks single-flight while a session is being created', async () => {
+    let resolveCreateSession: () => void;
+    const createSessionModel = jest.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveCreateSession = resolve;
+        }),
+    );
+    const services = createMockServices({ panelLayout: 'agentic', createSessionModel });
+    installInjectableMocks(services);
+
+    await renderHeader(
+      React.createElement(AcpChatViewHeader, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    const newChatButton = container.querySelector('[data-testid="acp-chat-history-new"]') as HTMLButtonElement;
+
+    await act(async () => {
+      newChatButton.click();
+      await Promise.resolve();
+    });
+    expect(createSessionModel).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      newChatButton.click();
+      await Promise.resolve();
+    });
+    expect(createSessionModel).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveCreateSession!();
+      await Promise.resolve();
+    });
   });
 });

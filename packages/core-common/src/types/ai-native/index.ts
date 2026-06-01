@@ -5,7 +5,7 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
 
-import { AvailableCommand, ListSessionsResponse } from './acp-types';
+import { AcpDebugLogEntry, AvailableCommand, ListSessionsResponse } from './acp-types';
 import { AgentProcessConfig } from './agent-types';
 import { IAIReportCompletionOption } from './reporter';
 
@@ -205,6 +205,40 @@ export interface IAIBackServiceOption {
   agentSessionConfig?: AgentProcessConfig;
 }
 
+export interface AgentSessionModeOption {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export interface AgentSessionModelOption {
+  modelId: string;
+  name: string;
+  description?: string | null;
+}
+
+export interface AgentSessionStateResult {
+  modes?: AgentSessionModeOption[];
+  currentModeId?: string;
+  models?: AgentSessionModelOption[];
+  currentModelId?: string;
+  configOptions?: Record<string, any>[];
+}
+
+export interface AgentSessionCreateResult extends AgentSessionStateResult {
+  sessionId: string;
+  availableCommands: AvailableCommand[];
+}
+
+export interface AgentSessionLoadResult extends AgentSessionStateResult {
+  sessionId: string;
+  messages: Array<{
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp?: number;
+  }>;
+}
+
 /**
  * 补全请求对象
  */
@@ -263,26 +297,17 @@ export interface IAIBackService<
    */
   reportCompletion?<I extends IAIReportCompletionOption>(input: I): Promise<void>;
 
-  loadAgentSession?(
-    config: AgentProcessConfig,
-    agentSessionId: string,
-  ): Promise<{
-    sessionId: string;
-    messages: Array<{
-      role: 'user' | 'assistant';
-      content: string;
-      timestamp?: number;
-    }>;
-  }>;
+  loadAgentSession?(config: AgentProcessConfig, agentSessionId: string): Promise<AgentSessionLoadResult>;
 
   listSessions?(config: AgentProcessConfig): Promise<ListSessionsResponse>;
 
-  createSession?(config: AgentProcessConfig): Promise<{
-    sessionId: string;
-    availableCommands: AvailableCommand[];
-  }>;
+  createSession?(config: AgentProcessConfig): Promise<AgentSessionCreateResult>;
 
   setSessionMode?(sessionId: string, modeId: string): Promise<void>;
+  setSessionConfigOption?(sessionId: string, configId: string, value: boolean | string): Promise<void>;
+  setSessionModel?(sessionId: string, model: string): Promise<void>;
+  getAcpDebugLog?(): Promise<AcpDebugLogEntry[]>;
+  clearAcpDebugLog?(): Promise<void>;
 
   ready?(): Promise<boolean>;
 }

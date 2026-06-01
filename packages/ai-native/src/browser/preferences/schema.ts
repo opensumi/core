@@ -282,6 +282,22 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
             description: '%preference.ai-native.acp.agentConfigsOverride.env.description%',
             default: {},
           },
+          defaultModel: {
+            type: 'string',
+            description: 'Default ACP model id to apply when creating or loading a session.',
+          },
+          defaultMode: {
+            type: 'string',
+            description: 'Default ACP mode id to apply when creating or loading a session.',
+          },
+          defaultConfigOptions: {
+            type: 'object',
+            additionalProperties: {
+              anyOf: [{ type: 'string' }, { type: 'boolean' }],
+            },
+            description: 'Default ACP session config option values keyed by config option id.',
+            default: {},
+          },
         },
       },
     },

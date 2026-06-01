@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Deferred, Disposable, Emitter, Event, IDisposable } from '@opensumi/ide-core-common';
 import {
+  AcpDebugLogEntry,
   AcpWebMcpCallerServiceToken,
   AvailableCommand,
   ListSessionsRequest,
@@ -14,6 +15,7 @@ import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { toAgentUpdate } from './acp-agent-update-adapter';
+import { acpDebugLogStore } from './acp-debug-log';
 import { getAcpErrorMessage, normalizeAcpError } from './acp-error';
 import {
   AcpThread,
@@ -89,7 +91,11 @@ export interface AgentRequest {
 export interface SessionLoadResult {
   sessionId: string;
   processId: string;
-  modes: Array<{ id: string; name: string }>;
+  modes: Array<{ id: string; name: string; description?: string }>;
+  currentModeId?: string;
+  models?: Array<{ modelId: string; name: string; description?: string | null }>;
+  currentModelId?: string;
+  configOptions?: Record<string, any>[];
   status: AgentSessionStatus;
   historyUpdates: SessionNotification[];
 }
@@ -160,7 +166,15 @@ export interface IAcpAgentService {
   /**
    * Create a new session
    */
-  createSession(config: AgentProcessConfig): Promise<{ sessionId: string; availableCommands: AvailableCommand[] }>;
+  createSession(config: AgentProcessConfig): Promise<{
+    sessionId: string;
+    availableCommands: AvailableCommand[];
+    modes?: Array<{ id: string; name: string; description?: string }>;
+    currentModeId?: string;
+    models?: Array<{ modelId: string; name: string; description?: string | null }>;
+    currentModelId?: string;
+    configOptions?: Record<string, any>[];
+  }>;
 
   /**
    * List all ACP Agent sessions
@@ -205,6 +219,10 @@ export interface IAcpAgentService {
    * Get available modes from initialize negotiation
    */
   getAvailableModes(): Promise<any | null>;
+
+  getAcpDebugLog(): Promise<AcpDebugLogEntry[]>;
+
+  clearAcpDebugLog(): Promise<void>;
 
   /**
    * Event fired when any session's thread status changes.
@@ -543,9 +561,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // createSession — with Deferred pattern (NOT setTimeout)
   // -----------------------------------------------------------------------
 
-  async createSession(
-    config: AgentProcessConfig,
-  ): Promise<{ sessionId: string; availableCommands: AvailableCommand[] }> {
+  async createSession(config: AgentProcessConfig): Promise<{
+    sessionId: string;
+    availableCommands: AvailableCommand[];
+    modes?: Array<{ id: string; name: string; description?: string }>;
+    currentModeId?: string;
+    models?: Array<{ modelId: string; name: string; description?: string | null }>;
+    currentModelId?: string;
+    configOptions?: Record<string, any>[];
+  }> {
     this.logger.log(`[AcpAgentService] createSession() — cwd=${config.cwd}, command=${config.command}`);
     const poolSizeBefore = this.threadPool.length;
     const thread = await this.findOrCreateIdleThread(config);
@@ -582,6 +606,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
       realSessionId = newSessionResponse.sessionId;
       this.setBuiltInMcpSessionState(realSessionId, this.didAppendBuiltInMcpServer(config, mcpServers));
+      await this.applyDefaultSessionOptions(realSessionId, thread, config);
       this.bindSession(realSessionId, thread);
       this.sessionRefCounts.set(realSessionId, 1);
       this.permissionRouting.registerSession(realSessionId);
@@ -599,7 +624,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       });
 
       const sessionState = thread.getSessionState();
-      const modes = sessionState.modes ? sessionState.modes.map(({ id, name }) => ({ id, name })) : [];
+      const modes = sessionState.modes
+        ? sessionState.modes.map(({ id, name, description }) => ({ id, name, description: description ?? undefined }))
+        : [];
       this.updateLastSessionInfo(realSessionId, thread, modes);
 
       this.logger.log(
@@ -607,7 +634,17 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       );
       this.logPoolStatus('after-createSession');
 
-      return { sessionId: realSessionId, availableCommands: deduplicated };
+      return {
+        sessionId: realSessionId,
+        availableCommands: deduplicated,
+        modes,
+        currentModeId: sessionState.currentModeId,
+        models: sessionState.models ? [...sessionState.models] : undefined,
+        currentModelId: sessionState.currentModelId,
+        configOptions: sessionState.configOptions
+          ? ([...sessionState.configOptions] as Record<string, any>[])
+          : undefined,
+      };
     } catch (e) {
       if (realSessionId) {
         this.sessions.delete(realSessionId);
@@ -791,12 +828,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       mcpServers,
     } as any);
     this.setBuiltInMcpSessionState(sessionId, this.didAppendBuiltInMcpServer(config, mcpServers));
+    await this.applyDefaultSessionOptions(sessionId, thread, config);
   }
 
   private buildSessionLoadResult(sessionId: string, thread: AcpThread): SessionLoadResult {
     const historyUpdates = [...thread.getSessionNotifications()];
     const sessionState = thread.getSessionState();
-    const modes = sessionState.modes ? sessionState.modes.map(({ id, name }) => ({ id, name })) : [];
+    const modes = sessionState.modes
+      ? sessionState.modes.map(({ id, name, description }) => ({ id, name, description: description ?? undefined }))
+      : [];
 
     this.updateLastSessionInfo(sessionId, thread, modes);
 
@@ -804,9 +844,124 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       sessionId,
       processId: thread.threadId,
       modes,
+      currentModeId: sessionState.currentModeId,
+      models: sessionState.models ? [...sessionState.models] : undefined,
+      currentModelId: sessionState.currentModelId,
+      configOptions: sessionState.configOptions
+        ? ([...sessionState.configOptions] as Record<string, any>[])
+        : undefined,
       status: 'ready',
       historyUpdates,
     };
+  }
+
+  private async applyDefaultSessionOptions(
+    sessionId: string,
+    thread: AcpThread,
+    config: AgentProcessConfig,
+  ): Promise<void> {
+    const sessionState = thread.getSessionState();
+
+    if (config.defaultMode) {
+      const hasMode = sessionState.modes?.some((mode) => mode.id === config.defaultMode) === true;
+      if (hasMode) {
+        try {
+          await thread.setSessionMode({ sessionId, modeId: config.defaultMode } as any);
+        } catch (error) {
+          this.logger.warn(`[AcpAgentService] Failed to apply defaultMode "${config.defaultMode}"`, error);
+        }
+      } else {
+        this.logger.warn(`[AcpAgentService] Invalid defaultMode "${config.defaultMode}" for session ${sessionId}`);
+      }
+    }
+
+    if (config.defaultModel) {
+      const hasModel = sessionState.models?.some((model) => model.modelId === config.defaultModel) === true;
+      if (hasModel) {
+        try {
+          await thread.unstable_setSessionModel({ sessionId, model: config.defaultModel } as any);
+        } catch (error) {
+          this.logger.warn(`[AcpAgentService] Failed to apply defaultModel "${config.defaultModel}"`, error);
+        }
+      } else {
+        this.logger.warn(`[AcpAgentService] Invalid defaultModel "${config.defaultModel}" for session ${sessionId}`);
+      }
+    }
+
+    const defaults = config.defaultConfigOptions;
+    if (!defaults || Object.keys(defaults).length === 0) {
+      return;
+    }
+
+    const configOptions = Array.isArray(sessionState.configOptions) ? sessionState.configOptions : [];
+    for (const [configId, value] of Object.entries(defaults)) {
+      const option = configOptions.find((item) => this.getConfigOptionId(item) === configId);
+      if (!option) {
+        this.logger.warn(`[AcpAgentService] Invalid defaultConfigOptions key "${configId}" for session ${sessionId}`);
+        continue;
+      }
+
+      if (typeof value === 'string') {
+        const validValues = this.collectConfigOptionValues(option);
+        if (validValues.size === 0 || !validValues.has(value)) {
+          this.logger.warn(
+            `[AcpAgentService] Invalid defaultConfigOptions value "${value}" for config option "${configId}"`,
+          );
+          continue;
+        }
+      }
+
+      try {
+        await thread.setSessionConfigOption({ sessionId, configId, value } as any);
+      } catch (error) {
+        this.logger.warn(`[AcpAgentService] Failed to apply defaultConfigOptions "${configId}"`, error);
+      }
+    }
+  }
+
+  private getConfigOptionId(option: unknown): string | undefined {
+    const rawId = (option as { id?: unknown; configId?: unknown })?.id ?? (option as { configId?: unknown })?.configId;
+    if (typeof rawId === 'string') {
+      return rawId;
+    }
+    if (rawId && typeof rawId === 'object' && typeof (rawId as { id?: unknown }).id === 'string') {
+      return (rawId as { id: string }).id;
+    }
+    return undefined;
+  }
+
+  private collectConfigOptionValues(option: unknown): Set<string> {
+    const values = new Set<string>();
+    const roots = [
+      (option as any)?.options,
+      (option as any)?.values,
+      (option as any)?.kind?.options,
+      (option as any)?.kind?.select?.options,
+      (option as any)?.select?.options,
+    ].filter(Boolean);
+
+    const visit = (node: unknown): void => {
+      if (Array.isArray(node)) {
+        node.forEach(visit);
+        return;
+      }
+      if (!node || typeof node !== 'object') {
+        return;
+      }
+      const record = node as Record<string, unknown>;
+      const value = record.value;
+      if (typeof value === 'string') {
+        values.add(value);
+      } else if (value && typeof value === 'object' && typeof (value as { id?: unknown }).id === 'string') {
+        values.add((value as { id: string }).id);
+      }
+      visit(record.options);
+      visit(record.values);
+      visit(record.groups);
+    };
+
+    roots.forEach(visit);
+    return values;
   }
 
   // -----------------------------------------------------------------------
@@ -1078,6 +1233,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
           this.sessionRefCounts.set(sessionId, pending.refCount);
         }
         this.setBuiltInMcpSessionState(actualSessionId, this.didAppendBuiltInMcpServer(config, mcpServers));
+        await this.applyDefaultSessionOptions(actualSessionId, thread, config);
         return this.buildSessionLoadResult(actualSessionId, thread);
       })
       .catch(async (e) => {
@@ -1295,6 +1451,14 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       // Modes come from initialize response; would need to track them
     }
     return null;
+  }
+
+  async getAcpDebugLog(): Promise<AcpDebugLogEntry[]> {
+    return acpDebugLogStore.getEntries();
+  }
+
+  async clearAcpDebugLog(): Promise<void> {
+    acpDebugLogStore.clear();
   }
 
   // -----------------------------------------------------------------------

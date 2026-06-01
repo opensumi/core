@@ -173,3 +173,20 @@
 .AI-Chat-slot {
   background-color: var(--activityBar-background) !important;
 }
+
+.agentic_view_slot {
+  :global(.kt-tab-panel) {
+    border-left: 1px solid var(--sideBar-border);
+    border-right: none !important;
+  }
+}
+
+.agentic_view_tab_bar {
+  display: flex;
+  height: 100%;
+
+  :global(#opensumi-left-tabbar) {
+    border-left: 1px solid var(--activityBar-border);
+    border-right: none !important;
+  }
+}

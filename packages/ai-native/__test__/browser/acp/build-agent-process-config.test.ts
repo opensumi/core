@@ -139,4 +139,65 @@ describe('buildAcpAgentProcessConfig', () => {
     });
     expect(result.webMcp).toEqual({ enabled: false });
   });
+
+  it('includes ACP session defaults from per-agent overrides', () => {
+    const defaultConfigOptions = {
+      permission: 'acceptEdits',
+      thinking: true,
+    };
+    const result = buildAcpAgentProcessConfig({
+      agentId: 'test-agent',
+      registration: defaultRegistration,
+      userPreferences: {
+        ...defaultPrefs,
+        agents: {
+          'test-agent': {
+            defaultModel: 'gpt-5',
+            defaultMode: 'plan',
+            defaultConfigOptions,
+          },
+        },
+      },
+    });
+
+    expect(result.defaultModel).toBe('gpt-5');
+    expect(result.defaultMode).toBe('plan');
+    expect(result.defaultConfigOptions).toBe(defaultConfigOptions);
+  });
+
+  it('keeps existing spawn overrides while adding ACP session defaults', () => {
+    const result = buildAcpAgentProcessConfig({
+      agentId: 'test-agent',
+      registration: defaultRegistration,
+      userPreferences: {
+        nodePath: '/usr/local/bin/node',
+        webMcpEnabled: true,
+        agents: {
+          'test-agent': {
+            command: '/custom/bin/agent',
+            args: ['--acp'],
+            env: { API_KEY: 'user-value' },
+            defaultModel: 'claude-sonnet',
+            defaultMode: 'code',
+            defaultConfigOptions: { approval: 'on-request' },
+          },
+        },
+      },
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        agentId: 'test-agent',
+        command: '/custom/bin/agent',
+        args: ['--acp'],
+        cwd: '/workspace',
+        nodePath: '/usr/local/bin/node',
+        defaultModel: 'claude-sonnet',
+        defaultMode: 'code',
+        defaultConfigOptions: { approval: 'on-request' },
+        webMcp: { enabled: true },
+      }),
+    );
+    expect(new Map(result.env!.map((v) => [v.name, v.value])).get('API_KEY')).toBe('user-value');
+  });
 });

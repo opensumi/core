@@ -18,6 +18,7 @@ import * as streamWeb from 'node:stream/web';
 import { Autowired, Injectable, Injector, Provider } from '@opensumi/di';
 import { Deferred, Disposable, Emitter, Event, ILogger, URI, uuid } from '@opensumi/ide-core-common';
 import {
+  AcpDebugLogDirection,
   AgentCapabilities,
   AvailableCommand,
   CancelNotification,
@@ -61,6 +62,7 @@ import {
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
+import { acpDebugLogStore } from './acp-debug-log';
 import { resolveAgentSpawnConfig } from './acp-spawn-config';
 import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './handlers/file-system.handler';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
@@ -95,10 +97,14 @@ async function loadSdk(): Promise<any> {
 // ---------------------------------------------------------------------------
 // Node Stream → Web Stream conversion helpers
 // ---------------------------------------------------------------------------
-function nodeReadableToWebStream(readable: NodeJS.ReadableStream): ReadableStream<Uint8Array> {
+function nodeReadableToWebStream(
+  readable: NodeJS.ReadableStream,
+  onChunk?: (chunk: Uint8Array | Buffer | string) => void,
+): ReadableStream<Uint8Array> {
   return new streamWeb.ReadableStream<Uint8Array>({
     start(controller) {
       readable.on('data', (chunk: Buffer) => {
+        onChunk?.(chunk);
         controller.enqueue(new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength));
       });
       readable.on('end', () => {
@@ -114,9 +120,13 @@ function nodeReadableToWebStream(readable: NodeJS.ReadableStream): ReadableStrea
   });
 }
 
-function nodeWritableToWebStream(writable: NodeJS.WritableStream): WritableStream<Uint8Array> {
+function nodeWritableToWebStream(
+  writable: NodeJS.WritableStream,
+  onChunk?: (chunk: Uint8Array | Buffer | string) => void,
+): WritableStream<Uint8Array> {
   return new streamWeb.WritableStream<Uint8Array>({
     write(chunk) {
+      onChunk?.(chunk);
       return new Promise<void>((resolve, reject) => {
         writable.write(chunk, (err) => {
           if (err) {
@@ -422,6 +432,7 @@ export class AcpThread extends Disposable implements IAcpThread {
   // Process
   private _childProcess: ChildProcess | null = null;
   private _processRunning = false;
+  private _debugLogRecorders = new Map<AcpDebugLogDirection, (chunk: Uint8Array | Buffer | string) => void>();
 
   // SDK
   private _connection: any = null; // ClientSideConnection instance
@@ -564,6 +575,7 @@ export class AcpThread extends Disposable implements IAcpThread {
       });
 
       childProcess.stderr?.on('data', (data: Buffer) => {
+        this.recordDebugLog('stderr', data);
         this.logger?.warn(`[AcpThread:${this.threadId}] Agent stderr:`, data.toString('utf8'));
       });
 
@@ -585,6 +597,7 @@ export class AcpThread extends Disposable implements IAcpThread {
         }
         this._childProcess = childProcess;
         this._processRunning = true;
+        this.recordDebugLog('system', `process started: ${resolved.command} ${resolved.args.join(' ')}`);
         this.fireEvent({ type: 'process_started' } as AcpThreadEvent);
         resolve();
       }, PROCESS_CONFIG.STARTUP_TIMEOUT_MS);
@@ -672,8 +685,8 @@ export class AcpThread extends Disposable implements IAcpThread {
     const stdout = this._childProcess!.stdio[1] as NodeJS.ReadableStream;
     const stdin = this._childProcess!.stdio[0] as NodeJS.WritableStream;
 
-    const webOutputStream = nodeWritableToWebStream(stdin);
-    const webInputStream = nodeReadableToWebStream(stdout);
+    const webOutputStream = nodeWritableToWebStream(stdin, (chunk) => this.recordDebugLog('outgoing', chunk));
+    const webInputStream = nodeReadableToWebStream(stdout, (chunk) => this.recordDebugLog('incoming', chunk));
 
     const stream = ndJsonStream(webOutputStream, webInputStream);
 
@@ -851,6 +864,7 @@ export class AcpThread extends Disposable implements IAcpThread {
 
     const response: NewSessionResponse = await this._connection.newSession(request);
     this._sessionId = response.sessionId;
+    acpDebugLogStore.setThreadSessionId(this.threadId, response.sessionId);
     this._needsReset = true;
     this.applySessionInitialState(response);
     this.setStatus('awaiting_prompt');
@@ -865,6 +879,7 @@ export class AcpThread extends Disposable implements IAcpThread {
     this.logger?.log(`[AcpThread:${this.threadId}] loadSession() — sessionId=${params.sessionId}`);
 
     this._sessionId = params.sessionId;
+    acpDebugLogStore.setThreadSessionId(this.threadId, params.sessionId);
     const response: LoadSessionResponse = await this._connection.loadSession(params);
     this._needsReset = true;
     this.applySessionInitialState(response);
@@ -927,13 +942,32 @@ export class AcpThread extends Disposable implements IAcpThread {
   async setSessionMode(params: SetSessionModeRequest): Promise<SetSessionModeResponse | void> {
     this.logger?.log(`[AcpThread:${this.threadId}] setSessionMode() — modeId=${params.modeId}`);
     await this.ensureInitialized();
-    return this._connection.setSessionMode(params);
+    const response = await this._connection.setSessionMode(params);
+    this._currentModeId = params.modeId;
+    return response;
   }
 
   async setSessionConfigOption(params: SetSessionConfigOptionRequest): Promise<SetSessionConfigOptionResponse> {
     this.logger?.log(`[AcpThread:${this.threadId}] setSessionConfigOption()`);
     await this.ensureInitialized();
-    return this._connection.setSessionConfigOption(params);
+    const response = await this._connection.setSessionConfigOption(params);
+    if (Array.isArray((response as any)?.configOptions)) {
+      this._configOptions = [...(response as any).configOptions];
+    } else if (this._configOptions) {
+      this._configOptions = this._configOptions.map((option: any) => {
+        const optionId = option?.id ?? option?.configId;
+        if (optionId !== params.configId) {
+          return option;
+        }
+        const next = { ...option };
+        if (next.kind && typeof next.kind === 'object') {
+          next.kind = { ...next.kind, currentValue: params.value };
+        }
+        next.currentValue = params.value;
+        return next;
+      });
+    }
+    return response;
   }
 
   async unstable_forkSession(params: ForkSessionRequest): Promise<ForkSessionResponse> {
@@ -957,7 +991,9 @@ export class AcpThread extends Disposable implements IAcpThread {
   async unstable_setSessionModel(params: SetSessionModelRequest): Promise<SetSessionModelResponse | void> {
     this.logger?.log(`[AcpThread:${this.threadId}] unstable_setSessionModel()`);
     await this.ensureInitialized();
-    return this._connection.unstable_setSessionModel(params);
+    const response = await this._connection.unstable_setSessionModel(params);
+    this._currentModelId = (params as any).model ?? params.modelId;
+    return response;
   }
 
   // -----------------------------------------------------------------------
@@ -1343,6 +1379,48 @@ export class AcpThread extends Disposable implements IAcpThread {
       return structuredCloneFn(value);
     }
     return JSON.parse(JSON.stringify(value));
+  }
+
+  private recordDebugLog(direction: AcpDebugLogDirection, chunk: Uint8Array | Buffer | string): void {
+    if (direction === 'system') {
+      acpDebugLogStore.record({
+        direction,
+        agentId: this.options.agentId,
+        threadId: this.threadId,
+        sessionId: this._sessionId || undefined,
+        raw: typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf8'),
+      });
+      return;
+    }
+
+    if (direction === 'stderr') {
+      const raw = typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf8');
+      raw
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .forEach((line) =>
+          acpDebugLogStore.record({
+            direction,
+            agentId: this.options.agentId,
+            threadId: this.threadId,
+            sessionId: this._sessionId || undefined,
+            raw: line,
+          }),
+        );
+      return;
+    }
+
+    let recorder = this._debugLogRecorders.get(direction);
+    if (!recorder) {
+      recorder = acpDebugLogStore.createLineRecorder({
+        direction,
+        agentId: this.options.agentId,
+        threadId: this.threadId,
+        sessionId: this._sessionId || undefined,
+      });
+      this._debugLogRecorders.set(direction, recorder);
+    }
+    recorder(chunk);
   }
 
   private applySessionInitialState(

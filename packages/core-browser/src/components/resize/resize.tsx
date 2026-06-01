@@ -259,10 +259,23 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       const currentNext = nextElement.current!.clientWidth;
 
       const totalSize = currentPrev + currentNext;
+      const effectiveTotalSize = totalSize || ref.current?.parentElement?.offsetWidth || 0;
+      if (!effectiveTotalSize) {
+        return;
+      }
+
       if (props.flexMode) {
-        const prevWidth = props.flexMode === ResizeFlexMode.Prev ? size : totalSize - size;
-        const nextWidth = props.flexMode === ResizeFlexMode.Next ? size : totalSize - size;
+        const prevWidth = props.flexMode === ResizeFlexMode.Prev ? size : effectiveTotalSize - size;
+        const nextWidth = props.flexMode === ResizeFlexMode.Next ? size : effectiveTotalSize - size;
         flexModeSetSize(prevWidth, nextWidth, true);
+      } else if (!totalSize) {
+        if (isLatter) {
+          nextElement.current!.style.width = (size / effectiveTotalSize) * 100 + '%';
+          prevElement.current!.style.width = (1 - size / effectiveTotalSize) * 100 + '%';
+        } else {
+          prevElement.current!.style.width = (size / effectiveTotalSize) * 100 + '%';
+          nextElement.current!.style.width = (1 - size / effectiveTotalSize) * 100 + '%';
+        }
       } else {
         const nextTotolWidth = +nextElement.current!.style.width!.replace('%', '');
         const prevTotalWidth = +prevElement.current!.style.width!.replace('%', '');
@@ -278,9 +291,9 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
         }
       }
       if (isLatter) {
-        handleZeroSize(totalSize - size, size);
+        handleZeroSize(effectiveTotalSize - size, size);
       } else {
-        handleZeroSize(size, totalSize - size);
+        handleZeroSize(size, effectiveTotalSize - size);
       }
       if (props.onResize) {
         props.onResize(prevElement.current!, nextElement.current!);
@@ -574,13 +587,31 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     const currentPrev = prevElement.current.clientHeight;
     const currentNext = nextElement.current.clientHeight;
     const totalSize = currentPrev + currentNext;
+    const effectiveTotalSize = totalSize || ref.current?.parentElement?.offsetHeight || 0;
+    if (!effectiveTotalSize) {
+      return;
+    }
+
     if (props.flexMode) {
-      const prevHeight = props.flexMode === ResizeFlexMode.Prev ? size : totalSize - size;
-      const nextHeight = props.flexMode === ResizeFlexMode.Next ? size : totalSize - size;
+      const prevHeight = props.flexMode === ResizeFlexMode.Prev ? size : effectiveTotalSize - size;
+      const nextHeight = props.flexMode === ResizeFlexMode.Next ? size : effectiveTotalSize - size;
       flexModeSetSize(prevHeight, nextHeight, true);
+    } else if (!totalSize) {
+      if (isLatter) {
+        if (keep) {
+          prevElement.current!.style.height = (1 - size / effectiveTotalSize) * 100 + '%';
+        }
+        const targetSize = (size / effectiveTotalSize) * 100;
+        nextElement.current!.style.height = targetSize === 0 ? '0px' : targetSize + '%';
+      } else {
+        prevElement.current!.style.height = (size / effectiveTotalSize) * 100 + '%';
+        if (keep) {
+          nextElement.current!.style.height = (1 - size / effectiveTotalSize) * 100 + '%';
+        }
+      }
     } else {
-      const nextH = +nextElement.current!.style.height!.replace(/\%|px/, '');
-      const prevH = +prevElement.current!.style.height!.replace(/\%|px/, '');
+      const nextH = +nextElement.current!.style.height!.replace(/%|px/, '');
+      const prevH = +prevElement.current!.style.height!.replace(/%|px/, '');
       const currentTotalHeight = nextH + prevH;
       if (isLatter) {
         if (keep) {
@@ -596,9 +627,9 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
       }
     }
     if (isLatter) {
-      handleZeroSize(totalSize - size, size);
+      handleZeroSize(effectiveTotalSize - size, size);
     } else {
-      handleZeroSize(size, totalSize - size);
+      handleZeroSize(size, effectiveTotalSize - size);
     }
     if (props.onResize) {
       props.onResize(prevElement.current!, nextElement.current!);
@@ -681,7 +712,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     });
   };
 
-  const onMouseUp = (e) => {
+  const onMouseUp = () => {
     resizing.current = false;
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);

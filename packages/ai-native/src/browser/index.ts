@@ -58,6 +58,7 @@ import {
   WebMcpGroupRegistry,
 } from './acp';
 import { AcpFooterContribution } from './acp/components/AcpFooterContribution';
+import { AcpDebugLogContribution } from './acp/debug-log/acp-debug-log.contribution';
 import { AcpPermissionDialogContribution, PermissionDialogManager } from './acp/permission-dialog-container';
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AcpChatAgent } from './chat/acp-chat-agent';
@@ -143,6 +144,7 @@ export class AINativeModule extends BrowserModule {
     MCPConfigContribution,
     MCPConfigCommandContribution,
     MCPPreferencesContribution,
+    AcpDebugLogContribution,
     AcpPermissionDialogContribution,
     PermissionDialogManager,
     AcpPermissionBridgeService,

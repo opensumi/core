@@ -76,6 +76,8 @@ interface MockThread {
   markToolCallWaiting: jest.Mock;
   respondToToolCall: jest.Mock;
   setSessionMode: jest.Mock;
+  setSessionConfigOption: jest.Mock;
+  unstable_setSessionModel: jest.Mock;
   reset: jest.Mock;
   dispose: jest.Mock;
   onEvent: jest.Mock;
@@ -131,6 +133,8 @@ function createMockThread(overrides: Record<string, any> = {}): MockThread {
     markToolCallWaiting: jest.fn(),
     respondToToolCall: jest.fn(),
     setSessionMode: jest.fn().mockResolvedValue(undefined),
+    setSessionConfigOption: jest.fn().mockResolvedValue(undefined),
+    unstable_setSessionModel: jest.fn().mockResolvedValue(undefined),
     reset: jest.fn(),
     dispose: jest.fn().mockResolvedValue(undefined),
     onEvent: jest.fn((cb: any) => {
@@ -483,6 +487,90 @@ describe('AcpAgentService (Thread Pool)', () => {
       await expect(service.createSession(mockAgentProcessConfig)).rejects.toThrow('Init failed');
       expect(thread.dispose).toHaveBeenCalled();
     });
+
+    it('should apply valid default mode, model, and config options after creating a session', async () => {
+      jest.useFakeTimers();
+      const { service, thread } = createServiceWithAutoEvents();
+      thread.getSessionState.mockReturnValue({
+        notifications: [],
+        entries: [],
+        modes: [{ id: 'plan', name: 'Plan' }],
+        models: [{ modelId: 'gpt-5', name: 'GPT-5' }],
+        configOptions: [
+          {
+            id: 'permission',
+            options: [{ value: 'acceptEdits' }, { value: 'ask' }],
+          },
+          {
+            id: 'thinking',
+          },
+        ],
+      });
+
+      const resultPromise = service.createSession({
+        ...mockAgentProcessConfig,
+        defaultMode: 'plan',
+        defaultModel: 'gpt-5',
+        defaultConfigOptions: {
+          permission: 'acceptEdits',
+          thinking: true,
+        },
+      });
+      await jest.advanceTimersByTimeAsync(5000);
+      const result = await resultPromise;
+
+      expect(result.sessionId).toBe('new-session-1');
+      expect(thread.setSessionMode).toHaveBeenCalledWith({ sessionId: 'new-session-1', modeId: 'plan' });
+      expect(thread.unstable_setSessionModel).toHaveBeenCalledWith({ sessionId: 'new-session-1', model: 'gpt-5' });
+      expect(thread.setSessionConfigOption).toHaveBeenCalledWith({
+        sessionId: 'new-session-1',
+        configId: 'permission',
+        value: 'acceptEdits',
+      });
+      expect(thread.setSessionConfigOption).toHaveBeenCalledWith({
+        sessionId: 'new-session-1',
+        configId: 'thinking',
+        value: true,
+      });
+    });
+
+    it('should warn and continue when default session options are invalid', async () => {
+      jest.useFakeTimers();
+      const { service, thread } = createServiceWithAutoEvents();
+      thread.getSessionState.mockReturnValue({
+        notifications: [],
+        entries: [],
+        modes: [{ id: 'code', name: 'Code' }],
+        models: [{ modelId: 'claude-sonnet', name: 'Claude Sonnet' }],
+        configOptions: [
+          {
+            id: 'permission',
+            options: [{ value: 'ask' }],
+          },
+        ],
+      });
+
+      const resultPromise = service.createSession({
+        ...mockAgentProcessConfig,
+        defaultMode: 'plan',
+        defaultModel: 'gpt-5',
+        defaultConfigOptions: {
+          permission: 'acceptEdits',
+          missing: 'value',
+        },
+      });
+      await jest.advanceTimersByTimeAsync(5000);
+      const result = await resultPromise;
+
+      expect(result.sessionId).toBe('new-session-1');
+      expect(thread.setSessionMode).not.toHaveBeenCalled();
+      expect(thread.unstable_setSessionModel).not.toHaveBeenCalled();
+      expect(thread.setSessionConfigOption).not.toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('Invalid defaultMode'));
+      expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('Invalid defaultModel'));
+      expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('Invalid defaultConfigOptions value'));
+      expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('Invalid defaultConfigOptions key'));
+    });
   });
 
   // -----------------------------------------------------------------------
@@ -605,6 +693,43 @@ describe('AcpAgentService (Thread Pool)', () => {
       const result = await service.loadSession('existing-session-id', mockAgentProcessConfig);
 
       expect(result.historyUpdates).toEqual([]);
+    });
+
+    it('should apply default session options after loading a session', async () => {
+      const thread = createMockThread({
+        initialized: true,
+        getStatus: jest.fn().mockReturnValue('idle'),
+        getSessionState: jest.fn().mockReturnValue({
+          notifications: [],
+          entries: [],
+          modes: [{ id: 'code', name: 'Code' }],
+          models: [{ modelId: 'gpt-5-mini', name: 'GPT-5 Mini' }],
+          configOptions: [{ id: 'approval', options: [{ value: 'on-request' }] }],
+        }),
+        onEvent: jest.fn(() => ({ dispose: jest.fn() })),
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+
+      await service.loadSession('existing-session-id', {
+        ...mockAgentProcessConfig,
+        defaultMode: 'code',
+        defaultModel: 'gpt-5-mini',
+        defaultConfigOptions: {
+          approval: 'on-request',
+        },
+      });
+
+      expect(thread.setSessionMode).toHaveBeenCalledWith({ sessionId: 'existing-session-id', modeId: 'code' });
+      expect(thread.unstable_setSessionModel).toHaveBeenCalledWith({
+        sessionId: 'existing-session-id',
+        model: 'gpt-5-mini',
+      });
+      expect(thread.setSessionConfigOption).toHaveBeenCalledWith({
+        sessionId: 'existing-session-id',
+        configId: 'approval',
+        value: 'on-request',
+      });
     });
 
     it('should join an in-flight load instead of returning a half-loaded thread', async () => {

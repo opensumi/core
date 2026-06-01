@@ -8,7 +8,7 @@ import {
   useContextMenus,
   useInjectable,
 } from '@opensumi/ide-core-browser';
-import { EDirection } from '@opensumi/ide-core-browser/lib/components';
+import { EDirection, PanelContext, ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
 import {
   EnhanceIcon,
   EnhanceIconWithCtxMenu,
@@ -16,6 +16,7 @@ import {
   HorizontalVertical,
 } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { localize } from '@opensumi/ide-core-common';
 import { DesignLeftTabRenderer, DesignRightTabRenderer } from '@opensumi/ide-design/lib/browser/layout/tabbar.view';
@@ -38,8 +39,15 @@ import styles from './layout.module.less';
 import { AIPanelLayoutService } from './panel-layout.service';
 
 const ChatTabbarRenderer: React.FC = () => (
-  <div style={{ width: 0 }}>
-    <TabbarViewBase tabSize={0} MoreTabView={IconElipses} TabView={IconTabView} barSize={0} panelBorderSize={0} />
+  <div style={{ width: 0, overflow: 'hidden' }}>
+    <TabbarViewBase
+      tabSize={0}
+      MoreTabView={IconElipses}
+      TabView={IconTabView}
+      barSize={0}
+      panelBorderSize={0}
+      disableAutoAdjust
+    />
   </div>
 );
 
@@ -109,7 +117,45 @@ export const AILeftTabRenderer = ({
 }: {
   className: string;
   components: ComponentRegistryInfo[];
-}) => <DesignLeftTabRenderer className={className} components={components} tabbarView={AILeftTabbarRenderer} />;
+}) => {
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
+  const isAgenticLayout = panelLayoutService.getLayoutMode() === 'agentic';
+  const resizeHandle = React.useContext(PanelContext);
+  const agenticResizeHandle = React.useMemo<ResizeHandle>(
+    () => ({
+      ...resizeHandle,
+      setSize: (targetSize?: number) => resizeHandle.setSize(targetSize, true),
+      setRelativeSize: (prev: number, next: number) => resizeHandle.setRelativeSize(prev, next, true),
+      getSize: () => resizeHandle.getSize(true),
+      getRelativeSize: () => resizeHandle.getRelativeSize(true),
+      lockSize: (lock: boolean | undefined) => resizeHandle.lockSize(lock, true),
+      setMaxSize: (lock: boolean | undefined) => resizeHandle.setMaxSize(lock, true),
+    }),
+    [resizeHandle],
+  );
+
+  if (!isAgenticLayout) {
+    return <DesignLeftTabRenderer className={className} components={components} tabbarView={AILeftTabbarRenderer} />;
+  }
+
+  return (
+    <PanelContext.Provider value={agenticResizeHandle}>
+      <TabRendererBase
+        side={SlotLocation.view}
+        direction={EDirection.RightToLeft}
+        id={VIEW_CONTAINERS.LEFT_TABBAR_PANEL}
+        className={cls(className, 'left-slot', 'design_left_slot', styles.agentic_view_slot)}
+        components={components}
+        TabbarView={() => (
+          <div className={styles.agentic_view_tab_bar}>
+            <AILeftTabbarRenderer />
+          </div>
+        )}
+        TabpanelView={() => <BaseTabPanelView PanelView={ContainerView} />}
+      />
+    </PanelContext.Provider>
+  );
+};
 
 const AILeftTabbarRenderer: React.FC = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);

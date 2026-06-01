@@ -153,6 +153,19 @@ export interface IAcpThreadStatusService {
   $onThreadStatusChange(sessionId: string, status: string): Promise<void>;
 }
 
+export type AcpDebugLogDirection = 'incoming' | 'outgoing' | 'stderr' | 'system';
+
+export interface AcpDebugLogEntry {
+  id: number;
+  timestamp: number;
+  direction: AcpDebugLogDirection;
+  agentId: string;
+  threadId: string;
+  sessionId?: string;
+  raw: string;
+  payload?: unknown;
+}
+
 // WebMCP Group types for OpenSumi IDE capability tools
 export const AcpWebMcpBridgePath = 'AcpWebMcpBridgePath';
 
