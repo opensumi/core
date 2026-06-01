@@ -39,6 +39,8 @@ import {
   AI_INLINE_COMPLETION_REPORTER,
   AI_INLINE_COMPLETION_VISIBLE,
   AI_INLINE_DIFF_PARTIAL_EDIT,
+  AI_PANEL_LAYOUT_SET,
+  AI_PANEL_LAYOUT_TOGGLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import {
   InlineChatIsVisible,
@@ -48,6 +50,7 @@ import {
   InlineInputWidgetIsVisible,
 } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
@@ -61,6 +64,7 @@ import {
   InlineChatFeatureRegistryToken,
   IntelligentCompletionsRegistryToken,
   MCPConfigServiceToken,
+  PanelLayoutMode,
   PreferenceScope,
   ProblemFixRegistryToken,
   RenameCandidatesProviderRegistryToken,
@@ -140,6 +144,7 @@ import { IntelligentCompletionsController } from './contrib/intelligent-completi
 import { ProblemFixController } from './contrib/problem-fix/problem-fix.controller';
 import { RenameSingleHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
+import { AIPanelLayoutService, AI_PANEL_LAYOUT_CONTEXT, AI_PANEL_LAYOUT_MENU } from './layout/panel-layout.service';
 import {
   AIChatTabRenderer,
   AIChatTabRendererWithTab,
@@ -193,6 +198,7 @@ const DynamicChatViewWrapper: React.FC = () => {
   KeybindingContribution,
   ComponentContribution,
   SlotRendererContribution,
+  MenuContribution,
   MonacoContribution,
   MultiDiffSourceContribution,
 )
@@ -205,6 +211,7 @@ export class AINativeBrowserContribution
     KeybindingContribution,
     ComponentContribution,
     SlotRendererContribution,
+    MenuContribution,
     MonacoContribution,
     MultiDiffSourceContribution
 {
@@ -261,6 +268,9 @@ export class AINativeBrowserContribution
 
   @Autowired(DesignLayoutConfig)
   private readonly designLayoutConfig: DesignLayoutConfig;
+
+  @Autowired(AIPanelLayoutService)
+  private readonly panelLayoutService: AIPanelLayoutService;
 
   @Autowired(AICompletionsService)
   private readonly aiCompletionsService: AICompletionsService;
@@ -349,6 +359,8 @@ export class AINativeBrowserContribution
   }
 
   async initialize() {
+    this.panelLayoutService.initialize();
+
     const { supportsChatAssistant, supportsAgentMode } = this.aiNativeConfigService.capabilities;
 
     if (supportsChatAssistant) {
@@ -704,6 +716,10 @@ export class AINativeBrowserContribution
           id: AINativeSettingSectionsId.ChatVisibleType,
           localized: 'preference.ai.native.chat.visible.type',
         },
+        {
+          id: AINativeSettingSectionsId.PanelLayout,
+          localized: 'preference.ai.native.panelLayout',
+        },
       ],
     });
 
@@ -967,6 +983,14 @@ export class AINativeBrowserContribution
       },
     });
 
+    commands.registerCommand(AI_PANEL_LAYOUT_SET, {
+      execute: (mode: PanelLayoutMode) => this.panelLayoutService.setLayoutMode(mode),
+    });
+
+    commands.registerCommand(AI_PANEL_LAYOUT_TOGGLE, {
+      execute: () => this.panelLayoutService.toggleLayoutMode(),
+    });
+
     commands.registerCommand(AI_INLINE_COMPLETION_VISIBLE, {
       execute: async (visible: boolean) => {
         if (!visible) {
@@ -988,6 +1012,32 @@ export class AINativeBrowserContribution
      */
     commands.afterExecuteCommand(HideInlineCompletion.ID, () => {
       this.commandService.executeCommand(AI_INLINE_COMPLETION_VISIBLE.id, false);
+    });
+  }
+
+  registerMenus(menus: IMenuRegistry): void {
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      submenu: AI_PANEL_LAYOUT_MENU,
+      label: 'Panel Layout',
+      group: '5_panel',
+    });
+    menus.registerMenuItem(AI_PANEL_LAYOUT_MENU, {
+      command: {
+        id: AI_PANEL_LAYOUT_SET.id,
+        label: 'Classic',
+      },
+      group: 'navigation',
+      extraTailArgs: ['classic'],
+      toggledWhen: `${AI_PANEL_LAYOUT_CONTEXT} == classic`,
+    });
+    menus.registerMenuItem(AI_PANEL_LAYOUT_MENU, {
+      command: {
+        id: AI_PANEL_LAYOUT_SET.id,
+        label: 'Agentic',
+      },
+      group: 'navigation',
+      extraTailArgs: ['agentic'],
+      toggledWhen: `${AI_PANEL_LAYOUT_CONTEXT} == agentic`,
     });
   }
 

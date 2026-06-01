@@ -96,6 +96,7 @@ import { RenameCandidatesProviderRegistry } from './contrib/rename/rename.featur
 import { TerminalAIContribution } from './contrib/terminal/terminal-ai.contributon';
 import { TerminalFeatureRegistry } from './contrib/terminal/terminal.feature.registry';
 import { LanguageParserService } from './languages/service';
+import { AIPanelLayoutService } from './layout/panel-layout.service';
 import { BaseApplyService } from './mcp/base-apply.service';
 import { MCPConfigCommandContribution } from './mcp/config/mcp-config.commands';
 import { MCPConfigContribution } from './mcp/config/mcp-config.contribution';
@@ -147,6 +148,7 @@ export class AINativeModule extends BrowserModule {
     AcpPermissionBridgeService,
     AcpChatRelayStore,
     AcpChatRelaySummaryProvider,
+    AIPanelLayoutService,
     {
       token: ISessionProviderRegistry,
       useClass: SessionProviderRegistry,

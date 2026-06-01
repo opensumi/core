@@ -20,6 +20,11 @@ export enum EWebMcpProfile {
   full = 'full',
 }
 
+export enum EAIPanelLayout {
+  classic = 'classic',
+  agentic = 'agentic',
+}
+
 export const WEBMCP_PROFILE_SETTING_ID = 'ai.native.webmcp.profile';
 
 export const aiNativePreferenceSchema: PreferenceSchema = {
@@ -49,6 +54,12 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'string',
       enum: ['never', 'always', 'default'],
       default: 'default',
+    },
+    [AINativeSettingSectionsId.PanelLayout]: {
+      type: 'string',
+      enum: [EAIPanelLayout.classic, EAIPanelLayout.agentic],
+      default: EAIPanelLayout.classic,
+      description: 'Controls the AI Native panel layout.',
     },
     [AINativeSettingSectionsId.IntelligentCompletionsPromptEngineeringEnabled]: {
       type: 'boolean',

@@ -8,6 +8,7 @@ export enum AINativeSettingSectionsId {
   InlineChatCodeActionEnabled = 'ai.native.inlineChat.codeAction.enabled',
   InterfaceQuickNavigationEnabled = 'ai.native.interface.quickNavigation.enabled',
   ChatVisibleType = 'ai.native.chat.visible.type',
+  PanelLayout = 'ai.native.panelLayout',
 
   /**
    * Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.

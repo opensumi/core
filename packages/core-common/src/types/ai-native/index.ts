@@ -13,6 +13,8 @@ import type { CoreMessage } from 'ai';
 export * from './reporter';
 export type { AvailableCommand };
 
+export type PanelLayoutMode = 'classic' | 'agentic';
+
 export interface IAINativeCapabilities {
   /**
    * Problem panel uses ai capabilities
@@ -86,6 +88,10 @@ export interface IDesignLayoutConfig {
    * 是否支持插件注册 Chat 面板
    */
   supportExternalChatPanel?: boolean;
+  /**
+   * Panel layout mode for AI Native.
+   */
+  panelLayout?: PanelLayoutMode;
 }
 
 export interface IAINativeInlineChatConfig {

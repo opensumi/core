@@ -35,6 +35,7 @@ import { TabbarService, TabbarServiceFactory } from '@opensumi/ide-main-layout/l
 import { AI_CHAT_VIEW_ID } from '../../common';
 
 import styles from './layout.module.less';
+import { AIPanelLayoutService } from './panel-layout.service';
 
 const ChatTabbarRenderer: React.FC = () => (
   <div style={{ width: 0 }}>
@@ -48,24 +49,29 @@ export const AIChatTabRenderer = ({
 }: {
   className: string;
   components: ComponentRegistryInfo[];
-}) => (
-  <TabRendererBase
-    side={AI_CHAT_VIEW_ID}
-    direction={EDirection.LeftToRight}
-    id={styles.ai_chat_panel}
-    className={cls(className, `${AI_CHAT_VIEW_ID}-slot`)}
-    components={components}
-    TabbarView={() => <ChatTabbarRenderer />}
-    TabpanelView={() => (
-      <BaseTabPanelView
-        PanelView={ContainerView}
-        PanelViewProps={{
-          className: styles.ai_chat_view_container,
-        }}
-      />
-    )}
-  />
-);
+}) => {
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
+  const isAgenticLayout = panelLayoutService.getLayoutMode() === 'agentic';
+
+  return (
+    <TabRendererBase
+      side={AI_CHAT_VIEW_ID}
+      direction={isAgenticLayout ? EDirection.LeftToRight : EDirection.RightToLeft}
+      id={styles.ai_chat_panel}
+      className={cls(className, `${AI_CHAT_VIEW_ID}-slot`, !isAgenticLayout && 'design_right_slot')}
+      components={components}
+      TabbarView={() => <ChatTabbarRenderer />}
+      TabpanelView={() => (
+        <BaseTabPanelView
+          PanelView={ContainerView}
+          PanelViewProps={{
+            className: styles.ai_chat_view_container,
+          }}
+        />
+      )}
+    />
+  );
+};
 
 export const AIChatTabRendererWithTab = ({
   className,
@@ -73,24 +79,29 @@ export const AIChatTabRendererWithTab = ({
 }: {
   className: string;
   components: ComponentRegistryInfo[];
-}) => (
-  <TabRendererBase
-    side={AI_CHAT_VIEW_ID}
-    direction={EDirection.RightToLeft}
-    id={styles.ai_chat_panel}
-    className={cls(className, `${AI_CHAT_VIEW_ID}-slot`, 'design_right_slot')}
-    components={components}
-    TabbarView={() => <ChatTabbarRenderer2 />}
-    TabpanelView={() => (
-      <BaseTabPanelView
-        PanelView={ContainerView}
-        PanelViewProps={{
-          className: styles.ai_chat_view_container,
-        }}
-      />
-    )}
-  />
-);
+}) => {
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
+  const isAgenticLayout = panelLayoutService.getLayoutMode() === 'agentic';
+
+  return (
+    <TabRendererBase
+      side={AI_CHAT_VIEW_ID}
+      direction={isAgenticLayout ? EDirection.LeftToRight : EDirection.RightToLeft}
+      id={styles.ai_chat_panel}
+      className={cls(className, `${AI_CHAT_VIEW_ID}-slot`, !isAgenticLayout && 'design_right_slot')}
+      components={components}
+      TabbarView={() => <ChatTabbarRenderer2 />}
+      TabpanelView={() => (
+        <BaseTabPanelView
+          PanelView={ContainerView}
+          PanelViewProps={{
+            className: styles.ai_chat_view_container,
+          }}
+        />
+      )}
+    />
+  );
+};
 
 export const AILeftTabRenderer = ({
   className,

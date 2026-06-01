@@ -158,6 +158,7 @@ export class DesignLayoutConfig implements IDesignLayoutConfig {
     useMenubarView: false,
     menubarLogo: '',
     supportExternalChatPanel: false,
+    panelLayout: 'classic',
   };
 
   setLayout(...value: (Partial<IDesignLayoutConfig> | undefined)[]): void {
@@ -174,5 +175,9 @@ export class DesignLayoutConfig implements IDesignLayoutConfig {
 
   get supportExternalChatPanel(): boolean {
     return this.internalLayout.supportExternalChatPanel;
+  }
+
+  get panelLayout(): Required<IDesignLayoutConfig>['panelLayout'] {
+    return this.internalLayout.panelLayout;
   }
 }
