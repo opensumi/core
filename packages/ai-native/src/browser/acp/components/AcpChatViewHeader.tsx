@@ -32,13 +32,7 @@ const MAX_TITLE_LENGTH = 100;
  * - 使用 session.title（服务端返回的标题）构建 historyList，而非从消息内容推导
  * - 不显示删除按钮（ACP 模式下由服务端管理会话生命周期）
  */
-export function AcpChatViewHeader({
-  handleClear,
-  handleCloseChatView,
-}: {
-  handleClear: () => any;
-  handleCloseChatView: () => any;
-}) {
+export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => any; handleCloseChatView: () => any }) {
   const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
@@ -270,20 +264,6 @@ export function AcpChatViewHeader({
           />
         </Popover>
       )}
-      <Popover
-        overlayClassName={styles.popover_icon}
-        id={'ai-chat-header-clear'}
-        title={localize('aiNative.operate.clear.title')}
-      >
-        <EnhanceIcon
-          wrapperClassName={styles.action_btn}
-          className={getIcon('clear')}
-          onClick={handleClear}
-          tabIndex={0}
-          role='button'
-          ariaLabel={localize('aiNative.operate.clear.title')}
-        />
-      </Popover>
       <Popover
         overlayClassName={styles.popover_icon}
         id={'ai-chat-header-close'}
