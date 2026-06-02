@@ -238,4 +238,42 @@ describe('SplitPanel initialResizeOnMount', () => {
     expect(chatWrapper.classList.contains('kt_display_none')).toBe(false);
     expect(workbenchWrapper.classList.contains('kt_display_none')).toBe(false);
   });
+
+  it('restores the first child when resize is requested from the latter side', () => {
+    const resizeHandles: Record<string, ResizeHandle> = {};
+    const CapturePanel = ({ name }: { id: string; name: string; flexGrow?: number }) => {
+      resizeHandles[name] = React.useContext(PanelContext);
+      return <div data-panel={name} />;
+    };
+
+    render(
+      <SplitPanel id='root' direction='left-to-right'>
+        <CapturePanel id='chat' name='chat' />
+        <CapturePanel id='workbench' name='workbench' flexGrow={1} />
+      </SplitPanel>,
+    );
+
+    const rootNode = container.querySelector('#root')!;
+    const chatWrapper = rootNode.children[0] as HTMLElement;
+    const workbenchWrapper = rootNode.children[2] as HTMLElement;
+    setReadonlySize(rootNode, 'offsetWidth', 1000);
+    setReadonlySize(chatWrapper, 'clientWidth', 0);
+    setReadonlySize(workbenchWrapper, 'clientWidth', 0);
+
+    act(() => {
+      resizeHandles.chat.setSize(0);
+    });
+    flushAnimationFrame();
+
+    expect(chatWrapper.classList.contains('kt_display_none')).toBe(true);
+
+    act(() => {
+      resizeHandles.chat.setSize(320, true);
+    });
+    flushAnimationFrame();
+
+    expect(chatWrapper.style.width).toBe('320px');
+    expect(chatWrapper.classList.contains('kt_display_none')).toBe(false);
+    expect(workbenchWrapper.classList.contains('kt_display_none')).toBe(false);
+  });
 });

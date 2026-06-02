@@ -55,18 +55,18 @@ export const TabRendererBase: FC<{
   const [fullSize, setFullSize] = useState(0);
 
   useLayoutEffect(() => {
-    const disposable = tabbarService.registerResizeHandle(resizeHandle);
-    tabbarService.updatePanelVisibility();
-    return () => disposable.dispose();
-  }, [resizeHandle, tabbarService]);
-
-  useLayoutEffect(() => {
     components.forEach((component) => {
       tabbarService.registerContainer(component.options!.containerId, component);
     });
     tabbarService.updatePanelVisibility();
     tabbarService.ensureViewReady();
   }, [components, tabbarService]);
+
+  useLayoutEffect(() => {
+    const disposable = tabbarService.registerResizeHandle(resizeHandle);
+    tabbarService.updatePanelVisibility();
+    return () => disposable.dispose();
+  }, [resizeHandle, tabbarService]);
 
   const refreshFullSize = useCallback(() => {
     if (rootRef.current) {

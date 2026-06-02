@@ -136,54 +136,68 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
   splitPanelService.panels = [];
 
   // 获取 setSize 的handle，对于最右端或最底部的视图，取上一个位置的 handle
+  const getResizeDelegate = React.useCallback((index: number, isLatter?: boolean) => {
+    const targetIndex = isLatter ? index - 1 : index;
+    const delegate = resizeDelegates.current[targetIndex];
+    if (delegate) {
+      return { delegate, isLatter };
+    }
+
+    if (isLatter && targetIndex < 0) {
+      return { delegate: resizeDelegates.current[index], isLatter: false };
+    }
+
+    if (!isLatter && targetIndex >= resizeDelegates.current.length) {
+      return { delegate: resizeDelegates.current[index - 1], isLatter: true };
+    }
+
+    return { delegate, isLatter };
+  }, []);
+
   const setSizeHandle = React.useCallback(
     (index) => (size?: number, isLatter?: boolean) => {
-      const targetIndex = isLatter ? index - 1 : index;
-      const delegate = resizeDelegates.current[targetIndex];
+      const { delegate, isLatter: actualIsLatter } = getResizeDelegate(index, isLatter);
       if (delegate) {
         delegate.setAbsoluteSize(
           size !== undefined ? size : getProp(childList[index], 'defaultSize'),
-          isLatter,
+          actualIsLatter,
           resizeKeep,
         );
       }
     },
-    [childList, resizeKeep],
+    [childList, getResizeDelegate, resizeKeep],
   );
 
   const setRelativeSizeHandle = React.useCallback(
     (index) => (prev: number, next: number, isLatter?: boolean) => {
-      const targetIndex = isLatter ? index - 1 : index;
-      const delegate = resizeDelegates.current[targetIndex];
+      const { delegate } = getResizeDelegate(index, isLatter);
       if (delegate) {
         delegate.setRelativeSize(prev, next);
       }
     },
-    [],
+    [getResizeDelegate],
   );
 
   const getSizeHandle = React.useCallback(
     (index) => (isLatter?: boolean) => {
-      const targetIndex = isLatter ? index - 1 : index;
-      const delegate = resizeDelegates.current[targetIndex];
+      const { delegate, isLatter: actualIsLatter } = getResizeDelegate(index, isLatter);
       if (delegate) {
-        return delegate.getAbsoluteSize(isLatter);
+        return delegate.getAbsoluteSize(actualIsLatter);
       }
       return 0;
     },
-    [],
+    [getResizeDelegate],
   );
 
   const getRelativeSizeHandle = React.useCallback(
     (index) => (isLatter?: boolean) => {
-      const targetIndex = isLatter ? index - 1 : index;
-      const delegate = resizeDelegates.current[targetIndex];
+      const { delegate } = getResizeDelegate(index, isLatter);
       if (delegate) {
         return delegate.getRelativeSize();
       }
       return [0, 0];
     },
-    [],
+    [getResizeDelegate],
   );
 
   const lockResizeHandle = React.useCallback(

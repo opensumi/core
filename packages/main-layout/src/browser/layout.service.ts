@@ -16,6 +16,7 @@ import {
   View,
   ViewContainerOptions,
   WithEventBus,
+  fastdom,
   slotRendererRegistry,
 } from '@opensumi/ide-core-browser';
 import { fixLayout } from '@opensumi/ide-core-browser/lib/components';
@@ -471,7 +472,13 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
     if (tabbarService.currentContainerId.get()) {
       if (size !== undefined || !wasVisible) {
-        tabbarService.resizeHandle?.setSize(size);
+        const restoreSize = () => {
+          if (tabbarService.currentContainerId.get()) {
+            tabbarService.resizeHandle?.setSize(size);
+          }
+        };
+        restoreSize();
+        fastdom.measureAtNextFrame(restoreSize);
       }
     }
   }
