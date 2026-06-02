@@ -2,11 +2,14 @@ import { AINativeSettingSectionsId, PreferenceScope } from '@opensumi/ide-core-c
 
 import {
   AIPanelLayoutService,
+  AI_AGENTIC_CHAT_DEFAULT_SIZE,
   AI_AGENTIC_LAYOUT_STORAGE_KEY,
+  AI_CLASSIC_CHAT_DEFAULT_SIZE,
   AI_PANEL_LAYOUT_CONTEXT,
   getPanelLayoutStorageKey,
   normalizePanelLayoutMode,
 } from '../../src/browser/layout/panel-layout.service';
+import { AI_CHAT_VIEW_ID } from '../../src/common';
 
 describe('AIPanelLayoutService', () => {
   const createService = ({
@@ -38,6 +41,7 @@ describe('AIPanelLayoutService', () => {
     };
     const layoutService = {
       setLayoutStateKey: jest.fn(),
+      toggleSlot: jest.fn(),
     };
     const service = new AIPanelLayoutService();
 
@@ -102,6 +106,7 @@ describe('AIPanelLayoutService', () => {
     expect(contextKey.set).toHaveBeenCalledWith('agentic');
     expect(layoutService.setLayoutStateKey).toHaveBeenCalledWith('layout', { saveCurrent: false });
     expect(layoutService.setLayoutStateKey).toHaveBeenCalledWith(AI_AGENTIC_LAYOUT_STORAGE_KEY, { saveCurrent: true });
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_AGENTIC_CHAT_DEFAULT_SIZE);
     expect(preferenceService.set).toHaveBeenCalledWith(
       AINativeSettingSectionsId.PanelLayout,
       'agentic',
@@ -119,7 +124,7 @@ describe('AIPanelLayoutService', () => {
   });
 
   it('should toggle both layout modes', async () => {
-    const { preferenceService, service } = createService({ inspectValue: { globalValue: 'agentic' } });
+    const { layoutService, preferenceService, service } = createService({ inspectValue: { globalValue: 'agentic' } });
 
     await service.toggleLayoutMode();
 
@@ -128,5 +133,6 @@ describe('AIPanelLayoutService', () => {
       'classic',
       PreferenceScope.User,
     );
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_CLASSIC_CHAT_DEFAULT_SIZE);
   });
 });

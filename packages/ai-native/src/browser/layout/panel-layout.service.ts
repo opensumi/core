@@ -5,6 +5,8 @@ import { LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state
 import { AINativeSettingSectionsId, Emitter, PanelLayoutMode, PreferenceScope } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
+import { AI_CHAT_VIEW_ID } from '../../common';
+
 export const AI_PANEL_LAYOUT_CONTEXT = 'aiNative.panelLayout';
 export const AI_PANEL_LAYOUT_MENU = 'aiNative/panelLayout';
 export const AI_AGENTIC_LAYOUT_STORAGE_KEY = 'layout.ai.agentic';
@@ -77,6 +79,7 @@ export class AIPanelLayoutService {
     await this.preferenceService.set(AINativeSettingSectionsId.PanelLayout, normalizedMode, PreferenceScope.User);
     const currentMode = this.getLayoutMode();
     this.applyLayoutMode(currentMode);
+    this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, getAIChatDefaultSize(currentMode));
     this.updateContextKey(currentMode);
     this.onDidChangePanelLayoutEmitter.fire(currentMode);
   }
