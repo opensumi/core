@@ -358,8 +358,8 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
               </div>
             ) : (
               <EnhanceIcon
-                className={cls(styles.chat_history_header_actions_new)}
-                icon='plus'
+                className={styles.chat_history_header_actions_new}
+                iconClass='codicon codicon-add'
                 onClick={handleNewChat}
               />
             )}

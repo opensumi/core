@@ -1,4 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { ILogger } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common/editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -22,13 +23,25 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
 
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
+
   async provideContextPrompt(context: SerializedContext, userMessage: string) {
+    const startTime = Date.now();
+    this.logger.log(
+      `[ChatAgentPromptProvider] provideContextPrompt start — userMessageChars=${userMessage.length}, attachedFiles=${context.attachedFiles.length}, attachedFolders=${context.attachedFolders.length}, attachedRules=${context.attachedRules.length}, globalRules=${context.globalRules.length}`,
+    );
     let currentFileInfo = await this.getCurrentFileInfo();
+    this.logger.log(
+      `[ChatAgentPromptProvider] current file resolved — hasCurrentFile=${Boolean(currentFileInfo)}, elapsedMs=${
+        Date.now() - startTime
+      }`,
+    );
     if (context.attachedFiles.some((file) => file.path === currentFileInfo?.path)) {
       currentFileInfo = null;
     }
 
-    return this.buildPromptTemplate({
+    const prompt = await this.buildPromptTemplate({
       attachedFiles: context.attachedFiles,
       attachedFolders: context.attachedFolders,
       currentFile: currentFileInfo,
@@ -36,18 +49,31 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
       globalRules: context.globalRules,
       userMessage,
     });
+    this.logger.log(
+      `[ChatAgentPromptProvider] provideContextPrompt done — promptChars=${prompt.length}, elapsedMs=${
+        Date.now() - startTime
+      }`,
+    );
+    return prompt;
   }
 
   private async getCurrentFileInfo() {
+    const startTime = Date.now();
     const editor = this.workbenchEditorService.currentEditor;
     const currentModel = editor?.currentDocumentModel;
 
     if (!currentModel?.uri) {
+      this.logger.log('[ChatAgentPromptProvider] getCurrentFileInfo skipped — no current model');
       return null;
     }
 
     const currentPath =
       (await this.workspaceService.asRelativePath(currentModel.uri))?.path || currentModel.uri.codeUri.fsPath;
+    this.logger.log(
+      `[ChatAgentPromptProvider] getCurrentFileInfo path resolved — path=${currentPath}, elapsedMs=${
+        Date.now() - startTime
+      }`,
+    );
 
     // 获取当前选中行信息
     const selection = editor?.monacoEditor?.getSelection();

@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AINativeConfigService } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, ILogger } from '@opensumi/ide-core-browser';
 import {
   AvailableCommand,
   ChatMessageRole,
@@ -14,7 +14,6 @@ import { MsgHistoryManager } from '../model/msg-history-manager';
 
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel, ChatResponseModel } from './chat-model';
-import { ChatFeatureRegistry } from './chat.feature.registry';
 import { ISessionModel, ISessionProvider } from './session-provider';
 import { ISessionProviderRegistry } from './session-provider-registry';
 
@@ -33,6 +32,9 @@ const ACP_PROMPT_TITLE_PREFIXES = [
 export class AcpChatManagerService extends ChatManagerService {
   @Autowired(AINativeConfigService)
   protected readonly aiNativeConfig: AINativeConfigService;
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   @Autowired(ISessionProviderRegistry)
   private sessionProviderRegistry: ISessionProviderRegistry;
@@ -348,12 +350,49 @@ export class AcpChatManagerService extends ChatManagerService {
       ((model.history.getMessages().length === 0 && model.requests.length === 0) ||
         this.isLikelyAcpContextTitle(model.title));
 
+    this.logger.log(
+      `[ACP Chat][Manager] createRequest start — sessionId=${sessionId}, agentId=${agentId || '(empty)'}, command=${
+        command || '(empty)'
+      }, messageChars=${message.length}, images=${images?.length ?? 0}, existingRequests=${
+        model?.requests.length ?? 0
+      }, historyMessages=${model?.history.getMessages().length ?? 0}`,
+    );
+
     const request = super.createRequest(sessionId, message, agentId, command, images);
+    this.logger.log(
+      `[ACP Chat][Manager] createRequest ${request ? 'done' : 'skipped'} — sessionId=${sessionId}, requestId=${
+        request?.requestId ?? '(empty)'
+      }`,
+    );
     if (request && shouldSetDisplayTitle) {
       this.setDisplayTitleOverride(sessionId, message);
     }
 
     return request;
+  }
+
+  override async sendRequest(sessionId: string, request: ChatRequestModel, regenerate: boolean): Promise<void> {
+    this.logger.log(
+      `[ACP Chat][Manager] sendRequest start — sessionId=${sessionId}, requestId=${
+        request.requestId
+      }, regenerate=${regenerate}, agentId=${request.message.agentId}, command=${
+        request.message.command || '(empty)'
+      }, messageChars=${request.message.prompt.length}, images=${request.message.images?.length ?? 0}`,
+    );
+    try {
+      await super.sendRequest(sessionId, request, regenerate);
+      this.logger.log(`[ACP Chat][Manager] sendRequest done — sessionId=${sessionId}, requestId=${request.requestId}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `[ACP Chat][Manager] sendRequest error — sessionId=${sessionId}, requestId=${request.requestId}, error=${message}`,
+      );
+      throw error;
+    }
+  }
+
+  protected override shouldValidateModelChange(sessionId: string): boolean {
+    return !sessionId.startsWith('acp:');
   }
 
   override clearSession(sessionId: string): void {

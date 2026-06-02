@@ -9,6 +9,7 @@ import {
   Emitter,
   IChatProgress,
   IDisposable,
+  ILogger,
   IStorage,
   LRUCache,
   STORAGE_NAMESPACE,
@@ -73,6 +74,9 @@ export class ChatManagerService extends Disposable {
 
   @Autowired(IChatAgentService)
   chatAgentService: IChatAgentService;
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;
@@ -171,30 +175,72 @@ export class ChatManagerService extends Disposable {
   }
 
   async sendRequest(sessionId: string, request: ChatRequestModel, regenerate: boolean) {
+    const startTime = Date.now();
+    this.logger.log(
+      `[ChatManagerService] sendRequest enter — sessionId=${sessionId}, requestId=${request.requestId}, agentId=${
+        request.message.agentId
+      }, command=${request.message.command || '(empty)'}, regenerate=${Boolean(regenerate)}`,
+    );
     const model = this.getSession(sessionId);
     if (!model) {
+      this.logger.error(
+        `[ChatManagerService] sendRequest missing model — sessionId=${sessionId}, requestId=${request.requestId}`,
+      );
       throw new Error(`Unknown session: ${sessionId}`);
     }
+    this.logger.log(
+      `[ChatManagerService] sendRequest model resolved — sessionId=${sessionId}, requestId=${
+        request.requestId
+      }, requests=${model.requests.length}, historyMessages=${model.history.getMessages().length}`,
+    );
 
     const savedModelId = model.modelId;
     const modelId = this.preferenceService.get<string>(AINativeSettingSectionsId.ModelID);
+    this.logger.log(
+      `[ChatManagerService] sendRequest model preference — sessionId=${sessionId}, requestId=${
+        request.requestId
+      }, savedModelId=${savedModelId || '(empty)'}, currentModelId=${modelId || '(empty)'}`,
+    );
     if (!savedModelId) {
       // 首次对话时记录 modelId
       model.modelId = modelId;
-    } else if (savedModelId !== modelId) {
+    } else if (savedModelId !== modelId && this.shouldValidateModelChange(sessionId, model)) {
       // 模型切换时，清空对话历史
+      this.logger.error(
+        `[ChatManagerService] sendRequest model changed — sessionId=${sessionId}, requestId=${
+          request.requestId
+        }, savedModelId=${savedModelId || '(empty)'}, currentModelId=${modelId || '(empty)'}`,
+      );
       throw new Error('Model changed unexpectedly');
+    } else if (savedModelId !== modelId) {
+      this.logger.log(
+        `[ChatManagerService] sendRequest model change allowed — sessionId=${sessionId}, requestId=${
+          request.requestId
+        }, savedModelId=${savedModelId || '(empty)'}, currentModelId=${modelId || '(empty)'}`,
+      );
     }
 
     const source = new CancellationTokenSource();
     const token = source.token;
     this.#pendingRequests.set(model.sessionId, source);
+    this.logger.log(
+      `[ChatManagerService] sendRequest pending registered — sessionId=${sessionId}, requestId=${request.requestId}`,
+    );
     const listener = token.onCancellationRequested(() => {
+      this.logger.log(
+        `[ChatManagerService] sendRequest cancellation requested — sessionId=${sessionId}, requestId=${request.requestId}`,
+      );
       request.response.cancel();
     });
 
     const contextWindow = this.preferenceService.get<number>(AINativeSettingSectionsId.ContextWindow);
+    this.logger.log(
+      `[ChatManagerService] sendRequest history start — sessionId=${sessionId}, requestId=${request.requestId}, contextWindow=${contextWindow}`,
+    );
     const history = model.getMessageHistory(contextWindow);
+    this.logger.log(
+      `[ChatManagerService] sendRequest history done — sessionId=${sessionId}, requestId=${request.requestId}, historyMessages=${history.length}`,
+    );
 
     try {
       const progressCallback = (progress: IChatProgress) => {
@@ -203,6 +249,9 @@ export class ChatManagerService extends Disposable {
         }
         model.acceptResponseProgress(request, progress);
       };
+      this.logger.log(
+        `[ChatManagerService] sendRequest progress callback ready — sessionId=${sessionId}, requestId=${request.requestId}`,
+      );
       const requestProps = {
         sessionId,
         requestId: request.requestId,
@@ -211,12 +260,24 @@ export class ChatManagerService extends Disposable {
         images: request.message.images,
         regenerate,
       };
+      this.logger.log(
+        `[ChatManagerService] sendRequest invokeAgent before — sessionId=${sessionId}, requestId=${
+          request.requestId
+        }, agentId=${request.message.agentId}, messageChars=${requestProps.message.length}, historyMessages=${
+          history.length
+        }, chatAgentService=${this.chatAgentService?.constructor?.name || '(unknown)'}`,
+      );
       const result = await this.chatAgentService.invokeAgent(
         request.message.agentId,
         requestProps,
         progressCallback,
         history,
         token,
+      );
+      this.logger.log(
+        `[ChatManagerService] sendRequest invokeAgent after — sessionId=${sessionId}, requestId=${
+          request.requestId
+        }, elapsedMs=${Date.now() - startTime}, hasErrorDetails=${Boolean(result.errorDetails)}`,
       );
 
       if (!token.isCancellationRequested) {
@@ -234,10 +295,21 @@ export class ChatManagerService extends Disposable {
         });
       }
     } finally {
+      this.logger.log(
+        `[ChatManagerService] sendRequest cleanup — sessionId=${sessionId}, requestId=${request.requestId}, elapsedMs=${
+          Date.now() - startTime
+        }, canceled=${token.isCancellationRequested}`,
+      );
       listener.dispose();
       this.#pendingRequests.disposeKey(model.sessionId);
       this.saveSessions();
     }
+  }
+
+  protected shouldValidateModelChange(_sessionId: string, _model: ChatModel): boolean {
+    void _sessionId;
+    void _model;
+    return true;
   }
 
   protected listenSession(session: ChatModel) {

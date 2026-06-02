@@ -134,6 +134,11 @@ export class AcpChatAgent implements IChatAgent {
   ): Promise<IChatAgentResult> {
     const chatDeferred = new Deferred<void>();
     const { message, command } = request;
+    this.logger.log(
+      `[ACP Chat] invoke start — rawSessionId=${request.sessionId}, requestId=${request.requestId}, command=${
+        command || '(empty)'
+      }, messageChars=${message.length}, images=${request.images?.length ?? 0}, historyMessages=${history.length}`,
+    );
     let prompt: string = message;
     if (command) {
       const commandHandler = this.chatFeatureRegistry.getSlashCommandHandler(command);
@@ -141,6 +146,9 @@ export class AcpChatAgent implements IChatAgent {
         const editor = this.monacoCommandRegistry.getActiveCodeEditor();
         const slashCommandPrompt = await commandHandler.providerPrompt(message, editor);
         prompt = slashCommandPrompt;
+        this.logger.log(
+          `[ACP Chat] invoke slash prompt resolved — requestId=${request.requestId}, command=${command}, promptChars=${prompt.length}`,
+        );
       }
     }
 
@@ -148,6 +156,9 @@ export class AcpChatAgent implements IChatAgent {
     if (command) {
       const commandHandler = this.chatFeatureRegistry.getSlashCommandHandler(command);
       if (commandHandler?.invoke) {
+        this.logger.log(
+          `[ACP Chat] invoke custom slash handler — requestId=${request.requestId}, command=${command}, promptChars=${prompt.length}`,
+        );
         await commandHandler.invoke(prompt, progress, token);
         chatDeferred.resolve();
         return {};
@@ -163,6 +174,11 @@ export class AcpChatAgent implements IChatAgent {
     }
     // agent 模式只需要发送最后一条数据
     const lastmessage = history[history.length - 1];
+    this.logger.log(
+      `[ACP Chat] invoke normalized — sessionId=${sessionId}, requestId=${request.requestId}, promptChars=${
+        prompt.length
+      }, lastMessageRole=${lastmessage?.role ?? '(empty)'}`,
+    );
 
     try {
       const config = await this.configProvider.resolveConfig();
@@ -183,19 +199,43 @@ export class AcpChatAgent implements IChatAgent {
       );
 
       const stream = await this.aiBackService.requestStream(prompt, requestOptions, token);
+      this.logger.log(
+        `[ACP Chat] requestStream opened — sessionId=${sessionId}, requestId=${request.requestId}, historyMessages=${requestOptions.history.length}`,
+      );
+      let streamDataCount = 0;
+      let hasLoggedFirstContent = false;
 
       listenReadable<IChatProgress>(stream, {
         onData: (data) => {
+          streamDataCount += 1;
+          const kind = data.kind;
           if (data.kind === 'threadStatus') {
+            this.logger.log(
+              `[ACP Chat] stream data — sessionId=${sessionId}, requestId=${request.requestId}, kind=threadStatus, status=${data.threadStatus}`,
+            );
             this.handleThreadStatusUpdate(data.threadStatus, data.sessionId);
           } else {
+            const shouldLogData =
+              !hasLoggedFirstContent || (kind !== 'content' && kind !== 'markdownContent' && kind !== 'reasoning');
+            if (shouldLogData) {
+              this.logger.log(
+                `[ACP Chat] stream data — sessionId=${sessionId}, requestId=${request.requestId}, kind=${kind}, count=${streamDataCount}`,
+              );
+              hasLoggedFirstContent = true;
+            }
             progress(data);
           }
         },
         onEnd: () => {
+          this.logger.log(
+            `[ACP Chat] stream end — sessionId=${sessionId}, requestId=${request.requestId}, dataCount=${streamDataCount}`,
+          );
           chatDeferred.resolve();
         },
         onError: (error) => {
+          this.logger.error(
+            `[ACP Chat] stream error — sessionId=${sessionId}, requestId=${request.requestId}, error=${error.message}`,
+          );
           this.messageService.error(error.message);
           this.aiReporter.end(sessionId + '_' + request.requestId, {
             message: error.message,
@@ -208,7 +248,11 @@ export class AcpChatAgent implements IChatAgent {
 
       await chatDeferred.promise;
     } catch (e) {
-      this.messageService.error(e.message);
+      const message = e instanceof Error ? e.message : String(e);
+      this.logger.error(
+        `[ACP Chat] invoke error — sessionId=${sessionId}, requestId=${request.requestId}, error=${message}`,
+      );
+      this.messageService.error(message);
       chatDeferred.reject(e);
     }
     return {};

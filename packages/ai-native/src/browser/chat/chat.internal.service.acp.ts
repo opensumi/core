@@ -1,12 +1,12 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AINativeConfigService } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, ILogger } from '@opensumi/ide-core-browser';
 import { AvailableCommand, Emitter, Event } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 
 import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
 
 import { AcpChatManagerService } from './chat-manager.service.acp';
-import { ChatModel } from './chat-model';
+import { ChatModel, ChatRequestModel } from './chat-model';
 import { ChatInternalService } from './chat.internal.service';
 
 const ACP_LOAD_SESSION_FALLBACK_MESSAGE = 'Unable to open this chat history. A new session has been created.';
@@ -80,6 +80,9 @@ export class AcpChatInternalService extends ChatInternalService {
   @Autowired(AcpPermissionBridgeService)
   private permissionBridgeService: AcpPermissionBridgeService;
 
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
+
   private readonly _onModeChange = new Emitter<string>();
   public readonly onModeChange: Event<string> = this._onModeChange.event;
 
@@ -109,6 +112,57 @@ export class AcpChatInternalService extends ChatInternalService {
 
   public get onStorageInit() {
     return this.chatManagerService.onStorageInit;
+  }
+
+  override createRequest(
+    input: string,
+    agentId: string,
+    images?: string[],
+    command?: string,
+  ): ChatRequestModel | undefined {
+    const sessionId = this._sessionModel?.sessionId;
+    this.logger.log(
+      `[ACP Chat][Frontend] createRequest start — sessionId=${sessionId ?? '(empty)'}, agentId=${
+        agentId || '(empty)'
+      }, command=${command || '(empty)'}, messageChars=${input.length}, images=${images?.length ?? 0}`,
+    );
+
+    const request = super.createRequest(input, agentId, images, command);
+    this.logger.log(
+      `[ACP Chat][Frontend] createRequest ${request ? 'done' : 'skipped'} — sessionId=${
+        sessionId ?? '(empty)'
+      }, requestId=${request?.requestId ?? '(empty)'}`,
+    );
+    return request;
+  }
+
+  override sendRequest(request: ChatRequestModel, regenerate = false) {
+    const sessionId = this._sessionModel?.sessionId;
+    this.logger.log(
+      `[ACP Chat][Frontend] sendRequest start — sessionId=${sessionId ?? '(empty)'}, requestId=${
+        request.requestId
+      }, regenerate=${regenerate}, agentId=${request.message.agentId}, command=${
+        request.message.command || '(empty)'
+      }, messageChars=${request.message.prompt.length}, images=${request.message.images?.length ?? 0}`,
+    );
+
+    const result = super.sendRequest(request, regenerate);
+    Promise.resolve(result).then(
+      () => {
+        this.logger.log(
+          `[ACP Chat][Frontend] sendRequest done — sessionId=${sessionId ?? '(empty)'}, requestId=${request.requestId}`,
+        );
+      },
+      (error) => {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `[ACP Chat][Frontend] sendRequest error — sessionId=${sessionId ?? '(empty)'}, requestId=${
+            request.requestId
+          }, error=${message}`,
+        );
+      },
+    );
+    return result;
   }
 
   override init() {

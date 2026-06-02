@@ -1081,11 +1081,19 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         sessionId: request.sessionId,
         prompt: promptBlocks,
       } as any);
+      this.logger.log(
+        `[AcpAgentService] sendPrompt() — prompt returned, sessionId=${request.sessionId}, thread=${thread.threadId}`,
+      );
 
       thread.markAssistantComplete();
       stream.emitData({ type: 'done', content: '' });
       stream.end();
     } catch (error) {
+      this.logger.error(
+        `[AcpAgentService] sendPrompt() — failed, sessionId=${request.sessionId}, thread=${
+          thread.threadId
+        }, error=${getAcpErrorMessage(error)}`,
+      );
       stream.emitError(normalizeAcpError(error));
     }
   }

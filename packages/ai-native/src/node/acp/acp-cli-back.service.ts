@@ -340,7 +340,11 @@ ${input}`;
     this.logger.log(
       `[ACP Back] requestStream: hasAgentSessionConfig=${!!options.agentSessionConfig}, apiKey=${
         options.apiKey ? options.apiKey.slice(0, 8) + '***' : '(empty)'
-      }, baseURL=${options.baseURL}, sessionId=${options.sessionId}`,
+      }, baseURL=${options.baseURL}, sessionId=${options.sessionId}, requestId=${
+        options.requestId ?? '(empty)'
+      }, inputChars=${input.length}, images=${options.images?.length ?? 0}, historyMessages=${
+        options.history?.length ?? 0
+      }`,
     );
     // Fallback to OpenAI-compatible API when ACP agent is not configured
     if (!options.agentSessionConfig) {
@@ -375,7 +379,11 @@ ${input}`;
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): SumiReadableStream<IChatProgress> {
-    this.logger.log('[ACP Back] agentRequestStream: setting up agent stream');
+    this.logger.log(
+      `[ACP Back] agentRequestStream: setting up agent stream, sessionId=${options.sessionId ?? '(empty)'}, requestId=${
+        options.requestId ?? '(empty)'
+      }, inputChars=${input.length}`,
+    );
     this.ensureThreadStatusSubscription();
     const stream = new SumiReadableStream<IChatProgress>();
     this.setupAgentStream(options.agentSessionConfig!, input, options, stream, cancelToken);
@@ -390,12 +398,22 @@ ${input}`;
     cancelToken?: CancellationToken,
   ): Promise<void> {
     try {
-      this.logger.log(`[ACP Back] setupAgentStream: config=${JSON.stringify(config)}, sessionId=${options.sessionId}`);
+      this.logger.log(
+        `[ACP Back] setupAgentStream: config=${JSON.stringify(config)}, sessionId=${options.sessionId}, requestId=${
+          options.requestId ?? '(empty)'
+        }`,
+      );
 
       let sessionId = options.sessionId;
       if (!sessionId) {
+        this.logger.log(
+          `[ACP Back] setupAgentStream: no sessionId, creating session for requestId=${options.requestId ?? '(empty)'}`,
+        );
         const result = await this.agentService.createSession(config);
         sessionId = result.sessionId;
+        this.logger.log(
+          `[ACP Back] setupAgentStream: created sessionId=${sessionId}, requestId=${options.requestId ?? '(empty)'}`,
+        );
       }
 
       const request: AgentRequest = {
@@ -405,18 +423,39 @@ ${input}`;
         history: convertMessageHistory(options.history),
       };
 
-      this.logger.log(`[ACP Back] setupAgentStream: sending message, prompt=${input.slice(0, 100)}...`);
+      this.logger.log(
+        `[ACP Back] setupAgentStream: sending message, sessionId=${sessionId}, requestId=${
+          options.requestId ?? '(empty)'
+        }, promptChars=${input.length}`,
+      );
 
       const agentStream = this.agentService.sendMessage(request, config);
       const toolCallCache = new Map<string, IChatToolCall>();
+      let agentUpdateCount = 0;
+      let hasLoggedFirstContent = false;
 
       cancelToken?.onCancellationRequested(async () => {
+        this.logger.warn(
+          `[ACP Back] setupAgentStream: cancellation requested, sessionId=${sessionId}, requestId=${
+            options.requestId ?? '(empty)'
+          }`,
+        );
         await this.agentService.cancelRequest(sessionId);
         stream.end();
       });
 
       agentStream.onData((update: AgentUpdate) => {
-        // this.logger.log(`[ACP Back] agentStream onData: type=${update.type}`);
+        agentUpdateCount += 1;
+        const shouldLogUpdate =
+          !hasLoggedFirstContent || (update.type !== 'message' && update.type !== 'thought' && update.type !== 'done');
+        if (shouldLogUpdate) {
+          this.logger.log(
+            `[ACP Back] agentStream onData: sessionId=${request.sessionId}, requestId=${
+              options.requestId ?? '(empty)'
+            }, type=${update.type}, count=${agentUpdateCount}, threadStatus=${update.threadStatus ?? '(empty)'}`,
+          );
+          hasLoggedFirstContent = true;
+        }
         const progress = this.convertAgentUpdateToChatProgress(update, toolCallCache);
         if (progress) {
           stream.emitData(progress);
@@ -432,16 +471,31 @@ ${input}`;
           } as IChatThreadStatus);
         }
         if (update.type === 'done') {
+          this.logger.log(
+            `[ACP Back] agentStream done: sessionId=${request.sessionId}, requestId=${
+              options.requestId ?? '(empty)'
+            }, updates=${agentUpdateCount}`,
+          );
           stream.end();
         }
       });
 
       agentStream.onError((error) => {
-        this.logger.error('[ACP Back] agentStream onError:', error);
+        this.logger.error(
+          `[ACP Back] agentStream onError: sessionId=${request.sessionId}, requestId=${
+            options.requestId ?? '(empty)'
+          }, updates=${agentUpdateCount}`,
+          error,
+        );
         stream.emitError(normalizeAcpError(error));
       });
     } catch (error) {
-      this.logger.error('[ACP Back] setupAgentStream catch:', error);
+      this.logger.error(
+        `[ACP Back] setupAgentStream catch: sessionId=${options.sessionId ?? '(empty)'}, requestId=${
+          options.requestId ?? '(empty)'
+        }`,
+        error,
+      );
       stream.emitError(normalizeAcpError(error));
     }
   }

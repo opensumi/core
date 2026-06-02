@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
-import { AINativeSettingSectionsId, IApplicationService, RulesServiceToken } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId, IApplicationService, ILogger, RulesServiceToken } from '@opensumi/ide-core-common';
 import { WithEventBus } from '@opensumi/ide-core-common/lib/event-bus/event-decorator';
 import { MarkerSeverity } from '@opensumi/ide-core-common/lib/types/markers/markers';
 import { Emitter, OperatingSystem, URI, parseGlob } from '@opensumi/ide-core-common/lib/utils';
@@ -38,6 +38,9 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
   @Autowired(RulesServiceToken)
   protected readonly rulesService: RulesService;
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   @Autowired(PreferenceService)
   protected readonly preferenceService: PreferenceService;
@@ -267,15 +270,52 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   }
 
   async serialize(): Promise<SerializedContext> {
+    const startTime = Date.now();
     const files = this.getAllContextFiles();
     const workspaceRoot = URI.file(this.appConfig.workspaceDir);
+    this.logger.log(
+      `[LLMContextService] serialize start — viewed=${files.viewed.length}, attached=${files.attached.length}, attachedFolders=${files.attachedFolders.length}, attachedRules=${files.attachedRules.length}`,
+    );
+
+    const recentlyViewFiles = this.serializeRecentlyViewFiles(files.viewed, workspaceRoot);
+    this.logger.log(
+      `[LLMContextService] serialize recentlyViewFiles done — count=${recentlyViewFiles.length}, elapsedMs=${
+        Date.now() - startTime
+      }`,
+    );
+
+    const attachedFiles = this.serializeAttachedFiles(files.attached, workspaceRoot);
+    this.logger.log(
+      `[LLMContextService] serialize attachedFiles done — count=${attachedFiles.length}, elapsedMs=${
+        Date.now() - startTime
+      }`,
+    );
+
+    const attachedFolders = await this.serializeAttachedFolders(files.attachedFolders);
+    this.logger.log(
+      `[LLMContextService] serialize attachedFolders done — count=${attachedFolders.length}, elapsedMs=${
+        Date.now() - startTime
+      }`,
+    );
+
+    const attachedRules = this.serializeAttachedRules(files.attachedRules);
+    this.logger.log(
+      `[LLMContextService] serialize attachedRules done — count=${attachedRules.length}, elapsedMs=${
+        Date.now() - startTime
+      }`,
+    );
+
+    const globalRules = this.serializeGlobalRules();
+    this.logger.log(
+      `[LLMContextService] serialize done — globalRules=${globalRules.length}, elapsedMs=${Date.now() - startTime}`,
+    );
 
     return {
-      recentlyViewFiles: this.serializeRecentlyViewFiles(files.viewed, workspaceRoot),
-      attachedFiles: this.serializeAttachedFiles(files.attached, workspaceRoot),
-      attachedFolders: await this.serializeAttachedFolders(files.attachedFolders),
-      attachedRules: this.serializeAttachedRules(files.attachedRules),
-      globalRules: this.serializeGlobalRules(),
+      recentlyViewFiles,
+      attachedFiles,
+      attachedFolders,
+      attachedRules,
+      globalRules,
     };
   }
 
@@ -287,7 +327,11 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       folderPath.map(async (folder) => {
         const folderUri = new URI(folder);
         const absolutePath = folderUri.codeUri.fsPath;
+        this.logger.log(`[LLMContextService] serializeAttachedFolders folder start — path=${absolutePath}`);
         const folderStructure = await this.getFormattedFolderStructure(absolutePath);
+        this.logger.log(
+          `[LLMContextService] serializeAttachedFolders folder done — path=${absolutePath}, structureChars=${folderStructure.length}`,
+        );
 
         return `Folder: ${absolutePath}
 Contents of directory:
@@ -304,7 +348,13 @@ ${folderStructure}`;
   private async getFormattedFolderStructure(folder: string): Promise<string> {
     const result: string[] = [];
     try {
+      const startTime = Date.now();
       const stat = await this.fileService.getFileStat(folder);
+      this.logger.log(
+        `[LLMContextService] getFormattedFolderStructure stat done — path=${folder}, children=${
+          stat?.children?.length ?? 0
+        }, elapsedMs=${Date.now() - startTime}`,
+      );
 
       for (const child of stat?.children || []) {
         const relativePath = new URI(folder).relative(new URI(child.uri))!.toString();
@@ -330,6 +380,7 @@ ${folderStructure}`;
         }
       }
     } catch {
+      this.logger.warn(`[LLMContextService] getFormattedFolderStructure failed — path=${folder}`);
       return '';
     }
 
