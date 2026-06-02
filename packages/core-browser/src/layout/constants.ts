@@ -158,7 +158,7 @@ export class DesignLayoutConfig implements IDesignLayoutConfig {
     useMenubarView: false,
     menubarLogo: '',
     supportExternalChatPanel: false,
-    panelLayout: 'classic',
+    panelLayout: 'agentic',
   };
 
   setLayout(...value: (Partial<IDesignLayoutConfig> | undefined)[]): void {

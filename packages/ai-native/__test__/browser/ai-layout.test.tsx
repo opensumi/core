@@ -119,6 +119,7 @@ jest.mock('@opensumi/ide-core-browser/lib/layout/constants', () => ({
 jest.mock('../../src/browser/layout/panel-layout.service', () => ({
   AIPanelLayoutService: class AIPanelLayoutService {},
   getPanelLayoutStorageKey: (mode: 'classic' | 'agentic') => (mode === 'agentic' ? 'layout.ai.agentic' : 'layout'),
+  getAIChatDefaultSize: (mode: 'classic' | 'agentic') => (mode === 'agentic' ? 1080 : 480),
 }));
 
 describe('AILayout BDD', () => {

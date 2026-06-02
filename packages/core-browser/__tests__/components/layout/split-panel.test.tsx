@@ -228,5 +228,14 @@ describe('SplitPanel initialResizeOnMount', () => {
     expect(chatWrapper.classList.contains('kt_display_none')).toBe(true);
     expect(workbenchWrapper.style.flexGrow).toBe('1');
     expect(workbenchWrapper.classList.contains('kt_display_none')).toBe(false);
+
+    act(() => {
+      resizeHandles.chat.setSize(300);
+    });
+    flushAnimationFrame();
+
+    expect(chatWrapper.style.width).toBe('300px');
+    expect(chatWrapper.classList.contains('kt_display_none')).toBe(false);
+    expect(workbenchWrapper.classList.contains('kt_display_none')).toBe(false);
   });
 });

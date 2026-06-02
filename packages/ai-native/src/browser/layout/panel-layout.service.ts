@@ -8,15 +8,21 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 export const AI_PANEL_LAYOUT_CONTEXT = 'aiNative.panelLayout';
 export const AI_PANEL_LAYOUT_MENU = 'aiNative/panelLayout';
 export const AI_AGENTIC_LAYOUT_STORAGE_KEY = 'layout.ai.agentic';
+export const AI_AGENTIC_CHAT_DEFAULT_SIZE = 1080;
+export const AI_CLASSIC_CHAT_DEFAULT_SIZE = 480;
 
-export const DEFAULT_AI_PANEL_LAYOUT: PanelLayoutMode = 'classic';
+export const DEFAULT_AI_PANEL_LAYOUT: PanelLayoutMode = 'agentic';
 
 export function normalizePanelLayoutMode(value: unknown): PanelLayoutMode {
-  return value === 'agentic' ? 'agentic' : DEFAULT_AI_PANEL_LAYOUT;
+  return value === 'classic' || value === 'agentic' ? value : DEFAULT_AI_PANEL_LAYOUT;
 }
 
 export function getPanelLayoutStorageKey(mode: PanelLayoutMode): string {
   return normalizePanelLayoutMode(mode) === 'agentic' ? AI_AGENTIC_LAYOUT_STORAGE_KEY : LAYOUT_STATE.MAIN;
+}
+
+export function getAIChatDefaultSize(mode: PanelLayoutMode): number {
+  return normalizePanelLayoutMode(mode) === 'agentic' ? AI_AGENTIC_CHAT_DEFAULT_SIZE : AI_CLASSIC_CHAT_DEFAULT_SIZE;
 }
 
 @Injectable()

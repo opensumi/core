@@ -10,7 +10,7 @@ import {
 
 describe('AIPanelLayoutService', () => {
   const createService = ({
-    designLayout = 'classic',
+    designLayout = 'agentic',
     inspectValue: initialInspectValue = {},
     setError,
   }: {
@@ -59,9 +59,11 @@ describe('AIPanelLayoutService', () => {
     return { contextKey, layoutService, preferenceService, service };
   };
 
-  it('should normalize unknown values to classic', () => {
+  it('should preserve valid values and fall back to the default for unknown values', () => {
     expect(normalizePanelLayoutMode('agentic')).toBe('agentic');
-    expect(normalizePanelLayoutMode('unknown')).toBe('classic');
+    expect(normalizePanelLayoutMode('classic')).toBe('classic');
+    expect(normalizePanelLayoutMode('unknown')).toBe('agentic');
+    expect(normalizePanelLayoutMode(undefined)).toBe('agentic');
   });
 
   it('should map panel layout modes to isolated layout storage keys', () => {
@@ -69,16 +71,16 @@ describe('AIPanelLayoutService', () => {
     expect(getPanelLayoutStorageKey('agentic')).toBe(AI_AGENTIC_LAYOUT_STORAGE_KEY);
   });
 
-  it('should default to classic without preference or app config', () => {
+  it('should default to agentic without preference or app config', () => {
     const { service } = createService();
 
-    expect(service.getLayoutMode()).toBe('classic');
+    expect(service.getLayoutMode()).toBe('agentic');
   });
 
   it('should use app config when no user preference is set', () => {
-    const { service } = createService({ designLayout: 'agentic' });
+    const { service } = createService({ designLayout: 'classic' });
 
-    expect(service.getLayoutMode()).toBe('agentic');
+    expect(service.getLayoutMode()).toBe('classic');
   });
 
   it('should let user preference override app config', () => {
@@ -91,7 +93,7 @@ describe('AIPanelLayoutService', () => {
   });
 
   it('should persist layout changes and update context key', async () => {
-    const { contextKey, layoutService, preferenceService, service } = createService();
+    const { contextKey, layoutService, preferenceService, service } = createService({ designLayout: 'classic' });
 
     service.initialize();
     await service.setLayoutMode('agentic');
@@ -112,8 +114,8 @@ describe('AIPanelLayoutService', () => {
 
     service.initialize();
 
-    await expect(service.setLayoutMode('agentic')).rejects.toThrow('write failed');
-    expect(contextKey.set).not.toHaveBeenCalledWith('agentic');
+    await expect(service.setLayoutMode('classic')).rejects.toThrow('write failed');
+    expect(contextKey.set).not.toHaveBeenCalledWith('classic');
   });
 
   it('should toggle both layout modes', async () => {

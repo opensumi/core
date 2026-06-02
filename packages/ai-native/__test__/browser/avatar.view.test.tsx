@@ -6,13 +6,27 @@ import { AIChatLogoAvatar } from '../../src/browser/layout/view/avatar/avatar.vi
 import { AI_CHAT_VIEW_ID } from '../../src/common';
 
 const mockToggleSlot = jest.fn();
-const mockToggleLayoutMode = jest.fn();
+const mockSetLayoutMode = jest.fn();
+const mockGetLayoutMode = jest.fn(() => 'agentic');
+const layoutChangeListeners: Array<(mode: string) => void> = [];
+const mockOnDidChangePanelLayout = jest.fn((listener: (mode: string) => void) => {
+  layoutChangeListeners.push(listener);
+  return {
+    dispose: () => {
+      const idx = layoutChangeListeners.indexOf(listener);
+      if (idx >= 0) {
+        layoutChangeListeners.splice(idx, 1);
+      }
+    },
+  };
+});
 
 jest.mock('@opensumi/ide-main-layout', () => ({
   IMainLayoutService: 'IMainLayoutService',
 }));
 
 jest.mock('@opensumi/ide-core-browser', () => ({
+  localize: (_key: string, defaultValue?: string) => defaultValue || _key,
   useInjectable: (token: any) => {
     if (token === 'IMainLayoutService') {
       return {
@@ -21,21 +35,30 @@ jest.mock('@opensumi/ide-core-browser', () => ({
     }
     if (token?.name === 'AIPanelLayoutService') {
       return {
-        toggleLayoutMode: mockToggleLayoutMode,
+        getLayoutMode: mockGetLayoutMode,
+        setLayoutMode: mockSetLayoutMode,
+        onDidChangePanelLayout: mockOnDidChangePanelLayout,
       };
     }
     return {};
   },
 }));
 
-jest.mock('@opensumi/ide-core-browser/lib/components', () => {
+jest.mock('@opensumi/ide-components', () => {
   const React = require('react');
   return {
-    Icon: ({ icon, className }: any) =>
-      React.createElement('span', {
-        'data-testid': `icon-${icon}`,
-        className: `kticon-${icon} ${className || ''}`,
-      }),
+    Select: ({ value, onChange, options }: any) =>
+      React.createElement(
+        'select',
+        {
+          'data-testid': 'layout-select',
+          value,
+          onChange: (event: React.ChangeEvent<HTMLSelectElement>) => onChange?.(event.target.value),
+        },
+        (options || []).map((option: { label: string; value: string }) =>
+          React.createElement('option', { key: option.value, value: option.value }, option.label),
+        ),
+      ),
   };
 });
 
@@ -52,6 +75,7 @@ jest.mock('@opensumi/ide-core-browser/lib/components/ai-native', () => {
 
 jest.mock('../../src/browser/layout/panel-layout.service', () => ({
   AIPanelLayoutService: class AIPanelLayoutService {},
+  getAIChatDefaultSize: (mode: string) => (mode === 'agentic' ? 1080 : 480),
 }));
 
 jest.mock('../../src/browser/layout/view/avatar/avatar.module.less', () => ({
@@ -59,7 +83,6 @@ jest.mock('../../src/browser/layout/view/avatar/avatar.module.less', () => ({
   ai_switch: 'ai_switch',
   avatar_icon_large: 'avatar_icon_large',
   layout_switch: 'layout_switch',
-  layout_icon: 'layout_icon',
 }));
 
 describe('AIChatLogoAvatar', () => {
@@ -70,6 +93,7 @@ describe('AIChatLogoAvatar', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
+    mockGetLayoutMode.mockReturnValue('agentic');
   });
 
   afterEach(() => {
@@ -77,6 +101,7 @@ describe('AIChatLogoAvatar', () => {
       root.unmount();
     });
     container.remove();
+    layoutChangeListeners.length = 0;
     jest.clearAllMocks();
   });
 
@@ -86,7 +111,17 @@ describe('AIChatLogoAvatar', () => {
     });
   }
 
-  it('clicks the AI icon without toggling panel layout', () => {
+  it('renders the layout select with the current mode', () => {
+    renderAvatar();
+
+    const select = container.querySelector<HTMLSelectElement>('[data-testid="layout-select"]');
+    expect(select).not.toBeNull();
+    expect(select!.value).toBe('agentic');
+    const options = Array.from(select!.querySelectorAll('option')).map((option) => option.value);
+    expect(options).toEqual(['agentic', 'classic']);
+  });
+
+  it('clicks the AI icon without changing layout mode', () => {
     renderAvatar();
 
     const aiLogoAvatar = container.querySelector('[data-testid="ai-logo-avatar"]');
@@ -96,31 +131,49 @@ describe('AIChatLogoAvatar', () => {
       Simulate.click(aiLogoAvatar!.parentElement as Element);
     });
 
-    expect(mockToggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID);
-    expect(mockToggleLayoutMode).not.toHaveBeenCalled();
+    expect(mockToggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, 1080);
+    expect(mockSetLayoutMode).not.toHaveBeenCalled();
   });
 
-  it('clicks the layout icon without toggling chat visibility', () => {
+  it('opens the AI chat with the classic default size in classic layout', () => {
+    mockGetLayoutMode.mockReturnValue('classic');
     renderAvatar();
 
-    const layoutIcon = container.querySelector('[data-testid="icon-layout"]');
-    expect(layoutIcon).not.toBeNull();
+    const aiLogoAvatar = container.querySelector('[data-testid="ai-logo-avatar"]');
+    expect(aiLogoAvatar).not.toBeNull();
 
     act(() => {
-      Simulate.click(layoutIcon!.parentElement as Element);
+      Simulate.click(aiLogoAvatar!.parentElement as Element);
     });
 
-    expect(mockToggleLayoutMode).toHaveBeenCalledTimes(1);
+    expect(mockToggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, 480);
+  });
+
+  it('calls setLayoutMode when the select value changes', () => {
+    renderAvatar();
+
+    const select = container.querySelector<HTMLSelectElement>('[data-testid="layout-select"]');
+    expect(select).not.toBeNull();
+
+    act(() => {
+      select!.value = 'classic';
+      Simulate.change(select!);
+    });
+
+    expect(mockSetLayoutMode).toHaveBeenCalledWith('classic');
     expect(mockToggleSlot).not.toHaveBeenCalled();
   });
 
-  it('renders the layout icon', () => {
+  it('reflects layout mode changes emitted by the service', () => {
+    mockGetLayoutMode.mockReturnValueOnce('agentic');
     renderAvatar();
 
-    const layoutIcon = container.querySelector('[data-testid="icon-layout"]');
+    act(() => {
+      mockGetLayoutMode.mockReturnValue('classic');
+      layoutChangeListeners.forEach((listener) => listener('classic'));
+    });
 
-    expect(layoutIcon).not.toBeNull();
-    expect(layoutIcon!.className).toContain('kticon-layout');
-    expect(layoutIcon!.className).toContain('avatar_icon_large');
+    const select = container.querySelector<HTMLSelectElement>('[data-testid="layout-select"]');
+    expect(select!.value).toBe('classic');
   });
 });

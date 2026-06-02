@@ -7,7 +7,7 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_CHAT_VIEW_ID } from '../../common';
 
-import { AIPanelLayoutService, getPanelLayoutStorageKey } from './panel-layout.service';
+import { AIPanelLayoutService, getAIChatDefaultSize, getPanelLayoutStorageKey } from './panel-layout.service';
 
 export const AILayout = () => {
   const designLayoutConfig = useInjectable(DesignLayoutConfig);
@@ -38,7 +38,7 @@ export const AILayout = () => {
   const aiChatLayout = layout[AI_CHAT_VIEW_ID];
   const hasCachedAIChatLayout = Object.prototype.hasOwnProperty.call(layout, AI_CHAT_VIEW_ID);
   const shouldDefaultOpenAIChat = panelLayout === 'agentic' && !hasCachedAIChatLayout;
-  const defaultAIChatSize = panelLayout === 'agentic' ? 1080 : 360;
+  const defaultAIChatSize = getAIChatDefaultSize(panelLayout);
 
   useEffect(() => {
     if (!shouldDefaultOpenAIChat || didDefaultOpenAIChat.current) {

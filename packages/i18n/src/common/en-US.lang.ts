@@ -1671,6 +1671,8 @@ export const localizationBundle = {
     'ai.native.mcp.type': 'Type:',
     'ai.native.mcp.stdio': 'Command',
     'ai.native.mcp.sse': 'SSE',
+    'ai.native.layout.agentic': 'Agentic Layout',
+    'ai.native.layout.classic': 'Classic Layout',
     'ai.native.mcp.buttonSave': 'Add',
     'ai.native.mcp.buttonUpdate': 'Update',
     'ai.native.mcp.buttonCancel': 'Cancel',

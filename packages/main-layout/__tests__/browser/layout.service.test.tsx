@@ -436,6 +436,25 @@ describe('main layout test', () => {
     expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.display).toEqual('block');
   });
 
+  it('should restore slot size when showing a zero-sized slot', () => {
+    const rightTabbarService = service.getTabbarService(SlotLocation.extendView);
+    const resizeHandle = rightTabbarService.resizeHandle!;
+    const setSizeSpy = jest.spyOn(resizeHandle, 'setSize').mockImplementation(() => {});
+
+    act(() => {
+      service.toggleSlot(SlotLocation.extendView, false);
+    });
+    setSizeSpy.mockClear();
+
+    act(() => {
+      service.toggleSlot(SlotLocation.extendView, true);
+    });
+
+    expect(setSizeSpy).toHaveBeenCalledWith(undefined);
+
+    setSizeSpy.mockRestore();
+  });
+
   it('should be able to judge whether a tab panel is visible', () => {
     expect(service.isVisible(SlotLocation.extendView)).toBeTruthy();
     act(() => {

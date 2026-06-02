@@ -182,6 +182,15 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     flexElement.style.flexGrow = '1';
     flexElement.style.flexShrink = '0';
 
+    fixedElement.classList.toggle('kt_display_none', targetFixedWidth === 0);
+    flexElement.classList.toggle('kt_display_none', prevWidth + nextWidth - targetFixedWidth === 0);
+
+    if (isPreFlexMode) {
+      handleZeroSize(targetFixedWidth, prevWidth + nextWidth - targetFixedWidth);
+    } else {
+      handleZeroSize(prevWidth + nextWidth - targetFixedWidth, targetFixedWidth);
+    }
+
     if (props.onResize && nextEle && prevEle) {
       props.onResize(prevEle, nextEle);
     }
@@ -494,6 +503,15 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     flexElement.style.height = '0';
     flexElement.style.flexGrow = '1';
     flexElement.style.flexShrink = '0';
+
+    fixedElement.classList.toggle('kt_display_none', targetFixedHeight === 0);
+    flexElement.classList.toggle('kt_display_none', prevHeight + nextHeight - targetFixedHeight === 0);
+
+    if (props.flexMode === ResizeFlexMode.Prev) {
+      handleZeroSize(targetFixedHeight, prevHeight + nextHeight - targetFixedHeight);
+    } else {
+      handleZeroSize(prevHeight + nextHeight - targetFixedHeight, targetFixedHeight);
+    }
 
     if (props.onResize && nextEle && prevEle) {
       props.onResize(prevEle, nextEle);
