@@ -7,16 +7,16 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_CHAT_VIEW_ID } from '../../common';
 
-import { AIPanelLayoutService } from './panel-layout.service';
+import { AIPanelLayoutService, getPanelLayoutStorageKey } from './panel-layout.service';
 
 export const AILayout = () => {
-  const { layout } = getStorageValue();
   const designLayoutConfig = useInjectable(DesignLayoutConfig);
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const clientApp = useInjectable<IClientApp>(IClientApp);
   const didDefaultOpenAIChat = useRef(false);
   const [panelLayout, setPanelLayout] = useState(() => panelLayoutService.getLayoutMode());
+  const { layout } = getStorageValue(getPanelLayoutStorageKey(panelLayout));
 
   useEffect(() => {
     const disposable = panelLayoutService.onDidChangePanelLayout((mode) => {
@@ -26,6 +26,10 @@ export const AILayout = () => {
 
     return () => disposable.dispose();
   }, [panelLayoutService]);
+
+  useEffect(() => {
+    layoutService.setLayoutStateKey(getPanelLayoutStorageKey(panelLayout), { saveCurrent: false });
+  }, [layoutService, panelLayout]);
 
   const defaultRightSize = useMemo(
     () => (designLayoutConfig.useMergeRightWithLeftPanel ? 0 : 49),

@@ -18,7 +18,7 @@ import {
   WithEventBus,
   slotRendererRegistry,
 } from '@opensumi/ide-core-browser';
-import { Layout, fixLayout } from '@opensumi/ide-core-browser/lib/components';
+import { fixLayout } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { ComponentRegistryInfo } from '@opensumi/ide-core-browser/lib/layout/layout.interface';
 import {
@@ -115,6 +115,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     };
   } = {};
 
+  private layoutStateKey = LAYOUT_STATE.MAIN;
+
   // 记录正在恢复状态的 location，防止恢复过程中存储中间状态
   private isRestoring = new Set<string>();
 
@@ -129,6 +131,28 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   protected contextmenuService: AbstractContextMenuService;
 
   public viewReady: Deferred<void> = new Deferred();
+
+  setLayoutStateKey(key: string, options: { saveCurrent?: boolean } = {}): void {
+    const nextLayoutStateKey = key || LAYOUT_STATE.MAIN;
+    if (this.layoutStateKey === nextLayoutStateKey) {
+      return;
+    }
+
+    if (!this.tabbarServices.size) {
+      this.layoutStateKey = nextLayoutStateKey;
+      return;
+    }
+
+    if (options.saveCurrent !== false) {
+      this.layoutState.setStateSync(this.layoutStateKey, this.getCurrentLayoutStateSnapshot());
+    }
+    this.layoutStateKey = nextLayoutStateKey;
+    this.restoreAllTabbarServices();
+  }
+
+  getLayoutStateKey(): string {
+    return this.layoutStateKey;
+  }
 
   didMount() {
     for (const [containerId, views] of this.pendingViewsMap.entries()) {
@@ -156,18 +180,29 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     });
   }
 
-  storeState(service: TabbarService, currentId?: string) {
+  storeState(service: TabbarService, currentId?: string, layoutStateKey = this.layoutStateKey) {
+    if (!service.location) {
+      return;
+    }
+
     // 如果正在恢复中，跳过存储，避免存储中间状态
     if (this.isRestoring.has(service.location)) {
       return;
     }
 
-    this.state[service.location] = {
+    const state =
+      layoutStateKey === this.layoutStateKey
+        ? this.state
+        : fixLayout(this.layoutState.getState(layoutStateKey, defaultLayoutState));
+    state[service.location] = {
       currentId,
       size: service.prevSize,
     };
+    if (layoutStateKey === this.layoutStateKey) {
+      this.state = state;
+    }
 
-    this.layoutState.setState(LAYOUT_STATE.MAIN, this.state);
+    this.layoutState.setState(layoutStateKey, state);
   }
 
   @OnEvent(ThemeChangedEvent)
@@ -186,7 +221,37 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   restoreTabbarService = async (service: TabbarService) => {
-    this.state = fixLayout(this.layoutState.getState(LAYOUT_STATE.MAIN, defaultLayoutState));
+    this.state = this.getStoredLayoutState();
+    this.applyLayoutStateToTabbarService(service);
+  };
+
+  private getStoredLayoutState() {
+    return fixLayout(this.layoutState.getState(this.layoutStateKey, defaultLayoutState));
+  }
+
+  private getCurrentLayoutStateSnapshot() {
+    const nextState = { ...this.state };
+    for (const service of this.tabbarServices.values()) {
+      if (!service.location) {
+        continue;
+      }
+
+      nextState[service.location] = {
+        currentId: service.currentContainerId.get(),
+        size: service.prevSize,
+      };
+    }
+    return nextState;
+  }
+
+  private restoreAllTabbarServices() {
+    this.state = this.getStoredLayoutState();
+    for (const service of this.tabbarServices.values()) {
+      this.applyLayoutStateToTabbarService(service);
+    }
+  }
+
+  private applyLayoutStateToTabbarService(service: TabbarService) {
     const { currentId, size } = this.state[service.location] || {};
     service.prevSize = size;
 
@@ -208,8 +273,16 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
 
     const defaultContainer = this.getDefaultContainer(service);
-    this.restoreContainerId(service, currentId, defaultContainer);
-  };
+    this.isRestoring.add(service.location);
+    try {
+      this.restoreContainerId(service, currentId, defaultContainer);
+      if (service.currentContainerId.get() && size) {
+        service.resizeHandle?.setSize(size);
+      }
+    } finally {
+      this.isRestoring.delete(service.location);
+    }
+  }
 
   private getDefaultContainer(service: TabbarService): string | undefined {
     const defaultPanels = this.appConfig.defaultPanels;
@@ -455,8 +528,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
           this.isRestoring.delete(service.location);
           this.logger.error(`[TabbarService:${location}] restore state error`, err);
         });
-      const debouncedStoreState = debounce(() => this.storeState(service, service.currentContainerId.get()), 100);
-      service.addDispose(service.onSizeChange(debouncedStoreState));
+      const debouncedStoreState = debounce((layoutStateKey: string) => {
+        this.storeState(service, service.currentContainerId.get(), layoutStateKey);
+      }, 100);
+      service.addDispose(service.onSizeChange(() => debouncedStoreState(this.layoutStateKey)));
       if (location === SlotLocation.panel) {
         // use this getter's side effect to set bottomExpanded contextKey
         const debouncedUpdate = debounce(() => void this.bottomExpanded, 100);

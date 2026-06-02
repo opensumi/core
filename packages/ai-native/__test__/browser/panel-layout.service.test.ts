@@ -2,7 +2,9 @@ import { AINativeSettingSectionsId, PreferenceScope } from '@opensumi/ide-core-c
 
 import {
   AIPanelLayoutService,
+  AI_AGENTIC_LAYOUT_STORAGE_KEY,
   AI_PANEL_LAYOUT_CONTEXT,
+  getPanelLayoutStorageKey,
   normalizePanelLayoutMode,
 } from '../../src/browser/layout/panel-layout.service';
 
@@ -34,6 +36,9 @@ describe('AIPanelLayoutService', () => {
       }),
       onSpecificPreferenceChange: jest.fn(() => ({ dispose: jest.fn() })),
     };
+    const layoutService = {
+      setLayoutStateKey: jest.fn(),
+    };
     const service = new AIPanelLayoutService();
 
     Object.defineProperty(service, 'preferenceService', {
@@ -47,13 +52,21 @@ describe('AIPanelLayoutService', () => {
         createKey: jest.fn(() => contextKey),
       },
     });
+    Object.defineProperty(service, 'layoutService', {
+      value: layoutService,
+    });
 
-    return { contextKey, preferenceService, service };
+    return { contextKey, layoutService, preferenceService, service };
   };
 
   it('should normalize unknown values to classic', () => {
     expect(normalizePanelLayoutMode('agentic')).toBe('agentic');
     expect(normalizePanelLayoutMode('unknown')).toBe('classic');
+  });
+
+  it('should map panel layout modes to isolated layout storage keys', () => {
+    expect(getPanelLayoutStorageKey('classic')).toBe('layout');
+    expect(getPanelLayoutStorageKey('agentic')).toBe(AI_AGENTIC_LAYOUT_STORAGE_KEY);
   });
 
   it('should default to classic without preference or app config', () => {
@@ -78,13 +91,15 @@ describe('AIPanelLayoutService', () => {
   });
 
   it('should persist layout changes and update context key', async () => {
-    const { contextKey, preferenceService, service } = createService();
+    const { contextKey, layoutService, preferenceService, service } = createService();
 
     service.initialize();
     await service.setLayoutMode('agentic');
 
     expect((service as any).contextKeyService.createKey).toHaveBeenCalledWith(AI_PANEL_LAYOUT_CONTEXT, 'classic');
     expect(contextKey.set).toHaveBeenCalledWith('agentic');
+    expect(layoutService.setLayoutStateKey).toHaveBeenCalledWith('layout', { saveCurrent: false });
+    expect(layoutService.setLayoutStateKey).toHaveBeenCalledWith(AI_AGENTIC_LAYOUT_STORAGE_KEY, { saveCurrent: true });
     expect(preferenceService.set).toHaveBeenCalledWith(
       AINativeSettingSectionsId.PanelLayout,
       'agentic',

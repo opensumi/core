@@ -9,12 +9,12 @@ export interface ILayoutConfigCache {
   [key: string]: { size?: number; currentId?: string };
 }
 
-export const getStorageValue = () => {
+export const getStorageValue = (layoutStorageKey = 'layout') => {
   // 启动时渲染的颜色和尺寸，弱依赖
   let savedLayout: ILayoutConfigCache = {};
   let savedColors: { [colorKey: string]: string } = {};
   try {
-    const layoutConfigStr = localStorage.getItem('layout');
+    const layoutConfigStr = localStorage.getItem(layoutStorageKey);
     if (layoutConfigStr) {
       savedLayout = JSON.parse(layoutConfigStr);
     }
@@ -83,6 +83,15 @@ export function ToolbarActionBasedLayout(
 export function fixLayout(layout: ILayoutConfigCache) {
   const newLayout = { ...layout };
   for (const key in layout) {
+    if (!Object.prototype.hasOwnProperty.call(layout, key)) {
+      continue;
+    }
+
+    if (key === 'undefined') {
+      delete newLayout[key];
+      continue;
+    }
+
     if (!layout[key] || key === 'containerLocations') {
       continue;
     }

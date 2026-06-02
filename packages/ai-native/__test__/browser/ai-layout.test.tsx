@@ -4,6 +4,7 @@ import { act } from 'react-dom/test-utils';
 
 let panelLayoutMode: 'classic' | 'agentic' = 'classic';
 let storedLayout: Record<string, { currentId?: string; size?: number }> = {};
+let storedLayouts: Record<string, Record<string, { currentId?: string; size?: number }>> = {};
 const mockToggleSlot = jest.fn();
 
 jest.mock('@opensumi/ide-core-browser', () => {
@@ -62,6 +63,7 @@ jest.mock('@opensumi/ide-core-browser', () => {
       if (String(token) === 'Symbol(IMainLayoutService)') {
         return {
           toggleSlot: mockToggleSlot,
+          setLayoutStateKey: jest.fn(),
           getTabbarService: () => ({
             viewReady: {
               promise: new Promise(() => {}),
@@ -106,7 +108,7 @@ jest.mock('@opensumi/ide-core-browser/lib/components', () => {
           ),
         ),
       ),
-    getStorageValue: () => ({ layout: storedLayout }),
+    getStorageValue: (layoutStorageKey = 'layout') => ({ layout: storedLayouts[layoutStorageKey] || storedLayout }),
   };
 });
 
@@ -116,6 +118,7 @@ jest.mock('@opensumi/ide-core-browser/lib/layout/constants', () => ({
 
 jest.mock('../../src/browser/layout/panel-layout.service', () => ({
   AIPanelLayoutService: class AIPanelLayoutService {},
+  getPanelLayoutStorageKey: (mode: 'classic' | 'agentic') => (mode === 'agentic' ? 'layout.ai.agentic' : 'layout'),
 }));
 
 describe('AILayout BDD', () => {
@@ -153,6 +156,7 @@ describe('AILayout BDD', () => {
   beforeEach(() => {
     panelLayoutMode = 'classic';
     storedLayout = {};
+    storedLayouts = {};
     mockToggleSlot.mockClear();
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -295,5 +299,55 @@ describe('AILayout BDD', () => {
     });
 
     expect(getSlotProps('AI-Chat')).toEqual({ defaultSize: '1080', maxResize: '1080', minSize: '0' });
+  });
+
+  it('Given each panel layout has its own cache, when agentic renders, then it uses the agentic layout cache', async () => {
+    panelLayoutMode = 'agentic';
+    storedLayouts = {
+      layout: {
+        'AI-Chat': {
+          currentId: 'AI-Chat-Container',
+          size: 360,
+        },
+      },
+      'layout.ai.agentic': {
+        'AI-Chat': {
+          currentId: 'AI-Chat-Container',
+          size: 1080,
+        },
+      },
+    };
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    act(() => {
+      root.render(<AILayout />);
+    });
+
+    expect(getSlotProps('AI-Chat')).toEqual({ defaultSize: '1080', maxResize: '1080', minSize: '0' });
+  });
+
+  it('Given each panel layout has its own cache, when classic renders, then it uses the classic layout cache', async () => {
+    panelLayoutMode = 'classic';
+    storedLayouts = {
+      layout: {
+        'AI-Chat': {
+          currentId: 'AI-Chat-Container',
+          size: 360,
+        },
+      },
+      'layout.ai.agentic': {
+        'AI-Chat': {
+          currentId: 'AI-Chat-Container',
+          size: 1080,
+        },
+      },
+    };
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    act(() => {
+      root.render(<AILayout />);
+    });
+
+    expect(getSlotProps('AI-Chat')).toEqual({ defaultSize: '360', maxResize: '1080', minSize: '0' });
   });
 });

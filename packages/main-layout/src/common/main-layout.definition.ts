@@ -1,5 +1,4 @@
 import { BasicEvent, IDisposable, SlotLocation } from '@opensumi/ide-core-browser';
-import { Layout } from '@opensumi/ide-core-browser/lib/components';
 import { SideStateManager, View, ViewContainerOptions } from '@opensumi/ide-core-browser/lib/layout';
 import { ComponentRegistryInfo } from '@opensumi/ide-core-browser/lib/layout/layout.interface';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -28,6 +27,12 @@ export interface IMainLayoutService {
   viewReady: Deferred<void>;
 
   didMount(): void;
+  /**
+   * Set the active layout state profile key.
+   * Defaults to `layout`; custom layouts can opt into their own layout profile.
+   */
+  setLayoutStateKey(key: string, options?: { saveCurrent?: boolean }): void;
+  getLayoutStateKey(): string;
   /**
    * 切换tabbar位置的slot，传 slot id
    */

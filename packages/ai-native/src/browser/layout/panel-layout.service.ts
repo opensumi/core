@@ -1,15 +1,22 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IContextKeyService, PreferenceService } from '@opensumi/ide-core-browser';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { AINativeSettingSectionsId, Emitter, PanelLayoutMode, PreferenceScope } from '@opensumi/ide-core-common';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 export const AI_PANEL_LAYOUT_CONTEXT = 'aiNative.panelLayout';
 export const AI_PANEL_LAYOUT_MENU = 'aiNative/panelLayout';
+export const AI_AGENTIC_LAYOUT_STORAGE_KEY = 'layout.ai.agentic';
 
 export const DEFAULT_AI_PANEL_LAYOUT: PanelLayoutMode = 'classic';
 
 export function normalizePanelLayoutMode(value: unknown): PanelLayoutMode {
   return value === 'agentic' ? 'agentic' : DEFAULT_AI_PANEL_LAYOUT;
+}
+
+export function getPanelLayoutStorageKey(mode: PanelLayoutMode): string {
+  return normalizePanelLayoutMode(mode) === 'agentic' ? AI_AGENTIC_LAYOUT_STORAGE_KEY : LAYOUT_STATE.MAIN;
 }
 
 @Injectable()
@@ -23,6 +30,9 @@ export class AIPanelLayoutService {
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
 
+  @Autowired(IMainLayoutService)
+  private readonly layoutService: IMainLayoutService;
+
   private readonly onDidChangePanelLayoutEmitter = new Emitter<PanelLayoutMode>();
   readonly onDidChangePanelLayout = this.onDidChangePanelLayoutEmitter.event;
 
@@ -34,9 +44,12 @@ export class AIPanelLayoutService {
       return;
     }
     this.initialized = true;
-    this.updateContextKey(this.getLayoutMode());
+    const initialMode = this.getLayoutMode();
+    this.applyLayoutMode(initialMode, false);
+    this.updateContextKey(initialMode);
     this.preferenceService.onSpecificPreferenceChange(AINativeSettingSectionsId.PanelLayout, () => {
       const mode = this.getLayoutMode();
+      this.applyLayoutMode(mode);
       this.updateContextKey(mode);
       this.onDidChangePanelLayoutEmitter.fire(mode);
     });
@@ -57,6 +70,7 @@ export class AIPanelLayoutService {
     const normalizedMode = normalizePanelLayoutMode(mode);
     await this.preferenceService.set(AINativeSettingSectionsId.PanelLayout, normalizedMode, PreferenceScope.User);
     const currentMode = this.getLayoutMode();
+    this.applyLayoutMode(currentMode);
     this.updateContextKey(currentMode);
     this.onDidChangePanelLayoutEmitter.fire(currentMode);
   }
@@ -71,5 +85,9 @@ export class AIPanelLayoutService {
       return;
     }
     this.panelLayoutContextKey.set(mode);
+  }
+
+  private applyLayoutMode(mode: PanelLayoutMode, saveCurrent = true): void {
+    this.layoutService.setLayoutStateKey(getPanelLayoutStorageKey(mode), { saveCurrent });
   }
 }
