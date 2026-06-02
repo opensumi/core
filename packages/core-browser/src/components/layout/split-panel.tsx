@@ -159,7 +159,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
         delegate.setRelativeSize(prev, next);
       }
     },
-    [resizeDelegates.current],
+    [],
   );
 
   const getSizeHandle = React.useCallback(
@@ -171,7 +171,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
       }
       return 0;
     },
-    [resizeDelegates.current],
+    [],
   );
 
   const getRelativeSizeHandle = React.useCallback(
@@ -183,45 +183,37 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
       }
       return [0, 0];
     },
-    [resizeDelegates.current],
+    [],
   );
 
   const lockResizeHandle = React.useCallback(
     (index) => (lock: boolean | undefined, isLatter?: boolean) => {
       const targetIndex = isLatter ? index - 1 : index;
-      const newResizeState = resizeLockState.current.map((state, idx) =>
-        idx === targetIndex ? (lock !== undefined ? lock : !state) : state,
-      );
+      if (targetIndex < 0 || targetIndex >= resizeLockState.current.length) {
+        return;
+      }
+      const nextValue = lock !== undefined ? lock : !resizeLockState.current[targetIndex];
+      if (resizeLockState.current[targetIndex] === nextValue) {
+        return;
+      }
+      const newResizeState = resizeLockState.current.map((state, idx) => (idx === targetIndex ? nextValue : state));
       resizeLockState.current = newResizeState;
       setLocks(newResizeState);
     },
-    [resizeDelegates.current],
+    [],
   );
 
   const setMaxSizeHandle = React.useCallback(
     (index) => (lock: boolean | undefined) => {
-      const newMaxState = maxLockState.current.map((state, idx) =>
-        idx === index ? (lock !== undefined ? lock : !state) : state,
-      );
+      const nextValue = lock !== undefined ? lock : !maxLockState.current[index];
+      if (maxLockState.current[index] === nextValue) {
+        return;
+      }
+      const newMaxState = maxLockState.current.map((state, idx) => (idx === index ? nextValue : state));
       maxLockState.current = newMaxState;
       setMaxLocks(newMaxState);
     },
-    [resizeDelegates.current],
-  );
-
-  const hidePanelHandle = React.useCallback(
-    (index: number) => (show?: boolean) => {
-      const newHideState = hideState.current.map((state, idx) =>
-        idx === index ? (show !== undefined ? !show : !state) : state,
-      );
-      hideState.current = newHideState;
-      const location = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
-      if (location) {
-        fireResizeEvent(location);
-      }
-      setHides(newHideState);
-    },
-    [childList, hideState.current],
+    [],
   );
 
   const fireResizeEvent = React.useCallback(
@@ -234,11 +226,51 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
     [eventBus],
   );
 
+  const hidePanelHandle = React.useCallback(
+    (index: number) => (show?: boolean) => {
+      const nextValue = show !== undefined ? !show : !hideState.current[index];
+      if (hideState.current[index] === nextValue) {
+        return;
+      }
+      const newHideState = hideState.current.map((state, idx) => (idx === index ? nextValue : state));
+      hideState.current = newHideState;
+      const location = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
+      if (location) {
+        fireResizeEvent(location);
+      }
+      setHides(newHideState);
+    },
+    [childList, fireResizeEvent],
+  );
+
   const fireChildrenResize = React.useCallback(() => {
     childList.forEach((c) => {
       fireResizeEvent(getProp(c, 'slot') || getProp(c, 'id'));
     });
   }, [childList, fireResizeEvent]);
+
+  const panelContextValues = React.useMemo(
+    () =>
+      childList.map((_, index) => ({
+        setSize: setSizeHandle(index),
+        getSize: getSizeHandle(index),
+        setRelativeSize: setRelativeSizeHandle(index),
+        getRelativeSize: getRelativeSizeHandle(index),
+        lockSize: lockResizeHandle(index),
+        setMaxSize: setMaxSizeHandle(index),
+        hidePanel: hidePanelHandle(index),
+      })),
+    [
+      childList,
+      getRelativeSizeHandle,
+      getSizeHandle,
+      hidePanelHandle,
+      lockResizeHandle,
+      setMaxSizeHandle,
+      setRelativeSizeHandle,
+      setSizeHandle,
+    ],
+  );
 
   const elements: React.ReactNode[] = React.useMemo(() => {
     resizeDelegates.current = [];
@@ -292,18 +324,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
         }
 
         result.push(
-          <PanelContext.Provider
-            key={index}
-            value={{
-              setSize: setSizeHandle(index),
-              getSize: getSizeHandle(index),
-              setRelativeSize: setRelativeSizeHandle(index),
-              getRelativeSize: getRelativeSizeHandle(index),
-              lockSize: lockResizeHandle(index),
-              setMaxSize: setMaxSizeHandle(index),
-              hidePanel: hidePanelHandle(index),
-            }}
-          >
+          <PanelContext.Provider key={index} value={panelContextValues[index]}>
             <div
               data-min-resize={getProp(element, 'minResize')}
               data-max-resize={getProp(element, 'maxResize')}

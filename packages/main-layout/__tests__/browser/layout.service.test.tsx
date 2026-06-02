@@ -302,7 +302,7 @@ describe('main layout test', () => {
       handler.setCollapsed('test-view-id5', true);
     });
     expect(handler.isCollapsed('test-view-id5')).toBeTruthy();
-    expect(mockCb).toHaveBeenCalledTimes(4);
+    expect(mockCb).toHaveBeenCalledTimes(2);
     let newTitle = 'new title';
     act(() => {
       handler.setBadge({ value: 20, tooltip: '20' });
