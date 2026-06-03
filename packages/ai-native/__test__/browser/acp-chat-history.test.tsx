@@ -69,6 +69,8 @@ jest.mock('../../src/browser/components/acp/chat-history.module.less', () => ({
   pending_permission_badge_inline: 'pending_permission_badge_inline',
   chat_history_header_actions_new: 'chat_history_header_actions_new',
   chat_history_header_actions_new_disabled: 'chat_history_header_actions_new_disabled',
+  chat_history_header_inline_actions: 'chat_history_header_inline_actions',
+  chat_history_header_actions_collapse: 'chat_history_header_actions_collapse',
   chat_history_header_bar: 'chat_history_header_bar',
   chat_history_inline: 'chat_history_inline',
   chat_history_inline_content: 'chat_history_inline_content',
@@ -178,8 +180,49 @@ describe('AcpChatHistory BDD', () => {
 
     expect(container.querySelector('[data-testid="acp-chat-history-button"]')).toBeNull();
     expect(container.querySelector('[data-testid="acp-chat-history-popover"]')).toBeNull();
+    expect(container.querySelector('.chat_history_header_actions')).toBeNull();
     expect(container.querySelector('[data-testid="acp-chat-history-inline"]')).not.toBeNull();
     expect(getRenderedItemIds()).toEqual(['acp:current', 'acp:middle', 'acp:oldest']);
+  });
+
+  it('Given inline variant, when the header renders, then the title is replaced by the new-chat action', () => {
+    const onNewChat = jest.fn();
+    renderHistory({ variant: 'inline', title: 'AI Assistant', onNewChat });
+
+    const title = container.querySelector('.chat_history_header_title') as HTMLElement;
+    const newChatAction = title.querySelector('.chat_history_header_actions_new') as HTMLElement;
+
+    expect(title.textContent).not.toContain('AI Assistant');
+    expect(newChatAction).not.toBeNull();
+
+    act(() => {
+      newChatAction.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(onNewChat).toHaveBeenCalledTimes(1);
+  });
+
+  it('Given inline variant supports collapse, when the collapse action is clicked, then it toggles history', () => {
+    const onToggleHistoryCollapsed = jest.fn();
+    renderHistory({ variant: 'inline', onToggleHistoryCollapsed });
+
+    const collapseAction = container.querySelector('.chat_history_header_actions_collapse') as HTMLElement;
+    expect(collapseAction).not.toBeNull();
+
+    act(() => {
+      collapseAction.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(onToggleHistoryCollapsed).toHaveBeenCalledTimes(1);
+  });
+
+  it('Given inline history is collapsed, when it renders, then it keeps header actions and hides the history list', () => {
+    renderHistory({ variant: 'inline', historyCollapsed: true, onToggleHistoryCollapsed: jest.fn() });
+
+    expect(container.querySelector('.chat_history_header_actions_new')).not.toBeNull();
+    expect(container.querySelector('.chat_history_header_actions_collapse')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history-collapsed"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history-inline"]')).toBeNull();
   });
 
   it('Given inline variant mounts, when a visible-change callback is provided, then it refreshes history once', () => {

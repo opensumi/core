@@ -52,6 +52,7 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
   const [sessionSwitching, setSessionSwitching] = React.useState(false);
   const [pendingPermissionBadge, setPendingPermissionBadge] = React.useState(0);
   const [panelLayout, setPanelLayout] = React.useState(() => panelLayoutService.getLayoutMode());
+  const [historyCollapsed, setHistoryCollapsed] = React.useState(false);
   const isMultiRoot = workspaceService.isMultiRootWorkspaceOpened;
 
   const subscribedSessionIdsRef = React.useRef<Set<string>>(new Set());
@@ -262,18 +263,34 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
 
   const isAgenticLayout = panelLayout === 'agentic';
 
+  React.useEffect(() => {
+    if (!isAgenticLayout) {
+      setHistoryCollapsed(false);
+    }
+  }, [isAgenticLayout]);
+
+  const handleToggleHistoryCollapsed = React.useCallback(() => {
+    setHistoryCollapsed((collapsed) => !collapsed);
+  }, []);
+
   return (
     <div className={cls(styles.header, isAgenticLayout && styles.header_agentic)}>
       <AcpChatHistory
-        className={cls(styles.chat_history, isAgenticLayout && styles.chat_history_agentic)}
+        className={cls(
+          styles.chat_history,
+          isAgenticLayout && styles.chat_history_agentic,
+          isAgenticLayout && historyCollapsed && styles.chat_history_agentic_collapsed,
+        )}
         currentId={aiChatService.sessionModel?.sessionId}
         title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
         historyList={historyList}
         variant={isAgenticLayout ? 'inline' : 'popover'}
         historyLoading={historyLoading}
+        historyCollapsed={isAgenticLayout && historyCollapsed}
         disabled={sessionSwitching}
         pendingPermissionBadge={pendingPermissionBadge}
         onNewChat={handleNewChat}
+        onToggleHistoryCollapsed={isAgenticLayout ? handleToggleHistoryCollapsed : undefined}
         onHistoryItemSelect={handleHistoryItemSelect}
         onHistoryItemDelete={() => {}}
         onHistoryItemChange={handleHistoryItemChange}
@@ -300,21 +317,23 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
           />
         </Popover>
       )}
-      <Popover
-        overlayClassName={styles.popover_icon}
-        id={'ai-chat-header-close'}
-        position={PopoverPosition.left}
-        title={localize('aiNative.operate.close.title')}
-      >
-        <EnhanceIcon
-          wrapperClassName={styles.action_btn}
-          className={getIcon('window-close')}
-          onClick={handleCloseChatView}
-          tabIndex={0}
-          role='button'
-          ariaLabel={localize('aiNative.operate.close.title')}
-        />
-      </Popover>
+      {!isAgenticLayout && (
+        <Popover
+          overlayClassName={styles.popover_icon}
+          id={'ai-chat-header-close'}
+          position={PopoverPosition.left}
+          title={localize('aiNative.operate.close.title')}
+        >
+          <EnhanceIcon
+            wrapperClassName={styles.action_btn}
+            className={getIcon('window-close')}
+            onClick={handleCloseChatView}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.operate.close.title')}
+          />
+        </Popover>
+      )}
     </div>
   );
 }

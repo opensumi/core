@@ -278,7 +278,7 @@
     }
   }
 
-  &:has([data-testid='acp-chat-history-inline']) {
+  &:has(.chat_history_agentic) {
     flex-direction: row;
 
     .header_container {
@@ -303,6 +303,13 @@
           right: 8px;
           z-index: 1;
         }
+      }
+    }
+
+    &:has(.chat_history_agentic_collapsed) {
+      .header_container {
+        flex-basis: 72px;
+        width: 72px;
       }
     }
 
@@ -338,6 +345,10 @@
   height: 100%;
   min-height: 0;
   color: var(--design-text-foreground);
+}
+
+.chat_history_agentic_collapsed {
+  min-width: 0;
 }
 
 .loading_container {

@@ -53,10 +53,10 @@ jest.mock('@opensumi/ide-workspace', () => ({
 
 jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
   __esModule: true,
-  default: ({ title, variant, disabled, onNewChat }: any) =>
+  default: ({ title, variant, disabled, historyCollapsed, onNewChat, onToggleHistoryCollapsed }: any) =>
     require('react').createElement(
       'div',
-      { 'data-testid': 'acp-chat-history', 'data-variant': variant },
+      { 'data-testid': 'acp-chat-history', 'data-collapsed': String(!!historyCollapsed), 'data-variant': variant },
       title,
       require('react').createElement(
         'button',
@@ -68,6 +68,16 @@ jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
         },
         'new',
       ),
+      onToggleHistoryCollapsed &&
+        require('react').createElement(
+          'button',
+          {
+            'data-testid': 'acp-chat-history-collapse',
+            onClick: onToggleHistoryCollapsed,
+            type: 'button',
+          },
+          'collapse',
+        ),
     ),
 }));
 
@@ -369,6 +379,27 @@ describe('ACP chat view headers', () => {
     );
 
     expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('inline');
+    expect(container.querySelector('#ai-chat-header-close')).toBeNull();
+  });
+
+  it('collapses ACP history in agentic layout when the collapse action is clicked', async () => {
+    installInjectableMocks(createMockServices({ panelLayout: 'agentic' }));
+
+    await renderHeader(
+      React.createElement(AcpChatViewHeader, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-collapsed')).toBe('false');
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-history-collapse"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-collapsed')).toBe('true');
   });
 
   it('updates the ACP-specific history variant when panel layout changes at runtime', async () => {
