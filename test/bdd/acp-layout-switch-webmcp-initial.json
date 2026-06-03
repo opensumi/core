@@ -1,0 +1,129 @@
+{
+  "available": true,
+  "hasGetTools": true,
+  "hasExecuteTool": true,
+  "tools": [
+    { "name": "acp_chat_getPermissionState", "descriptionLength": 111, "hasInputSchema": true },
+    { "name": "acp_chat_getSessionState", "descriptionLength": 99, "hasInputSchema": true },
+    { "name": "acp_chat_showChatView", "descriptionLength": 40, "hasInputSchema": true },
+    { "name": "diagnostics_getStats", "descriptionLength": 60, "hasInputSchema": true },
+    { "name": "diagnostics_list", "descriptionLength": 105, "hasInputSchema": true },
+    { "name": "diagnostics_open", "descriptionLength": 53, "hasInputSchema": true },
+    { "name": "editor_getActive", "descriptionLength": 91, "hasInputSchema": true },
+    { "name": "editor_getDirtyDiff", "descriptionLength": 72, "hasInputSchema": true },
+    { "name": "editor_getSelection", "descriptionLength": 56, "hasInputSchema": true },
+    { "name": "editor_listDirtyFiles", "descriptionLength": 28, "hasInputSchema": true },
+    { "name": "editor_listOpenFiles", "descriptionLength": 79, "hasInputSchema": true },
+    { "name": "editor_open", "descriptionLength": 122, "hasInputSchema": true },
+    { "name": "editor_readBuffer", "descriptionLength": 80, "hasInputSchema": true },
+    { "name": "editor_readRangeFromBuffer", "descriptionLength": 67, "hasInputSchema": true },
+    { "name": "editor_setSelection", "descriptionLength": 139, "hasInputSchema": true },
+    { "name": "terminal_getActive", "descriptionLength": 36, "hasInputSchema": true },
+    { "name": "terminal_getOS", "descriptionLength": 136, "hasInputSchema": true },
+    { "name": "terminal_getProcessId", "descriptionLength": 119, "hasInputSchema": true },
+    { "name": "terminal_getProcessInfo", "descriptionLength": 41, "hasInputSchema": true },
+    { "name": "terminal_list", "descriptionLength": 173, "hasInputSchema": true },
+    { "name": "terminal_readOutput", "descriptionLength": 46, "hasInputSchema": true },
+    { "name": "terminal_resize", "descriptionLength": 87, "hasInputSchema": true },
+    { "name": "terminal_show", "descriptionLength": 101, "hasInputSchema": true },
+    { "name": "terminal_showPanel", "descriptionLength": 124, "hasInputSchema": true },
+    { "name": "terminal_tail", "descriptionLength": 54, "hasInputSchema": true },
+    { "name": "terminal_waitForPattern", "descriptionLength": 67, "hasInputSchema": true },
+    { "name": "workspace_getInfo", "descriptionLength": 121, "hasInputSchema": true },
+    { "name": "workspace_listOpenFiles", "descriptionLength": 102, "hasInputSchema": true },
+    { "name": "workspace_listRecentWorkspaces", "descriptionLength": 47, "hasInputSchema": true }
+  ],
+  "legacyTools": [],
+  "calls": [
+    { "name": "acp_chat_showChatView", "args": {}, "success": true, "resultSummary": { "shown": true } },
+    {
+      "name": "acp_chat_getSessionState",
+      "args": {},
+      "success": true,
+      "resultSummary": {
+        "active": true,
+        "session": {
+          "sessionId": "acp:55c51ca5-1aba-4143-b601-23af9cfeb3da",
+          "rawSessionId": "55c51ca5-1aba-4143-b601-23af9cfeb3da",
+          "title": "New Session",
+          "modelId": "qwen3.6-plus",
+          "threadStatus": "idle",
+          "requestCount": 0,
+          "historyMessageCount": 0,
+          "slicedMessageCount": 0,
+          "hasPendingPermission": false
+        }
+      }
+    },
+    {
+      "name": "acp_chat_getPermissionState",
+      "args": {},
+      "success": true,
+      "resultSummary": {
+        "activeDialogCount": 0,
+        "activeSessionId": "55c51ca5-1aba-4143-b601-23af9cfeb3da",
+        "pendingCountExcludingActive": 0
+      }
+    },
+    {
+      "name": "workspace_getInfo",
+      "args": {},
+      "success": true,
+      "resultSummary": {
+        "workspaceDir": "/Users/lujunsheng/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default",
+        "roots": [
+          {
+            "uri": "file:///Users/lujunsheng/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default",
+            "path": "/Users/lujunsheng/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default",
+            "name": "default"
+          }
+        ],
+        "rootCount": 1,
+        "isMultiRootWorkspaceOpened": false,
+        "isMultiRootWorkspaceEnabled": false
+      }
+    },
+    {
+      "name": "editor_getActive",
+      "args": {},
+      "success": true,
+      "resultSummary": {
+        "path": "/Users/lujunsheng/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor2.js",
+        "uri": "file:///Users/lujunsheng/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor2.js",
+        "selection": { "startLine": 1, "startCol": 1, "endLine": 1, "endCol": 1 },
+        "active": true
+      }
+    },
+    {
+      "name": "workspace_listOpenFiles",
+      "args": {},
+      "success": true,
+      "resultSummary": {
+        "files": [
+          {
+            "uri": "file:///Users/lujunsheng/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor2.js",
+            "path": "/Users/lujunsheng/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor2.js",
+            "name": "editor2.js",
+            "groupIndex": 0,
+            "active": true
+          }
+        ],
+        "total": 1
+      }
+    },
+    { "name": "file_exists", "args": { "path": "editor.js" }, "skipped": true, "reason": "not exposed" },
+    {
+      "name": "file_read",
+      "args": { "path": "package.json", "maxBytes": 4096 },
+      "skipped": true,
+      "reason": "not exposed"
+    },
+    {
+      "name": "diagnostics_list",
+      "args": {},
+      "error": "Converting circular structure to JSON\n    --> starting at object with constructor 'MarkerStats'\n    |     property '_manager' -> object with constructor 'MarkerManager'\n    |     property 'disposables' -> object with constructor 'Array'\n    --- index 0 closes the circle"
+    },
+    { "name": "search_text", "args": { "query": "Person", "maxResults": 5 }, "skipped": true, "reason": "not exposed" }
+  ],
+  "toolCount": 29
+}

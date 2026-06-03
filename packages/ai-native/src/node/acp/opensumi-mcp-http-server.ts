@@ -10,19 +10,38 @@ import { ILogger } from '@opensumi/ide-core-common';
 import { AcpWebMcpCallerServiceToken } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
+import {
+  type WebMcpProfile,
+  type WebMcpToolRiskLevel,
+  canExposeWebMcpTool,
+  isWebMcpToolInProfile,
+} from '../../common/webmcp-policy';
+
 import type { AcpWebMcpCallerService } from './acp-webmcp-caller.service';
 import type { WebMcpGroupDef, WebMcpToolDef } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 const OPEN_SUMI_MCP_SERVER_NAME = 'opensumi-ide';
 const LOOPBACK_HOST = '127.0.0.1';
 const MCP_PATH_PREFIX = '/mcp/';
+const CATALOG_TOOL_NAMES = {
+  discoverCapabilities: 'opensumi_discover_capabilities',
+  describeCapabilityGroup: 'opensumi_describe_capability_group',
+  describeTool: 'opensumi_describe_tool',
+  enableCapabilityGroup: 'opensumi_enable_capability_group',
+  invokeCapabilityTool: 'opensumi_invoke_capability_tool',
+} as const;
+
+const LEGACY_CATALOG_TOOL_ALIASES: Record<string, string> = {
+  opensumi_discoverCapabilities: CATALOG_TOOL_NAMES.discoverCapabilities,
+  opensumi_describeCapabilityGroup: CATALOG_TOOL_NAMES.describeCapabilityGroup,
+  opensumi_describeTool: CATALOG_TOOL_NAMES.describeTool,
+  opensumi_enableCapabilityGroup: CATALOG_TOOL_NAMES.enableCapabilityGroup,
+  opensumi_invokeCapabilityTool: CATALOG_TOOL_NAMES.invokeCapabilityTool,
+};
 
 type ExposableWebMcpToolDef = WebMcpGroupDef['tools'][number] & {
   exposedByDefault?: boolean;
 };
-
-type WebMcpToolRiskLevel = 'read' | 'write' | 'destructive' | 'shell' | 'ui';
-type WebMcpProfile = 'minimal' | 'default' | 'interactive' | 'full';
 
 type WebMcpToolDefWithMeta = WebMcpToolDef & {
   riskLevel?: WebMcpToolRiskLevel;
@@ -361,32 +380,11 @@ export class OpenSumiMcpHttpServer {
   }
 
   private isToolAllowedAfterEnable(tool: WebMcpToolDefWithMeta, profile: WebMcpProfile): boolean {
-    // Keep this lightweight until real agent behavior is observed. Risk/profile
-    // metadata mainly shapes exposure and telemetry; do not treat it as the
-    // final long-term permission model.
-    if (tool.riskLevel === 'destructive' || tool.riskLevel === 'write') {
-      return profile === 'full';
-    }
-    if (tool.riskLevel === 'shell') {
-      return profile !== 'minimal';
-    }
-    return true;
+    return canExposeWebMcpTool(tool, profile);
   }
 
   private isToolInDefaultProfile(tool: WebMcpToolDefWithMeta, profile: WebMcpProfile): boolean {
-    if (tool.profiles?.length) {
-      return tool.profiles.includes(profile);
-    }
-    if (profile === 'full') {
-      return true;
-    }
-    if (tool.riskLevel === 'shell') {
-      return profile === 'interactive';
-    }
-    if (tool.riskLevel === 'destructive' || tool.riskLevel === 'write') {
-      return false;
-    }
-    return profile === 'minimal' ? tool.riskLevel === 'read' : tool.riskLevel === 'read' || tool.riskLevel === 'ui';
+    return isWebMcpToolInProfile(tool, profile);
   }
 
   private getCatalogGroupDef(): WebMcpGroupDefWithMeta {
@@ -397,7 +395,7 @@ export class OpenSumiMcpHttpServer {
       defaultLoaded: true,
       tools: [
         {
-          name: 'opensumi_discoverCapabilities',
+          name: CATALOG_TOOL_NAMES.discoverCapabilities,
           description:
             'Discover hidden OpenSumi IDE capability groups. Call this when you need search, file read, language navigation, SCM, debug, tasks, output logs, ACP chat state, permissions, or terminal interaction tools that are not currently listed.',
           riskLevel: 'read',
@@ -417,7 +415,7 @@ export class OpenSumiMcpHttpServer {
           },
         },
         {
-          name: 'opensumi_describeCapabilityGroup',
+          name: CATALOG_TOOL_NAMES.describeCapabilityGroup,
           description:
             'Describe one OpenSumi capability group and its tools. Use includeSchemas only when you need exact parameters.',
           riskLevel: 'read',
@@ -439,7 +437,7 @@ export class OpenSumiMcpHttpServer {
           },
         },
         {
-          name: 'opensumi_describeTool',
+          name: CATALOG_TOOL_NAMES.describeTool,
           description: 'Return one OpenSumi WebMCP tool description and full input schema.',
           riskLevel: 'read',
           inputSchema: {
@@ -455,7 +453,7 @@ export class OpenSumiMcpHttpServer {
           },
         },
         {
-          name: 'opensumi_enableCapabilityGroup',
+          name: CATALOG_TOOL_NAMES.enableCapabilityGroup,
           description:
             'Enable an OpenSumi capability group for this MCP session. This only changes tool visibility; it does not execute IDE actions.',
           riskLevel: 'read',
@@ -472,7 +470,7 @@ export class OpenSumiMcpHttpServer {
           },
         },
         {
-          name: 'opensumi_invokeCapabilityTool',
+          name: CATALOG_TOOL_NAMES.invokeCapabilityTool,
           description:
             'Fallback broker for calling an enabled OpenSumi capability tool when the MCP client does not refresh tools/list after enabling a group.',
           riskLevel: 'read',
@@ -503,16 +501,17 @@ export class OpenSumiMcpHttpServer {
     toolName: string,
     args: Record<string, unknown>,
   ): Promise<{ content: Array<{ type: 'text'; text: string }>; isError: boolean } | undefined> {
-    switch (toolName) {
-      case 'opensumi_discoverCapabilities':
+    const normalizedToolName = LEGACY_CATALOG_TOOL_ALIASES[toolName] ?? toolName;
+    switch (normalizedToolName) {
+      case CATALOG_TOOL_NAMES.discoverCapabilities:
         return this.toToolResponse(this.discoverCapabilities(groupDefs, sessionState, args));
-      case 'opensumi_describeCapabilityGroup':
+      case CATALOG_TOOL_NAMES.describeCapabilityGroup:
         return this.toToolResponse(this.describeCapabilityGroup(groupDefs, args));
-      case 'opensumi_describeTool':
+      case CATALOG_TOOL_NAMES.describeTool:
         return this.toToolResponse(this.describeTool(groupDefs, args));
-      case 'opensumi_enableCapabilityGroup':
+      case CATALOG_TOOL_NAMES.enableCapabilityGroup:
         return this.toToolResponse(this.enableCapabilityGroup(groupDefs, sessionState, args));
-      case 'opensumi_invokeCapabilityTool':
+      case CATALOG_TOOL_NAMES.invokeCapabilityTool:
         return this.invokeCapabilityTool(groupDefs, sessionState, args);
       default:
         return undefined;
@@ -527,11 +526,15 @@ export class OpenSumiMcpHttpServer {
     const task = typeof args.task === 'string' ? args.task : '';
     const includeDisabled = args.includeDisabled === true;
     const recommended = this.getRecommendedGroups(groupDefs, task)
+      .filter((groupName) => {
+        const group = groupDefs.find((item) => item.name === groupName);
+        return group ? this.getToolsAvailableAfterEnable(group).length > 0 : false;
+      })
       .filter((group) => !sessionState.enabledGroups.has(group))
       .map((group) => ({
         group,
         reason: this.getRecommendationReason(group),
-        nextAction: 'opensumi_enableCapabilityGroup',
+        nextAction: CATALOG_TOOL_NAMES.enableCapabilityGroup,
         arguments: { group },
       }));
     const groups = groupDefs
@@ -611,6 +614,13 @@ export class OpenSumiMcpHttpServer {
     if (!target) {
       return { success: false, error: 'TOOL_NOT_FOUND', details: `Tool "${toolName}" not found` };
     }
+    if (!this.isToolAllowedAfterEnable(target.tool, target.group.profile ?? 'default')) {
+      return {
+        success: false,
+        error: 'CAPABILITY_NOT_AVAILABLE',
+        details: `Tool "${toolName}" is not available in the current WebMCP profile`,
+      };
+    }
 
     const schemaBytes = this.getJsonByteLength(target.tool.inputSchema);
     this.logger?.log?.(
@@ -652,10 +662,10 @@ export class OpenSumiMcpHttpServer {
         group: group.name,
         enabledGroups: Array.from(sessionState.enabledGroups),
         refreshRequired: true,
-        fallbackTool: 'opensumi_invokeCapabilityTool',
+        fallbackTool: CATALOG_TOOL_NAMES.invokeCapabilityTool,
         example: firstTool
           ? {
-              tool: 'opensumi_invokeCapabilityTool',
+              tool: CATALOG_TOOL_NAMES.invokeCapabilityTool,
               arguments: {
                 tool: firstTool.name,
                 arguments: {},
@@ -687,7 +697,7 @@ export class OpenSumiMcpHttpServer {
       return this.toToolResponse({
         success: false,
         error: 'CAPABILITY_NOT_ENABLED',
-        details: `Enable group "${target.group.name}" with opensumi_enableCapabilityGroup before invoking "${target.name}".`,
+        details: `Enable group "${target.group.name}" with ${CATALOG_TOOL_NAMES.enableCapabilityGroup} before invoking "${target.name}".`,
       });
     }
 
@@ -711,8 +721,7 @@ export class OpenSumiMcpHttpServer {
         response: {
           success: false,
           error: 'INVALID_ARGUMENTS',
-          details:
-            'Invalid arguments for opensumi_invokeCapabilityTool. Expected { tool: string, arguments?: object }.',
+          details: `Invalid arguments for ${CATALOG_TOOL_NAMES.invokeCapabilityTool}. Expected { tool: string, arguments?: object }.`,
         },
       };
     }

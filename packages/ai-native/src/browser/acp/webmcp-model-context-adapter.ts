@@ -1,5 +1,7 @@
 import { ensureModelContext } from '@opensumi/ide-core-browser/lib/webmcp-polyfill';
 
+import { canExposeWebMcpTool } from '../../common/webmcp-policy';
+
 import type { WebMcpGroupDefinitionOptions, WebMcpGroupRegistry } from './webmcp-group-registry';
 import type { WebMCPTool } from '@opensumi/ide-core-browser/lib/webmcp-types';
 import type { IDisposable } from '@opensumi/ide-core-common';
@@ -23,7 +25,7 @@ export function getWebMcpModelContextToolDefinitions(
     .filter((group) => !defaultLoadedOnly || group.defaultLoaded)
     .flatMap((group) =>
       group.tools
-        .filter((tool) => tool.exposedByDefault !== false)
+        .filter((tool) => canExposeWebMcpTool(tool, group.profile ?? 'default'))
         .map((tool) => ({
           group: group.name,
           name: tool.name,

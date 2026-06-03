@@ -1,14 +1,20 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 
+import {
+  type WebMcpProfile,
+  type WebMcpToolRiskLevel,
+  canExposeWebMcpTool,
+  isValidWebMcpProfile,
+  isWebMcpToolInProfile,
+} from '../../common/webmcp-policy';
+
 import type {
   WebMcpGroupDef,
   WebMcpGroupInfo,
   WebMcpToolResult,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
-export type WebMcpToolRiskLevel = 'read' | 'write' | 'destructive' | 'shell' | 'ui';
-export type WebMcpProfile = 'minimal' | 'default' | 'interactive' | 'full';
 
 export const WEBMCP_PROFILE_SETTING_ID = 'ai.native.webmcp.profile';
 
@@ -110,6 +116,14 @@ export class WebMcpGroupRegistry {
         details: `Tool "${toolName}" not found in group "${groupName}"`,
       });
     }
+    const profile = this.getActiveProfile();
+    if (!canExposeWebMcpTool(tool, profile)) {
+      return Promise.resolve({
+        success: false,
+        error: 'PERMISSION_DENIED',
+        details: `Tool "${toolName}" is not allowed in WebMCP profile "${profile}"`,
+      });
+    }
     return tool.execute(params);
   }
 
@@ -121,25 +135,13 @@ export class WebMcpGroupRegistry {
 
   private getActiveProfile(): WebMcpProfile {
     const profile = this.preferenceService?.get<WebMcpProfile>(WEBMCP_PROFILE_SETTING_ID, 'default');
-    if (profile === 'minimal' || profile === 'default' || profile === 'interactive' || profile === 'full') {
+    if (isValidWebMcpProfile(profile)) {
       return profile;
     }
     return 'default';
   }
 
   private isToolInProfile(tool: WebMcpToolExecute, profile: WebMcpProfile): boolean {
-    if (tool.profiles?.length) {
-      return tool.profiles.includes(profile);
-    }
-    if (profile === 'full') {
-      return true;
-    }
-    if (tool.riskLevel === 'shell') {
-      return profile === 'interactive';
-    }
-    if (tool.riskLevel === 'destructive' || tool.riskLevel === 'write') {
-      return false;
-    }
-    return profile === 'minimal' ? tool.riskLevel === 'read' : tool.riskLevel === 'read' || tool.riskLevel === 'ui';
+    return isWebMcpToolInProfile(tool, profile);
   }
 }

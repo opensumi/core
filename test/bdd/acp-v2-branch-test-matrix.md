@@ -1,0 +1,24 @@
+# ACP V2 Branch Test Matrix
+
+Source comparison: `git diff main` on branch `feat/acp-v2`.
+
+## Test Cases
+
+| Area | Change under test | Automated test coverage | BDD coverage |
+| --- | --- | --- | --- |
+| ACP thread lifecycle | ACP sessions are managed through `AcpThread`, including create, load, stream, cancel, dispose, LRU reuse, and failure cleanup. | `packages/ai-native/__test__/node/acp/acp-thread.test.ts`, `packages/ai-native/__test__/node/acp-agent.service.test.ts` | `test/bdd/acp-agent-session-lifecycle.scenario.md`, `test/bdd/acp-thread-pool-lru.scenario.md` |
+| ACP session state updates | Agent update notifications produce stable chat model status, thread status, history, and permission state. | `packages/ai-native/__test__/node/acp-agent.service.test.ts`, `packages/ai-native/__test__/node/acp-thread-status-caller.test.ts`, `packages/ai-native/__test__/browser/chat/acp-chat-manager.service.test.ts` | `test/bdd/acp-chat-session-storage.scenario.md`, `test/bdd/acp-chat.scenario.md`, `test/bdd/session-mode.scenario.md` |
+| Permission routing | Permission dialogs are scoped by session, route through node/browser bridge services, and do not leak after session switches or cleanup. | `packages/ai-native/__test__/browser/acp/permission-bridge-session.test.ts`, `packages/ai-native/__test__/browser/permission-dialog-ui.test.tsx`, `packages/ai-native/__test__/node/permission-routing.test.ts`, `packages/ai-native/__test__/node/acp-permission-caller.test.ts` | `test/bdd/acp-permission-routing.scenario.md`, `test/bdd/permission-dialog.scenario.md` |
+| WebMCP bridge and capability groups | Browser WebMCP tools and node MCP exposure use canonical underscore names, group gating, profile restrictions, fallback broker normalization, and token-safe logs. | `packages/ai-native/__test__/browser/webmcp-acp-chat-group.test.ts`, `packages/ai-native/__test__/browser/webmcp-model-context-adapter.test.ts`, `packages/ai-native/__test__/browser/webmcp-tool-naming.test.ts`, `packages/ai-native/__test__/node/opensumi-mcp-http-server.test.ts` | `test/bdd/acp-mcp-bridge.scenario.md`, `test/bdd/webmcp-capability-surface.scenario.md`, `test/bdd/webmcp-ide-capability-groups.scenario.md`, `test/bdd/error-handling.scenario.md` |
+| ACP chat UI | ACP chat history, header, mention input, relay store, command metadata, and safe read-only session state remain stable across session changes. | `packages/ai-native/__test__/browser/acp-chat-history.test.tsx`, `packages/ai-native/__test__/browser/acp-chat-mention-input-ref.test.tsx`, `packages/ai-native/__test__/browser/acp-chat-relay-store.test.ts`, `packages/ai-native/__test__/browser/acp-chat-view-header.test.tsx`, `packages/ai-native/__test__/browser/chat/acp-chat-internal.service.test.ts` | `test/bdd/acp-chat.scenario.md`, `test/bdd/available-commands.scenario.md`, `test/bdd/session-relay.scenario.md` |
+| Agent process config | Browser process config merge and node spawn config resolution preserve agent id, node path, cwd, and fallback behavior. | `packages/ai-native/__test__/browser/acp/build-agent-process-config.test.ts`, `packages/ai-native/__test__/node/acp/acp-spawn-config.test.ts`, `packages/ai-native/__test__/node/acp-cli-back.test.ts` | `test/bdd/acp-process-config.scenario.md` |
+| ACP client handlers | File system and terminal handlers expose bounded agent operations and route errors consistently. | `packages/ai-native/__test__/node/acp-file-system-handler.test.ts`, `packages/ai-native/__test__/node/acp-terminal-handler.test.ts`, `packages/ai-native/__test__/node/acp-agent-request-handler.test.ts` | `test/bdd/acp-client-handlers.scenario.md` |
+| Layout switch and resize | Agentic and Classic layouts keep ACP chat, workbench, Explorer, WebMCP state, and side tabbar restore sizes stable while switching and resizing. | `packages/ai-native/__test__/browser/ai-layout.test.tsx`, `packages/main-layout/__tests__/browser/layout.service.test.tsx`, `tools/playwright/src/tests/acp-layout-switch.test.ts` | `test/bdd/acp-layout-switch.scenario.md` |
+
+## BDD Acceptance Focus
+
+- Runtime scenarios should start from `test/bdd/README.md` common preflight and use `yarn start` against `http://localhost:8080/?workspaceDir=<absolute workspace path>`.
+- WebMCP scenarios should assert canonical underscore tool names and reject legacy `_opensumi/...` names except in explicit negative checks.
+- Permission scenarios should observe dialog and pending state only; they should not approve or reject permission through ACP tools.
+- Layout scenarios should verify both interaction order and resize bounds because this branch changes layout profile storage, split panel constraints, and side tabbar restore behavior.
+- Failure output should identify whether the blocker is browser readiness, `navigator.modelContext`, MCP `tools/list`, or a specific capability group/tool call.

@@ -826,6 +826,20 @@ export class TabbarService extends WithEventBus {
     return !!(info && info.options && info.options.expanded);
   }
 
+  private isValidExpandedSize(size?: number): size is number {
+    return isDefined(size) && size > (this.barSize || 0);
+  }
+
+  private getRestoreSize(): number {
+    return this.isValidExpandedSize(this.prevSize) ? this.prevSize : this.panelSize + this.barSize;
+  }
+
+  private saveExpandedSize(size: number): void {
+    if (this.isValidExpandedSize(size)) {
+      this.prevSize = size;
+    }
+  }
+
   protected onResize() {
     fastdom.measureAtNextFrame(() => {
       if (!this.currentContainerId.get() || !this.resizeHandle) {
@@ -834,8 +848,8 @@ export class TabbarService extends WithEventBus {
       }
 
       const size = this.resizeHandle.getSize();
-      if (size !== this.barSize && !this.shouldExpand(this.currentContainerId.get())) {
-        this.prevSize = size;
+      if (this.isValidExpandedSize(size) && !this.shouldExpand(this.currentContainerId.get())) {
+        this.saveExpandedSize(size);
         this.onSizeChangeEmitter.fire({ size });
       }
     });
@@ -865,11 +879,11 @@ export class TabbarService extends WithEventBus {
     } else {
       if (currentId) {
         if (previousId && currentId !== previousId) {
-          this.prevSize = getSize();
+          this.saveExpandedSize(getSize());
         }
         const containerInfo = this.getContainer(currentId);
 
-        setSize(this.prevSize || this.panelSize + this.barSize);
+        setSize(this.getRestoreSize());
         lockSize(Boolean(containerInfo?.options?.noResize));
 
         this.activatedKey.set(currentId);

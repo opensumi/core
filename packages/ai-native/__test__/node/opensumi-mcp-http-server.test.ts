@@ -266,11 +266,7 @@ describe('OpenSumiMcpHttpServer', () => {
         arguments: { task: 'search for a symbol' },
       });
       expect(discoverResult.isError).toBe(false);
-      expect(JSON.parse((discoverResult.content as any)[0].text).result.recommended[0]).toEqual(
-        expect.objectContaining({
-          group: 'search',
-        }),
-      );
+      expect(JSON.parse((discoverResult.content as any)[0].text).result.recommended).toEqual([]);
 
       const enableResult = await client.callTool({
         name: 'opensumi_enable_capability_group',
@@ -280,7 +276,7 @@ describe('OpenSumiMcpHttpServer', () => {
 
       const toolsAfterEnable = await client.listTools();
       expect(toolsAfterEnable.tools).toEqual(
-        expect.arrayContaining([
+        expect.not.arrayContaining([
           expect.objectContaining({
             name: 'search_text',
           }),
@@ -293,28 +289,17 @@ describe('OpenSumiMcpHttpServer', () => {
       });
       expect(describeGroupResult.isError).toBe(false);
       const describedGroup = JSON.parse((describeGroupResult.content as any)[0].text).result;
-      expect(describedGroup.tools[0]).toEqual(
-        expect.objectContaining({
-          name: 'search_text',
-          description: 'Search text',
-        }),
-      );
-      expect(describedGroup.tools[0]).not.toHaveProperty('method');
+      expect(describedGroup.tools).toEqual([]);
 
       const describeToolResult = await client.callTool({
         name: 'opensumi_describe_tool',
         arguments: { tool: 'search_text' },
       });
-      expect(describeToolResult.isError).toBe(false);
-      const describedTool = JSON.parse((describeToolResult.content as any)[0].text).result;
-      expect(describedTool).toEqual(
-        expect.objectContaining({
-          name: 'search_text',
-          group: 'search',
-          description: 'Search text',
-        }),
-      );
-      expect(describedTool).not.toHaveProperty('method');
+      expect(describeToolResult.isError).toBe(true);
+      expect(JSON.parse((describeToolResult.content as any)[0].text)).toMatchObject({
+        success: false,
+        error: 'CAPABILITY_NOT_AVAILABLE',
+      });
 
       const enableTerminalResult = await client.callTool({
         name: 'opensumi_enable_capability_group',
@@ -324,7 +309,7 @@ describe('OpenSumiMcpHttpServer', () => {
 
       const toolsAfterTerminalEnable = await client.listTools();
       expect(toolsAfterTerminalEnable.tools).toEqual(
-        expect.arrayContaining([
+        expect.not.arrayContaining([
           expect.objectContaining({
             name: 'terminal_create',
           }),
@@ -355,6 +340,24 @@ describe('OpenSumiMcpHttpServer', () => {
       expect(hiddenResult.isError).toBe(true);
       expect(caller.executeTool).toHaveBeenCalledTimes(1);
 
+      const deniedSearchResult = await client.callTool({
+        name: 'opensumi_invoke_capability_tool',
+        arguments: { tool: 'search_text', arguments: { query: 'foo' } },
+      });
+      expect(deniedSearchResult.isError).toBe(true);
+      expect(JSON.parse((deniedSearchResult.content as any)[0].text)).toMatchObject({
+        success: false,
+        error: 'CAPABILITY_NOT_ENABLED',
+      });
+      expect(caller.executeTool).toHaveBeenCalledTimes(1);
+
+      const deniedTerminalResult = await client.callTool({
+        name: 'opensumi_invoke_capability_tool',
+        arguments: { tool: 'terminal_run_command', arguments: { id: '1', command: 'pwd' } },
+      });
+      expect(deniedTerminalResult.isError).toBe(true);
+      expect(caller.executeTool).toHaveBeenCalledTimes(1);
+
       const invalidToolResult = await client.callTool({
         name: 'opensumi_invoke_capability_tool',
         arguments: { tool: 'search_text_typo', arguments: { query: 'foo' } },
@@ -368,24 +371,24 @@ describe('OpenSumiMcpHttpServer', () => {
 
       const fallbackResult = await client.callTool({
         name: 'opensumi_invoke_capability_tool',
-        arguments: { tool: 'search_text', arguments: { query: 'foo' } },
+        arguments: { tool: 'file_read', arguments: { path: 'README.md' } },
       });
       expect(fallbackResult.isError).toBe(false);
-      expect(caller.executeTool).toHaveBeenCalledWith('search', 'search_text', { query: 'foo' });
+      expect(caller.executeTool).toHaveBeenCalledWith('file', 'file_read', { path: 'README.md' });
 
       const nestedFallbackResult = await client.callTool({
         name: 'opensumi_invoke_capability_tool',
-        arguments: { tool: 'search_text', arguments: { arguments: { query: 'bar' } } },
+        arguments: { tool: 'file_read', arguments: { arguments: { path: 'README.md' } } },
       });
       expect(nestedFallbackResult.isError).toBe(false);
-      expect(caller.executeTool).toHaveBeenLastCalledWith('search', 'search_text', { query: 'bar' });
+      expect(caller.executeTool).toHaveBeenLastCalledWith('file', 'file_read', { path: 'README.md' });
 
       const nestedInvocationResult = await client.callTool({
         name: 'opensumi_invoke_capability_tool',
-        arguments: { arguments: { tool: 'search_text', arguments: { query: 'baz' } } },
+        arguments: { arguments: { tool: 'file_read', arguments: { path: 'README.md' } } },
       });
       expect(nestedInvocationResult.isError).toBe(false);
-      expect(caller.executeTool).toHaveBeenLastCalledWith('search', 'search_text', { query: 'baz' });
+      expect(caller.executeTool).toHaveBeenLastCalledWith('file', 'file_read', { path: 'README.md' });
 
       const invalidInvocationResult = await client.callTool({
         name: 'opensumi_invoke_capability_tool',

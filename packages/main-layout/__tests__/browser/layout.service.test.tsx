@@ -455,6 +455,61 @@ describe('main layout test', () => {
     setSizeSpy.mockRestore();
   });
 
+  it('should keep the expanded size when collapsing a side tabbar', () => {
+    const viewTabbarService = service.getTabbarService(SlotLocation.view);
+    const resizeHandle = viewTabbarService.resizeHandle!;
+    const setSizeSpy = jest.spyOn(resizeHandle, 'setSize').mockImplementation(() => {});
+    const expandedSize = 420;
+
+    act(() => {
+      viewTabbarService.updateCurrentContainerId('containerId');
+    });
+    viewTabbarService.prevSize = expandedSize;
+    setSizeSpy.mockClear();
+
+    act(() => {
+      viewTabbarService.updateCurrentContainerId('');
+    });
+
+    expect(setSizeSpy).toHaveBeenLastCalledWith(viewTabbarService.getBarSize());
+    expect(viewTabbarService.prevSize).toBe(expandedSize);
+
+    setSizeSpy.mockRestore();
+  });
+
+  it('should ignore collapsed previous size when restoring a side tabbar', () => {
+    const viewTabbarService = service.getTabbarService(SlotLocation.view);
+    const resizeHandle = viewTabbarService.resizeHandle!;
+    const setSizeSpy = jest.spyOn(resizeHandle, 'setSize').mockImplementation(() => {});
+    const barSize = viewTabbarService.getBarSize();
+
+    act(() => {
+      viewTabbarService.updateCurrentContainerId('');
+    });
+    viewTabbarService.prevSize = barSize;
+    setSizeSpy.mockClear();
+
+    act(() => {
+      viewTabbarService.updateCurrentContainerId('containerId');
+    });
+
+    const restoredSize = setSizeSpy.mock.calls[setSizeSpy.mock.calls.length - 1][0];
+    expect(restoredSize).toBeGreaterThan(barSize);
+
+    viewTabbarService.prevSize = 0;
+    setSizeSpy.mockClear();
+
+    act(() => {
+      viewTabbarService.updateCurrentContainerId('');
+      viewTabbarService.updateCurrentContainerId('containerId');
+    });
+
+    const zeroFallbackSize = setSizeSpy.mock.calls[setSizeSpy.mock.calls.length - 1][0];
+    expect(zeroFallbackSize).toBeGreaterThan(barSize);
+
+    setSizeSpy.mockRestore();
+  });
+
   it('should be able to judge whether a tab panel is visible', () => {
     expect(service.isVisible(SlotLocation.extendView)).toBeTruthy();
     act(() => {

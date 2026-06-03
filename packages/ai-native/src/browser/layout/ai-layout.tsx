@@ -39,6 +39,10 @@ export const AILayout = () => {
   const hasCachedAIChatLayout = Object.prototype.hasOwnProperty.call(layout, AI_CHAT_VIEW_ID);
   const shouldDefaultOpenAIChat = panelLayout === 'agentic' && !hasCachedAIChatLayout;
   const defaultAIChatSize = getAIChatDefaultSize(panelLayout);
+  const isAgenticLayout = panelLayout === 'agentic';
+  const aiChatMinResize = isAgenticLayout ? 640 : 280;
+  const aiChatMaxResize = isAgenticLayout ? 1440 : 1080;
+  const workbenchMinResize = isAgenticLayout ? 480 : 300;
 
   useEffect(() => {
     if (!shouldDefaultOpenAIChat || didDefaultOpenAIChat.current) {
@@ -73,8 +77,8 @@ export const AILayout = () => {
           ? defaultAIChatSize
           : 0
       }
-      maxResize={1080}
-      minResize={280}
+      maxResize={aiChatMaxResize}
+      minResize={aiChatMinResize}
       minSize={0}
     />
   );
@@ -125,7 +129,7 @@ export const AILayout = () => {
     <SplitPanel
       key='workbench'
       id={panelLayout === 'agentic' ? 'main-horizontal-agentic' : 'main-horizontal'}
-      minResize={300}
+      minResize={workbenchMinResize}
       flexGrow={1}
       direction={'left-to-right'}
       resizeHandleClassName={'design-slot_resize_horizontal'}

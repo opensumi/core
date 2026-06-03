@@ -11,10 +11,19 @@ let mockCapturedResizeHandle: any;
 
 const mockMainLayoutServiceToken = Symbol('IMainLayoutService');
 const mockTabbarServiceFactoryToken = Symbol('TabbarServiceFactory');
-const mockTabbarService = {
-  currentContainerId: '',
-  visibleContainers: [],
+const mockViewTabbarService = {
+  currentContainerId: 'view-current',
+  visibleContainers: [] as any[],
 };
+const mockExtendViewTabbarService = {
+  currentContainerId: 'extend-view-current',
+  visibleContainers: [] as any[],
+};
+const mockTabbarServices = {
+  view: mockViewTabbarService,
+  extendView: mockExtendViewTabbarService,
+};
+const mockTabbarServiceFactory = jest.fn((side: keyof typeof mockTabbarServices) => mockTabbarServices[side]);
 
 jest.mock('@opensumi/ide-core-browser', () => ({
   SlotLocation: {
@@ -36,7 +45,7 @@ jest.mock('@opensumi/ide-core-browser', () => ({
       };
     }
     if (token === mockTabbarServiceFactoryToken) {
-      return () => mockTabbarService;
+      return mockTabbarServiceFactory;
     }
     return {};
   },
@@ -150,6 +159,11 @@ describe('AI tabbar layout BDD', () => {
     mockCapturedLeftTabbarProps = undefined;
     mockCapturedTabbarViewBaseProps = undefined;
     mockCapturedResizeHandle = undefined;
+    mockTabbarServiceFactory.mockClear();
+    mockViewTabbarService.currentContainerId = 'view-current';
+    mockViewTabbarService.visibleContainers = [];
+    mockExtendViewTabbarService.currentContainerId = 'extend-view-current';
+    mockExtendViewTabbarService.visibleContainers = [];
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -191,6 +205,52 @@ describe('AI tabbar layout BDD', () => {
     expect(mockCapturedTabRendererProps.className).toContain('agentic_view_slot');
     expect(container.querySelector('.agentic_view_tab_bar')).toBeTruthy();
     expect(mockCapturedLeftTabbarProps).toBeTruthy();
+    expect(mockTabbarServiceFactory).toHaveBeenCalledWith('extendView');
+    expect(mockTabbarServiceFactory).not.toHaveBeenCalledWith('view');
+  });
+
+  it('Given agentic layout, when rendering merged extra containers, then it uses extendView containers only', async () => {
+    panelLayoutMode = 'agentic';
+    mockViewTabbarService.visibleContainers = [
+      {
+        options: {
+          containerId: 'view-explorer',
+        },
+      },
+    ];
+    mockExtendViewTabbarService.visibleContainers = [
+      {
+        options: {
+          containerId: 'extend-tools',
+        },
+      },
+      {
+        options: {
+          containerId: 'extend-hidden',
+          hideTab: true,
+        },
+      },
+    ];
+    const { AILeftTabRenderer } = await import('../../src/browser/layout/tabbar.view');
+
+    act(() => {
+      root.render(<AILeftTabRenderer className='slot-class' components={[]} />);
+    });
+
+    const renderContainers = jest.fn((component) => <span key={component.options.containerId} />);
+    mockCapturedLeftTabbarProps.renderOtherVisibleContainers({ renderContainers });
+
+    expect(renderContainers).toHaveBeenCalledTimes(1);
+    expect(renderContainers).toHaveBeenCalledWith(
+      mockExtendViewTabbarService.visibleContainers[0],
+      mockExtendViewTabbarService,
+      'extend-view-current',
+    );
+    expect(renderContainers).not.toHaveBeenCalledWith(
+      mockViewTabbarService.visibleContainers[0],
+      expect.anything(),
+      expect.anything(),
+    );
   });
 
   it('Given agentic layout, when the view slot restores size, then it uses the previous resize handle', async () => {

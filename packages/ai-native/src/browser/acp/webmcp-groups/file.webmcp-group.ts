@@ -8,25 +8,24 @@
  */
 import { Injector } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { URI } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { WebMcpGroupRegistration } from '../webmcp-group-registry';
 import { classifyError, errorResult, serviceUnavailableResult, successResult, tryGetService } from '../webmcp-utils';
 
+import {
+  resolveWorkspaceFilePath,
+  validateWorkspaceFileStat,
+  validateWorkspacePathAccess,
+  validateWritableWorkspaceTarget,
+} from './file-workspace-path';
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function resolveWorkspacePath(workspaceDir: string, relativePath: string): string {
-  if (relativePath.startsWith('/')) {
-    return relativePath;
-  }
-  return `${workspaceDir}/${relativePath}`.replace(/\/+/g, '/');
-}
-
-function toUri(filePath: string): string {
-  return URI.file(filePath).toString();
+function invalidPathResult(message: string) {
+  return errorResult('INVALID_INPUT', new Error(message));
 }
 
 // ---------------------------------------------------------------------------
@@ -94,11 +93,30 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
             return serviceUnavailableResult('IFileServiceClient');
           }
           try {
-            const absolutePath = resolveWorkspacePath(appConfig.workspaceDir, filePath);
-            const uri = toUri(absolutePath);
+            const resolved = resolveWorkspaceFilePath(appConfig.workspaceDir, filePath);
+            if (!resolved.ok) {
+              return invalidPathResult(resolved.message);
+            }
+            const accessValidation = await validateWorkspacePathAccess(
+              fileService,
+              appConfig.workspaceDir,
+              resolved.value,
+            );
+            if (!accessValidation.ok) {
+              return invalidPathResult(accessValidation.message);
+            }
+            const uri = resolved.value.uri;
             const fileStat = await fileService.getFileStat(uri);
             if (!fileStat) {
               return errorResult('FILE_NOT_FOUND', new Error(`File not found: ${filePath}`));
+            }
+            const statValidation = validateWorkspaceFileStat(
+              appConfig.workspaceDir,
+              fileStat,
+              resolved.value.pathModule,
+            );
+            if (!statValidation.ok) {
+              return invalidPathResult(statValidation.message);
             }
             if (fileStat.isDirectory) {
               return errorResult('IS_DIRECTORY', new Error(`Path is a directory, not a file: ${filePath}`));
@@ -149,8 +167,19 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
             return serviceUnavailableResult('IFileServiceClient');
           }
           try {
-            const absolutePath = resolveWorkspacePath(appConfig.workspaceDir, filePath);
-            const uri = toUri(absolutePath);
+            const resolved = resolveWorkspaceFilePath(appConfig.workspaceDir, filePath);
+            if (!resolved.ok) {
+              return invalidPathResult(resolved.message);
+            }
+            const targetValidation = await validateWritableWorkspaceTarget(
+              fileService,
+              appConfig.workspaceDir,
+              resolved.value,
+            );
+            if (!targetValidation.ok) {
+              return invalidPathResult(targetValidation.message);
+            }
+            const uri = resolved.value.uri;
             const existingStat = await fileService.getFileStat(uri);
             if (existingStat) {
               await fileService.setContent(existingStat, content);
@@ -196,11 +225,30 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
             return serviceUnavailableResult('IFileServiceClient');
           }
           try {
-            const absolutePath = resolveWorkspacePath(appConfig.workspaceDir, dirPath);
-            const uri = toUri(absolutePath);
+            const resolved = resolveWorkspaceFilePath(appConfig.workspaceDir, dirPath);
+            if (!resolved.ok) {
+              return invalidPathResult(resolved.message);
+            }
+            const accessValidation = await validateWorkspacePathAccess(
+              fileService,
+              appConfig.workspaceDir,
+              resolved.value,
+            );
+            if (!accessValidation.ok) {
+              return invalidPathResult(accessValidation.message);
+            }
+            const uri = resolved.value.uri;
             const fileStat = await fileService.getFileStat(uri, true);
             if (!fileStat) {
               return errorResult('FILE_NOT_FOUND', new Error(`Directory not found: ${dirPath}`));
+            }
+            const statValidation = validateWorkspaceFileStat(
+              appConfig.workspaceDir,
+              fileStat,
+              resolved.value.pathModule,
+            );
+            if (!statValidation.ok) {
+              return invalidPathResult(statValidation.message);
             }
             if (!fileStat.isDirectory) {
               return errorResult('NOT_A_DIRECTORY', new Error(`Path is a file, not a directory: ${dirPath}`));
@@ -248,11 +296,30 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
             return serviceUnavailableResult('IFileServiceClient');
           }
           try {
-            const absolutePath = resolveWorkspacePath(appConfig.workspaceDir, filePath);
-            const uri = toUri(absolutePath);
+            const resolved = resolveWorkspaceFilePath(appConfig.workspaceDir, filePath);
+            if (!resolved.ok) {
+              return invalidPathResult(resolved.message);
+            }
+            const accessValidation = await validateWorkspacePathAccess(
+              fileService,
+              appConfig.workspaceDir,
+              resolved.value,
+            );
+            if (!accessValidation.ok) {
+              return invalidPathResult(accessValidation.message);
+            }
+            const uri = resolved.value.uri;
             const fileStat = await fileService.getFileStat(uri);
             if (!fileStat) {
               return errorResult('FILE_NOT_FOUND', new Error(`Path not found: ${filePath}`));
+            }
+            const statValidation = validateWorkspaceFileStat(
+              appConfig.workspaceDir,
+              fileStat,
+              resolved.value.pathModule,
+            );
+            if (!statValidation.ok) {
+              return invalidPathResult(statValidation.message);
             }
             return successResult({
               path: filePath,
@@ -297,9 +364,30 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
             return serviceUnavailableResult('IFileServiceClient');
           }
           try {
-            const absolutePath = resolveWorkspacePath(appConfig.workspaceDir, filePath);
-            const uri = toUri(absolutePath);
-            const exists = await fileService.access(uri);
+            const resolved = resolveWorkspaceFilePath(appConfig.workspaceDir, filePath);
+            if (!resolved.ok) {
+              return invalidPathResult(resolved.message);
+            }
+            const accessValidation = await validateWorkspacePathAccess(
+              fileService,
+              appConfig.workspaceDir,
+              resolved.value,
+            );
+            if (!accessValidation.ok) {
+              return invalidPathResult(accessValidation.message);
+            }
+            const fileStat = await fileService.getFileStat(resolved.value.uri);
+            if (fileStat) {
+              const statValidation = validateWorkspaceFileStat(
+                appConfig.workspaceDir,
+                fileStat,
+                resolved.value.pathModule,
+              );
+              if (!statValidation.ok) {
+                return invalidPathResult(statValidation.message);
+              }
+            }
+            const exists = !!fileStat;
             return successResult({ path: filePath, exists });
           } catch (err) {
             return errorResult(classifyError(err), err);
@@ -345,8 +433,19 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
             return serviceUnavailableResult('IFileServiceClient');
           }
           try {
-            const absolutePath = resolveWorkspacePath(appConfig.workspaceDir, filePath);
-            const uri = toUri(absolutePath);
+            const resolved = resolveWorkspaceFilePath(appConfig.workspaceDir, filePath);
+            if (!resolved.ok) {
+              return invalidPathResult(resolved.message);
+            }
+            const targetValidation = await validateWritableWorkspaceTarget(
+              fileService,
+              appConfig.workspaceDir,
+              resolved.value,
+            );
+            if (!targetValidation.ok) {
+              return invalidPathResult(targetValidation.message);
+            }
+            const uri = resolved.value.uri;
             const existingStat = await fileService.getFileStat(uri);
             if (existingStat) {
               return errorResult('FILE_EXISTS', new Error(`Path already exists: ${filePath}`));
@@ -399,11 +498,30 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
             return serviceUnavailableResult('IFileServiceClient');
           }
           try {
-            const absolutePath = resolveWorkspacePath(appConfig.workspaceDir, filePath);
-            const uri = toUri(absolutePath);
+            const resolved = resolveWorkspaceFilePath(appConfig.workspaceDir, filePath);
+            if (!resolved.ok) {
+              return invalidPathResult(resolved.message);
+            }
+            const accessValidation = await validateWorkspacePathAccess(
+              fileService,
+              appConfig.workspaceDir,
+              resolved.value,
+            );
+            if (!accessValidation.ok) {
+              return invalidPathResult(accessValidation.message);
+            }
+            const uri = resolved.value.uri;
             const existingStat = await fileService.getFileStat(uri);
             if (!existingStat) {
               return errorResult('FILE_NOT_FOUND', new Error(`Path not found: ${filePath}`));
+            }
+            const statValidation = validateWorkspaceFileStat(
+              appConfig.workspaceDir,
+              existingStat,
+              resolved.value.pathModule,
+            );
+            if (!statValidation.ok) {
+              return invalidPathResult(statValidation.message);
             }
             if (existingStat.isDirectory && !recursive) {
               return errorResult(
@@ -455,10 +573,44 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
             return serviceUnavailableResult('IFileServiceClient');
           }
           try {
-            const sourceAbsolute = resolveWorkspacePath(appConfig.workspaceDir, source);
-            const destinationAbsolute = resolveWorkspacePath(appConfig.workspaceDir, destination);
-            const sourceUri = toUri(sourceAbsolute);
-            const destinationUri = toUri(destinationAbsolute);
+            const sourceResolved = resolveWorkspaceFilePath(appConfig.workspaceDir, source);
+            if (!sourceResolved.ok) {
+              return invalidPathResult(sourceResolved.message);
+            }
+            const sourceAccessValidation = await validateWorkspacePathAccess(
+              fileService,
+              appConfig.workspaceDir,
+              sourceResolved.value,
+            );
+            if (!sourceAccessValidation.ok) {
+              return invalidPathResult(sourceAccessValidation.message);
+            }
+            const destinationResolved = resolveWorkspaceFilePath(appConfig.workspaceDir, destination);
+            if (!destinationResolved.ok) {
+              return invalidPathResult(destinationResolved.message);
+            }
+            const sourceUri = sourceResolved.value.uri;
+            const destinationUri = destinationResolved.value.uri;
+            const sourceStat = await fileService.getFileStat(sourceUri);
+            if (!sourceStat) {
+              return errorResult('FILE_NOT_FOUND', new Error(`Source not found: ${source}`));
+            }
+            const sourceValidation = validateWorkspaceFileStat(
+              appConfig.workspaceDir,
+              sourceStat,
+              sourceResolved.value.pathModule,
+            );
+            if (!sourceValidation.ok) {
+              return invalidPathResult(sourceValidation.message);
+            }
+            const destinationValidation = await validateWritableWorkspaceTarget(
+              fileService,
+              appConfig.workspaceDir,
+              destinationResolved.value,
+            );
+            if (!destinationValidation.ok) {
+              return invalidPathResult(destinationValidation.message);
+            }
             await fileService.move(sourceUri, destinationUri);
             return successResult({ source, destination, moved: true });
           } catch (err) {
@@ -503,10 +655,44 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
             return serviceUnavailableResult('IFileServiceClient');
           }
           try {
-            const sourceAbsolute = resolveWorkspacePath(appConfig.workspaceDir, source);
-            const destinationAbsolute = resolveWorkspacePath(appConfig.workspaceDir, destination);
-            const sourceUri = toUri(sourceAbsolute);
-            const destinationUri = toUri(destinationAbsolute);
+            const sourceResolved = resolveWorkspaceFilePath(appConfig.workspaceDir, source);
+            if (!sourceResolved.ok) {
+              return invalidPathResult(sourceResolved.message);
+            }
+            const sourceAccessValidation = await validateWorkspacePathAccess(
+              fileService,
+              appConfig.workspaceDir,
+              sourceResolved.value,
+            );
+            if (!sourceAccessValidation.ok) {
+              return invalidPathResult(sourceAccessValidation.message);
+            }
+            const destinationResolved = resolveWorkspaceFilePath(appConfig.workspaceDir, destination);
+            if (!destinationResolved.ok) {
+              return invalidPathResult(destinationResolved.message);
+            }
+            const sourceUri = sourceResolved.value.uri;
+            const destinationUri = destinationResolved.value.uri;
+            const sourceStat = await fileService.getFileStat(sourceUri);
+            if (!sourceStat) {
+              return errorResult('FILE_NOT_FOUND', new Error(`Source not found: ${source}`));
+            }
+            const sourceValidation = validateWorkspaceFileStat(
+              appConfig.workspaceDir,
+              sourceStat,
+              sourceResolved.value.pathModule,
+            );
+            if (!sourceValidation.ok) {
+              return invalidPathResult(sourceValidation.message);
+            }
+            const destinationValidation = await validateWritableWorkspaceTarget(
+              fileService,
+              appConfig.workspaceDir,
+              destinationResolved.value,
+            );
+            if (!destinationValidation.ok) {
+              return invalidPathResult(destinationValidation.message);
+            }
             await fileService.copy(sourceUri, destinationUri);
             return successResult({ source, destination, copied: true });
           } catch (err) {

@@ -161,13 +161,13 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
         if (isPreFlexMode) {
           if (prevMaxResize && prevMaxResize <= prevWidth) {
             targetFixedWidth = prevMaxResize;
-          } else if (nextMaxResize && nextMaxResize > nextWidth) {
+          } else if (nextMaxResize && nextMaxResize <= nextWidth) {
             targetFixedWidth = prevWidth + nextWidth - nextMaxResize;
           }
         } else {
           if (nextMaxResize && nextMaxResize <= nextWidth) {
             targetFixedWidth = nextMaxResize;
-          } else if (prevMaxResize && prevMaxResize > nextWidth) {
+          } else if (prevMaxResize && prevMaxResize <= prevWidth) {
             targetFixedWidth = prevWidth + nextWidth - prevMaxResize;
           }
         }

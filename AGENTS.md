@@ -53,16 +53,16 @@ lsof -nP -iTCP:8000 -sTCP:LISTEN || true
 
 ## Build and Test Matrix
 
-- TypeScript or shared API changes:
+- TypeScript or shared API changes: choose the narrowest affected TypeScript reference or package-level typecheck that covers the files you touched. For cross-package contracts, use the relevant reference under `configs/ts/references/`.
 
 ```bash
-yarn tsc --build configs/ts/references/tsconfig.ai-native.json --pretty false
+yarn tsc --build <affected-ts-reference> --pretty false
 ```
 
-- Package-specific build when touching package build output or package-level contracts:
+- Package-specific build when touching package build output or package-level contracts: run the build for the workspace package you changed.
 
 ```bash
-yarn workspace @opensumi/ide-ai-native build
+yarn workspace <affected-workspace> build
 ```
 
 - Focused Jest tests are usually preferred over full-suite runs during iteration:
@@ -95,28 +95,16 @@ yarn test:ui-report
 
 ## Current Focus Appendix
 
-This appendix captures current high-activity areas. Treat it as helpful context, not as a permanent project-wide priority list.
+This appendix is for stable guidance that is still too area-specific for the main sections. Do not store short-term feature notes, temporary tool names, sprint priorities, or one-off validation shortcuts in the root `AGENTS.md`. Put those details in a nearby package-level `AGENTS.md`, `test/bdd/README.md`, protocol documentation, or task-specific notes instead.
 
-### ACP, AI Native, and WebMCP
+### Protocol, MCP, and Extension-Facing Work
 
-- Current high-activity areas include:
-  - `packages/ai-native`
-  - `packages/core-common/src/types/ai-native`
-  - `packages/main-layout`
-  - `packages/core-browser`
-  - `test/bdd`
-- For ACP/WebMCP work, treat `test/bdd/README.md` as the current runtime contract.
-- Canonical WebMCP tool names are external capability identifiers. They should be registered once in the browser `WebMcpGroupRegistry` and match browser and MCP exposure.
-- Do not reintroduce legacy `_opensumi/{group}/{action}` identifiers except in explicit negative tests.
-- Current ACP Chat tool names include `acp_chat_getSessionState`, `acp_chat_getPermissionState`, `acp_chat_showChatView`, `acp_chat_listSessions`, `acp_chat_getAvailableCommands`, `acp_chat_prepareSessionDigest`, `acp_chat_postPreparedRelay`, `acp_chat_readSessionMessages`, and `acp_chat_setSessionMode`.
-- Do not expose old direct ACP Chat tools such as `acp_sendMessage`, `acp_createSession`, `acp_switchSession`, `acp_clearSession`, `acp_cancelRequest`, or `acp_handlePermissionDialog`.
-- Permission scenarios may observe pending permission state and DOM, but must not approve or reject permissions through an ACP tool.
-- Session mode tests must verify that a mode switch is observable through session state; a successful setter response alone is not enough.
-- Startup logs for the built-in `opensumi-ide` MCP server must not print the full bridge URL or token. Redact token paths as `/mcp/<redacted>`.
+- Treat protocol types, contribution registries, BDD scenarios, and nearby package documentation as the source of truth for current capability names and behavior.
+- Keep externally visible names stable unless the task explicitly changes the public contract. When changing them, update browser exposure, MCP exposure, tests, and documentation together.
+- For security-sensitive integration points, verify capability gating, backwards compatibility, and log/token redaction.
 
-### Agentic and Classic Layout
+### Layout and Runtime Validation
 
-- The normal web sample enables `AILayout`; `start:e2e` intentionally disables the AI/design layout.
-- Do not use `start:e2e` to validate Agentic layout, Classic layout, or the AI layout selector.
-- For Agentic/Classic layout changes, validate the live IDE through a real browser or CDP in addition to focused layout tests.
-- The IDE is ready for browser checks when the document is complete, `#main` exists, loading indicators are gone, and the page text includes `EXPLORER`.
+- For layout, startup, browser integration, or real DOM behavior, validate the relevant runtime profile rather than relying only on component snapshots.
+- Choose the launch profile that actually enables the feature under test. If profiles differ, document which profile you used and what risk remains.
+- For browser checks, wait until the IDE is fully loaded before judging layout or behavior.

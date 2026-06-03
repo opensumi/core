@@ -14,6 +14,8 @@ import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-nativ
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
+import { type WebMcpProfile, canExposeWebMcpTool, isValidWebMcpProfile } from '../../common/webmcp-policy';
+
 import { toAgentUpdate } from './acp-agent-update-adapter';
 import { acpDebugLogStore } from './acp-debug-log';
 import { getAcpErrorMessage, normalizeAcpError } from './acp-error';
@@ -41,20 +43,20 @@ export { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types
 export const AcpAgentServiceToken = Symbol('AcpAgentServiceToken');
 
 const WEBMCP_CAPABILITY_HINT =
-  'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server. Start with opensumi_discoverCapabilities, then call opensumi_enableCapabilityGroup for the relevant group. If the MCP client does not refresh tools/list after enabling, use opensumi_invokeCapabilityTool as the fallback broker.';
+  'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server. Start with opensumi_discover_capabilities, then call opensumi_enable_capability_group for the relevant group. If the MCP client does not refresh tools/list after enabling, use opensumi_invoke_capability_tool as the fallback broker.';
 const WEBMCP_CAPABILITY_QUESTION_HINT =
-  'When the user asks what IDE/OpenSumi capabilities or tools are available, answer from the live opensumi-ide MCP metadata below. If you need current per-session enabled/disabled state, call opensumi_discoverCapabilities with includeDisabled=true. Do not answer only from memory.';
+  'When the user asks what IDE/OpenSumi capabilities or tools are available, answer from the live opensumi-ide MCP metadata below. If you need current per-session enabled/disabled state, call opensumi_discover_capabilities with includeDisabled=true. Do not answer only from memory.';
 const WEBMCP_TERMINAL_CAPABILITY_HINT =
-  'For requests to create an OpenSumi IDE terminal or type/run a command in an IDE terminal, use the opensumi-ide MCP server: call opensumi_enableCapabilityGroup with group "terminal", refresh tools/list if possible, then use terminal_create and terminal_runCommand. If tools/list is not refreshed, call opensumi_invokeCapabilityTool for terminal_create and terminal_runCommand.';
+  'For requests to create an OpenSumi IDE terminal or type/run a command in an IDE terminal, use the opensumi-ide MCP server: call opensumi_enable_capability_group with group "terminal", refresh tools/list if possible, then use terminal_create and terminal_runCommand. If tools/list is not refreshed, call opensumi_invoke_capability_tool for terminal_create and terminal_runCommand.';
 
 type WebMcpToolWithMeta = WebMcpToolDef & {
-  riskLevel?: string;
+  riskLevel?: 'read' | 'write' | 'destructive' | 'shell' | 'ui';
   exposedByDefault?: boolean;
-  profiles?: string[];
+  profiles?: WebMcpProfile[];
 };
 
 type WebMcpGroupWithMeta = Omit<WebMcpGroupDef, 'tools'> & {
-  profile?: string;
+  profile?: WebMcpProfile;
   tools: WebMcpToolWithMeta[];
 };
 
@@ -1695,8 +1697,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       })) as WebMcpGroupWithMeta[];
       const profile = groups.find((group) => group.profile)?.profile ?? 'unknown';
       const lines = groups.map((group) => {
+        const groupProfile = isValidWebMcpProfile(group.profile) ? group.profile : 'default';
         const tools = group.tools
-          .filter((tool) => tool.exposedByDefault !== false)
+          .filter((tool) => canExposeWebMcpTool(tool, groupProfile))
           .map((tool) => tool.name)
           .slice(0, 12);
         const suffix =

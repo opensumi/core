@@ -44,6 +44,16 @@ describe('WebMCP modelContext adapter', () => {
                 required: ['path', 'content'],
               },
             },
+            {
+              name: 'file_interactive_read',
+              description: 'Interactive read',
+              riskLevel: 'read',
+              profiles: ['interactive', 'full'],
+              inputSchema: {
+                type: 'object',
+                properties: {},
+              },
+            },
           ],
         },
         {
@@ -117,6 +127,18 @@ describe('WebMCP modelContext adapter', () => {
     expect(tools.map((tool) => tool.name)).toEqual(['file_read', 'hidden_read']);
   });
 
+  it('does not let includeAllTools bypass profile exposure', () => {
+    const registry = createRegistry();
+
+    const tools = getWebMcpModelContextToolDefinitions(registry, {
+      defaultLoadedOnly: false,
+      includeAllTools: true,
+    });
+
+    expect(tools.map((tool) => tool.name)).not.toContain('file_interactive_read');
+    expect(tools.map((tool) => tool.name)).not.toContain('file_write');
+  });
+
   it('registers and executes canonical tool names', async () => {
     const registry = createRegistry();
 
@@ -135,30 +157,14 @@ describe('WebMCP modelContext adapter', () => {
     expect(modelContext.registerTool.mock.results[0].value.dispose).toHaveBeenCalled();
   });
 
-  it('registers browser catalog tools on the default modelContext surface', () => {
+  it('registers only profile-exposed registry tools on the default modelContext surface', () => {
     const registry = createRegistry();
 
     registerWebMcpModelContextTools(registry);
     const modelContext = (global as any).navigator.modelContext;
     const registeredToolNames = modelContext.registerTool.mock.calls.map(([tool]) => tool.name);
 
-    expect(registeredToolNames).toEqual(
-      expect.arrayContaining([
-        'opensumi_discover_capabilities',
-        'opensumi_describe_capability_group',
-        'opensumi_describe_tool',
-        'opensumi_enable_capability_group',
-        'opensumi_invoke_capability_tool',
-      ]),
-    );
-    expect(registeredToolNames).toEqual(
-      expect.not.arrayContaining([
-        'opensumi_discoverCapabilities',
-        'opensumi_describeCapabilityGroup',
-        'opensumi_describeTool',
-        'opensumi_enableCapabilityGroup',
-        'opensumi_invokeCapabilityTool',
-      ]),
-    );
+    expect(registeredToolNames).toEqual(['file_read']);
+    expect(registeredToolNames).toEqual(expect.not.arrayContaining(['file_write', 'file_interactive_read']));
   });
 });

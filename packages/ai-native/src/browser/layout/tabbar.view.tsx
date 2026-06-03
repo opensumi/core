@@ -160,24 +160,28 @@ export const AILeftTabRenderer = ({
 const AILeftTabbarRenderer: React.FC = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.extendView);
-  const currentContainerId = useAutorun(tabbarService.currentContainerId);
+  const extendViewTabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.extendView);
+  const extendViewCurrentContainerId = useAutorun(extendViewTabbarService.currentContainerId);
 
   const extraMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
   const [navMenu] = useContextMenus(extraMenus);
 
   const renderOtherVisibleContainers = useCallback(
     ({ renderContainers }) => {
-      const visibleContainers = tabbarService.visibleContainers.filter((container) => !container.options?.hideTab);
+      const visibleContainers = extendViewTabbarService.visibleContainers.filter(
+        (container) => !container.options?.hideTab,
+      );
 
       return (
         <>
           {visibleContainers.length > 0 && <HorizontalVertical margin={'8px auto 0px'} width={'60%'} />}
-          {visibleContainers.map((component) => renderContainers(component, tabbarService, currentContainerId))}
+          {visibleContainers.map((component) =>
+            renderContainers(component, extendViewTabbarService, extendViewCurrentContainerId),
+          )}
         </>
       );
     },
-    [currentContainerId, tabbarService],
+    [extendViewCurrentContainerId, extendViewTabbarService],
   );
 
   return (

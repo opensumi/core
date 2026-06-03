@@ -13,6 +13,13 @@ import { classifyError, errorResult, serviceUnavailableResult, successResult, tr
 const DEFAULT_DIAGNOSTIC_RESULTS = 100;
 const MAX_DIAGNOSTIC_RESULTS = 500;
 
+interface SafeDiagnosticStats {
+  errors: number;
+  warnings: number;
+  infos: number;
+  unknowns: number;
+}
+
 function toPositiveCappedNumber(value: unknown, fallback: number, cap: number): number {
   return Math.min(Math.max(Number(value) || fallback, 1), cap);
 }
@@ -48,6 +55,15 @@ function severityName(severity: MarkerSeverity): string {
     return 'info';
   }
   return 'hint';
+}
+
+function toSafeDiagnosticStats(stats: Partial<SafeDiagnosticStats>): SafeDiagnosticStats {
+  return {
+    errors: Number(stats.errors) || 0,
+    warnings: Number(stats.warnings) || 0,
+    infos: Number(stats.infos) || 0,
+    unknowns: Number(stats.unknowns) || 0,
+  };
 }
 
 function resolveResourceUri(workspaceService: IWorkspaceService | null, pathOrUri: string): string {
@@ -130,7 +146,7 @@ export function createDiagnosticsGroup(container: Injector): WebMcpGroupRegistra
             }));
             return successResult({
               diagnostics,
-              stats: markerService.getManager().getStats(),
+              stats: toSafeDiagnosticStats(markerService.getManager().getStats()),
               total: diagnostics.length,
               truncated: markers.length >= maxResults,
             });
@@ -153,7 +169,7 @@ export function createDiagnosticsGroup(container: Injector): WebMcpGroupRegistra
             return serviceUnavailableResult('IMarkerService');
           }
           try {
-            return successResult(markerService.getManager().getStats());
+            return successResult(toSafeDiagnosticStats(markerService.getManager().getStats()));
           } catch (err) {
             return errorResult(classifyError(err), err);
           }
