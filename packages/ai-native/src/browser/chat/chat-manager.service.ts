@@ -26,6 +26,7 @@ import { ChatFeatureRegistry } from './chat.feature.registry';
 
 interface ISessionModel {
   sessionId: string;
+  createdAt?: number;
   modelId: string;
   history: { additional: Record<string, any>; messages: IHistoryChatMessage[] };
   requests: {
@@ -99,6 +100,7 @@ export class ChatManagerService extends Disposable {
       .map((item) => {
         const model = new ChatModel(this.chatFeatureRegistry, {
           sessionId: item.sessionId,
+          createdAt: item.createdAt,
           history: new MsgHistoryManager(this.chatFeatureRegistry, item.history),
           modelId: item.modelId,
         });

@@ -307,6 +307,7 @@ export class ChatModel extends Disposable implements IChatModel {
     private chatFeatureRegistry: ChatFeatureRegistry,
     initParams?: {
       sessionId?: string;
+      createdAt?: number;
       history?: MsgHistoryManager;
       modelId?: string;
       title?: string;
@@ -318,6 +319,7 @@ export class ChatModel extends Disposable implements IChatModel {
   ) {
     super();
     this.#sessionId = initParams?.sessionId ?? uuid();
+    this.#createdAt = initParams?.createdAt ?? Date.now();
     this.history = initParams?.history ?? new MsgHistoryManager(this.chatFeatureRegistry);
     this.#modelId = initParams?.modelId;
     this.#title = initParams?.title ?? '';
@@ -339,6 +341,11 @@ export class ChatModel extends Disposable implements IChatModel {
   #sessionId: string;
   get sessionId(): string {
     return this.#sessionId;
+  }
+
+  #createdAt: number;
+  get createdAt(): number {
+    return this.#createdAt;
   }
 
   #requests: Map<string, ChatRequestModel> = new Map();
@@ -615,6 +622,7 @@ export class ChatModel extends Disposable implements IChatModel {
   toJSON() {
     return {
       sessionId: this.sessionId,
+      createdAt: this.createdAt,
       modelId: this.modelId,
       agentModes: this.agentModes,
       currentModeId: this.currentModeId,

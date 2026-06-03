@@ -9,6 +9,7 @@ import { IChatProgressResponseContent } from './chat-model';
  */
 export interface ISessionModel {
   sessionId: string;
+  createdAt?: number;
   modelId?: string;
   agentModes?: AcpSessionModeOption[];
   currentModeId?: string;

@@ -95,21 +95,21 @@ describe('AcpChatHistory BDD', () => {
     {
       id: 'acp:oldest',
       title: 'Oldest Session',
-      updatedAt: 1000,
+      createdAt: 1000,
       loading: false,
       threadStatus: 'idle',
     },
     {
       id: 'acp:middle',
       title: 'Middle Session',
-      updatedAt: 2000,
+      createdAt: 2000,
       loading: false,
       threadStatus: 'awaiting_prompt',
     },
     {
       id: 'acp:current',
       title: 'New Session',
-      updatedAt: 3000,
+      createdAt: 3000,
       loading: false,
       threadStatus: 'idle',
     },
@@ -173,6 +173,45 @@ describe('AcpChatHistory BDD', () => {
     expect(container.querySelector('[data-testid="acp-chat-history-popover"]')).not.toBeNull();
     expect(getRenderedItemIds()).toEqual(['acp:current', 'acp:middle', 'acp:oldest']);
     expect(getHistoryItem('acp:current').className).toContain('chat_history_item_selected');
+  });
+
+  it('Given manager order is mixed, when the popover renders, then sessions are ordered by creation time descending', () => {
+    renderHistory({
+      historyList: [
+        {
+          id: 'acp:newest',
+          title: 'Newest Session',
+          createdAt: 3000,
+          loading: false,
+        },
+        {
+          id: 'acp:oldest',
+          title: 'Oldest Session',
+          createdAt: 1000,
+          loading: false,
+        },
+        {
+          id: 'acp:middle',
+          title: 'Middle Session',
+          createdAt: 2000,
+          loading: false,
+        },
+      ],
+      currentId: 'acp:middle',
+    });
+
+    expect(getRenderedItemIds()).toEqual(['acp:newest', 'acp:middle', 'acp:oldest']);
+  });
+
+  it('Given legacy sessions have no creation time, when the popover renders, then it falls back to reverse manager order', () => {
+    renderHistory({
+      historyList: baseHistoryList.map((item) => ({
+        ...item,
+        createdAt: 0,
+      })),
+    });
+
+    expect(getRenderedItemIds()).toEqual(['acp:current', 'acp:middle', 'acp:oldest']);
   });
 
   it('Given inline variant, when it renders, then it shows the history list directly without the popover trigger', () => {
@@ -323,7 +362,7 @@ describe('AcpChatHistory BDD', () => {
         {
           id: 'acp:pending',
           title: 'Needs Permission',
-          updatedAt: 4000,
+          createdAt: 4000,
           loading: false,
           hasPendingPermission: true,
         },
@@ -346,7 +385,7 @@ describe('AcpChatHistory BDD', () => {
     const historyList = Array.from({ length: 101 }, (_, index) => ({
       id: `acp:${index}`,
       title: `Session ${index}`,
-      updatedAt: index,
+      createdAt: index,
       loading: false,
     }));
 

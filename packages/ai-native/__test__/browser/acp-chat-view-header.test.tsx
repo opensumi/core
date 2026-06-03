@@ -53,11 +53,26 @@ jest.mock('@opensumi/ide-workspace', () => ({
 
 jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
   __esModule: true,
-  default: ({ title, variant, disabled, historyCollapsed, onNewChat, onToggleHistoryCollapsed }: any) =>
+  default: ({
+    title,
+    variant,
+    disabled,
+    historyCollapsed,
+    historyList = [],
+    onNewChat,
+    onToggleHistoryCollapsed,
+  }: any) =>
     require('react').createElement(
       'div',
       { 'data-testid': 'acp-chat-history', 'data-collapsed': String(!!historyCollapsed), 'data-variant': variant },
       title,
+      historyList.map((item: any) =>
+        require('react').createElement('span', {
+          key: item.id,
+          'data-created-at': String(item.createdAt),
+          'data-testid': `acp-chat-history-item-${item.id}`,
+        }),
+      ),
       require('react').createElement(
         'button',
         {
@@ -182,20 +197,35 @@ import { DefaultChatViewHeaderACP } from '../../src/browser/chat/chat.view.acp';
 
 const disposable = () => ({ dispose: jest.fn() });
 
-function createMockSession() {
+function createMockSession({
+  createdAt,
+  messages,
+}: {
+  createdAt?: number;
+  messages?: Array<{
+    role: ChatMessageRole;
+    content: string;
+    replyStartTime?: number;
+    timestamp?: number;
+  }>;
+} = {}) {
   const history = {
-    getMessages: jest.fn(() => [
-      {
-        role: ChatMessageRole.User,
-        content: 'Current ACP session',
-        replyStartTime: 1,
-      },
-    ]),
+    getMessages: jest.fn(
+      () =>
+        messages || [
+          {
+            role: ChatMessageRole.User,
+            content: 'Current ACP session',
+            replyStartTime: 1,
+          },
+        ],
+    ),
     onMessageChange: jest.fn(() => disposable()),
   };
 
   return {
     sessionId: 'acp:current',
+    createdAt,
     title: 'Current ACP session',
     history,
     threadStatus: 'idle',
@@ -207,21 +237,23 @@ function createMockServices({
   isMultiRoot = false,
   panelLayout = 'classic',
   createSessionModel,
+  session,
 }: {
   isMultiRoot?: boolean;
   panelLayout?: 'classic' | 'agentic';
   createSessionModel?: jest.Mock;
+  session?: ReturnType<typeof createMockSession>;
 } = {}) {
-  const session = createMockSession();
+  const currentSession = session || createMockSession();
   const panelLayoutListeners = new Set<(mode: 'classic' | 'agentic') => void>();
   let currentPanelLayout = panelLayout;
   const aiChatService = {
-    sessionModel: session,
+    sessionModel: currentSession,
     activateSession: jest.fn(),
     clearSessionModel: jest.fn(),
     createSessionModel: createSessionModel || jest.fn(),
-    getSessions: jest.fn(() => [session]),
-    getSessionsByAcp: jest.fn(() => Promise.resolve([session])),
+    getSessions: jest.fn(() => [currentSession]),
+    getSessionsByAcp: jest.fn(() => Promise.resolve([currentSession])),
     onChangeSession: jest.fn(() => disposable()),
     onSessionLoadingChange: jest.fn(() => disposable()),
   };
@@ -366,6 +398,48 @@ describe('ACP chat view headers', () => {
     );
 
     expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('popover');
+  });
+
+  it('passes session creation time to the ACP-specific history list', async () => {
+    installInjectableMocks(createMockServices({ session: createMockSession({ createdAt: 12345 }) }));
+
+    await renderHeader(
+      React.createElement(AcpChatViewHeader, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(
+      container.querySelector('[data-testid="acp-chat-history-item-acp:current"]')?.getAttribute('data-created-at'),
+    ).toBe('12345');
+  });
+
+  it('falls back to the first message timestamp for default ACP history creation time', async () => {
+    installInjectableMocks(
+      createMockServices({
+        session: createMockSession({
+          messages: [
+            {
+              role: ChatMessageRole.User,
+              content: 'Current ACP session',
+              timestamp: 67890,
+            },
+          ],
+        }),
+      }),
+    );
+
+    await renderHeader(
+      React.createElement(DefaultChatViewHeaderACP, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(
+      container.querySelector('[data-testid="acp-chat-history-item-acp:current"]')?.getAttribute('data-created-at'),
+    ).toBe('67890');
   });
 
   it('uses inline history in the ACP-specific header when panel layout is agentic', async () => {

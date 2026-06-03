@@ -1,5 +1,6 @@
 import { ChatMessageRole } from '@opensumi/ide-core-common';
 
+import { ACPSessionProvider } from '../../../src/browser/chat/acp-session-provider';
 import { AcpChatManagerService } from '../../../src/browser/chat/chat-manager.service.acp';
 import { ChatModel } from '../../../src/browser/chat/chat-model';
 import { ChatFeatureRegistry } from '../../../src/browser/chat/chat.feature.registry';
@@ -16,6 +17,7 @@ describe('AcpChatManagerService', () => {
       storageInitEmitter: any;
       listenSession: jest.Mock;
       fromAcpJSON(data: any[]): ChatModel[];
+      toSessionData(model: ChatModel): any;
     };
 
     Object.defineProperty(service, 'aiNativeConfig', {
@@ -129,6 +131,74 @@ describe('AcpChatManagerService', () => {
     return { service, storage };
   };
 
+  const createSessionProvider = () => {
+    const provider = Object.create(ACPSessionProvider.prototype) as ACPSessionProvider & {
+      aiBackService: any;
+      configProvider: any;
+      loadedSessionMap: Map<string, any>;
+      messageService: any;
+      convertAgentSessionToModel(sessionId: string, agentSession: any): any;
+    };
+
+    Object.defineProperty(provider, 'configProvider', {
+      value: {
+        resolveConfig: jest.fn().mockResolvedValue({ cwd: '/workspace' }),
+      },
+    });
+    Object.defineProperty(provider, 'messageService', {
+      value: {
+        error: jest.fn(),
+      },
+    });
+    Object.defineProperty(provider, 'loadedSessionMap', {
+      value: new Map(),
+    });
+
+    return provider;
+  };
+
+  it('sets creation time when creating an ACP session', async () => {
+    const provider = createSessionProvider();
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        createSession: jest.fn().mockResolvedValue({
+          sessionId: 's1',
+        }),
+      },
+    });
+    const dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(12345);
+
+    try {
+      const session = await provider.createSession();
+
+      expect(session.createdAt).toBe(12345);
+    } finally {
+      dateNowSpy.mockRestore();
+    }
+  });
+
+  it('uses the first agent message timestamp as loaded ACP session creation time', () => {
+    const provider = createSessionProvider();
+
+    const session = provider.convertAgentSessionToModel('acp:s1', {
+      sessionId: 's1',
+      messages: [
+        {
+          role: 'user',
+          content: 'first prompt',
+          timestamp: 67890,
+        },
+        {
+          role: 'assistant',
+          content: 'reply',
+          timestamp: 67891,
+        },
+      ],
+    });
+
+    expect(session.createdAt).toBe(67890);
+  });
+
   it('preserves metadata title when loading a full ACP session without title', async () => {
     const service = createService();
     const sessionId = 'acp:s1';
@@ -170,6 +240,25 @@ describe('AcpChatManagerService', () => {
     const loadedModel = service.sessionModels.get(sessionId);
     expect(loadedModel?.title).toBe('commit');
     expect(loadedModel?.history.getMessages()).toHaveLength(1);
+  });
+
+  it('preserves creation time when restoring and serializing ACP sessions', () => {
+    const service = createService();
+    const [model] = service.fromAcpJSON([
+      {
+        sessionId: 'acp:s-created',
+        createdAt: 12345,
+        history: {
+          additional: {},
+          messages: [],
+        },
+        requests: [],
+        title: 'created session',
+      },
+    ]);
+
+    expect(model.createdAt).toBe(12345);
+    expect(service.toSessionData(model).createdAt).toBe(12345);
   });
 
   it('keeps existing list title when a full ACP session is loaded', async () => {

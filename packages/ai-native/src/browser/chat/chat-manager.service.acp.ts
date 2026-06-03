@@ -460,6 +460,7 @@ export class AcpChatManagerService extends ChatManagerService {
   private toSessionData(model: ChatModel): ISessionModel {
     return {
       sessionId: model.sessionId,
+      createdAt: model.createdAt,
       modelId: model.modelId,
       history: model.history.toJSON(),
       title: model.title,
@@ -484,6 +485,7 @@ export class AcpChatManagerService extends ChatManagerService {
       .map((item) => {
         const model = new ChatModel(this.chatFeatureRegistry, {
           sessionId: item.sessionId,
+          createdAt: item.createdAt,
           history: new MsgHistoryManager(this.chatFeatureRegistry, item.history),
           modelId: item.modelId,
           title: this.resolveAcpSessionTitle(item),

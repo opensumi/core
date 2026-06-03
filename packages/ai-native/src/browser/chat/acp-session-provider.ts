@@ -45,10 +45,12 @@ export class ACPSessionProvider implements ISessionProvider {
 
       // 构造本地 Session ID（添加 acp: 前缀）
       const sessionId = `acp:${result.sessionId}`;
+      const createdAt = Date.now();
 
       // 构造空壳会话模型
       const sessionModel: ISessionModel & { extension?: ISessionModelExtension } = {
         sessionId,
+        createdAt,
         modelId: result.currentModelId,
         agentModes: result.modes,
         currentModeId: result.currentModeId,
@@ -187,6 +189,7 @@ export class ACPSessionProvider implements ISessionProvider {
 
     const result = {
       sessionId,
+      createdAt: messages[0]?.timestamp,
       modelId: agentSession.currentModelId,
       agentModes: agentSession.modes,
       currentModeId: agentSession.currentModeId,

@@ -84,6 +84,11 @@ interface TDispatchAction {
 
 const MAX_TITLE_LENGTH = 100;
 
+function getSessionCreatedAt(session: ChatModel): number {
+  const firstMessage = session.history.getMessages()[0];
+  return session.createdAt || firstMessage?.timestamp || firstMessage?.replyStartTime || 0;
+}
+
 const getFileChanges = (codeBlocks: CodeBlockData[]) =>
   codeBlocks
     .map((block) => {
@@ -1104,11 +1109,11 @@ export function DefaultChatViewHeaderACP({
           const messageTitle =
             messages.length > 0 ? cleanAttachedTextWrapper(messages[0].content).slice(0, MAX_TITLE_LENGTH) : '';
           const title = session.title || messageTitle;
-          const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
+          const createdAt = getSessionCreatedAt(session);
           return {
             id: session.sessionId,
             title,
-            updatedAt,
+            createdAt,
             loading: false,
             threadStatus: session.threadStatus,
             hasPendingPermission: permissionBridgeService.hasPendingForSession(session.sessionId),

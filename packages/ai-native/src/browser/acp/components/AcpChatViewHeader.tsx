@@ -32,6 +32,11 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+function getSessionCreatedAt(session: ChatModel): number {
+  const firstMessage = session.history.getMessages()[0];
+  return session.createdAt || firstMessage?.timestamp || firstMessage?.replyStartTime || 0;
+}
+
 /**
  * ACP 专属的 ChatViewHeader
  * 与 DefaultChatViewHeader 的区别：
@@ -181,12 +186,12 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
           sessionTitle = cleanAttachedTextWrapper(messages[0].content).slice(0, MAX_TITLE_LENGTH);
         }
 
-        const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
+        const createdAt = getSessionCreatedAt(session as ChatModel);
 
         return {
           id: session.sessionId,
           title: sessionTitle,
-          updatedAt,
+          createdAt,
           loading: false,
           threadStatus: (session as ChatModel).threadStatus,
           hasPendingPermission: permissionBridgeService.hasPendingForSession(session.sessionId),

@@ -33,7 +33,7 @@ function renderThreadStatusIcon(status: ThreadStatus | undefined, loading: boole
 export interface IChatHistoryItem {
   id: string;
   title: string;
-  updatedAt: number;
+  createdAt: number;
   loading: boolean;
   threadStatus?: ThreadStatus;
   hasPendingPermission?: boolean;
@@ -178,8 +178,8 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
         const result = [] as { key: string; items: typeof list }[];
 
         list.forEach((item: IChatHistoryItem) => {
-          const updatedAt = new Date(item.updatedAt);
-          const diff = now.getTime() - updatedAt.getTime();
+          const createdAt = new Date(item.createdAt);
+          const diff = now.getTime() - createdAt.getTime();
           const key = getTimeKey(diff);
 
           const existingGroup = result.find((group) => group.key === key);
@@ -262,8 +262,21 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     // 渲染历史记录列表
     const renderHistory = useCallback(() => {
       const filteredList = historyList
-        .slice(-MAX_HISTORY_LIST)
-        .reverse()
+        .map((item, index) => ({ item, index }))
+        .sort((a, b) => {
+          if (a.item.createdAt && b.item.createdAt && a.item.createdAt !== b.item.createdAt) {
+            return b.item.createdAt - a.item.createdAt;
+          }
+          if (a.item.createdAt && !b.item.createdAt) {
+            return -1;
+          }
+          if (!a.item.createdAt && b.item.createdAt) {
+            return 1;
+          }
+          return b.index - a.index;
+        })
+        .slice(0, MAX_HISTORY_LIST)
+        .map(({ item }) => item)
         .filter((item) => item.title !== undefined && item.title.includes(searchValue));
 
       const groupedHistoryList = formatHistory(filteredList);
