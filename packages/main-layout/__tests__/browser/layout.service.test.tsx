@@ -522,4 +522,62 @@ describe('main layout test', () => {
     );
     setStateSpy.mockRestore();
   });
+
+  it('should store explicit slot size immediately for the active layout state key', () => {
+    const layoutStorageKey = 'layout.ai.agentic';
+    const layoutState = injector.get(LayoutState);
+    const rightTabbarService = service.getTabbarService(SlotLocation.extendView);
+    const setStateSpy = jest.spyOn(layoutState, 'setState');
+
+    act(() => {
+      service.setLayoutStateKey(layoutStorageKey, { saveCurrent: false });
+      service.toggleSlot(SlotLocation.extendView, true, 456);
+    });
+
+    expect(rightTabbarService.prevSize).toBe(456);
+    expect(setStateSpy).toHaveBeenCalledWith(
+      layoutStorageKey,
+      expect.objectContaining({
+        [SlotLocation.extendView]: {
+          currentId: testContainerId,
+          size: 456,
+        },
+      }),
+    );
+
+    act(() => {
+      service.setLayoutStateKey('layout');
+    });
+    setStateSpy.mockRestore();
+  });
+
+  it('should force restore tabbar services when setting the active layout state key again', () => {
+    const layoutStorageKey = 'layout.ai.agentic';
+    const layoutState = injector.get(LayoutState);
+    const rightTabbarService = service.getTabbarService(SlotLocation.extendView);
+    const setSizeSpy = jest.spyOn(rightTabbarService.resizeHandle!, 'setSize').mockImplementation(() => {});
+
+    layoutState.setStateSync(layoutStorageKey, {
+      [SlotLocation.extendView]: {
+        currentId: testContainerId,
+        size: 321,
+      },
+    });
+
+    act(() => {
+      service.setLayoutStateKey(layoutStorageKey, { saveCurrent: false });
+    });
+    setSizeSpy.mockClear();
+
+    act(() => {
+      service.setLayoutStateKey(layoutStorageKey, { saveCurrent: false, forceRestore: true });
+    });
+
+    expect(setSizeSpy).toHaveBeenCalledWith(321);
+
+    act(() => {
+      service.setLayoutStateKey('layout');
+    });
+    setSizeSpy.mockRestore();
+  });
 });

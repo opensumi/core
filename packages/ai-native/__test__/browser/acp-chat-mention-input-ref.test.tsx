@@ -26,10 +26,23 @@ jest.mock('@opensumi/ide-components/lib/image', () => ({
 }));
 
 jest.mock('../../src/browser/components/acp/MentionInput', () => ({
-  MentionInput: ({ defaultInput, expanded }: { defaultInput?: string; expanded?: boolean }) =>
+  MentionInput: ({
+    currentMode,
+    defaultInput,
+    expanded,
+    footerConfig,
+  }: {
+    currentMode?: string;
+    defaultInput?: string;
+    expanded?: boolean;
+    footerConfig?: { defaultModel?: string; configOptions?: unknown[] };
+  }) =>
     require('react').createElement('textarea', {
       'data-testid': 'acp-mention-input',
       'data-expanded': expanded ? 'true' : 'false',
+      'data-current-mode': currentMode,
+      'data-default-model': footerConfig?.defaultModel,
+      'data-config-option-count': String(footerConfig?.configOptions?.length ?? 0),
       readOnly: true,
       value: defaultInput || '',
     }),
@@ -169,5 +182,80 @@ describe('AcpChatMentionInput ref contract', () => {
     expect(expandButton.querySelector('span')!.className).toContain('icon-fullescreen');
     expect(onExpand).toHaveBeenLastCalledWith(false);
     expect(onExpand).toHaveBeenCalledTimes(2);
+  });
+
+  it('syncs currentMode when currentModeId prop changes', () => {
+    const props = {
+      onSend: jest.fn(),
+      setTheme: jest.fn(),
+      agentId: '',
+      setAgentId: jest.fn(),
+      command: '',
+      setCommand: jest.fn(),
+      agentModes: [
+        { id: 'plan', name: 'Plan Mode' },
+        { id: 'code', name: 'Code Mode' },
+      ],
+    };
+
+    act(() => {
+      render(React.createElement(AcpChatMentionInput, { ...props, currentModeId: 'plan' } as any), container);
+    });
+
+    const input = () => container.querySelector('[data-testid="acp-mention-input"]') as HTMLTextAreaElement;
+    expect(input().getAttribute('data-current-mode')).toBe('plan');
+
+    act(() => {
+      render(React.createElement(AcpChatMentionInput, { ...props, currentModeId: 'code' } as any), container);
+    });
+
+    expect(input().getAttribute('data-current-mode')).toBe('code');
+  });
+
+  it('syncs model and config options when props change', () => {
+    const props = {
+      onSend: jest.fn(),
+      setTheme: jest.fn(),
+      agentId: '',
+      setAgentId: jest.fn(),
+      command: '',
+      setCommand: jest.fn(),
+      agentModels: [
+        { modelId: 'old-model', name: 'Old Model' },
+        { modelId: 'qwen3.6-plus', name: 'Qwen' },
+      ],
+    };
+
+    act(() => {
+      render(
+        React.createElement(AcpChatMentionInput, {
+          ...props,
+          currentModelId: 'old-model',
+          configOptions: [{ id: 'permission', name: 'Permission' }],
+        } as any),
+        container,
+      );
+    });
+
+    const input = () => container.querySelector('[data-testid="acp-mention-input"]') as HTMLTextAreaElement;
+    expect(input().getAttribute('data-default-model')).toBe('old-model');
+    expect(input().getAttribute('data-config-option-count')).toBe('1');
+
+    act(() => {
+      render(
+        React.createElement(AcpChatMentionInput, {
+          ...props,
+          currentModelId: 'qwen3.6-plus',
+          configOptions: [
+            { id: 'permission', name: 'Permission' },
+            { id: 'thinking', name: 'Thinking' },
+          ],
+        } as any),
+        container,
+      );
+    });
+
+    expect(input().getAttribute('data-default-model')).toBe('qwen3.6-plus');
+    expect(input().getAttribute('data-config-option-count')).toBe('2');
   });
 });

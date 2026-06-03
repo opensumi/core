@@ -10,6 +10,7 @@ import {
   IAIReporter,
   IApplicationService,
   IChatProgress,
+  IChatSessionState,
   MCPConfigServiceToken,
   ThreadStatus,
 } from '@opensumi/ide-core-common';
@@ -27,10 +28,12 @@ import {
   IChatAgentResult,
   IChatAgentService,
   IChatAgentWelcomeMessage,
+  IChatManagerService,
 } from '../../common/index';
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
 import { ChatManagerService } from './chat-manager.service';
+import { AcpChatManagerService } from './chat-manager.service.acp';
 import { ChatFeatureRegistry } from './chat.feature.registry';
 
 /**
@@ -73,7 +76,7 @@ export class AcpChatAgent implements IChatAgent {
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
-  @Autowired(ChatManagerService)
+  @Autowired(IChatManagerService)
   protected readonly chatManagerService: ChatManagerService;
 
   public id = AcpChatAgent.AGENT_ID;
@@ -214,6 +217,13 @@ export class AcpChatAgent implements IChatAgent {
               `[ACP Chat] stream data — sessionId=${sessionId}, requestId=${request.requestId}, kind=threadStatus, status=${data.threadStatus}`,
             );
             this.handleThreadStatusUpdate(data.threadStatus, data.sessionId);
+          } else if (data.kind === 'sessionState') {
+            this.logger.log(
+              `[ACP Chat] stream data — sessionId=${sessionId}, requestId=${
+                request.requestId
+              }, kind=sessionState, currentModeId=${data.currentModeId ?? '(empty)'}`,
+            );
+            this.handleSessionStateUpdate(data, sessionId);
           } else {
             const shouldLogData =
               !hasLoggedFirstContent || (kind !== 'content' && kind !== 'markdownContent' && kind !== 'reasoning');
@@ -253,7 +263,9 @@ export class AcpChatAgent implements IChatAgent {
         `[ACP Chat] invoke error — sessionId=${sessionId}, requestId=${request.requestId}, error=${message}`,
       );
       this.messageService.error(message);
-      chatDeferred.reject(e);
+      return {
+        errorDetails: { message },
+      };
     }
     return {};
   }
@@ -266,6 +278,15 @@ export class AcpChatAgent implements IChatAgent {
     if (model) {
       model.setThreadStatus(status);
     }
+  }
+
+  private handleSessionStateUpdate(state: IChatSessionState, fallbackSessionId: string): void {
+    const manager = this.chatManagerService as AcpChatManagerService;
+    manager.applySessionStateUpdate?.(state.sessionId || fallbackSessionId, {
+      currentModeId: state.currentModeId,
+      currentModelId: state.currentModelId,
+      configOptions: state.configOptions,
+    });
   }
 
   async provideSlashCommands(): Promise<IChatAgentCommand[]> {

@@ -109,6 +109,27 @@ export function toAgentUpdate(notification: SessionNotification): AgentUpdate | 
       return null;
     }
 
+    case 'current_mode_update': {
+      return {
+        type: 'session_state',
+        content: '',
+        sessionId: (notification as any).sessionId,
+        currentModeId: update.currentModeId,
+      };
+    }
+
+    case 'config_option_update': {
+      if (!Array.isArray(update.configOptions)) {
+        return null;
+      }
+      return {
+        type: 'session_state',
+        content: '',
+        sessionId: (notification as any).sessionId,
+        configOptions: update.configOptions,
+      };
+    }
+
     default:
       return null;
   }

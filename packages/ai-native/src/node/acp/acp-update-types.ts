@@ -14,7 +14,8 @@ export type AgentUpdateType =
   | 'tool_result'
   | 'plan'
   | 'done'
-  | 'thread_status';
+  | 'thread_status'
+  | 'session_state';
 
 export interface SimpleToolCall {
   toolCallId: string;
@@ -28,4 +29,8 @@ export interface AgentUpdate {
   content: string;
   toolCall?: SimpleToolCall;
   threadStatus?: ThreadStatus;
+  sessionId?: string;
+  currentModeId?: string;
+  currentModelId?: string;
+  configOptions?: Record<string, any>[];
 }

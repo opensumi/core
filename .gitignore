@@ -104,3 +104,5 @@ tools/workspace
 # Claude Code
 .claude/
 .claudebak
+
+.understand-anything/

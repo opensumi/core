@@ -1031,6 +1031,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         }
         for (const agentUpdate of normalizedUpdates) {
           agentUpdate.threadStatus = thread.getStatus();
+          agentUpdate.sessionId = agentUpdate.sessionId || event.notification.sessionId || request.sessionId;
           stream.emitData(agentUpdate);
         }
       } else if (event.type === 'status_changed') {

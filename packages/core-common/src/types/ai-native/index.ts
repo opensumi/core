@@ -509,6 +509,14 @@ export interface IChatThreadStatus {
   sessionId: string;
 }
 
+export interface IChatSessionState {
+  kind: 'sessionState';
+  sessionId: string;
+  currentModeId?: string;
+  currentModelId?: string;
+  configOptions?: Record<string, any>[];
+}
+
 export type IChatProgress =
   | IChatContent
   | IChatMarkdownContent
@@ -517,7 +525,8 @@ export type IChatProgress =
   | IChatComponent
   | IChatToolContent
   | IChatReasoning
-  | IChatThreadStatus;
+  | IChatThreadStatus
+  | IChatSessionState;
 
 export interface IChatMessage {
   role: ChatMessageRole;

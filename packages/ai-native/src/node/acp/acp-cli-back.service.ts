@@ -8,6 +8,7 @@ import {
   IChatContent,
   IChatProgress,
   IChatReasoning,
+  IChatSessionState,
   IChatThreadStatus,
   IChatToolCall,
   IChatToolContent,
@@ -515,6 +516,14 @@ ${input}`;
           kind: 'content',
           content: update.content,
         } as IChatContent;
+      case 'session_state':
+        return {
+          kind: 'sessionState',
+          sessionId: update.sessionId || '',
+          ...(update.currentModeId !== undefined ? { currentModeId: update.currentModeId } : {}),
+          ...(update.currentModelId !== undefined ? { currentModelId: update.currentModelId } : {}),
+          ...(update.configOptions !== undefined ? { configOptions: update.configOptions } : {}),
+        } as IChatSessionState;
       case 'tool_call': {
         const toolCall: IChatToolCall = {
           id: update.toolCall?.toolCallId || '',

@@ -44,6 +44,10 @@ interface ISessionModel {
 
 const MAX_SESSION_COUNT = 20;
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 class DisposableLRUCache<K, V extends IDisposable = IDisposable> extends LRUCache<K, V> implements IDisposable {
   disposeKey(key: K): void {
     const disposable = this.get(key);
@@ -283,6 +287,8 @@ export class ChatManagerService extends Disposable {
       if (!token.isCancellationRequested) {
         if (result.errorDetails) {
           request.response.setErrorDetails(result.errorDetails);
+          request.response.complete();
+          return;
         }
         const followups = this.chatAgentService.getFollowups(
           request.message.agentId,
@@ -293,6 +299,15 @@ export class ChatManagerService extends Disposable {
           request.response.setFollowups(followups);
           request.response.complete();
         });
+      }
+    } catch (error) {
+      const message = getErrorMessage(error);
+      this.logger.error(
+        `[ChatManagerService] sendRequest error — sessionId=${sessionId}, requestId=${request.requestId}, error=${message}`,
+      );
+      if (!token.isCancellationRequested) {
+        request.response.setErrorDetails({ message });
+        request.response.complete();
       }
     } finally {
       this.logger.log(

@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IContextKeyService, PreferenceService } from '@opensumi/ide-core-browser';
+import { IContextKeyService, PreferenceService, fastdom } from '@opensumi/ide-core-browser';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { AINativeSettingSectionsId, Emitter, PanelLayoutMode, PreferenceScope } from '@opensumi/ide-core-common';
@@ -80,6 +80,7 @@ export class AIPanelLayoutService {
     const currentMode = this.getLayoutMode();
     this.applyLayoutMode(currentMode);
     this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, getAIChatDefaultSize(currentMode));
+    this.restoreLayoutAfterModeChange(currentMode);
     this.updateContextKey(currentMode);
     this.onDidChangePanelLayoutEmitter.fire(currentMode);
   }
@@ -98,5 +99,18 @@ export class AIPanelLayoutService {
 
   private applyLayoutMode(mode: PanelLayoutMode, saveCurrent = true): void {
     this.layoutService.setLayoutStateKey(getPanelLayoutStorageKey(mode), { saveCurrent });
+  }
+
+  private restoreLayoutAfterModeChange(mode: PanelLayoutMode): void {
+    const layoutStateKey = getPanelLayoutStorageKey(mode);
+    const aiChatSize = getAIChatDefaultSize(mode);
+
+    fastdom.measureAtNextFrame(() => {
+      this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, aiChatSize);
+      fastdom.measureAtNextFrame(() => {
+        this.layoutService.setLayoutStateKey(layoutStateKey, { saveCurrent: false, forceRestore: true });
+        this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, aiChatSize);
+      });
+    });
   }
 }

@@ -38,6 +38,7 @@ import {
   DROP_PANEL_CONTAINER,
   DROP_VIEW_CONTAINER,
   IMainLayoutService,
+  LayoutStateKeyOptions,
   MainLayoutContribution,
   SUPPORT_ACCORDION_LOCATION,
   ViewComponentOptions,
@@ -133,9 +134,12 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   public viewReady: Deferred<void> = new Deferred();
 
-  setLayoutStateKey(key: string, options: { saveCurrent?: boolean } = {}): void {
+  setLayoutStateKey(key: string, options: LayoutStateKeyOptions = {}): void {
     const nextLayoutStateKey = key || LAYOUT_STATE.MAIN;
     if (this.layoutStateKey === nextLayoutStateKey) {
+      if (options.forceRestore && this.tabbarServices.size) {
+        this.restoreAllTabbarServices();
+      }
       return;
     }
 
@@ -471,6 +475,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       );
     }
     if (tabbarService.currentContainerId.get()) {
+      if (size !== undefined) {
+        tabbarService.prevSize = size;
+        this.storeState(tabbarService, tabbarService.currentContainerId.get());
+      }
       if (size !== undefined || !wasVisible) {
         const restoreSize = () => {
           if (tabbarService.currentContainerId.get()) {

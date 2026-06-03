@@ -3,6 +3,8 @@ import { AINativeConfigService, ILogger } from '@opensumi/ide-core-browser';
 import {
   AvailableCommand,
   ChatMessageRole,
+  Emitter,
+  IChatSessionState,
   IStorage,
   STORAGE_NAMESPACE,
   StorageProvider,
@@ -28,6 +30,13 @@ const ACP_PROMPT_TITLE_PREFIXES = [
   'For requests to create an OpenSumi IDE',
 ];
 
+export interface AcpSessionStateChangeEvent {
+  sessionId: string;
+  model: ChatModel;
+  previousModeId?: string;
+  currentModeId?: string;
+}
+
 @Injectable()
 export class AcpChatManagerService extends ChatManagerService {
   @Autowired(AINativeConfigService)
@@ -49,6 +58,9 @@ export class AcpChatManagerService extends ChatManagerService {
   private acpTitleStorage: IStorage | undefined;
 
   private acpSessionDisplayTitleOverrides: Record<string, string> = {};
+
+  private readonly onDidApplySessionStateEmitter = this.registerDispose(new Emitter<AcpSessionStateChangeEvent>());
+  public readonly onDidApplySessionState = this.onDidApplySessionStateEmitter.event;
 
   constructor() {
     super();
@@ -398,6 +410,41 @@ export class AcpChatManagerService extends ChatManagerService {
   override clearSession(sessionId: string): void {
     super.clearSession(sessionId);
     this.removeDisplayTitleOverride(sessionId);
+  }
+
+  applySessionStateUpdate(sessionId: string, state: Partial<Omit<IChatSessionState, 'kind' | 'sessionId'>>): void {
+    const lookupKey = sessionId.startsWith('acp:') ? sessionId : `acp:${sessionId}`;
+    const model = this.getSession(lookupKey);
+    if (!model) {
+      return;
+    }
+
+    const previousModeId = model.currentModeId;
+    let changed = false;
+
+    if (state.currentModeId !== undefined && model.currentModeId !== state.currentModeId) {
+      model.currentModeId = state.currentModeId;
+      changed = true;
+    }
+    if (state.currentModelId !== undefined && model.modelId !== state.currentModelId) {
+      model.modelId = state.currentModelId;
+      changed = true;
+    }
+    if (state.configOptions !== undefined) {
+      model.configOptions = state.configOptions;
+      changed = true;
+    }
+
+    if (!changed) {
+      return;
+    }
+
+    this.onDidApplySessionStateEmitter.fire({
+      sessionId: lookupKey,
+      model,
+      previousModeId,
+      currentModeId: model.currentModeId,
+    });
   }
 
   fallbackToLocal(): void {

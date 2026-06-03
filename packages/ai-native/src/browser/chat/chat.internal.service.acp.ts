@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AINativeConfigService, ILogger } from '@opensumi/ide-core-browser';
-import { AvailableCommand, Emitter, Event } from '@opensumi/ide-core-common';
+import { AvailableCommand, Emitter, Event, IDisposable } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 
 import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
@@ -97,6 +97,8 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private availableCommands: AvailableCommand[] = [];
 
+  private sessionStateDisposable: IDisposable | undefined;
+
   private stripAcpPrefix(sessionId: string): string {
     return sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
   }
@@ -166,6 +168,8 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   override init() {
+    this.ensureSessionStateListener();
+
     this.chatManagerService.onStorageInit(async () => {
       if (this.aiNativeConfigService.capabilities.supportsAgentMode) {
         return;
@@ -177,6 +181,29 @@ export class AcpChatInternalService extends ChatInternalService {
         await this.createSessionModel();
       }
     });
+  }
+
+  private ensureSessionStateListener(): void {
+    if (this.sessionStateDisposable) {
+      return;
+    }
+
+    const acpManager = this.chatManagerService as AcpChatManagerService;
+    if (!acpManager.onDidApplySessionState) {
+      return;
+    }
+
+    this.sessionStateDisposable = acpManager.onDidApplySessionState((event) => {
+      if (!this._sessionModel || event.sessionId !== this._sessionModel.sessionId) {
+        return;
+      }
+
+      this._onSessionModelChange.fire(this._sessionModel);
+      if (event.currentModeId !== undefined && event.currentModeId !== event.previousModeId) {
+        this._onModeChange.fire(event.currentModeId);
+      }
+    });
+    this.addDispose(this.sessionStateDisposable);
   }
 
   async setSessionMode(modeId: string): Promise<void> {

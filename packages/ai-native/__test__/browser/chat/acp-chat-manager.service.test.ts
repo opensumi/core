@@ -28,6 +28,13 @@ describe('AcpChatManagerService', () => {
     Object.defineProperty(service, 'chatFeatureRegistry', {
       value: new ChatFeatureRegistry(),
     });
+    Object.defineProperty(service, 'logger', {
+      value: {
+        log: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+      },
+    });
     Object.defineProperty(service, 'sessionModels', {
       value: new Map(),
     });
@@ -98,6 +105,13 @@ describe('AcpChatManagerService', () => {
     });
     Object.defineProperty(service, 'chatFeatureRegistry', {
       value: new ChatFeatureRegistry(),
+    });
+    Object.defineProperty(service, 'logger', {
+      value: {
+        log: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+      },
     });
     Object.defineProperty(service, 'acpSessionDisplayTitleOverrides', {
       value: {},
@@ -402,6 +416,21 @@ describe('AcpChatManagerService', () => {
     });
   });
 
+  it('skips global model preference validation for ACP sessions only', () => {
+    const { service } = createConstructedService();
+    const acpModel = new ChatModel(new ChatFeatureRegistry(), {
+      sessionId: 'acp:s1',
+      modelId: 'qwen3.6-plus',
+    });
+    const localModel = new ChatModel(new ChatFeatureRegistry(), {
+      sessionId: 'local:s1',
+      modelId: 'MiniMax-M2.7',
+    });
+
+    expect((service as any).shouldValidateModelChange('acp:s1', acpModel)).toBe(false);
+    expect((service as any).shouldValidateModelChange('local:s1', localModel)).toBe(true);
+  });
+
   it('stores raw follow-up message as display title for old polluted ACP sessions', () => {
     const { service, storage } = createConstructedService();
     const sessionId = 'acp:s1';
@@ -529,5 +558,37 @@ describe('AcpChatManagerService', () => {
     ]);
 
     expect(model.title).toBe('New Session');
+  });
+
+  it('applies ACP session state updates and emits a change event', () => {
+    const { service } = createConstructedService();
+    const model = new ChatModel(new ChatFeatureRegistry(), {
+      sessionId: 'acp:sess-1',
+      modelId: 'old-model',
+      currentModeId: 'plan',
+    });
+    const configOptions = [{ id: 'permission', name: 'Permission', currentValue: 'default' }];
+    const changes: any[] = [];
+
+    (service as any).sessionModels.set(model.sessionId, model);
+    service.onDidApplySessionState((event) => changes.push(event));
+
+    service.applySessionStateUpdate('sess-1', {
+      currentModeId: 'code',
+      currentModelId: 'qwen3.6-plus',
+      configOptions,
+    });
+
+    expect(model.currentModeId).toBe('code');
+    expect(model.modelId).toBe('qwen3.6-plus');
+    expect(model.configOptions).toEqual(configOptions);
+    expect(changes).toEqual([
+      expect.objectContaining({
+        sessionId: 'acp:sess-1',
+        model,
+        previousModeId: 'plan',
+        currentModeId: 'code',
+      }),
+    ]);
   });
 });

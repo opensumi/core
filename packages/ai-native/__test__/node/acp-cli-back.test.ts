@@ -2,6 +2,7 @@ import { AgentProcessConfig, CancellationToken, Emitter } from '@opensumi/ide-co
 import { ChatReadableStream, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
+import { toAgentUpdate } from '../../src/node/acp/acp-agent-update-adapter';
 import { AgentSessionInfo, AgentUpdate, IAcpAgentService } from '../../src/node/acp/acp-agent.service';
 import { AcpCliBackService } from '../../src/node/acp/acp-cli-back.service';
 import { AcpThreadStatusCallerService } from '../../src/node/acp/acp-thread-status-caller.service';
@@ -316,6 +317,42 @@ describe('AcpCliBackService', () => {
   });
 
   describe('convertAgentUpdateToChatProgress()', () => {
+    it('should convert native current_mode_update to a session_state update', () => {
+      expect(
+        toAgentUpdate({
+          sessionId: 'sess-1',
+          update: {
+            sessionUpdate: 'current_mode_update',
+            currentModeId: 'code',
+          },
+        } as any),
+      ).toEqual({
+        type: 'session_state',
+        content: '',
+        sessionId: 'sess-1',
+        currentModeId: 'code',
+      });
+    });
+
+    it('should convert native config_option_update to a session_state update', () => {
+      const configOptions = [{ id: 'permission', name: 'Permission', currentValue: 'default' }];
+
+      expect(
+        toAgentUpdate({
+          sessionId: 'sess-1',
+          update: {
+            sessionUpdate: 'config_option_update',
+            configOptions,
+          },
+        } as any),
+      ).toEqual({
+        type: 'session_state',
+        content: '',
+        sessionId: 'sess-1',
+        configOptions,
+      });
+    });
+
     it('should convert "thought" update to reasoning progress', async () => {
       mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
@@ -344,6 +381,37 @@ describe('AcpCliBackService', () => {
       agentStream.emitData({ type: 'done', content: '' });
 
       expect(receivedData).toEqual([{ kind: 'content', content: 'Answer text' }]);
+    });
+
+    it('should convert "session_state" update to sessionState progress', async () => {
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+      const receivedData: any[] = [];
+      output.onData((data) => receivedData.push(data));
+
+      const configOptions = [{ id: 'permission', name: 'Permission', currentValue: 'default' }];
+      agentStream.emitData({
+        type: 'session_state',
+        content: '',
+        sessionId: 'sess-1',
+        currentModeId: 'code',
+        currentModelId: 'qwen3.6-plus',
+        configOptions,
+      });
+      agentStream.emitData({ type: 'done', content: '' });
+
+      expect(receivedData).toEqual([
+        {
+          kind: 'sessionState',
+          sessionId: 'sess-1',
+          currentModeId: 'code',
+          currentModelId: 'qwen3.6-plus',
+          configOptions,
+        },
+      ]);
     });
 
     it('should convert "tool_result" update to content progress', async () => {
