@@ -38,9 +38,9 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
     description: '文件读写和管理操作',
     defaultLoaded: true,
     tools: [
-      // ----- file_getWorkspaceRoot -----
+      // ----- file_get_workspace_root -----
       {
-        name: 'file_getWorkspaceRoot',
+        name: 'file_get_workspace_root',
         description:
           'Get the absolute path of the current workspace root directory. Use this to understand the base path for relative file operations.',
         riskLevel: 'read',

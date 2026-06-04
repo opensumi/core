@@ -21,7 +21,7 @@ export function createWorkspaceGroup(container: Injector): WebMcpGroupRegistrati
     defaultLoaded: true,
     tools: [
       {
-        name: 'workspace_getInfo',
+        name: 'workspace_get_info',
         description:
           'Get workspace metadata, including root folders, workspace name, multi-root state, and the configured workspace directory.',
         riskLevel: 'read',
@@ -55,7 +55,7 @@ export function createWorkspaceGroup(container: Injector): WebMcpGroupRegistrati
         },
       },
       {
-        name: 'workspace_listOpenFiles',
+        name: 'workspace_list_open_files',
         description:
           'List files currently opened in editor groups. Use this to understand the user visible editing context.',
         riskLevel: 'read',
@@ -86,7 +86,7 @@ export function createWorkspaceGroup(container: Injector): WebMcpGroupRegistrati
         },
       },
       {
-        name: 'workspace_listRecentWorkspaces',
+        name: 'workspace_list_recent_workspaces',
         description: 'List recently used workspaces known to the IDE.',
         riskLevel: 'read',
         inputSchema: {

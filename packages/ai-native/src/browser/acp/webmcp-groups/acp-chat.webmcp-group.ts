@@ -139,7 +139,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
     defaultLoaded: true,
     tools: [
       {
-        name: 'acp_chat_getSessionState',
+        name: 'acp_chat_get_session_state',
         description:
           'Get the active ACP chat session state without returning user prompts or assistant response content.',
         riskLevel: 'read',
@@ -168,7 +168,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
         },
       },
       {
-        name: 'acp_chat_getPermissionState',
+        name: 'acp_chat_get_permission_state',
         description:
           'Get ACP permission dialog counts and active session id. Does not approve, reject, or expose permission content.',
         riskLevel: 'read',
@@ -193,7 +193,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
         },
       },
       {
-        name: 'acp_chat_showChatView',
+        name: 'acp_chat_show_chat_view',
         description: 'Show the ACP chat view panel in the IDE.',
         riskLevel: 'ui',
         inputSchema: {
@@ -214,7 +214,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
         },
       },
       {
-        name: 'acp_chat_listSessions',
+        name: 'acp_chat_list_sessions',
         description:
           'List ACP chat sessions as metadata only. Does not return prompts, responses, or tool-call contents.',
         riskLevel: 'read',
@@ -241,7 +241,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
         },
       },
       {
-        name: 'acp_chat_getAvailableCommands',
+        name: 'acp_chat_get_available_commands',
         description: 'Get available ACP slash commands for the active chat session.',
         riskLevel: 'read',
         profiles: ['interactive', 'full'],
@@ -269,7 +269,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
         },
       },
       {
-        name: 'acp_chat_prepareSessionDigest',
+        name: 'acp_chat_prepare_session_digest',
         description:
           'Prepare a bounded background digest for another ACP chat session. Returns only digest metadata and a short preview; the full digest stays in the browser relay store.',
         riskLevel: 'read',
@@ -382,7 +382,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
         },
       },
       {
-        name: 'acp_chat_postPreparedRelay',
+        name: 'acp_chat_post_prepared_relay',
         description:
           'Post a previously prepared ACP chat digest to a target ACP session after explicit user permission.',
         riskLevel: 'write',
@@ -392,7 +392,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
           properties: {
             digestId: {
               type: 'string',
-              description: 'Digest id returned by acp_chat_prepareSessionDigest.',
+              description: 'Digest id returned by acp_chat_prepare_session_digest.',
             },
             targetSessionId: {
               type: 'string',
@@ -587,7 +587,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
         },
       },
       {
-        name: 'acp_chat_readSessionMessages',
+        name: 'acp_chat_read_session_messages',
         description:
           'Read bounded recent user/assistant message previews from an ACP session. Full-profile debug fallback only.',
         riskLevel: 'read',
@@ -693,7 +693,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
         },
       },
       {
-        name: 'acp_chat_setSessionMode',
+        name: 'acp_chat_set_session_mode',
         description:
           'Switch the active ACP session mode. This changes agent behavior and is only available in the full WebMCP profile.',
         riskLevel: 'write',

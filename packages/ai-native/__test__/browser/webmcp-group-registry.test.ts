@@ -15,14 +15,14 @@ describe('WebMCP group registry policy', () => {
       defaultLoaded: true,
       tools: [
         {
-          name: 'terminal_readOutput',
+          name: 'terminal_read_output',
           description: 'Read output',
           riskLevel: 'read',
           inputSchema: {},
           execute: jest.fn().mockResolvedValue({ success: true }),
         },
         {
-          name: 'terminal_runCommand',
+          name: 'terminal_run_command',
           description: 'Run command',
           riskLevel: 'shell',
           profiles: ['interactive', 'full'],
@@ -30,7 +30,7 @@ describe('WebMCP group registry policy', () => {
           execute: jest.fn().mockResolvedValue({ success: true }),
         },
         {
-          name: 'terminal_internalWrite',
+          name: 'terminal_internal_write',
           description: 'Hidden write',
           riskLevel: 'write',
           exposedByDefault: false,
@@ -46,8 +46,8 @@ describe('WebMCP group registry policy', () => {
   it('does not expose or execute shell tools in the default profile', async () => {
     const registry = createRegistry('default');
 
-    expect(registry.getGroupDefinitions()[0].tools.map((tool) => tool.name)).toEqual(['terminal_readOutput']);
-    await expect(registry.executeTool('terminal', 'terminal_runCommand', {})).resolves.toMatchObject({
+    expect(registry.getGroupDefinitions()[0].tools.map((tool) => tool.name)).toEqual(['terminal_read_output']);
+    await expect(registry.executeTool('terminal', 'terminal_run_command', {})).resolves.toMatchObject({
       success: false,
       error: 'PERMISSION_DENIED',
     });
@@ -57,10 +57,10 @@ describe('WebMCP group registry policy', () => {
     const registry = createRegistry('interactive');
 
     expect(registry.getGroupDefinitions()[0].tools.map((tool) => tool.name)).toEqual([
-      'terminal_readOutput',
-      'terminal_runCommand',
+      'terminal_read_output',
+      'terminal_run_command',
     ]);
-    await expect(registry.executeTool('terminal', 'terminal_runCommand', {})).resolves.toMatchObject({
+    await expect(registry.executeTool('terminal', 'terminal_run_command', {})).resolves.toMatchObject({
       success: true,
     });
   });
@@ -68,7 +68,7 @@ describe('WebMCP group registry policy', () => {
   it('does not execute tools hidden by exposedByDefault false', async () => {
     const registry = createRegistry('full');
 
-    await expect(registry.executeTool('terminal', 'terminal_internalWrite', {})).resolves.toMatchObject({
+    await expect(registry.executeTool('terminal', 'terminal_internal_write', {})).resolves.toMatchObject({
       success: false,
       error: 'PERMISSION_DENIED',
     });

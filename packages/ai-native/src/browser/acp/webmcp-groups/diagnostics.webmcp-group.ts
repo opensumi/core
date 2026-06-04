@@ -156,7 +156,7 @@ export function createDiagnosticsGroup(container: Injector): WebMcpGroupRegistra
         },
       },
       {
-        name: 'diagnostics_getStats',
+        name: 'diagnostics_get_stats',
         description: 'Get diagnostic counts by severity for the current workspace.',
         riskLevel: 'read',
         inputSchema: {

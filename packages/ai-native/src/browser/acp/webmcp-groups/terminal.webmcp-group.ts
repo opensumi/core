@@ -116,9 +116,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_getActive -----
+      // ----- terminal_get_active -----
       {
-        name: 'terminal_getActive',
+        name: 'terminal_get_active',
         description: 'Get the active IDE terminal session.',
         riskLevel: 'read',
         inputSchema: {
@@ -150,9 +150,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_readOutput -----
+      // ----- terminal_read_output -----
       {
-        name: 'terminal_readOutput',
+        name: 'terminal_read_output',
         description: 'Read recent output lines from an IDE terminal.',
         riskLevel: 'read',
         inputSchema: {
@@ -241,9 +241,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_getProcessInfo -----
+      // ----- terminal_get_process_info -----
       {
-        name: 'terminal_getProcessInfo',
+        name: 'terminal_get_process_info',
         description: 'Get process metadata for an IDE terminal.',
         riskLevel: 'read',
         inputSchema: {
@@ -329,9 +329,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_executeCommand -----
+      // ----- terminal_execute_command -----
       {
-        name: 'terminal_executeCommand',
+        name: 'terminal_execute_command',
         description:
           'Send a text command to a specific terminal session identified by id. The text is typed into the terminal as-is. To execute the command, include a trailing newline (\\n). Get valid ids from terminal_list.',
         riskLevel: 'shell',
@@ -373,9 +373,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_sendText -----
+      // ----- terminal_send_text -----
       {
-        name: 'terminal_sendText',
+        name: 'terminal_send_text',
         description: 'Type text into an IDE terminal without pressing Enter.',
         riskLevel: 'shell',
         profiles: ['interactive', 'full'],
@@ -412,9 +412,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_sendControl -----
+      // ----- terminal_send_control -----
       {
-        name: 'terminal_sendControl',
+        name: 'terminal_send_control',
         description: 'Send an allowlisted control key to an IDE terminal.',
         riskLevel: 'shell',
         profiles: ['interactive', 'full'],
@@ -453,9 +453,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_runCommand -----
+      // ----- terminal_run_command -----
       {
-        name: 'terminal_runCommand',
+        name: 'terminal_run_command',
         description: 'Type a command into an IDE terminal and press Enter.',
         riskLevel: 'shell',
         profiles: ['interactive', 'full'],
@@ -492,9 +492,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_waitForPattern -----
+      // ----- terminal_wait_for_pattern -----
       {
-        name: 'terminal_waitForPattern',
+        name: 'terminal_wait_for_pattern',
         description: 'Wait until terminal output contains a string or regular expression.',
         riskLevel: 'read',
         profiles: ['default', 'interactive', 'full'],
@@ -592,9 +592,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_getProcessId -----
+      // ----- terminal_get_process_id -----
       {
-        name: 'terminal_getProcessId',
+        name: 'terminal_get_process_id',
         description:
           'Get the OS process ID (PID) of the shell process running in a terminal session. Returns null if the process has exited.',
         riskLevel: 'read',
@@ -707,9 +707,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_getOS -----
+      // ----- terminal_get_os -----
       {
-        name: 'terminal_getOS',
+        name: 'terminal_get_os',
         description:
           'Get the operating system type of the terminal backend (e.g. "Linux", "macOS", "Windows"). Useful for writing platform-specific commands.',
         riskLevel: 'read',
@@ -731,9 +731,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_getProfiles -----
+      // ----- terminal_get_profiles -----
       {
-        name: 'terminal_getProfiles',
+        name: 'terminal_get_profiles',
         description:
           'Get the list of available terminal shell profiles (e.g. bash, zsh, PowerShell). Use the profile name with terminal_create to open a specific shell.',
         riskLevel: 'read',
@@ -768,9 +768,9 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         },
       },
 
-      // ----- terminal_showPanel -----
+      // ----- terminal_show_panel -----
       {
-        name: 'terminal_showPanel',
+        name: 'terminal_show_panel',
         description:
           'Show/open the terminal panel in the IDE. Use this to ensure the terminal panel is visible before interacting with terminals.',
         riskLevel: 'ui',

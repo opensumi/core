@@ -135,9 +135,9 @@ describe('WebMCP Group - ACP Chat', () => {
       .map((tool) => tool.name);
 
     expect(defaultToolNames).toEqual([
-      'acp_chat_getSessionState',
-      'acp_chat_getPermissionState',
-      'acp_chat_showChatView',
+      'acp_chat_get_session_state',
+      'acp_chat_get_permission_state',
+      'acp_chat_show_chat_view',
     ]);
     expect(group.tools.map((tool) => tool.name)).not.toContain('acp_chat_sendMessage');
     expect(group.tools.map((tool) => tool.name)).not.toContain('acp_chat_handlePermissionDialog');
@@ -145,7 +145,7 @@ describe('WebMCP Group - ACP Chat', () => {
 
   it('returns active session metadata without prompt or response content', async () => {
     const group = createAcpChatGroup(createMockContainer());
-    const tool = group.tools.find((item) => item.name === 'acp_chat_getSessionState')!;
+    const tool = group.tools.find((item) => item.name === 'acp_chat_get_session_state')!;
 
     const result = await tool.execute({});
 
@@ -169,7 +169,7 @@ describe('WebMCP Group - ACP Chat', () => {
 
   it('returns permission counts without handling the permission decision', async () => {
     const group = createAcpChatGroup(createMockContainer());
-    const tool = group.tools.find((item) => item.name === 'acp_chat_getPermissionState')!;
+    const tool = group.tools.find((item) => item.name === 'acp_chat_get_permission_state')!;
 
     const result = await tool.execute({});
 
@@ -185,7 +185,7 @@ describe('WebMCP Group - ACP Chat', () => {
 
   it('prepares a relay digest without returning the full digest', async () => {
     const group = createAcpChatGroup(createMockContainer());
-    const tool = group.tools.find((item) => item.name === 'acp_chat_prepareSessionDigest')!;
+    const tool = group.tools.find((item) => item.name === 'acp_chat_prepare_session_digest')!;
 
     const result = await tool.execute({ sourceSessionId: 'sess-1' });
 
@@ -212,7 +212,7 @@ describe('WebMCP Group - ACP Chat', () => {
 
   it('posts a prepared relay after permission and restores the original session', async () => {
     const group = createAcpChatGroup(createMockContainer());
-    const tool = group.tools.find((item) => item.name === 'acp_chat_postPreparedRelay')!;
+    const tool = group.tools.find((item) => item.name === 'acp_chat_post_prepared_relay')!;
 
     const result = await tool.execute({ digestId: 'digest-1', targetSessionId: 'sess-2' });
 
@@ -251,7 +251,7 @@ describe('WebMCP Group - ACP Chat', () => {
       always: false,
     });
     const group = createAcpChatGroup(createMockContainer());
-    const tool = group.tools.find((item) => item.name === 'acp_chat_postPreparedRelay')!;
+    const tool = group.tools.find((item) => item.name === 'acp_chat_post_prepared_relay')!;
 
     const result = await tool.execute({ digestId: 'digest-1', targetSessionId: 'sess-2' });
 
@@ -266,7 +266,7 @@ describe('WebMCP Group - ACP Chat', () => {
       { id: 'm3', order: 3, role: ChatMessageRole.Function, content: 'tool result' },
     ]);
     const group = createAcpChatGroup(createMockContainer());
-    const tool = group.tools.find((item) => item.name === 'acp_chat_readSessionMessages')!;
+    const tool = group.tools.find((item) => item.name === 'acp_chat_read_session_messages')!;
 
     const result = await tool.execute({ sessionId: 'sess-1', maxMessages: 10, maxChars: 100 });
 

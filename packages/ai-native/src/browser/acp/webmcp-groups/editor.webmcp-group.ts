@@ -228,9 +228,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- editor_getActive -----
+      // ----- editor_get_active -----
       {
-        name: 'editor_getActive',
+        name: 'editor_get_active',
         description: 'Get information about the currently active editor, including file path and selection range.',
         riskLevel: 'read',
         inputSchema: {
@@ -254,9 +254,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- editor_listOpenFiles -----
+      // ----- editor_list_open_files -----
       {
-        name: 'editor_listOpenFiles',
+        name: 'editor_list_open_files',
         description: 'List files currently opened in editor groups, including dirty and active state.',
         riskLevel: 'read',
         inputSchema: {
@@ -300,9 +300,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- editor_getSelection -----
+      // ----- editor_get_selection -----
       {
-        name: 'editor_getSelection',
+        name: 'editor_get_selection',
         description: 'Get the active editor selection range and selected text.',
         riskLevel: 'read',
         inputSchema: {
@@ -353,9 +353,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- editor_readBuffer -----
+      // ----- editor_read_buffer -----
       {
-        name: 'editor_readBuffer',
+        name: 'editor_read_buffer',
         description: 'Read an editor buffer, including unsaved content. Defaults to the active editor.',
         riskLevel: 'read',
         inputSchema: {
@@ -407,9 +407,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- editor_readRangeFromBuffer -----
+      // ----- editor_read_range_from_buffer -----
       {
-        name: 'editor_readRangeFromBuffer',
+        name: 'editor_read_range_from_buffer',
         description: 'Read a line range from an editor buffer, including unsaved content.',
         riskLevel: 'read',
         inputSchema: {
@@ -493,9 +493,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- editor_listDirtyFiles -----
+      // ----- editor_list_dirty_files -----
       {
-        name: 'editor_listDirtyFiles',
+        name: 'editor_list_dirty_files',
         description: 'List unsaved editor buffers.',
         riskLevel: 'read',
         inputSchema: {
@@ -528,9 +528,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- editor_getDirtyDiff -----
+      // ----- editor_get_dirty_diff -----
       {
-        name: 'editor_getDirtyDiff',
+        name: 'editor_get_dirty_diff',
         description: 'Return a compact diff between disk content and an unsaved editor buffer.',
         riskLevel: 'read',
         inputSchema: {
@@ -587,9 +587,9 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         },
       },
 
-      // ----- editor_setSelection -----
+      // ----- editor_set_selection -----
       {
-        name: 'editor_setSelection',
+        name: 'editor_set_selection',
         description:
           'Set the selection range in the editor. Opens the file first if it is not already open, then sets the selection to the specified line range.',
         riskLevel: 'ui',

@@ -32,9 +32,9 @@ describe('WebMCP diagnostics group', () => {
     };
   }
 
-  it('returns plain bounded stats for diagnostics_getStats', async () => {
+  it('returns plain bounded stats for diagnostics_get_stats', async () => {
     const group = createDiagnosticsGroup(createContainer(createMarkerService()));
-    const tool = group.tools.find((item) => item.name === 'diagnostics_getStats')!;
+    const tool = group.tools.find((item) => item.name === 'diagnostics_get_stats')!;
 
     const result = await tool.execute({});
 
