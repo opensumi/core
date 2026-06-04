@@ -20,7 +20,7 @@ export function getWebMcpModelContextToolDefinitions(
 ): WebMcpModelContextToolDefinition[] {
   const { defaultLoadedOnly = true, includeAllTools = false } = options ?? {};
 
-  return registry
+  const definitions = registry
     .getGroupDefinitions({ ...options, includeAllTools })
     .filter((group) => !defaultLoadedOnly || group.defaultLoaded)
     .flatMap((group) =>
@@ -33,6 +33,15 @@ export function getWebMcpModelContextToolDefinitions(
           inputSchema: tool.inputSchema as WebMCPTool['inputSchema'],
         })),
     );
+
+  const seen = new Set<string>();
+  return definitions.filter((definition) => {
+    if (seen.has(definition.name)) {
+      return false;
+    }
+    seen.add(definition.name);
+    return true;
+  });
 }
 
 export function registerWebMcpModelContextTools(
@@ -41,14 +50,23 @@ export function registerWebMcpModelContextTools(
 ): IDisposable {
   ensureModelContext();
 
-  const disposables = getWebMcpModelContextToolDefinitions(registry, options).map((definition) =>
-    navigator.modelContext!.registerTool({
-      name: definition.name,
-      description: definition.description,
-      inputSchema: definition.inputSchema,
-      execute: (args: Record<string, unknown>) => registry.executeTool(definition.group, definition.name, args ?? {}),
-    }),
-  );
+  const registeredToolNames = new Set(navigator.modelContext!.getTools?.().map((tool) => tool.name) ?? []);
+  const disposables = getWebMcpModelContextToolDefinitions(registry, options)
+    .filter((definition) => {
+      if (registeredToolNames.has(definition.name)) {
+        return false;
+      }
+      registeredToolNames.add(definition.name);
+      return true;
+    })
+    .map((definition) =>
+      navigator.modelContext!.registerTool({
+        name: definition.name,
+        description: definition.description,
+        inputSchema: definition.inputSchema,
+        execute: (args: Record<string, unknown>) => registry.executeTool(definition.group, definition.name, args ?? {}),
+      }),
+    );
 
   return {
     dispose: () => {

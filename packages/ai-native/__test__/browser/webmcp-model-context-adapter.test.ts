@@ -167,4 +167,16 @@ describe('WebMCP modelContext adapter', () => {
     expect(registeredToolNames).toEqual(['file_read']);
     expect(registeredToolNames).toEqual(expect.not.arrayContaining(['file_write', 'file_interactive_read']));
   });
+
+  it('does not register duplicate tools already present on modelContext', () => {
+    const registry = createRegistry();
+
+    registerWebMcpModelContextTools(registry);
+    registerWebMcpModelContextTools(registry);
+
+    const modelContext = (global as any).navigator.modelContext;
+    const registeredToolNames = modelContext.registerTool.mock.calls.map(([tool]) => tool.name);
+
+    expect(registeredToolNames).toEqual(['file_read']);
+  });
 });
