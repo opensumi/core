@@ -3,7 +3,7 @@ import { ensureModelContext } from '@opensumi/ide-core-browser/lib/webmcp-polyfi
 import { canExposeWebMcpTool } from '../../common/webmcp-policy';
 
 import type { WebMcpGroupDefinitionOptions, WebMcpGroupRegistry } from './webmcp-group-registry';
-import type { WebMCPTool } from '@opensumi/ide-core-browser/lib/webmcp-types';
+import type { NavigatorModelContext, WebMCPTool } from '@opensumi/ide-core-browser/lib/webmcp-types';
 import type { IDisposable } from '@opensumi/ide-core-common';
 
 export interface WebMcpModelContextAdapterOptions extends WebMcpGroupDefinitionOptions {
@@ -13,6 +13,8 @@ export interface WebMcpModelContextAdapterOptions extends WebMcpGroupDefinitionO
 export interface WebMcpModelContextToolDefinition extends Omit<WebMCPTool, 'execute'> {
   group: string;
 }
+
+const registeredModelContextToolNames = new WeakMap<NavigatorModelContext, Set<string>>();
 
 export function getWebMcpModelContextToolDefinitions(
   registry: WebMcpGroupRegistry,
@@ -50,17 +52,24 @@ export function registerWebMcpModelContextTools(
 ): IDisposable {
   ensureModelContext();
 
-  const registeredToolNames = new Set(navigator.modelContext!.getTools?.().map((tool) => tool.name) ?? []);
+  const modelContext = navigator.modelContext!;
+  const registeredToolNames = registeredModelContextToolNames.get(modelContext) ?? new Set<string>();
+  registeredModelContextToolNames.set(modelContext, registeredToolNames);
+
+  modelContext.getTools?.().forEach((tool) => registeredToolNames.add(tool.name));
+
+  const registeredByThisCall: string[] = [];
   const disposables = getWebMcpModelContextToolDefinitions(registry, options)
     .filter((definition) => {
       if (registeredToolNames.has(definition.name)) {
         return false;
       }
       registeredToolNames.add(definition.name);
+      registeredByThisCall.push(definition.name);
       return true;
     })
     .map((definition) =>
-      navigator.modelContext!.registerTool({
+      modelContext.registerTool({
         name: definition.name,
         description: definition.description,
         inputSchema: definition.inputSchema,
@@ -71,6 +80,7 @@ export function registerWebMcpModelContextTools(
   return {
     dispose: () => {
       disposables.forEach((disposable) => disposable.dispose());
+      registeredByThisCall.forEach((toolName) => registeredToolNames.delete(toolName));
     },
   };
 }
