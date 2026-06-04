@@ -4,4 +4,5 @@ export const enum SearchSettingId {
   UseReplacePreview = 'search.useReplacePreview',
   SearchOnType = 'search.searchOnType',
   SearchOnTypeDebouncePeriod = 'search.searchOnTypeDebouncePeriod',
+  FollowSymlinks = 'search.followSymlinks',
 }

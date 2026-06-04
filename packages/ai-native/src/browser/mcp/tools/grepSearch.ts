@@ -90,6 +90,7 @@ export class GrepSearchTool implements MCPServerContribution {
         isWholeWord: false,
         isOnlyOpenEditors: false,
         isIncludeIgnored: false,
+        isFollowSymlinks: this.searchService.UIState.isFollowSymlinks,
       },
       CancellationToken.None,
     );

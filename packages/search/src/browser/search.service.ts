@@ -160,6 +160,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
     isUseRegexp: false,
     isIncludeIgnored: false,
     isOnlyOpenEditors: false,
+    isFollowSymlinks: true,
   };
 
   public searchResults: Map<string, ContentSearchResult[]> = new Map();
@@ -204,6 +205,20 @@ export class ContentSearchClientService extends Disposable implements IContentSe
         maxWait: timeout * 5,
       },
     );
+
+    this.addDispose(
+      this.searchPreferences.onPreferenceChanged((e) => {
+        if (e.affects(SearchSettingId.FollowSymlinks)) {
+          const newValue = this.searchPreferences[SearchSettingId.FollowSymlinks] ?? true;
+          if (this.UIState.isFollowSymlinks !== newValue) {
+            this.updateUIState({ isFollowSymlinks: newValue });
+          }
+        }
+        if (e.affects(SearchSettingId.SearchOnType)) {
+          this.searchOnType = this.searchPreferences[SearchSettingId.SearchOnType] ?? true;
+        }
+      }),
+    );
   }
 
   private searchId: number = new Date().getTime();
@@ -243,6 +258,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
       matchWholeWord: state.isWholeWord,
       useRegExp: state.isUseRegexp,
       includeIgnored: state.isIncludeIgnored,
+      followSymlinks: this.searchPreferences[SearchSettingId.FollowSymlinks] ?? true,
 
       include: state.include || splitOnComma(this.includeValue || ''),
       exclude: state.exclude || splitOnComma(this.excludeValue || ''),
@@ -602,7 +618,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
   };
 
   private shouldSearch = (uiState: Partial<typeof this.UIState>) =>
-    ['isWholeWord', 'isMatchCase', 'isUseRegexp', 'isIncludeIgnored', 'isOnlyOpenEditors'].some(
+    ['isWholeWord', 'isMatchCase', 'isUseRegexp', 'isIncludeIgnored', 'isOnlyOpenEditors', 'isFollowSymlinks'].some(
       (v) => uiState[v] !== undefined && uiState[v] !== this.UIState[v],
     );
 

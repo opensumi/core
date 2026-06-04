@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { Autowired } from '@opensumi/di';
 import { getValidateInput } from '@opensumi/ide-addons/lib/browser/file-search.contribution';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Domain, URI } from '@opensumi/ide-core-common';
 import { defaultFilesWatcherExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
@@ -32,6 +33,9 @@ export class FileSearchTool implements MCPServerContribution {
 
   @Autowired(IChatInternalService)
   private readonly chatInternalService: ChatInternalService;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   registerMCPServer(registry: IMCPServerRegistry): void {
     registry.registerMCPTool(this.getToolDefinition());
@@ -69,6 +73,7 @@ export class FileSearchTool implements MCPServerContribution {
       useGitIgnore: true,
       noIgnoreParent: true,
       fuzzyMatch: true,
+      followSymlinks: this.preferenceService.get('search.followSymlinks') ?? true,
     });
 
     const files = searchResults.slice(0, MAX_RESULTS).map((file) => {

@@ -815,6 +815,7 @@ export const defaultSettingSections: {
         // { id: 'search.maxResults' },
         { id: SearchSettingId.SearchOnType },
         { id: SearchSettingId.SearchOnTypeDebouncePeriod },
+        { id: SearchSettingId.FollowSymlinks, localized: 'preference.search.followSymlinks' },
         // { id: 'search.showLineNumbers' },
         // { id: 'search.smartCase' },
         // { id: 'search.useGlobalIgnoreFiles' },

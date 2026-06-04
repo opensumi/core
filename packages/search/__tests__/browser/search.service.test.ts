@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@opensumi/di';
 import { CorePreferences } from '@opensumi/ide-core-browser';
-import { URI } from '@opensumi/ide-core-common';
+import { Disposable, URI } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
@@ -90,6 +90,9 @@ describe('search.service.ts', () => {
             '*.java': true,
             '*.ts': true,
           },
+          'search.followSymlinks': true,
+          'search.searchOnType': true,
+          onPreferenceChanged: () => Disposable.NULL,
         },
       },
       {
