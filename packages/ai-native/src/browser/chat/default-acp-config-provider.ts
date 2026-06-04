@@ -3,6 +3,7 @@ import { PreferenceService, QuickPickService } from '@opensumi/ide-core-browser'
 import {
   AINativeSettingSectionsId,
   AgentProcessConfig,
+  DEFAULT_ACP_THREAD_POOL_SIZE,
   IACPConfigProvider,
   MCPConfigServiceToken,
 } from '@opensumi/ide-core-common';
@@ -55,6 +56,10 @@ export class DefaultACPConfigProvider implements IACPConfigProvider {
       userPreferences: {
         nodePath: this.preferenceService.get('ai-native.acp.nodePath', ''),
         agents: this.preferenceService.get('ai-native.acp.agents', {}),
+        threadPoolSize: this.preferenceService.get(
+          AINativeSettingSectionsId.AcpThreadPoolSize,
+          DEFAULT_ACP_THREAD_POOL_SIZE,
+        ),
         webMcpEnabled: this.preferenceService.get(AINativeSettingSectionsId.WebMcpEnabled, true),
       },
       mcpServers,

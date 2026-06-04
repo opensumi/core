@@ -59,6 +59,11 @@ export enum AINativeSettingSectionsId {
   AgentConfigsOverride = 'ai-native.acp.agents',
 
   /**
+   * ACP: Maximum number of reusable agent threads.
+   */
+  AcpThreadPoolSize = 'ai-native.acp.threadPoolSize',
+
+  /**
    * Default Agent Type
    */
   DefaultAgentType = 'ai.native.agent.defaultType',
@@ -83,3 +88,4 @@ export enum AINativeSettingSectionsId {
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';
+export const DEFAULT_ACP_THREAD_POOL_SIZE = 10;

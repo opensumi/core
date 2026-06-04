@@ -861,6 +861,10 @@ export class AINativeBrowserContribution
             id: AINativeSettingSectionsId.DefaultAgentType,
             localized: 'preference.ai.native.agent.defaultType',
           },
+          {
+            id: AINativeSettingSectionsId.AcpThreadPoolSize,
+            localized: 'preference.ai-native.acp.threadPoolSize',
+          },
         ],
       });
     }

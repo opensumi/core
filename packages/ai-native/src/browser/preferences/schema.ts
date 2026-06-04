@@ -1,4 +1,4 @@
-import { AINativeSettingSectionsId, PreferenceSchema } from '@opensumi/ide-core-browser';
+import { AINativeSettingSectionsId, DEFAULT_ACP_THREAD_POOL_SIZE, PreferenceSchema } from '@opensumi/ide-core-browser';
 
 import { CodeEditsRenderType } from '../contrib/intelligent-completions';
 
@@ -254,6 +254,12 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'string',
       default: '',
       description: '%preference.ai-native.acp.nodePath.description%',
+    },
+    [AINativeSettingSectionsId.AcpThreadPoolSize]: {
+      type: 'number',
+      default: DEFAULT_ACP_THREAD_POOL_SIZE,
+      minimum: 1,
+      description: '%preference.ai-native.acp.threadPoolSize.description%',
     },
     [AINativeSettingSectionsId.AgentConfigsOverride]: {
       type: 'object',

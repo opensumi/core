@@ -10,6 +10,7 @@ jest.mock('@opensumi/di', () => {
   };
 });
 
+import { DEFAULT_ACP_THREAD_POOL_SIZE } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
 import { AcpAgentService, AcpAgentServiceToken } from '../../src/node/acp/acp-agent.service';
@@ -48,6 +49,13 @@ const mockAgentProcessConfig = {
   args: ['@anthropic-ai/claude-code@latest'],
   cwd: '/test/workspace',
   env: [],
+};
+
+const SMALL_THREAD_POOL_SIZE = 3;
+
+const mockAgentProcessConfigWithSmallPool = {
+  ...mockAgentProcessConfig,
+  threadPoolSize: SMALL_THREAD_POOL_SIZE,
 };
 
 // ---- Mock AcpThread factory ----
@@ -363,10 +371,9 @@ describe('AcpAgentService (Thread Pool)', () => {
     it('should throw when thread pool is full and no idle threads', async () => {
       const { service, thread } = createServiceWithAutoEvents();
 
-      const maxPoolSize = (service as any).maxPoolSize;
       // Fill the pool with max threads
       const createdThreads: MockThread[] = [];
-      for (let i = 0; i < maxPoolSize; i++) {
+      for (let i = 0; i < SMALL_THREAD_POOL_SIZE; i++) {
         const t = createMockThread({
           getStatus: jest.fn().mockReturnValue('working'),
           onEvent: jest.fn((cb: any) => {
@@ -384,13 +391,13 @@ describe('AcpAgentService (Thread Pool)', () => {
         });
         createdThreads.push(t);
         (service as any).threadFactory.mockReturnValueOnce(t);
-        await service.createSession(mockAgentProcessConfig);
+        await service.createSession(mockAgentProcessConfigWithSmallPool);
       }
 
       // Now try to create another session - should fail
       const failThread = createMockThread();
       (service as any).threadFactory.mockReturnValue(failThread);
-      await expect(service.createSession(mockAgentProcessConfig)).rejects.toThrow('Thread pool is full');
+      await expect(service.createSession(mockAgentProcessConfigWithSmallPool)).rejects.toThrow('Thread pool is full');
     });
 
     it('should recycle the least recently used reusable thread when pool is full', async () => {
@@ -417,11 +424,11 @@ describe('AcpAgentService (Thread Pool)', () => {
         });
         threads.push(t);
         mockFactory.mockReturnValueOnce(t);
-        await service.createSession(mockAgentProcessConfig);
+        await service.createSession(mockAgentProcessConfigWithSmallPool);
       }
 
       threads[0].newSession.mockResolvedValueOnce({ sessionId: 'session-3' });
-      const result = await service.createSession(mockAgentProcessConfig);
+      const result = await service.createSession(mockAgentProcessConfigWithSmallPool);
 
       expect(result.sessionId).toBe('session-3');
       expect(mockFactory).toHaveBeenCalledTimes(3);
@@ -791,9 +798,8 @@ describe('AcpAgentService (Thread Pool)', () => {
     it('should throw when pool is full and no idle thread', async () => {
       const { service } = createServiceWithAutoEvents();
 
-      const maxPoolSize = (service as any).maxPoolSize;
       // Fill the pool
-      for (let i = 0; i < maxPoolSize; i++) {
+      for (let i = 0; i < SMALL_THREAD_POOL_SIZE; i++) {
         const t = createMockThread({
           getStatus: jest.fn().mockReturnValue('working'),
           onEvent: jest.fn((cb: any) => {
@@ -810,10 +816,12 @@ describe('AcpAgentService (Thread Pool)', () => {
           }),
         });
         (service as any).threadFactory.mockReturnValueOnce(t);
-        await service.createSession(mockAgentProcessConfig);
+        await service.createSession(mockAgentProcessConfigWithSmallPool);
       }
 
-      await expect(service.loadSession('new-session', mockAgentProcessConfig)).rejects.toThrow('Thread pool is full');
+      await expect(service.loadSession('new-session', mockAgentProcessConfigWithSmallPool)).rejects.toThrow(
+        'Thread pool is full',
+      );
     });
 
     it('should load a new session by recycling the least recently used reusable thread', async () => {
@@ -841,10 +849,10 @@ describe('AcpAgentService (Thread Pool)', () => {
         });
         threads.push(t);
         mockFactory.mockReturnValueOnce(t);
-        await service.createSession(mockAgentProcessConfig);
+        await service.createSession(mockAgentProcessConfigWithSmallPool);
       }
 
-      const result = await service.loadSession('session-3', mockAgentProcessConfig);
+      const result = await service.loadSession('session-3', mockAgentProcessConfigWithSmallPool);
 
       expect(result.sessionId).toBe('session-3');
       expect(mockFactory).toHaveBeenCalledTimes(3);
@@ -880,7 +888,7 @@ describe('AcpAgentService (Thread Pool)', () => {
         });
         threads.push(t);
         mockFactory.mockReturnValueOnce(t);
-        await service.createSession(mockAgentProcessConfig);
+        await service.createSession(mockAgentProcessConfigWithSmallPool);
       }
 
       const firstReleaseGate = createDeferred<void>();
@@ -890,11 +898,11 @@ describe('AcpAgentService (Thread Pool)', () => {
         }
       });
 
-      const firstLoad = service.loadSession('session-3', mockAgentProcessConfig);
+      const firstLoad = service.loadSession('session-3', mockAgentProcessConfigWithSmallPool);
       await flushAsyncWork();
       expect(mockTerminalHandler.releaseSessionTerminals).toHaveBeenCalledWith('session-0');
 
-      const secondLoad = service.loadSession('session-4', mockAgentProcessConfig);
+      const secondLoad = service.loadSession('session-4', mockAgentProcessConfigWithSmallPool);
       await flushAsyncWork();
       expect(mockTerminalHandler.releaseSessionTerminals).toHaveBeenCalledWith('session-1');
 
@@ -983,10 +991,10 @@ describe('AcpAgentService (Thread Pool)', () => {
         });
         threads.push(t);
         mockFactory.mockReturnValueOnce(t);
-        await service.createSession(mockAgentProcessConfig);
+        await service.createSession(mockAgentProcessConfigWithSmallPool);
       }
 
-      await service.loadSessionOrNew('session-3', mockAgentProcessConfig);
+      await service.loadSessionOrNew('session-3', mockAgentProcessConfigWithSmallPool);
 
       expect(threads[0].loadSessionOrNew).toHaveBeenCalledWith(
         expect.objectContaining({ sessionId: 'session-3', cwd: mockAgentProcessConfig.cwd }),
@@ -1041,15 +1049,18 @@ describe('AcpAgentService (Thread Pool)', () => {
         });
         threads.push(t);
         mockFactory.mockReturnValueOnce(t);
-        await service.createSession(mockAgentProcessConfig);
+        await service.createSession(mockAgentProcessConfigWithSmallPool);
       }
 
       threads[0].newSession.mockResolvedValueOnce({ sessionId: 'session-3' });
-      await service.createSession(mockAgentProcessConfig);
+      await service.createSession(mockAgentProcessConfigWithSmallPool);
 
       expect((service as any).sessions.has('session-0')).toBe(false);
 
-      const stream = service.sendMessage({ prompt: 'Hello again', sessionId: 'session-0' }, mockAgentProcessConfig);
+      const stream = service.sendMessage(
+        { prompt: 'Hello again', sessionId: 'session-0' },
+        mockAgentProcessConfigWithSmallPool,
+      );
       const updates: any[] = [];
       stream.onData((data) => updates.push(data));
       await flushAsyncWork();
@@ -1580,7 +1591,7 @@ describe('AcpAgentService (Thread Pool)', () => {
         });
         threads.push(t);
         (service as any).threadFactory.mockReturnValueOnce(t);
-        await service.createSession(mockAgentProcessConfig);
+        await service.createSession(mockAgentProcessConfigWithSmallPool);
       }
 
       await service.stopAgent();
@@ -1797,7 +1808,13 @@ describe('AcpAgentService (Thread Pool)', () => {
 
     it('should track maxPoolSize correctly', async () => {
       const { service } = createService();
-      expect((service as any).maxPoolSize).toBe(3);
+      expect((service as any).maxPoolSize).toBe(DEFAULT_ACP_THREAD_POOL_SIZE);
+    });
+
+    it('should apply configured maxPoolSize from agent process config', async () => {
+      const { service } = createService();
+      (service as any).syncMaxPoolSize({ ...mockAgentProcessConfig, threadPoolSize: 4 });
+      expect((service as any).maxPoolSize).toBe(4);
     });
   });
 

@@ -98,6 +98,10 @@ export interface AgentProcessConfig {
     enabled?: boolean;
   };
   /**
+   * Maximum number of reusable ACP agent threads.
+   */
+  threadPoolSize?: number;
+  /**
    * Default ACP session model id to apply after session creation/loading.
    */
   defaultModel?: string;

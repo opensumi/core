@@ -1,3 +1,4 @@
+import { DEFAULT_ACP_THREAD_POOL_SIZE } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { EnvVariable, McpServer } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 
@@ -26,6 +27,7 @@ export function buildAcpAgentProcessConfig(input: {
         defaultConfigOptions?: Record<string, string | boolean>;
       }
     >;
+    threadPoolSize?: number;
     webMcpEnabled?: boolean;
   };
   mcpServers?: McpServer[];
@@ -38,6 +40,7 @@ export function buildAcpAgentProcessConfig(input: {
     env: mergeEnv(input.registration.env, override.env),
     cwd: input.registration.cwd,
     nodePath: input.userPreferences.nodePath || undefined,
+    threadPoolSize: normalizeThreadPoolSize(input.userPreferences.threadPoolSize),
   };
   if (input.mcpServers) {
     config.mcpServers = input.mcpServers;
@@ -57,6 +60,13 @@ export function buildAcpAgentProcessConfig(input: {
     config.defaultConfigOptions = override.defaultConfigOptions;
   }
   return config;
+}
+
+function normalizeThreadPoolSize(value: number | undefined): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 1) {
+    return DEFAULT_ACP_THREAD_POOL_SIZE;
+  }
+  return Math.floor(value);
 }
 
 function mergeEnv(base?: EnvVariable[], override?: Record<string, string>): EnvVariable[] | undefined {

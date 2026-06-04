@@ -1,5 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Deferred, Disposable, Emitter, Event, IDisposable } from '@opensumi/ide-core-common';
+import { DEFAULT_ACP_THREAD_POOL_SIZE } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import {
   AcpDebugLogEntry,
   AcpWebMcpCallerServiceToken,
@@ -290,7 +291,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   private reservedThreads = new Set<AcpThread>();
 
   // Pool limit (configurable)
-  private readonly maxPoolSize = 3;
+  private maxPoolSize = DEFAULT_ACP_THREAD_POOL_SIZE;
 
   // Cached session info for backward compat (getSessionInfo without sessionId)
   private lastSessionInfo: AgentSessionInfo | null = null;
@@ -313,6 +314,8 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
    * 4. Pool full, no idle -> throw
    */
   private async findOrCreateThread(sessionId: string, config: AgentProcessConfig): Promise<AcpThread> {
+    this.syncMaxPoolSize(config);
+
     // 1. Active session mapping exists
     const existing = this.sessions.get(sessionId);
     if (existing && existing.getStatus() !== 'disconnected') {
@@ -369,6 +372,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       return;
     }
     this.bindSession(sessionId, thread);
+  }
+
+  private syncMaxPoolSize(config: AgentProcessConfig): void {
+    const { threadPoolSize } = config;
+    if (typeof threadPoolSize !== 'number' || !Number.isFinite(threadPoolSize) || threadPoolSize < 1) {
+      this.maxPoolSize = DEFAULT_ACP_THREAD_POOL_SIZE;
+      return;
+    }
+    this.maxPoolSize = Math.floor(threadPoolSize);
   }
 
   private isThreadReusableForLRU(thread: AcpThread): boolean {
@@ -457,6 +469,8 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
    * Find an idle thread or create a new one, without binding to a sessionId.
    */
   private async findOrCreateIdleThread(config: AgentProcessConfig): Promise<AcpThread> {
+    this.syncMaxPoolSize(config);
+
     const idleThread = this.threadPool.find(
       (t) =>
         !this.reservedThreads.has(t) &&
@@ -691,6 +705,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // -----------------------------------------------------------------------
 
   async loadSession(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
+    this.syncMaxPoolSize(config);
     this.logger.log(`[AcpAgentService] loadSession() — sessionId=${sessionId}`);
 
     // 1. If a load for this session is already in flight, join it. The
@@ -1184,6 +1199,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // -----------------------------------------------------------------------
 
   async loadSessionOrNew(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
+    this.syncMaxPoolSize(config);
     this.logger.log(`[AcpAgentService] loadSessionOrNew() — sessionId=${sessionId}`);
 
     const pendingLoad = this.pendingSessionLoads.get(sessionId);

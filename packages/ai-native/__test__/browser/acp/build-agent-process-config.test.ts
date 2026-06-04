@@ -1,3 +1,4 @@
+import { DEFAULT_ACP_THREAD_POOL_SIZE } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { EnvVariable, McpServer } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 import { buildAcpAgentProcessConfig } from '../../../src/browser/acp/build-agent-process-config';
@@ -28,6 +29,7 @@ describe('buildAcpAgentProcessConfig', () => {
       env: [{ name: 'API_KEY', value: 'default' }],
       cwd: '/workspace',
       nodePath: undefined,
+      threadPoolSize: DEFAULT_ACP_THREAD_POOL_SIZE,
     });
   });
 
@@ -140,6 +142,30 @@ describe('buildAcpAgentProcessConfig', () => {
     expect(result.webMcp).toEqual({ enabled: false });
   });
 
+  it('includes configured ACP thread pool size when provided', () => {
+    const result = buildAcpAgentProcessConfig({
+      agentId: 'test-agent',
+      registration: defaultRegistration,
+      userPreferences: {
+        ...defaultPrefs,
+        threadPoolSize: 5,
+      },
+    });
+    expect(result.threadPoolSize).toBe(5);
+  });
+
+  it('falls back to default ACP thread pool size when preference is invalid', () => {
+    const result = buildAcpAgentProcessConfig({
+      agentId: 'test-agent',
+      registration: defaultRegistration,
+      userPreferences: {
+        ...defaultPrefs,
+        threadPoolSize: 0,
+      },
+    });
+    expect(result.threadPoolSize).toBe(DEFAULT_ACP_THREAD_POOL_SIZE);
+  });
+
   it('includes ACP session defaults from per-agent overrides', () => {
     const defaultConfigOptions = {
       permission: 'acceptEdits',
@@ -192,6 +218,7 @@ describe('buildAcpAgentProcessConfig', () => {
         args: ['--acp'],
         cwd: '/workspace',
         nodePath: '/usr/local/bin/node',
+        threadPoolSize: DEFAULT_ACP_THREAD_POOL_SIZE,
         defaultModel: 'claude-sonnet',
         defaultMode: 'code',
         defaultConfigOptions: { approval: 'on-request' },
