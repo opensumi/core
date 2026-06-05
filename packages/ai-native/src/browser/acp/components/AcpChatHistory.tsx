@@ -50,6 +50,7 @@ export interface IChatHistoryProps {
   historyCollapsed?: boolean;
   pendingPermissionBadge?: number;
   onNewChat: () => void;
+  onOpenMCPConfig?: () => void;
   onToggleHistoryCollapsed?: () => void;
   onHistoryItemSelect: (item: IChatHistoryItem) => void;
   onHistoryItemDelete?: (item: IChatHistoryItem) => void;
@@ -70,6 +71,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     historyList,
     currentId,
     onNewChat,
+    onOpenMCPConfig,
     onHistoryItemSelect,
     onHistoryItemChange,
     onHistoryPopoverVisibleChange,
@@ -346,6 +348,25 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
       </Popover>
     );
 
+    const renderMCPConfigAction = () => {
+      if (variant !== 'inline' || !onOpenMCPConfig) {
+        return null;
+      }
+
+      const mcpConfigTitle = localize('ai.native.mcp.config.title');
+
+      return (
+        <Popover id={'ai-chat-header-mcp-config'} position={PopoverPosition.top} title={mcpConfigTitle}>
+          <EnhanceIcon
+            ariaLabel={mcpConfigTitle}
+            className={styles.chat_history_header_actions_mcp}
+            iconClass={getIcon('mcp')}
+            onClick={onOpenMCPConfig}
+          />
+        </Popover>
+      );
+    };
+
     const renderCollapseAction = () => {
       if (variant !== 'inline' || !onToggleHistoryCollapsed) {
         return null;
@@ -372,8 +393,9 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
         <div className={styles.chat_history_header_title}>
           {variant === 'inline' ? (
             <div className={styles.chat_history_header_inline_actions}>
-              {renderNewChatAction()}
               {renderCollapseAction()}
+              {renderNewChatAction()}
+              {renderMCPConfigAction()}
             </div>
           ) : (
             <span>{title}</span>

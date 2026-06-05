@@ -1,11 +1,12 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   ChatMessageRole,
+  CommandService,
   DisposableCollection,
   IDisposable,
   formatLocalize,
@@ -21,6 +22,7 @@ import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
 import { getCachedWorkspaceDir, switchWorkspaceDir } from '../../chat/pick-workspace-dir';
 import { AIPanelLayoutService } from '../../layout/panel-layout.service';
+import { MCPConfigCommands } from '../../mcp/config/mcp-config.commands';
 import { AcpPermissionBridgeService } from '../permission-bridge.service';
 
 import AcpChatHistory, { IChatHistoryItem } from './AcpChatHistory';
@@ -45,6 +47,8 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
   const quickPick = useInjectable<QuickPickService>(QuickPickService);
   const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const commandService = useInjectable<CommandService>(CommandService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
@@ -61,16 +65,13 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
 
   const [currentWorkspaceDir, setCurrentWorkspaceDir] = React.useState<string>(getCachedWorkspaceDir());
 
-  const enterDraftSession = React.useCallback(
-    () => {
-      if (sessionSwitchingRef.current) {
-        return;
-      }
+  const enterDraftSession = React.useCallback(() => {
+    if (sessionSwitchingRef.current) {
+      return;
+    }
 
-      aiChatService.enterDraftSession();
-    },
-    [aiChatService],
-  );
+    aiChatService.enterDraftSession();
+  }, [aiChatService]);
 
   // Sync state when cache is updated externally (e.g. by session provider on first init)
   React.useEffect(() => {
@@ -257,6 +258,10 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
     setHistoryCollapsed((collapsed) => !collapsed);
   }, []);
 
+  const handleOpenMCPConfig = React.useCallback(() => {
+    commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
+  }, [commandService]);
+
   return (
     <div className={cls(styles.header, isAgenticLayout && styles.header_agentic)}>
       <AcpChatHistory
@@ -274,6 +279,9 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
         disabled={sessionSwitching}
         pendingPermissionBadge={pendingPermissionBadge}
         onNewChat={handleNewChat}
+        onOpenMCPConfig={
+          isAgenticLayout && aiNativeConfigService.capabilities.supportsMCP ? handleOpenMCPConfig : undefined
+        }
         onToggleHistoryCollapsed={isAgenticLayout ? handleToggleHistoryCollapsed : undefined}
         onHistoryItemSelect={handleHistoryItemSelect}
         onHistoryItemDelete={() => {}}

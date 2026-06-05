@@ -69,6 +69,7 @@ jest.mock('../../src/browser/components/acp/chat-history.module.less', () => ({
   pending_permission_badge_inline: 'pending_permission_badge_inline',
   chat_history_header_actions_new: 'chat_history_header_actions_new',
   chat_history_header_actions_new_disabled: 'chat_history_header_actions_new_disabled',
+  chat_history_header_actions_mcp: 'chat_history_header_actions_mcp',
   chat_history_header_inline_actions: 'chat_history_header_inline_actions',
   chat_history_header_actions_collapse: 'chat_history_header_actions_collapse',
   chat_history_header_bar: 'chat_history_header_bar',
@@ -239,6 +240,44 @@ describe('AcpChatHistory BDD', () => {
     });
 
     expect(onNewChat).toHaveBeenCalledTimes(1);
+  });
+
+  it('Given inline variant has an MCP config action, when the header renders, then it appears after the new-chat action and opens MCP config', () => {
+    const onOpenMCPConfig = jest.fn();
+    renderHistory({ variant: 'inline', onOpenMCPConfig, onToggleHistoryCollapsed: jest.fn() });
+
+    const inlineActions = container.querySelector('.chat_history_header_inline_actions') as HTMLElement;
+    const actionClasses = Array.from(
+      inlineActions.querySelectorAll(
+        '.chat_history_header_actions_collapse, .chat_history_header_actions_new, .chat_history_header_actions_mcp',
+      ),
+    ).map((action) => action.className);
+    const mcpAction = inlineActions.querySelector('.chat_history_header_actions_mcp') as HTMLElement;
+
+    expect(actionClasses).toEqual([
+      'chat_history_header_actions_collapse',
+      'chat_history_header_actions_new',
+      'chat_history_header_actions_mcp',
+    ]);
+    expect(mcpAction).not.toBeNull();
+
+    act(() => {
+      mcpAction.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(onOpenMCPConfig).toHaveBeenCalledTimes(1);
+  });
+
+  it('Given no MCP config action is provided, when inline history renders, then it does not show the MCP button', () => {
+    renderHistory({ variant: 'inline' });
+
+    expect(container.querySelector('.chat_history_header_actions_mcp')).toBeNull();
+  });
+
+  it('Given popover variant has an MCP config action, when it renders, then it does not show the MCP button', () => {
+    renderHistory({ onOpenMCPConfig: jest.fn() });
+
+    expect(container.querySelector('.chat_history_header_actions_mcp')).toBeNull();
   });
 
   it('Given inline variant supports collapse, when the collapse action is clicked, then it toggles history', () => {
