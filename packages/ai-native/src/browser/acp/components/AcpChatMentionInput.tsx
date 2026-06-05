@@ -37,6 +37,7 @@ import { LLMContextService } from '../../../common/llm-context';
 import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import { ChatRenderRegistry } from '../../chat/chat.render.registry';
+import { hasAcpChatSendPayload } from '../../components/acp/chat-input-validation';
 import { MentionInput } from '../../components/acp/MentionInput';
 import { ModeOption } from '../../components/acp/types';
 import styles from '../../components/components.module.less';
@@ -734,13 +735,11 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
       const currentAgentId = props.agentId;
 
       const doSend = (newValue: string = content) => {
-        onSend(
-          newValue,
-          images.map((image) => image.toString()),
-          currentAgentId,
-          currentCommand,
-          option,
-        );
+        const imagePayload = images.map((image) => image.toString());
+        if (!hasAcpChatSendPayload({ message: newValue, images: imagePayload, command: currentCommand })) {
+          return;
+        }
+        onSend(newValue, imagePayload, currentAgentId, currentCommand, option);
         // 发送后重置 slash command 状态
         props.setTheme(null);
         props.setAgentId('');

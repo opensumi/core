@@ -28,6 +28,7 @@ import { ChatSlashCommandItemModel } from '../../chat/chat-model';
 import { ChatProxyService } from '../../chat/chat-proxy.service';
 import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
+import { hasAcpChatSendPayload } from '../../components/acp/chat-input-validation';
 import styles from '../../components/components.module.less';
 import { MCPConfigCommands } from '../../mcp/config/mcp-config.commands';
 import { MCPServerProxyService } from '../../mcp/mcp-server-proxy.service';
@@ -339,6 +340,9 @@ export const AcpChatInput = React.forwardRef((props: IAcpChatInputProps, ref) =>
     }
 
     const handleSendLogic = (newValue: string = value) => {
+      if (!hasAcpChatSendPayload({ message: newValue, command })) {
+        return;
+      }
       onSend(newValue, [], agentId, command);
       setValue('');
       setTheme('');

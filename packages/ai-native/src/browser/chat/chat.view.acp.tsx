@@ -53,6 +53,7 @@ import { cleanAttachedTextWrapper } from '../../common/utils';
 import ChatHistory, { IChatHistoryItem } from '../acp/components/AcpChatHistory';
 import { AcpChatViewWrapper } from '../acp/components/AcpChatViewWrapper';
 import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
+import { hasAcpChatSendPayload } from '../components/acp/chat-input-validation';
 import { FileChange, FileListDisplay } from '../components/ChangeList';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
@@ -62,7 +63,6 @@ import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
 import { BaseApplyService } from '../mcp/base-apply.service';
-import type { MsgHistoryManager } from '../model/msg-history-manager';
 import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
 import { ChatModel, ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
@@ -75,6 +75,8 @@ import { ChatInternalService } from './chat.internal.service';
 import { AcpChatInternalService } from './chat.internal.service.acp';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
+
+import type { MsgHistoryManager } from '../model/msg-history-manager';
 
 const SCROLL_CLASSNAME = 'chat_scroll';
 
@@ -667,6 +669,10 @@ export const AIChatViewACPContent = () => {
       const { message, images, agentId, command, reportExtra } = value;
       const { actionType, actionSource } = reportExtra || {};
 
+      if (!hasAcpChatSendPayload({ message, images, command })) {
+        return false;
+      }
+
       let sessionModel: ChatModel;
       try {
         sessionModel = await aiChatService.ensureSessionModel();
@@ -763,6 +769,10 @@ export const AIChatViewACPContent = () => {
 
   const handleSend = React.useCallback(
     async (message: string, images?: string[], agentId?: string, command?: string) => {
+      if (!hasAcpChatSendPayload({ message, images, command })) {
+        return false;
+      }
+
       const reportExtra = {
         actionSource: ActionSourceEnum.Chat,
         actionType: ActionTypeEnum.Send,

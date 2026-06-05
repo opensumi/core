@@ -308,13 +308,44 @@ function createMockServices({
   const ChatInputForTest = React.forwardRef((_props: any, _ref) => {
     const props = _props;
     return React.createElement(
-      'button',
-      {
-        'data-testid': 'acp-chat-send',
-        onClick: () => props.onSend('hello'),
-        type: 'button',
-      },
-      'send',
+      'div',
+      null,
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'acp-chat-send',
+          onClick: () => props.onSend('hello'),
+          type: 'button',
+        },
+        'send',
+      ),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'acp-chat-send-whitespace',
+          onClick: () => props.onSend('   \n\t  '),
+          type: 'button',
+        },
+        'send whitespace',
+      ),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'acp-chat-send-empty-html',
+          onClick: () => props.onSend('<div><br></div>&nbsp;<span> </span>'),
+          type: 'button',
+        },
+        'send empty html',
+      ),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'acp-chat-send-command-only',
+          onClick: () => props.onSend('   ', undefined, undefined, 'generate'),
+          type: 'button',
+        },
+        'send command only',
+      ),
     );
   });
 
@@ -785,5 +816,91 @@ describe('ACP chat view headers', () => {
         sessionId: 'acp:current',
       },
     });
+  });
+
+  it('ignores whitespace-only draft sends before creating an ACP session', async () => {
+    const createRequest = jest.fn();
+    const ensureSessionModel = jest.fn();
+    const sendRequest = jest.fn();
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel,
+      sendRequest,
+      session: null,
+      sessions: [],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-whitespace"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(ensureSessionModel).not.toHaveBeenCalled();
+    expect(createRequest).not.toHaveBeenCalled();
+    expect(sendRequest).not.toHaveBeenCalled();
+  });
+
+  it('ignores contenteditable blank markup before creating an ACP session', async () => {
+    const createRequest = jest.fn();
+    const ensureSessionModel = jest.fn();
+    const sendRequest = jest.fn();
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel,
+      sendRequest,
+      session: null,
+      sessions: [],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-empty-html"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(ensureSessionModel).not.toHaveBeenCalled();
+    expect(createRequest).not.toHaveBeenCalled();
+    expect(sendRequest).not.toHaveBeenCalled();
+  });
+
+  it('keeps command-only ACP sends valid', async () => {
+    const session = createMockSession({ messages: [] });
+    const createRequest = jest.fn(() => ({
+      message: {
+        agentId: 'default-agent',
+        command: 'generate',
+        prompt: '   ',
+      },
+      requestId: 'request-1',
+      response: {
+        isComplete: false,
+      },
+    }));
+    const ensureSessionModel = jest.fn(async () => session);
+    const sendRequest = jest.fn();
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel,
+      sendRequest,
+      session: null,
+      sessions: [],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-command-only"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(ensureSessionModel).toHaveBeenCalledTimes(1);
+    expect(createRequest).toHaveBeenCalledWith('   ', 'default-agent', undefined, 'generate');
+    expect(sendRequest).toHaveBeenCalledWith(createRequest.mock.results[0].value);
   });
 });

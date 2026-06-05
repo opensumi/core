@@ -31,21 +31,45 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => ({
     defaultInput,
     expanded,
     footerConfig,
+    onSend,
   }: {
     currentMode?: string;
     defaultInput?: string;
     expanded?: boolean;
     footerConfig?: { defaultModel?: string; configOptions?: unknown[] };
+    onSend?: (content: string, option?: { model: string }) => void;
   }) =>
-    require('react').createElement('textarea', {
-      'data-testid': 'acp-mention-input',
-      'data-expanded': expanded ? 'true' : 'false',
-      'data-current-mode': currentMode,
-      'data-default-model': footerConfig?.defaultModel,
-      'data-config-option-count': String(footerConfig?.configOptions?.length ?? 0),
-      readOnly: true,
-      value: defaultInput || '',
-    }),
+    require('react').createElement(
+      'div',
+      null,
+      require('react').createElement('textarea', {
+        'data-testid': 'acp-mention-input',
+        'data-expanded': expanded ? 'true' : 'false',
+        'data-current-mode': currentMode,
+        'data-default-model': footerConfig?.defaultModel,
+        'data-config-option-count': String(footerConfig?.configOptions?.length ?? 0),
+        readOnly: true,
+        value: defaultInput || '',
+      }),
+      require('react').createElement(
+        'button',
+        {
+          'data-testid': 'acp-mention-send-whitespace',
+          onClick: () => onSend?.('   \n\t  ', { model: 'mock-model' }),
+          type: 'button',
+        },
+        'send whitespace',
+      ),
+      require('react').createElement(
+        'button',
+        {
+          'data-testid': 'acp-mention-send-empty-html',
+          onClick: () => onSend?.('<div><br></div>&nbsp;<span> </span>', { model: 'mock-model' }),
+          type: 'button',
+        },
+        'send empty html',
+      ),
+    ),
 }));
 
 jest.mock('../../src/browser/components/components.module.less', () => ({
@@ -257,5 +281,80 @@ describe('AcpChatMentionInput ref contract', () => {
 
     expect(input().getAttribute('data-default-model')).toBe('qwen3.6-plus');
     expect(input().getAttribute('data-config-option-count')).toBe('2');
+  });
+
+  it('does not forward whitespace-only contenteditable submits', async () => {
+    const onSend = jest.fn();
+
+    act(() => {
+      render(
+        React.createElement(AcpChatMentionInput, {
+          onSend,
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+        } as any),
+        container,
+      );
+    });
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-mention-send-whitespace"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(onSend).not.toHaveBeenCalled();
+  });
+
+  it('does not forward contenteditable blank markup submits', async () => {
+    const onSend = jest.fn();
+
+    act(() => {
+      render(
+        React.createElement(AcpChatMentionInput, {
+          onSend,
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+        } as any),
+        container,
+      );
+    });
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-mention-send-empty-html"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(onSend).not.toHaveBeenCalled();
+  });
+
+  it('keeps command-only contenteditable submits valid', async () => {
+    const onSend = jest.fn();
+
+    act(() => {
+      render(
+        React.createElement(AcpChatMentionInput, {
+          onSend,
+          setTheme: jest.fn(),
+          agentId: 'default-agent',
+          setAgentId: jest.fn(),
+          command: 'generate',
+          setCommand: jest.fn(),
+        } as any),
+        container,
+      );
+    });
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-mention-send-whitespace"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(onSend).toHaveBeenCalledWith('   \n\t  ', [], 'default-agent', 'generate', { model: 'mock-model' });
   });
 });
