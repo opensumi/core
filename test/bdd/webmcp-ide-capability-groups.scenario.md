@@ -2,6 +2,8 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/webmcp-groups/*.webmcp-group.ts`, `packages/ai-native/src/browser/acp/webmcp-group-registry.ts`, or `packages/ai-native/src/node/acp/opensumi-mcp-http-server.ts`
 
+**Layer:** `mcp-contract` **Required profile:** `full` **Fixtures:** Fresh MCP session, workspace containing `package.json`, and a temporary workspace path for reversible mutation checks. **Workspace mutation:** Temporary files under `.tmp/acp-bdd` only. **Automation status:** Automated MCP contract spec; default/interactive runs should skip this full-profile scenario.
+
 ## Given
 
 - Common preflight in `test/bdd/README.md` passes.
@@ -15,23 +17,23 @@
 
 ### Part A - Catalog
 
-1. `mcp`: `opensumi_discoverCapabilities({ task: "inspect IDE context", includeDisabled: true })`.
-2. For each group, call `opensumi_describeCapabilityGroup({ group, includeSchemas: true })`:
+1. `mcp`: `opensumi_discover_capabilities({ task: "inspect IDE context", includeDisabled: true })`.
+2. For each group, call `opensumi_describe_capability_group({ group, includeSchemas: true })`:
    - `workspace`
    - `search`
    - `diagnostics`
    - `file`
    - `terminal`
    - `editor`
-3. For each canonical tool name, call `opensumi_describeTool({ tool })`.
-4. For representative legacy names such as `_opensumi/file/read` and `_opensumi/editor/getActive`, call `opensumi_describeTool`.
+3. For each canonical tool name, call `opensumi_describe_tool({ tool })`.
+4. For representative legacy names such as `_opensumi/file/read` and `_opensumi/editor/getActive`, call `opensumi_describe_tool`.
 
 ### Part B - Workspace And Search
 
 5. Enable the `workspace` group and call:
-   - `workspace_getInfo({})`
-   - `workspace_listOpenFiles({})`
-   - `workspace_listRecentWorkspaces({})`
+   - `workspace_get_info({})`
+   - `workspace_list_open_files({})`
+   - `workspace_list_recent_workspaces({})`
 6. Enable the `search` group and call:
    - `search_files({ query: "package" })`
    - `search_text({ query: "name", includePattern: "package.json" })`
@@ -41,10 +43,10 @@
 
 7. Enable the `diagnostics` group and call:
    - `diagnostics_list({})`
-   - `diagnostics_getStats({})`
+   - `diagnostics_get_stats({})`
 8. If diagnostics exist, call `diagnostics_open` for one diagnostic.
 9. Enable the `file` group and call:
-   - `file_getWorkspaceRoot({})`
+   - `file_get_workspace_root({})`
    - `file_exists({ path: "package.json" })`
    - `file_stat({ path: "package.json" })`
    - `file_read({ path: "package.json", maxBytes: 4096 })`
@@ -62,15 +64,15 @@
 11. Open `package.json` in the IDE.
 12. Enable the `editor` group and call:
     - `editor_open({ path: "package.json" })`
-    - `editor_getActive({})`
-    - `editor_listOpenFiles({})`
-    - `editor_getSelection({})`
-    - `editor_readBuffer({})`
-    - `editor_readRangeFromBuffer({ startLine: 1, endLine: 20 })`
-    - `editor_listDirtyFiles({})`
-    - `editor_getDirtyDiff({})`
+    - `editor_get_active({})`
+    - `editor_list_open_files({})`
+    - `editor_get_selection({})`
+    - `editor_read_buffer({})`
+    - `editor_read_range_from_buffer({ startLine: 1, endLine: 20 })`
+    - `editor_list_dirty_files({})`
+    - `editor_get_dirty_diff({})`
 13. In full profile only, call safe editor write/UI tools with reversible input:
-    - `editor_setSelection`
+    - `editor_set_selection`
     - `editor_format`
     - `editor_fold`
     - `editor_unfold`
@@ -81,23 +83,23 @@
 
 15. Enable the `terminal` group and call read/UI tools:
     - `terminal_list({})`
-    - `terminal_getActive({})`
-    - `terminal_getOS({})`
-    - `terminal_getProfiles({})`
-    - `terminal_showPanel({})`
+    - `terminal_get_active({})`
+    - `terminal_get_os({})`
+    - `terminal_get_profiles({})`
+    - `terminal_show_panel({})`
 16. In full profile only, create a terminal and call:
     - `terminal_create({})`
     - `terminal_show({ terminalId })`
-    - `terminal_executeCommand({ terminalId, command: "pwd" })`
-    - `terminal_readOutput({ terminalId })`
+    - `terminal_execute_command({ terminalId, command: "pwd" })`
+    - `terminal_read_output({ terminalId })`
     - `terminal_tail({ terminalId, lines: 20 })`
-    - `terminal_getProcessInfo({ terminalId })`
-    - `terminal_getProcessId({ terminalId })`
-    - `terminal_waitForPattern({ terminalId, pattern: "." })`
-    - `terminal_sendText({ terminalId, text: "" })`
-    - `terminal_sendControl({ terminalId, control: "c" })`
+    - `terminal_get_process_info({ terminalId })`
+    - `terminal_get_process_id({ terminalId })`
+    - `terminal_wait_for_pattern({ terminalId, pattern: "." })`
+    - `terminal_send_text({ terminalId, text: "" })`
+    - `terminal_send_control({ terminalId, control: "c" })`
     - `terminal_resize({ terminalId, cols: 80, rows: 24 })`
-    - `terminal_runCommand({ command: "pwd" })`
+    - `terminal_run_command({ command: "pwd" })`
     - `terminal_dispose({ terminalId })`
 
 ## Then
@@ -121,5 +123,5 @@
 ## Pass / Fail Judgment
 
 - **PASS** - every registered IDE WebMCP capability group is discoverable, profile-gated, session-scoped, and its representative tools execute with bounded, canonical responses.
-- **PARTIAL** - catalog and read/UI checks pass, but full-profile editor or terminal mutation checks are skipped because the environment is not full profile.
+- **BLOCKED** - the scenario is scheduled without the required full profile, so reversible file/editor/terminal mutation checks cannot be exercised.
 - **FAIL** - a registered group is missing from discovery, legacy aliases work, enablement leaks across MCP sessions, profile-gated tools are callable too early, or file/editor/terminal responses are unbounded or workspace-unsafe.

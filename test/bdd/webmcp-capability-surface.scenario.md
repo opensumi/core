@@ -2,6 +2,8 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/webmcp-group-registry.ts`, `packages/ai-native/src/browser/acp/webmcp-model-context-adapter.ts`, or `packages/ai-native/src/node/acp/opensumi-mcp-http-server.ts`
 
+**Layer:** `mcp-contract` **Required profile:** `interactive` or `full` **Fixtures:** Browser `navigator.modelContext` and fresh MCP session connected to `opensumi-ide`. **Workspace mutation:** None. **Automation status:** Automated MCP/browser surface contract; blocked if either surface is unavailable.
+
 ## Given
 
 - Common preflight in `test/bdd/README.md` passes.
@@ -20,9 +22,9 @@
    ```
    -> record `BROWSER_TOOL_NAMES`.
 2. `mcp`: `tools/list` -> record `MCP_TOOL_NAMES`.
-3. `mcp`: `opensumi_discoverCapabilities({ task: "compare webmcp surfaces", includeDisabled: true })` -> record `CATALOG`.
-4. `mcp`: `opensumi_describeTool({ tool: "file_read" })` -> record `FILE_READ_DESCRIPTION`.
-5. `mcp`: `opensumi_describeTool({ tool: "_opensumi/file/read" })` -> record `LEGACY_FILE_READ_DESCRIPTION`.
+3. `mcp`: `opensumi_discover_capabilities({ task: "compare webmcp surfaces", includeDisabled: true })` -> record `CATALOG`.
+4. `mcp`: `opensumi_describe_tool({ tool: "file_read" })` -> record `FILE_READ_DESCRIPTION`.
+5. `mcp`: `opensumi_describe_tool({ tool: "_opensumi/file/read" })` -> record `LEGACY_FILE_READ_DESCRIPTION`.
 6. If `file_read` is present in both surfaces, call the browser surface with a small existing file:
    ```js
    navigator.modelContext.executeTool('file_read', { path: 'package.json' });
@@ -48,5 +50,5 @@
 ## Pass / Fail Judgment
 
 - **PASS** - browser `navigator.modelContext` and the Node MCP server expose the same canonical WebMCP names, and legacy `_opensumi/...` identifiers are not accepted.
-- **PARTIAL** - name and catalog checks pass, but file execution is skipped because `file_read` is not exposed by the active profile.
+- **BLOCKED** - either browser ModelContext, the Node MCP bridge, or an interactive/full profile tool surface is unavailable.
 - **FAIL** - either surface exposes a legacy `_opensumi/...` name, accepts a legacy alias, or diverges from the shared registry naming contract.

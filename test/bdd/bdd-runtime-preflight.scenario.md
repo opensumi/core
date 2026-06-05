@@ -2,6 +2,8 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/webmcp-model-context-adapter.ts`, `packages/ai-native/src/node/acp/opensumi-mcp-http-server.ts`, or `test/bdd/README.md`
 
+**Layer:** `runtime-ui` **Required profile:** `default` **Fixtures:** IDE dev server and, when ACP bridge checks run, an agent session with HTTP MCP support. **Workspace mutation:** None. **Automation status:** Automated preflight; downstream runtime scenarios are blocked until this passes.
+
 ## Given
 
 - The IDE dev server is running.
@@ -46,8 +48,8 @@
 7. Create or load an ACP session with HTTP MCP supported.
 8. Connect an MCP client to the injected `opensumi-ide` server.
 9. Call `tools/list`.
-10. Call `opensumi_discoverCapabilities({ task: "preflight", includeDisabled: true })`.
-11. Enable `acp_chat` and call `acp_chat_getSessionState({})` directly or through `opensumi_invokeCapabilityTool`.
+10. Call `opensumi_discover_capabilities({ task: "preflight", includeDisabled: true })`.
+11. Enable `acp_chat` and call `acp_chat_get_session_state({})` directly or through `opensumi_invoke_capability_tool`.
 
 ### Part D - Failure Diagnostics
 

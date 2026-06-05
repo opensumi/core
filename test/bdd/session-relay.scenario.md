@@ -2,43 +2,45 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/acp-chat-relay-*.ts` or `packages/ai-native/src/browser/acp/webmcp-groups/acp-chat.webmcp-group.ts`
 
+**Layer:** `mcp-contract` **Required profile:** `full` **Fixtures:** Two ACP sessions with bounded history, prepared relay digest state, and stable permission dialog selectors. **Workspace mutation:** None. **Automation status:** Automated through MCP plus Chrome DevTools MCP; blocked if the dialog lacks a stable Reject/close selector.
+
 ## Given
 
 - Common preflight in `test/bdd/README.md` passes.
 - The MCP `opensumi-ide` server is connected.
-- `opensumi_enableCapabilityGroup({ group: "acp_chat" })` has succeeded.
+- `opensumi_enable_capability_group({ group: "acp_chat" })` has succeeded.
+- The scenario is scheduled only when `ai.native.webmcp.profile = "full"`.
 - There are at least two ACP sessions:
   - `sourceSessionId`
   - `targetSessionId`
-- The relay post step runs only when `ai.native.webmcp.profile = "full"`.
-- The bounded debug read step may run in the current default profile after enabling `acp_chat`, because `acp_chat_readSessionMessages` is a read tool.
+- The relay post and bounded debug read steps run in the same full-profile pass.
 
 ## When
 
 ### Part A - Discover Sessions
 
-1. `mcp`: `acp_chat_listSessions({})` -> record `SESSIONS`.
+1. `mcp`: `acp_chat_list_sessions({})` -> record `SESSIONS`.
 
 ### Part B - Prepare Digest
 
-2. `mcp`: `acp_chat_prepareSessionDigest({ sourceSessionId, maxSourceChars: 12000, maxDigestChars: 2000 })` -> record `DIGEST`.
+2. `mcp`: `acp_chat_prepare_session_digest({ sourceSessionId, maxSourceChars: 12000, maxDigestChars: 2000 })` -> record `DIGEST`.
 
 ### Part C - Post Digest With Permission
 
-3. In full profile, start:
+3. Start:
    ```js
-   acp_chat_postPreparedRelay({ digestId: DIGEST.result.digestId, targetSessionId });
+   acp_chat_post_prepared_relay({ digestId: DIGEST.result.digestId, targetSessionId });
    ```
 4. `chrome-devtools-mcp-wait`: wait until the permission dialog is visible.
-5. `mcp`: `acp_chat_getPermissionState({})` -> record `PERMISSION_DURING_RELAY`.
-6. Manually reject or close the permission dialog through the UI.
+5. `mcp`: `acp_chat_get_permission_state({})` -> record `PERMISSION_DURING_RELAY`.
+6. `chrome-devtools-mcp`: click the visible Reject or close control in the permission dialog.
 7. Await the relay tool call -> record `POST_RESULT`.
 
 ### Part D - Bounded Debug Read
 
-8. If `acp_chat_readSessionMessages` is exposed after enabling `acp_chat`, call:
+8. If `acp_chat_read_session_messages` is exposed after enabling `acp_chat`, call:
    ```js
-   acp_chat_readSessionMessages({ sessionId: sourceSessionId, maxMessages: 10, maxChars: 4000 });
+   acp_chat_read_session_messages({ sessionId: sourceSessionId, maxMessages: 10, maxChars: 4000 });
    ```
    -> record `READ_RESULT`.
 
@@ -69,5 +71,5 @@
 ## Pass / Fail Judgment
 
 - **PASS** - relay preparation returns only bounded metadata/preview, relay posting is permission-gated, and full-profile message reads are bounded.
-- **PARTIAL** - Parts A and B pass, but full-profile Part C is skipped because the environment is not full profile or lacks two sessions.
+- **BLOCKED** - the run is not full profile, lacks two ACP sessions, or lacks a stable permission dialog selector for the Reject/close control.
 - **FAIL** - prepare returns full digest/source content, post bypasses permission, or debug reads return unbounded/tool-result content.

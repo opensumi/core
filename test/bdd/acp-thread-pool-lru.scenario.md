@@ -2,6 +2,8 @@
 
 **Trigger:** `packages/ai-native/src/node/acp/acp-agent.service.ts` or `packages/ai-native/src/browser/chat/chat.internal.service.acp.ts`
 
+**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Deterministic ACP thread pool with controllable statuses, reservations, and pending loads. **Workspace mutation:** None. **Automation status:** Automated contract spec; visible loading-state checks may also run through the IDE.
+
 ## Given
 
 - Common preflight in `test/bdd/README.md` passes if this is run through the IDE.

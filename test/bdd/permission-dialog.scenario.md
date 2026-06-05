@@ -2,36 +2,38 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/permission-bridge.service.ts` or `packages/ai-native/src/browser/acp/webmcp-groups/acp-chat.webmcp-group.ts`
 
+**Layer:** `runtime-ui` **Required profile:** `full` **Fixtures:** Two ACP sessions, a prepared relay permission request, and stable permission dialog selectors. **Workspace mutation:** None. **Automation status:** Automated through MCP plus Chrome DevTools MCP; blocked if the dialog lacks a stable Reject/close selector.
+
 ## Given
 
 - Common preflight in `test/bdd/README.md` passes.
 - The MCP `opensumi-ide` server is connected.
-- `acp_chat_getPermissionState` is available in the default tool list.
+- `acp_chat_get_permission_state` is available in the default tool list.
 - Permission tools are referenced only by canonical `tool.name` values.
-- The test environment uses full WebMCP profile only if it executes the relay step.
-- There are at least two ACP sessions if the relay step is used.
+- The test environment uses full WebMCP profile for this scenario.
+- There are at least two ACP sessions.
 
 ## When
 
 ### Part A - Baseline Permission State
 
-1. `mcp`: `acp_chat_getPermissionState({})` -> record `PERMISSION_BASELINE`.
+1. `mcp`: `acp_chat_get_permission_state({})` -> record `PERMISSION_BASELINE`.
 2. `chrome-devtools-mcp-evaluate`: record count of visible ACP permission dialog elements.
 
 ### Part B - Pending Permission Observability
 
 3. If full-profile relay tools are available, prepare a digest:
    ```js
-   acp_chat_prepareSessionDigest({ sourceSessionId });
+   acp_chat_prepare_session_digest({ sourceSessionId });
    ```
 4. Start, but do not await to completion:
    ```js
-   acp_chat_postPreparedRelay({ digestId, targetSessionId });
+   acp_chat_post_prepared_relay({ digestId, targetSessionId });
    ```
-5. While the relay call is pending, poll `acp_chat_getPermissionState({})` -> record `PERMISSION_PENDING`.
+5. While the relay call is pending, poll `acp_chat_get_permission_state({})` -> record `PERMISSION_PENDING`.
 6. `chrome-devtools-mcp-evaluate`: record whether the permission dialog is visible and whether it shows user-facing permission text.
-7. Manually dismiss the dialog through the UI with Reject or close. Do not use an ACP tool to decide.
-8. `mcp`: `acp_chat_getPermissionState({})` -> record `PERMISSION_AFTER_DISMISS`.
+7. `chrome-devtools-mcp`: click the visible Reject or close control in the permission dialog. Do not use an ACP tool to decide.
+8. `mcp`: `acp_chat_get_permission_state({})` -> record `PERMISSION_AFTER_DISMISS`.
 
 ## Then
 
@@ -49,5 +51,5 @@
 ## Pass / Fail Judgment
 
 - **PASS** - permission state is observable as counts/session id only, and pending dialogs are visible through both MCP state and Chrome DevTools MCP DOM.
-- **PARTIAL** - baseline observability passes, but no full-profile relay setup exists to create a pending permission during this run.
+- **BLOCKED** - the run lacks full profile relay setup, two ACP sessions, or a stable permission dialog selector for the Reject/close control.
 - **FAIL** - permission state is unavailable, leaks permission content, or exposes an automated approve/reject ACP tool.

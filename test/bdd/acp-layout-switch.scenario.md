@@ -2,6 +2,8 @@
 
 **Trigger:** `packages/ai-native/src/browser/layout/panel-layout.service.ts`, `packages/ai-native/src/browser/layout/ai-layout.tsx`, `packages/ai-native/src/browser/layout/tabbar.view.tsx`, or `packages/ai-native/src/browser/acp/webmcp-groups/acp-chat.webmcp-group.ts`
 
+**Layer:** `runtime-ui` **Required profile:** `default` **Fixtures:** IDE dev server opened on the default Playwright workspace with Common Preflight. **Workspace mutation:** None; this scenario is read-only. **Automation status:** Automated through Chrome DevTools MCP; WebMCP reads run only when exposed by the active profile.
+
 ## Given
 
 - Common preflight in `test/bdd/README.md` passes through Chrome DevTools MCP.
@@ -13,14 +15,14 @@
 
 1. `chrome-devtools-mcp`: Open `http://localhost:8080/?workspaceDir=<absolute workspace path>`.
 2. `chrome-devtools-mcp-wait`: Wait until `#main` is visible, `.loading_indicator` is detached, and the page text includes `EXPLORER`.
-3. `webmcp`: Show the ACP chat view with `acp_chat_showChatView({})` when that tool is exposed.
+3. `webmcp`: Show the ACP chat view with `acp_chat_show_chat_view({})` when that tool is exposed.
 4. `chrome-devtools-mcp`: Switch to `classic` with the user-facing menu path `View -> Panel Layout -> Classic`.
 5. `chrome-devtools-mcp`: Assert the Explorer/workbench area is positioned before the AI chat slot, and the AI chat slot is visible.
 6. `chrome-devtools-mcp`: Drag the Classic AI chat/workbench horizontal splitter in both directions and assert the AI chat width stays within its Classic resize bounds: minimum `280px`, maximum `1080px`.
 7. `chrome-devtools-mcp`: Open Explorer, expand `test`, open `test/test.js`, and assert an editor tab is active.
 8. `webmcp`: Read current IDE state through read-only tools:
-   - `workspace_getInfo({})`
-   - `editor_getActive({})`
+   - `workspace_get_info({})`
+   - `editor_get_active({})`
    - `file_exists({ path: "editor.js" })` when exposed by the active profile
    - `file_read({ path: "package.json", maxBytes: 4096 })` only when both the tool is exposed and `package.json` exists in the workspace
 9. `chrome-devtools-mcp`: Switch to `agentic` with the user-facing menu path `View -> Panel Layout -> Agentic`.
