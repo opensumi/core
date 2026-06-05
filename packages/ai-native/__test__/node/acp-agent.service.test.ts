@@ -1097,6 +1097,72 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(thread.prompt).toHaveBeenCalled();
     });
 
+    it('should prepend only the low-priority WebMCP hint for the first built-in MCP prompt', async () => {
+      const { service, thread } = createServiceWithAutoEvents();
+
+      setTimeout(() => {
+        thread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'session-1',
+            update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+          },
+        });
+      }, 10);
+
+      const createResult = await service.createSession(mockAgentProcessConfig);
+      (service as any).builtInMcpSessionIds.add(createResult.sessionId);
+
+      service.sendMessage(
+        { prompt: 'Explain the current file', sessionId: createResult.sessionId },
+        mockAgentProcessConfig,
+      );
+      await flushAsyncWork();
+
+      const promptBlocks = thread.prompt.mock.calls[0][0].prompt;
+      expect(promptBlocks).toEqual([
+        {
+          type: 'text',
+          text: [
+            '<opensumi_mcp_usage_hint priority="low">',
+            'Use the opensumi-ide MCP catalog tools to discover and enable IDE capability groups before invoking non-default OpenSumi tools.',
+            '</opensumi_mcp_usage_hint>',
+            '',
+            'Explain the current file',
+          ].join('\n'),
+        },
+      ]);
+      expect(promptBlocks[0].text).not.toContain('terminal_create');
+      expect(promptBlocks[0].text).not.toContain('Live OpenSumi opensumi-ide MCP registered capability metadata');
+    });
+
+    it('should not repeat the WebMCP hint after the first built-in MCP prompt', async () => {
+      const { service, thread } = createServiceWithAutoEvents();
+
+      setTimeout(() => {
+        thread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'session-1',
+            update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+          },
+        });
+      }, 10);
+
+      const createResult = await service.createSession(mockAgentProcessConfig);
+      (service as any).builtInMcpSessionIds.add(createResult.sessionId);
+      thread.getEntries.mockReturnValue([{ id: 'user-1' }, { id: 'assistant-1' }]);
+
+      service.sendMessage({ prompt: 'Summarize this file', sessionId: createResult.sessionId }, mockAgentProcessConfig);
+      await flushAsyncWork();
+
+      expect(thread.prompt).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prompt: [{ type: 'text', text: 'Summarize this file' }],
+        }),
+      );
+    });
+
     it('should emit thought updates from session_notification events', async () => {
       const { service, thread } = createServiceWithAutoEvents();
 

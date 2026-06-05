@@ -3,7 +3,6 @@ import { Deferred, Disposable, Emitter, Event, IDisposable } from '@opensumi/ide
 import { DEFAULT_ACP_THREAD_POOL_SIZE } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import {
   AcpDebugLogEntry,
-  AcpWebMcpCallerServiceToken,
   AvailableCommand,
   ListSessionsRequest,
   ListSessionsResponse,
@@ -14,8 +13,6 @@ import {
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
-
-import { type WebMcpProfile, canExposeWebMcpTool, isValidWebMcpProfile } from '../../common/webmcp-policy';
 
 import { toAgentUpdate } from './acp-agent-update-adapter';
 import { acpDebugLogStore } from './acp-debug-log';
@@ -33,8 +30,6 @@ import { OpenSumiMcpHttpServer } from './opensumi-mcp-http-server';
 import { PermissionRoutingService, PermissionRoutingServiceToken } from './permission-routing.service';
 
 import type { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types';
-import type { AcpWebMcpCallerService } from './acp-webmcp-caller.service';
-import type { WebMcpGroupDef, WebMcpToolDef } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 export { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types';
 
 // ============================================================================
@@ -43,23 +38,11 @@ export { AgentUpdate, AgentUpdateType, SimpleToolCall } from './acp-update-types
 
 export const AcpAgentServiceToken = Symbol('AcpAgentServiceToken');
 
-const WEBMCP_CAPABILITY_HINT =
-  'OpenSumi exposes IDE capabilities through the opensumi-ide MCP server. Start with opensumi_discover_capabilities, then call opensumi_enable_capability_group for the relevant group. If the MCP client does not refresh tools/list after enabling, use opensumi_invoke_capability_tool as the fallback broker.';
-const WEBMCP_CAPABILITY_QUESTION_HINT =
-  'When the user asks what IDE/OpenSumi capabilities or tools are available, answer from the live opensumi-ide MCP metadata below. If you need current per-session enabled/disabled state, call opensumi_discover_capabilities with includeDisabled=true. Do not answer only from memory.';
-const WEBMCP_TERMINAL_CAPABILITY_HINT =
-  'For requests to create an OpenSumi IDE terminal or type/run a command in an IDE terminal, use the opensumi-ide MCP server: call opensumi_enable_capability_group with group "terminal", refresh tools/list if possible, then use terminal_create and terminal_run_command. If tools/list is not refreshed, call opensumi_invoke_capability_tool for terminal_create and terminal_run_command.';
-
-type WebMcpToolWithMeta = WebMcpToolDef & {
-  riskLevel?: 'read' | 'write' | 'destructive' | 'shell' | 'ui';
-  exposedByDefault?: boolean;
-  profiles?: WebMcpProfile[];
-};
-
-type WebMcpGroupWithMeta = Omit<WebMcpGroupDef, 'tools'> & {
-  profile?: WebMcpProfile;
-  tools: WebMcpToolWithMeta[];
-};
+const WEBMCP_CAPABILITY_HINT = [
+  '<opensumi_mcp_usage_hint priority="low">',
+  'Use the opensumi-ide MCP catalog tools to discover and enable IDE capability groups before invoking non-default OpenSumi tools.',
+  '</opensumi_mcp_usage_hint>',
+].join('\n');
 
 // ============================================================================
 // Agent Session Types
@@ -267,9 +250,6 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
   @Autowired(OpenSumiMcpHttpServer)
   private readonly opensumiMcpHttpServer: OpenSumiMcpHttpServer | undefined;
-
-  @Autowired(AcpWebMcpCallerServiceToken)
-  private readonly webmcpCallerService: AcpWebMcpCallerService | undefined;
 
   // Session -> Thread mapping (active sessions)
   private sessions = new Map<string, AcpThread>();
@@ -1663,77 +1643,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     includeHint: boolean,
     webMcpHintsEnabled = true,
   ): Promise<string> {
-    if (!webMcpHintsEnabled) {
+    if (!webMcpHintsEnabled || !includeHint) {
       return input;
     }
-    const hints: string[] = [];
-    if (includeHint) {
-      hints.push(WEBMCP_CAPABILITY_HINT);
-    }
-    if (this.needsWebMcpCapabilityQuestionHint(input)) {
-      hints.push(WEBMCP_CAPABILITY_QUESTION_HINT);
-      const liveSummary = await this.getWebMcpCapabilitySummary();
-      if (liveSummary) {
-        hints.push(liveSummary);
-      }
-    }
-    if (this.needsWebMcpTerminalHint(input)) {
-      hints.push(WEBMCP_TERMINAL_CAPABILITY_HINT);
-    }
-    if (hints.length === 0) {
-      return input;
-    }
-    return `${hints.join('\n')}\n\n${input}`;
-  }
-
-  private needsWebMcpTerminalHint(input: string): boolean {
-    const normalized = input.toLowerCase();
-    const hasTerminalIntent = /终端|terminal/.test(normalized);
-    const hasInteractionIntent = /新建|创建|create|打开|open|输入|运行|执行|run|type|command|命令/.test(normalized);
-    return hasTerminalIntent && hasInteractionIntent;
-  }
-
-  private needsWebMcpCapabilityQuestionHint(input: string): boolean {
-    const normalized = input.toLowerCase();
-    const hasIdeSubject = /ide|opensumi|webmcp|mcp|工具|tool|能力|capabilit/.test(normalized);
-    const asksCapabilities =
-      /提供.*能力|有什么能力|哪些能力|能力.*有哪些|有哪些.*能力|提供.*工具|有什么工具|哪些工具|工具.*有哪些|available.*tools|available.*capabilit/.test(
-        normalized,
-      );
-    return hasIdeSubject && asksCapabilities;
-  }
-
-  private async getWebMcpCapabilitySummary(): Promise<string | undefined> {
-    if (!this.webmcpCallerService) {
-      return undefined;
-    }
-    try {
-      const groups = (await this.webmcpCallerService.getGroupDefinitions({
-        includeAllTools: true,
-      })) as WebMcpGroupWithMeta[];
-      const profile = groups.find((group) => group.profile)?.profile ?? 'unknown';
-      const lines = groups.map((group) => {
-        const groupProfile = isValidWebMcpProfile(group.profile) ? group.profile : 'default';
-        const tools = group.tools
-          .filter((tool) => canExposeWebMcpTool(tool, groupProfile))
-          .map((tool) => tool.name)
-          .slice(0, 12);
-        const suffix =
-          group.tools.length > tools.length ? `, +${group.tools.length - tools.length} hidden/protected` : '';
-        return `- ${group.name}: defaultLoaded=${group.defaultLoaded}, profile=${
-          group.profile ?? profile
-        }, tools=${tools.join(', ')}${suffix}`;
-      });
-      return [
-        'Live OpenSumi opensumi-ide MCP registered capability metadata:',
-        `profile=${profile}, groupCount=${groups.length}`,
-        ...lines,
-        'This metadata is the registered capability catalog, not the current per-session enabledGroups state.',
-      ].join('\n');
-    } catch (error) {
-      this.logger.warn('[AcpAgentService] Failed to build WebMCP capability summary', error);
-      return undefined;
-    }
+    return `${WEBMCP_CAPABILITY_HINT}\n\n${input}`;
   }
 
   private parseDataUrl(dataUrl: string): { mimeType: string; base64Data: string } {
