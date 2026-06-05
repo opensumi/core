@@ -11,7 +11,7 @@ export const AI_PANEL_LAYOUT_CONTEXT = 'aiNative.panelLayout';
 export const AI_PANEL_LAYOUT_MENU = 'aiNative/panelLayout';
 export const AI_AGENTIC_LAYOUT_STORAGE_KEY = 'layout.ai.agentic';
 export const AI_AGENTIC_CHAT_DEFAULT_SIZE = 1080;
-export const AI_CLASSIC_CHAT_DEFAULT_SIZE = 480;
+export const AI_CLASSIC_CHAT_DEFAULT_SIZE = 580;
 
 export const DEFAULT_AI_PANEL_LAYOUT: PanelLayoutMode = 'agentic';
 

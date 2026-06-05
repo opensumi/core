@@ -40,7 +40,7 @@ export const AILayout = () => {
   const shouldDefaultOpenAIChat = panelLayout === 'agentic' && !hasCachedAIChatLayout;
   const defaultAIChatSize = getAIChatDefaultSize(panelLayout);
   const isAgenticLayout = panelLayout === 'agentic';
-  const aiChatMinResize = isAgenticLayout ? 640 : 280;
+  const aiChatMinResize = isAgenticLayout ? 640 : 380;
   const aiChatMaxResize = isAgenticLayout ? 1440 : 1080;
   const workbenchMinResize = isAgenticLayout ? 480 : 300;
 
