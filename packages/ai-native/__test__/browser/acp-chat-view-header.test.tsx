@@ -60,6 +60,7 @@ jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
     historyCollapsed,
     historyList = [],
     onNewChat,
+    onHistoryItemSelect,
     onToggleHistoryCollapsed,
   }: any) =>
     require('react').createElement(
@@ -67,11 +68,17 @@ jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
       { 'data-testid': 'acp-chat-history', 'data-collapsed': String(!!historyCollapsed), 'data-variant': variant },
       title,
       historyList.map((item: any) =>
-        require('react').createElement('span', {
-          key: item.id,
-          'data-created-at': String(item.createdAt),
-          'data-testid': `acp-chat-history-item-${item.id}`,
-        }),
+        require('react').createElement(
+          'button',
+          {
+            key: item.id,
+            'data-created-at': String(item.createdAt),
+            'data-testid': `acp-chat-history-item-${item.id}`,
+            onClick: () => onHistoryItemSelect?.(item),
+            type: 'button',
+          },
+          item.title,
+        ),
       ),
       require('react').createElement(
         'button',
@@ -159,7 +166,9 @@ jest.mock('../../src/browser/mcp/base-apply.service', () => ({
 }));
 
 jest.mock('../../src/browser/chat/chat-proxy.service', () => ({
-  ChatProxyService: Symbol('ChatProxyService'),
+  ChatProxyService: {
+    AGENT_ID: 'default-agent',
+  },
 }));
 
 jest.mock('../../src/browser/chat/chat.api.service', () => ({
@@ -193,9 +202,10 @@ jest.mock('../../src/browser/chat/chat.render.registry', () => ({
 import { ChatMessageRole } from '@opensumi/ide-core-common';
 
 import { AcpChatViewHeader } from '../../src/browser/acp/components/AcpChatViewHeader';
-import { DefaultChatViewHeaderACP } from '../../src/browser/chat/chat.view.acp';
+import { AIChatViewACPContent, DefaultChatViewHeaderACP } from '../../src/browser/chat/chat.view.acp';
 
 const disposable = () => ({ dispose: jest.fn() });
+const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 function createMockSession({
   createdAt,
@@ -210,6 +220,8 @@ function createMockSession({
   }>;
 } = {}) {
   const history = {
+    addAssistantMessage: jest.fn(() => 'assistant-message'),
+    addUserMessage: jest.fn(),
     getMessages: jest.fn(
       () =>
         messages || [
@@ -237,35 +249,130 @@ function createMockServices({
   isMultiRoot = false,
   panelLayout = 'classic',
   createSessionModel,
+  enterDraftSession,
+  ensureSessionModel,
+  createRequest,
+  sendRequest,
   session,
+  sessions,
 }: {
   isMultiRoot?: boolean;
   panelLayout?: 'classic' | 'agentic';
   createSessionModel?: jest.Mock;
-  session?: ReturnType<typeof createMockSession>;
+  createRequest?: jest.Mock;
+  enterDraftSession?: jest.Mock;
+  ensureSessionModel?: jest.Mock;
+  sendRequest?: jest.Mock;
+  session?: ReturnType<typeof createMockSession> | null;
+  sessions?: ReturnType<typeof createMockSession>[];
 } = {}) {
-  const currentSession = session || createMockSession();
+  const currentSession = session === undefined ? createMockSession() : session;
+  const sessionList = sessions || (currentSession ? [currentSession] : []);
   const panelLayoutListeners = new Set<(mode: 'classic' | 'agentic') => void>();
   let currentPanelLayout = panelLayout;
   const aiChatService = {
     sessionModel: currentSession,
     activateSession: jest.fn(),
     clearSessionModel: jest.fn(),
+    createRequest:
+      createRequest ||
+      jest.fn(() => ({
+        message: {
+          agentId: 'default-agent',
+          prompt: 'hello',
+        },
+        requestId: 'request-1',
+        response: {
+          isComplete: false,
+        },
+      })),
     createSessionModel: createSessionModel || jest.fn(),
-    getSessions: jest.fn(() => [currentSession]),
-    getSessionsByAcp: jest.fn(() => Promise.resolve([currentSession])),
+    enterDraftSession: enterDraftSession || jest.fn(),
+    ensureSessionModel:
+      ensureSessionModel ||
+      jest.fn(async () => {
+        if (!aiChatService.sessionModel && currentSession) {
+          aiChatService.sessionModel = currentSession;
+        }
+        return aiChatService.sessionModel;
+      }),
+    getSessions: jest.fn(() => sessionList),
+    getSessionsByAcp: jest.fn(() => Promise.resolve(sessionList)),
+    latestRequestId: 'request-1',
     onChangeSession: jest.fn(() => disposable()),
+    onSessionModelChange: jest.fn(() => disposable()),
     onSessionLoadingChange: jest.fn(() => disposable()),
+    sendRequest: sendRequest || jest.fn(),
+    setLatestRequestId: jest.fn(),
   };
+  const ChatInputForTest = React.forwardRef((_props: any, _ref) => {
+    const props = _props;
+    return React.createElement(
+      'button',
+      {
+        'data-testid': 'acp-chat-send',
+        onClick: () => props.onSend('hello'),
+        type: 'button',
+      },
+      'send',
+    );
+  });
 
   return {
     aiChatService,
+    aiNativeConfigService: {
+      capabilities: {
+        supportsAgentMode: true,
+      },
+    },
+    aiReporter: {
+      start: jest.fn(() => 'relation-1'),
+    },
+    appConfig: {
+      workspaceDir: '/workspace/root',
+    },
+    applyService: {
+      getSessionCodeBlocks: jest.fn(() => []),
+      onCodeBlockUpdate: jest.fn(() => disposable()),
+      processAll: jest.fn(),
+    },
+    chatAgentService: {
+      getCommands: jest.fn(() => []),
+      getDefaultAgentId: jest.fn(() => undefined),
+      onDidChangeAgents: jest.fn(() => disposable()),
+      onDidSendMessage: jest.fn(() => disposable()),
+    },
+    chatApiService: {
+      clearHistoryMessages: jest.fn(),
+      onChatMessageLaunch: jest.fn(() => disposable()),
+      onChatMessageListLaunch: jest.fn(() => disposable()),
+      onChatReplyMessageLaunch: jest.fn(() => disposable()),
+      onScrollToBottom: jest.fn(() => disposable()),
+    },
     chatFeatureRegistry: {
+      getAllShortcutSlashCommand: jest.fn(() => []),
+      getSlashCommandHandler: jest.fn(() => undefined),
       getMessageSummaryProvider: jest.fn(() => undefined),
     },
+    chatInputRegistry: {
+      getActiveChatInput: jest.fn(() => ({
+        component: ChatInputForTest,
+      })),
+    },
+    chatRenderRegistry: {},
+    commandService: {},
+    editorService: {
+      open: jest.fn(),
+    },
+    labelService: {},
+    layoutService: {
+      toggleSlot: jest.fn(),
+    },
+    llmContextService: {},
     messageService: {
       error: jest.fn(),
     },
+    mcpServerRegistry: {},
     permissionBridgeService: {
       getPendingCountExcludingActive: jest.fn(() => 0),
       hasPendingForSession: jest.fn(() => false),
@@ -289,6 +396,7 @@ function createMockServices({
     },
     quickPick: {},
     workspaceService: {
+      asRelativePath: jest.fn(async () => undefined),
       isMultiRootWorkspaceOpened: isMultiRoot,
     },
   };
@@ -303,8 +411,64 @@ function installInjectableMocks(services: ReturnType<typeof createMockServices>)
       return services.aiChatService;
     }
 
+    if (key.includes('AINativeConfigService')) {
+      return services.aiNativeConfigService;
+    }
+
+    if (key.includes('AppConfig')) {
+      return services.appConfig;
+    }
+
+    if (key.includes('BaseApplyService')) {
+      return services.applyService;
+    }
+
+    if (key.includes('ChatInputRegistry')) {
+      return services.chatInputRegistry;
+    }
+
+    if (key.includes('ChatRenderRegistry')) {
+      return services.chatRenderRegistry;
+    }
+
+    if (key.includes('ChatServiceToken')) {
+      return services.chatApiService;
+    }
+
+    if (key.includes('CommandService')) {
+      return services.commandService;
+    }
+
     if (key.includes('ChatFeatureRegistry')) {
       return services.chatFeatureRegistry;
+    }
+
+    if (key.includes('IAIReporter')) {
+      return services.aiReporter;
+    }
+
+    if (key.includes('IChatAgentService')) {
+      return services.chatAgentService;
+    }
+
+    if (key.includes('IMainLayoutService')) {
+      return services.layoutService;
+    }
+
+    if (key.includes('LabelService')) {
+      return services.labelService;
+    }
+
+    if (key.includes('LLMContextServiceToken')) {
+      return services.llmContextService;
+    }
+
+    if (key.includes('TokenMCPServerRegistry')) {
+      return services.mcpServerRegistry;
+    }
+
+    if (key.includes('WorkbenchEditorService')) {
+      return services.editorService;
     }
 
     if (key.includes('IMessageService')) {
@@ -497,15 +661,10 @@ describe('ACP chat view headers', () => {
     expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('inline');
   });
 
-  it('keeps agentic new-chat clicks single-flight while a session is being created', async () => {
-    let resolveCreateSession: () => void;
-    const createSessionModel = jest.fn(
-      () =>
-        new Promise<void>((resolve) => {
-          resolveCreateSession = resolve;
-        }),
-    );
-    const services = createMockServices({ panelLayout: 'agentic', createSessionModel });
+  it('enters draft when creating a new ACP chat without creating a session', async () => {
+    const createSessionModel = jest.fn();
+    const enterDraftSession = jest.fn();
+    const services = createMockServices({ panelLayout: 'agentic', createSessionModel, enterDraftSession });
     installInjectableMocks(services);
 
     await renderHeader(
@@ -521,17 +680,110 @@ describe('ACP chat view headers', () => {
       newChatButton.click();
       await Promise.resolve();
     });
-    expect(createSessionModel).toHaveBeenCalledTimes(1);
+    expect(enterDraftSession).toHaveBeenCalledTimes(1);
+    expect(createSessionModel).not.toHaveBeenCalled();
+  });
 
+  it('enters draft when switching ACP workspace cwd without creating a session', async () => {
+    const pickWorkspaceDir = jest.requireMock('../../src/browser/chat/pick-workspace-dir');
+    pickWorkspaceDir.switchWorkspaceDir.mockResolvedValueOnce('/workspace/next');
+    const createSessionModel = jest.fn();
+    const enterDraftSession = jest.fn();
+    const services = createMockServices({
+      isMultiRoot: true,
+      createSessionModel,
+      enterDraftSession,
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(
+      React.createElement(AcpChatViewHeader, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    const switchButton = container.querySelector('#ai-chat-header-switch-cwd button') as HTMLButtonElement;
     await act(async () => {
-      newChatButton.click();
+      switchButton.click();
       await Promise.resolve();
     });
-    expect(createSessionModel).toHaveBeenCalledTimes(1);
+
+    expect(enterDraftSession).toHaveBeenCalledTimes(1);
+    expect(createSessionModel).not.toHaveBeenCalled();
+  });
+
+  it('keeps history item selection activating the selected ACP session', async () => {
+    const historySession = createMockSession({ createdAt: 1 });
+    const services = createMockServices({ sessions: [historySession] });
+    installInjectableMocks(services);
+
+    await renderHeader(
+      React.createElement(AcpChatViewHeader, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
 
     await act(async () => {
-      resolveCreateSession!();
+      (container.querySelector('[data-testid="acp-chat-history-item-acp:current"]') as HTMLButtonElement).click();
       await Promise.resolve();
+    });
+
+    expect(services.aiChatService.activateSession).toHaveBeenCalledWith('acp:current');
+  });
+
+  it('creates an ACP session on first draft send before writing chat history', async () => {
+    const session = createMockSession({ messages: [] });
+    const createRequest = jest.fn(() => ({
+      message: {
+        agentId: 'default-agent',
+        prompt: 'hello',
+      },
+      requestId: 'request-1',
+      response: {
+        isComplete: false,
+      },
+    }));
+    const ensureSessionModel = jest.fn(async () => session);
+    const sendRequest = jest.fn();
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel,
+      sendRequest,
+      session: null,
+      sessions: [],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(ensureSessionModel).toHaveBeenCalledTimes(1);
+    expect(createRequest).toHaveBeenCalledWith('hello', 'default-agent', undefined, undefined);
+    expect(ensureSessionModel.mock.invocationCallOrder[0]).toBeLessThan(createRequest.mock.invocationCallOrder[0]);
+    expect(session.history.addUserMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: 'hello',
+        relationId: 'relation-1',
+      }),
+    );
+    expect(session.history.addAssistantMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        relationId: 'relation-1',
+        requestId: 'request-1',
+      }),
+    );
+    expect(sendRequest).toHaveBeenCalledWith(createRequest.mock.results[0].value);
+    expect(services.mcpServerRegistry).toEqual({
+      activeMessageInfo: {
+        messageId: 'assistant-message',
+        sessionId: 'acp:current',
+      },
     });
   });
 });

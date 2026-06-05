@@ -9,8 +9,10 @@ import { AcpChatManagerService } from './chat-manager.service.acp';
 import { ChatModel, ChatRequestModel } from './chat-model';
 import { ChatInternalService } from './chat.internal.service';
 
-const ACP_LOAD_SESSION_FALLBACK_MESSAGE = 'Unable to open this chat history. A new session has been created.';
-const ACP_LOAD_SESSION_NOT_FOUND_MESSAGE = 'This chat history is no longer available. A new session has been created.';
+const ACP_LOAD_SESSION_FALLBACK_MESSAGE =
+  'Unable to open this chat history. A new chat draft is ready, and a session will be created when you send a message.';
+const ACP_LOAD_SESSION_NOT_FOUND_MESSAGE =
+  'This chat history is no longer available. A new chat draft is ready, and a session will be created when you send a message.';
 
 function getReadableErrorMessage(error: unknown): string {
   if (error instanceof Error) {
@@ -99,6 +101,8 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private sessionStateDisposable: IDisposable | undefined;
 
+  private storageInitDisposable: IDisposable | undefined;
+
   private stripAcpPrefix(sessionId: string): string {
     return sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
   }
@@ -168,9 +172,13 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   override init() {
+    if (this.storageInitDisposable) {
+      return;
+    }
+
     this.ensureSessionStateListener();
 
-    this.chatManagerService.onStorageInit(async () => {
+    this.storageInitDisposable = this.chatManagerService.onStorageInit(async () => {
       if (this.aiNativeConfigService.capabilities.supportsAgentMode) {
         return;
       }
@@ -181,6 +189,7 @@ export class AcpChatInternalService extends ChatInternalService {
         await this.createSessionModel();
       }
     });
+    this.addDispose(this.storageInitDisposable);
   }
 
   private ensureSessionStateListener(): void {
@@ -204,6 +213,40 @@ export class AcpChatInternalService extends ChatInternalService {
       }
     });
     this.addDispose(this.sessionStateDisposable);
+  }
+
+  private async startSessionModel(): Promise<ChatModel> {
+    this._sessionModel = await this.chatManagerService.startSession();
+    const acpManager = this.chatManagerService as AcpChatManagerService;
+    this.setAvailableCommands(acpManager.getAvailableCommands());
+    this._onSessionModelChange.fire(this._sessionModel);
+    // Notify permission bridge of session change
+    const rawSessionId = this.stripAcpPrefix(this._sessionModel.sessionId);
+    this.permissionBridgeService.setActiveSession(rawSessionId);
+    this._onChangeSession.fire(this._sessionModel.sessionId);
+    return this._sessionModel;
+  }
+
+  async ensureSessionModel(): Promise<ChatModel> {
+    if (this._sessionModel) {
+      return this._sessionModel;
+    }
+
+    this._onSessionLoadingChange.fire(true);
+    try {
+      return await this.startSessionModel();
+    } finally {
+      this._onSessionLoadingChange.fire(false);
+    }
+  }
+
+  enterDraftSession(): void {
+    this._sessionModel = undefined as unknown as ChatModel;
+    this.setAvailableCommands([]);
+    this.permissionBridgeService.setActiveSession(undefined);
+    this._onSessionModelChange.fire(undefined);
+    this._onModeChange.fire('');
+    this._onChangeSession.fire('');
   }
 
   async setSessionMode(modeId: string): Promise<void> {
@@ -264,14 +307,7 @@ export class AcpChatInternalService extends ChatInternalService {
   override async createSessionModel() {
     this._onSessionLoadingChange.fire(true);
     try {
-      this._sessionModel = await this.chatManagerService.startSession();
-      const acpManager = this.chatManagerService as AcpChatManagerService;
-      this.setAvailableCommands(acpManager.getAvailableCommands());
-      this._onSessionModelChange.fire(this._sessionModel);
-      // Notify permission bridge of session change
-      const rawSessionId = this.stripAcpPrefix(this._sessionModel.sessionId);
-      this.permissionBridgeService.setActiveSession(rawSessionId);
-      this._onChangeSession.fire(this._sessionModel.sessionId);
+      await this.startSessionModel();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.messageService.error(`Failed to create session. (${errorMessage})`);
@@ -283,7 +319,8 @@ export class AcpChatInternalService extends ChatInternalService {
   override async clearSessionModel(sessionId?: string) {
     sessionId = sessionId || this._sessionModel?.sessionId;
     if (!sessionId) {
-      throw new Error('No active session');
+      this.enterDraftSession();
+      return;
     }
     this._onWillClearSession.fire(sessionId);
     const clearedSessionId =
@@ -293,14 +330,8 @@ export class AcpChatInternalService extends ChatInternalService {
       this.permissionBridgeService.clearSessionDialogs(clearedSessionId);
     }
     if (this._sessionModel && sessionId === this._sessionModel.sessionId) {
-      this._sessionModel = await this.chatManagerService.startSession();
-      const acpManager = this.chatManagerService as AcpChatManagerService;
-      this.setAvailableCommands(acpManager.getAvailableCommands());
-      this._onSessionModelChange.fire(this._sessionModel);
-      const rawSessionId = this.stripAcpPrefix(this._sessionModel.sessionId);
-      this.permissionBridgeService.setActiveSession(rawSessionId);
-    }
-    if (this._sessionModel) {
+      this.enterDraftSession();
+    } else if (this._sessionModel) {
       this._onChangeSession.fire(this._sessionModel.sessionId);
     }
   }
@@ -332,8 +363,10 @@ export class AcpChatInternalService extends ChatInternalService {
       await acpManager.loadSession(sessionId);
       const updatedSession = this.chatManagerService.getSession(sessionId);
       if (!updatedSession) {
-        this.messageService.info(`Session ${sessionId} not found, creating a new session.`);
-        await this.createSessionModel();
+        this.messageService.info(
+          `Session ${sessionId} not found. A new chat draft is ready, and a session will be created when you send a message.`,
+        );
+        this.enterDraftSession();
         return;
       }
       this._sessionModel = updatedSession;
@@ -345,7 +378,7 @@ export class AcpChatInternalService extends ChatInternalService {
       this._onChangeSession.fire(this._sessionModel.sessionId);
     } catch (error) {
       this.messageService.info(formatAcpLoadSessionFallbackMessage(error));
-      await this.createSessionModel();
+      this.enterDraftSession();
     } finally {
       this._onSessionLoadingChange.fire(false);
     }

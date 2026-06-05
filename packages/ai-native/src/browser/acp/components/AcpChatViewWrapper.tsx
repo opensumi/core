@@ -3,7 +3,7 @@
  *
  * 为 ACP 模式提供包装层，封装：
  * - ACP 初始化逻辑（等待 Agent 准备）
- * - 等待 sessionModel 准备好
+ * - 加载历史会话列表
  * - Loading/Error 状态处理
  * - 权限弹窗
  *
@@ -16,12 +16,9 @@ import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { AIBackSerivcePath, IAIBackService, localize } from '@opensumi/ide-core-common';
 
 import { ChatProxyServiceToken, IChatManagerService } from '../../../common';
-import { ChatManagerService } from '../../chat/chat-manager.service';
 import { AcpChatManagerService } from '../../chat/chat-manager.service.acp';
-import { ChatProxyService } from '../../chat/chat-proxy.service';
 import { AcpChatProxyService } from '../../chat/chat-proxy.service.acp';
 import { ChatInternalService } from '../../chat/chat.internal.service';
-import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
 
 interface AcpChatViewWrapperProps {
@@ -42,9 +39,6 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
     initialized: false,
   });
 
-  // ACP 模式：等待 sessionModel 准备好
-  const [sessionReady, setSessionReady] = useState(false);
-
   // 初始化超时状态：超过 30s 未完成时展示重试按钮
   const [timedOut, setTimedOut] = useState(false);
 
@@ -59,14 +53,12 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
     // 非 ACP 模式不需要延迟初始化
     if (!aiNativeConfigService.capabilities.supportsAgentMode) {
       setInitState({ initialized: true });
-      setSessionReady(true);
       return;
     }
 
     // 取消上一轮初始化，重置状态
     cancelledRef.current = false;
     setInitState({ initialized: false });
-    setSessionReady(false);
     setTimedOut(false);
 
     const cancelled = () => cancelledRef.current;
@@ -101,14 +93,8 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
 
         // 先调用 aiChatService.init() 注册 onStorageInit 监听器
         aiChatService.init();
-        // 创建新会话
-        await aiChatService.createSessionModel();
 
-        if (cancelled()) {
-          return;
-        }
-
-        // 加载历史会话列表（用于 history 下拉展示）
+        // 加载历史会话列表（用于 history 下拉展示），打开面板不创建 ACP session
         await chatManagerService.loadSessionList();
 
         if (cancelled()) {
@@ -123,8 +109,6 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
         // Fallback to default agent when ACP is unavailable
         chatManagerService.fallbackToLocal();
         chatProxyService.registerFallbackAgent();
-        // Re-create session model using the local provider
-        await aiChatService.createSessionModel();
         setInitState({ initialized: true });
       }
     };
@@ -146,50 +130,12 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
     setRetryKey((k) => k + 1);
   };
 
-  // 等待 sessionModel 准备好
-  useEffect(() => {
-    if (!aiNativeConfigService.capabilities.supportsAgentMode) {
-      setSessionReady(true);
-      return;
-    }
-
-    if (!initState.initialized) {
-      return;
-    }
-
-    // 检查 sessionModel 是否已准备好
-    if (aiChatService.sessionModel) {
-      setSessionReady(true);
-      return;
-    }
-
-    // 轮询检查 sessionModel，直到就绪
-    let pollCount = 0;
-    const MAX_POLL_COUNT = 12000; // 1200s at 100ms intervals
-
-    const interval = window.setInterval(() => {
-      pollCount++;
-      if (aiChatService.sessionModel) {
-        setSessionReady(true);
-        clearInterval(interval);
-        return;
-      }
-      if (pollCount >= MAX_POLL_COUNT) {
-        clearInterval(interval);
-        setInitState({ initialized: true });
-      }
-    }, 100);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [initState.initialized, retryKey]);
   if (!aiNativeConfigService.capabilities.supportsAgentMode) {
     return children;
   }
 
-  // ACP 模式或初始化完成且 session 准备好，渲染子组件
-  if (initState.initialized && sessionReady) {
+  // ACP 模式初始化完成后直接渲染；session 在首次发送时按需创建
+  if (initState.initialized) {
     return <>{children}</>;
   }
 

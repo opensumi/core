@@ -17,7 +17,6 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IChatInternalService } from '../../../common';
 import { cleanAttachedTextWrapper } from '../../../common/utils';
 import { ChatModel } from '../../chat/chat-model';
-import { ChatInternalService } from '../../chat/chat.internal.service';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
 import { getCachedWorkspaceDir, switchWorkspaceDir } from '../../chat/pick-workspace-dir';
@@ -27,10 +26,6 @@ import { AcpPermissionBridgeService } from '../permission-bridge.service';
 import AcpChatHistory, { IChatHistoryItem } from './AcpChatHistory';
 
 const MAX_TITLE_LENGTH = 100;
-
-function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
 
 function getSessionCreatedAt(session: ChatModel): number {
   const firstMessage = session.history.getMessages()[0];
@@ -66,31 +61,15 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
 
   const [currentWorkspaceDir, setCurrentWorkspaceDir] = React.useState<string>(getCachedWorkspaceDir());
 
-  const createSessionModel = React.useCallback(
-    async ({ skipEmptySession = true }: { skipEmptySession?: boolean } = {}) => {
+  const enterDraftSession = React.useCallback(
+    () => {
       if (sessionSwitchingRef.current) {
         return;
       }
 
-      if (skipEmptySession) {
-        const currentMessages = aiChatService.sessionModel?.history.getMessages() || [];
-        if (currentMessages.length === 0) {
-          return;
-        }
-      }
-
-      sessionSwitchingRef.current = true;
-      setSessionSwitching(true);
-      try {
-        await aiChatService.createSessionModel();
-      } catch (error) {
-        messageService.error(getErrorMessage(error));
-      } finally {
-        sessionSwitchingRef.current = false;
-        setSessionSwitching(false);
-      }
+      aiChatService.enterDraftSession();
     },
-    [aiChatService, messageService],
+    [aiChatService],
   );
 
   // Sync state when cache is updated externally (e.g. by session provider on first init)
@@ -105,11 +84,11 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
     const oldDir = getCachedWorkspaceDir();
     const newDir = await switchWorkspaceDir(workspaceService, quickPick, messageService);
     setCurrentWorkspaceDir(newDir);
-    // Create new session with new cwd if path actually changed
+    // Enter a draft; the ACP session will be created with the new cwd on first send
     if (newDir && newDir !== oldDir) {
-      await createSessionModel({ skipEmptySession: false });
+      enterDraftSession();
     }
-  }, [workspaceService, quickPick, messageService, createSessionModel]);
+  }, [workspaceService, quickPick, messageService, enterDraftSession]);
 
   React.useEffect(() => {
     const dispose = aiChatService.onSessionLoadingChange((loading) => {
@@ -129,8 +108,8 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
   }, [panelLayoutService]);
 
   const handleNewChat = React.useCallback(() => {
-    createSessionModel();
-  }, [createSessionModel]);
+    enterDraftSession();
+  }, [enterDraftSession]);
 
   const handleHistoryItemSelect = React.useCallback(
     (item: IChatHistoryItem) => {
