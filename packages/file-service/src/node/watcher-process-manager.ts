@@ -1,9 +1,9 @@
 import { ChildProcess, fork } from 'child_process';
-import { existsSync } from 'fs';
 import { Server, Socket, createServer } from 'net';
 import path from 'path';
 
 import { Autowired, Injectable } from '@opensumi/di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/socket';
 import { SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { ILogServiceManager, SupportLogNamespace } from '@opensumi/ide-core-common/lib/log';
@@ -31,11 +31,9 @@ export const WatcherProcessManagerToken = Symbol('WatcherProcessManager');
 
 @Injectable({ multiple: true })
 export class WatcherProcessManagerImpl implements IWatcherProcessManager {
-  private protocol?: SumiConnectionMultiplexer;
+  private protocol: IRPCProtocol;
 
   private watcherProcess?: ChildProcess;
-
-  private watcherProcessReady = false;
 
   private logger: ILogService;
 
@@ -89,13 +87,9 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
     });
 
     this._whenReadyDeferred.resolve();
-    this.watcherProcessReady = true;
   }
 
   private getProxy() {
-    if (!this.protocol) {
-      throw new Error('Watcher process is not connected.');
-    }
     return this.protocol.getProxy<IWatcherHostService>(WatcherServiceProxy);
   }
 
@@ -116,17 +110,8 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
       this.setProxyConnection(socket);
     });
 
-    await new Promise<void>((resolve, reject) => {
-      const onError = (error: Error) => {
-        reject(error);
-      };
-
-      server.once('error', onError);
-      server.listen(listenOptions, () => {
-        server.off('error', onError);
-        this.logger.log(`watcher process listen on ${JSON.stringify(listenOptions)}`);
-        resolve();
-      });
+    server.listen(listenOptions, () => {
+      this.logger.log(`watcher process listen on ${JSON.stringify(listenOptions)}`);
     });
   }
 
@@ -139,65 +124,7 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
     );
   }
 
-  private assertWatcherHost(watcherHost: string) {
-    if (existsSync(watcherHost)) {
-      return;
-    }
-
-    const message = `Watcher process entry not found: ${watcherHost}. Please run "yarn build:watcher-host" before starting with EXT_MODE=js, or set WATCHER_HOST_ENTRY to a valid watcher host.`;
-    this.logger.error(message);
-    throw new Error(message);
-  }
-
-  private resetWhenReadyDeferred(reason?: Error) {
-    this._whenReadyDeferred.promise.catch(() => undefined);
-
-    if (reason) {
-      this._whenReadyDeferred.reject(reason);
-    }
-
-    this._whenReadyDeferred = new Deferred();
-    this._whenReadyDeferred.promise.catch(() => undefined);
-    this.watcherProcessReady = false;
-  }
-
-  private disposeWatcherProcess() {
-    const watcherProcess = this.watcherProcess;
-    if (!watcherProcess) {
-      return;
-    }
-
-    this.watcherProcess = undefined;
-    this.protocol?.dispose();
-    this.protocol = undefined;
-
-    if (!watcherProcess.killed && watcherProcess.exitCode === null && watcherProcess.signalCode === null) {
-      watcherProcess.kill();
-    }
-  }
-
-  private bindWatcherProcessOutput(watcherProcess: ChildProcess) {
-    watcherProcess.stdout?.on('data', (chunk) => {
-      const message = chunk.toString().trim();
-      if (message) {
-        this.logger.log('[WatcherProcess stdout]', message);
-      }
-    });
-
-    watcherProcess.stderr?.on('data', (chunk) => {
-      const message = chunk.toString().trim();
-      if (message) {
-        this.logger.error('[WatcherProcess stderr]', message);
-      }
-    });
-  }
-
-  private async createWatcherProcess(
-    clientId: string,
-    ipcHandlerPath: string,
-    watcherHost: string,
-    backend?: RecursiveWatcherBackend,
-  ) {
+  private async createWatcherProcess(clientId: string, ipcHandlerPath: string, backend?: RecursiveWatcherBackend) {
     const forkArgs = [
       `--${SUMI_WATCHER_PROCESS_SOCK_KEY}=${JSON.stringify({
         path: ipcHandlerPath,
@@ -210,64 +137,38 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
       })}`,
     ];
 
-    this.logger.log('Watcher process path: ', watcherHost);
-    this.watcherProcess = fork(watcherHost, forkArgs, {
+    this.logger.log('Watcher process path: ', this.watcherHost);
+    this.watcherProcess = fork(this.watcherHost, forkArgs, {
       silent: true,
     });
-    const watcherProcess = this.watcherProcess;
-    this.bindWatcherProcessOutput(watcherProcess);
 
-    this.logger.log('Watcher process fork success, pid: ', watcherProcess.pid);
+    this.logger.log('Watcher process fork success, pid: ', this.watcherProcess.pid);
 
-    watcherProcess.on('error', (error) => {
-      this.logger.error('watcher process error: ', error);
-    });
-
-    watcherProcess.on('exit', async (code, signal) => {
+    this.watcherProcess.on('exit', async (code, signal) => {
       this.logger.warn('watcher process exit: ', code, signal);
-      if (this.watcherProcess === watcherProcess) {
-        this.watcherProcess = undefined;
-        this.protocol?.dispose();
-        this.protocol = undefined;
-
-        if (!this.watcherProcessReady) {
-          this._whenReadyDeferred.reject(
-            new Error(`Watcher process exited before ready, code: ${code}, signal: ${signal}`),
-          );
-        }
-      }
     });
 
-    return watcherProcess.pid;
+    return this.watcherProcess.pid;
   }
 
   async createProcess(clientId: string, backend?: RecursiveWatcherBackend) {
-    const watcherHost = this.watcherHost;
-    this.resetWhenReadyDeferred(new Error('Watcher process is restarting.'));
+    this._whenReadyDeferred = new Deferred();
+    this.logger.log('create watcher process for client: ', clientId);
+    this.logger.log('appconfig watcherHost: ', this.watcherHost);
 
-    try {
-      this.assertWatcherHost(watcherHost);
-      this.logger.log('create watcher process for client: ', clientId);
-      this.logger.log('appconfig watcherHost: ', watcherHost);
-
-      const ipcHandlerPath = await this.getIPCHandlerPath('watcher_process');
-      // 如果存在连接，则关闭连接, 避免重复创建
-      const server = this.clientWatcherConnectionServer.get(clientId);
-      if (server) {
-        // 等待真正关闭后再移除引用，避免句柄和端口泄漏
-        await new Promise<void>((res) => server.close(() => res()));
-        this.clientWatcherConnectionServer.delete(clientId);
-      }
-      this.disposeWatcherProcess();
-      await this.createWatcherServer(clientId, ipcHandlerPath);
-
-      const pid = await this.createWatcherProcess(clientId, ipcHandlerPath, watcherHost, backend);
-
-      return pid;
-    } catch (error) {
-      this._whenReadyDeferred.reject(error);
-      throw error;
+    const ipcHandlerPath = await this.getIPCHandlerPath('watcher_process');
+    // 如果存在连接，则关闭连接, 避免重复创建
+    const server = this.clientWatcherConnectionServer.get(clientId);
+    if (server) {
+      // 等待真正关闭后再移除引用，避免句柄和端口泄漏
+      await new Promise<void>((res) => server.close(() => res()));
+      this.clientWatcherConnectionServer.delete(clientId);
     }
+    await this.createWatcherServer(clientId, ipcHandlerPath);
+
+    const pid = await this.createWatcherProcess(clientId, ipcHandlerPath, backend);
+
+    return pid;
   }
 
   async dispose() {
@@ -276,7 +177,7 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
       await this.getProxy().$dispose();
     } catch {
     } finally {
-      this.disposeWatcherProcess();
+      this.watcherProcess?.kill();
     }
   }
 
