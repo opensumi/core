@@ -41,7 +41,7 @@ The horizontal resize logic in flex mode had asymmetric maximum-bound checks. Wh
 ## Verification
 
 - `yarn jest packages/ai-native/__test__/browser/ai-layout.test.tsx --runInBand`
-- Runtime Playwright/CDP recheck:
+- Runtime Playwright/Chrome DevTools MCP recheck:
   - Classic before drag: `479px`
   - Drag toward min: `279px`
   - Drag toward max: `1079px`

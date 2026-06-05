@@ -16,7 +16,7 @@
 ### Part A - Baseline Permission State
 
 1. `mcp`: `acp_chat_getPermissionState({})` -> record `PERMISSION_BASELINE`.
-2. `cdp-evaluate`: record count of visible ACP permission dialog elements.
+2. `chrome-devtools-mcp-evaluate`: record count of visible ACP permission dialog elements.
 
 ### Part B - Pending Permission Observability
 
@@ -29,7 +29,7 @@
    acp_chat_postPreparedRelay({ digestId, targetSessionId });
    ```
 5. While the relay call is pending, poll `acp_chat_getPermissionState({})` -> record `PERMISSION_PENDING`.
-6. `cdp-evaluate`: record whether the permission dialog is visible and whether it shows user-facing permission text.
+6. `chrome-devtools-mcp-evaluate`: record whether the permission dialog is visible and whether it shows user-facing permission text.
 7. Manually dismiss the dialog through the UI with Reject or close. Do not use an ACP tool to decide.
 8. `mcp`: `acp_chat_getPermissionState({})` -> record `PERMISSION_AFTER_DISMISS`.
 
@@ -48,6 +48,6 @@
 
 ## Pass / Fail Judgment
 
-- **PASS** - permission state is observable as counts/session id only, and pending dialogs are visible through both MCP state and CDP DOM.
+- **PASS** - permission state is observable as counts/session id only, and pending dialogs are visible through both MCP state and Chrome DevTools MCP DOM.
 - **PARTIAL** - baseline observability passes, but no full-profile relay setup exists to create a pending permission during this run.
 - **FAIL** - permission state is unavailable, leaks permission content, or exposes an automated approve/reject ACP tool.

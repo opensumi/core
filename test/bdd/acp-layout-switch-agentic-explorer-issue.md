@@ -53,7 +53,7 @@ The left tabbar renderer used the `extendView` tabbar service while rendering th
 
 - `yarn jest packages/ai-native/__test__/browser/ai-tabbar-layout.test.tsx --runInBand`
 - `yarn jest packages/main-layout/__tests__/browser/layout.service.test.tsx --runInBand`
-- Runtime Playwright/CDP recheck after switching to Agentic and clicking Explorer:
+- Runtime Playwright/Chrome DevTools MCP recheck after switching to Agentic and clicking Explorer:
   - AI Chat: `left=0`, `width=1080px`
   - Explorer: `left=1485`, `width=260px`
   - Editor/workbench: `left=1086`, `width=393px`

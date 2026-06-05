@@ -1,4 +1,4 @@
-# ACP Layout Switch CDP + WebMCP Test Report
+# ACP Layout Switch Chrome DevTools MCP + WebMCP Test Report
 
 Date: 2026-06-03
 
@@ -6,7 +6,7 @@ Date: 2026-06-03
 
 - Module: ACP / AI Native layout switching.
 - Runtime: `yarn start`.
-- Browser control: CDP.
+- Browser control: Chrome DevTools MCP.
 - WebMCP usage: supplemental read-only capability checks and ACP chat view activation.
 - Playwright: not run in this verification pass.
 
@@ -34,7 +34,7 @@ Date: 2026-06-03
   - `workspace_listOpenFiles({})`
 - `file_*` tools were not exposed in this browser catalog, so `file_exists` and `file_read` were not called.
 
-## CDP Interaction Steps
+## Chrome DevTools MCP Interaction Steps
 
 1. Loaded the IDE using `yarn start`.
 2. Verified the default layout control showed `Agentic Layout`.
@@ -61,7 +61,7 @@ Date: 2026-06-03
 
 ## Resize Coverage
 
-Additional CDP drag checks were performed for visible layout splitters.
+Additional Chrome DevTools MCP drag checks were performed for visible layout splitters.
 
 1. Agentic AI Chat / Workbench horizontal splitter:
    - Before: AI Chat was collapsed, `x=0`, `width=0`; workbench `x=6`, `width=1794`.
