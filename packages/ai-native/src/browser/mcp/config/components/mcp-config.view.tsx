@@ -1,14 +1,19 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { Badge, Button, Icon, Popover, PopoverTriggerType } from '@opensumi/ide-components';
+import { Badge, Button, Icon, Popover, PopoverTriggerType, Select } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { MCPConfigServiceToken, localize } from '@opensumi/ide-core-common';
+import type { WebMcpProfile } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 import { BUILTIN_MCP_SERVER_NAME } from '../../../../common';
 import { MCPServerDescription } from '../../../../common/mcp-server-manager';
 import { MCPServer } from '../../../../common/types';
-import { MCPConfigService } from '../mcp-config.service';
+import {
+  MCPConfigService,
+  WEBMCP_PROFILE_OPTIONS,
+} from '../mcp-config.service';
+import type { WebMcpGroupSummary } from '../mcp-config.service';
 
 import styles from './mcp-config.module.less';
 import { MCPServerForm, MCPServerFormData } from './mcp-server-form';
@@ -21,6 +26,8 @@ export const MCPConfigView: React.FC = () => {
   const [loadingServer, setLoadingServer] = React.useState<string | undefined>();
   const [isReady, setIsReady] = React.useState(mcpConfigService.isInitialized);
   const [disabledTools, setDisabledTools] = React.useState<string[]>([]);
+  const [webMcpProfile, setWebMcpProfile] = React.useState<WebMcpProfile>(mcpConfigService.getWebMcpProfile());
+  const [webMcpGroups, setWebMcpGroups] = React.useState<WebMcpGroupSummary[]>([]);
 
   const loadServers = useCallback(async () => {
     const allServers = await mcpConfigService.getServers();
@@ -32,20 +39,27 @@ export const MCPConfigView: React.FC = () => {
     setDisabledTools(disabled);
   }, [mcpConfigService]);
 
+  const loadWebMcpConfig = useCallback(() => {
+    setWebMcpProfile(mcpConfigService.getWebMcpProfile());
+    setWebMcpGroups(mcpConfigService.getWebMcpGroups());
+  }, [mcpConfigService]);
+
   React.useEffect(() => {
     loadServers();
     loadDisabledTools();
+    loadWebMcpConfig();
     const disposer = mcpConfigService.onMCPServersChange((isReady) => {
       if (isReady) {
         setIsReady(true);
       }
       loadServers();
+      loadWebMcpConfig();
     });
 
     return () => {
       disposer.dispose();
     };
-  }, [loadServers, loadDisabledTools]);
+  }, [loadServers, loadDisabledTools, loadWebMcpConfig]);
 
   const handleServerControl = useCallback(
     async (serverName: string, start: boolean) => {
@@ -53,12 +67,22 @@ export const MCPConfigView: React.FC = () => {
         setLoadingServer(serverName);
         await mcpConfigService.controlServer(serverName, start);
         await loadServers();
+        loadWebMcpConfig();
         setLoadingServer(undefined);
       } catch (error) {
         setLoadingServer(undefined);
       }
     },
-    [mcpConfigService, loadServers],
+    [mcpConfigService, loadServers, loadWebMcpConfig],
+  );
+
+  const handleWebMcpProfileChange = useCallback(
+    async (profile: WebMcpProfile) => {
+      setWebMcpProfile(profile);
+      await mcpConfigService.setWebMcpProfile(profile);
+      loadWebMcpConfig();
+    },
+    [mcpConfigService, loadWebMcpConfig],
   );
 
   const handleAddServer = useCallback(() => {
@@ -138,124 +162,165 @@ export const MCPConfigView: React.FC = () => {
         </button>
       </div>
       <div className={styles.serversList}>
-        {servers.map((server) => (
-          <div key={server.name} className={styles.serverItem}>
-            <div className={styles.serverHeader}>
-              <div className={styles.serverTitleRow}>
-                <h3 className={styles.serverName}>
-                  {server.name}
-                  <span
-                    className={cls(styles.serverStatusIcon, server.isStarted ? styles.active : styles.inactive)}
-                  ></span>
-                </h3>
-              </div>
-              <div className={styles.serverActions}>
-                <Popover
-                  id='mcp-server-action-popover'
-                  trigger={PopoverTriggerType.hover}
-                  content={
-                    server.isStarted ? localize('ai.native.mcp.disable.title') : localize('ai.native.mcp.enable.title')
-                  }
-                >
-                  <Button
-                    type='default'
-                    className={cls(styles.serverActionButton, server.isStarted && styles.active)}
-                    onClick={() => handleServerControl(server.name, !server.isStarted)}
+        {servers.map((server) => {
+          const isBuiltinServer = server.name === BUILTIN_MCP_SERVER_NAME;
+          const serverDisplayName = isBuiltinServer ? 'OpenSumi IDE (Builtin)' : server.name;
+          return (
+            <div key={server.name} className={styles.serverItem}>
+              <div className={styles.serverHeader}>
+                <div className={styles.serverTitleRow}>
+                  <h3 className={styles.serverName}>
+                    {serverDisplayName}
+                    <span
+                      className={cls(styles.serverStatusIcon, server.isStarted ? styles.active : styles.inactive)}
+                    ></span>
+                  </h3>
+                </div>
+                <div className={styles.serverActions}>
+                  <Popover
+                    id='mcp-server-action-popover'
+                    trigger={PopoverTriggerType.hover}
+                    content={
+                      server.isStarted
+                        ? localize('ai.native.mcp.disable.title')
+                        : localize('ai.native.mcp.enable.title')
+                    }
                   >
-                    <i
-                      className={`codicon ${
-                        loadingServer === server.name ||
-                        (!isReady && server.name !== BUILTIN_MCP_SERVER_NAME && !server.isStarted)
-                          ? 'codicon-loading kt-icon-loading'
-                          : server.isStarted
-                          ? 'codicon-check'
-                          : 'codicon-circle'
-                      }`}
+                    <Button
+                      type='default'
+                      className={cls(styles.serverActionButton, server.isStarted && styles.active)}
+                      onClick={() => handleServerControl(server.name, !server.isStarted)}
+                    >
+                      <i
+                        className={`codicon ${
+                          loadingServer === server.name ||
+                          (!isReady && server.name !== BUILTIN_MCP_SERVER_NAME && !server.isStarted)
+                            ? 'codicon-loading kt-icon-loading'
+                            : server.isStarted
+                            ? 'codicon-check'
+                            : 'codicon-circle'
+                        }`}
+                      />
+                      <span>{localize(server.isStarted ? 'ai.native.mcp.enabled' : 'ai.native.mcp.disabled')}</span>
+                    </Button>
+                  </Popover>
+                  {!isBuiltinServer && (
+                    <Button
+                      type='icon'
+                      iconClass='codicon codicon-edit'
+                      className={styles.iconButton}
+                      title={localize('ai.native.mcp.tool.action.edit')}
+                      onClick={() => handleEditServer(server)}
                     />
-                    <span>{localize(server.isStarted ? 'ai.native.mcp.enabled' : 'ai.native.mcp.disabled')}</span>
-                  </Button>
-                </Popover>
-                {server.name !== BUILTIN_MCP_SERVER_NAME && (
-                  <Button
-                    type='icon'
-                    iconClass='codicon codicon-edit'
-                    className={styles.iconButton}
-                    title={localize('ai.native.mcp.tool.action.edit')}
-                    onClick={() => handleEditServer(server)}
-                  />
-                )}
-                {server.name !== BUILTIN_MCP_SERVER_NAME && (
-                  <Button
-                    type='icon'
-                    iconClass='codicon codicon-sync'
-                    className={styles.iconButton}
-                    title={localize('ai.native.mcp.tool.action.sync')}
-                    onClick={() => handleSyncServer(server)}
-                  />
-                )}
-                {server.name !== BUILTIN_MCP_SERVER_NAME && (
-                  <Button
-                    type='icon'
-                    iconClass='codicon codicon-trash'
-                    className={styles.iconButton}
-                    title={localize('ai.native.mcp.tool.action.delete')}
-                    onClick={() => handleDeleteServer(server.name)}
-                  />
+                  )}
+                  {!isBuiltinServer && (
+                    <Button
+                      type='icon'
+                      iconClass='codicon codicon-sync'
+                      className={styles.iconButton}
+                      title={localize('ai.native.mcp.tool.action.sync')}
+                      onClick={() => handleSyncServer(server)}
+                    />
+                  )}
+                  {!isBuiltinServer && (
+                    <Button
+                      type='icon'
+                      iconClass='codicon codicon-trash'
+                      className={styles.iconButton}
+                      title={localize('ai.native.mcp.tool.action.delete')}
+                      onClick={() => handleDeleteServer(server.name)}
+                    />
+                  )}
+                </div>
+              </div>
+              <div className={styles.serverDetail}>
+                {server.type && (
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Type:</span>
+                    <Badge className={cls(styles.serverType, styles.typeTag)}>
+                      {mcpConfigService.getReadableServerType(server.type)}
+                    </Badge>
+                  </div>
                 )}
               </div>
-            </div>
-            <div className={styles.serverDetail}>
-              {server.type && (
-                <div className={styles.detailRow}>
-                  <span className={styles.detailLabel}>Type:</span>
-                  <Badge className={cls(styles.serverType, styles.typeTag)}>
-                    {mcpConfigService.getReadableServerType(server.type)}
-                  </Badge>
+              {isBuiltinServer && (
+                <>
+                  <div className={styles.serverDetail}>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>Profile:</span>
+                      <Select<WebMcpProfile>
+                        size='small'
+                        disabled={!server.isStarted}
+                        value={webMcpProfile}
+                        options={WEBMCP_PROFILE_OPTIONS.map((profile) => ({ label: profile, value: profile }))}
+                        className={styles.profileSelect}
+                        onChange={handleWebMcpProfileChange}
+                      />
+                    </div>
+                  </div>
+                  {webMcpGroups.length > 0 && (
+                    <div className={styles.serverDetail}>
+                      <div className={styles.detailRow}>
+                        <span className={styles.detailLabel}>Capabilities:</span>
+                        <span className={styles.detailContent}>
+                          {webMcpGroups.map((group) => (
+                            <Badge
+                              key={group.name}
+                              className={cls(styles.toolTag, styles.capabilityTag)}
+                              title={group.description}
+                            >
+                              {group.name} ({group.toolCount})
+                            </Badge>
+                          ))}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+              {!isBuiltinServer && server.tools && server.tools.length > 0 && (
+                <div className={styles.serverDetail}>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Tools:</span>
+                    <span className={styles.detailContent}>
+                      {server.tools.map((tool, index) => {
+                        const isDisabled = disabledTools.includes(tool.name);
+                        return (
+                          <Badge
+                            key={index}
+                            className={cls(styles.toolTag, isDisabled && styles.disabledTool)}
+                            title={`${tool.description}${isDisabled ? ' (已禁用)' : ''}`}
+                            onClick={() => handleToggleTool(tool.name)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            {tool.name}
+                            {isDisabled && <span style={{ marginLeft: '4px', opacity: 0.6 }}>✕</span>}
+                          </Badge>
+                        );
+                      })}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {server.command && (
+                <div className={styles.serverDetail}>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Command:</span>
+                    <span className={styles.detailContent}>{server.command}</span>
+                  </div>
+                </div>
+              )}
+              {server.url && (
+                <div className={styles.serverDetail}>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Server Link:</span>
+                    <span className={cls(styles.detailContent, styles.link)}>{server.url}</span>
+                  </div>
                 </div>
               )}
             </div>
-            {server.tools && server.tools.length > 0 && (
-              <div className={styles.serverDetail}>
-                <div className={styles.detailRow}>
-                  <span className={styles.detailLabel}>Tools:</span>
-                  <span className={styles.detailContent}>
-                    {server.tools.map((tool, index) => {
-                      const isDisabled = disabledTools.includes(tool.name);
-                      return (
-                        <Badge
-                          key={index}
-                          className={cls(styles.toolTag, isDisabled && styles.disabledTool)}
-                          title={`${tool.description}${isDisabled ? ' (已禁用)' : ''}`}
-                          onClick={() => handleToggleTool(tool.name)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          {tool.name}
-                          {isDisabled && <span style={{ marginLeft: '4px', opacity: 0.6 }}>✕</span>}
-                        </Badge>
-                      );
-                    })}
-                  </span>
-                </div>
-              </div>
-            )}
-            {server.command && (
-              <div className={styles.serverDetail}>
-                <div className={styles.detailRow}>
-                  <span className={styles.detailLabel}>Command:</span>
-                  <span className={styles.detailContent}>{server.command}</span>
-                </div>
-              </div>
-            )}
-            {server.url && (
-              <div className={styles.serverDetail}>
-                <div className={styles.detailRow}>
-                  <span className={styles.detailLabel}>Server Link:</span>
-                  <span className={cls(styles.detailContent, styles.link)}>{server.url}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
       <MCPServerForm
         visible={formVisible}

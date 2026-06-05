@@ -45,6 +45,7 @@ export class DefaultACPConfigProvider implements IACPConfigProvider {
     const agentConfig = getAgentConfig(this.preferenceService, agentType);
     const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
     const mcpServers = await this.mcpConfigService.getACPServers();
+    const webMcpEnabled = await this.mcpConfigService.isBuiltinMCPEnabled();
 
     return buildAcpAgentProcessConfig({
       agentId: agentType,
@@ -60,7 +61,7 @@ export class DefaultACPConfigProvider implements IACPConfigProvider {
           AINativeSettingSectionsId.AcpThreadPoolSize,
           DEFAULT_ACP_THREAD_POOL_SIZE,
         ),
-        webMcpEnabled: this.preferenceService.get(AINativeSettingSectionsId.WebMcpEnabled, true),
+        webMcpEnabled,
       },
       mcpServers,
     });

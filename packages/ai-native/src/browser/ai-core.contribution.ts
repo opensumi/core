@@ -179,7 +179,6 @@ import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stre
 import { SumiLightBulbWidget } from './widget/light-bulb';
 
 export const INLINE_DIFF_MANAGER_WIDGET_ID = 'inline-diff-manager-widget';
-const WEBMCP_PROFILE_SETTING_ID = 'ai.native.webmcp.profile';
 
 const DynamicChatViewWrapper: React.FC = () => {
   const chatViewRegistry = useInjectable<IChatViewRegistry>(ChatViewRegistryToken);
@@ -580,7 +579,10 @@ export class AINativeBrowserContribution
     }
     const userServers = mcpServerFromWorkspace.value?.mcpServers;
     // 总是初始化内置服务器，根据禁用列表决定是否启用
-    this.sumiMCPServerBackendProxy.$initBuiltinMCPServer(!disabledMCPServers.includes(BUILTIN_MCP_SERVER_NAME));
+    const webMcpEnabled = this.preferenceService.get<boolean>(AINativeSettingSectionsId.WebMcpEnabled, true);
+    this.sumiMCPServerBackendProxy.$initBuiltinMCPServer(
+      !disabledMCPServers.includes(BUILTIN_MCP_SERVER_NAME) && webMcpEnabled !== false,
+    );
 
     if (userServers && Object.keys(userServers).length > 0) {
       const mcpServers = (
@@ -835,14 +837,6 @@ export class AINativeBrowserContribution
           {
             id: AINativeSettingSectionsId.TerminalAutoRun,
             localized: 'ai.native.terminal.autorun',
-          },
-          {
-            id: AINativeSettingSectionsId.WebMcpEnabled,
-            localized: 'preference.ai.native.webmcp.enabled',
-          },
-          {
-            id: WEBMCP_PROFILE_SETTING_ID,
-            localized: 'preference.ai.native.webmcp.profile',
           },
         ],
       });
