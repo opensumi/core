@@ -39,16 +39,10 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
     initialized: false,
   });
 
-  // 初始化超时状态：超过 30s 未完成时展示重试按钮
-  const [timedOut, setTimedOut] = useState(false);
-
-  // 重试 key：变化时触发重新初始化
-  const [retryKey, setRetryKey] = useState(0);
-
-  // 用于取消上一轮初始化的 cancelled flag
+  // 用于取消当前初始化的 cancelled flag
   const cancelledRef = useRef(false);
 
-  // ACP 模式：只在第一次渲染或重试时触发初始化
+  // ACP 模式：组件 mount 时触发初始化
   useEffect(() => {
     // 非 ACP 模式不需要延迟初始化
     if (!aiNativeConfigService.capabilities.supportsAgentMode) {
@@ -56,11 +50,7 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
       return;
     }
 
-    // 取消上一轮初始化，重置状态
     cancelledRef.current = false;
-    setInitState({ initialized: false });
-    setTimedOut(false);
-
     const cancelled = () => cancelledRef.current;
 
     const initializeACP = async () => {
@@ -113,22 +103,12 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
       }
     };
 
-    // 30s 超时 timer
-    const timeoutTimer = window.setTimeout(() => {
-      setTimedOut(true);
-    }, 30000);
-
     initializeACP();
 
     return () => {
       cancelledRef.current = true;
-      clearTimeout(timeoutTimer);
     };
-  }, [retryKey]);
-
-  const handleRetry = () => {
-    setRetryKey((k) => k + 1);
-  };
+  }, []);
 
   if (!aiNativeConfigService.capabilities.supportsAgentMode) {
     return children;
@@ -144,16 +124,6 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
     <div className={styles.loading_container}>
       <Progress loading={true} />
       <div>{localize('aiNative.chat.acp.initializing.text', 'Initializing ACP service...')}</div>
-      {timedOut && (
-        <>
-          <div className={styles.timeout_hint}>
-            {localize('aiNative.chat.acp.timeout.hint', 'Initialization is taking longer than expected')}
-          </div>
-          <button className={styles.retry_button} onClick={handleRetry}>
-            {localize('aiNative.chat.acp.retry', 'Retry')}
-          </button>
-        </>
-      )}
     </div>
   );
 }
