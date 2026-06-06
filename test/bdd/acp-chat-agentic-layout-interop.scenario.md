@@ -15,7 +15,7 @@
 1. Open Explorer in Agentic layout.
 2. Expand `test`, open `test/test.js`, then open `editor.js`.
 3. `mcp`: call read-only tools exposed by the active profile, including `workspace_get_info({})`, `editor_get_active({})`, and `workspace_list_open_files({})`.
-4. If file tools are exposed, call only read-only file tools such as `file_exists({ path: "editor.js" })` and bounded `file_read({ path: "package.json", maxBytes: 4096 })`.
+4. If file tools are exposed, call only read-only file tools against existing default-workspace files, such as `file_exists({ path: "editor.js" })` and `file_read({ path: "editor.js" })`.
 5. Drag the Agentic AI Chat/workbench splitter smaller and larger, then record AI Chat and workbench geometry after each drag.
 6. Drag the Agentic Explorer/workbench splitter smaller and larger, then record Explorer and workbench geometry after each drag.
 7. Reload the page without changing the workspace URL and repeat startup visibility, state, input, history, and read-only MCP checks.
@@ -33,6 +33,6 @@
 
 ## Pass / Fail Judgment
 
-- **PASS** - Explorer/editor interop, bounded read-only MCP calls, resize, reload, and layout switching remain stable in Agentic layout.
+- **PASS** - Explorer/editor interop, workspace-scoped read-only MCP calls, resize, reload, and layout switching remain stable in Agentic layout.
 - **BLOCKED** - the run lacks interactive profile, the required workspace files, or read-only workspace/editor tool exposure.
 - **FAIL** - Explorer/editor interaction breaks, resize bounds fail, reload loses Agentic layout, or layout switching leaves AI Chat/Explorer unusable.

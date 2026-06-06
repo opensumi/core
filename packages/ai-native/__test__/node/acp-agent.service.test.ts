@@ -209,6 +209,27 @@ describe('AcpAgentService (Thread Pool)', () => {
   });
 
   describe('getSessionMcpServers()', () => {
+    it('should start and return the built-in OpenSumi MCP server connection descriptor', async () => {
+      const { service } = createService();
+      const connection = {
+        name: 'opensumi-ide',
+        type: 'http',
+        transport: 'streamable-http',
+        url: 'http://127.0.0.1:12345/mcp/token',
+        redactedUrl: 'http://127.0.0.1:12345/mcp/<redacted>',
+        headers: [],
+      };
+      const opensumiMcpHttpServer = {
+        start: jest.fn().mockResolvedValue(undefined),
+        getConnectionInfo: jest.fn().mockReturnValue(connection),
+      };
+      (service as any).opensumiMcpHttpServer = opensumiMcpHttpServer;
+
+      await expect(service.getOpenSumiMcpServerConnection()).resolves.toBe(connection);
+      expect(opensumiMcpHttpServer.start).toHaveBeenCalled();
+      expect(opensumiMcpHttpServer.getConnectionInfo).toHaveBeenCalled();
+    });
+
     it('should append the built-in OpenSumi MCP server when the agent supports HTTP MCP', async () => {
       const thread = createMockThread({
         agentCapabilities: {

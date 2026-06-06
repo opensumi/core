@@ -239,6 +239,74 @@ describe('SplitPanel initialResizeOnMount', () => {
     expect(workbenchWrapper.classList.contains('kt_display_none')).toBe(false);
   });
 
+  it('keeps the flex sibling visible when restoring an oversized fixed panel', () => {
+    const resizeHandles: Record<string, ResizeHandle> = {};
+    const CapturePanel = ({ name }: { id: string; name: string; flexGrow?: number; minResize?: number }) => {
+      resizeHandles[name] = React.useContext(PanelContext);
+      return <div data-panel={name} />;
+    };
+
+    render(
+      <SplitPanel id='root' direction='left-to-right'>
+        <CapturePanel id='chat' name='chat' />
+        <CapturePanel id='workbench' name='workbench' flexGrow={1} minResize={480} />
+      </SplitPanel>,
+    );
+
+    const rootNode = container.querySelector('#root')!;
+    const chatWrapper = rootNode.children[0] as HTMLElement;
+    const workbenchWrapper = rootNode.children[2] as HTMLElement;
+    setReadonlySize(rootNode, 'offsetWidth', 1000);
+    setReadonlySize(chatWrapper, 'clientWidth', 0);
+    setReadonlySize(workbenchWrapper, 'clientWidth', 0);
+
+    act(() => {
+      resizeHandles.chat.setSize(800);
+    });
+    flushAnimationFrame();
+
+    expect(chatWrapper.style.width).toBe('520px');
+    expect(workbenchWrapper.classList.contains('kt_display_none')).toBe(false);
+  });
+
+  it('caps restored side panels at their max resize size', () => {
+    const resizeHandles: Record<string, ResizeHandle> = {};
+    const CapturePanel = ({
+      name,
+    }: {
+      id: string;
+      name: string;
+      flexGrow?: number;
+      minResize?: number;
+      maxResize?: number;
+    }) => {
+      resizeHandles[name] = React.useContext(PanelContext);
+      return <div data-panel={name} />;
+    };
+
+    render(
+      <SplitPanel id='root' direction='left-to-right'>
+        <CapturePanel id='main' name='main' flexGrow={1} minResize={300} />
+        <CapturePanel id='view' name='view' maxResize={480} />
+      </SplitPanel>,
+    );
+
+    const rootNode = container.querySelector('#root')!;
+    const mainWrapper = rootNode.children[0] as HTMLElement;
+    const viewWrapper = rootNode.children[2] as HTMLElement;
+    setReadonlySize(rootNode, 'offsetWidth', 1000);
+    setReadonlySize(mainWrapper, 'clientWidth', 0);
+    setReadonlySize(viewWrapper, 'clientWidth', 0);
+
+    act(() => {
+      resizeHandles.view.setSize(900);
+    });
+    flushAnimationFrame();
+
+    expect(viewWrapper.style.width).toBe('480px');
+    expect(mainWrapper.classList.contains('kt_display_none')).toBe(false);
+  });
+
   it('restores the first child when resize is requested from the latter side', () => {
     const resizeHandles: Record<string, ResizeHandle> = {};
     const CapturePanel = ({ name }: { id: string; name: string; flexGrow?: number }) => {

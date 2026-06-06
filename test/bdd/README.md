@@ -12,22 +12,29 @@ Runtime scenarios use Chrome DevTools MCP against the IDE dev server:
 http://localhost:8080/?workspaceDir=<absolute workspace path>
 ```
 
-The page is ready when Chrome DevTools MCP evaluation confirms:
+The page is ready when Chrome DevTools MCP evaluation confirms that the IDE shell is ready and at least one stable workbench signal is visible:
 
 ```js
-document.readyState === 'complete' &&
+const text = document.body.innerText || '';
+const shellReady =
+  document.readyState === 'complete' &&
   !!document.querySelector('#main') &&
-  !document.querySelector('.loading_indicator') &&
-  document.body.innerText.includes('EXPLORER');
+  !document.querySelector('.loading_indicator');
+const workbenchVisible =
+  text.includes('EXPLORER') ||
+  text.includes('Agentic') ||
+  text.includes('editor.js') ||
+  !!document.querySelector('.monaco-editor');
+shellReady && workbenchVisible;
 ```
 
-Chrome DevTools MCP is used for browser startup, DOM readiness, UI interaction, and dialog observability. ACP tool execution uses the current OpenSumi MCP bridge. `navigator.modelContext` remains a supported WebMCP surface and is validated only where a scenario explicitly compares browser and MCP tool exposure.
+`EXPLORER` remains a useful Explorer-specific signal, but it is not the only valid readiness marker for Agentic-first layouts. Chrome DevTools MCP is used for browser startup, DOM readiness, UI interaction, and dialog observability. ACP tool execution uses the current OpenSumi MCP bridge when a scenario explicitly requires MCP transport. `navigator.modelContext` remains a supported WebMCP surface for browser runtime checks and is validated against MCP only where a scenario explicitly compares browser and MCP tool exposure.
 
 ## Scenario Layers
 
 | Layer | Purpose | Execution expectation |
 | --- | --- | --- |
-| `runtime-ui` | Real IDE rendering, layout, dialogs, input, history, and visible recovery. | Run Common Preflight, then use Chrome DevTools MCP plus MCP calls when the scenario requires them. |
+| `runtime-ui` | Real IDE rendering, layout, dialogs, input, history, and visible recovery. | Run Common Preflight, then use Chrome DevTools MCP plus MCP calls only when the scenario requires them. |
 | `mcp-contract` | WebMCP/MCP tool names, group enablement, profile gating, catalog shape, bounded responses, and error contracts. | Use fresh MCP transport sessions; browser UI is needed only for observable dialog or surface parity checks. |
 | `node-contract` | ACP service, thread, process, RPC, handler, storage, and debug-log behavior. | Run deterministic service/unit-contract fixtures; browser interaction is optional unless the scenario says otherwise. |
 | `exploratory/manual` | Historical investigations, issue notes, and evidence reports. | Not part of the required `.scenario.md` suite; keep these as `.md`, `.json`, or image evidence files. |
@@ -79,12 +86,23 @@ There is no alias or fallback external name for capability tools. Legacy `_opens
 
 Current MCP exposure:
 
+- Default discovery: `opensumi_get_mcp_server_connection`
 - Default: `acp_chat_get_session_state`, `acp_chat_get_permission_state`, `acp_chat_show_chat_view`
 - After enabling `acp_chat`: read/ui tools allowed by the active profile
 - Interactive/full profile: read tools such as `acp_chat_list_sessions`, `acp_chat_get_available_commands`, and `acp_chat_prepare_session_digest`
 - Full profile only: `acp_chat_read_session_messages`, `acp_chat_set_session_mode`, and `acp_chat_post_prepared_relay`
 
 ## MCP Helper
+
+For browser-backed BDD runs, first discover the loopback MCP endpoint through the default browser WebMCP surface, then connect a standard MCP client to the returned Streamable HTTP URL:
+
+```js
+const connectionResult = await navigator.modelContext.executeTool('opensumi_get_mcp_server_connection', {});
+const { url, redactedUrl } = connectionResult.result;
+// Use `url` only for the MCP client. Use `redactedUrl` in evidence/logs.
+const transport = new StreamableHTTPClientTransport(new URL(url));
+await mcp.connect(transport);
+```
 
 Use the MCP client connected to the IDE's `opensumi-ide` server. Scenario steps refer to this shape:
 
@@ -153,12 +171,26 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-fallback.scenario.md` | `runtime-ui` | `default` | Usable Agentic chat surface when ACP backend readiness fails. |
 | `acp-layout-switch.scenario.md` | `runtime-ui` | `default` | Agentic/Classic switching, Explorer interop, resize bounds, and read-only state checks. |
 | `acp-chat-agentic-input-send.scenario.md` | `runtime-ui` | `interactive` | Draft input, first send, commands, mentions, attachments, scroll, and recovery. |
+| `acp-chat-agentic-stream-rendering.scenario.md` | `runtime-ui` | `interactive` | Deterministic ACP Agent stream rendering for content, reasoning, plan, tool calls, session state, completion, and recovery. |
+| `acp-chat-agentic-cancel-stop.scenario.md` | `runtime-ui` | `interactive` | Long-stream stop/cancel behavior, input recovery, and follow-up send. |
+| `acp-chat-agentic-rich-history-restore.scenario.md` | `runtime-ui` | `interactive` | Complex content, reasoning, plan, and tool-call history restore across switching and reload. |
+| `acp-chat-agentic-permission-during-send.scenario.md` | `runtime-ui` | `full` | Permission dialog, badge, dismissal, and recovery during an active Agentic send. |
+| `acp-chat-agentic-session-isolation.scenario.md` | `runtime-ui` | `interactive` | Concurrent session status, stream updates, and history selection isolation. |
+| `acp-chat-agentic-config-controls.scenario.md` | `runtime-ui` | `full` | Mode, model, and config option controls, send-time gating, and safe state-summary checks. |
+| `acp-chat-agentic-context-attachments.scenario.md` | `runtime-ui` | `interactive` | File, folder, code, and rule context chips, attachment cleanup, and metadata safety. |
+| `acp-chat-agentic-command-surface.scenario.md` | `runtime-ui` | `interactive` | Slash command discovery, selection, cancellation, send, and metadata parity. |
+| `acp-chat-agentic-reload-during-stream.scenario.md` | `runtime-ui` | `interactive` | Page reload while streaming and recovery to a usable Agentic chat state. |
+| `acp-chat-agentic-error-taxonomy.scenario.md` | `runtime-ui` | `interactive` | Create, load, send, auth, disconnected, and config failure visibility and retry. |
+| `acp-chat-agentic-layout-stress.scenario.md` | `runtime-ui` | `interactive` | Long content, tool results, scrolling, resizing, and layout round-trip stability. |
+| `acp-chat-agentic-keyboard-a11y.scenario.md` | `runtime-ui` | `interactive` | Keyboard-only input, commands, history, dialogs, and tool-card interaction. |
+| `acp-chat-agentic-debug-log-from-chat.scenario.md` | `runtime-ui` | `full` | Debug log viewer correlation and controls after a chat stream; redaction audit is blocked until product support exists. |
+| `acp-chat-agentic-theme-persistence.scenario.md` | `runtime-ui` | `default` | Theme, Agentic layout preference, geometry, and visual usability persistence. |
 | `acp-chat-agentic-history.scenario.md` | `runtime-ui` | `interactive` | New Chat, persisted history, session switching, and permission badges. |
 | `acp-chat-agentic-layout-interop.scenario.md` | `runtime-ui` | `interactive` | Explorer/editor interop, resize, reload, and Agentic/Classic round trip. |
 | `available-commands.scenario.md` | `mcp-contract` | `interactive/full` | Command metadata through enabled `acp_chat`. |
 | `webmcp-capability-surface.scenario.md` | `mcp-contract` | `interactive/full` | Browser and MCP surfaces expose the same canonical tool names. |
 | `acp-mcp-bridge.scenario.md` | `mcp-contract` | `default/interactive/full` | Built-in MCP bridge startup, injection, catalog, profiles, and session-scoped enablement. |
-| `session-mode.scenario.md` | `mcp-contract` | `full` | Full-profile mode switching plus mode observability. |
+| `session-mode.scenario.md` | `mcp-contract` | `full` | Full-profile mode switching return contract plus metadata-only state reads. |
 | `session-relay.scenario.md` | `mcp-contract` | `full` | Cross-session digest relay, permission gate, and bounded debug reads. |
 | `permission-dialog.scenario.md` | `runtime-ui` | `full` | Permission state and dialog observability without ACP decision tools. |
 | `error-handling.scenario.md` | `mcp-contract` | `full` | Capability boundaries, invalid inputs, and redacted structured errors. |
@@ -171,7 +203,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-process-config.scenario.md` | `node-contract` | `default` | Browser config merge and node spawn config resolution. |
 | `acp-client-handlers.scenario.md` | `node-contract` | `default` | ACP client file and terminal handlers exposed to the agent process. |
 | `acp-chat-session-storage.scenario.md` | `node-contract` | `default` | Browser chat session provider, activation, fallback, command propagation, and permission cleanup. |
-| `acp-debug-log.scenario.md` | `runtime-ui` | `full` | Protocol trace store, bounds, safe viewer, and redaction. |
+| `acp-debug-log.scenario.md` | `runtime-ui` | `full` | Protocol trace store, entry bounds, raw viewer controls, and blocked redaction audit. |
 | `acp-error-and-recovery.scenario.md` | `node-contract` | `full` | Structured failures and recovery across node, MCP, and browser UI boundaries. |
 | `acp-rpc-bridge-and-status.scenario.md` | `node-contract` | `default` | Browser/node WebMCP RPC definitions, execution, and thread status synchronization. |
 

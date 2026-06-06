@@ -9,6 +9,7 @@
 - The agent is initialized and reports `mcpCapabilities.http === true`.
 - `OpenSumiMcpHttpServer` can start on loopback.
 - WebMCP group definitions are available from the browser caller service.
+- The browser WebMCP surface exposes `opensumi_get_mcp_server_connection` for stable client discovery.
 - The active MCP profile is recorded from the group registry metadata.
 
 ## When
@@ -23,7 +24,7 @@
 
 ### Part B - MCP Transport And Catalog
 
-6. Connect an MCP client to the bridge URL.
+6. Discover the bridge URL with `opensumi_get_mcp_server_connection`, then connect an MCP client to the returned Streamable HTTP URL.
 7. Call `tools/list`.
 8. Call `opensumi_discover_capabilities({ task, includeDisabled: true })`.
 9. Call `opensumi_describe_capability_group({ group: "acp_chat", includeSchemas: true })`.

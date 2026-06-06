@@ -74,7 +74,6 @@ import {
   TerminalRegistryToken,
   URI,
   WebMcpGroupRegistryToken,
-  isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
@@ -120,6 +119,7 @@ import { createAcpChatGroup } from './acp/webmcp-groups/acp-chat.webmcp-group';
 import { createDiagnosticsGroup } from './acp/webmcp-groups/diagnostics.webmcp-group';
 import { createEditorGroup } from './acp/webmcp-groups/editor.webmcp-group';
 import { createFileGroup } from './acp/webmcp-groups/file.webmcp-group';
+import { createOpenSumiMcpGroup } from './acp/webmcp-groups/opensumi-mcp.webmcp-group';
 import { createSearchGroup } from './acp/webmcp-groups/search.webmcp-group';
 import { createTerminalGroup } from './acp/webmcp-groups/terminal.webmcp-group';
 import { createWorkspaceGroup } from './acp/webmcp-groups/workspace.webmcp-group';
@@ -512,6 +512,7 @@ export class AINativeBrowserContribution
       // Register WebMCP groups once, then expose the same registry through
       // navigator.modelContext and the Node-side HTTP MCP server.
       const groupRegistry = this.injector.get(WebMcpGroupRegistryToken);
+      groupRegistry.registerGroup(createOpenSumiMcpGroup(this.injector));
       groupRegistry.registerGroup(createWorkspaceGroup(this.injector));
       groupRegistry.registerGroup(createSearchGroup(this.injector));
       groupRegistry.registerGroup(createDiagnosticsGroup(this.injector));
@@ -977,7 +978,11 @@ export class AINativeBrowserContribution
 
     commands.registerCommand(AI_CHAT_VISIBLE, {
       execute: (visible?: boolean) => {
-        this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, isUndefined(visible) ? true : visible);
+        if (visible === false) {
+          this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, false);
+          return;
+        }
+        this.panelLayoutService.showAIChatView();
       },
     });
 

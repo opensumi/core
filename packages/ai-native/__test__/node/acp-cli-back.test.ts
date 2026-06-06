@@ -55,6 +55,7 @@ describe('AcpCliBackService', () => {
       setSessionMode: jest.fn(),
       stopAgent: jest.fn(),
       getAvailableModes: jest.fn(),
+      getOpenSumiMcpServerConnection: jest.fn(),
       onThreadStatusChange: mockOnThreadStatusChange.event,
     } as unknown as jest.Mocked<IAcpAgentService>;
 
@@ -88,6 +89,23 @@ describe('AcpCliBackService', () => {
     it('should always return true', async () => {
       const result = await service.ready();
       expect(result).toBe(true);
+    });
+  });
+
+  describe('getOpenSumiMcpServerConnection()', () => {
+    it('should proxy the built-in MCP connection descriptor from AcpAgentService', async () => {
+      const connection = {
+        name: 'opensumi-ide',
+        type: 'http',
+        transport: 'streamable-http',
+        url: 'http://127.0.0.1:12345/mcp/token',
+        redactedUrl: 'http://127.0.0.1:12345/mcp/<redacted>',
+        headers: [],
+      } as any;
+      mockAgentService.getOpenSumiMcpServerConnection.mockResolvedValue(connection);
+
+      await expect(service.getOpenSumiMcpServerConnection()).resolves.toBe(connection);
+      expect(mockAgentService.getOpenSumiMcpServerConnection).toHaveBeenCalled();
     });
   });
 

@@ -14,7 +14,7 @@
 ## When
 
 1. `chrome-devtools-mcp`: Open `http://localhost:8080/?workspaceDir=<absolute workspace path>`.
-2. Wait until `#main` is visible, `.loading_indicator` is detached, and the page text includes `EXPLORER`.
+2. Wait until the Common Preflight browser readiness predicate passes.
 3. Record layout label/preference state and bounding boxes for AI Chat, workbench, Explorer/view slot, and status bar.
 4. `mcp`: `tools/list` -> record `TOOLS_DEFAULT`.
 5. `mcp`: `acp_chat_show_chat_view({})`.

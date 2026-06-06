@@ -14,7 +14,7 @@
 ## When
 
 1. `chrome-devtools-mcp`: Open `http://localhost:8080/?workspaceDir=<absolute workspace path>`.
-2. `chrome-devtools-mcp-wait`: Wait until `#main` is visible, `.loading_indicator` is detached, and the page text includes `EXPLORER`.
+2. `chrome-devtools-mcp-wait`: Wait until the Common Preflight browser readiness predicate passes.
 3. `webmcp`: Show the ACP chat view with `acp_chat_show_chat_view({})` when that tool is exposed.
 4. `chrome-devtools-mcp`: Switch to `classic` with the user-facing menu path `View -> Panel Layout -> Classic`.
 5. `chrome-devtools-mcp`: Assert the Explorer/workbench area is positioned before the AI chat slot, and the AI chat slot is visible.
@@ -24,7 +24,7 @@
    - `workspace_get_info({})`
    - `editor_get_active({})`
    - `file_exists({ path: "editor.js" })` when exposed by the active profile
-   - `file_read({ path: "package.json", maxBytes: 4096 })` only when both the tool is exposed and `package.json` exists in the workspace
+   - `file_read({ path: "editor.js" })` when exposed by the active profile
 9. `chrome-devtools-mcp`: Switch to `agentic` with the user-facing menu path `View -> Panel Layout -> Agentic`.
 10. `chrome-devtools-mcp`: Assert the AI chat slot is positioned before the Explorer/workbench area, and the Explorer remains visible.
 11. `chrome-devtools-mcp`: Drag the Agentic AI chat/workbench horizontal splitter in both directions and assert the AI chat width stays within its Agentic resize bounds: minimum `640px`, maximum `1440px`.
@@ -38,7 +38,7 @@
   - Classic: `280px <= AI Chat <= 1080px`.
   - Agentic: `640px <= AI Chat <= 1440px`.
 - Explorer remains visible and can expand folders and open files after both switches.
-- WebMCP read-only calls return successful, bounded responses after both switches.
+- WebMCP read-only calls return successful, workspace-scoped responses after both switches.
 - Browser and MCP tool catalogs expose canonical underscore tool names only; legacy `_opensumi/...` names are absent.
 - If `navigator.modelContext` and the MCP bridge are both unavailable, the failure output includes `navigator.modelContext missing` or `opensumi-ide MCP tools/list unavailable`.
 

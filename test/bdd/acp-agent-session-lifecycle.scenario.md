@@ -1,6 +1,6 @@
 # Scenario: ACP Agent Session Lifecycle - Create, Load, Stream, Cancel, Dispose
 
-**Trigger:** `packages/ai-native/src/node/acp/acp-agent.service.ts` or `packages/ai-native/src/browser/chat/session-provider-acp.ts`
+**Trigger:** `packages/ai-native/src/node/acp/acp-agent.service.ts` or `packages/ai-native/src/browser/chat/acp-session-provider.ts`
 
 **Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Deterministic ACP agent with session, load, stream, cancellation, and HTTP MCP capability controls. **Workspace mutation:** None. **Automation status:** Automated contract spec; browser preflight is optional when validating the visible provider path.
 

@@ -5,7 +5,7 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
 
-import { AcpDebugLogEntry, AvailableCommand, ListSessionsResponse } from './acp-types';
+import { AcpDebugLogEntry, AvailableCommand, ListSessionsResponse, OpenSumiMcpServerConnectionInfo } from './acp-types';
 import { AgentProcessConfig } from './agent-types';
 import { IAIReportCompletionOption } from './reporter';
 
@@ -308,6 +308,7 @@ export interface IAIBackService<
   setSessionModel?(sessionId: string, model: string): Promise<void>;
   getAcpDebugLog?(): Promise<AcpDebugLogEntry[]>;
   clearAcpDebugLog?(): Promise<void>;
+  getOpenSumiMcpServerConnection?(): Promise<OpenSumiMcpServerConnectionInfo>;
 
   ready?(): Promise<boolean>;
 }

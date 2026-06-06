@@ -1,8 +1,8 @@
-# Scenario: ACP Debug Log - Protocol Trace, Bounds, and Safe Viewer
+# Scenario: ACP Debug Log - Protocol Trace, Entry Bounds, and Viewer
 
 **Trigger:** `packages/ai-native/src/node/acp/acp-debug-log.ts`, `packages/ai-native/src/browser/acp/debug-log/acp-debug-log.contribution.ts`, or `packages/ai-native/src/browser/acp/debug-log/acp-debug-log.view.tsx`
 
-**Layer:** `runtime-ui` **Required profile:** `full` with ACP debug logging enabled. **Fixtures:** ACP debug log store, one thread that emits protocol lines, and the browser debug-log contribution. **Workspace mutation:** None. **Automation status:** Automated with store-level assertions and Chrome DevTools MCP viewer checks.
+**Layer:** `runtime-ui` **Required profile:** `full` with ACP debug logging enabled. **Fixtures:** ACP debug log store, one thread that emits protocol lines, and the browser debug-log contribution. **Workspace mutation:** None. **Automation status:** Automated with store-level assertions and Chrome DevTools MCP viewer checks. Sensitive-data redaction checks are blocked until the product exposes a redacted render/copy contract.
 
 ## Given
 
@@ -37,18 +37,19 @@
 14. Click Clear.
 15. Let the auto-refresh timer tick at least once.
 
-### Part D - Sensitive Transport Data
+### Part D - Sensitive Transport Data Audit
 
-16. Create a session where the built-in `opensumi-ide` MCP server is injected.
-17. Open the debug log viewer and copy all entries.
-18. Search the copied log text for:
+16. Run this part only when a redacted debug-log render/copy contract is implemented.
+17. Create a session where the built-in `opensumi-ide` MCP server is injected.
+18. Open the debug log viewer and copy all entries.
+19. Search the copied log text for:
     - raw MCP URL paths matching `/mcp/[a-f0-9]{32}`
     - known API token/key patterns
     - full relay digest bodies or permission prompt content
 
 ## Then
 
-- Valid JSON lines populate `payload`; non-JSON stderr lines keep `payload` empty but preserve bounded raw text.
+- Valid JSON lines populate `payload`; non-JSON stderr lines keep `payload` empty and preserve raw text.
 - Empty lines are ignored by `createLineRecorder`.
 - Partial chunks are not recorded until a newline completes the message.
 - `setThreadSessionId` backfills earlier entries for the same thread that did not yet have a session id.
@@ -60,9 +61,11 @@
 - Clear calls `IAIBackService.clearAcpDebugLog` and updates the UI to the empty state.
 - Copy All is disabled when there are no entries and writes the rendered log when entries exist.
 - Auto-refresh does not duplicate existing entries or reset scroll/focus unexpectedly.
-- Debug log UI must not expose unredacted MCP bridge tokens, API keys, full relay digests, or permission prompt contents. If raw protocol capture needs to include sensitive transport fields for diagnosis, the viewer must redact them before rendering and copying.
+- Current debug-log rendering is raw. Tests must use synthetic protocol lines and must not inject real secrets.
+- When a redacted render/copy contract exists, Part D must verify that debug log UI does not expose unredacted MCP bridge tokens, API keys, full relay digests, or permission prompt contents.
 
 ## Pass / Fail Judgment
 
-- **PASS** - ACP debug logging captures useful bounded protocol traces, keeps session/thread metadata consistent, presents a usable viewer, and avoids leaking transport tokens or sensitive chat/permission bodies.
-- **FAIL** - logs grow unbounded, partial lines become corrupt entries, session ids are not backfilled, the viewer cannot refresh/clear/copy correctly, or copied logs contain unredacted MCP tokens or sensitive content.
+- **PASS** - ACP debug logging captures useful protocol traces, keeps the newest 2000 entries, preserves session/thread metadata, and presents a usable raw viewer for synthetic test data.
+- **BLOCKED** - the run schedules Part D before the product exposes redacted debug-log rendering/copying.
+- **FAIL** - entry counts grow unbounded, partial lines become corrupt entries, session ids are not backfilled, the viewer cannot refresh/clear/copy correctly, or the redaction audit runs and copied logs contain unredacted MCP tokens or sensitive content.

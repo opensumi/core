@@ -1,9 +1,9 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { IChatComponent, IChatContent } from '@opensumi/ide-core-common/lib/types/ai-native';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
-import { AI_CHAT_VIEW_ID, IChatInternalService, IChatMessageListItem, IChatMessageStructure } from '../../common';
+import { IChatInternalService, IChatMessageListItem, IChatMessageStructure } from '../../common';
+import { AIPanelLayoutService } from '../layout/panel-layout.service';
 
 import { ChatInternalService } from './chat.internal.service';
 
@@ -12,8 +12,8 @@ export class ChatService extends Disposable {
   @Autowired(IChatInternalService)
   chatInternalService: ChatInternalService;
 
-  @Autowired(IMainLayoutService)
-  private mainLayoutService: IMainLayoutService;
+  @Autowired(AIPanelLayoutService)
+  private panelLayoutService: AIPanelLayoutService;
 
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
@@ -35,7 +35,7 @@ export class ChatService extends Disposable {
    * 显示聊天视图
    */
   public showChatView() {
-    this.mainLayoutService.toggleSlot(AI_CHAT_VIEW_ID, true);
+    this.panelLayoutService.showAIChatView();
   }
 
   public sendMessage(data: IChatMessageStructure) {

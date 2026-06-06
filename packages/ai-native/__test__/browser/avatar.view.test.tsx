@@ -75,7 +75,7 @@ jest.mock('@opensumi/ide-core-browser/lib/components/ai-native', () => {
 
 jest.mock('../../src/browser/layout/panel-layout.service', () => ({
   AIPanelLayoutService: class AIPanelLayoutService {},
-  getAIChatDefaultSize: (mode: string) => (mode === 'agentic' ? 1080 : 480),
+  getAIChatDefaultSize: (mode: string) => (mode === 'agentic' ? 840 : 580),
 }));
 
 jest.mock('../../src/browser/layout/view/avatar/avatar.module.less', () => ({
@@ -131,7 +131,7 @@ describe('AIChatLogoAvatar', () => {
       Simulate.click(aiLogoAvatar!.parentElement as Element);
     });
 
-    expect(mockToggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, 1080);
+    expect(mockToggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, 840);
     expect(mockSetLayoutMode).not.toHaveBeenCalled();
   });
 
@@ -146,7 +146,7 @@ describe('AIChatLogoAvatar', () => {
       Simulate.click(aiLogoAvatar!.parentElement as Element);
     });
 
-    expect(mockToggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, 480);
+    expect(mockToggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, 580);
   });
 
   it('calls setLayoutMode when the select value changes', () => {

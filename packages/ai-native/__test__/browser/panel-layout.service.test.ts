@@ -25,7 +25,14 @@ describe('AIPanelLayoutService', () => {
     const contextKey = {
       set: jest.fn(),
     };
+    let preferenceChangeCallback: (() => void) | undefined;
     const preferenceService = {
+      ready: {
+        then: jest.fn((callback: () => void) => {
+          callback();
+          return Promise.resolve();
+        }),
+      },
       inspect: jest.fn(() => inspectValue),
       set: jest.fn((_preferenceName, value) => {
         if (setError) {
@@ -37,7 +44,10 @@ describe('AIPanelLayoutService', () => {
         };
         return Promise.resolve();
       }),
-      onSpecificPreferenceChange: jest.fn(() => ({ dispose: jest.fn() })),
+      onSpecificPreferenceChange: jest.fn((_preferenceName, callback: () => void) => {
+        preferenceChangeCallback = callback;
+        return { dispose: jest.fn() };
+      }),
     };
     const layoutService = {
       setLayoutStateKey: jest.fn(),
@@ -60,7 +70,13 @@ describe('AIPanelLayoutService', () => {
       value: layoutService,
     });
 
-    return { contextKey, layoutService, preferenceService, service };
+    return {
+      contextKey,
+      layoutService,
+      preferenceService,
+      service,
+      triggerPreferenceChange: () => preferenceChangeCallback?.(),
+    };
   };
 
   it('should preserve valid values and fall back to the default for unknown values', () => {
@@ -96,7 +112,18 @@ describe('AIPanelLayoutService', () => {
     expect(service.getLayoutMode()).toBe('classic');
   });
 
-  it('should persist layout changes and update context key', async () => {
+  it('should initialize layout state and context key from the current mode', () => {
+    const { layoutService, service } = createService({ inspectValue: { globalValue: 'agentic' } });
+
+    service.initialize();
+
+    expect((service as any).contextKeyService.createKey).toHaveBeenCalledWith(AI_PANEL_LAYOUT_CONTEXT, 'agentic');
+    expect(layoutService.setLayoutStateKey).toHaveBeenCalledWith(AI_AGENTIC_LAYOUT_STORAGE_KEY, {
+      saveCurrent: false,
+    });
+  });
+
+  it('should persist layout changes and reveal AI chat without reloading the shell', async () => {
     const { contextKey, layoutService, preferenceService, service } = createService({ designLayout: 'classic' });
 
     service.initialize();
@@ -114,13 +141,14 @@ describe('AIPanelLayoutService', () => {
     );
   });
 
-  it('should not update context key when persisting layout fails', async () => {
-    const { contextKey, service } = createService({ setError: new Error('write failed') });
+  it('should not update layout when persisting layout fails', async () => {
+    const { contextKey, layoutService, service } = createService({ setError: new Error('write failed') });
 
     service.initialize();
 
     await expect(service.setLayoutMode('classic')).rejects.toThrow('write failed');
     expect(contextKey.set).not.toHaveBeenCalledWith('classic');
+    expect(layoutService.toggleSlot).not.toHaveBeenCalled();
   });
 
   it('should toggle both layout modes', async () => {
@@ -133,6 +161,19 @@ describe('AIPanelLayoutService', () => {
       'classic',
       PreferenceScope.User,
     );
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_CLASSIC_CHAT_DEFAULT_SIZE);
+  });
+
+  it('should apply external preference changes to the active layout shell', () => {
+    const { contextKey, layoutService, service, triggerPreferenceChange } = createService({
+      inspectValue: { globalValue: 'classic' },
+    });
+
+    service.initialize();
+    triggerPreferenceChange();
+
+    expect(contextKey.set).toHaveBeenCalledWith('classic');
+    expect(layoutService.setLayoutStateKey).toHaveBeenCalledWith('layout', { saveCurrent: true });
     expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_CLASSIC_CHAT_DEFAULT_SIZE);
   });
 });

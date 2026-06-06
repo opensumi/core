@@ -193,6 +193,14 @@ describe('OpenSumiMcpHttpServer', () => {
     const server = createServer(caller);
     await server.start();
     const fullUrl = server.getUrl();
+    expect(server.getConnectionInfo()).toEqual({
+      name: 'opensumi-ide',
+      type: 'http',
+      transport: 'streamable-http',
+      url: fullUrl,
+      redactedUrl: expect.stringContaining('/mcp/<redacted>'),
+      headers: [],
+    });
     const token = fullUrl.slice(fullUrl.lastIndexOf('/') + 1);
     const listeningLog = (mockLogger.log as jest.Mock).mock.calls.find(([message]) =>
       String(message).includes('[OpenSumiMcpHttpServer] Listening on '),

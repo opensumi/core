@@ -2,14 +2,14 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/webmcp-groups/*.webmcp-group.ts`, `packages/ai-native/src/browser/acp/webmcp-group-registry.ts`, or `packages/ai-native/src/node/acp/opensumi-mcp-http-server.ts`
 
-**Layer:** `mcp-contract` **Required profile:** `full` **Fixtures:** Fresh MCP session, workspace containing `package.json`, and a temporary workspace path for reversible mutation checks. **Workspace mutation:** Temporary files under `.tmp/acp-bdd` only. **Automation status:** Automated MCP contract spec; default/interactive runs should skip this full-profile scenario.
+**Layer:** `mcp-contract` **Required profile:** `full` **Fixtures:** Fresh MCP session, workspace containing a small `package.json`, and a temporary workspace path for reversible mutation checks. **Workspace mutation:** Temporary files under `.tmp/acp-bdd` only. **Automation status:** Automated MCP contract spec; default/interactive runs should skip this full-profile scenario.
 
 ## Given
 
 - Common preflight in `test/bdd/README.md` passes.
 - The MCP `opensumi-ide` server is connected.
 - Use a fresh MCP client session so enabled groups do not leak from another scenario.
-- The workspace contains `package.json`.
+- The workspace contains a small `package.json`.
 - The IDE can open an editor for `package.json`.
 - Shell or terminal mutation steps run only in a full profile, or are skipped explicitly as profile-gated.
 
@@ -34,9 +34,10 @@
    - `workspace_get_info({})`
    - `workspace_list_open_files({})`
    - `workspace_list_recent_workspaces({})`
+   - record `WORKSPACE_ROOT` from `workspace_get_info.result.workspaceDir` or the first root path
 6. Enable the `search` group and call:
    - `search_files({ query: "package" })`
-   - `search_text({ query: "name", includePattern: "package.json" })`
+   - `search_text({ query: "name", include: ["package.json"], maxResults: 20 })`
    - `search_symbols({ query: "Acp" })`
 
 ### Part C - Diagnostics And File
@@ -49,11 +50,12 @@
    - `file_get_workspace_root({})`
    - `file_exists({ path: "package.json" })`
    - `file_stat({ path: "package.json" })`
-   - `file_read({ path: "package.json", maxBytes: 4096 })`
-   - `file_list({ path: ".", limit: 50 })`
+   - `file_read({ path: "package.json" })`
+   - `file_list({ path: "." })`
 10. In full profile only, call reversible file mutation tools under a temporary workspace path:
     - `file_create({ path: ".tmp/acp-bdd/source.txt", content: "hello" })`
     - `file_write({ path: ".tmp/acp-bdd/source.txt", content: "updated" })`
+    - `file_create({ path: ".tmp/acp-bdd/editor.ts", content: "function acpBdd() {\n return 1;\n}\n" })`
     - `file_copy({ sourcePath: ".tmp/acp-bdd/source.txt", targetPath: ".tmp/acp-bdd/copy.txt" })`
     - `file_move({ sourcePath: ".tmp/acp-bdd/copy.txt", targetPath: ".tmp/acp-bdd/moved.txt" })`
     - `file_delete({ path: ".tmp/acp-bdd/source.txt" })`
@@ -61,23 +63,28 @@
 
 ### Part D - Editor
 
-11. Open `package.json` in the IDE.
+11. Derive absolute editor paths from `WORKSPACE_ROOT`:
+    - `PACKAGE_ABS = WORKSPACE_ROOT + "/package.json"`
+    - `TEMP_EDITOR_ABS = WORKSPACE_ROOT + "/.tmp/acp-bdd/editor.ts"`
 12. Enable the `editor` group and call:
-    - `editor_open({ path: "package.json" })`
+    - `editor_open({ path: PACKAGE_ABS })`
     - `editor_get_active({})`
     - `editor_list_open_files({})`
     - `editor_get_selection({})`
     - `editor_read_buffer({})`
-    - `editor_read_range_from_buffer({ startLine: 1, endLine: 20 })`
+    - `editor_read_range_from_buffer({ path: PACKAGE_ABS, startLine: 1, endLine: 20 })`
     - `editor_list_dirty_files({})`
-    - `editor_get_dirty_diff({})`
+    - `editor_get_dirty_diff({ path: PACKAGE_ABS })`
 13. In full profile only, call safe editor write/UI tools with reversible input:
-    - `editor_set_selection`
-    - `editor_format`
-    - `editor_fold`
-    - `editor_unfold`
-    - `editor_save`
-14. Close the editor opened by this scenario with `editor_close`.
+    - `editor_set_selection({ path: TEMP_EDITOR_ABS, startLine: 1 })`
+    - `editor_format({ path: TEMP_EDITOR_ABS })`
+    - `editor_fold({ path: TEMP_EDITOR_ABS, startLine: 1 })`
+    - `editor_unfold({ path: TEMP_EDITOR_ABS, startLine: 1 })`
+    - `editor_save({ path: TEMP_EDITOR_ABS })`
+14. Close editors and clean up the remaining temporary editor file:
+    - `editor_close({ path: PACKAGE_ABS })`
+    - `editor_close({ path: TEMP_EDITOR_ABS })`
+    - `file_delete({ path: ".tmp/acp-bdd/editor.ts" })`
 
 ### Part E - Terminal
 
@@ -88,19 +95,19 @@
     - `terminal_get_profiles({})`
     - `terminal_show_panel({})`
 16. In full profile only, create a terminal and call:
-    - `terminal_create({})`
-    - `terminal_show({ terminalId })`
-    - `terminal_execute_command({ terminalId, command: "pwd" })`
-    - `terminal_read_output({ terminalId })`
-    - `terminal_tail({ terminalId, lines: 20 })`
-    - `terminal_get_process_info({ terminalId })`
-    - `terminal_get_process_id({ terminalId })`
-    - `terminal_wait_for_pattern({ terminalId, pattern: "." })`
-    - `terminal_send_text({ terminalId, text: "" })`
-    - `terminal_send_control({ terminalId, control: "c" })`
-    - `terminal_resize({ terminalId, cols: 80, rows: 24 })`
-    - `terminal_run_command({ command: "pwd" })`
-    - `terminal_dispose({ terminalId })`
+    - `terminal_create({})` and record `TERMINAL_ID = result.id`
+    - `terminal_show({ id: TERMINAL_ID })`
+    - `terminal_execute_command({ id: TERMINAL_ID, command: "pwd\n" })`
+    - `terminal_read_output({ id: TERMINAL_ID, maxLines: 120 })`
+    - `terminal_tail({ id: TERMINAL_ID, maxLines: 20 })`
+    - `terminal_get_process_info({ id: TERMINAL_ID })`
+    - `terminal_get_process_id({ id: TERMINAL_ID })`
+    - `terminal_wait_for_pattern({ id: TERMINAL_ID, pattern: "." })`
+    - `terminal_send_text({ id: TERMINAL_ID, text: "" })`
+    - `terminal_send_control({ id: TERMINAL_ID, key: "ctrl-c" })`
+    - `terminal_resize({ id: TERMINAL_ID, cols: 80, rows: 24 })`
+    - `terminal_run_command({ id: TERMINAL_ID, command: "pwd" })`
+    - `terminal_dispose({ id: TERMINAL_ID })`
 
 ## Then
 
@@ -113,7 +120,7 @@
 - Workspace responses contain metadata such as roots and open files, not file contents.
 - Search responses are bounded and include paths/ranges/snippets only within configured limits.
 - Diagnostics responses are bounded and include severity, path, range, and message metadata.
-- File read/list/stat/exists operations are workspace-scoped, bounded, and reject path traversal outside the workspace.
+- File read/list/stat/exists operations are workspace-scoped and reject path traversal outside the workspace. `file_read` and `file_list` currently do not accept `maxBytes` or `limit`, so this scenario uses a small fixture file and small fixture workspace.
 - File mutation operations are unavailable outside full profile and, when run, are limited to the temporary workspace path created by this scenario.
 - Editor read operations return active-editor metadata or bounded buffer/range content only for open editor resources.
 - Editor write/UI operations are unavailable outside full profile.

@@ -7,6 +7,7 @@ import {
   ListSessionsRequest,
   ListSessionsResponse,
   McpServer,
+  OpenSumiMcpServerConnectionInfo,
   SessionInfo,
   SessionNotification,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
@@ -209,6 +210,11 @@ export interface IAcpAgentService {
   getAcpDebugLog(): Promise<AcpDebugLogEntry[]>;
 
   clearAcpDebugLog(): Promise<void>;
+
+  /**
+   * Start and return the loopback HTTP MCP server connection for external MCP clients.
+   */
+  getOpenSumiMcpServerConnection(): Promise<OpenSumiMcpServerConnectionInfo>;
 
   /**
    * Event fired when any session's thread status changes.
@@ -551,6 +557,14 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     } else {
       this.builtInMcpSessionIds.delete(sessionId);
     }
+  }
+
+  async getOpenSumiMcpServerConnection(): Promise<OpenSumiMcpServerConnectionInfo> {
+    if (!this.opensumiMcpHttpServer) {
+      throw new Error('[AcpAgentService] OpenSumi MCP server is not available');
+    }
+    await this.opensumiMcpHttpServer.start();
+    return this.opensumiMcpHttpServer.getConnectionInfo();
   }
 
   // -----------------------------------------------------------------------

@@ -107,6 +107,10 @@ export class AcpCliBackService implements IAIBackService {
 
   private threadStatusDisposable: any;
 
+  async getOpenSumiMcpServerConnection() {
+    return this.agentService.getOpenSumiMcpServerConnection();
+  }
+
   /**
    * Lazily subscribe to thread status changes from AcpAgentService
    * and forward them to the browser via RPC.

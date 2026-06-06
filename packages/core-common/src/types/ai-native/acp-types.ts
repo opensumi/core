@@ -210,6 +210,15 @@ export interface WebMcpToolResult {
   details?: string; // human-readable error description
 }
 
+export interface OpenSumiMcpServerConnectionInfo {
+  name: string;
+  type: 'http';
+  transport: 'streamable-http';
+  url: string;
+  redactedUrl: string;
+  headers: Array<{ name: string; value: string }>;
+}
+
 export interface WebMcpGroupInfo {
   name: string;
   description: string;

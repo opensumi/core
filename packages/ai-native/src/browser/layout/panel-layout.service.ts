@@ -10,7 +10,7 @@ import { AI_CHAT_VIEW_ID } from '../../common';
 export const AI_PANEL_LAYOUT_CONTEXT = 'aiNative.panelLayout';
 export const AI_PANEL_LAYOUT_MENU = 'aiNative/panelLayout';
 export const AI_AGENTIC_LAYOUT_STORAGE_KEY = 'layout.ai.agentic';
-export const AI_AGENTIC_CHAT_DEFAULT_SIZE = 1080;
+export const AI_AGENTIC_CHAT_DEFAULT_SIZE = 840;
 export const AI_CLASSIC_CHAT_DEFAULT_SIZE = 580;
 
 export const DEFAULT_AI_PANEL_LAYOUT: PanelLayoutMode = 'agentic';
@@ -46,20 +46,25 @@ export class AIPanelLayoutService {
 
   private panelLayoutContextKey?: ReturnType<IContextKeyService['createKey']>;
   private initialized = false;
+  private isSettingLayoutMode = false;
 
   initialize(): void {
     if (this.initialized) {
       return;
     }
     this.initialized = true;
-    const initialMode = this.getLayoutMode();
-    this.applyLayoutMode(initialMode, false);
-    this.updateContextKey(initialMode);
+    void this.preferenceService.ready.then(() => {
+      const initialMode = this.getLayoutMode();
+      this.applyLayoutMode(initialMode, false);
+      this.updateContextKey(initialMode);
+      this.onDidChangePanelLayoutEmitter.fire(initialMode);
+    });
     this.preferenceService.onSpecificPreferenceChange(AINativeSettingSectionsId.PanelLayout, () => {
+      if (this.isSettingLayoutMode) {
+        return;
+      }
       const mode = this.getLayoutMode();
-      this.applyLayoutMode(mode);
-      this.updateContextKey(mode);
-      this.onDidChangePanelLayoutEmitter.fire(mode);
+      this.activateLayoutMode(mode, true);
     });
   }
 
@@ -76,13 +81,13 @@ export class AIPanelLayoutService {
 
   async setLayoutMode(mode: PanelLayoutMode): Promise<void> {
     const normalizedMode = normalizePanelLayoutMode(mode);
-    await this.preferenceService.set(AINativeSettingSectionsId.PanelLayout, normalizedMode, PreferenceScope.User);
-    const currentMode = this.getLayoutMode();
-    this.applyLayoutMode(currentMode);
-    this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, getAIChatDefaultSize(currentMode));
-    this.restoreLayoutAfterModeChange(currentMode);
-    this.updateContextKey(currentMode);
-    this.onDidChangePanelLayoutEmitter.fire(currentMode);
+    this.isSettingLayoutMode = true;
+    try {
+      await this.preferenceService.set(AINativeSettingSectionsId.PanelLayout, normalizedMode, PreferenceScope.User);
+    } finally {
+      this.isSettingLayoutMode = false;
+    }
+    this.activateLayoutMode(this.getLayoutMode(), true);
   }
 
   async toggleLayoutMode(): Promise<void> {
@@ -101,15 +106,28 @@ export class AIPanelLayoutService {
     this.layoutService.setLayoutStateKey(getPanelLayoutStorageKey(mode), { saveCurrent });
   }
 
+  showAIChatView(mode: PanelLayoutMode = this.getLayoutMode()): void {
+    this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, getAIChatDefaultSize(mode));
+  }
+
+  private activateLayoutMode(mode: PanelLayoutMode, restoreAIChat = false): void {
+    this.applyLayoutMode(mode);
+    if (restoreAIChat) {
+      this.showAIChatView(mode);
+      this.restoreLayoutAfterModeChange(mode);
+    }
+    this.updateContextKey(mode);
+    this.onDidChangePanelLayoutEmitter.fire(mode);
+  }
+
   private restoreLayoutAfterModeChange(mode: PanelLayoutMode): void {
     const layoutStateKey = getPanelLayoutStorageKey(mode);
-    const aiChatSize = getAIChatDefaultSize(mode);
 
     fastdom.measureAtNextFrame(() => {
-      this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, aiChatSize);
+      this.showAIChatView(mode);
       fastdom.measureAtNextFrame(() => {
         this.layoutService.setLayoutStateKey(layoutStateKey, { saveCurrent: false, forceRestore: true });
-        this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, aiChatSize);
+        this.showAIChatView(mode);
       });
     });
   }

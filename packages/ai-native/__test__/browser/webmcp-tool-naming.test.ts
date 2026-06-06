@@ -2,6 +2,7 @@ import { createAcpChatGroup } from '../../src/browser/acp/webmcp-groups/acp-chat
 import { createDiagnosticsGroup } from '../../src/browser/acp/webmcp-groups/diagnostics.webmcp-group';
 import { createEditorGroup } from '../../src/browser/acp/webmcp-groups/editor.webmcp-group';
 import { createFileGroup } from '../../src/browser/acp/webmcp-groups/file.webmcp-group';
+import { createOpenSumiMcpGroup } from '../../src/browser/acp/webmcp-groups/opensumi-mcp.webmcp-group';
 import { createSearchGroup } from '../../src/browser/acp/webmcp-groups/search.webmcp-group';
 import { createTerminalGroup } from '../../src/browser/acp/webmcp-groups/terminal.webmcp-group';
 import { createWorkspaceGroup } from '../../src/browser/acp/webmcp-groups/workspace.webmcp-group';
@@ -12,6 +13,7 @@ describe('WebMCP tool naming contract', () => {
   it('registers only lower snake case external tool names', () => {
     const container = {} as any;
     const groups = [
+      createOpenSumiMcpGroup(container),
       createWorkspaceGroup(container),
       createSearchGroup(container),
       createDiagnosticsGroup(container),

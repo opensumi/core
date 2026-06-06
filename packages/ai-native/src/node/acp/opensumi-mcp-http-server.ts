@@ -18,7 +18,11 @@ import {
 } from '../../common/webmcp-policy';
 
 import type { AcpWebMcpCallerService } from './acp-webmcp-caller.service';
-import type { WebMcpGroupDef, WebMcpToolDef } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
+import type {
+  OpenSumiMcpServerConnectionInfo,
+  WebMcpGroupDef,
+  WebMcpToolDef,
+} from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 const OPEN_SUMI_MCP_SERVER_NAME = 'opensumi-ide';
 const LOOPBACK_HOST = '127.0.0.1';
@@ -132,6 +136,17 @@ export class OpenSumiMcpHttpServer {
       throw new Error('[OpenSumiMcpHttpServer] Server is not started');
     }
     return `http://${LOOPBACK_HOST}:${this.port}${MCP_PATH_PREFIX}${this.token}`;
+  }
+
+  getConnectionInfo(): OpenSumiMcpServerConnectionInfo {
+    return {
+      name: this.getServerName(),
+      type: 'http',
+      transport: 'streamable-http',
+      url: this.getUrl(),
+      redactedUrl: this.getRedactedUrl(),
+      headers: [],
+    };
   }
 
   private getRedactedUrl(): string {
