@@ -302,7 +302,7 @@ describe('main layout test', () => {
       handler.setCollapsed('test-view-id5', true);
     });
     expect(handler.isCollapsed('test-view-id5')).toBeTruthy();
-    expect(mockCb).toHaveBeenCalledTimes(2);
+    expect(mockCb).toHaveBeenCalledTimes(4);
     let newTitle = 'new title';
     act(() => {
       handler.setBadge({ value: 20, tooltip: '20' });
@@ -436,80 +436,6 @@ describe('main layout test', () => {
     expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.display).toEqual('block');
   });
 
-  it('should restore slot size when showing a zero-sized slot', () => {
-    const rightTabbarService = service.getTabbarService(SlotLocation.extendView);
-    const resizeHandle = rightTabbarService.resizeHandle!;
-    const setSizeSpy = jest.spyOn(resizeHandle, 'setSize').mockImplementation(() => {});
-
-    act(() => {
-      service.toggleSlot(SlotLocation.extendView, false);
-    });
-    setSizeSpy.mockClear();
-
-    act(() => {
-      service.toggleSlot(SlotLocation.extendView, true);
-    });
-
-    expect(setSizeSpy).toHaveBeenCalledWith(undefined);
-
-    setSizeSpy.mockRestore();
-  });
-
-  it('should keep the expanded size when collapsing a side tabbar', () => {
-    const viewTabbarService = service.getTabbarService(SlotLocation.view);
-    const resizeHandle = viewTabbarService.resizeHandle!;
-    const setSizeSpy = jest.spyOn(resizeHandle, 'setSize').mockImplementation(() => {});
-    const expandedSize = 420;
-
-    act(() => {
-      viewTabbarService.updateCurrentContainerId('containerId');
-    });
-    viewTabbarService.prevSize = expandedSize;
-    setSizeSpy.mockClear();
-
-    act(() => {
-      viewTabbarService.updateCurrentContainerId('');
-    });
-
-    expect(setSizeSpy).toHaveBeenLastCalledWith(viewTabbarService.getBarSize());
-    expect(viewTabbarService.prevSize).toBe(expandedSize);
-
-    setSizeSpy.mockRestore();
-  });
-
-  it('should ignore collapsed previous size when restoring a side tabbar', () => {
-    const viewTabbarService = service.getTabbarService(SlotLocation.view);
-    const resizeHandle = viewTabbarService.resizeHandle!;
-    const setSizeSpy = jest.spyOn(resizeHandle, 'setSize').mockImplementation(() => {});
-    const barSize = viewTabbarService.getBarSize();
-
-    act(() => {
-      viewTabbarService.updateCurrentContainerId('');
-    });
-    viewTabbarService.prevSize = barSize;
-    setSizeSpy.mockClear();
-
-    act(() => {
-      viewTabbarService.updateCurrentContainerId('containerId');
-    });
-
-    const restoredSize = setSizeSpy.mock.calls[setSizeSpy.mock.calls.length - 1][0];
-    expect(restoredSize).toBeGreaterThan(barSize);
-
-    viewTabbarService.prevSize = 0;
-    setSizeSpy.mockClear();
-
-    act(() => {
-      viewTabbarService.updateCurrentContainerId('');
-      viewTabbarService.updateCurrentContainerId('containerId');
-    });
-
-    const zeroFallbackSize = setSizeSpy.mock.calls[setSizeSpy.mock.calls.length - 1][0];
-    expect(zeroFallbackSize).toBeGreaterThan(barSize);
-
-    setSizeSpy.mockRestore();
-  });
-
   it('should be able to judge whether a tab panel is visible', () => {
     expect(service.isVisible(SlotLocation.extendView)).toBeTruthy();
     act(() => {
@@ -575,34 +501,6 @@ describe('main layout test', () => {
         },
       }),
     );
-    setStateSpy.mockRestore();
-  });
-
-  it('should store explicit slot size immediately for the active layout state key', () => {
-    const layoutStorageKey = 'layout.ai.agentic';
-    const layoutState = injector.get(LayoutState);
-    const rightTabbarService = service.getTabbarService(SlotLocation.extendView);
-    const setStateSpy = jest.spyOn(layoutState, 'setState');
-
-    act(() => {
-      service.setLayoutStateKey(layoutStorageKey, { saveCurrent: false });
-      service.toggleSlot(SlotLocation.extendView, true, 456);
-    });
-
-    expect(rightTabbarService.prevSize).toBe(456);
-    expect(setStateSpy).toHaveBeenCalledWith(
-      layoutStorageKey,
-      expect.objectContaining({
-        [SlotLocation.extendView]: {
-          currentId: testContainerId,
-          size: 456,
-        },
-      }),
-    );
-
-    act(() => {
-      service.setLayoutStateKey('layout');
-    });
     setStateSpy.mockRestore();
   });
 

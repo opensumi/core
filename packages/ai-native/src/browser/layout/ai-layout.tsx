@@ -19,33 +19,115 @@ import { AIPanelLayoutService, getAIChatDefaultSize, getPanelLayoutStorageKey } 
 
 const AGENTIC_EDITOR_MIN_SIZE = 360;
 const AGENTIC_WORKBENCH_MIN_RESIZE = 640;
-const CLASSIC_WORKBENCH_MIN_RESIZE = 300;
 const SIDE_SLOT_MAX_RESIZE = 480;
 
-const AIWorkbenchShell = ({ panelLayout }: { panelLayout: PanelLayoutMode }) => {
-  const designLayoutConfig = useInjectable(DesignLayoutConfig);
-  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
-  const clientApp = useInjectable<IClientApp>(IClientApp);
-  const didDefaultOpenAIChat = useRef(false);
-  const { layout } = getStorageValue(getPanelLayoutStorageKey(panelLayout));
+// 使用 UA 判断是否为移动设备
+const isMobileDevice = () => {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
 
-  useEffect(() => {
-    layoutService.setLayoutStateKey(getPanelLayoutStorageKey(panelLayout), { saveCurrent: false });
-  }, [layoutService, panelLayout]);
+export const ClassicShell = () => {
+  const { layout } = getStorageValue();
+  const designLayoutConfig = useInjectable(DesignLayoutConfig);
+
+  // 判断是否应该显示完整布局
+  const shouldShowFullLayout = !isMobileDevice();
+
+  // 移动端模式：只渲染 AI_CHAT_VIEW_ID，添加 mobile class
+  if (!shouldShowFullLayout) {
+    return (
+      <SlotRenderer
+        slot={AI_CHAT_VIEW_ID}
+        isTabbar={true}
+        defaultSize={layout['AI-Chat']?.currentId ? layout['AI-Chat']?.size || 360 : 0}
+        maxResize={420}
+        minResize={280}
+        minSize={0}
+      />
+    );
+  }
 
   const defaultRightSize = useMemo(
     () => (designLayoutConfig.useMergeRightWithLeftPanel ? 0 : 49),
     [designLayoutConfig.useMergeRightWithLeftPanel],
   );
+
+  return (
+    <BoxPanel direction='top-to-bottom'>
+      <SlotRenderer id='top' defaultSize={layout.top?.currentId ? layout.top?.size || 32 : 32} slot='top' />
+      <SplitPanel
+        id='main-horizontal-ai'
+        flex={1}
+        direction={'left-to-right'}
+        resizeHandleClassName={'design-slot_resize_horizontal'}
+      >
+        <SplitPanel
+          id='main-horizontal'
+          flex={1}
+          flexGrow={1}
+          direction={'left-to-right'}
+          resizeHandleClassName={'design-slot_resize_horizontal'}
+        >
+          <SlotRenderer
+            slot={SlotLocation.view}
+            isTabbar={true}
+            defaultSize={layout[SlotLocation.view]?.currentId ? layout[SlotLocation.view]?.size || 310 : 49}
+            minResize={280}
+            minSize={49}
+          />
+          <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
+            <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
+            <SlotRenderer
+              flex={1}
+              defaultSize={layout[SlotLocation.panel]?.currentId ? layout[SlotLocation.panel]?.size : 24}
+              minResize={160}
+              slot={SlotLocation.panel}
+              isTabbar={true}
+            />
+          </SplitPanel>
+          <SlotRenderer
+            slot={SlotLocation.extendView}
+            isTabbar={true}
+            defaultSize={
+              layout[SlotLocation.extendView]?.currentId
+                ? layout[SlotLocation.extendView]?.size || 360
+                : defaultRightSize
+            }
+            minResize={280}
+            minSize={defaultRightSize}
+          />
+        </SplitPanel>
+        <SlotRenderer
+          slot={AI_CHAT_VIEW_ID}
+          isTabbar={true}
+          defaultSize={layout['AI-Chat']?.currentId ? layout['AI-Chat']?.size || 360 : 0}
+          maxResize={1080}
+          minResize={280}
+          minSize={0}
+        />
+      </SplitPanel>
+      <SlotRenderer id='statusbar' defaultSize={24} slot='statusBar' />
+    </BoxPanel>
+  );
+};
+
+export const AgenticShell = () => {
+  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+  const clientApp = useInjectable<IClientApp>(IClientApp);
+  const didDefaultOpenAIChat = useRef(false);
+  const { layout } = getStorageValue(getPanelLayoutStorageKey('agentic'));
+
+  useEffect(() => {
+    layoutService.setLayoutStateKey(getPanelLayoutStorageKey('agentic'), { saveCurrent: false });
+  }, [layoutService]);
+
   const aiChatLayout = layout[AI_CHAT_VIEW_ID];
   const hasCachedAIChatLayout = Object.prototype.hasOwnProperty.call(layout, AI_CHAT_VIEW_ID);
-  const shouldDefaultOpenAIChat = panelLayout === 'agentic' && !hasCachedAIChatLayout;
-  const defaultAIChatSize = getAIChatDefaultSize(panelLayout);
-  const isAgenticLayout = panelLayout === 'agentic';
-  const aiChatMinResize = isAgenticLayout ? 640 : 280;
-  const aiChatMaxResize = isAgenticLayout ? 1440 : 1080;
-  const editorMinSize = isAgenticLayout ? AGENTIC_EDITOR_MIN_SIZE : CLASSIC_WORKBENCH_MIN_RESIZE;
-  const workbenchMinResize = isAgenticLayout ? AGENTIC_WORKBENCH_MIN_RESIZE : CLASSIC_WORKBENCH_MIN_RESIZE;
+  const shouldDefaultOpenAIChat = !hasCachedAIChatLayout;
+  const defaultAIChatSize = getAIChatDefaultSize('agentic');
 
   const getSideSlotSize = (slot: SlotLocation, activeFallbackSize: number, inactiveFallbackSize: number) => {
     const slotLayout = layout[slot];
@@ -89,8 +171,8 @@ const AIWorkbenchShell = ({ panelLayout }: { panelLayout: PanelLayoutMode }) => 
           ? defaultAIChatSize
           : 0
       }
-      maxResize={aiChatMaxResize}
-      minResize={aiChatMinResize}
+      maxResize={1440}
+      minResize={640}
       minSize={0}
     />
   );
@@ -99,8 +181,8 @@ const AIWorkbenchShell = ({ panelLayout }: { panelLayout: PanelLayoutMode }) => 
     <SplitPanel
       key={id}
       id={id}
-      minResize={editorMinSize}
-      minSize={editorMinSize}
+      minResize={AGENTIC_EDITOR_MIN_SIZE}
+      minSize={AGENTIC_EDITOR_MIN_SIZE}
       flexGrow={1}
       direction='top-to-bottom'
     >
@@ -127,58 +209,34 @@ const AIWorkbenchShell = ({ panelLayout }: { panelLayout: PanelLayoutMode }) => 
     />
   );
 
-  const extendViewSlot = (
-    <SlotRenderer
-      key='extend-view'
-      slot={SlotLocation.extendView}
-      isTabbar={true}
-      defaultSize={isAgenticLayout ? defaultRightSize : getSideSlotSize(SlotLocation.extendView, 360, defaultRightSize)}
-      minResize={280}
-      maxResize={SIDE_SLOT_MAX_RESIZE}
-      minSize={defaultRightSize}
-    />
-  );
-
-  const workbenchChildren =
-    panelLayout === 'agentic'
-      ? [editorWithBottomPanel('main-vertical-agentic'), workbenchViewSlot]
-      : [workbenchViewSlot, editorWithBottomPanel('main-vertical'), extendViewSlot];
-
   const workbench = (
     <SplitPanel
       key='workbench'
-      id={panelLayout === 'agentic' ? 'main-horizontal-agentic' : 'main-horizontal'}
-      minResize={workbenchMinResize}
+      id='main-horizontal-agentic'
+      minResize={AGENTIC_WORKBENCH_MIN_RESIZE}
       flexGrow={1}
       direction={'left-to-right'}
       resizeHandleClassName={'design-slot_resize_horizontal'}
     >
-      {workbenchChildren}
+      {[editorWithBottomPanel('main-vertical-agentic'), workbenchViewSlot]}
     </SplitPanel>
   );
-
-  const layoutChildren = panelLayout === 'agentic' ? [aiChatSlot, workbench] : [workbench, aiChatSlot];
 
   return (
     <BoxPanel direction='top-to-bottom'>
       <SlotRenderer id='top' defaultSize={layout.top?.currentId ? layout.top?.size || 32 : 32} slot='top' />
       <SplitPanel
-        id={panelLayout === 'agentic' ? 'main-horizontal-ai-agentic' : 'main-horizontal-ai'}
+        id='main-horizontal-ai-agentic'
         flex={1}
         direction={'left-to-right'}
         resizeHandleClassName={'design-slot_resize_horizontal'}
-        initialResizeOnMount={panelLayout === 'agentic'}
       >
-        {layoutChildren}
+        {[aiChatSlot, workbench]}
       </SplitPanel>
       <SlotRenderer id='statusbar' defaultSize={24} slot='statusBar' />
     </BoxPanel>
   );
 };
-
-export const ClassicShell = () => <AIWorkbenchShell panelLayout='classic' />;
-
-export const AgenticShell = () => <AIWorkbenchShell panelLayout='agentic' />;
 
 export const AIShellRoot = () => {
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);

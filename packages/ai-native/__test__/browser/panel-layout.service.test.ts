@@ -4,7 +4,6 @@ import {
   AIPanelLayoutService,
   AI_AGENTIC_CHAT_DEFAULT_SIZE,
   AI_AGENTIC_LAYOUT_STORAGE_KEY,
-  AI_CLASSIC_CHAT_DEFAULT_SIZE,
   AI_PANEL_LAYOUT_CONTEXT,
   getPanelLayoutStorageKey,
   normalizePanelLayoutMode,
@@ -52,6 +51,7 @@ describe('AIPanelLayoutService', () => {
     const layoutService = {
       setLayoutStateKey: jest.fn(),
       toggleSlot: jest.fn(),
+      isVisible: jest.fn(() => false),
     };
     const service = new AIPanelLayoutService();
 
@@ -151,6 +151,30 @@ describe('AIPanelLayoutService', () => {
     expect(layoutService.toggleSlot).not.toHaveBeenCalled();
   });
 
+  it('should keep the main classic AI chat command size behavior', () => {
+    const { layoutService, service } = createService();
+
+    service.showAIChatView('classic');
+
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, undefined);
+  });
+
+  it('should keep the main classic AI chat toggle size behavior', () => {
+    const { layoutService, service } = createService();
+
+    service.toggleAIChatView('classic');
+
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, undefined);
+  });
+
+  it('should use the agentic AI chat default size in agentic mode', () => {
+    const { layoutService, service } = createService();
+
+    service.showAIChatView('agentic');
+
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_AGENTIC_CHAT_DEFAULT_SIZE);
+  });
+
   it('should toggle both layout modes', async () => {
     const { layoutService, preferenceService, service } = createService({ inspectValue: { globalValue: 'agentic' } });
 
@@ -161,7 +185,7 @@ describe('AIPanelLayoutService', () => {
       'classic',
       PreferenceScope.User,
     );
-    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_CLASSIC_CHAT_DEFAULT_SIZE);
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, undefined);
   });
 
   it('should apply external preference changes to the active layout shell', () => {
@@ -174,6 +198,6 @@ describe('AIPanelLayoutService', () => {
 
     expect(contextKey.set).toHaveBeenCalledWith('classic');
     expect(layoutService.setLayoutStateKey).toHaveBeenCalledWith('layout', { saveCurrent: true });
-    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_CLASSIC_CHAT_DEFAULT_SIZE);
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, undefined);
   });
 });

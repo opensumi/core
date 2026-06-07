@@ -4,6 +4,7 @@ import React, { useCallback, useMemo } from 'react';
 import {
   ComponentRegistryInfo,
   SlotLocation,
+  fastdom,
   useAutorun,
   useContextMenus,
   useInjectable,
@@ -38,18 +39,96 @@ import { AI_CHAT_VIEW_ID } from '../../common';
 import styles from './layout.module.less';
 import { AIPanelLayoutService } from './panel-layout.service';
 
-const ChatTabbarRenderer: React.FC = () => (
-  <div style={{ width: 0, overflow: 'hidden' }}>
+const AGENTIC_VIEW_ACTIVITY_BAR_SIZE = 49;
+const AGENTIC_VIEW_DEFAULT_SIZE = 310;
+const AGENTIC_VIEW_MAX_SIZE = 480;
+
+const ChatTabbarRenderer: React.FC<{ disableAutoAdjust?: boolean }> = ({ disableAutoAdjust }) => (
+  <div style={disableAutoAdjust ? { width: 0, overflow: 'hidden' } : { width: 0 }}>
     <TabbarViewBase
       tabSize={0}
       MoreTabView={IconElipses}
       TabView={IconTabView}
       barSize={0}
       panelBorderSize={0}
-      disableAutoAdjust
+      {...(disableAutoAdjust ? { disableAutoAdjust: true } : {})}
     />
   </div>
 );
+
+function useFixedResizeSideHandle(enabled: boolean, targetIsLatter: boolean): ResizeHandle {
+  const resizeHandle = React.useContext(PanelContext);
+
+  return React.useMemo<ResizeHandle>(() => {
+    if (!enabled) {
+      return resizeHandle;
+    }
+
+    return {
+      ...resizeHandle,
+      setSize: (targetSize?: number) => resizeHandle.setSize(targetSize, targetIsLatter),
+      setRelativeSize: (prev: number, next: number) => resizeHandle.setRelativeSize(prev, next, targetIsLatter),
+      getSize: () => resizeHandle.getSize(targetIsLatter),
+      getRelativeSize: () => resizeHandle.getRelativeSize(targetIsLatter),
+      lockSize: (lock: boolean | undefined) => resizeHandle.lockSize(lock, targetIsLatter),
+      setMaxSize: (lock: boolean | undefined) => resizeHandle.setMaxSize(lock, targetIsLatter),
+    };
+  }, [enabled, resizeHandle, targetIsLatter]);
+}
+
+function getAgenticViewRestoreSize(tabbarService: TabbarService): number {
+  const cachedSize = tabbarService.prevSize;
+
+  if (typeof cachedSize === 'number' && Number.isFinite(cachedSize) && cachedSize > AGENTIC_VIEW_ACTIVITY_BAR_SIZE) {
+    return Math.min(cachedSize, AGENTIC_VIEW_MAX_SIZE);
+  }
+
+  return AGENTIC_VIEW_DEFAULT_SIZE;
+}
+
+function useRestoreAgenticViewSize(
+  tabbarService: TabbarService,
+  resizeHandle: ResizeHandle,
+  currentContainerId: string | undefined,
+) {
+  React.useEffect(() => {
+    if (!currentContainerId) {
+      return;
+    }
+
+    let disposed = false;
+    const frameDisposables: Array<{ dispose(): void }> = [];
+
+    const restoreIfCollapsed = () => {
+      if (disposed) {
+        return;
+      }
+
+      const frameDisposable = fastdom.measureAtNextFrame(() => {
+        if (disposed || !tabbarService.currentContainerId.get()) {
+          return;
+        }
+
+        const currentSize = resizeHandle.getSize();
+        if (!Number.isFinite(currentSize) || currentSize <= AGENTIC_VIEW_ACTIVITY_BAR_SIZE) {
+          resizeHandle.setSize(getAgenticViewRestoreSize(tabbarService));
+        }
+      });
+      frameDisposables.push(frameDisposable);
+    };
+
+    restoreIfCollapsed();
+
+    void tabbarService.viewReady.promise.then(() => {
+      restoreIfCollapsed();
+    });
+
+    return () => {
+      disposed = true;
+      frameDisposables.forEach((disposable) => disposable.dispose());
+    };
+  }, [currentContainerId, resizeHandle, tabbarService]);
+}
 
 export const AIChatTabRenderer = ({
   className,
@@ -60,15 +139,16 @@ export const AIChatTabRenderer = ({
 }) => {
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const isAgenticLayout = panelLayoutService.getLayoutMode() === 'agentic';
+  const agenticResizeHandle = useFixedResizeSideHandle(isAgenticLayout, false);
 
-  return (
+  const renderer = (
     <TabRendererBase
       side={AI_CHAT_VIEW_ID}
-      direction={isAgenticLayout ? EDirection.LeftToRight : EDirection.RightToLeft}
+      direction={EDirection.LeftToRight}
       id={styles.ai_chat_panel}
-      className={cls(className, `${AI_CHAT_VIEW_ID}-slot`, !isAgenticLayout && 'design_right_slot')}
+      className={cls(className, `${AI_CHAT_VIEW_ID}-slot`)}
       components={components}
-      TabbarView={() => <ChatTabbarRenderer />}
+      TabbarView={() => <ChatTabbarRenderer disableAutoAdjust={isAgenticLayout} />}
       TabpanelView={() => (
         <BaseTabPanelView
           PanelView={ContainerView}
@@ -78,6 +158,12 @@ export const AIChatTabRenderer = ({
         />
       )}
     />
+  );
+
+  return isAgenticLayout ? (
+    <PanelContext.Provider value={agenticResizeHandle}>{renderer}</PanelContext.Provider>
+  ) : (
+    renderer
   );
 };
 
@@ -90,8 +176,9 @@ export const AIChatTabRendererWithTab = ({
 }) => {
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const isAgenticLayout = panelLayoutService.getLayoutMode() === 'agentic';
+  const agenticResizeHandle = useFixedResizeSideHandle(isAgenticLayout, false);
 
-  return (
+  const renderer = (
     <TabRendererBase
       side={AI_CHAT_VIEW_ID}
       direction={isAgenticLayout ? EDirection.LeftToRight : EDirection.RightToLeft}
@@ -109,6 +196,12 @@ export const AIChatTabRendererWithTab = ({
       )}
     />
   );
+
+  return isAgenticLayout ? (
+    <PanelContext.Provider value={agenticResizeHandle}>{renderer}</PanelContext.Provider>
+  ) : (
+    renderer
+  );
 };
 
 export const AILeftTabRenderer = ({
@@ -120,23 +213,26 @@ export const AILeftTabRenderer = ({
 }) => {
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const isAgenticLayout = panelLayoutService.getLayoutMode() === 'agentic';
-  const resizeHandle = React.useContext(PanelContext);
-  const agenticResizeHandle = React.useMemo<ResizeHandle>(
-    () => ({
-      ...resizeHandle,
-      setSize: (targetSize?: number) => resizeHandle.setSize(targetSize, true),
-      setRelativeSize: (prev: number, next: number) => resizeHandle.setRelativeSize(prev, next, true),
-      getSize: () => resizeHandle.getSize(true),
-      getRelativeSize: () => resizeHandle.getRelativeSize(true),
-      lockSize: (lock: boolean | undefined) => resizeHandle.lockSize(lock, true),
-      setMaxSize: (lock: boolean | undefined) => resizeHandle.setMaxSize(lock, true),
-    }),
-    [resizeHandle],
-  );
 
   if (!isAgenticLayout) {
     return <DesignLeftTabRenderer className={className} components={components} tabbarView={AILeftTabbarRenderer} />;
   }
+
+  return <AgenticLeftTabRenderer className={className} components={components} />;
+};
+
+const AgenticLeftTabRenderer = ({
+  className,
+  components,
+}: {
+  className: string;
+  components: ComponentRegistryInfo[];
+}) => {
+  const viewTabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.view);
+  const currentContainerId = useAutorun(viewTabbarService.currentContainerId);
+  const agenticResizeHandle = useFixedResizeSideHandle(true, true);
+
+  useRestoreAgenticViewSize(viewTabbarService, agenticResizeHandle, currentContainerId);
 
   return (
     <PanelContext.Provider value={agenticResizeHandle}>

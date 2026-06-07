@@ -46,43 +46,6 @@ export interface IResizeHandleDelegate {
   getAbsoluteSize(isLatter?: boolean): number;
 }
 
-function getResizeLimit(element: HTMLElement | null | undefined, key: 'minResize' | 'maxResize'): number {
-  const value = element?.dataset?.[key];
-  return value ? Number(value) : 0;
-}
-
-function clampAbsoluteSize(
-  size: number,
-  targetElement: HTMLElement | null | undefined,
-  siblingElement: HTMLElement | null | undefined,
-  totalSize: number,
-) {
-  if (size === 0) {
-    return 0;
-  }
-
-  let nextSize = Math.max(0, Math.min(size, totalSize));
-  const targetMinResize = getResizeLimit(targetElement, 'minResize');
-  const targetMaxResize = getResizeLimit(targetElement, 'maxResize');
-  const siblingMinResize = getResizeLimit(siblingElement, 'minResize');
-  const siblingMaxResize = getResizeLimit(siblingElement, 'maxResize');
-
-  if (targetMinResize) {
-    nextSize = Math.max(nextSize, targetMinResize);
-  }
-  if (targetMaxResize) {
-    nextSize = Math.min(nextSize, targetMaxResize);
-  }
-  if (siblingMinResize) {
-    nextSize = Math.min(nextSize, Math.max(0, totalSize - siblingMinResize));
-  }
-  if (siblingMaxResize) {
-    nextSize = Math.max(nextSize, Math.max(0, totalSize - siblingMaxResize));
-  }
-
-  return Math.max(0, Math.min(nextSize, totalSize));
-}
-
 export function preventWebviewCatchMouseEvents() {
   const iframes = document.getElementsByTagName('iframe');
   const webviews = document.getElementsByTagName('webview');
@@ -198,13 +161,13 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
         if (isPreFlexMode) {
           if (prevMaxResize && prevMaxResize <= prevWidth) {
             targetFixedWidth = prevMaxResize;
-          } else if (nextMaxResize && nextMaxResize <= nextWidth) {
+          } else if (nextMaxResize && nextMaxResize > nextWidth) {
             targetFixedWidth = prevWidth + nextWidth - nextMaxResize;
           }
         } else {
           if (nextMaxResize && nextMaxResize <= nextWidth) {
             targetFixedWidth = nextMaxResize;
-          } else if (prevMaxResize && prevMaxResize <= prevWidth) {
+          } else if (prevMaxResize && prevMaxResize > nextWidth) {
             targetFixedWidth = prevWidth + nextWidth - prevMaxResize;
           }
         }
@@ -218,15 +181,6 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     flexElement.style.width = '0';
     flexElement.style.flexGrow = '1';
     flexElement.style.flexShrink = '0';
-
-    fixedElement.classList.toggle('kt_display_none', targetFixedWidth === 0);
-    flexElement.classList.toggle('kt_display_none', prevWidth + nextWidth - targetFixedWidth === 0);
-
-    if (isPreFlexMode) {
-      handleZeroSize(targetFixedWidth, prevWidth + nextWidth - targetFixedWidth);
-    } else {
-      handleZeroSize(prevWidth + nextWidth - targetFixedWidth, targetFixedWidth);
-    }
 
     if (props.onResize && nextEle && prevEle) {
       props.onResize(prevEle, nextEle);
@@ -305,63 +259,28 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       const currentNext = nextElement.current!.clientWidth;
 
       const totalSize = currentPrev + currentNext;
-      const effectiveTotalSize = totalSize || ref.current?.parentElement?.offsetWidth || 0;
-      if (!effectiveTotalSize) {
-        return;
-      }
-
       if (props.flexMode) {
-        const isFixedElementLatter = props.flexMode === ResizeFlexMode.Next;
-        const fixedSize = clampAbsoluteSize(
-          size,
-          isFixedElementLatter ? nextElement.current : prevElement.current,
-          isFixedElementLatter ? prevElement.current : nextElement.current,
-          effectiveTotalSize,
-        );
-        const prevWidth = props.flexMode === ResizeFlexMode.Prev ? fixedSize : effectiveTotalSize - fixedSize;
-        const nextWidth = props.flexMode === ResizeFlexMode.Next ? fixedSize : effectiveTotalSize - fixedSize;
-        flexModeSetSize(prevWidth, nextWidth, fixedSize === 0);
-        return;
-      } else if (!totalSize) {
-        const targetSize = clampAbsoluteSize(
-          size,
-          isLatter ? nextElement.current : prevElement.current,
-          isLatter ? prevElement.current : nextElement.current,
-          effectiveTotalSize,
-        );
-        if (isLatter) {
-          nextElement.current!.style.width = (targetSize / effectiveTotalSize) * 100 + '%';
-          prevElement.current!.style.width = (1 - targetSize / effectiveTotalSize) * 100 + '%';
-        } else {
-          prevElement.current!.style.width = (targetSize / effectiveTotalSize) * 100 + '%';
-          nextElement.current!.style.width = (1 - targetSize / effectiveTotalSize) * 100 + '%';
-        }
-        size = targetSize;
+        const prevWidth = props.flexMode === ResizeFlexMode.Prev ? size : totalSize - size;
+        const nextWidth = props.flexMode === ResizeFlexMode.Next ? size : totalSize - size;
+        flexModeSetSize(prevWidth, nextWidth, true);
       } else {
         const nextTotolWidth = +nextElement.current!.style.width!.replace('%', '');
         const prevTotalWidth = +prevElement.current!.style.width!.replace('%', '');
 
         const currentTotalWidth = nextTotolWidth + prevTotalWidth;
-        const targetSize = clampAbsoluteSize(
-          size,
-          isLatter ? nextElement.current : prevElement.current,
-          isLatter ? prevElement.current : nextElement.current,
-          effectiveTotalSize,
-        );
 
         if (isLatter) {
-          nextElement.current!.style.width = currentTotalWidth * (targetSize / totalSize) + '%';
-          prevElement.current!.style.width = currentTotalWidth * (1 - targetSize / totalSize) + '%';
+          nextElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
+          prevElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
         } else {
-          prevElement.current!.style.width = currentTotalWidth * (targetSize / totalSize) + '%';
-          nextElement.current!.style.width = currentTotalWidth * (1 - targetSize / totalSize) + '%';
+          prevElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
+          nextElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
         }
-        size = targetSize;
       }
       if (isLatter) {
-        handleZeroSize(effectiveTotalSize - size, size);
+        handleZeroSize(totalSize - size, size);
       } else {
-        handleZeroSize(size, effectiveTotalSize - size);
+        handleZeroSize(size, totalSize - size);
       }
       if (props.onResize) {
         props.onResize(prevElement.current!, nextElement.current!);
@@ -563,15 +482,6 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     flexElement.style.flexGrow = '1';
     flexElement.style.flexShrink = '0';
 
-    fixedElement.classList.toggle('kt_display_none', targetFixedHeight === 0);
-    flexElement.classList.toggle('kt_display_none', prevHeight + nextHeight - targetFixedHeight === 0);
-
-    if (props.flexMode === ResizeFlexMode.Prev) {
-      handleZeroSize(targetFixedHeight, prevHeight + nextHeight - targetFixedHeight);
-    } else {
-      handleZeroSize(prevHeight + nextHeight - targetFixedHeight, targetFixedHeight);
-    }
-
     if (props.onResize && nextEle && prevEle) {
       props.onResize(prevEle, nextEle);
     }
@@ -664,71 +574,31 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     const currentPrev = prevElement.current.clientHeight;
     const currentNext = nextElement.current.clientHeight;
     const totalSize = currentPrev + currentNext;
-    const effectiveTotalSize = totalSize || ref.current?.parentElement?.offsetHeight || 0;
-    if (!effectiveTotalSize) {
-      return;
-    }
-
     if (props.flexMode) {
-      const isFixedElementLatter = props.flexMode === ResizeFlexMode.Next;
-      const fixedSize = clampAbsoluteSize(
-        size,
-        isFixedElementLatter ? nextElement.current : prevElement.current,
-        isFixedElementLatter ? prevElement.current : nextElement.current,
-        effectiveTotalSize,
-      );
-      const prevHeight = props.flexMode === ResizeFlexMode.Prev ? fixedSize : effectiveTotalSize - fixedSize;
-      const nextHeight = props.flexMode === ResizeFlexMode.Next ? fixedSize : effectiveTotalSize - fixedSize;
-      flexModeSetSize(prevHeight, nextHeight, fixedSize === 0);
-      return;
-    } else if (!totalSize) {
-      const targetSize = clampAbsoluteSize(
-        size,
-        isLatter ? nextElement.current : prevElement.current,
-        isLatter ? prevElement.current : nextElement.current,
-        effectiveTotalSize,
-      );
-      if (isLatter) {
-        if (keep) {
-          prevElement.current!.style.height = (1 - targetSize / effectiveTotalSize) * 100 + '%';
-        }
-        const targetPercent = (targetSize / effectiveTotalSize) * 100;
-        nextElement.current!.style.height = targetPercent === 0 ? '0px' : targetPercent + '%';
-      } else {
-        prevElement.current!.style.height = (targetSize / effectiveTotalSize) * 100 + '%';
-        if (keep) {
-          nextElement.current!.style.height = (1 - targetSize / effectiveTotalSize) * 100 + '%';
-        }
-      }
-      size = targetSize;
+      const prevHeight = props.flexMode === ResizeFlexMode.Prev ? size : totalSize - size;
+      const nextHeight = props.flexMode === ResizeFlexMode.Next ? size : totalSize - size;
+      flexModeSetSize(prevHeight, nextHeight, true);
     } else {
-      const nextH = +nextElement.current!.style.height!.replace(/%|px/, '');
-      const prevH = +prevElement.current!.style.height!.replace(/%|px/, '');
+      const nextH = +nextElement.current!.style.height!.replace(/\%|px/, '');
+      const prevH = +prevElement.current!.style.height!.replace(/\%|px/, '');
       const currentTotalHeight = nextH + prevH;
-      const targetSize = clampAbsoluteSize(
-        size,
-        isLatter ? nextElement.current : prevElement.current,
-        isLatter ? prevElement.current : nextElement.current,
-        effectiveTotalSize,
-      );
       if (isLatter) {
         if (keep) {
-          prevElement.current!.style.height = currentTotalHeight * (1 - targetSize / totalSize) + '%';
+          prevElement.current!.style.height = currentTotalHeight * (1 - size / totalSize) + '%';
         }
-        const targetPercent = currentTotalHeight * (targetSize / totalSize);
-        nextElement.current!.style.height = targetPercent === 0 ? targetPercent + 'px' : targetPercent + '%';
+        const targetSize = currentTotalHeight * (size / totalSize);
+        nextElement.current!.style.height = targetSize === 0 ? targetSize + 'px' : targetSize + '%';
       } else {
-        prevElement.current!.style.height = currentTotalHeight * (targetSize / totalSize) + '%';
+        prevElement.current!.style.height = currentTotalHeight * (size / totalSize) + '%';
         if (keep) {
-          nextElement.current!.style.height = currentTotalHeight * (1 - targetSize / totalSize) + '%';
+          nextElement.current!.style.height = currentTotalHeight * (1 - size / totalSize) + '%';
         }
       }
-      size = targetSize;
     }
     if (isLatter) {
-      handleZeroSize(effectiveTotalSize - size, size);
+      handleZeroSize(totalSize - size, size);
     } else {
-      handleZeroSize(size, effectiveTotalSize - size);
+      handleZeroSize(size, totalSize - size);
     }
     if (props.onResize) {
       props.onResize(prevElement.current!, nextElement.current!);
@@ -811,7 +681,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     });
   };
 
-  const onMouseUp = () => {
+  const onMouseUp = (e) => {
     resizing.current = false;
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);

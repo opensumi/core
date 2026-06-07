@@ -16,7 +16,6 @@ import {
   View,
   ViewContainerOptions,
   WithEventBus,
-  fastdom,
   slotRendererRegistry,
 } from '@opensumi/ide-core-browser';
 import { fixLayout } from '@opensumi/ide-core-browser/lib/components';
@@ -463,7 +462,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       this.debug.error(`Unable to switch panels because no TabbarService corresponding to \`${location}\` was found.`);
       return;
     }
-    const wasVisible = !!tabbarService.currentContainerId.get();
     if (show === true) {
       // 不允许通过该api展示drop面板
       tabbarService.updateCurrentContainerId(this.findNonDropContainerId(tabbarService));
@@ -474,20 +472,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         tabbarService.currentContainerId.get() ? '' : this.findNonDropContainerId(tabbarService),
       );
     }
-    if (tabbarService.currentContainerId.get()) {
-      if (size !== undefined) {
-        tabbarService.prevSize = size;
-        this.storeState(tabbarService, tabbarService.currentContainerId.get());
-      }
-      if (size !== undefined || !wasVisible) {
-        const restoreSize = () => {
-          if (tabbarService.currentContainerId.get()) {
-            tabbarService.resizeHandle?.setSize(size);
-          }
-        };
-        restoreSize();
-        fastdom.measureAtNextFrame(restoreSize);
-      }
+    if (tabbarService.currentContainerId.get() && size) {
+      tabbarService.resizeHandle?.setSize(size);
     }
   }
 

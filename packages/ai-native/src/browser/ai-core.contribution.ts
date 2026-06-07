@@ -1046,7 +1046,7 @@ export class AINativeBrowserContribution
 
   registerRenderer(registry: SlotRendererRegistry): void {
     const tabbarConfig: TabbarBehaviorConfig = {
-      isLatter: () => this.panelLayoutService.getLayoutMode() !== 'agentic',
+      isLatter: true,
     };
     if (this.designLayoutConfig.supportExternalChatPanel) {
       registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRendererWithTab, tabbarConfig);

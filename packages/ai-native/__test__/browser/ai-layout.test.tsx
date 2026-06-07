@@ -140,7 +140,7 @@ jest.mock('@opensumi/ide-core-browser/lib/layout/constants', () => ({
 jest.mock('../../src/browser/layout/panel-layout.service', () => ({
   AIPanelLayoutService: class AIPanelLayoutService {},
   getPanelLayoutStorageKey: (mode: 'classic' | 'agentic') => (mode === 'agentic' ? 'layout.ai.agentic' : 'layout'),
-  getAIChatDefaultSize: (mode: 'classic' | 'agentic') => (mode === 'agentic' ? 840 : 580),
+  getAIChatDefaultSize: (mode: 'classic' | 'agentic') => (mode === 'agentic' ? 840 : 360),
 }));
 
 describe('AILayout BDD', () => {
@@ -260,7 +260,7 @@ describe('AILayout BDD', () => {
     });
 
     expect(getSplitChildProps('main-horizontal-ai')).toEqual([
-      { id: 'main-horizontal', flex: null, flexGrow: '1', minResize: '300', minSize: null, maxResize: null },
+      { id: 'main-horizontal', flex: '1', flexGrow: '1', minResize: null, minSize: null, maxResize: null },
       { id: 'AI-Chat', flex: null, flexGrow: null, minResize: '280', minSize: '0', maxResize: '1080' },
     ]);
   });
@@ -272,10 +272,10 @@ describe('AILayout BDD', () => {
       root.render(<AILayout />);
     });
 
-    expect(getSlotProps('view')).toEqual({ defaultSize: '49', maxResize: '480', minResize: '280', minSize: '49' });
+    expect(getSlotProps('view')).toEqual({ defaultSize: '49', maxResize: null, minResize: '280', minSize: '49' });
     expect(getSlotProps('extendView')).toEqual({
       defaultSize: '49',
-      maxResize: '480',
+      maxResize: null,
       minResize: '280',
       minSize: '49',
     });
@@ -297,7 +297,7 @@ describe('AILayout BDD', () => {
 
     expect(getSlots()).toEqual(['top', 'AI-Chat', 'main', 'panel', 'view', 'statusBar']);
     expect(container.querySelector('[data-split="main-horizontal-ai-agentic"]')).toBeTruthy();
-    expect(getSplitProps('main-horizontal-ai-agentic')).toEqual({ initialResizeOnMount: 'true' });
+    expect(getSplitProps('main-horizontal-ai-agentic')).toEqual({ initialResizeOnMount: 'false' });
     expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat', 'main-horizontal-agentic']);
     expect(getSplitChildIds('main-horizontal-agentic')).toEqual(['main-vertical-agentic', 'view']);
   });

@@ -4,15 +4,12 @@ import { Select } from '@opensumi/ide-components';
 import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { AILogoAvatar } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { PanelLayoutMode } from '@opensumi/ide-core-common';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
-import { AI_CHAT_VIEW_ID } from '../../../../common';
-import { AIPanelLayoutService, getAIChatDefaultSize } from '../../panel-layout.service';
+import { AIPanelLayoutService } from '../../panel-layout.service';
 
 import styles from './avatar.module.less';
 
 export const AIChatLogoAvatar = () => {
-  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
 
   const [layoutMode, setLayoutMode] = React.useState<PanelLayoutMode>(() => panelLayoutService.getLayoutMode());
@@ -26,8 +23,8 @@ export const AIChatLogoAvatar = () => {
   }, [panelLayoutService]);
 
   const handleChatVisible = React.useCallback(() => {
-    layoutService.toggleSlot(AI_CHAT_VIEW_ID, undefined, getAIChatDefaultSize(layoutMode));
-  }, [layoutMode, layoutService]);
+    panelLayoutService.toggleAIChatView(layoutMode);
+  }, [layoutMode, panelLayoutService]);
 
   const handleLayoutModeChange = React.useCallback(
     (value: PanelLayoutMode) => {

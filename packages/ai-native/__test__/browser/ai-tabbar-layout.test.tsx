@@ -8,15 +8,28 @@ let mockCapturedTabRendererProps: any;
 let mockCapturedLeftTabbarProps: any;
 let mockCapturedTabbarViewBaseProps: any;
 let mockCapturedResizeHandle: any;
+let mockViewCurrentContainerId = 'view-current';
+let mockExtendViewCurrentContainerId = 'extend-view-current';
+let mockViewReadyPromise: Promise<void> = Promise.resolve();
 
 const mockMainLayoutServiceToken = Symbol('IMainLayoutService');
 const mockTabbarServiceFactoryToken = Symbol('TabbarServiceFactory');
 const mockViewTabbarService = {
-  currentContainerId: 'view-current',
+  currentContainerId: {
+    get: jest.fn(() => mockViewCurrentContainerId),
+  },
   visibleContainers: [] as any[],
+  prevSize: undefined as number | undefined,
+  viewReady: {
+    get promise() {
+      return mockViewReadyPromise;
+    },
+  },
 };
 const mockExtendViewTabbarService = {
-  currentContainerId: 'extend-view-current',
+  currentContainerId: {
+    get: jest.fn(() => mockExtendViewCurrentContainerId),
+  },
   visibleContainers: [] as any[],
 };
 const mockTabbarServices = {
@@ -30,7 +43,13 @@ jest.mock('@opensumi/ide-core-browser', () => ({
     view: 'view',
     extendView: 'extendView',
   },
-  useAutorun: (value: any) => value,
+  fastdom: {
+    measureAtNextFrame: (callback: () => void) => {
+      callback();
+      return { dispose: jest.fn() };
+    },
+  },
+  useAutorun: (value: any) => (typeof value?.get === 'function' ? value.get() : value),
   useContextMenus: () => [[]],
   useInjectable: (token: any) => {
     if (token?.name === 'AIPanelLayoutService') {
@@ -160,9 +179,11 @@ describe('AI tabbar layout BDD', () => {
     mockCapturedTabbarViewBaseProps = undefined;
     mockCapturedResizeHandle = undefined;
     mockTabbarServiceFactory.mockClear();
-    mockViewTabbarService.currentContainerId = 'view-current';
+    mockViewCurrentContainerId = 'view-current';
+    mockViewReadyPromise = Promise.resolve();
     mockViewTabbarService.visibleContainers = [];
-    mockExtendViewTabbarService.currentContainerId = 'extend-view-current';
+    mockViewTabbarService.prevSize = undefined;
+    mockExtendViewCurrentContainerId = 'extend-view-current';
     mockExtendViewTabbarService.visibleContainers = [];
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -205,8 +226,8 @@ describe('AI tabbar layout BDD', () => {
     expect(mockCapturedTabRendererProps.className).toContain('agentic_view_slot');
     expect(container.querySelector('.agentic_view_tab_bar')).toBeTruthy();
     expect(mockCapturedLeftTabbarProps).toBeTruthy();
+    expect(mockTabbarServiceFactory).toHaveBeenCalledWith('view');
     expect(mockTabbarServiceFactory).toHaveBeenCalledWith('extendView');
-    expect(mockTabbarServiceFactory).not.toHaveBeenCalledWith('view');
   });
 
   it('Given agentic layout, when rendering merged extra containers, then it uses extendView containers only', async () => {
@@ -290,7 +311,145 @@ describe('AI tabbar layout BDD', () => {
     expect(parentResizeHandle.setMaxSize).toHaveBeenCalledWith(true, true);
   });
 
-  it('Given the hidden AI chat tabbar, when it renders, then it does not render overflow tabs', async () => {
+  it('Given agentic layout has an active Explorer at activity bar width, when view is ready, then it restores cached width', async () => {
+    panelLayoutMode = 'agentic';
+    mockViewCurrentContainerId = 'workbench.explorer.fileView';
+    mockViewTabbarService.prevSize = 384;
+    const { PanelContext } = await import('@opensumi/ide-core-browser/lib/components');
+    const { AILeftTabRenderer } = await import('../../src/browser/layout/tabbar.view');
+    const parentResizeHandle = {
+      setSize: jest.fn(),
+      setRelativeSize: jest.fn(),
+      getSize: jest.fn(() => 49),
+      getRelativeSize: jest.fn(() => [951, 49]),
+      lockSize: jest.fn(),
+      setMaxSize: jest.fn(),
+      hidePanel: jest.fn(),
+    };
+
+    await act(async () => {
+      root.render(
+        <PanelContext.Provider value={parentResizeHandle}>
+          <AILeftTabRenderer className='slot-class' components={[]} />
+        </PanelContext.Provider>,
+      );
+      await Promise.resolve();
+    });
+
+    expect(parentResizeHandle.getSize).toHaveBeenCalledWith(true);
+    expect(parentResizeHandle.setSize).toHaveBeenCalledWith(384, true);
+  });
+
+  it('Given agentic layout has an active Explorer without cached width, when view is ready, then it restores the default usable width', async () => {
+    panelLayoutMode = 'agentic';
+    mockViewCurrentContainerId = 'workbench.explorer.fileView';
+    const { PanelContext } = await import('@opensumi/ide-core-browser/lib/components');
+    const { AILeftTabRenderer } = await import('../../src/browser/layout/tabbar.view');
+    const parentResizeHandle = {
+      setSize: jest.fn(),
+      setRelativeSize: jest.fn(),
+      getSize: jest.fn(() => 49),
+      getRelativeSize: jest.fn(() => [951, 49]),
+      lockSize: jest.fn(),
+      setMaxSize: jest.fn(),
+      hidePanel: jest.fn(),
+    };
+
+    await act(async () => {
+      root.render(
+        <PanelContext.Provider value={parentResizeHandle}>
+          <AILeftTabRenderer className='slot-class' components={[]} />
+        </PanelContext.Provider>,
+      );
+      await Promise.resolve();
+    });
+
+    expect(parentResizeHandle.setSize).toHaveBeenCalledWith(310, true);
+  });
+
+  it('Given agentic layout has an active Explorer before view is ready, when it is collapsed, then it restores immediately', async () => {
+    panelLayoutMode = 'agentic';
+    mockViewCurrentContainerId = 'workbench.explorer.fileView';
+    mockViewReadyPromise = new Promise(() => {});
+    const { PanelContext } = await import('@opensumi/ide-core-browser/lib/components');
+    const { AILeftTabRenderer } = await import('../../src/browser/layout/tabbar.view');
+    const parentResizeHandle = {
+      setSize: jest.fn(),
+      setRelativeSize: jest.fn(),
+      getSize: jest.fn(() => 49),
+      getRelativeSize: jest.fn(() => [951, 49]),
+      lockSize: jest.fn(),
+      setMaxSize: jest.fn(),
+      hidePanel: jest.fn(),
+    };
+
+    await act(async () => {
+      root.render(
+        <PanelContext.Provider value={parentResizeHandle}>
+          <AILeftTabRenderer className='slot-class' components={[]} />
+        </PanelContext.Provider>,
+      );
+      await Promise.resolve();
+    });
+
+    expect(parentResizeHandle.setSize).toHaveBeenCalledWith(310, true);
+  });
+
+  it('Given classic layout, when the hidden AI chat renderer renders, then it keeps the main branch direction', async () => {
+    const { AIChatTabRenderer } = await import('../../src/browser/layout/tabbar.view');
+
+    act(() => {
+      root.render(<AIChatTabRenderer className='slot-class' components={[]} />);
+    });
+
+    expect(mockCapturedTabRendererProps.direction).toBe('left-to-right');
+    expect(mockCapturedTabRendererProps.className).not.toContain('design_right_slot');
+    expect(mockCapturedTabbarViewBaseProps.disableAutoAdjust).toBeUndefined();
+  });
+
+  it('Given classic layout, when the tabbed AI chat renderer renders, then it keeps the main branch right-side direction', async () => {
+    const { AIChatTabRendererWithTab } = await import('../../src/browser/layout/tabbar.view');
+
+    act(() => {
+      root.render(<AIChatTabRendererWithTab className='slot-class' components={[]} />);
+    });
+
+    expect(mockCapturedTabRendererProps.direction).toBe('right-to-left');
+    expect(mockCapturedTabRendererProps.className).toContain('design_right_slot');
+  });
+
+  it('Given agentic layout, when AI chat restores size, then it uses the first split child resize side', async () => {
+    panelLayoutMode = 'agentic';
+    const { PanelContext } = await import('@opensumi/ide-core-browser/lib/components');
+    const { AIChatTabRenderer } = await import('../../src/browser/layout/tabbar.view');
+    const parentResizeHandle = {
+      setSize: jest.fn(),
+      setRelativeSize: jest.fn(),
+      getSize: jest.fn(() => 840),
+      getRelativeSize: jest.fn(() => [840, 1000]),
+      lockSize: jest.fn(),
+      setMaxSize: jest.fn(),
+      hidePanel: jest.fn(),
+    };
+
+    act(() => {
+      root.render(
+        <PanelContext.Provider value={parentResizeHandle}>
+          <AIChatTabRenderer className='slot-class' components={[]} />
+        </PanelContext.Provider>,
+      );
+    });
+
+    mockCapturedResizeHandle.setSize(840, true);
+    mockCapturedResizeHandle.getSize(true);
+
+    expect(mockCapturedTabRendererProps.direction).toBe('left-to-right');
+    expect(parentResizeHandle.setSize).toHaveBeenCalledWith(840, false);
+    expect(parentResizeHandle.getSize).toHaveBeenCalledWith(false);
+  });
+
+  it('Given agentic layout, when the hidden AI chat tabbar renders, then it does not render overflow tabs', async () => {
+    panelLayoutMode = 'agentic';
     const { AIChatTabRenderer } = await import('../../src/browser/layout/tabbar.view');
 
     act(() => {

@@ -31,7 +31,7 @@ export class TabbarBehaviorHandler {
    */
   getIsLatter(): boolean {
     if (this.config?.isLatter !== undefined) {
-      return typeof this.config.isLatter === 'function' ? this.config.isLatter() : this.config.isLatter;
+      return this.config.isLatter;
     }
     // 默认配置：扩展视图和底部面板为后置位置
     return this.location === 'extendView' || this.location === 'panel';
@@ -42,14 +42,15 @@ export class TabbarBehaviorHandler {
    */
   wrapResizeHandle(resizeHandle: ResizeHandle): ITabbarResizeOptions {
     const { setSize, setRelativeSize, getSize, getRelativeSize, lockSize, setMaxSize, hidePanel } = resizeHandle;
+    const isLatter = this.getIsLatter();
 
     return {
-      setSize: (size) => setSize(size, this.getIsLatter()),
-      setRelativeSize: (prev: number, next: number) => setRelativeSize(prev, next, this.getIsLatter()),
-      getSize: () => getSize(this.getIsLatter()),
-      getRelativeSize: () => getRelativeSize(this.getIsLatter()),
-      setMaxSize: (lock: boolean | undefined) => setMaxSize(lock, this.getIsLatter()),
-      lockSize: (lock: boolean | undefined) => lockSize(lock, this.getIsLatter()),
+      setSize: (size) => setSize(size, isLatter),
+      setRelativeSize: (prev: number, next: number) => setRelativeSize(prev, next, isLatter),
+      getSize: () => getSize(isLatter),
+      getRelativeSize: () => getRelativeSize(isLatter),
+      setMaxSize: (lock: boolean | undefined) => setMaxSize(lock, isLatter),
+      lockSize: (lock: boolean | undefined) => lockSize(lock, isLatter),
       hidePanel: (show) => hidePanel(show),
     };
   }

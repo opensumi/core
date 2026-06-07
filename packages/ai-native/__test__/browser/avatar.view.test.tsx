@@ -3,9 +3,8 @@ import { Root, createRoot } from 'react-dom/client';
 import { Simulate, act } from 'react-dom/test-utils';
 
 import { AIChatLogoAvatar } from '../../src/browser/layout/view/avatar/avatar.view';
-import { AI_CHAT_VIEW_ID } from '../../src/common';
 
-const mockToggleSlot = jest.fn();
+const mockToggleAIChatView = jest.fn();
 const mockSetLayoutMode = jest.fn();
 const mockGetLayoutMode = jest.fn(() => 'agentic');
 const layoutChangeListeners: Array<(mode: string) => void> = [];
@@ -21,22 +20,14 @@ const mockOnDidChangePanelLayout = jest.fn((listener: (mode: string) => void) =>
   };
 });
 
-jest.mock('@opensumi/ide-main-layout', () => ({
-  IMainLayoutService: 'IMainLayoutService',
-}));
-
 jest.mock('@opensumi/ide-core-browser', () => ({
   localize: (_key: string, defaultValue?: string) => defaultValue || _key,
   useInjectable: (token: any) => {
-    if (token === 'IMainLayoutService') {
-      return {
-        toggleSlot: mockToggleSlot,
-      };
-    }
     if (token?.name === 'AIPanelLayoutService') {
       return {
         getLayoutMode: mockGetLayoutMode,
         setLayoutMode: mockSetLayoutMode,
+        toggleAIChatView: mockToggleAIChatView,
         onDidChangePanelLayout: mockOnDidChangePanelLayout,
       };
     }
@@ -75,7 +66,7 @@ jest.mock('@opensumi/ide-core-browser/lib/components/ai-native', () => {
 
 jest.mock('../../src/browser/layout/panel-layout.service', () => ({
   AIPanelLayoutService: class AIPanelLayoutService {},
-  getAIChatDefaultSize: (mode: string) => (mode === 'agentic' ? 840 : 580),
+  getAIChatDefaultSize: (mode: string) => (mode === 'agentic' ? 840 : 360),
 }));
 
 jest.mock('../../src/browser/layout/view/avatar/avatar.module.less', () => ({
@@ -131,11 +122,11 @@ describe('AIChatLogoAvatar', () => {
       Simulate.click(aiLogoAvatar!.parentElement as Element);
     });
 
-    expect(mockToggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, 840);
+    expect(mockToggleAIChatView).toHaveBeenCalledWith('agentic');
     expect(mockSetLayoutMode).not.toHaveBeenCalled();
   });
 
-  it('opens the AI chat with the classic default size in classic layout', () => {
+  it('toggles the AI chat with the classic layout mode', () => {
     mockGetLayoutMode.mockReturnValue('classic');
     renderAvatar();
 
@@ -146,7 +137,7 @@ describe('AIChatLogoAvatar', () => {
       Simulate.click(aiLogoAvatar!.parentElement as Element);
     });
 
-    expect(mockToggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, 580);
+    expect(mockToggleAIChatView).toHaveBeenCalledWith('classic');
   });
 
   it('calls setLayoutMode when the select value changes', () => {
@@ -161,7 +152,7 @@ describe('AIChatLogoAvatar', () => {
     });
 
     expect(mockSetLayoutMode).toHaveBeenCalledWith('classic');
-    expect(mockToggleSlot).not.toHaveBeenCalled();
+    expect(mockToggleAIChatView).not.toHaveBeenCalled();
   });
 
   it('reflects layout mode changes emitted by the service', () => {
