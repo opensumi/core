@@ -30,7 +30,7 @@ import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import { hasAcpChatSendPayload } from '../../components/acp/chat-input-validation';
 import styles from '../../components/components.module.less';
-import { MCPConfigCommands } from '../../mcp/config/mcp-config.commands';
+import { MCPConfigCommands } from '../../mcp/config/mcp-config.constants';
 import { MCPServerProxyService } from '../../mcp/mcp-server-proxy.service';
 import { MCPToolsDialog } from '../../mcp/mcp-tools-dialog.view';
 import { IChatSlashCommandItem } from '../../types';

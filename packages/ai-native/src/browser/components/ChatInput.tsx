@@ -28,7 +28,7 @@ import { ChatSlashCommandItemModel } from '../chat/chat-model';
 import { ChatProxyService } from '../chat/chat-proxy.service';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { ChatInternalService } from '../chat/chat.internal.service';
-import { MCPConfigCommands } from '../mcp/config/mcp-config.commands';
+import { MCPConfigCommands } from '../mcp/config/mcp-config.constants';
 import { MCPServerProxyService } from '../mcp/mcp-server-proxy.service';
 import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
 import { IChatSlashCommandItem } from '../types';

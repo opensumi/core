@@ -34,7 +34,7 @@ import { LLMContextService } from '../../common/llm-context';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { AcpChatInternalService } from '../chat/chat.internal.service.acp';
-import { MCPConfigCommands } from '../mcp/config/mcp-config.commands';
+import { MCPConfigCommands } from '../mcp/config/mcp-config.constants';
 import { RulesCommands } from '../rules/rules.contribution';
 import { RulesService } from '../rules/rules.service';
 

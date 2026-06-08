@@ -22,7 +22,7 @@ import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
 import { getCachedWorkspaceDir, switchWorkspaceDir } from '../../chat/pick-workspace-dir';
 import { AIPanelLayoutService } from '../../layout/panel-layout.service';
-import { MCPConfigCommands } from '../../mcp/config/mcp-config.commands';
+import { MCPConfigCommands } from '../../mcp/config/mcp-config.constants';
 import { AcpPermissionBridgeService } from '../permission-bridge.service';
 
 import AcpChatHistory, { IChatHistoryItem } from './AcpChatHistory';
