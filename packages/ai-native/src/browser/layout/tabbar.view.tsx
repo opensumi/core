@@ -109,7 +109,7 @@ function useRestoreAgenticViewSize(
           return;
         }
 
-        const currentSize = resizeHandle.getSize();
+        const currentSize = resizeHandle.getSize(true);
         if (!Number.isFinite(currentSize) || currentSize <= AGENTIC_VIEW_ACTIVITY_BAR_SIZE) {
           resizeHandle.setSize(getAgenticViewRestoreSize(tabbarService));
         }
