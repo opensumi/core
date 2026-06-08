@@ -69,6 +69,7 @@ interface IChatReplyProps {
   onDidChange?: () => void;
   onDone?: () => void;
   msgId: string;
+  keepReasoningExpandedOnComplete?: boolean;
 }
 
 const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) => {
@@ -216,6 +217,7 @@ export const ChatReply = (props: IChatReplyProps) => {
     command,
     history,
     msgId,
+    keepReasoningExpandedOnComplete = false,
   } = props;
 
   const [, update] = useReducer((num) => (num + 1) % 1_000_000, 0);
@@ -227,7 +229,7 @@ export const ChatReply = (props: IChatReplyProps) => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const [collapseThinkingIndexSet, setCollapseThinkingIndexSet] = useState<Set<number>>(
-    !request.response.isComplete
+    !request.response.isComplete || keepReasoningExpandedOnComplete
       ? new Set()
       : new Set(
           request.response.responseContents
@@ -237,7 +239,7 @@ export const ChatReply = (props: IChatReplyProps) => {
   );
 
   useEffect(() => {
-    if (request.response.isComplete) {
+    if (request.response.isComplete && !keepReasoningExpandedOnComplete) {
       setCollapseThinkingIndexSet(
         new Set(
           request.response.responseContents
@@ -246,7 +248,7 @@ export const ChatReply = (props: IChatReplyProps) => {
         ),
       );
     }
-  }, [request.response.isComplete]);
+  }, [request.response.isComplete, keepReasoningExpandedOnComplete]);
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();

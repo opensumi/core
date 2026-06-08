@@ -914,7 +914,18 @@ export class AcpThread extends Disposable implements IAcpThread {
     this.logger?.log(`[AcpThread:${this.threadId}] prompt() — status→working`);
     this.setStatus('working');
 
-    const response: PromptResponse = await this._connection.prompt(params);
+    let response: PromptResponse;
+    try {
+      response = await this._connection.prompt(params);
+    } catch (error) {
+      if (this._status === 'working') {
+        this.setStatus('awaiting_prompt');
+        this.logger?.log(
+          `[AcpThread:${this.threadId}] prompt() — failed, status→awaiting_prompt, entries=${this._entries.length}`,
+        );
+      }
+      throw error;
+    }
 
     // After prompt completes, transition to awaiting_prompt
     if (this._status === 'working') {
@@ -1327,7 +1338,9 @@ export class AcpThread extends Disposable implements IAcpThread {
     // Remove existing plan entries
     this._entries = this._entries.filter((e) => e.type !== 'plan');
 
-    const plan = update.plan as Plan;
+    const plan = (update.plan || (Array.isArray(update.entries) ? { entries: update.entries } : undefined)) as
+      | Plan
+      | undefined;
     if (plan) {
       const threadEntry: AgentThreadEntry = { type: 'plan', data: plan };
       this._entries.push(threadEntry);

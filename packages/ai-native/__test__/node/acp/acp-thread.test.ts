@@ -269,6 +269,25 @@ describe('AcpThread', () => {
       expect(thread.status).toBe('awaiting_prompt');
     });
 
+    it('should recover to awaiting_prompt when prompt fails while working', async () => {
+      (thread as any)._connected = true;
+      (thread as any)._connection = {
+        prompt: jest.fn().mockRejectedValue(new Error('BDD send failure')),
+      };
+      (thread as any)._initialized = true;
+
+      const events: any[] = [];
+      thread.onEvent((event) => events.push(event));
+
+      await expect(thread.prompt({} as any)).rejects.toThrow('BDD send failure');
+
+      expect(thread.status).toBe('awaiting_prompt');
+      expect(events.filter((event) => event.type === 'status_changed').map((event) => event.status)).toEqual([
+        'working',
+        'awaiting_prompt',
+      ]);
+    });
+
     it('should transition to disconnected on process exit', async () => {
       (thread as any)._processRunning = true;
       (thread as any)._connected = true;
@@ -836,6 +855,24 @@ describe('AcpThread', () => {
 
       expect(thread.entries).toHaveLength(1);
       expect(thread.entries[0].type).toBe('plan');
+    });
+
+    it('should create plan entry from top-level ACP plan entries', () => {
+      thread.handleNotification({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'plan',
+          entries: [
+            { content: 'BDD plan: prepare deterministic stream', status: 'completed', priority: 'high' },
+            { content: 'BDD plan: emit tool update', status: 'in_progress', priority: 'medium' },
+          ],
+        },
+      } as any);
+
+      expect(thread.entries).toHaveLength(1);
+      expect(thread.entries[0].type).toBe('plan');
+      expect((thread.entries[0] as any).data.entries).toHaveLength(2);
+      expect((thread.entries[0] as any).data.entries[0].content).toBe('BDD plan: prepare deterministic stream');
     });
 
     it('should transition to working on tool_call notification', () => {

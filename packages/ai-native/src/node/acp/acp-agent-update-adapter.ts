@@ -2,6 +2,13 @@ import { SessionNotification } from '@opensumi/ide-core-common/lib/types/ai-nati
 
 import type { AgentUpdate } from './acp-update-types';
 
+interface PlanEntryLike { content: string; completed?: boolean; status?: string }
+
+function getPlanEntries(update: any): PlanEntryLike[] | undefined {
+  const entries = update.plan?.entries ?? update.entries;
+  return Array.isArray(entries) ? entries : undefined;
+}
+
 /**
  * Translate a native ACP SessionNotification into the legacy AgentUpdate format
  * for stream consumers that have not migrated to ACP-native updates yet.
@@ -97,14 +104,12 @@ export function toAgentUpdate(notification: SessionNotification): AgentUpdate | 
     }
 
     case 'plan': {
-      const plan = update.plan;
-      if (plan?.entries?.length) {
-        const planText = plan.entries
-          .map((e: { content: string; completed?: boolean; status?: string }) =>
-            e.completed ? `- [x] ${e.content}` : `- [ ] ${e.content}`,
-          )
+      const entries = getPlanEntries(update);
+      if (entries?.length) {
+        const planText = entries
+          .map((e) => (e.completed || e.status === 'completed' ? `- [x] ${e.content}` : `- [ ] ${e.content}`))
           .join('\n');
-        return { type: 'plan', content: planText };
+        return { type: 'plan', content: `${planText}\n\n` };
       }
       return null;
     }

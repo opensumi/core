@@ -371,6 +371,24 @@ describe('AcpCliBackService', () => {
       });
     });
 
+    it('should convert native top-level plan entries to plan update content', () => {
+      expect(
+        toAgentUpdate({
+          sessionId: 'sess-1',
+          update: {
+            sessionUpdate: 'plan',
+            entries: [
+              { content: 'BDD plan: prepare deterministic stream', status: 'completed', priority: 'high' },
+              { content: 'BDD plan: emit tool update', status: 'in_progress', priority: 'medium' },
+            ],
+          },
+        } as any),
+      ).toEqual({
+        type: 'plan',
+        content: '- [x] BDD plan: prepare deterministic stream\n- [ ] BDD plan: emit tool update\n\n',
+      });
+    });
+
     it('should convert "thought" update to reasoning progress', async () => {
       mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();

@@ -617,6 +617,7 @@ export const AIChatViewACPContent = () => {
               }
             }}
             msgId={msgId}
+            keepReasoningExpandedOnComplete
           />
         ),
       });
