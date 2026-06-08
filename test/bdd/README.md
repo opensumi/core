@@ -66,6 +66,26 @@ http://localhost:8080/?workspaceDir=<absolute workspace path>&webMcpProfile=full
 
 `PASS` means all required steps for the declared profile ran and met the assertions. `BLOCKED` means the scenario could not start because a declared prerequisite was unavailable. `FAIL` means the declared prerequisites were present but behavior violated the contract.
 
+## Evidence Report
+
+Runtime BDD runs may save local, gitignored evidence under:
+
+```text
+test/bdd/evidence/<date>/<scenario-name>/
+```
+
+Use evidence reports for scenarios whose result is hard to review from a stack trace alone: Agentic layout, permission dialogs, streaming state, ACP Debug Log proof, WebMCP/MCP tool exposure, or live-agent shell contracts. Evidence is opt-in for hardened Playwright tests; set `OPENSUMI_BDD_EVIDENCE=1` to write artifacts. `OPENSUMI_BDD_EVIDENCE_DIR=<path>` may override the default root for local experiments.
+
+Each evidence report should map scenario requirements to critical points:
+
+- `evidence.json` is the machine-readable summary: scenario metadata, profile, execution mode, critical points, artifact list, scenario verdict, and hardening verdict.
+- `report.md` is the human-readable review summary.
+- Supporting artifacts may include screenshots, DOM geometry/text snapshots, MCP/WebMCP JSON, bounded ACP Debug Log proof records, and redacted console diagnostics.
+
+Critical points should be independently verifiable. A `PASS` critical point needs at least one concrete evidence file unless it is a purely in-process assertion already captured in `report.md`. A `BLOCKED` critical point should name the missing profile, fixture, selector, transport, or runtime surface. A `FAIL` critical point should point to the smallest proof showing actual versus expected behavior.
+
+Do not commit evidence artifacts. Do not store MCP bridge tokens, API keys, raw prompt bodies, full assistant content, permission content, ACP raw payloads containing secrets, or unbounded tool results. Save redacted or bounded metadata instead.
+
 ## Tool Names
 
 The canonical WebMCP tool name is the only external capability identifier. Each tool is registered once in the browser `WebMcpGroupRegistry` with `tool.name`, and both supported surfaces expose that same name:
