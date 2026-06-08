@@ -8,8 +8,8 @@
 
 - Common preflight in `test/bdd/README.md` passes.
 - The MCP `opensumi-ide` server is connected.
-- `opensumi_enable_capability_group({ group: "acp_chat" })` has succeeded.
 - The scenario is scheduled only when `ai.native.webmcp.profile = "full"`.
+- ACP Chat relay and bounded debug read tools are exposed by the full profile.
 - There are at least two ACP sessions:
   - `sourceSessionId`
   - `targetSessionId`
@@ -38,7 +38,7 @@
 
 ### Part D - Bounded Debug Read
 
-8. If `acp_chat_read_session_messages` is exposed after enabling `acp_chat`, call:
+8. If `acp_chat_read_session_messages` is exposed in the full profile, call:
    ```js
    acp_chat_read_session_messages({ sessionId: sourceSessionId, maxMessages: 10, maxChars: 4000 });
    ```
@@ -47,7 +47,7 @@
 ## Then
 
 - Step 1 returns `success: true` with `sessions` metadata and `total`.
-- Session metadata must not include prompt text, assistant response content, or tool-call result content.
+- Session metadata may include bounded title fields, but must not include full prompt/message bodies, assistant response content, or tool-call result content.
 - Step 2 returns `success: true`.
 - `DIGEST.result` contains:
   - `digestId`

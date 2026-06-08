@@ -6,8 +6,9 @@
 
 ## Given
 
-- Agentic AI Chat is visible and has `acp_chat` enabled in a fresh MCP session.
+- Agentic AI Chat is visible and the active profile exposes the required `acp_chat` tools in a fresh MCP session.
 - History checks run after at least one successful deterministic send.
+- Full session-switching assertions require at least two deterministic persisted sessions. If a live run only has one session, record New Chat/history metadata observations and mark the session-switching portion **BLOCKED**, not **FAIL**.
 - Pending permission badge checks run only when the fixture can create pending permission state without exposing permission content.
 
 ## When
@@ -31,11 +32,11 @@
 - Each visible history item has a stable session id and a non-empty safe title.
 - Selected/current markers follow `acp_chat_get_session_state` after selection and reselection.
 - History collapse/reopen preserves active session selection and does not duplicate header actions.
-- History item titles and `acp_chat_list_sessions` results remain metadata-only.
+- History item titles are allowed metadata. `acp_chat_list_sessions` remains metadata-only and must not include full message bodies, assistant content, tool-call results, or permission content.
 - Pending permission badges show counts/scoped state only and do not expose approval/rejection controls or permission content.
 
 ## Pass / Fail Judgment
 
-- **PASS** - New Chat draft behavior, persisted history, session selection, and badge observability stay consistent and metadata-only.
-- **BLOCKED** - the run lacks interactive profile, deterministic provider, or at least two ACP sessions for selection checks.
-- **FAIL** - empty drafts persist as history rows, selection state drifts, history leaks content, or permission badges expose decision controls/content.
+- **PASS** - New Chat draft behavior, persisted history, session selection, and badge observability stay consistent and metadata-only with at least two deterministic sessions.
+- **BLOCKED** - the run lacks interactive profile, deterministic provider, at least two ACP sessions for selection checks, or a stable history selector.
+- **FAIL** - empty drafts persist as history rows, selection state drifts, history leaks message/tool/permission content outside allowed title metadata, or permission badges expose decision controls/content.

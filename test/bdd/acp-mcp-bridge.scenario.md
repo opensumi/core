@@ -32,13 +32,13 @@
 11. Call `opensumi_describe_tool({ tool: "_opensumi/acp_chat/getSessionState" })`.
 12. Call `opensumi_describe_tool({ tool: "acp_chat_getSessionState" })`.
 
-### Part C - Session-Scoped Enablement
+### Part C - Catalog Helper And Fallback Invocation
 
-13. In client A, call `opensumi_enable_capability_group({ group: "acp_chat" })`.
+13. In client A, call `opensumi_enable_capability_group({ group: "acp_chat" })` and record the helper result as catalog/discovery acknowledgement.
 14. Refresh `tools/list` for client A.
-15. Connect client B as a fresh MCP session and call `tools/list`.
-16. In client A, call an enabled ACP read tool directly or through `opensumi_invoke_capability_tool`.
-17. In client A, call the same enabled ACP read tool through `opensumi_invoke_capability_tool` with the common accidental nested shape:
+15. Connect client B as a fresh MCP session, call `tools/list`, and record the same active-profile exposure without calling the helper.
+16. In client A, call a profile-exposed ACP read tool directly or through `opensumi_invoke_capability_tool`. Use `acp_chat_get_session_state` in default profile and `acp_chat_list_sessions` in interactive/full profiles.
+17. In client A, call the same profile-exposed ACP read tool through `opensumi_invoke_capability_tool` with the common accidental nested shape:
 
 ```json
 {
@@ -49,7 +49,7 @@
 }
 ```
 
-18. In client A, call the same enabled ACP read tool through `opensumi_invoke_capability_tool` with the whole invocation nested under `arguments`:
+18. In client A, call the same profile-exposed ACP read tool through `opensumi_invoke_capability_tool` with the whole invocation nested under `arguments`:
 
 ```json
 {
@@ -61,13 +61,13 @@
 ```
 
 19. In client A, call `opensumi_invoke_capability_tool` without a string `tool`.
-20. In client B, call the same non-default tool through `opensumi_invoke_capability_tool` before enabling.
+20. In client B, call the same profile-exposed tool through `opensumi_invoke_capability_tool` without first calling `opensumi_enable_capability_group`.
 
 ### Part D - Profile Exposure
 
-21. In default profile, inspect tools exposed after enabling `acp_chat`.
-22. In interactive profile, inspect tools exposed after enabling `acp_chat`.
-23. In full profile, inspect tools exposed after enabling `acp_chat`.
+21. In default profile, inspect tools exposed before and after the optional catalog helper call.
+22. In interactive profile, inspect tools exposed before and after the optional catalog helper call.
+23. In full profile, inspect tools exposed before and after the optional catalog helper call.
 
 ### Part E - Transport Lifecycle
 
@@ -87,17 +87,18 @@
 - `tools/list` includes canonical underscore tool names only.
 - Catalog tools describe groups and tools without exposing file/chat contents.
 - Legacy `_opensumi/...` and camelCase ACP Chat names return `TOOL_NOT_FOUND` or equivalent failure.
-- Enabling a group is scoped to the current MCP transport session; client B does not inherit client A's enabled groups.
-- In default profile after enabling `acp_chat`, only default-safe read/ui tools remain exposed.
-- In interactive profile after enabling `acp_chat`, read tools such as `acp_chat_list_sessions`, `acp_chat_get_available_commands`, and `acp_chat_prepare_session_digest` are exposed, but full-profile debug/write tools remain hidden.
-- In full profile after enabling `acp_chat`, full-profile tools such as `acp_chat_read_session_messages`, `acp_chat_set_session_mode`, and `acp_chat_post_prepared_relay` are exposed.
+- `opensumi_enable_capability_group` may acknowledge the group for catalog/discovery purposes, but active-profile tool exposure does not depend on that helper.
+- A fresh client B sees the same active-profile tool surface as client A for profile-granted tools, without inheriting any transport-local catalog helper state.
+- In default profile, only default-safe read/ui tools remain exposed.
+- In interactive profile, read tools such as `acp_chat_list_sessions`, `acp_chat_get_available_commands`, and `acp_chat_prepare_session_digest` are exposed, but full-profile debug/write tools remain hidden.
+- In full profile, full-profile tools such as `acp_chat_read_session_messages`, `acp_chat_set_session_mode`, and `acp_chat_post_prepared_relay` are exposed.
 - `opensumi_invoke_capability_tool` accepts the canonical fallback shape and the two common accidental nested shapes, normalizing all of them to the target tool's actual arguments before execution.
 - `opensumi_invoke_capability_tool` without a valid string `tool` fails with `INVALID_ARGUMENTS` or equivalent structured failure and explains the expected `{ tool: string, arguments?: object }` shape.
-- Calling a non-default tool before enablement fails with `CAPABILITY_NOT_ENABLED` or equivalent structured failure.
+- Calling a profile-forbidden tool is rejected or absent from `tools/list`, even if the catalog helper was called.
 - Unknown or deleted `mcp-session-id` requests return 404 and do not create a new transport implicitly.
-- `DELETE` releases the transport and removes session-scoped enabled groups.
+- `DELETE` releases the transport and removes any transport-local catalog helper state.
 
 ## Pass / Fail Judgment
 
-- **PASS** - the bridge is loopback/token scoped, injects only when supported, redacts secrets in logs, exposes canonical tools, normalizes fallback broker arguments, and enforces session-scoped enablement/profile visibility.
-- **FAIL** - bridge URLs or tokens leak in logs, legacy aliases work, nested fallback arguments are passed through incorrectly, enabled groups leak across MCP sessions, or write tools are exposed outside full profile.
+- **PASS** - the bridge is loopback/token scoped, injects only when supported, redacts secrets in logs, exposes canonical tools, normalizes fallback broker arguments, and enforces profile-gated visibility.
+- **FAIL** - bridge URLs or tokens leak in logs, legacy aliases work, nested fallback arguments are passed through incorrectly, profile-granted tools require a helper call, or write tools are exposed outside full profile.

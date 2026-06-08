@@ -15,7 +15,6 @@ import type {
   WebMcpToolResult,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
-
 export const WEBMCP_PROFILE_SETTING_ID = 'ai.native.webmcp.profile';
 export const WEBMCP_PROFILE_QUERY_PARAM = 'webMcpProfile';
 

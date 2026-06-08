@@ -54,7 +54,7 @@
   - `slicedMessageCount`
   - `hasPendingPermission`
 - If no active session exists, Step 4 returns `{ active: false, session: null }`.
-- Step 4 response must not contain prompt text, assistant response text, or tool-call result content.
+- Step 4 may contain bounded session title metadata, but must not contain full prompt/message bodies, assistant response text, or tool-call result content.
 - Step 5 returns only permission counts and active session id:
   - `activeDialogCount`
   - `activeSessionId`
@@ -66,4 +66,4 @@
 ## Pass / Fail Judgment
 
 - **PASS** - default tools are available, legacy tools are absent, the chat view opens, and state responses are metadata-only.
-- **FAIL** - any legacy direct ACP tool is exposed, the chat view cannot open, or state responses leak prompt/response/tool result content.
+- **FAIL** - any legacy direct ACP tool is exposed, the chat view cannot open, or state responses leak message/response/tool result content outside allowed title metadata.

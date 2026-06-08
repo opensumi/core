@@ -35,7 +35,7 @@ shellReady && workbenchVisible;
 | Layer | Purpose | Execution expectation |
 | --- | --- | --- |
 | `runtime-ui` | Real IDE rendering, layout, dialogs, input, history, and visible recovery. | Run Common Preflight, then use Chrome DevTools MCP plus MCP calls only when the scenario requires them. |
-| `mcp-contract` | WebMCP/MCP tool names, group enablement, profile gating, catalog shape, bounded responses, and error contracts. | Use fresh MCP transport sessions; browser UI is needed only for observable dialog or surface parity checks. |
+| `mcp-contract` | WebMCP/MCP tool names, profile gating, catalog shape, bounded responses, and error contracts. | Use fresh MCP transport sessions; browser UI is needed only for observable dialog or surface parity checks. |
 | `node-contract` | ACP service, thread, process, RPC, handler, storage, and debug-log behavior. | Run deterministic service/unit-contract fixtures; browser interaction is optional unless the scenario says otherwise. |
 | `exploratory/manual` | Historical investigations, issue notes, and evidence reports. | Not part of the required `.scenario.md` suite; keep these as `.md`, `.json`, or image evidence files. |
 
@@ -54,8 +54,15 @@ Node/service scenarios are contract specs. They do not need to prove behavior by
 | Profile | Expected coverage | Result rule |
 | --- | --- | --- |
 | `default` | Common Preflight, default ACP Chat smoke, default safe state tools, Agentic startup, fallback, and read-only layout checks. | Default-profile scenarios should PASS or FAIL. Do not mark interactive/full-only work as PARTIAL in a default run; skip scheduling it or mark it BLOCKED with the missing profile. |
-| `interactive` | Default coverage plus enabled read/UI tools such as `acp_chat_list_sessions`, `acp_chat_get_available_commands`, `acp_chat_prepare_session_digest`, and IDE read groups. | Interactive scenarios should PASS/FAIL only when the profile is active and required fixtures exist. |
-| `full` | Interactive coverage plus write/debug tools such as `acp_chat_set_session_mode`, `acp_chat_post_prepared_relay`, `acp_chat_read_session_messages`, and reversible file/editor/terminal mutation checks. | Full-profile scenarios are BLOCKED, not PARTIAL, when the run lacks full profile, controlled sessions, or stable selectors. |
+| `interactive` | Default coverage plus profile-granted read/UI tools such as `acp_chat_list_sessions`, `acp_chat_get_available_commands`, `acp_chat_prepare_session_digest`, and IDE read groups. | Interactive scenarios should PASS/FAIL only when the profile is active and required fixtures exist. |
+| `full` | Interactive coverage plus profile-granted write/debug tools such as `acp_chat_set_session_mode`, `acp_chat_post_prepared_relay`, `acp_chat_read_session_messages`, and reversible file/editor/terminal mutation checks. | Full-profile scenarios are BLOCKED, not PARTIAL, when the run lacks full profile, controlled sessions, or stable selectors. |
+
+Use a profile-specific loopback URL when a local BDD run needs a non-default WebMCP profile. The query override is runtime-only, only applies on local loopback hosts, and does not write the user's saved `ai.native.webmcp.profile` preference:
+
+```text
+http://localhost:8080/?workspaceDir=<absolute workspace path>&webMcpProfile=interactive
+http://localhost:8080/?workspaceDir=<absolute workspace path>&webMcpProfile=full
+```
 
 `PASS` means all required steps for the declared profile ran and met the assertions. `BLOCKED` means the scenario could not start because a declared prerequisite was unavailable. `FAIL` means the declared prerequisites were present but behavior violated the contract.
 
@@ -87,10 +94,11 @@ There is no alias or fallback external name for capability tools. Legacy `_opens
 Current MCP exposure:
 
 - Default discovery: `opensumi_get_mcp_server_connection`
-- Default: `acp_chat_get_session_state`, `acp_chat_get_permission_state`, `acp_chat_show_chat_view`
-- After enabling `acp_chat`: read/ui tools allowed by the active profile
-- Interactive/full profile: read tools such as `acp_chat_list_sessions`, `acp_chat_get_available_commands`, and `acp_chat_prepare_session_digest`
-- Full profile only: `acp_chat_read_session_messages`, `acp_chat_set_session_mode`, and `acp_chat_post_prepared_relay`
+- Default profile: `acp_chat_get_session_state`, `acp_chat_get_permission_state`, `acp_chat_show_chat_view`
+- Interactive/full profile: profile-granted read tools such as `acp_chat_list_sessions`, `acp_chat_get_available_commands`, and `acp_chat_prepare_session_digest`
+- Full profile only: profile-granted write/debug tools such as `acp_chat_read_session_messages`, `acp_chat_set_session_mode`, and `acp_chat_post_prepared_relay`
+
+The active WebMCP profile is the permission boundary for tool exposure. `opensumi_enable_capability_group` is retained as a catalog/discovery helper for agents and clients that want an explicit group acknowledgement, but BDD scenarios must not require it before invoking tools already allowed by the active profile. Profile-forbidden tools must remain absent from `tools/list` or fail with a structured boundary error even if a group helper has been called.
 
 ## MCP Helper
 
@@ -108,11 +116,10 @@ Use the MCP client connected to the IDE's `opensumi-ide` server. Scenario steps 
 
 ```js
 await mcp.callTool({ name: 'opensumi_discover_capabilities', arguments: { task: 'acp chat state' } });
-await mcp.callTool({ name: 'opensumi_enable_capability_group', arguments: { group: 'acp_chat' } });
 await mcp.callTool({ name: 'acp_chat_get_session_state', arguments: {} });
 ```
 
-If the client cannot refresh `tools/list` after enabling the group, call through the fallback broker:
+Calling `opensumi_enable_capability_group` is optional for profile-granted tools and should be treated as a catalog helper, not a permission grant. If the client cannot call a profile-exposed capability tool directly, call through the fallback broker:
 
 ```js
 await mcp.callTool({
@@ -158,7 +165,8 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 - Permission scenarios must observe pending permission state and DOM, but must not approve or reject permission through an ACP tool.
 - Runtime permission dismissal must use Chrome DevTools MCP to click a visible Reject or close control. If no stable selector exists, mark the scenario BLOCKED with `missing stable permission dialog selector`.
 - Session-mode scenarios must verify that a successful mode switch is observable through session state. A response from `acp_chat_set_session_mode` alone is not enough.
-- ACP Chat scenarios must not assert prompt text, assistant response text, or tool-call result content in `acp_chat_get_session_state`, `acp_chat_list_sessions`, or permission state responses.
+- ACP Chat state/list responses may expose bounded, user-visible session title metadata such as `title` or `sourceTitle`, even when that title is derived from the first prompt. Do not treat those title fields as prompt-content leakage.
+- ACP Chat scenarios must not assert full prompt/message bodies, assistant response text, tool-call arguments/results, raw ACP payloads, file contents, secrets, or permission content in `acp_chat_get_session_state`, `acp_chat_list_sessions`, or permission state responses.
 - File/editor/terminal BDD belongs to those capability groups, not to ACP Chat.
 
 ## Current Scenarios
@@ -187,14 +195,15 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-theme-persistence.scenario.md` | `runtime-ui` | `default` | Theme, Agentic layout preference, geometry, and visual usability persistence. |
 | `acp-chat-agentic-history.scenario.md` | `runtime-ui` | `interactive` | New Chat, persisted history, session switching, and permission badges. |
 | `acp-chat-agentic-layout-interop.scenario.md` | `runtime-ui` | `interactive` | Explorer/editor interop, resize, reload, and Agentic/Classic round trip. |
-| `available-commands.scenario.md` | `mcp-contract` | `interactive/full` | Command metadata through enabled `acp_chat`. |
+| `available-commands.scenario.md` | `mcp-contract` | `interactive/full` | Command metadata through profile-granted `acp_chat`. |
 | `webmcp-capability-surface.scenario.md` | `mcp-contract` | `interactive/full` | Browser and MCP surfaces expose the same canonical tool names. |
-| `acp-mcp-bridge.scenario.md` | `mcp-contract` | `default/interactive/full` | Built-in MCP bridge startup, injection, catalog, profiles, and session-scoped enablement. |
+| `acp-mcp-bridge.scenario.md` | `mcp-contract` | `default/interactive/full` | Built-in MCP bridge startup, injection, catalog, profiles, and profile-gated exposure. |
 | `session-mode.scenario.md` | `mcp-contract` | `full` | Full-profile mode switching return contract plus metadata-only state reads. |
 | `session-relay.scenario.md` | `mcp-contract` | `full` | Cross-session digest relay, permission gate, and bounded debug reads. |
 | `permission-dialog.scenario.md` | `runtime-ui` | `full` | Permission state and dialog observability without ACP decision tools. |
 | `error-handling.scenario.md` | `mcp-contract` | `full` | Capability boundaries, invalid inputs, and redacted structured errors. |
 | `webmcp-ide-capability-groups.scenario.md` | `mcp-contract` | `full` | Workspace, search, diagnostics, file, terminal, and editor groups. |
+| `terminal-file-tree-refresh.scenario.md` | `runtime-ui` | `full` | Terminal-created and terminal-deleted files refresh Explorer automatically. |
 | `acp-agent-session-lifecycle.scenario.md` | `node-contract` | `default` | Node-side session creation, loading, streaming, cancellation, disposal, and pool cleanup. |
 | `acp-session-advanced-operations.scenario.md` | `node-contract` | `default` | Config option, fork, resume, close, model selection, and available-mode operations. |
 | `acp-thread-pool-lru.scenario.md` | `node-contract` | `default` | Thread-pool LRU recycling, evicted-session reload, race handling, and failure diagnostics. |

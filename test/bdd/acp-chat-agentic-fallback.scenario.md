@@ -24,7 +24,7 @@
 - The fallback path does not create an infinite loading state and does not require a real ACP session to render children.
 - Hidden ACP mutation tools remain unavailable.
 - ACP Chat state tools either return a structured service-unavailable result or safe metadata for the fallback session.
-- No state or visible UI exposes uncaught stack traces, raw JSON-RPC payloads, MCP tokens, prompt text, assistant text, or permission content.
+- No state or visible UI exposes uncaught stack traces, raw JSON-RPC payloads, MCP tokens, full prompt/message bodies, assistant text, or permission content outside allowed title metadata.
 
 ## Pass / Fail Judgment
 

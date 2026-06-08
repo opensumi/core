@@ -32,7 +32,7 @@
 - Legacy `_opensumi/...`, older camelCase ACP Chat names, and old direct ACP mutation tools are absent and fail with tool-not-found if called as explicit negative checks.
 - `acp_chat_show_chat_view({})` returns `success: true` and `{ shown: true }`.
 - Opening Agentic AI Chat may leave no active session, or may expose an empty metadata-only active session.
-- Session and permission state responses expose metadata/counts only and do not include prompt text, assistant text, file contents, relay digest bodies, permission prompt content, or tool-call result content.
+- Session and permission state responses expose metadata/counts only. Bounded session titles are allowed, but full prompt/message bodies, assistant text, file contents, relay digest bodies, permission prompt content, and tool-call result content are not.
 - No step shows fatal UI text such as `SERVICE_UNAVAILABLE`, `EXECUTION_ERROR`, uncaught stack traces, or an initialization timeout that blocks the chat view.
 
 ## Pass / Fail Judgment

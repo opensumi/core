@@ -1,8 +1,8 @@
-# Scenario: Available Commands - Enabled ACP Chat Group Exposes Command Metadata
+# Scenario: Available Commands - Profile-Granted ACP Chat Exposes Command Metadata
 
 **Trigger:** `packages/ai-native/src/browser/acp/webmcp-groups/acp-chat.webmcp-group.ts`
 
-**Layer:** `mcp-contract` **Required profile:** `interactive` or `full` **Fixtures:** Fresh MCP session with `acp_chat` enabled and command metadata available. **Workspace mutation:** None. **Automation status:** Automated MCP contract spec; default-profile runs should skip this scenario instead of marking it partial.
+**Layer:** `mcp-contract` **Required profile:** `interactive` or `full` **Fixtures:** Fresh MCP session in a profile that exposes `acp_chat_get_available_commands` and command metadata available. **Workspace mutation:** None. **Automation status:** Automated MCP contract spec; default-profile runs should skip this scenario instead of marking it partial.
 
 ## Given
 
@@ -13,22 +13,23 @@
 
 ## When
 
-1. `mcp`: `opensumi_enable_capability_group({ group: "acp_chat" })`.
-2. Refresh `tools/list`.
-3. If `tools/list` contains `acp_chat_get_available_commands`, call it directly.
-4. If the client cannot refresh tools, call:
+1. `mcp`: `tools/list` -> record `TOOLS_PROFILE`.
+2. If `tools/list` contains `acp_chat_get_available_commands`, call it directly.
+3. If the client cannot call the tool directly, call:
    ```js
    opensumi_invoke_capability_tool({
      tool: 'acp_chat_get_available_commands',
      arguments: {},
    });
    ```
-5. Record the result as `COMMANDS_RESULT`.
+4. Optionally call `opensumi_enable_capability_group({ group: "acp_chat" })` as a catalog helper and verify it is not required for the command metadata call.
+5. Record the command metadata result as `COMMANDS_RESULT`.
 
 ## Then
 
-- Step 1 returns `success: true`, `enabled: true`, and `group: "acp_chat"`.
-- Step 2 or Step 4 makes `acp_chat_get_available_commands` callable in this MCP session.
+- Step 1 includes `acp_chat_get_available_commands` in interactive/full profiles.
+- Step 2 or Step 3 makes `acp_chat_get_available_commands` callable in this MCP session.
+- Step 4, when run, returns `success: true`, `enabled: true`, and `group: "acp_chat"`, but does not change the profile boundary.
 - Step 5 returns `success: true`.
 - `COMMANDS_RESULT.result.commands` is an array.
 - Every command item has a non-empty string `name`.
@@ -38,6 +39,6 @@
 
 ## Pass / Fail Judgment
 
-- **PASS** - command metadata is callable and structurally valid after enabling `acp_chat`.
+- **PASS** - command metadata is callable and structurally valid in interactive/full profiles without requiring a catalog helper call.
 - **BLOCKED** - the scenario is scheduled against default profile instead of interactive/full profile.
-- **FAIL** - enabling the group fails in an interactive/full profile, the tool cannot be invoked through direct or fallback path, or command items are malformed.
+- **FAIL** - the tool cannot be invoked through direct or fallback path in an interactive/full profile, the catalog helper is incorrectly required, or command items are malformed.

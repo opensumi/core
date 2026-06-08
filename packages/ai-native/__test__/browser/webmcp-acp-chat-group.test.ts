@@ -208,9 +208,9 @@ describe('WebMCP Group - ACP Chat', () => {
       requests: [],
       slicedMessageCount: 0,
       history: {
-        getMessages: jest.fn().mockReturnValue([
-          { role: ChatMessageRole.User, content: 'middle prompt content', timestamp: 2000 },
-        ]),
+        getMessages: jest
+          .fn()
+          .mockReturnValue([{ role: ChatMessageRole.User, content: 'middle prompt content', timestamp: 2000 }]),
         getMemorySummaries: jest.fn().mockReturnValue([]),
       },
     };

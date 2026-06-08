@@ -52,9 +52,9 @@ describe('WebMCP group registry policy', () => {
   it('parses runtime profile overrides from URL search params', () => {
     expect(getWebMcpProfileFromSearch(`?${WEBMCP_PROFILE_QUERY_PARAM}=interactive`)).toBe('interactive');
     expect(getWebMcpProfileFromSearch(`?${WEBMCP_PROFILE_SETTING_ID}=full`)).toBe('full');
-    expect(
-      getWebMcpProfileFromSearch(`?${WEBMCP_PROFILE_QUERY_PARAM}=invalid&${WEBMCP_PROFILE_SETTING_ID}=full`),
-    ).toBe('full');
+    expect(getWebMcpProfileFromSearch(`?${WEBMCP_PROFILE_QUERY_PARAM}=invalid&${WEBMCP_PROFILE_SETTING_ID}=full`)).toBe(
+      'full',
+    );
     expect(getWebMcpProfileFromSearch(`?${WEBMCP_PROFILE_QUERY_PARAM}=invalid`)).toBeUndefined();
     expect(getWebMcpProfileFromSearch('')).toBeUndefined();
   });

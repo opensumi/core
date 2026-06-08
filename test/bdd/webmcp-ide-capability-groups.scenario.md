@@ -8,7 +8,7 @@
 
 - Common preflight in `test/bdd/README.md` passes.
 - The MCP `opensumi-ide` server is connected.
-- Use a fresh MCP client session so enabled groups do not leak from another scenario.
+- Use a fresh MCP client session so transport-local catalog helper state does not leak from another scenario.
 - The workspace contains a small `package.json`.
 - The IDE can open an editor for `package.json`.
 - Shell or terminal mutation steps run only in a full profile, or are skipped explicitly as profile-gated.
@@ -30,23 +30,23 @@
 
 ### Part B - Workspace And Search
 
-5. Enable the `workspace` group and call:
+5. Call `workspace` group tools exposed by the active profile:
    - `workspace_get_info({})`
    - `workspace_list_open_files({})`
    - `workspace_list_recent_workspaces({})`
    - record `WORKSPACE_ROOT` from `workspace_get_info.result.workspaceDir` or the first root path
-6. Enable the `search` group and call:
+6. Call `search` group tools exposed by the active profile:
    - `search_files({ query: "package" })`
    - `search_text({ query: "name", include: ["package.json"], maxResults: 20 })`
    - `search_symbols({ query: "Acp" })`
 
 ### Part C - Diagnostics And File
 
-7. Enable the `diagnostics` group and call:
+7. Call `diagnostics` group tools exposed by the active profile:
    - `diagnostics_list({})`
    - `diagnostics_get_stats({})`
 8. If diagnostics exist, call `diagnostics_open` for one diagnostic.
-9. Enable the `file` group and call:
+9. Call `file` group tools exposed by the active profile:
    - `file_get_workspace_root({})`
    - `file_exists({ path: "package.json" })`
    - `file_stat({ path: "package.json" })`
@@ -66,7 +66,7 @@
 11. Derive absolute editor paths from `WORKSPACE_ROOT`:
     - `PACKAGE_ABS = WORKSPACE_ROOT + "/package.json"`
     - `TEMP_EDITOR_ABS = WORKSPACE_ROOT + "/.tmp/acp-bdd/editor.ts"`
-12. Enable the `editor` group and call:
+12. Call `editor` group tools exposed by the active profile:
     - `editor_open({ path: PACKAGE_ABS })`
     - `editor_get_active({})`
     - `editor_list_open_files({})`
@@ -88,7 +88,7 @@
 
 ### Part E - Terminal
 
-15. Enable the `terminal` group and call read/UI tools:
+15. Call `terminal` group read/UI tools exposed by the active profile:
     - `terminal_list({})`
     - `terminal_get_active({})`
     - `terminal_get_os({})`
@@ -114,9 +114,9 @@
 - Discovery lists all six IDE groups with canonical underscore tool names only.
 - Each described group returns schemas for its tools without exposing workspace file contents or editor buffer contents in the catalog response.
 - Legacy `_opensumi/...` names fail with `TOOL_NOT_FOUND` or equivalent.
-- Before a non-default group is enabled, direct calls to that group's tools fail with `CAPABILITY_NOT_ENABLED` or are absent from `tools/list`.
-- After enabling each group, read/UI tools for that group are callable in the current MCP session.
-- Enabled groups remain scoped to the current MCP transport session.
+- Profile-granted tools for default-loaded groups are callable in the current MCP session without requiring `opensumi_enable_capability_group`.
+- Profile-forbidden tools are absent from `tools/list` or fail with a structured boundary error, and the optional catalog helper cannot override the active profile.
+- Transport-local catalog helper state does not change the profile boundary for another MCP transport session.
 - Workspace responses contain metadata such as roots and open files, not file contents.
 - Search responses are bounded and include paths/ranges/snippets only within configured limits.
 - Diagnostics responses are bounded and include severity, path, range, and message metadata.
@@ -129,6 +129,6 @@
 
 ## Pass / Fail Judgment
 
-- **PASS** - every registered IDE WebMCP capability group is discoverable, profile-gated, session-scoped, and its representative tools execute with bounded, canonical responses.
+- **PASS** - every registered IDE WebMCP capability group is discoverable, profile-gated, and its representative tools execute with bounded, canonical responses.
 - **BLOCKED** - the scenario is scheduled without the required full profile, so reversible file/editor/terminal mutation checks cannot be exercised.
-- **FAIL** - a registered group is missing from discovery, legacy aliases work, enablement leaks across MCP sessions, profile-gated tools are callable too early, or file/editor/terminal responses are unbounded or workspace-unsafe.
+- **FAIL** - a registered group is missing from discovery, legacy aliases work, profile-granted tools require a catalog helper, profile-forbidden tools are callable, or file/editor/terminal responses are unbounded or workspace-unsafe.

@@ -9,7 +9,7 @@
 - Common preflight in `test/bdd/README.md` passes.
 - `navigator.modelContext` exists. Native browser implementations and the OpenSumi polyfill are both acceptable.
 - The MCP `opensumi-ide` server is connected.
-- Use a fresh MCP client session for this scenario so enabled capability groups do not leak in from another scenario.
+- Use a fresh MCP client session for this scenario so transport-local catalog helper state does not leak in from another scenario.
 - The active workspace contains a small existing file `editor.js`.
 
 ## When
