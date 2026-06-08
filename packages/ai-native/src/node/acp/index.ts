@@ -8,6 +8,15 @@ export {
   AcpPermissionCallerServiceToken,
   AcpPermissionCallerManagerToken,
 } from './acp-permission-caller.service';
+export { AcpBrowserRpcRegistry } from './acp-browser-rpc-registry';
+export {
+  AcpPermissionRpcBridgeService,
+  AcpPermissionRpcBridgeServiceToken,
+  AcpThreadStatusRpcBridgeService,
+  AcpThreadStatusRpcBridgeServiceToken,
+  AcpWebMcpRpcBridgeService,
+  AcpWebMcpRpcBridgeServiceToken,
+} from './acp-browser-rpc-bridge.service';
 export { AcpThreadStatusCallerService, AcpThreadStatusCallerServiceToken } from './acp-thread-status-caller.service';
 export {
   PermissionRoutingService,

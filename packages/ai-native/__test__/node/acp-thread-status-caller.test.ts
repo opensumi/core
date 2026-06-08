@@ -10,6 +10,7 @@ jest.mock('@opensumi/di', () => {
   };
 });
 
+import { AcpBrowserRpcRegistry } from '../../src/node/acp/acp-browser-rpc-registry';
 import { AcpThreadStatusCallerService } from '../../src/node/acp/acp-thread-status-caller.service';
 
 const mockRpcClient = {
@@ -21,13 +22,8 @@ describe('AcpThreadStatusCallerService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    AcpThreadStatusCallerService.staticRpcClient = undefined;
     service = new AcpThreadStatusCallerService();
     Object.defineProperty(service, 'rpcClient', { value: [mockRpcClient], writable: true });
-  });
-
-  afterEach(() => {
-    AcpThreadStatusCallerService.staticRpcClient = undefined;
   });
 
   describe('notifyThreadStatusChange()', () => {
@@ -45,14 +41,16 @@ describe('AcpThreadStatusCallerService', () => {
       expect(mockRpcClient.$onThreadStatusChange).toHaveBeenCalledWith('session-2', 'awaiting_prompt');
     });
 
-    it('should fall back to staticRpcClient when instance client is unavailable', () => {
+    it('should fall back to registered browser RPC client when instance client is unavailable', () => {
       Object.defineProperty(service, 'rpcClient', { value: undefined, writable: true });
-      const staticClient = { $onThreadStatusChange: jest.fn().mockResolvedValue(undefined) };
-      AcpThreadStatusCallerService.staticRpcClient = staticClient as any;
+      const registry = new AcpBrowserRpcRegistry();
+      const registeredClient = { $onThreadStatusChange: jest.fn().mockResolvedValue(undefined) };
+      registry.registerThreadStatusClient('client-1', registeredClient as any);
+      (service as any).browserRpcRegistry = registry;
 
       service.notifyThreadStatusChange('session-1', 'working');
 
-      expect(staticClient.$onThreadStatusChange).toHaveBeenCalledWith('session-1', 'working');
+      expect(registeredClient.$onThreadStatusChange).toHaveBeenCalledWith('session-1', 'working');
     });
 
     it('should silently do nothing when no RPC client is available', () => {
@@ -65,17 +63,6 @@ describe('AcpThreadStatusCallerService', () => {
       mockRpcClient.$onThreadStatusChange.mockRejectedValue(new Error('RPC disconnected'));
 
       expect(() => service.notifyThreadStatusChange('session-1', 'working')).not.toThrow();
-    });
-  });
-
-  describe('staticRpcClient', () => {
-    it('should set and clear static client', () => {
-      const client = { $onThreadStatusChange: jest.fn() } as any;
-      AcpThreadStatusCallerService.setStaticRpcClient(client);
-      expect(AcpThreadStatusCallerService.staticRpcClient).toBe(client);
-
-      AcpThreadStatusCallerService.setStaticRpcClient(undefined);
-      expect(AcpThreadStatusCallerService.staticRpcClient).toBeUndefined();
     });
   });
 });

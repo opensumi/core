@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
-import { AcpPermissionCallerService } from './acp-permission-caller.service';
+import { AcpPermissionCallerService, AcpPermissionCallerServiceToken } from './acp-permission-caller.service';
 
 import type {
   RequestPermissionRequest,
@@ -33,7 +33,7 @@ export interface IPermissionRoutingService {
  */
 @Injectable()
 export class PermissionRoutingService implements IPermissionRoutingService {
-  @Autowired(AcpPermissionCallerService)
+  @Autowired(AcpPermissionCallerServiceToken)
   private readonly permissionCallerService: AcpPermissionCallerService;
 
   @Autowired(INodeLogger)

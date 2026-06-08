@@ -17,16 +17,23 @@ import {
   AcpAgentRequestHandlerToken,
   AcpAgentService,
   AcpAgentServiceToken,
+  AcpBrowserRpcRegistry,
   AcpFileSystemHandler,
   AcpFileSystemHandlerToken,
   AcpPermissionCallerService,
   AcpPermissionCallerServiceToken,
+  AcpPermissionRpcBridgeService,
+  AcpPermissionRpcBridgeServiceToken,
   AcpTerminalHandler,
   AcpTerminalHandlerToken,
   AcpThreadFactoryProvider,
   AcpThreadStatusCallerService,
   AcpThreadStatusCallerServiceToken,
+  AcpThreadStatusRpcBridgeService,
+  AcpThreadStatusRpcBridgeServiceToken,
   AcpWebMcpCallerService,
+  AcpWebMcpRpcBridgeService,
+  AcpWebMcpRpcBridgeServiceToken,
   OpenSumiMcpHttpServer,
   PermissionRoutingService,
   PermissionRoutingServiceToken,
@@ -49,6 +56,19 @@ export class AINativeModule extends NodeModule {
     {
       token: AcpPermissionCallerServiceToken,
       useClass: AcpPermissionCallerService,
+    },
+    AcpBrowserRpcRegistry,
+    {
+      token: AcpPermissionRpcBridgeServiceToken,
+      useClass: AcpPermissionRpcBridgeService,
+    },
+    {
+      token: AcpThreadStatusRpcBridgeServiceToken,
+      useClass: AcpThreadStatusRpcBridgeService,
+    },
+    {
+      token: AcpWebMcpRpcBridgeServiceToken,
+      useClass: AcpWebMcpRpcBridgeService,
     },
     {
       token: ToolInvocationRegistryManager,
@@ -108,15 +128,15 @@ export class AINativeModule extends NodeModule {
     },
     {
       servicePath: AcpPermissionServicePath,
-      token: AcpPermissionCallerServiceToken,
+      token: AcpPermissionRpcBridgeServiceToken,
     },
     {
       servicePath: AcpThreadStatusServicePath,
-      token: AcpThreadStatusCallerServiceToken,
+      token: AcpThreadStatusRpcBridgeServiceToken,
     },
     {
       servicePath: AcpWebMcpBridgePath,
-      token: AcpWebMcpCallerServiceToken,
+      token: AcpWebMcpRpcBridgeServiceToken,
     },
   ];
 }

@@ -1,5 +1,7 @@
-import { Injectable } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
+
+import { AcpBrowserRpcRegistry } from './acp-browser-rpc-registry';
 
 import type {
   IAcpWebMcpBridgeService,
@@ -15,21 +17,16 @@ interface WebMcpGroupDefinitionOptions {
  * Node-side RPC caller service for WebMCP bridge calls.
  * Calls browser-side methods via RPC to retrieve group definitions and execute tools.
  *
- * Uses the same staticRpcClient pattern as AcpPermissionCallerService
- * to bridge parent/child injector scopes: the child-injector instance
- * (created by bindModuleBackService) gets this.client set, while
- * parent-injector consumers need the static fallback.
+ * Uses AcpBrowserRpcRegistry to bridge parent-injector consumers to the active
+ * per-connection browser RPC service without changing core connection wiring.
  */
 @Injectable()
 export class AcpWebMcpCallerService extends RPCService<IAcpWebMcpBridgeService> {
-  static staticRpcClient: IAcpWebMcpBridgeService | undefined;
-
-  static setStaticRpcClient(client: IAcpWebMcpBridgeService | undefined): void {
-    AcpWebMcpCallerService.staticRpcClient = client;
-  }
+  @Autowired(AcpBrowserRpcRegistry)
+  private readonly browserRpcRegistry: AcpBrowserRpcRegistry;
 
   private getRpcClient(): IAcpWebMcpBridgeService | undefined {
-    return this.client ?? AcpWebMcpCallerService.staticRpcClient;
+    return this.client ?? this.browserRpcRegistry?.getWebMcpClient();
   }
 
   async getGroupDefinitions(options?: WebMcpGroupDefinitionOptions): Promise<WebMcpGroupDef[]> {

@@ -56,8 +56,9 @@ export const AcpAgentRequestHandlerToken = Symbol('AcpAgentRequestHandlerToken')
  * 由于 `AcpAgentRequestHandler` 在主 Injector 中创建，它通过 `@Autowired` 注入的
  * `AcpPermissionCallerService` 不是 childInjector 中与 RPC 连接关联的实例。
  *
- * 解决方案：`AcpPermissionCallerService` 使用 RPCService 框架自动注入的 `this.client`
- * 来调用 Browser 端的 `AcpPermissionRpcService`，确保权限对话框在用户当前活跃的 Browser Tab 中显示。
+ * 解决方案：per-connection 的 ACP permission bridge 在连接建立时登记 Browser RPC client，
+ * `AcpPermissionCallerService` 再从 registry 取当前活跃的 client 调用 Browser 端
+ * `AcpPermissionRpcService`。
  *
  * @see {@link /docs/ai-native/architecture/injector-hierarchy.md} 详细设计文档
  */

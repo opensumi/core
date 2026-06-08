@@ -10,6 +10,7 @@ jest.mock('@opensumi/di', () => {
   };
 });
 
+import { AcpBrowserRpcRegistry } from '../../src/node/acp/acp-browser-rpc-registry';
 import {
   AcpPermissionCallerManagerToken,
   AcpPermissionCallerService,
@@ -192,6 +193,26 @@ describe('AcpPermissionCallerService', () => {
           'sess-1',
         ),
       ).rejects.toThrow('[ACP Permission Caller] No active RPC client available');
+    });
+
+    it('should fall back to registered browser RPC client when instance client is unavailable', async () => {
+      Object.defineProperty(service, 'rpcClient', { value: undefined, writable: true });
+      const registry = new AcpBrowserRpcRegistry();
+      registry.registerPermissionClient('client-1', mockRpcClient as any);
+      (service as any).browserRpcRegistry = registry;
+
+      mockRpcClient.$showPermissionDialog.mockResolvedValue({ type: 'allow', optionId: 'allow_once' });
+
+      await service.requestPermission(
+        {
+          sessionId: 'sess-1',
+          toolCall: { toolCallId: 'tc-1', title: 'Test', kind: 'read', status: 'pending' } as any,
+          options: [{ optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' as const }],
+        },
+        'sess-1',
+      );
+
+      expect(mockRpcClient.$showPermissionDialog).toHaveBeenCalled();
     });
 
     it('should use the provided sessionId for the dialog requestId', async () => {

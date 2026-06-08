@@ -1,5 +1,7 @@
-import { Injectable } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
+
+import { AcpBrowserRpcRegistry } from './acp-browser-rpc-registry';
 
 import type {
   AcpPermissionDecision,
@@ -18,43 +20,24 @@ export const AcpPermissionCallerServiceToken = Symbol('AcpPermissionCallerServic
  *
  * Node-side singleton that calls the browser-side permission dialog via RPC.
  *
- * IMPORTANT: This service exists in BOTH the parent injector (providers) AND the
- * child injector per connection (backServices). The child instance gets rpcClient
- * set by bindModuleBackService, but the parent instance does not. To bridge this,
- * the child instance stores its RPC stub in staticRpcClient so all instances
- * can use it.
+ * Browser RPC clients are registered by per-connection bridge services in
+ * AcpBrowserRpcRegistry. This keeps connection wiring inside ai-native while
+ * allowing parent-injector consumers to reach the active browser connection.
  *
  * Each call to requestPermission() independently invokes
- * this.client or the shared static RPC stub — no global lock,
+ * this.client or the active registered RPC stub — no global lock,
  * concurrent requests run independently.
  */
 @Injectable()
 export class AcpPermissionCallerService extends RPCService<IAcpPermissionService> {
-  /**
-   * Shared RPC stub for the current browser connection.
-   * Populated by setStaticRpcClient() after bindModuleBackService
-   * assigns serviceInstance.rpcClient = [stub].
-   * This allows parent-injector consumers (e.g. PermissionRoutingService)
-   * to reach the browser-side dialog via static access.
-   */
-  static staticRpcClient: IAcpPermissionService | undefined;
+  @Autowired(AcpBrowserRpcRegistry)
+  private readonly browserRpcRegistry: AcpBrowserRpcRegistry;
 
   /**
-   * Set the shared static RPC client.
-   * Called by bindModuleBackService (or equivalent) after setting rpcClient
-   * on the child-injector instance, so that parent-injector consumers
-   * can also reach the browser-side permission dialog.
-   */
-  static setStaticRpcClient(client: IAcpPermissionService | undefined): void {
-    AcpPermissionCallerService.staticRpcClient = client;
-  }
-
-  /**
-   * Get the RPC client from the shared static set by
-   * bindModuleBackService on the child-injector instance.
+   * Get the RPC client from the instance or from the active browser bridge.
    */
   private getRpcClient(): IAcpPermissionService | undefined {
-    return this.client ?? AcpPermissionCallerService.staticRpcClient;
+    return this.client ?? this.browserRpcRegistry?.getPermissionClient();
   }
 
   /**
