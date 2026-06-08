@@ -139,7 +139,7 @@ export const AIChatTabRenderer = ({
 }) => {
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const isAgenticLayout = panelLayoutService.getLayoutMode() === 'agentic';
-  const agenticResizeHandle = useFixedResizeSideHandle(isAgenticLayout, false);
+  const aiChatResizeHandle = useFixedResizeSideHandle(true, !isAgenticLayout);
 
   const renderer = (
     <TabRendererBase
@@ -160,11 +160,7 @@ export const AIChatTabRenderer = ({
     />
   );
 
-  return isAgenticLayout ? (
-    <PanelContext.Provider value={agenticResizeHandle}>{renderer}</PanelContext.Provider>
-  ) : (
-    renderer
-  );
+  return <PanelContext.Provider value={aiChatResizeHandle}>{renderer}</PanelContext.Provider>;
 };
 
 export const AIChatTabRendererWithTab = ({
@@ -176,7 +172,7 @@ export const AIChatTabRendererWithTab = ({
 }) => {
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const isAgenticLayout = panelLayoutService.getLayoutMode() === 'agentic';
-  const agenticResizeHandle = useFixedResizeSideHandle(isAgenticLayout, false);
+  const aiChatResizeHandle = useFixedResizeSideHandle(true, !isAgenticLayout);
 
   const renderer = (
     <TabRendererBase
@@ -197,11 +193,7 @@ export const AIChatTabRendererWithTab = ({
     />
   );
 
-  return isAgenticLayout ? (
-    <PanelContext.Provider value={agenticResizeHandle}>{renderer}</PanelContext.Provider>
-  ) : (
-    renderer
-  );
+  return <PanelContext.Provider value={aiChatResizeHandle}>{renderer}</PanelContext.Provider>;
 };
 
 export const AILeftTabRenderer = ({

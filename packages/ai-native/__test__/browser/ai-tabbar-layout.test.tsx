@@ -407,6 +407,34 @@ describe('AI tabbar layout BDD', () => {
     expect(mockCapturedTabbarViewBaseProps.disableAutoAdjust).toBeUndefined();
   });
 
+  it('Given classic layout, when AI chat collapses, then it uses the latter split child resize side', async () => {
+    const { PanelContext } = await import('@opensumi/ide-core-browser/lib/components');
+    const { AIChatTabRenderer } = await import('../../src/browser/layout/tabbar.view');
+    const parentResizeHandle = {
+      setSize: jest.fn(),
+      setRelativeSize: jest.fn(),
+      getSize: jest.fn(() => 360),
+      getRelativeSize: jest.fn(() => [1000, 360]),
+      lockSize: jest.fn(),
+      setMaxSize: jest.fn(),
+      hidePanel: jest.fn(),
+    };
+
+    act(() => {
+      root.render(
+        <PanelContext.Provider value={parentResizeHandle}>
+          <AIChatTabRenderer className='slot-class' components={[]} />
+        </PanelContext.Provider>,
+      );
+    });
+
+    mockCapturedResizeHandle.setSize(0, false);
+    mockCapturedResizeHandle.getSize(false);
+
+    expect(parentResizeHandle.setSize).toHaveBeenCalledWith(0, true);
+    expect(parentResizeHandle.getSize).toHaveBeenCalledWith(true);
+  });
+
   it('Given classic layout, when the tabbed AI chat renderer renders, then it keeps the main branch right-side direction', async () => {
     const { AIChatTabRendererWithTab } = await import('../../src/browser/layout/tabbar.view');
 

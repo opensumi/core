@@ -12,6 +12,7 @@ export const AI_PANEL_LAYOUT_MENU = 'aiNative/panelLayout';
 export const AI_AGENTIC_LAYOUT_STORAGE_KEY = 'layout.ai.agentic';
 export const AI_AGENTIC_CHAT_DEFAULT_SIZE = 840;
 export const AI_CLASSIC_CHAT_DEFAULT_SIZE = 360;
+const AI_CLASSIC_CHAT_MAX_SIZE = 1080;
 
 export const DEFAULT_AI_PANEL_LAYOUT: PanelLayoutMode = 'agentic';
 
@@ -106,21 +107,32 @@ export class AIPanelLayoutService {
     this.layoutService.setLayoutStateKey(getPanelLayoutStorageKey(mode), { saveCurrent });
   }
 
+  private getAIChatOpenSize(mode: PanelLayoutMode): number {
+    const normalizedMode = normalizePanelLayoutMode(mode);
+    if (normalizedMode === 'agentic') {
+      return getAIChatDefaultSize(normalizedMode);
+    }
+
+    const prevSize = this.layoutService.getTabbarService(AI_CHAT_VIEW_ID).prevSize;
+    if (typeof prevSize === 'number' && Number.isFinite(prevSize) && prevSize > 0) {
+      return Math.min(prevSize, AI_CLASSIC_CHAT_MAX_SIZE);
+    }
+
+    return getAIChatDefaultSize(normalizedMode);
+  }
+
   showAIChatView(mode: PanelLayoutMode = this.getLayoutMode()): void {
     const normalizedMode = normalizePanelLayoutMode(mode);
-    this.layoutService.toggleSlot(
-      AI_CHAT_VIEW_ID,
-      true,
-      normalizedMode === 'agentic' ? getAIChatDefaultSize(normalizedMode) : undefined,
-    );
+    this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, this.getAIChatOpenSize(normalizedMode));
   }
 
   toggleAIChatView(mode: PanelLayoutMode = this.getLayoutMode()): void {
     const normalizedMode = normalizePanelLayoutMode(mode);
+    const isVisible = this.layoutService.isVisible(AI_CHAT_VIEW_ID);
     this.layoutService.toggleSlot(
       AI_CHAT_VIEW_ID,
       undefined,
-      normalizedMode === 'agentic' ? getAIChatDefaultSize(normalizedMode) : undefined,
+      isVisible ? undefined : this.getAIChatOpenSize(normalizedMode),
     );
   }
 

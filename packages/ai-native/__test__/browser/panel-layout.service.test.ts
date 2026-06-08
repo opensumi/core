@@ -4,6 +4,7 @@ import {
   AIPanelLayoutService,
   AI_AGENTIC_CHAT_DEFAULT_SIZE,
   AI_AGENTIC_LAYOUT_STORAGE_KEY,
+  AI_CLASSIC_CHAT_DEFAULT_SIZE,
   AI_PANEL_LAYOUT_CONTEXT,
   getPanelLayoutStorageKey,
   normalizePanelLayoutMode,
@@ -15,10 +16,14 @@ describe('AIPanelLayoutService', () => {
     designLayout = 'agentic',
     inspectValue: initialInspectValue = {},
     setError,
+    aiChatPrevSize,
+    aiChatVisible = false,
   }: {
     designLayout?: 'classic' | 'agentic';
     inspectValue?: { globalValue?: 'classic' | 'agentic'; workspaceValue?: 'classic' | 'agentic' };
     setError?: Error;
+    aiChatPrevSize?: number;
+    aiChatVisible?: boolean;
   } = {}) => {
     let inspectValue = initialInspectValue;
     const contextKey = {
@@ -51,7 +56,10 @@ describe('AIPanelLayoutService', () => {
     const layoutService = {
       setLayoutStateKey: jest.fn(),
       toggleSlot: jest.fn(),
-      isVisible: jest.fn(() => false),
+      isVisible: jest.fn(() => aiChatVisible),
+      getTabbarService: jest.fn(() => ({
+        prevSize: aiChatPrevSize,
+      })),
     };
     const service = new AIPanelLayoutService();
 
@@ -151,20 +159,36 @@ describe('AIPanelLayoutService', () => {
     expect(layoutService.toggleSlot).not.toHaveBeenCalled();
   });
 
-  it('should keep the main classic AI chat command size behavior', () => {
+  it('should open classic AI chat with the classic fallback size', () => {
     const { layoutService, service } = createService();
 
     service.showAIChatView('classic');
 
-    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, undefined);
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_CLASSIC_CHAT_DEFAULT_SIZE);
   });
 
-  it('should keep the main classic AI chat toggle size behavior', () => {
-    const { layoutService, service } = createService();
+  it('should cap stale classic AI chat sizes when opening from the avatar', () => {
+    const { layoutService, service } = createService({ aiChatPrevSize: 1794 });
+
+    service.toggleAIChatView('classic');
+
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, 1080);
+  });
+
+  it('should not force a classic AI chat size when closing from the avatar', () => {
+    const { layoutService, service } = createService({ aiChatVisible: true, aiChatPrevSize: 600 });
 
     service.toggleAIChatView('classic');
 
     expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, undefined);
+  });
+
+  it('should use the classic AI chat fallback size when opening from the avatar', () => {
+    const { layoutService, service } = createService();
+
+    service.toggleAIChatView('classic');
+
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, undefined, AI_CLASSIC_CHAT_DEFAULT_SIZE);
   });
 
   it('should use the agentic AI chat default size in agentic mode', () => {
@@ -185,7 +209,7 @@ describe('AIPanelLayoutService', () => {
       'classic',
       PreferenceScope.User,
     );
-    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, undefined);
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_CLASSIC_CHAT_DEFAULT_SIZE);
   });
 
   it('should apply external preference changes to the active layout shell', () => {
@@ -198,6 +222,6 @@ describe('AIPanelLayoutService', () => {
 
     expect(contextKey.set).toHaveBeenCalledWith('classic');
     expect(layoutService.setLayoutStateKey).toHaveBeenCalledWith('layout', { saveCurrent: true });
-    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, undefined);
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_CLASSIC_CHAT_DEFAULT_SIZE);
   });
 });
