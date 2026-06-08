@@ -17,6 +17,7 @@ import type {
 
 
 export const WEBMCP_PROFILE_SETTING_ID = 'ai.native.webmcp.profile';
+export const WEBMCP_PROFILE_QUERY_PARAM = 'webMcpProfile';
 
 export interface WebMcpGroupDefinitionOptions {
   includeAllTools?: boolean;
@@ -50,6 +51,18 @@ export interface WebMcpGroupRegistration {
   description: string;
   defaultLoaded: boolean;
   tools: WebMcpToolExecute[];
+}
+
+export function getWebMcpProfileFromSearch(search: string | undefined): WebMcpProfile | undefined {
+  if (!search) {
+    return undefined;
+  }
+  const params = new URLSearchParams(search);
+  return [params.get(WEBMCP_PROFILE_QUERY_PARAM), params.get(WEBMCP_PROFILE_SETTING_ID)].find(isValidWebMcpProfile);
+}
+
+export function canUseWebMcpProfileQueryOverride(hostname: string | undefined): boolean {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
 }
 
 @Injectable()
@@ -134,11 +147,25 @@ export class WebMcpGroupRegistry {
   }
 
   private getActiveProfile(): WebMcpProfile {
+    const profileOverride = this.getRuntimeProfileOverride();
+    if (profileOverride) {
+      return profileOverride;
+    }
     const profile = this.preferenceService?.get<WebMcpProfile>(WEBMCP_PROFILE_SETTING_ID, 'default');
     if (isValidWebMcpProfile(profile)) {
       return profile;
     }
     return 'default';
+  }
+
+  private getRuntimeProfileOverride(): WebMcpProfile | undefined {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+    if (!canUseWebMcpProfileQueryOverride(window.location?.hostname)) {
+      return undefined;
+    }
+    return getWebMcpProfileFromSearch(window.location?.search);
   }
 
   private isToolInProfile(tool: WebMcpToolExecute, profile: WebMcpProfile): boolean {

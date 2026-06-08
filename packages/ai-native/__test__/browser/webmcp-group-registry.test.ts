@@ -1,4 +1,10 @@
-import { WEBMCP_PROFILE_SETTING_ID, WebMcpGroupRegistry } from '../../src/browser/acp/webmcp-group-registry';
+import {
+  WEBMCP_PROFILE_QUERY_PARAM,
+  WEBMCP_PROFILE_SETTING_ID,
+  WebMcpGroupRegistry,
+  canUseWebMcpProfileQueryOverride,
+  getWebMcpProfileFromSearch,
+} from '../../src/browser/acp/webmcp-group-registry';
 
 describe('WebMCP group registry policy', () => {
   function createRegistry(profile: string) {
@@ -43,6 +49,23 @@ describe('WebMCP group registry policy', () => {
     return registry;
   }
 
+  it('parses runtime profile overrides from URL search params', () => {
+    expect(getWebMcpProfileFromSearch(`?${WEBMCP_PROFILE_QUERY_PARAM}=interactive`)).toBe('interactive');
+    expect(getWebMcpProfileFromSearch(`?${WEBMCP_PROFILE_SETTING_ID}=full`)).toBe('full');
+    expect(
+      getWebMcpProfileFromSearch(`?${WEBMCP_PROFILE_QUERY_PARAM}=invalid&${WEBMCP_PROFILE_SETTING_ID}=full`),
+    ).toBe('full');
+    expect(getWebMcpProfileFromSearch(`?${WEBMCP_PROFILE_QUERY_PARAM}=invalid`)).toBeUndefined();
+    expect(getWebMcpProfileFromSearch('')).toBeUndefined();
+  });
+
+  it('only allows URL profile overrides on loopback hosts', () => {
+    expect(canUseWebMcpProfileQueryOverride('localhost')).toBe(true);
+    expect(canUseWebMcpProfileQueryOverride('127.0.0.1')).toBe(true);
+    expect(canUseWebMcpProfileQueryOverride('::1')).toBe(true);
+    expect(canUseWebMcpProfileQueryOverride('example.com')).toBe(false);
+  });
+
   it('does not expose or execute shell tools in the default profile', async () => {
     const registry = createRegistry('default');
 
@@ -72,5 +95,23 @@ describe('WebMCP group registry policy', () => {
       success: false,
       error: 'PERMISSION_DENIED',
     });
+  });
+
+  it('prefers the URL profile override over the persisted preference', async () => {
+    const previousUrl = window.location.href;
+    window.history.pushState({}, '', `/?${WEBMCP_PROFILE_QUERY_PARAM}=interactive`);
+    try {
+      const registry = createRegistry('default');
+
+      expect(registry.getGroupDefinitions()[0].tools.map((tool) => tool.name)).toEqual([
+        'terminal_read_output',
+        'terminal_run_command',
+      ]);
+      await expect(registry.executeTool('terminal', 'terminal_run_command', {})).resolves.toMatchObject({
+        success: true,
+      });
+    } finally {
+      window.history.pushState({}, '', previousUrl);
+    }
   });
 });

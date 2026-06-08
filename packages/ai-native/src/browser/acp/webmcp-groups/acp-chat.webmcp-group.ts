@@ -48,6 +48,33 @@ function getRequestCount(session: unknown): number {
   return Array.isArray(requests) ? requests.length : 0;
 }
 
+function getSessionCreatedAt(session: unknown): number {
+  const model = session as {
+    createdAt?: number;
+    history?: { getMessages?: () => Array<{ timestamp?: number; replyStartTime?: number }> };
+  };
+  const firstMessage = model.history?.getMessages?.()[0];
+  return model.createdAt || firstMessage?.timestamp || firstMessage?.replyStartTime || 0;
+}
+
+function sortSessionsByCreatedAtDesc(sessions: unknown[]): unknown[] {
+  return sessions
+    .map((session, index) => ({ session, index, createdAt: getSessionCreatedAt(session) }))
+    .sort((a, b) => {
+      if (a.createdAt && b.createdAt && a.createdAt !== b.createdAt) {
+        return b.createdAt - a.createdAt;
+      }
+      if (a.createdAt && !b.createdAt) {
+        return -1;
+      }
+      if (!a.createdAt && b.createdAt) {
+        return 1;
+      }
+      return b.index - a.index;
+    })
+    .map(({ session }) => session);
+}
+
 function toSessionSummary(session: unknown, permissionBridge?: AcpPermissionBridgeService | null) {
   const model = session as {
     sessionId?: string;
@@ -62,6 +89,7 @@ function toSessionSummary(session: unknown, permissionBridge?: AcpPermissionBrid
     title: model.title || '',
     modelId: model.modelId,
     threadStatus: model.threadStatus,
+    createdAt: getSessionCreatedAt(session),
     requestCount: getRequestCount(session),
     historyMessageCount: getHistoryMessageCount(session),
     slicedMessageCount: model.slicedMessageCount ?? 0,
@@ -216,7 +244,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
       {
         name: 'acp_chat_list_sessions',
         description:
-          'List ACP chat sessions as metadata only. Does not return prompts, responses, or tool-call contents.',
+          'List ACP chat sessions newest first as metadata only. Does not return prompts, responses, or tool-call contents.',
         riskLevel: 'read',
         profiles: ['interactive', 'full'],
         inputSchema: {
@@ -231,8 +259,9 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
           const permissionBridge = tryGetService<AcpPermissionBridgeService>(container, AcpPermissionBridgeService);
           try {
             const sessions = chatInternalService.getSessions();
+            const sortedSessions = sortSessionsByCreatedAtDesc(sessions);
             return successResult({
-              sessions: sessions.map((session) => toSessionSummary(session, permissionBridge)),
+              sessions: sortedSessions.map((session) => toSessionSummary(session, permissionBridge)),
               total: sessions.length,
             });
           } catch (err) {

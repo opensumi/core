@@ -167,6 +167,106 @@ describe('WebMCP Group - ACP Chat', () => {
     expect(JSON.stringify(result)).not.toContain('responseText');
   });
 
+  it('returns session list metadata newest first without prompt or response content', async () => {
+    const oldSession = {
+      sessionId: 'acp:old',
+      title: 'Old Session',
+      modelId: 'claude',
+      threadStatus: 'idle',
+      createdAt: 1000,
+      requests: [],
+      slicedMessageCount: 0,
+      history: {
+        getMessages: jest.fn().mockReturnValue([
+          { role: ChatMessageRole.User, content: 'old prompt content', timestamp: 1000 },
+          { role: ChatMessageRole.Assistant, content: 'old response content' },
+        ]),
+        getMemorySummaries: jest.fn().mockReturnValue([]),
+      },
+    };
+    const newestByFirstMessage = {
+      sessionId: 'acp:newest-by-message',
+      title: 'Newest By Message',
+      modelId: 'claude',
+      threadStatus: 'working',
+      requests: [],
+      slicedMessageCount: 0,
+      history: {
+        getMessages: jest.fn().mockReturnValue([
+          { role: ChatMessageRole.User, content: 'new prompt content', timestamp: 3000 },
+          { role: ChatMessageRole.Assistant, content: 'new response content' },
+        ]),
+        getMemorySummaries: jest.fn().mockReturnValue([]),
+      },
+    };
+    const middleSession = {
+      sessionId: 'acp:middle',
+      title: 'Middle Session',
+      modelId: 'claude',
+      threadStatus: 'awaiting_prompt',
+      createdAt: 2000,
+      requests: [],
+      slicedMessageCount: 0,
+      history: {
+        getMessages: jest.fn().mockReturnValue([
+          { role: ChatMessageRole.User, content: 'middle prompt content', timestamp: 2000 },
+        ]),
+        getMemorySummaries: jest.fn().mockReturnValue([]),
+      },
+    };
+    const firstUntimestampedSession = {
+      sessionId: 'acp:first-untimestamped',
+      title: 'First Untimestamped Session',
+      modelId: 'claude',
+      threadStatus: 'idle',
+      requests: [],
+      slicedMessageCount: 0,
+      history: {
+        getMessages: jest.fn().mockReturnValue([{ role: ChatMessageRole.User, content: 'untimestamped prompt' }]),
+        getMemorySummaries: jest.fn().mockReturnValue([]),
+      },
+    };
+    const secondUntimestampedSession = {
+      sessionId: 'acp:second-untimestamped',
+      title: 'Second Untimestamped Session',
+      modelId: 'claude',
+      threadStatus: 'idle',
+      requests: [],
+      slicedMessageCount: 0,
+      history: {
+        getMessages: jest.fn().mockReturnValue([]),
+        getMemorySummaries: jest.fn().mockReturnValue([]),
+      },
+    };
+    mockChatInternalService.getSessions.mockReturnValueOnce([
+      oldSession,
+      newestByFirstMessage,
+      firstUntimestampedSession,
+      middleSession,
+      secondUntimestampedSession,
+    ]);
+    const group = createAcpChatGroup(createMockContainer());
+    const tool = group.tools.find((item) => item.name === 'acp_chat_list_sessions')!;
+
+    const result = await tool.execute({});
+
+    expect(result).toMatchObject({
+      success: true,
+      result: {
+        total: 5,
+        sessions: [
+          { sessionId: 'acp:newest-by-message', createdAt: 3000 },
+          { sessionId: 'acp:middle', createdAt: 2000 },
+          { sessionId: 'acp:old', createdAt: 1000 },
+          { sessionId: 'acp:second-untimestamped', createdAt: 0 },
+          { sessionId: 'acp:first-untimestamped', createdAt: 0 },
+        ],
+      },
+    });
+    expect(JSON.stringify(result)).not.toContain('prompt content');
+    expect(JSON.stringify(result)).not.toContain('response content');
+  });
+
   it('returns permission counts without handling the permission decision', async () => {
     const group = createAcpChatGroup(createMockContainer());
     const tool = group.tools.find((item) => item.name === 'acp_chat_get_permission_state')!;
