@@ -58,7 +58,7 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     [AINativeSettingSectionsId.PanelLayout]: {
       type: 'string',
       enum: [EAIPanelLayout.classic, EAIPanelLayout.agentic],
-      default: EAIPanelLayout.agentic,
+      default: EAIPanelLayout.classic,
       description: 'Controls the AI Native panel layout.',
     },
     [AINativeSettingSectionsId.IntelligentCompletionsPromptEngineeringEnabled]: {

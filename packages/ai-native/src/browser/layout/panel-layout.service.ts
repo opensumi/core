@@ -14,7 +14,7 @@ export const AI_AGENTIC_CHAT_DEFAULT_SIZE = 840;
 export const AI_CLASSIC_CHAT_DEFAULT_SIZE = 360;
 const AI_CLASSIC_CHAT_MAX_SIZE = 1080;
 
-export const DEFAULT_AI_PANEL_LAYOUT: PanelLayoutMode = 'agentic';
+export const DEFAULT_AI_PANEL_LAYOUT: PanelLayoutMode = 'classic';
 
 export function normalizePanelLayoutMode(value: unknown): PanelLayoutMode {
   return value === 'classic' || value === 'agentic' ? value : DEFAULT_AI_PANEL_LAYOUT;

@@ -1,3 +1,4 @@
+import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { AINativeSettingSectionsId, PreferenceScope } from '@opensumi/ide-core-common';
 
 import {
@@ -13,14 +14,14 @@ import { AI_CHAT_VIEW_ID } from '../../src/common';
 
 describe('AIPanelLayoutService', () => {
   const createService = ({
-    designLayout = 'agentic',
+    designLayout = 'classic',
     inspectValue: initialInspectValue = {},
     setError,
     aiChatPrevSize,
     aiChatVisible = false,
   }: {
     designLayout?: 'classic' | 'agentic';
-    inspectValue?: { globalValue?: 'classic' | 'agentic'; workspaceValue?: 'classic' | 'agentic' };
+    inspectValue?: { globalValue?: unknown; workspaceValue?: unknown; workspaceFolderValue?: unknown };
     setError?: Error;
     aiChatPrevSize?: number;
     aiChatVisible?: boolean;
@@ -90,8 +91,8 @@ describe('AIPanelLayoutService', () => {
   it('should preserve valid values and fall back to the default for unknown values', () => {
     expect(normalizePanelLayoutMode('agentic')).toBe('agentic');
     expect(normalizePanelLayoutMode('classic')).toBe('classic');
-    expect(normalizePanelLayoutMode('unknown')).toBe('agentic');
-    expect(normalizePanelLayoutMode(undefined)).toBe('agentic');
+    expect(normalizePanelLayoutMode('unknown')).toBe('classic');
+    expect(normalizePanelLayoutMode(undefined)).toBe('classic');
   });
 
   it('should map panel layout modes to isolated layout storage keys', () => {
@@ -99,25 +100,44 @@ describe('AIPanelLayoutService', () => {
     expect(getPanelLayoutStorageKey('agentic')).toBe(AI_AGENTIC_LAYOUT_STORAGE_KEY);
   });
 
-  it('should default to agentic without preference or app config', () => {
+  it('should default to classic without preference or app config', () => {
     const { service } = createService();
+
+    expect(service.getLayoutMode()).toBe('classic');
+  });
+
+  it('should fall back to classic for an invalid user preference', () => {
+    const { service } = createService({
+      designLayout: 'agentic',
+      inspectValue: { globalValue: 'unknown' },
+    });
+
+    expect(service.getLayoutMode()).toBe('classic');
+  });
+
+  it('should default design layout config to classic without an override', () => {
+    const designLayoutConfig = new DesignLayoutConfig();
+
+    expect(designLayoutConfig.panelLayout).toBe('classic');
+
+    designLayoutConfig.setLayout({ panelLayout: 'agentic' });
+
+    expect(designLayoutConfig.panelLayout).toBe('agentic');
+  });
+
+  it('should use app config when no user preference is set', () => {
+    const { service } = createService({ designLayout: 'agentic' });
 
     expect(service.getLayoutMode()).toBe('agentic');
   });
 
-  it('should use app config when no user preference is set', () => {
-    const { service } = createService({ designLayout: 'classic' });
-
-    expect(service.getLayoutMode()).toBe('classic');
-  });
-
   it('should let user preference override app config', () => {
     const { service } = createService({
-      designLayout: 'agentic',
-      inspectValue: { globalValue: 'classic' },
+      designLayout: 'classic',
+      inspectValue: { globalValue: 'agentic' },
     });
 
-    expect(service.getLayoutMode()).toBe('classic');
+    expect(service.getLayoutMode()).toBe('agentic');
   });
 
   it('should initialize layout state and context key from the current mode', () => {
