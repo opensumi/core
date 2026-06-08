@@ -26,6 +26,8 @@ export class ACPSessionProvider implements ISessionProvider {
 
   private loadedSessionsResult: ISessionModel[] | null = null;
 
+  private loadingSessionsPromise: Promise<ISessionModel[]> | null = null;
+
   canHandle(mode: string): boolean {
     return mode.startsWith('acp');
   }
@@ -76,11 +78,25 @@ export class ACPSessionProvider implements ISessionProvider {
   }
 
   async loadSessions(): Promise<ISessionModel[]> {
-    if (this.loadedSessionsResult) {
+    if (Array.isArray(this.loadedSessionsResult)) {
       return this.loadedSessionsResult;
     }
 
+    if (this.loadingSessionsPromise) {
+      return this.loadingSessionsPromise;
+    }
+
+    this.loadingSessionsPromise = this.doLoadSessions();
+    try {
+      return await this.loadingSessionsPromise;
+    } finally {
+      this.loadingSessionsPromise = null;
+    }
+  }
+
+  private async doLoadSessions(): Promise<ISessionModel[]> {
     if (!this.aiBackService?.listSessions) {
+      this.loadedSessionsResult = [];
       return [];
     }
 
@@ -89,7 +105,8 @@ export class ACPSessionProvider implements ISessionProvider {
       const result = await this.aiBackService!.listSessions(config);
 
       if (!result?.sessions?.length) {
-        return [];
+        this.loadedSessionsResult = [];
+        return this.loadedSessionsResult;
       }
 
       // 只返回会话列表的元数据，不加载完整数据
@@ -108,12 +125,9 @@ export class ACPSessionProvider implements ISessionProvider {
           title: sessionMeta.title,
         }));
 
-      if (sessionModels.length === 0) {
-        return [];
-      }
       this.loadedSessionsResult = sessionModels as unknown as ISessionModel[];
 
-      return this.loadedSessionsResult ?? [];
+      return this.loadedSessionsResult;
     } catch (e) {
       this.messageService.error(e.message);
       return [];

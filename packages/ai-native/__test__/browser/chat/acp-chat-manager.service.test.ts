@@ -199,6 +199,68 @@ describe('AcpChatManagerService', () => {
     expect(session.createdAt).toBe(67890);
   });
 
+  it('caches empty ACP session list results', async () => {
+    const provider = createSessionProvider();
+    const listSessions = jest.fn().mockResolvedValue({ sessions: [] });
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        listSessions,
+      },
+    });
+
+    await expect(provider.loadSessions()).resolves.toEqual([]);
+    await expect(provider.loadSessions()).resolves.toEqual([]);
+
+    expect(listSessions).toHaveBeenCalledTimes(1);
+  });
+
+  it('reuses the in-flight ACP session list request', async () => {
+    const provider = createSessionProvider();
+    let resolveListSessions!: (value: any) => void;
+    const listSessions = jest.fn(
+      () =>
+        new Promise((resolve) => {
+          resolveListSessions = resolve;
+        }),
+    );
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        listSessions,
+      },
+    });
+
+    const first = provider.loadSessions();
+    const second = provider.loadSessions();
+
+    await Promise.resolve();
+
+    expect(listSessions).toHaveBeenCalledTimes(1);
+
+    resolveListSessions({
+      sessions: [
+        {
+          sessionId: 's1',
+          title: 'Session 1',
+        },
+      ],
+    });
+
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      [
+        expect.objectContaining({
+          sessionId: 'acp:s1',
+          title: 'Session 1',
+        }),
+      ],
+      [
+        expect.objectContaining({
+          sessionId: 'acp:s1',
+          title: 'Session 1',
+        }),
+      ],
+    ]);
+  });
+
   it('preserves metadata title when loading a full ACP session without title', async () => {
     const service = createService();
     const sessionId = 'acp:s1';

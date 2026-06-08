@@ -38,18 +38,23 @@ import { AcpChatViewWrapper } from '../../src/browser/acp/components/AcpChatView
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 function createServices({
+  createSessionModel = jest.fn(() => Promise.resolve()),
   ready = jest.fn(() => Promise.resolve(true)),
+  sessionModel,
   supportsAgentMode = true,
 }: {
+  createSessionModel?: jest.Mock;
   ready?: jest.Mock;
+  sessionModel?: unknown;
   supportsAgentMode?: boolean;
 } = {}) {
   const aiBackService = {
     ready,
   };
   const aiChatService = {
-    createSessionModel: jest.fn(),
     init: jest.fn(),
+    createSessionModel,
+    sessionModel,
   };
   const chatManagerService = {
     fallbackToLocal: jest.fn(),
@@ -123,19 +128,33 @@ describe('AcpChatViewWrapper', () => {
     });
   }
 
-  it('loads ACP session metadata without creating a session when opened', async () => {
+  it('creates an ACP session before rendering children so config options can populate', async () => {
     const services = createServices();
 
     await renderWrapper(services.aiChatService);
 
     expect(services.aiBackService.ready).toHaveBeenCalled();
     expect(services.aiChatService.init).toHaveBeenCalledTimes(1);
+    expect(services.aiChatService.createSessionModel).toHaveBeenCalledTimes(1);
     expect(services.chatManagerService.loadSessionList).toHaveBeenCalledTimes(1);
-    expect(services.aiChatService.createSessionModel).not.toHaveBeenCalled();
     expect(container.querySelector('[data-testid="child"]')).not.toBeNull();
   });
 
-  it('falls back without creating a local session when ACP backend is unavailable', async () => {
+  it('does not create another ACP session when one is already active', async () => {
+    const services = createServices({
+      sessionModel: { sessionId: 'acp:existing-session' },
+    });
+
+    await renderWrapper(services.aiChatService);
+
+    expect(services.aiBackService.ready).toHaveBeenCalled();
+    expect(services.aiChatService.init).toHaveBeenCalledTimes(1);
+    expect(services.aiChatService.createSessionModel).not.toHaveBeenCalled();
+    expect(services.chatManagerService.loadSessionList).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[data-testid="child"]')).not.toBeNull();
+  });
+
+  it('falls back and creates a local session when ACP backend is unavailable', async () => {
     const services = createServices({
       ready: jest.fn(() => Promise.reject(new Error('not ready'))),
     });
@@ -144,7 +163,7 @@ describe('AcpChatViewWrapper', () => {
 
     expect(services.chatManagerService.fallbackToLocal).toHaveBeenCalledTimes(1);
     expect(services.chatProxyService.registerFallbackAgent).toHaveBeenCalledTimes(1);
-    expect(services.aiChatService.createSessionModel).not.toHaveBeenCalled();
+    expect(services.aiChatService.createSessionModel).toHaveBeenCalledTimes(1);
     expect(container.querySelector('[data-testid="child"]')).not.toBeNull();
   });
 });

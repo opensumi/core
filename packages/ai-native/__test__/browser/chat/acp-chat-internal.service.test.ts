@@ -162,6 +162,60 @@ describe('AcpChatInternalService', () => {
       expect(loadingChanges).toEqual([true, false]);
     });
 
+    it('reuses the in-flight ACP session creation request', async () => {
+      const { chatManagerService, model, service } = createService();
+      const sessionModelChanges: any[] = [];
+      const loadingChanges: boolean[] = [];
+      let resolveStartSession!: (model: ChatModel) => void;
+
+      chatManagerService.startSession.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveStartSession = resolve;
+          }),
+      );
+      service.onSessionModelChange((sessionModel) => sessionModelChanges.push(sessionModel));
+      service.onSessionLoadingChange((loading) => loadingChanges.push(loading));
+
+      const first = service.ensureSessionModel();
+      const second = service.ensureSessionModel();
+
+      expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
+
+      resolveStartSession(model);
+
+      await expect(Promise.all([first, second])).resolves.toEqual([model, model]);
+      expect(sessionModelChanges).toEqual([model]);
+      expect(loadingChanges).toEqual([true, false]);
+    });
+
+    it('deduplicates concurrent ACP createSessionModel calls', async () => {
+      const { chatManagerService, model, service } = createService();
+      const sessionModelChanges: any[] = [];
+      const loadingChanges: boolean[] = [];
+      let resolveStartSession!: (model: ChatModel) => void;
+
+      chatManagerService.startSession.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveStartSession = resolve;
+          }),
+      );
+      service.onSessionModelChange((sessionModel) => sessionModelChanges.push(sessionModel));
+      service.onSessionLoadingChange((loading) => loadingChanges.push(loading));
+
+      const first = service.createSessionModel();
+      const second = service.createSessionModel();
+
+      expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
+
+      resolveStartSession(model);
+      await Promise.all([first, second]);
+
+      expect(sessionModelChanges).toEqual([model]);
+      expect(loadingChanges).toEqual([true, false]);
+    });
+
     it('enters draft and clears active ACP session state', () => {
       const { model, permissionBridgeService, service } = createService();
       const sessionModelChanges: any[] = [];

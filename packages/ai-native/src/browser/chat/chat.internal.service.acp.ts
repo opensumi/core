@@ -103,6 +103,8 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private storageInitDisposable: IDisposable | undefined;
 
+  private sessionCreationPromise: Promise<ChatModel> | undefined;
+
   private stripAcpPrefix(sessionId: string): string {
     return sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
   }
@@ -215,7 +217,7 @@ export class AcpChatInternalService extends ChatInternalService {
     this.addDispose(this.sessionStateDisposable);
   }
 
-  private async startSessionModel(): Promise<ChatModel> {
+  private async doStartSessionModel(): Promise<ChatModel> {
     this._sessionModel = await this.chatManagerService.startSession();
     const acpManager = this.chatManagerService as AcpChatManagerService;
     this.setAvailableCommands(acpManager.getAvailableCommands());
@@ -227,17 +229,27 @@ export class AcpChatInternalService extends ChatInternalService {
     return this._sessionModel;
   }
 
+  private async startSessionModel(): Promise<ChatModel> {
+    if (this.sessionCreationPromise) {
+      return this.sessionCreationPromise;
+    }
+
+    this._onSessionLoadingChange.fire(true);
+    this.sessionCreationPromise = this.doStartSessionModel();
+    try {
+      return await this.sessionCreationPromise;
+    } finally {
+      this.sessionCreationPromise = undefined;
+      this._onSessionLoadingChange.fire(false);
+    }
+  }
+
   async ensureSessionModel(): Promise<ChatModel> {
     if (this._sessionModel) {
       return this._sessionModel;
     }
 
-    this._onSessionLoadingChange.fire(true);
-    try {
-      return await this.startSessionModel();
-    } finally {
-      this._onSessionLoadingChange.fire(false);
-    }
+    return this.startSessionModel();
   }
 
   enterDraftSession(): void {
@@ -305,14 +317,11 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   override async createSessionModel() {
-    this._onSessionLoadingChange.fire(true);
     try {
       await this.startSessionModel();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.messageService.error(`Failed to create session. (${errorMessage})`);
-    } finally {
-      this._onSessionLoadingChange.fire(false);
     }
   }
 
