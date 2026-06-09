@@ -8,6 +8,7 @@ import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
 import { AcpChatManagerService } from './chat-manager.service.acp';
 import { ChatModel, ChatRequestModel } from './chat-model';
 import { ChatInternalService } from './chat.internal.service';
+import { AcpSessionConfigOption, AcpSessionModeOption, AcpSessionModelOption } from './session-provider';
 
 const ACP_LOAD_SESSION_FALLBACK_MESSAGE =
   'Unable to open this chat history. A new chat draft is ready, and a session will be created when you send a message.';
@@ -71,6 +72,35 @@ function updateConfigOptionValue(option: Record<string, any>, value: boolean | s
   return next;
 }
 
+function readConfigOptionId(option: AcpSessionConfigOption): string | undefined {
+  const rawId = option.id || option.configId;
+  if (typeof rawId === 'string') {
+    return rawId;
+  }
+  if (rawId && typeof rawId === 'object' && typeof (rawId as { id?: unknown }).id === 'string') {
+    return (rawId as { id: string }).id;
+  }
+  return undefined;
+}
+
+function readConfigOptionValue(option: AcpSessionConfigOption): boolean | string | undefined {
+  const kind = option.kind && typeof option.kind === 'object' ? option.kind : undefined;
+  const value = kind?.currentValue ?? option.currentValue ?? option.current_value ?? option.value;
+  return typeof value === 'boolean' || typeof value === 'string' ? value : undefined;
+}
+
+function cloneConfigOptions(configOptions?: AcpSessionConfigOption[]): AcpSessionConfigOption[] | undefined {
+  return configOptions?.map((option) => ({ ...option }));
+}
+
+interface AcpDraftSessionState {
+  agentModes?: AcpSessionModeOption[];
+  currentModeId?: string;
+  agentModels?: AcpSessionModelOption[];
+  modelId?: string;
+  configOptions?: AcpSessionConfigOption[];
+}
+
 @Injectable()
 export class AcpChatInternalService extends ChatInternalService {
   @Autowired(AINativeConfigService)
@@ -99,6 +129,8 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private availableCommands: AvailableCommand[] = [];
 
+  private draftSessionState: AcpDraftSessionState = {};
+
   private sessionStateDisposable: IDisposable | undefined;
 
   private storageInitDisposable: IDisposable | undefined;
@@ -116,6 +148,10 @@ export class AcpChatInternalService extends ChatInternalService {
   setAvailableCommands(commands: AvailableCommand[]) {
     this.availableCommands = commands;
     this._onAvailableCommandsChange.fire(commands);
+  }
+
+  getDraftSessionState(): AcpDraftSessionState {
+    return this.draftSessionState;
   }
 
   public get onStorageInit() {
@@ -218,9 +254,12 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   private async doStartSessionModel(): Promise<ChatModel> {
+    const draftSessionState = this.draftSessionState;
     this._sessionModel = await this.chatManagerService.startSession();
+    await this.applyDraftSessionState(this._sessionModel, draftSessionState);
     const acpManager = this.chatManagerService as AcpChatManagerService;
     this.setAvailableCommands(acpManager.getAvailableCommands());
+    this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || {};
     this._onSessionModelChange.fire(this._sessionModel);
     // Notify permission bridge of session change
     const rawSessionId = this.stripAcpPrefix(this._sessionModel.sessionId);
@@ -253,18 +292,116 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   enterDraftSession(): void {
+    this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || this.draftSessionState;
     this._sessionModel = undefined as unknown as ChatModel;
-    this.setAvailableCommands([]);
     this.permissionBridgeService.setActiveSession(undefined);
     this._onSessionModelChange.fire(undefined);
     this._onModeChange.fire('');
     this._onChangeSession.fire('');
   }
 
+  private createDraftStateFromModel(model: ChatModel | undefined): AcpDraftSessionState | undefined {
+    if (!model) {
+      return undefined;
+    }
+
+    return {
+      agentModes: model.agentModes ? [...model.agentModes] : undefined,
+      currentModeId: model.currentModeId,
+      agentModels: model.agentModels ? [...model.agentModels] : undefined,
+      modelId: model.modelId,
+      configOptions: cloneConfigOptions(model.configOptions),
+    };
+  }
+
+  private fireDraftSessionStateChange(): void {
+    this._onSessionModelChange.fire(undefined);
+  }
+
+  private updateDraftConfigOption(configId: string, value: boolean | string): void {
+    this.draftSessionState = {
+      ...this.draftSessionState,
+      configOptions: (this.draftSessionState.configOptions || []).map((option) =>
+        readConfigOptionId(option) === configId ? updateConfigOptionValue(option, value) : option,
+      ),
+    };
+    this.fireDraftSessionStateChange();
+  }
+
+  private async applyDraftSessionState(model: ChatModel, draftState: AcpDraftSessionState): Promise<void> {
+    const sessionId = this.stripAcpPrefix(model.sessionId);
+
+    if (
+      draftState.currentModeId &&
+      draftState.currentModeId !== model.currentModeId &&
+      model.agentModes?.some((mode) => mode.id === draftState.currentModeId)
+    ) {
+      try {
+        await this.aiBackService.setSessionMode?.(sessionId, draftState.currentModeId);
+        model.currentModeId = draftState.currentModeId;
+        this._onModeChange.fire(draftState.currentModeId);
+      } catch (error) {
+        this.logger.warn?.(`[ACP Chat][Frontend] Failed to apply draft mode "${draftState.currentModeId}"`, error);
+      }
+    }
+
+    if (
+      draftState.modelId &&
+      draftState.modelId !== model.modelId &&
+      model.agentModels?.some((agentModel) => agentModel.modelId === draftState.modelId)
+    ) {
+      try {
+        await this.aiBackService.setSessionModel?.(sessionId, draftState.modelId);
+        model.modelId = draftState.modelId;
+      } catch (error) {
+        this.logger.warn?.(`[ACP Chat][Frontend] Failed to apply draft model "${draftState.modelId}"`, error);
+      }
+    }
+
+    const draftConfigValues = new Map<string, boolean | string>();
+    (draftState.configOptions || []).forEach((option) => {
+      const id = readConfigOptionId(option);
+      const value = readConfigOptionValue(option);
+      if (id && value !== undefined) {
+        draftConfigValues.set(id, value);
+      }
+    });
+
+    if (draftConfigValues.size === 0) {
+      return;
+    }
+
+    const nextConfigOptions: AcpSessionConfigOption[] = [];
+    for (const option of model.configOptions || []) {
+      const optionId = readConfigOptionId(option);
+      const draftValue = optionId ? draftConfigValues.get(optionId) : undefined;
+      if (!optionId || draftValue === undefined || readConfigOptionValue(option) === draftValue) {
+        nextConfigOptions.push(option);
+        continue;
+      }
+
+      try {
+        await this.aiBackService.setSessionConfigOption?.(sessionId, optionId, draftValue);
+        nextConfigOptions.push(updateConfigOptionValue(option, draftValue));
+      } catch (error) {
+        this.logger.warn?.(`[ACP Chat][Frontend] Failed to apply draft config option "${optionId}"`, error);
+        nextConfigOptions.push(option);
+      }
+    }
+
+    model.configOptions = nextConfigOptions;
+  }
+
   async setSessionMode(modeId: string): Promise<void> {
     const sessionId = this._sessionModel ? this.stripAcpPrefix(this._sessionModel.sessionId) : undefined;
     if (!sessionId) {
-      throw new Error('No active session');
+      this.draftSessionState = {
+        ...this.draftSessionState,
+        currentModeId: modeId,
+      };
+      this._onModeChange.fire(modeId);
+      this.fireDraftSessionStateChange();
+      return;
     }
 
     try {
@@ -282,7 +419,12 @@ export class AcpChatInternalService extends ChatInternalService {
   async setSessionModel(modelId: string): Promise<void> {
     const sessionId = this._sessionModel ? this.stripAcpPrefix(this._sessionModel.sessionId) : undefined;
     if (!sessionId) {
-      throw new Error('No active session');
+      this.draftSessionState = {
+        ...this.draftSessionState,
+        modelId,
+      };
+      this.fireDraftSessionStateChange();
+      return;
     }
 
     try {
@@ -299,7 +441,8 @@ export class AcpChatInternalService extends ChatInternalService {
   async setSessionConfigOption(configId: string, value: boolean | string): Promise<void> {
     const sessionId = this._sessionModel ? this.stripAcpPrefix(this._sessionModel.sessionId) : undefined;
     if (!sessionId) {
-      throw new Error('No active session');
+      this.updateDraftConfigOption(configId, value);
+      return;
     }
 
     try {

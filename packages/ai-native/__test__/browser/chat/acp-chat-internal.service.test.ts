@@ -85,7 +85,31 @@ describe('AcpChatInternalService', () => {
       const service = new AcpChatInternalService() as any;
       const model = new ChatModel(new ChatFeatureRegistry(), {
         sessionId: 'acp:sess-1',
+        modelId: 'model-a',
+        agentModels: [
+          {
+            modelId: 'model-a',
+            name: 'Model A',
+          },
+        ],
+        agentModes: [
+          {
+            id: 'code',
+            name: 'Code',
+          },
+        ],
         currentModeId: 'code',
+        configOptions: [
+          {
+            id: 'approval',
+            name: 'Approval',
+            currentValue: 'default',
+            options: [
+              { value: 'default', label: 'Default' },
+              { value: 'always', label: 'Always' },
+            ],
+          },
+        ],
       });
       const stateEmitter = new Emitter<any>();
       const chatManagerService = {
@@ -105,6 +129,11 @@ describe('AcpChatInternalService', () => {
         error: jest.fn(),
         info: jest.fn(),
       };
+      const aiBackService = {
+        setSessionConfigOption: jest.fn(() => Promise.resolve()),
+        setSessionMode: jest.fn(() => Promise.resolve()),
+        setSessionModel: jest.fn(() => Promise.resolve()),
+      };
 
       Object.defineProperty(service, 'chatManagerService', {
         value: chatManagerService,
@@ -115,6 +144,9 @@ describe('AcpChatInternalService', () => {
       Object.defineProperty(service, 'messageService', {
         value: messageService,
       });
+      Object.defineProperty(service, 'aiBackService', {
+        value: aiBackService,
+      });
       Object.defineProperty(service, 'aiNativeConfigService', {
         value: { capabilities: { supportsAgentMode: true } },
       });
@@ -124,6 +156,7 @@ describe('AcpChatInternalService', () => {
 
       return {
         chatManagerService,
+        aiBackService,
         messageService,
         model,
         permissionBridgeService,
@@ -216,13 +249,14 @@ describe('AcpChatInternalService', () => {
       expect(loadingChanges).toEqual([true, false]);
     });
 
-    it('enters draft and clears active ACP session state', () => {
+    it('enters draft and preserves ACP footer state for the next input', () => {
       const { model, permissionBridgeService, service } = createService();
       const sessionModelChanges: any[] = [];
       const availableCommandsChanges: any[] = [];
       const modeChanges: string[] = [];
       const sessionChanges: string[] = [];
       service._sessionModel = model;
+      service.setAvailableCommands([{ name: 'help', description: 'Help' }]);
 
       service.onSessionModelChange((sessionModel) => sessionModelChanges.push(sessionModel));
       service.onAvailableCommandsChange((commands) => availableCommandsChanges.push(commands));
@@ -232,11 +266,35 @@ describe('AcpChatInternalService', () => {
       service.enterDraftSession();
 
       expect(service.sessionModel).toBeUndefined();
+      expect(service.getDraftSessionState()).toEqual({
+        agentModes: model.agentModes,
+        currentModeId: 'code',
+        agentModels: model.agentModels,
+        modelId: 'model-a',
+        configOptions: model.configOptions,
+      });
+      expect(service.getAvailableCommands()).toEqual([{ name: 'help', description: 'Help' }]);
       expect(permissionBridgeService.setActiveSession).toHaveBeenCalledWith(undefined);
       expect(sessionModelChanges).toEqual([undefined]);
-      expect(availableCommandsChanges).toEqual([[]]);
+      expect(availableCommandsChanges).toEqual([]);
       expect(modeChanges).toEqual(['']);
       expect(sessionChanges).toEqual(['']);
+    });
+
+    it('stores draft config option changes and applies them to the first created ACP session', async () => {
+      const { aiBackService, model, service } = createService();
+      service._sessionModel = model;
+      service.enterDraftSession();
+
+      await service.setSessionConfigOption('approval', 'always');
+
+      expect(aiBackService.setSessionConfigOption).not.toHaveBeenCalled();
+      expect(service.getDraftSessionState().configOptions[0].currentValue).toBe('always');
+
+      await expect(service.ensureSessionModel()).resolves.toBe(model);
+
+      expect(aiBackService.setSessionConfigOption).toHaveBeenCalledWith('sess-1', 'approval', 'always');
+      expect(service.sessionModel.configOptions[0].currentValue).toBe('always');
     });
 
     it('clears the current ACP session into draft without creating another session', async () => {

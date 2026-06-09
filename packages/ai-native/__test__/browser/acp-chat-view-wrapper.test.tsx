@@ -128,14 +128,14 @@ describe('AcpChatViewWrapper', () => {
     });
   }
 
-  it('creates an ACP session before rendering children so config options can populate', async () => {
+  it('initializes ACP without creating a default session before rendering children', async () => {
     const services = createServices();
 
     await renderWrapper(services.aiChatService);
 
     expect(services.aiBackService.ready).toHaveBeenCalled();
     expect(services.aiChatService.init).toHaveBeenCalledTimes(1);
-    expect(services.aiChatService.createSessionModel).toHaveBeenCalledTimes(1);
+    expect(services.aiChatService.createSessionModel).not.toHaveBeenCalled();
     expect(services.chatManagerService.loadSessionList).toHaveBeenCalledTimes(1);
     expect(container.querySelector('[data-testid="child"]')).not.toBeNull();
   });

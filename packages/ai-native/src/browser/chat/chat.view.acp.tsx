@@ -246,6 +246,13 @@ export const AIChatViewACPContent = () => {
   useUpdateOnEvent(aiChatService.onChangeSession);
   useUpdateOnEvent(aiChatService.onSessionModelChange);
 
+  const draftSessionState = aiChatService.getDraftSessionState();
+  const footerAgentModes = aiChatService.sessionModel?.agentModes || draftSessionState.agentModes;
+  const footerCurrentModeId = aiChatService.sessionModel?.currentModeId || draftSessionState.currentModeId;
+  const footerAgentModels = aiChatService.sessionModel?.agentModels || draftSessionState.agentModels;
+  const footerCurrentModelId = aiChatService.sessionModel?.modelId || draftSessionState.modelId;
+  const footerConfigOptions = aiChatService.sessionModel?.configOptions || draftSessionState.configOptions;
+
   const ChatInputWrapperRender = React.useMemo(() => {
     // 1. 优先使用 ChatInputRegistry 注册的输入组件（按优先级 + when 条件匹配）
     const activeInput = chatInputRegistry.getActiveChatInput();
@@ -1024,11 +1031,11 @@ export const AIChatViewACPContent = () => {
                 aiNativeConfigService.capabilities.supportsAgentMode ? loading : sessionModelId !== undefined || loading
               }
               sessionModelId={sessionModelId}
-              agentModes={aiChatService.sessionModel?.agentModes}
-              currentModeId={aiChatService.sessionModel?.currentModeId}
-              agentModels={aiChatService.sessionModel?.agentModels}
-              currentModelId={aiChatService.sessionModel?.modelId}
-              configOptions={aiChatService.sessionModel?.configOptions}
+              agentModes={footerAgentModes}
+              currentModeId={footerCurrentModeId}
+              agentModels={footerAgentModels}
+              currentModelId={footerCurrentModelId}
+              configOptions={footerConfigOptions}
               agentCwd={appConfig.workspaceDir}
               placeholder={localize('aiNative.chat.input.placeholder.acp')}
             />

@@ -3,7 +3,7 @@
  *
  * 为 ACP 模式提供包装层，封装：
  * - ACP 初始化逻辑（等待 Agent 准备）
- * - 等待 sessionModel 准备好
+ * - 等待历史会话元数据准备好
  * - Loading/Error 状态处理
  * - 权限弹窗
  *
@@ -84,15 +84,6 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
         // 先调用 aiChatService.init() 注册 onStorageInit 监听器
         aiChatService.init();
 
-        // 创建默认会话，ACP config options 会随 session state 返回并渲染到输入框。
-        if (!aiChatService.sessionModel) {
-          await aiChatService.createSessionModel();
-        }
-
-        if (cancelled()) {
-          return;
-        }
-
         // 加载历史会话列表（用于 history 下拉展示）
         await chatManagerService.loadSessionList();
 
@@ -126,12 +117,12 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
     return children;
   }
 
-  // ACP 模式初始化完成且 session ready 后渲染子组件
+  // ACP 模式初始化完成后渲染子组件；真正的 session 会在首次发送时创建。
   if (initState.initialized) {
     return <>{children}</>;
   }
 
-  // 初始化中或等待 session
+  // 初始化中
   return (
     <div className={styles.loading_container}>
       <Progress loading={true} />
