@@ -1,10 +1,11 @@
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common';
-import type { WebMcpProfile } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 import { WebMcpGroupRegistry } from '../../src/browser/acp/webmcp-group-registry';
 import { MCPConfigService } from '../../src/browser/mcp/config/mcp-config.service';
 import { BUILTIN_MCP_SERVER_NAME } from '../../src/common';
 import { MCPServersDisabledKey } from '../../src/common/mcp-server-manager';
+
+import type { WebMcpProfile } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 function createStorage(initial: Record<string, unknown> = {}) {
   const data = { ...initial };
@@ -17,12 +18,14 @@ function createStorage(initial: Record<string, unknown> = {}) {
   };
 }
 
-function createService(options: {
-  disabledServers?: string[];
-  webMcpEnabled?: boolean;
-  webMcpProfile?: WebMcpProfile;
-  webMcpGroupRegistry?: WebMcpGroupRegistry;
-} = {}) {
+function createService(
+  options: {
+    disabledServers?: string[];
+    webMcpEnabled?: boolean;
+    webMcpProfile?: WebMcpProfile;
+    webMcpGroupRegistry?: WebMcpGroupRegistry;
+  } = {},
+) {
   const preferences: Record<string, unknown> = {
     [AINativeSettingSectionsId.WebMcpEnabled]: options.webMcpEnabled ?? true,
     [AINativeSettingSectionsId.WebMcpProfile]: options.webMcpProfile ?? 'default',
@@ -125,11 +128,14 @@ describe('MCPConfigService unified built-in MCP management', () => {
     const preferences: Record<string, unknown> = {
       [AINativeSettingSectionsId.WebMcpProfile]: 'default',
     };
+    const previousUrl = window.location.href;
+    window.history.pushState({}, '', '/');
     const registry = new WebMcpGroupRegistry();
     Object.defineProperty(registry, 'preferenceService', {
       value: {
         get: jest.fn((id: string, fallback: unknown) => (id in preferences ? preferences[id] : fallback)),
       },
+      writable: true,
     });
     registry.registerGroup({
       name: 'terminal',
@@ -154,26 +160,30 @@ describe('MCPConfigService unified built-in MCP management', () => {
       ],
     });
 
-    const { service, preferenceService } = createService({
-      webMcpProfile: 'default',
-      webMcpGroupRegistry: registry,
-    });
-    preferenceService.set.mockImplementation(async (id: string, value: unknown) => {
-      preferences[id] = value;
-    });
+    try {
+      const { service, preferenceService } = createService({
+        webMcpProfile: 'default',
+        webMcpGroupRegistry: registry,
+      });
+      preferenceService.set.mockImplementation(async (id: string, value: unknown) => {
+        preferences[id] = value;
+      });
 
-    expect(service.getWebMcpGroups()).toEqual([
-      {
-        name: 'terminal',
-        description: 'Terminal capabilities',
-        defaultLoaded: true,
-        toolCount: 1,
-      },
-    ]);
+      expect(service.getWebMcpGroups()).toEqual([
+        {
+          name: 'terminal',
+          description: 'Terminal capabilities',
+          defaultLoaded: true,
+          toolCount: 1,
+        },
+      ]);
 
-    await service.setWebMcpProfile('interactive');
+      await service.setWebMcpProfile('interactive');
 
-    expect(preferenceService.set).toHaveBeenCalledWith(AINativeSettingSectionsId.WebMcpProfile, 'interactive');
-    expect(service.getWebMcpGroups()[0].toolCount).toBe(2);
+      expect(preferenceService.set).toHaveBeenCalledWith(AINativeSettingSectionsId.WebMcpProfile, 'interactive');
+      expect(service.getWebMcpGroups()[0].toolCount).toBe(2);
+    } finally {
+      window.history.pushState({}, '', previousUrl);
+    }
   });
 });

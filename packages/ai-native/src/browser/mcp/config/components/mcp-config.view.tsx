@@ -4,19 +4,17 @@ import React, { useCallback } from 'react';
 import { Badge, Button, Icon, Popover, PopoverTriggerType, Select } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { MCPConfigServiceToken, localize } from '@opensumi/ide-core-common';
-import type { WebMcpProfile } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 import { BUILTIN_MCP_SERVER_NAME } from '../../../../common';
 import { MCPServerDescription } from '../../../../common/mcp-server-manager';
 import { MCPServer } from '../../../../common/types';
-import {
-  MCPConfigService,
-  WEBMCP_PROFILE_OPTIONS,
-} from '../mcp-config.service';
-import type { WebMcpGroupSummary } from '../mcp-config.service';
+import { MCPConfigService, WEBMCP_PROFILE_OPTIONS } from '../mcp-config.service';
 
 import styles from './mcp-config.module.less';
 import { MCPServerForm, MCPServerFormData } from './mcp-server-form';
+
+import type { WebMcpGroupSummary } from '../mcp-config.service';
+import type { WebMcpProfile } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 export const MCPConfigView: React.FC = () => {
   const mcpConfigService = useInjectable<MCPConfigService>(MCPConfigServiceToken);

@@ -13,16 +13,9 @@ import {
   localize,
 } from '@opensumi/ide-core-common';
 import { WebMcpGroupRegistryToken } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
-import type {
-  EnvVariable,
-  McpServer,
-  WebMcpGroupDef,
-  WebMcpProfile,
-} from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMessageService } from '@opensumi/ide-overlay';
 
-import { WebMcpGroupRegistry } from '../../acp/webmcp-group-registry';
 import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend, SumiMCPServerProxyServicePath } from '../../../common';
 import {
   MCPServerDescription,
@@ -31,9 +24,17 @@ import {
   StdioMCPServerDescription,
 } from '../../../common/mcp-server-manager';
 import { MCPServer, MCP_SERVER_TYPE } from '../../../common/types';
+import { WebMcpGroupRegistry } from '../../acp/webmcp-group-registry';
 import { MCPServerProxyService } from '../mcp-server-proxy.service';
 
 import { MCPServerFormData } from './components/mcp-server-form';
+
+import type {
+  EnvVariable,
+  McpServer,
+  WebMcpGroupDef,
+  WebMcpProfile,
+} from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 export const WEBMCP_PROFILE_OPTIONS: WebMcpProfile[] = ['minimal', 'default', 'interactive', 'full'];
 
