@@ -370,7 +370,7 @@ describe('AILayout BDD', () => {
     expect(container.querySelector('[data-slot="extendView"]')).toBeFalsy();
   });
 
-  it('Given agentic layout has cached collapsed AI chat, when it renders, then AI chat stays collapsed', async () => {
+  it('Given agentic layout has cached collapsed AI chat, when it renders, then AI chat opens with the agentic default size', async () => {
     panelLayoutMode = 'agentic';
     storedLayout = {
       'AI-Chat': {
@@ -385,7 +385,7 @@ describe('AILayout BDD', () => {
     });
 
     expect(getSlotProps('AI-Chat')).toEqual({
-      defaultSize: '0',
+      defaultSize: '840',
       maxResize: '1440',
       minResize: '640',
       minSize: '0',

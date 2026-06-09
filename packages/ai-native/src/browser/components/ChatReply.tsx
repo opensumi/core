@@ -47,7 +47,7 @@ import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { IChatAgentService, IChatInternalService } from '../../common';
-import { ChatRequestModel } from '../chat/chat-model';
+import { ChatRequestModel, IChatProgressResponseContent } from '../chat/chat-model';
 import { ChatService } from '../chat/chat.api.service';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { ChatRenderRegistry } from '../chat/chat.render.registry';
@@ -70,7 +70,13 @@ interface IChatReplyProps {
   onDone?: () => void;
   msgId: string;
   keepReasoningExpandedOnComplete?: boolean;
+  collapseReasoningByDefault?: boolean;
 }
+
+const getReasoningIndexSet = (responseContents: IChatProgressResponseContent[]) =>
+  new Set(
+    responseContents.map((item, index) => (item.kind === 'reasoning' ? index : -1)).filter((item) => item !== -1),
+  );
 
 const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) => {
   const labelService = useInjectable<LabelService>(LabelService);
@@ -218,6 +224,7 @@ export const ChatReply = (props: IChatReplyProps) => {
     history,
     msgId,
     keepReasoningExpandedOnComplete = false,
+    collapseReasoningByDefault = false,
   } = props;
 
   const [, update] = useReducer((num) => (num + 1) % 1_000_000, 0);
@@ -228,27 +235,19 @@ export const ChatReply = (props: IChatReplyProps) => {
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const expandedThinkingIndexSetRef = useRef<Set<number>>(new Set());
   const [collapseThinkingIndexSet, setCollapseThinkingIndexSet] = useState<Set<number>>(
-    !request.response.isComplete || keepReasoningExpandedOnComplete
+    (!request.response.isComplete && !collapseReasoningByDefault) ||
+      (keepReasoningExpandedOnComplete && !collapseReasoningByDefault)
       ? new Set()
-      : new Set(
-          request.response.responseContents
-            .map((item, index) => (item.kind === 'reasoning' ? index : -1))
-            .filter((item) => item !== -1),
-        ),
+      : getReasoningIndexSet(request.response.responseContents),
   );
 
   useEffect(() => {
-    if (request.response.isComplete && !keepReasoningExpandedOnComplete) {
-      setCollapseThinkingIndexSet(
-        new Set(
-          request.response.responseContents
-            .map((item, index) => (item.kind === 'reasoning' ? index : -1))
-            .filter((item) => item !== -1),
-        ),
-      );
+    if (request.response.isComplete && !keepReasoningExpandedOnComplete && !collapseReasoningByDefault) {
+      setCollapseThinkingIndexSet(getReasoningIndexSet(request.response.responseContents));
     }
-  }, [request.response.isComplete, keepReasoningExpandedOnComplete]);
+  }, [request.response.isComplete, keepReasoningExpandedOnComplete, collapseReasoningByDefault]);
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
@@ -325,6 +324,10 @@ export const ChatReply = (props: IChatReplyProps) => {
         } else if (item.kind === 'reasoning') {
           // 思考中必然为最后一条
           const isThinking = index === request.response.responseContents.length - 1 && !request.response.isComplete;
+          const canToggleThinking = !isThinking || collapseReasoningByDefault;
+          const isCollapsed =
+            collapseThinkingIndexSet.has(index) ||
+            (collapseReasoningByDefault && !expandedThinkingIndexSetRef.current.has(index));
           node = (
             <div className={cls(styles.reasoning, { [styles.thinking]: isThinking })}>
               <Button
@@ -332,28 +335,33 @@ export const ChatReply = (props: IChatReplyProps) => {
                 type='secondary'
                 className={styles.thinking}
                 onClick={() => {
-                  if (isThinking) {
+                  if (!canToggleThinking) {
                     return;
                   }
-                  if (collapseThinkingIndexSet.has(index)) {
-                    collapseThinkingIndexSet.delete(index);
-                  } else {
-                    collapseThinkingIndexSet.add(index);
-                  }
-                  setCollapseThinkingIndexSet(new Set(collapseThinkingIndexSet));
+                  setCollapseThinkingIndexSet((currentSet) => {
+                    const nextSet = new Set(currentSet);
+                    if (isCollapsed) {
+                      nextSet.delete(index);
+                      expandedThinkingIndexSetRef.current.add(index);
+                    } else {
+                      nextSet.add(index);
+                      expandedThinkingIndexSetRef.current.delete(index);
+                    }
+                    return nextSet;
+                  });
                 }}
               >
                 <Icon iconClass='codicon codicon-sparkle' />
                 <span style={{ marginLeft: 4 }} className={isThinking ? styles.shiny_text : ''}>
                   {localize('aiNative.chat.thinking')}
                 </span>
-                {isThinking ? null : collapseThinkingIndexSet.has(index) ? (
+                {!canToggleThinking ? null : isCollapsed ? (
                   <Icon iconClass='codicon codicon-chevron-right' />
                 ) : (
                   <Icon iconClass='codicon codicon-chevron-down' />
                 )}
               </Button>
-              {!collapseThinkingIndexSet.has(index) ? (
+              {!isCollapsed ? (
                 <div className={styles.reasoning_content}>{renderMarkdown(new MarkdownString(item.content))}</div>
               ) : null}
             </div>

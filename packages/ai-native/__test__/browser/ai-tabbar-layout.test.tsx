@@ -96,6 +96,11 @@ jest.mock('@opensumi/ide-core-browser/lib/components/ai-native', () => ({
   HorizontalVertical: () => <span />,
 }));
 
+jest.mock('@opensumi/ide-core-browser/lib/common/container-id', () => ({
+  EXPLORER_CONTAINER_ID: 'explorer',
+  SCM_CONTAINER_ID: 'scm',
+}));
+
 jest.mock('@opensumi/ide-core-browser/lib/layout/constants', () => ({
   DesignLayoutConfig: class DesignLayoutConfig {},
 }));
@@ -112,8 +117,9 @@ jest.mock('@opensumi/ide-core-common', () => ({
 
 jest.mock('@opensumi/ide-design/lib/browser/layout/tabbar.view', () => ({
   DesignLeftTabRenderer: (props: any) => {
+    const TabbarView = props.tabbarView;
     mockCapturedDesignLeftProps = props;
-    return <div data-testid='design-left-tab-renderer' />;
+    return <div data-testid='design-left-tab-renderer'>{TabbarView ? <TabbarView /> : null}</div>;
   },
   DesignRightTabRenderer: () => <div />,
 }));
@@ -207,6 +213,7 @@ describe('AI tabbar layout BDD', () => {
     expect(container.querySelector('[data-testid="design-left-tab-renderer"]')).toBeTruthy();
     expect(mockCapturedDesignLeftProps.className).toBe('slot-class');
     expect(mockCapturedDesignLeftProps.tabbarView).toBeTruthy();
+    expect(mockCapturedLeftTabbarProps.tabbarViewProps).toBeUndefined();
     expect(mockCapturedTabRendererProps).toBeUndefined();
   });
 
@@ -230,24 +237,64 @@ describe('AI tabbar layout BDD', () => {
     expect(mockTabbarServiceFactory).toHaveBeenCalledWith('extendView');
   });
 
-  it('Given agentic layout, when rendering merged extra containers, then it uses extendView containers only', async () => {
+  it('Given agentic layout, when rendering side entries, then it allows only Explorer and SCM', async () => {
     panelLayoutMode = 'agentic';
     mockViewTabbarService.visibleContainers = [
       {
         options: {
-          containerId: 'view-explorer',
+          containerId: 'explorer',
+        },
+      },
+      {
+        options: {
+          containerId: 'search',
+        },
+      },
+      {
+        options: {
+          containerId: 'scm',
+        },
+      },
+      {
+        options: {
+          containerId: 'debug',
+        },
+      },
+      {
+        options: {
+          containerId: 'extension',
         },
       },
     ];
     mockExtendViewTabbarService.visibleContainers = [
       {
         options: {
-          containerId: 'extend-tools',
+          containerId: 'debug',
         },
       },
       {
         options: {
-          containerId: 'extend-hidden',
+          containerId: 'extension',
+        },
+      },
+      {
+        options: {
+          containerId: 'search',
+        },
+      },
+      {
+        options: {
+          containerId: 'scm',
+        },
+      },
+      {
+        options: {
+          containerId: 'explorer',
+        },
+      },
+      {
+        options: {
+          containerId: 'scm-hidden',
           hideTab: true,
         },
       },
@@ -261,16 +308,24 @@ describe('AI tabbar layout BDD', () => {
     const renderContainers = jest.fn((component) => <span key={component.options.containerId} />);
     mockCapturedLeftTabbarProps.renderOtherVisibleContainers({ renderContainers });
 
-    expect(renderContainers).toHaveBeenCalledTimes(1);
+    const containerFilter = mockCapturedLeftTabbarProps.tabbarViewProps.containerFilter;
+    expect(
+      mockViewTabbarService.visibleContainers.filter(containerFilter).map((container) => container.options.containerId),
+    ).toEqual(['explorer', 'scm']);
+    expect(renderContainers).toHaveBeenCalledTimes(2);
+    expect(renderContainers.mock.calls.map(([component]) => component.options.containerId)).toEqual([
+      'scm',
+      'explorer',
+    ]);
     expect(renderContainers).toHaveBeenCalledWith(
-      mockExtendViewTabbarService.visibleContainers[0],
+      mockExtendViewTabbarService.visibleContainers[3],
       mockExtendViewTabbarService,
       'extend-view-current',
     );
-    expect(renderContainers).not.toHaveBeenCalledWith(
-      mockViewTabbarService.visibleContainers[0],
-      expect.anything(),
-      expect.anything(),
+    expect(renderContainers).toHaveBeenCalledWith(
+      mockExtendViewTabbarService.visibleContainers[4],
+      mockExtendViewTabbarService,
+      'extend-view-current',
     );
   });
 

@@ -242,10 +242,12 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `bdd-runtime-preflight.scenario.md` | `runtime-ui` | `default` | Browser readiness, ModelContext/MCP bridge availability, and blocked-run diagnostics. |
 | `acp-chat.scenario.md` | `runtime-ui` | `default` | Default ACP Chat smoke and safe state observability. |
 | `acp-chat-agentic-startup.scenario.md` | `runtime-ui` | `default` | Agentic startup, default layout, safe tool surface, and metadata-only state. |
+| `acp-chat-agentic-side-entry-filter.scenario.md` | `runtime-ui` | `default` | Agentic side entry filter showing only Explorer and Git while Classic remains unchanged. |
 | `acp-chat-agentic-fallback.scenario.md` | `runtime-ui` | `default` | Usable Agentic chat surface when ACP backend readiness fails. |
 | `acp-layout-switch.scenario.md` | `runtime-ui` | `default` | Agentic/Classic switching, Explorer interop, resize bounds, and read-only state checks. |
 | `acp-chat-agentic-input-send.scenario.md` | `runtime-ui` | `interactive` | Draft input, first send, commands, mentions, attachments, scroll, and recovery. |
 | `acp-chat-agentic-stream-rendering.scenario.md` | `runtime-ui` | `interactive` | Deterministic ACP Agent stream rendering for content, reasoning, plan, tool calls, session state, completion, and recovery. |
+| `acp-chat-agentic-deep-thinking-collapse.scenario.md` | `runtime-ui` | `interactive` | Deep Thinking default collapse, streaming expansion, explicit toggle state, and metadata-only state checks. |
 | `acp-chat-agentic-cancel-stop.scenario.md` | `runtime-ui` | `interactive` | Long-stream stop/cancel behavior, input recovery, and follow-up send. |
 | `acp-chat-agentic-rich-history-restore.scenario.md` | `runtime-ui` | `interactive` | Complex content, reasoning, plan, and tool-call history restore across switching and reload. |
 | `acp-chat-agentic-permission-during-send.scenario.md` | `runtime-ui` | `full` | Permission dialog, badge, dismissal, and recovery during an active Agentic send. |

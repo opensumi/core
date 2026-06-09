@@ -125,8 +125,7 @@ export const AgenticShell = () => {
   }, [layoutService]);
 
   const aiChatLayout = layout[AI_CHAT_VIEW_ID];
-  const hasCachedAIChatLayout = Object.prototype.hasOwnProperty.call(layout, AI_CHAT_VIEW_ID);
-  const shouldDefaultOpenAIChat = !hasCachedAIChatLayout;
+  const shouldDefaultOpenAIChat = !aiChatLayout?.currentId;
   const defaultAIChatSize = getAIChatDefaultSize('agentic');
 
   const getSideSlotSize = (slot: SlotLocation, activeFallbackSize: number, inactiveFallbackSize: number) => {

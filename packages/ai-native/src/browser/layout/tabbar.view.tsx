@@ -9,6 +9,7 @@ import {
   useContextMenus,
   useInjectable,
 } from '@opensumi/ide-core-browser';
+import { EXPLORER_CONTAINER_ID, SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { EDirection, PanelContext, ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
 import {
   EnhanceIcon,
@@ -42,6 +43,12 @@ import { AIPanelLayoutService } from './panel-layout.service';
 const AGENTIC_VIEW_ACTIVITY_BAR_SIZE = 49;
 const AGENTIC_VIEW_DEFAULT_SIZE = 310;
 const AGENTIC_VIEW_MAX_SIZE = 480;
+const AGENTIC_VISIBLE_VIEW_CONTAINER_IDS = new Set([EXPLORER_CONTAINER_ID, SCM_CONTAINER_ID]);
+
+const isAgenticVisibleViewContainer = (component: ComponentRegistryInfo) => {
+  const containerId = component.options?.containerId;
+  return !!containerId && AGENTIC_VISIBLE_VIEW_CONTAINER_IDS.has(containerId);
+};
 
 const ChatTabbarRenderer: React.FC<{ disableAutoAdjust?: boolean }> = ({ disableAutoAdjust }) => (
   <div style={disableAutoAdjust ? { width: 0, overflow: 'hidden' } : { width: 0 }}>
@@ -247,6 +254,8 @@ const AgenticLeftTabRenderer = ({
 
 const AILeftTabbarRenderer: React.FC = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
+  const isAgenticLayout = panelLayoutService.getLayoutMode() === 'agentic';
 
   const extendViewTabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.extendView);
   const extendViewCurrentContainerId = useAutorun(extendViewTabbarService.currentContainerId);
@@ -256,9 +265,13 @@ const AILeftTabbarRenderer: React.FC = () => {
 
   const renderOtherVisibleContainers = useCallback(
     ({ renderContainers }) => {
-      const visibleContainers = extendViewTabbarService.visibleContainers.filter(
-        (container) => !container.options?.hideTab,
-      );
+      const visibleContainers = extendViewTabbarService.visibleContainers.filter((container) => {
+        if (container.options?.hideTab) {
+          return false;
+        }
+
+        return !isAgenticLayout || isAgenticVisibleViewContainer(container);
+      });
 
       return (
         <>
@@ -269,13 +282,14 @@ const AILeftTabbarRenderer: React.FC = () => {
         </>
       );
     },
-    [extendViewCurrentContainerId, extendViewTabbarService],
+    [extendViewCurrentContainerId, extendViewTabbarService, isAgenticLayout],
   );
 
   return (
     <LeftTabbarRenderer
       renderOtherVisibleContainers={renderOtherVisibleContainers}
       isRenderExtraTopMenus={false}
+      tabbarViewProps={isAgenticLayout ? { containerFilter: isAgenticVisibleViewContainer } : undefined}
       renderExtraMenus={
         <div className={styles.extra_bottom_icon_container}>
           {navMenu.length >= 0

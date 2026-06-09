@@ -819,6 +819,41 @@ describe('ACP chat view headers', () => {
     });
   });
 
+  it('renders ACP replies with Deep Thinking collapsed by default', async () => {
+    const session = createMockSession({ messages: [] });
+    const createRequest = jest.fn(() => ({
+      message: {
+        agentId: 'default-agent',
+        prompt: 'hello',
+      },
+      requestId: 'request-1',
+      response: {
+        isComplete: false,
+      },
+    }));
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel: jest.fn(async () => session),
+      session: null,
+      sessions: [],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    const createMessageByAI = jest.requireMock('../../src/browser/components/utils').createMessageByAI as jest.Mock;
+    const chatReplyElement = createMessageByAI.mock.calls
+      .map(([message]) => message.text)
+      .find((text) => text?.props?.request);
+    expect(chatReplyElement.props.collapseReasoningByDefault).toBe(true);
+    expect(chatReplyElement.props.keepReasoningExpandedOnComplete).toBeUndefined();
+  });
+
   it('ignores whitespace-only draft sends before creating an ACP session', async () => {
     const createRequest = jest.fn();
     const ensureSessionModel = jest.fn();
