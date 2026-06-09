@@ -2,11 +2,11 @@
 
 **Trigger:** `packages/ai-native/src/node/acp/permission-routing.service.ts`, `packages/ai-native/src/node/acp/acp-thread.ts`, or `packages/ai-native/src/browser/acp/permission-bridge.service.ts`
 
-**Layer:** `node-contract` **Required profile:** `full` when validating visible permission dialogs. **Fixtures:** Registered ACP sessions, permission bridge, and stable permission dialog selectors. **Workspace mutation:** None. **Automation status:** Automated contract spec; visible dialog assertions use Chrome DevTools MCP.
+**Layer:** `node-contract` **Required profile:** `full` when validating visible permission dialogs. **Fixtures:** Registered ACP sessions from the mock ACP agent `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=permission`, permission bridge, and stable permission dialog selectors. **Workspace mutation:** None. **Automation status:** Automated contract spec; visible dialog assertions use Chrome DevTools MCP.
 
 ## Given
 
-- A raw ACP session id exists.
+- A raw ACP session id exists from the mock `permission` fixture or an equivalent registered ACP session fixture.
 - The session is registered through `PermissionRoutingService.registerSession`.
 - The browser `AcpPermissionBridgeService` is available.
 - The ACP chat view has an active session id.

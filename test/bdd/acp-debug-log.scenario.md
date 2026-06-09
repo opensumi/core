@@ -2,12 +2,12 @@
 
 **Trigger:** `packages/ai-native/src/node/acp/acp-debug-log.ts`, `packages/ai-native/src/browser/acp/debug-log/acp-debug-log.contribution.ts`, or `packages/ai-native/src/browser/acp/debug-log/acp-debug-log.view.tsx`
 
-**Layer:** `runtime-ui` **Required profile:** `full` with ACP debug logging enabled. **Fixtures:** ACP debug log store, one thread that emits protocol lines, and the browser debug-log contribution. **Workspace mutation:** None. **Automation status:** Automated with store-level assertions and Chrome DevTools MCP viewer checks. Sensitive-data redaction checks are blocked until the product exposes a redacted render/copy contract.
+**Layer:** `runtime-ui` **Required profile:** `full` with ACP debug logging enabled. **Fixtures:** ACP debug log store, one thread driven by `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=stream-rich` or synthetic store records that emit protocol lines, optionally a real LLM-backed ACP agent for live raw-log viewer smoke coverage, and the browser debug-log contribution. **Workspace mutation:** None. **Automation status:** Automated with store-level assertions and Chrome DevTools MCP viewer checks. Live-agent raw-log evidence must be redacted and must not include real secrets. Sensitive-data redaction checks are blocked until the product exposes a redacted render/copy contract.
 
 ## Given
 
 - ACP debug logging is enabled by the active test profile.
-- At least one ACP thread has started and can write stdout/stderr protocol lines.
+- At least one ACP thread has started through the mock ACP agent or synthetic store harness and can write stdout/stderr protocol lines.
 - The IDE command registry contains `ai.native.acp.openDebugLog`.
 - Common preflight in `test/bdd/README.md` passes when validating the browser viewer.
 
@@ -63,6 +63,11 @@
 - Auto-refresh does not duplicate existing entries or reset scroll/focus unexpectedly.
 - Current debug-log rendering is raw. Tests must use synthetic protocol lines and must not inject real secrets.
 - When a redacted render/copy contract exists, Part D must verify that debug log UI does not expose unredacted MCP bridge tokens, API keys, full relay digests, or permission prompt contents.
+
+## Live Agent Execution
+
+- A real LLM-backed ACP agent may be used only for live viewer smoke coverage: entries appear, refresh/copy/clear controls work, and session/thread metadata is visible.
+- Live-agent mode must not be used for store bounds, defensive-copy, partial-line parsing, or redaction pass/fail assertions. Any captured live logs must redact raw prompts, assistant text, API keys, MCP tokens, permission content, relay digests, and tool results.
 
 ## Pass / Fail Judgment
 

@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/node/acp/acp-agent.service.ts` or `packages/ai-native/src/node/acp/acp-thread.ts`
 
-**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Deterministic ACP agent exposing config, fork, resume, close, model, and mode operations. **Workspace mutation:** None. **Automation status:** Automated contract spec; runtime mode visibility is covered by `session-mode.scenario.md`.
+**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** The mock ACP agent at `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=stream-rich` exposes config, fork, resume, close, model, and mode operations; `--fixture=config-failure` covers deterministic config failures. **Workspace mutation:** None. **Automation status:** Automated contract spec; runtime mode visibility is covered by `session-mode.scenario.md`.
 
 ## Given
 
@@ -14,7 +14,7 @@
   - `unstable_resumeSession`
   - `unstable_closeSession`
   - `unstable_setSessionModel`
-- The test harness can observe calls made through the ACP SDK connection.
+- The test harness can observe calls made through the ACP SDK connection or the ACP debug log produced by the mock process.
 
 ## When
 

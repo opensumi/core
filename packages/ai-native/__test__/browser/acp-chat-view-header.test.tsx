@@ -288,6 +288,7 @@ function createMockServices({
       })),
     createSessionModel: createSessionModel || jest.fn(),
     enterDraftSession: enterDraftSession || jest.fn(),
+    getDraftSessionState: jest.fn(() => ({ isDraft: false })),
     ensureSessionModel:
       ensureSessionModel ||
       jest.fn(async () => {

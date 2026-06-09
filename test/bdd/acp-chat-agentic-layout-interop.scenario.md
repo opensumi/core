@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/layout/ai-layout.tsx`, `packages/ai-native/src/browser/layout/panel-layout.service.ts`, `packages/ai-native/src/browser/layout/tabbar.view.tsx`, `packages/ai-native/src/browser/acp/components/AcpChatViewWrapper.tsx`, or `packages/ai-native/src/browser/acp/webmcp-groups/acp-chat.webmcp-group.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** Agentic startup has passed, workspace contains `editor.js` and `test/test.js`, and read-only workspace/editor tools are exposed. **Workspace mutation:** None. **Automation status:** Automated through Chrome DevTools MCP; read-only MCP checks run through `opensumi-ide`.
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** Agentic startup has passed, workspace contains `editor.js` and `test/test.js`, read-only workspace/editor tools are exposed, and optionally a real LLM-backed ACP agent has populated chat content for live layout smoke coverage. **Workspace mutation:** None. **Automation status:** Automated through Chrome DevTools MCP; read-only MCP checks run through `opensumi-ide`. Live-agent content is optional and must not gate the read-only layout interop contract.
 
 ## Given
 
@@ -30,6 +30,11 @@
 - Agentic Explorer/workbench resizing keeps Explorer recoverable and does not collapse the file tree to a permanent `0px` width.
 - Reload preserves Agentic mode and restores a usable AI Chat plus workbench layout.
 - Switching Agentic to Classic and back restores Agentic leftmost chat layout without losing Explorer/editor interop.
+
+## Live Agent Execution
+
+- A real LLM-backed ACP agent may provide populated chat content while verifying Explorer/editor interop, resize, reload, and Agentic/Classic round trips.
+- Live-agent mode must not assert generated assistant text, model timing, or exact restored message content. Core read-only workspace/editor and layout assertions remain deterministic and model-output independent.
 
 ## Pass / Fail Judgment
 

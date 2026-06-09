@@ -26,6 +26,11 @@
 - ACP Chat state tools either return a structured service-unavailable result or safe metadata for the fallback session.
 - No state or visible UI exposes uncaught stack traces, raw JSON-RPC payloads, MCP tokens, full prompt/message bodies, assistant text, or permission content outside allowed title metadata.
 
+## Live Agent Execution
+
+- A real LLM-backed ACP agent is not a substitute for this scenario, because the contract is the UI fallback when ACP backend readiness fails before chat initialization.
+- Live-agent runs may verify the normal healthy path separately, but this scenario remains blocked until a backend-failure fixture or test provider can force readiness failure.
+
 ## Pass / Fail Judgment
 
 - **PASS** - ACP backend failure still leaves a usable Agentic chat surface and structured safe state responses.

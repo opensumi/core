@@ -2,12 +2,12 @@
 
 **Trigger:** `packages/ai-native/src/node/acp/acp-error.ts`, `packages/ai-native/src/node/acp/acp-agent.service.ts`, `packages/ai-native/src/node/acp/acp-cli-back.service.ts`, `packages/ai-native/src/browser/acp/webmcp-utils.ts`, or `packages/ai-native/src/browser/acp/components/AcpChatViewWrapper.tsx`
 
-**Layer:** `node-contract` **Required profile:** `full` for complete WebMCP and browser recovery coverage. **Fixtures:** Deterministic failure injection for ACP process, node service, browser provider, and WebMCP registry. **Workspace mutation:** None. **Automation status:** Automated contract spec with runtime recovery checks through Chrome DevTools MCP.
+**Layer:** `node-contract` **Required profile:** `full` for complete WebMCP and browser recovery coverage. **Fixtures:** The mock ACP agent provides deterministic ACP process failures through `--fixture=create-failure`, `--fixture=load-failure`, `--fixture=send-failure`, `--fixture=auth-required`, and `--fixture=config-failure`; node service, browser provider, and WebMCP registry failures use their existing targeted harnesses. **Workspace mutation:** None. **Automation status:** Automated contract spec with runtime recovery checks through Chrome DevTools MCP.
 
 ## Given
 
 - ACP agent mode is enabled.
-- The test harness can force deterministic failures from the ACP process, node service, browser provider, and WebMCP tool registry.
+- The test harness can force deterministic failures from the mock ACP process, node service, browser provider, and WebMCP tool registry.
 - Common preflight in `test/bdd/README.md` passes for browser recovery checks.
 - The run records browser console errors, MCP tool responses, chat model loading flags, and visible fatal UI text through Chrome DevTools MCP.
 
@@ -23,9 +23,9 @@
 
 ### Part B - Service Operation Failures
 
-6. Force `createSession` to fail after a thread is allocated but before a session id is returned.
-7. Force `loadSession` to fail for a historical session and then succeed through `loadSessionOrNew`.
-8. Force `sendMessage` to fail while the thread is `working`.
+6. Force `createSession` to fail with the mock `create-failure` fixture after a thread is allocated but before a session id is returned.
+7. Force `loadSession` to fail with the mock `load-failure` fixture for a historical session and then succeed through `loadSessionOrNew`.
+8. Force `sendMessage` to fail with the mock `send-failure` fixture while the thread is `working`.
 9. Call mode/config/fork/resume/close/model operations with a missing raw session id.
 10. Dispose a session while a pending load is still in flight.
 
@@ -40,9 +40,9 @@
 
 15. Start the IDE with `aiBackService.ready()` rejecting before ACP chat initialization.
 16. Open or show the ACP chat view.
-17. Trigger a deterministic create-session failure from the UI.
-18. Trigger a deterministic send failure from the UI.
-19. Retry with a successful create/send fixture.
+17. Trigger a deterministic create-session failure from the UI with the mock `create-failure` fixture.
+18. Trigger a deterministic send failure from the UI with the mock `send-failure` fixture.
+19. Retry with the mock `stream-rich` fixture.
 
 ## Then
 

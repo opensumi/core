@@ -116,6 +116,7 @@ describe('AcpChatInternalService', () => {
         clearSession: jest.fn(),
         getAvailableCommands: jest.fn(() => [{ name: 'help', description: 'Help' }]),
         getSession: jest.fn(() => model),
+        getSessions: jest.fn(() => [model]),
         loadSession: jest.fn(() => Promise.resolve()),
         onDidApplySessionState: stateEmitter.event,
         onStorageInit: jest.fn(() => disposable()),
@@ -151,7 +152,7 @@ describe('AcpChatInternalService', () => {
         value: { capabilities: { supportsAgentMode: true } },
       });
       Object.defineProperty(service, 'logger', {
-        value: { error: jest.fn(), log: jest.fn() },
+        value: { error: jest.fn(), log: jest.fn(), warn: jest.fn() },
       });
 
       return {
@@ -171,6 +172,104 @@ describe('AcpChatInternalService', () => {
       await expect(service.ensureSessionModel()).resolves.toBe(model);
 
       expect(chatManagerService.startSession).not.toHaveBeenCalled();
+    });
+
+    it('creates one bootstrap ACP session and exposes its footer metadata', async () => {
+      const { chatManagerService, model, permissionBridgeService, service } = createService();
+
+      await expect(service.ensureBootstrapSessionModel()).resolves.toBe(model);
+      await expect(service.ensureBootstrapSessionModel()).resolves.toBe(model);
+
+      expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
+      expect(permissionBridgeService.setActiveSession).toHaveBeenCalledWith('sess-1');
+      expect(service.sessionModel).toBe(model);
+      expect(service.getAvailableCommands()).toEqual([{ name: 'help', description: 'Help' }]);
+      expect(service.getDraftSessionState()).toEqual({
+        agentModes: model.agentModes,
+        currentModeId: 'code',
+        agentModels: model.agentModels,
+        modelId: 'model-a',
+        configOptions: model.configOptions,
+      });
+    });
+
+    it('reuses the bootstrap ACP session on first send instead of creating another session', async () => {
+      const { chatManagerService, model, service } = createService();
+
+      await expect(service.ensureBootstrapSessionModel()).resolves.toBe(model);
+      await expect(service.ensureSessionModel()).resolves.toBe(model);
+
+      expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
+    });
+
+    it('hides an unused bootstrap session from visible history until it receives user content', async () => {
+      const { model, service } = createService();
+
+      await service.ensureBootstrapSessionModel();
+
+      expect(service.getSessions()).toEqual([model]);
+      expect(service.getVisibleSessions()).toEqual([]);
+
+      model.history.addUserMessage({
+        content: 'hello',
+        agentId: 'default-agent',
+        agentCommand: '',
+        images: [],
+        relationId: 'request-1',
+      });
+
+      expect(service.getVisibleSessions()).toEqual([model]);
+    });
+
+    it('keeps an unused bootstrap session active when starting a new chat', async () => {
+      const { chatManagerService, model, permissionBridgeService, service } = createService();
+
+      await service.ensureBootstrapSessionModel();
+      permissionBridgeService.setActiveSession.mockClear();
+
+      service.enterDraftSession();
+
+      expect(service.sessionModel).toBe(model);
+      expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
+      expect(permissionBridgeService.setActiveSession).not.toHaveBeenCalledWith(undefined);
+    });
+
+    it('keeps later new chat lazy after the bootstrap session has been used', async () => {
+      const { chatManagerService, model, service } = createService();
+      const nextModel = new ChatModel(new ChatFeatureRegistry(), {
+        sessionId: 'acp:sess-2',
+      });
+      chatManagerService.startSession.mockReset();
+      chatManagerService.startSession.mockResolvedValueOnce(model).mockResolvedValueOnce(nextModel);
+
+      await service.ensureBootstrapSessionModel();
+      model.history.addUserMessage({
+        content: 'hello',
+        agentId: 'default-agent',
+        agentCommand: '',
+        images: [],
+        relationId: 'request-1',
+      });
+
+      service.enterDraftSession();
+
+      expect(service.sessionModel).toBeUndefined();
+      expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
+
+      await expect(service.ensureSessionModel()).resolves.toBe(nextModel);
+      expect(chatManagerService.startSession).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not block first-send lazy session creation when bootstrap creation fails', async () => {
+      const { chatManagerService, model, service } = createService();
+      chatManagerService.startSession.mockReset();
+      chatManagerService.startSession.mockRejectedValueOnce(new Error('session/new failed'));
+      chatManagerService.startSession.mockResolvedValueOnce(model);
+
+      await expect(service.ensureBootstrapSessionModel()).resolves.toBeUndefined();
+      await expect(service.ensureSessionModel()).resolves.toBe(model);
+
+      expect(chatManagerService.startSession).toHaveBeenCalledTimes(2);
     });
 
     it('creates the ACP session only when ensuring from draft', async () => {

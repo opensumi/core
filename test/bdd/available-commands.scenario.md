@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/webmcp-groups/acp-chat.webmcp-group.ts`
 
-**Layer:** `mcp-contract` **Required profile:** `interactive` or `full` **Fixtures:** Fresh MCP session in a profile that exposes `acp_chat_get_available_commands` and command metadata available. **Workspace mutation:** None. **Automation status:** Automated MCP contract spec; default-profile runs should skip this scenario instead of marking it partial.
+**Layer:** `mcp-contract` **Required profile:** `interactive` or `full` **Fixtures:** Fresh MCP session in a profile that exposes `acp_chat_get_available_commands` and command metadata from the mock ACP agent configured as `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=stream-rich`; the active real ACP agent may supply live evidence only when its command catalog is stable for the run. **Workspace mutation:** None. **Automation status:** Automated MCP contract spec; default-profile runs should skip this scenario instead of marking it partial. Playwright conversion requires the stable mock command catalog or an equivalent deterministic provider.
 
 ## Given
 
@@ -36,6 +36,11 @@
 - Every command item has a string `description`; empty descriptions are allowed.
 - Command names are not required to start with `/`.
 - The response must not include chat message content, prompts, assistant responses, or tool-call results.
+
+## Live Agent Execution
+
+- A real LLM-backed ACP agent may provide command metadata for live MCP contract evidence when the interactive/full profile exposes `acp_chat_get_available_commands`.
+- Live-agent mode must not assert exact command counts, ordering, generated command effects, or assistant content unless the command catalog is stable for the configured provider. CI hardening requires deterministic command metadata.
 
 ## Pass / Fail Judgment
 

@@ -1,0 +1,630 @@
+#!/usr/bin/env node
+
+import { AgentSideConnection, RequestError, ndJsonStream } from '@agentclientprotocol/sdk';
+import { Readable, Writable } from 'node:stream';
+
+const DEFAULT_DELAY_MS = 40;
+const DEFAULT_LONG_STREAM_TICKS = 80;
+
+function parseArgs(argv) {
+  const options = {
+    fixture: process.env.OPENSUMI_ACP_BDD_FIXTURE || 'stream-rich',
+    delayMs: Number(process.env.OPENSUMI_ACP_BDD_DELAY_MS || DEFAULT_DELAY_MS),
+    longStreamTicks: Number(process.env.OPENSUMI_ACP_BDD_LONG_STREAM_TICKS || DEFAULT_LONG_STREAM_TICKS),
+    sessionPrefix: process.env.OPENSUMI_ACP_BDD_SESSION_PREFIX || 'bdd-session',
+    verbose: process.env.OPENSUMI_ACP_BDD_VERBOSE === '1',
+    help: false,
+  };
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--help' || arg === '-h') {
+      options.help = true;
+    } else if (arg === '--fixture') {
+      options.fixture = argv[++i] || options.fixture;
+    } else if (arg.startsWith('--fixture=')) {
+      options.fixture = arg.slice('--fixture='.length);
+    } else if (arg === '--delay-ms') {
+      options.delayMs = Number(argv[++i] || options.delayMs);
+    } else if (arg.startsWith('--delay-ms=')) {
+      options.delayMs = Number(arg.slice('--delay-ms='.length));
+    } else if (arg === '--long-stream-ticks') {
+      options.longStreamTicks = Number(argv[++i] || options.longStreamTicks);
+    } else if (arg.startsWith('--long-stream-ticks=')) {
+      options.longStreamTicks = Number(arg.slice('--long-stream-ticks='.length));
+    } else if (arg === '--session-prefix') {
+      options.sessionPrefix = argv[++i] || options.sessionPrefix;
+    } else if (arg.startsWith('--session-prefix=')) {
+      options.sessionPrefix = arg.slice('--session-prefix='.length);
+    } else if (arg === '--verbose') {
+      options.verbose = true;
+    }
+  }
+
+  if (!Number.isFinite(options.delayMs) || options.delayMs < 0) {
+    options.delayMs = DEFAULT_DELAY_MS;
+  }
+  if (!Number.isFinite(options.longStreamTicks) || options.longStreamTicks < 1) {
+    options.longStreamTicks = DEFAULT_LONG_STREAM_TICKS;
+  }
+
+  return options;
+}
+
+const options = parseArgs(process.argv.slice(2));
+
+if (options.help) {
+  console.log(`OpenSumi BDD mock ACP agent
+
+Usage:
+  node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs [--fixture stream-rich]
+
+Options:
+  --fixture <name>          Fixture mode. Also accepts OPENSUMI_ACP_BDD_FIXTURE.
+  --delay-ms <ms>          Delay between streamed updates.
+  --long-stream-ticks <n>  Number of long-stream chunks before natural completion.
+  --session-prefix <text>  Prefix for generated session ids.
+  --verbose                Write diagnostics to stderr.
+
+Fixtures:
+  stream-rich       Content, thought, plan, tool call, config, and usage updates.
+  long-stream       Repeated content chunks until session/cancel or tick limit.
+  permission        Requests visible client permission during prompt.
+  send-failure      Fails deterministically during session/prompt.
+  create-failure    Fails deterministically during session/new.
+  load-failure      Fails deterministically during session/load.
+  auth-required     Raises an ACP auth-required error during session/prompt.
+  config-failure    Fails deterministic session/set_config_option calls.
+  history           Seeds deterministic list/load session metadata.
+`);
+  process.exit(0);
+}
+
+const log = (...args) => {
+  if (options.verbose) {
+    console.error('[mock-acp-agent]', ...args);
+  }
+};
+
+const sleep = (ms = options.delayMs) => new Promise((resolve) => setTimeout(resolve, ms));
+const nowIso = () => new Date().toISOString();
+const text = (value) => ({ type: 'text', text: value });
+
+function createConfigOptions(state = {}) {
+  const values = {
+    mode: state.mode || 'agent',
+    model: state.model || 'bdd-small',
+    thought: state.thought || 'medium',
+    webSearch: state.webSearch ?? false,
+  };
+
+  return [
+    {
+      id: 'bdd-mode',
+      name: 'BDD Mode',
+      type: 'select',
+      category: 'mode',
+      currentValue: values.mode,
+      options: [
+        { value: 'agent', name: 'Agent' },
+        { value: 'chat', name: 'Chat' },
+      ],
+    },
+    {
+      id: 'bdd-model',
+      name: 'BDD Model',
+      type: 'select',
+      category: 'model',
+      currentValue: values.model,
+      options: [
+        { value: 'bdd-small', name: 'BDD Small' },
+        { value: 'bdd-large', name: 'BDD Large' },
+      ],
+    },
+    {
+      id: 'bdd-thought-level',
+      name: 'BDD Thought Level',
+      type: 'select',
+      category: 'thought_level',
+      currentValue: values.thought,
+      options: [
+        { value: 'low', name: 'Low' },
+        { value: 'medium', name: 'Medium' },
+        { value: 'high', name: 'High' },
+      ],
+    },
+    {
+      id: 'bdd-web-search',
+      name: 'BDD Web Search',
+      type: 'boolean',
+      category: '_bdd_feature',
+      currentValue: values.webSearch,
+    },
+  ];
+}
+
+function createModes(currentModeId = 'agent') {
+  return {
+    currentModeId,
+    availableModes: [
+      { id: 'agent', name: 'Agent', description: 'Deterministic agent mode' },
+      { id: 'chat', name: 'Chat', description: 'Deterministic chat mode' },
+    ],
+  };
+}
+
+function createModels(currentModelId = 'bdd-small') {
+  return {
+    currentModelId,
+    availableModels: [
+      { modelId: 'bdd-small', name: 'BDD Small', description: 'Fast deterministic model' },
+      { modelId: 'bdd-large', name: 'BDD Large', description: 'Verbose deterministic model' },
+    ],
+  };
+}
+
+function createCommands() {
+  return [
+    {
+      name: 'bdd_echo',
+      description: 'Emit a deterministic assistant response.',
+      input: { hint: 'optional deterministic text' },
+    },
+    {
+      name: 'bdd_plan',
+      description: 'Emit deterministic thought, plan, and tool updates.',
+      input: { hint: 'optional plan subject' },
+    },
+    {
+      name: 'bdd_permission',
+      description: 'Trigger a deterministic permission request.',
+      input: { hint: 'optional permission subject' },
+    },
+  ];
+}
+
+function createSessionRecord(sessionId, cwd) {
+  return {
+    sessionId,
+    cwd,
+    title: `BDD Session ${sessionId}`,
+    updatedAt: nowIso(),
+    mode: 'agent',
+    model: 'bdd-small',
+    thought: 'medium',
+    webSearch: false,
+    promptCount: 0,
+  };
+}
+
+function responseForSession(session) {
+  return {
+    sessionId: session.sessionId,
+    modes: createModes(session.mode),
+    models: createModels(session.model),
+    configOptions: createConfigOptions(session),
+  };
+}
+
+function sessionInfo(session) {
+  return {
+    sessionId: session.sessionId,
+    cwd: session.cwd,
+    title: session.title,
+    updatedAt: session.updatedAt,
+  };
+}
+
+function extractPromptText(prompt) {
+  if (!Array.isArray(prompt)) {
+    return '';
+  }
+  return prompt
+    .map((block) => {
+      if (block?.type === 'text') {
+        return block.text || '';
+      }
+      if (block?.type === 'resource_link') {
+        return block.title || block.name || block.uri || '';
+      }
+      return '';
+    })
+    .filter(Boolean)
+    .join('\n');
+}
+
+function createAgent(conn) {
+  const sessions = new Map();
+  const pendingPrompts = new Map();
+  let nextSessionNumber = 1;
+
+  if (options.fixture === 'history') {
+    for (const suffix of ['alpha', 'beta']) {
+      const session = createSessionRecord(`${options.sessionPrefix}-${suffix}`, process.cwd());
+      session.title = `BDD History ${suffix}`;
+      sessions.set(session.sessionId, session);
+    }
+  }
+
+  const emit = async (sessionId, update) => {
+    await conn.sessionUpdate({ sessionId, update });
+  };
+
+  const emitAvailableCommandsUpdate = async (session) => {
+    await emit(session.sessionId, {
+      sessionUpdate: 'available_commands_update',
+      availableCommands: createCommands(),
+    });
+  };
+
+  const scheduleAvailableCommandsUpdate = (session) => {
+    setTimeout(() => {
+      emitAvailableCommandsUpdate(session).catch((error) => log('available commands update failed', error));
+    }, 0);
+  };
+
+  const emitInitialSessionUpdates = async (session) => {
+    await emit(session.sessionId, {
+      sessionUpdate: 'session_info_update',
+      title: session.title,
+      updatedAt: session.updatedAt,
+    });
+    await emitAvailableCommandsUpdate(session);
+    await emit(session.sessionId, {
+      sessionUpdate: 'current_mode_update',
+      currentModeId: session.mode,
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'config_option_update',
+      configOptions: createConfigOptions(session),
+    });
+  };
+
+  const getOrCreateSession = (sessionId, cwd = process.cwd()) => {
+    if (sessions.has(sessionId)) {
+      return sessions.get(sessionId);
+    }
+    const session = createSessionRecord(sessionId, cwd);
+    sessions.set(sessionId, session);
+    return session;
+  };
+
+  const runRichStream = async (session, promptText) => {
+    const configSnapshot = {
+      mode: session.mode,
+      model: session.model,
+      thought: session.thought,
+      webSearch: session.webSearch,
+    };
+
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_thought_chunk',
+      content: text('BDD_THOUGHT_STEP_1: inspected deterministic fixture.'),
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_thought_chunk',
+      content: text(
+        `BDD_CONFIG_SNAPSHOT mode=${configSnapshot.mode} model=${configSnapshot.model} thought=${configSnapshot.thought} webSearch=${configSnapshot.webSearch}`,
+      ),
+    });
+    await sleep();
+    await emit(session.sessionId, {
+      sessionUpdate: 'plan',
+      entries: [
+        { content: 'BDD plan: prepare deterministic stream', status: 'completed', priority: 'high' },
+        { content: 'BDD plan: emit tool update', status: 'in_progress', priority: 'medium' },
+      ],
+    });
+    await sleep();
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_message_chunk',
+      content: text(`BDD_ASSISTANT_PART_1 for turn ${session.promptCount}.`),
+    });
+    await sleep();
+    await emit(session.sessionId, {
+      sessionUpdate: 'tool_call',
+      toolCallId: `bdd-tool-${session.promptCount}`,
+      title: 'BDD deterministic tool',
+      kind: 'read',
+      status: 'pending',
+      rawInput: {
+        fixture: options.fixture,
+        promptChars: promptText.length,
+        configSnapshot,
+      },
+    });
+    await sleep();
+    await emit(session.sessionId, {
+      sessionUpdate: 'tool_call_update',
+      toolCallId: `bdd-tool-${session.promptCount}`,
+      status: 'in_progress',
+      rawInput: {
+        fixture: options.fixture,
+        phase: 'in_progress',
+      },
+    });
+    await sleep();
+    await emit(session.sessionId, {
+      sessionUpdate: 'tool_call_update',
+      toolCallId: `bdd-tool-${session.promptCount}`,
+      status: 'completed',
+      rawOutput: {
+        ok: true,
+        sentinel: 'BDD_TOOL_RESULT',
+      },
+    });
+    await sleep();
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_message_chunk',
+      content: text(' BDD_ASSISTANT_PART_2 completed.'),
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'usage_update',
+      size: 4096,
+      used: 128 + session.promptCount,
+    });
+  };
+
+  const runLongStream = async (session) => {
+    let resolveCancel;
+    const cancelPromise = new Promise((resolve) => {
+      resolveCancel = resolve;
+    });
+    pendingPrompts.set(session.sessionId, { cancel: resolveCancel });
+
+    try {
+      for (let i = 1; i <= options.longStreamTicks; i++) {
+        await emit(session.sessionId, {
+          sessionUpdate: 'agent_message_chunk',
+          content: text(`BDD_LONG_STREAM_CHUNK_${String(i).padStart(2, '0')} `),
+        });
+
+        const canceled = await Promise.race([sleep(), cancelPromise.then(() => true)]);
+        if (canceled === true) {
+          await emit(session.sessionId, {
+            sessionUpdate: 'agent_message_chunk',
+            content: text('BDD_LONG_STREAM_CANCELLED'),
+          });
+          return { stopReason: 'cancelled' };
+        }
+      }
+    } finally {
+      pendingPrompts.delete(session.sessionId);
+    }
+
+    return { stopReason: 'end_turn' };
+  };
+
+  const runPermission = async (session) => {
+    const toolCallId = `bdd-permission-${session.promptCount}`;
+    const toolCall = {
+      toolCallId,
+      title: 'BDD permission fixture',
+      kind: 'edit',
+      status: 'pending',
+      rawInput: {
+        fixture: 'permission',
+        path: 'editor.js',
+      },
+    };
+
+    await emit(session.sessionId, { sessionUpdate: 'tool_call', ...toolCall });
+    const response = await conn.requestPermission({
+      sessionId: session.sessionId,
+      toolCall,
+      options: [
+        { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
+        { optionId: 'reject_once', name: 'Reject', kind: 'reject_once' },
+      ],
+    });
+
+    const selected = response?.outcome?.outcome === 'selected' ? response.outcome.optionId : 'cancelled';
+    const allowed = selected === 'allow_once';
+
+    await emit(session.sessionId, {
+      sessionUpdate: 'tool_call_update',
+      toolCallId,
+      status: allowed ? 'completed' : 'failed',
+      rawOutput: {
+        permissionOutcome: selected,
+      },
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_message_chunk',
+      content: text(allowed ? 'BDD_PERMISSION_ALLOWED' : 'BDD_PERMISSION_REJECTED'),
+    });
+
+    return { stopReason: allowed ? 'end_turn' : 'cancelled' };
+  };
+
+  return {
+    async initialize(params) {
+      log('initialize', params?.protocolVersion);
+      return {
+        protocolVersion: params.protocolVersion,
+        agentInfo: {
+          name: 'opensumi-bdd-mock-acp-agent',
+          title: 'OpenSumi BDD Mock ACP Agent',
+          version: '1.0.0',
+        },
+        agentCapabilities: {
+          loadSession: true,
+          sessionCapabilities: {
+            list: {},
+            loadSession: {},
+          },
+          mcpCapabilities: {
+            http: true,
+          },
+          promptCapabilities: {
+            image: false,
+            audio: false,
+            embeddedContext: true,
+          },
+        },
+      };
+    },
+
+    async newSession(params) {
+      if (options.fixture === 'create-failure') {
+        throw RequestError.internalError({ fixture: options.fixture }, 'BDD create-session failure');
+      }
+
+      const sessionId = `${options.sessionPrefix}-${nextSessionNumber++}`;
+      const session = createSessionRecord(sessionId, params.cwd);
+      sessions.set(sessionId, session);
+      await emitInitialSessionUpdates(session);
+      scheduleAvailableCommandsUpdate(session);
+      return responseForSession(session);
+    },
+
+    async loadSession(params) {
+      if (options.fixture === 'load-failure') {
+        throw RequestError.resourceNotFound(params.sessionId);
+      }
+
+      const session = getOrCreateSession(params.sessionId, params.cwd);
+      session.updatedAt = nowIso();
+      await emitInitialSessionUpdates(session);
+      scheduleAvailableCommandsUpdate(session);
+      return responseForSession(session);
+    },
+
+    async listSessions(params = {}) {
+      const allSessions = [...sessions.values()]
+        .filter((session) => !params.cwd || session.cwd === params.cwd)
+        .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+      return { sessions: allSessions.map(sessionInfo) };
+    },
+
+    async setSessionMode(params) {
+      const session = getOrCreateSession(params.sessionId);
+      session.mode = params.modeId;
+      session.updatedAt = nowIso();
+      await emit(params.sessionId, {
+        sessionUpdate: 'current_mode_update',
+        currentModeId: session.mode,
+      });
+      return {};
+    },
+
+    async unstable_setSessionModel(params) {
+      const session = getOrCreateSession(params.sessionId);
+      session.model = params.modelId || params.model || session.model;
+      session.updatedAt = nowIso();
+      return {};
+    },
+
+    async setSessionConfigOption(params) {
+      if (options.fixture === 'config-failure') {
+        throw RequestError.invalidParams({ fixture: options.fixture, configId: params.configId }, 'BDD config failure');
+      }
+
+      const session = getOrCreateSession(params.sessionId);
+      if (params.configId === 'bdd-mode') {
+        session.mode = params.value;
+      } else if (params.configId === 'bdd-model') {
+        session.model = params.value;
+      } else if (params.configId === 'bdd-thought-level') {
+        session.thought = params.value;
+      } else if (params.configId === 'bdd-web-search') {
+        session.webSearch = params.value;
+      }
+      session.updatedAt = nowIso();
+      const configOptions = createConfigOptions(session);
+      await emit(params.sessionId, {
+        sessionUpdate: 'config_option_update',
+        configOptions,
+      });
+      return { configOptions };
+    },
+
+    async prompt(params) {
+      if (options.fixture === 'send-failure') {
+        throw RequestError.internalError({ fixture: options.fixture }, 'BDD send failure');
+      }
+      if (options.fixture === 'auth-required') {
+        throw RequestError.authRequired({ fixture: options.fixture }, 'BDD auth required');
+      }
+
+      const session = getOrCreateSession(params.sessionId);
+      session.promptCount += 1;
+      session.title = `BDD Turn ${session.promptCount}`;
+      session.updatedAt = nowIso();
+      const promptText = extractPromptText(params.prompt);
+
+      await emit(params.sessionId, {
+        sessionUpdate: 'session_info_update',
+        title: session.title,
+        updatedAt: session.updatedAt,
+      });
+      await emit(params.sessionId, {
+        sessionUpdate: 'user_message_chunk',
+        content: text(`BDD_USER_TURN_${session.promptCount}`),
+      });
+      await sleep();
+
+      if (options.fixture === 'long-stream') {
+        return runLongStream(session);
+      }
+      if (options.fixture === 'permission') {
+        return runPermission(session);
+      }
+
+      await runRichStream(session, promptText);
+      return {
+        stopReason: 'end_turn',
+        usage: {
+          inputTokens: Math.max(1, promptText.length),
+          outputTokens: 32,
+          totalTokens: Math.max(1, promptText.length) + 32,
+          thoughtTokens: 4,
+        },
+      };
+    },
+
+    async cancel(params) {
+      const pending = pendingPrompts.get(params.sessionId);
+      if (pending) {
+        pending.cancel();
+      }
+    },
+
+    async unstable_forkSession(params) {
+      const source = getOrCreateSession(params.sessionId, params.cwd);
+      const sessionId = `${source.sessionId}-fork`;
+      const session = {
+        ...source,
+        sessionId,
+        title: `${source.title} Fork`,
+        updatedAt: nowIso(),
+      };
+      sessions.set(sessionId, session);
+      return { sessionId };
+    },
+
+    async unstable_resumeSession(params) {
+      getOrCreateSession(params.sessionId, params.cwd);
+      return {};
+    },
+
+    async unstable_closeSession(params) {
+      sessions.delete(params.sessionId);
+      return {};
+    },
+
+    async authenticate() {
+      return {};
+    },
+  };
+}
+
+const input = Readable.toWeb(process.stdin);
+const output = Writable.toWeb(process.stdout);
+const stream = ndJsonStream(output, input);
+const connection = new AgentSideConnection((conn) => createAgent(conn), stream);
+
+connection.closed.catch((error) => {
+  console.error('[mock-acp-agent] connection failed', error);
+  process.exitCode = 1;
+});

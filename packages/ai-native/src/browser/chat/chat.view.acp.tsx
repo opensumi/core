@@ -96,6 +96,12 @@ function getSessionCreatedAt(session: ChatModel): number {
   return session.createdAt || firstMessage?.timestamp || firstMessage?.replyStartTime || 0;
 }
 
+function getVisibleAcpSessions(aiChatService: AcpChatInternalService): ChatModel[] {
+  return typeof aiChatService.getVisibleSessions === 'function'
+    ? aiChatService.getVisibleSessions()
+    : aiChatService.getSessions();
+}
+
 const getFileChanges = (codeBlocks: CodeBlockData[]) =>
   codeBlocks
     .map((block) => {
@@ -1147,7 +1153,7 @@ export function DefaultChatViewHeaderACP({
         }
       }
 
-      const sessions = aiChatService.getSessions();
+      const sessions = getVisibleAcpSessions(aiChatService);
       for (const session of sessions) {
         subscribeThreadStatus(session);
       }

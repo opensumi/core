@@ -1,23 +1,14 @@
 // Source: test/bdd/acp-chat-agentic-config-controls.scenario.md
 
-import { promises as fs } from 'fs';
-import path from 'path';
-
 import { type Locator, expect } from '@playwright/test';
 
-import { OpenSumiApp } from '../app';
-import { OpenSumiWorkspace } from '../workspace';
-
 import test, { page } from './hooks';
+import { type AcpBddFixtureRuntime, loadAcpBddFixtureWorkbench } from './utils/acp-bdd-fixture';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const CONFIG_SELECTOR = '[role="combobox"][class*="config_selector"]';
-const DEFAULT_WORKSPACE = path.resolve(__dirname, '../../src/tests/workspaces/default');
-const REPO_ROOT = path.resolve(__dirname, '../../../..');
-const MOCK_ACP_AGENT = path.join(REPO_ROOT, 'test/bdd/fixtures/acp-agent/mock-acp-agent.mjs');
 
-let app: OpenSumiApp;
-let workspace: OpenSumiWorkspace;
+let runtime: AcpBddFixtureRuntime;
 
 interface ConfigProof {
   configId: string;
@@ -47,71 +38,15 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-async function writeMockAcpAgentSettings(workspaceDir: string) {
-  const settingsDir = path.join(workspaceDir, '.sumi');
-  await fs.mkdir(settingsDir, { recursive: true });
-  await fs.writeFile(
-    path.join(settingsDir, 'settings.json'),
-    JSON.stringify(
-      {
-        'ai.native.agent.defaultType': 'claude-agent-acp',
-        'ai-native.acp.agents': {
-          'claude-agent-acp': {
-            command: process.execPath,
-            args: [MOCK_ACP_AGENT, '--fixture=stream-rich', '--delay-ms=5'],
-            env: {
-              OPENSUMI_ACP_BDD_DELAY_MS: '5',
-            },
-          },
-        },
-      },
-      null,
-      2,
-    ),
-  );
-}
-
-async function waitForWorkbenchReady() {
-  await page.waitForSelector('.loading_indicator', { state: 'detached' });
-  await page.waitForSelector('#main');
-  await page.waitForFunction(() => {
-    const text = document.body.innerText || '';
-    const shellReady =
-      document.readyState === 'complete' &&
-      !!document.querySelector('#main') &&
-      !document.querySelector('.loading_indicator');
-    const workbenchVisible =
-      text.includes('EXPLORER') ||
-      text.includes('Agentic') ||
-      text.includes('editor.js') ||
-      !!document.querySelector('.monaco-editor');
-    return shellReady && workbenchVisible;
-  });
-}
-
-async function ensureAgenticLayout() {
-  const layoutLabel = page.getByText(/^(Agentic|Classic)$/).first();
-  await expect(layoutLabel).toBeVisible();
-  if ((await layoutLabel.textContent())?.trim() === 'Classic') {
-    await layoutLabel.click();
-    await page.getByText('Agentic', { exact: true }).last().click();
-  }
-  await expect(page.getByText('Agentic', { exact: true }).first()).toBeVisible();
-}
-
 async function loadFullProfileWorkbench() {
-  workspace = new OpenSumiWorkspace([DEFAULT_WORKSPACE]);
-  await workspace.initWorksapce();
-  await writeMockAcpAgentSettings(workspace.workspace.codeUri.fsPath);
-  app = new OpenSumiApp(page);
-  const workspaceDir = encodeURIComponent(workspace.workspace.codeUri.fsPath);
-  await page.goto(`/?workspaceDir=${workspaceDir}&webMcpProfile=full`);
-  await waitForWorkbenchReady();
-  await page.waitForFunction(() => Boolean((navigator as any).modelContext?.executeTool));
-  await page.evaluate(async () => {
-    await (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {});
+  runtime = await loadAcpBddFixtureWorkbench(page, {
+    fixture: 'stream-rich',
+    profile: 'full',
+    delayMs: 5,
+    showChatView: true,
+    ensureAgenticLayout: true,
+    viewport: { width: 1800, height: 1000 },
   });
-  await ensureAgenticLayout();
   await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
 }
 
@@ -142,7 +77,7 @@ async function selectFooterConfig(comboIndex: number, label: string) {
 }
 
 async function openAndClearAcpDebugLog() {
-  await app.quickCommandPalette.type('Open ACP Debug Log');
+  await runtime.app.quickCommandPalette.type('Open ACP Debug Log');
   await expect(page.getByText('Open ACP Debug Log', { exact: true })).toBeVisible();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'ACP Debug Log' })).toBeVisible();
@@ -305,16 +240,14 @@ test.describe('ACP Chat Agentic footer config controls', () => {
   test.setTimeout(120_000);
 
   test.beforeAll(async () => {
-    await page.setViewportSize({ width: 1800, height: 1000 });
     await loadFullProfileWorkbench();
   });
 
-  test.afterAll(() => {
-    app?.dispose();
-    workspace?.dispose();
+  test.afterAll(async () => {
+    await runtime?.dispose();
   });
 
-  test('applies footer config options through ACP session config protocol', async (_, testInfo) => {
+  test('applies footer config options through ACP session config protocol', async (_fixtures, testInfo) => {
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-config-controls', {
       sourceScenario: 'test/bdd/acp-chat-agentic-config-controls.scenario.md',
       profile: 'full',

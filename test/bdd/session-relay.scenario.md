@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/acp-chat-relay-*.ts` or `packages/ai-native/src/browser/acp/webmcp-groups/acp-chat.webmcp-group.ts`
 
-**Layer:** `mcp-contract` **Required profile:** `full` **Fixtures:** Two ACP sessions with bounded history, prepared relay digest state, and stable permission dialog selectors. **Workspace mutation:** None. **Automation status:** Automated through MCP plus Chrome DevTools MCP; blocked if the dialog lacks a stable Reject/close selector.
+**Layer:** `mcp-contract` **Required profile:** `full` **Fixtures:** Two ACP sessions from the mock ACP agent `--fixture=history` with bounded history or deterministic sends, prepared relay digest state, or live sessions created through a real LLM-backed ACP agent only for bounded relay smoke coverage; stable permission dialog selectors are required when posting the relay. **Workspace mutation:** None. **Automation status:** Automated through MCP plus Chrome DevTools MCP; live-agent sessions may supply bounded metadata, but the mock `history` fixture or equivalent stable setup is required for prepared relay digest and permission-gate hardening.
 
 ## Given
 
@@ -10,7 +10,7 @@
 - The MCP `opensumi-ide` server is connected.
 - The scenario is scheduled only when `ai.native.webmcp.profile = "full"`.
 - ACP Chat relay and bounded debug read tools are exposed by the full profile.
-- There are at least two ACP sessions:
+- There are at least two ACP sessions, preferably seeded by the mock `history` fixture:
   - `sourceSessionId`
   - `targetSessionId`
 - The relay post and bounded debug read steps run in the same full-profile pass.
@@ -68,8 +68,13 @@
 - If Part D runs, `READ_RESULT.result.messages` contains only `user` and `assistant` roles, bounded by `maxMessages` and `maxChars`.
 - Part D must not return tool-result messages.
 
+## Live Agent Execution
+
+- A real LLM-backed ACP agent may create source and target sessions for relay smoke coverage, list metadata, bounded digest preview shape, and permission-gate observability.
+- Live-agent mode must not assert full digest bodies, exact generated session titles, assistant response text, model tool results, or exact message contents. Permission posting still requires a stable visible Reject/close selector, and bounded debug reads must remain redacted evidence only.
+
 ## Pass / Fail Judgment
 
 - **PASS** - relay preparation returns only bounded metadata/preview, relay posting is permission-gated, and full-profile message reads are bounded.
-- **BLOCKED** - the run is not full profile, lacks two ACP sessions, or lacks a stable permission dialog selector for the Reject/close control.
+- **BLOCKED** - the run is not full profile, lacks two ACP sessions from the mock `history` fixture or equivalent stable setup, or lacks a stable permission dialog selector for the Reject/close control.
 - **FAIL** - prepare returns full digest/source content, post bypasses permission, or debug reads return unbounded/tool-result content.

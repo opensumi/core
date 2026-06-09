@@ -13,6 +13,11 @@
 - The IDE can open an editor for `package.json`.
 - Shell or terminal mutation steps run only in a full profile, or are skipped explicitly as profile-gated.
 
+## Live Agent Execution
+
+- A real LLM-backed ACP agent is not applicable to this scenario. The contract is the IDE WebMCP capability surface plus reversible workspace/file/editor/terminal fixtures.
+- Missing workspace fixtures such as `package.json`, profile-gated tool exposure, or temporary mutation setup must be fixed directly; live-agent availability must not unblock or satisfy these assertions.
+
 ## When
 
 ### Part A - Catalog

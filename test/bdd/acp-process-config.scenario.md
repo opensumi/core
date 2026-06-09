@@ -2,11 +2,11 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/build-agent-process-config.ts` or `packages/ai-native/src/node/acp/acp-spawn-config.ts`
 
-**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Browser preference fixture and node spawn config resolver fixture. **Workspace mutation:** None. **Automation status:** Automated contract spec; no runtime IDE interaction is required.
+**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Browser preference fixture and node spawn config resolver fixture using `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=stream-rich` as the concrete ACP agent command. **Workspace mutation:** None. **Automation status:** Automated contract spec; no runtime IDE interaction is required.
 
 ## Given
 
-- An ACP agent registration exists with `agentId`, `command`, `args`, `env`, and `cwd`.
+- An ACP agent registration exists with `agentId`, `command`, `args`, `env`, and `cwd`; the default command points to `node` with args including `test/bdd/fixtures/acp-agent/mock-acp-agent.mjs` and `--fixture=stream-rich`.
 - User preferences may override agent `command`, `args`, `env`, and `nodePath`.
 - Node process environment may include `SUMI_ACP_NODE_PATH` and `SUMI_ACP_AGENT_PATH`.
 

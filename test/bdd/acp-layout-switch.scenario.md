@@ -42,6 +42,11 @@
 - Browser and MCP tool catalogs expose canonical underscore tool names only; legacy `_opensumi/...` names are absent.
 - If `navigator.modelContext` and the MCP bridge are both unavailable, the failure output includes `navigator.modelContext missing` or `opensumi-ide MCP tools/list unavailable`.
 
+## Live Agent Execution
+
+- A real LLM-backed ACP agent is not required for this read-only layout scenario and does not replace stable layout selectors, splitter selectors, workspace fixtures, or read-only WebMCP exposure.
+- If a live agent happens to populate AI Chat during the run, generated chat content is evidence only and must not affect the layout-switch pass/fail oracle.
+
 ## Pass / Fail Judgment
 
 - **PASS** - layout switching works in both directions, file-tree interaction remains healthy, layout-specific AI chat resize bounds hold, and read-only WebMCP state checks succeed.

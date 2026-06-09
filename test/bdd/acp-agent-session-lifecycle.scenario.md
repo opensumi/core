@@ -2,12 +2,12 @@
 
 **Trigger:** `packages/ai-native/src/node/acp/acp-agent.service.ts` or `packages/ai-native/src/browser/chat/acp-session-provider.ts`
 
-**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Deterministic ACP agent with session, load, stream, cancellation, and HTTP MCP capability controls. **Workspace mutation:** None. **Automation status:** Automated contract spec; browser preflight is optional when validating the visible provider path.
+**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** The mock ACP agent at `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs` covers session creation/loading, `--fixture=stream-rich` streaming, `--fixture=long-stream` cancellation, `--fixture=send-failure` prompt errors, `--fixture=load-failure` load fallback, and advertised HTTP MCP capability controls. **Workspace mutation:** None. **Automation status:** Automated contract spec; browser preflight is optional when validating the visible provider path.
 
 ## Given
 
 - Common preflight in `test/bdd/README.md` passes if this is run through the IDE.
-- The ACP agent command is configured and can complete `initialize`.
+- The ACP agent command points to the mock ACP agent and can complete `initialize`.
 - The agent advertises `sessionCapabilities.list` and `loadSession` when saved session checks are executed.
 - The agent advertises `mcpCapabilities.http` when MCP bridge injection checks are executed.
 
@@ -58,7 +58,7 @@
 - If the agent supports HTTP MCP and no configured server uses the built-in server name, `newSession` receives one `opensumi-ide` HTTP MCP server.
 - Message prompts, images, history, and per-send config are forwarded to the ACP thread with raw session ids.
 - Part B emits at least one status update and eventually returns to `awaiting_prompt` after a successful prompt.
-- Part B emits a normalized error and returns the thread to a recoverable terminal state after an agent failure.
+- Part B emits a normalized error and returns the thread to a recoverable terminal state after the mock `send-failure` fixture fails.
 - Streamed updates for unrelated session ids are ignored.
 - `cancelRequest` is idempotent when the session is missing.
 - `disposeSession(force=false)` releases session terminals, unregisters permission routing, removes the session mapping, and keeps the thread eligible for reuse.

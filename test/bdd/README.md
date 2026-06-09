@@ -66,6 +66,16 @@ http://localhost:8080/?workspaceDir=<absolute workspace path>&webMcpProfile=full
 
 `PASS` means all required steps for the declared profile ran and met the assertions. `BLOCKED` means the scenario could not start because a declared prerequisite was unavailable. `FAIL` means the declared prerequisites were present but behavior violated the contract.
 
+## Live Agent BDD Lane
+
+Runtime-ui scenarios may run against a real LLM-backed ACP agent when the declared profile is available and the goal is live integration coverage. A live-agent run may verify stable outer contracts such as input focus/send, user row creation, streaming/loading state, stop/cancel visibility, reload recovery, permission dialog observability, safe metadata-only state tools, and absence of legacy ACP tools.
+
+Live-agent runs must not assert assistant text, exact token or chunk timing, generated reasoning/content, tool arguments/results chosen by the model, or exact command/history titles derived from prompts. Treat model output as evidence only after redacting secrets, prompt bodies, full assistant content, permission content, API keys, MCP tokens, raw ACP JSON, and tool results.
+
+A live-agent pass is normally `PASS` with hardening verdict `DEFER`. Convert to Playwright CI only when the scenario is backed by deterministic ACP provider/protocol fixtures, recorded stable protocol fixtures, or stable selectors and bounded data independent of LLM generation.
+
+If a scenario supports both live-agent and deterministic execution, record the mode in evidence as `Execution mode: live-agent` or `Execution mode: deterministic-fixture`. When live-agent execution covers only the stable shell contract but not fixture-only assertions, record the omitted fixture assertions explicitly instead of marking them as passed.
+
 ## Evidence Report
 
 Runtime BDD runs may save local, gitignored evidence under:
@@ -85,6 +95,42 @@ Each evidence report should map scenario requirements to critical points:
 Critical points should be independently verifiable. A `PASS` critical point needs at least one concrete evidence file unless it is a purely in-process assertion already captured in `report.md`. A `BLOCKED` critical point should name the missing profile, fixture, selector, transport, or runtime surface. A `FAIL` critical point should point to the smallest proof showing actual versus expected behavior.
 
 Do not commit evidence artifacts. Do not store MCP bridge tokens, API keys, raw prompt bodies, full assistant content, permission content, ACP raw payloads containing secrets, or unbounded tool results. Save redacted or bounded metadata instead.
+
+## Deterministic ACP Agent Fixture
+
+When an ACP BDD scenario asks for a deterministic ACP provider, use the process-level mock ACP agent unless that scenario explicitly names a more specialized fixture. The mock agent speaks the real ACP stdio/JSON-RPC transport through `AcpThread`, so it exercises process spawn, protocol initialization, session updates, permission routing, debug logging, WebMCP injection, and browser state through the normal product path.
+
+Configure the ACP agent command with `test/bdd/fixtures/acp-agent/mock-acp-agent.mjs`:
+
+```json
+{
+  "ai.native.agent.defaultType": "claude-agent-acp",
+  "ai-native.acp.agents": {
+    "claude-agent-acp": {
+      "command": "node",
+      "args": ["test/bdd/fixtures/acp-agent/mock-acp-agent.mjs", "--fixture=stream-rich"],
+      "streaming": true,
+      "description": "OpenSumi BDD mock ACP agent"
+    }
+  }
+}
+```
+
+The fixture can be selected either with `--fixture=<name>` or `OPENSUMI_ACP_BDD_FIXTURE`. Use this mapping for current BDD scenarios:
+
+| Fixture | Primary BDD use |
+| --- | --- |
+| `stream-rich` | First send, command metadata, config controls, stream rendering, tool-card rendering, debug-log-from-chat, and normal retry recovery. |
+| `long-stream` | Stop/cancel, reload-during-stream, active-stream layout, and active-session isolation checks. |
+| `permission` | Permission dialog, active permission badge/count, browser-only dismissal, and permission routing observability. |
+| `send-failure` | Send failure recovery after a user row exists. |
+| `create-failure` | Create-session failure UI and service recovery. |
+| `load-failure` | History/session reload failure and `loadSessionOrNew` recovery. |
+| `auth-required` | Auth-required status/error recovery without relying on live credentials. |
+| `config-failure` | Footer config error and retry behavior. |
+| `history` | Multi-session history/list/switching and seeded session metadata. |
+
+If a scenario needs more than one fixture class, run the subcases as separate deterministic fixture passes and record the fixture used for each pass in evidence. Do not mix these deterministic fixture assertions with live-agent assertions in a single PASS unless every fixture-only assertion actually ran.
 
 ## Tool Names
 
@@ -204,7 +250,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-rich-history-restore.scenario.md` | `runtime-ui` | `interactive` | Complex content, reasoning, plan, and tool-call history restore across switching and reload. |
 | `acp-chat-agentic-permission-during-send.scenario.md` | `runtime-ui` | `full` | Permission dialog, badge, dismissal, and recovery during an active Agentic send. |
 | `acp-chat-agentic-session-isolation.scenario.md` | `runtime-ui` | `interactive` | Concurrent session status, stream updates, and history selection isolation. |
-| `acp-chat-agentic-config-controls.scenario.md` | `runtime-ui` | `full` | Mode, model, and config option controls, send-time gating, and safe state-summary checks. |
+| `acp-chat-agentic-config-controls.scenario.md` | `runtime-ui` | `full` | Footer `configOptions` controls with deterministic ACP `stream-rich` fixture coverage for mode, model, thought level, boolean values, returned-state refresh, send-time snapshots, and safe state-summary checks. |
 | `acp-chat-agentic-context-attachments.scenario.md` | `runtime-ui` | `interactive` | File, folder, code, and rule context chips, attachment cleanup, and metadata safety. |
 | `acp-chat-agentic-command-surface.scenario.md` | `runtime-ui` | `interactive` | Slash command discovery, selection, cancellation, send, and metadata parity. |
 | `acp-chat-agentic-reload-during-stream.scenario.md` | `runtime-ui` | `interactive` | Page reload while streaming and recovery to a usable Agentic chat state. |

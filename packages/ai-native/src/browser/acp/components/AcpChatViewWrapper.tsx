@@ -26,6 +26,10 @@ interface AcpChatViewWrapperProps {
   aiChatService: ChatInternalService;
 }
 
+type AcpBootstrapChatService = ChatInternalService & {
+  ensureBootstrapSessionModel?: () => Promise<unknown>;
+};
+
 export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapperProps) {
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const aiBackService = useInjectable<IAIBackService>(AIBackSerivcePath);
@@ -86,6 +90,16 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
 
         // 加载历史会话列表（用于 history 下拉展示）
         await chatManagerService.loadSessionList();
+
+        if (cancelled()) {
+          return;
+        }
+
+        try {
+          await (aiChatService as AcpBootstrapChatService).ensureBootstrapSessionModel?.();
+        } catch {
+          // Bootstrap is a UX warm-up only. The first real send still creates a session lazily.
+        }
 
         if (cancelled()) {
           return;

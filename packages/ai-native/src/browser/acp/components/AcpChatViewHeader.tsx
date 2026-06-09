@@ -34,6 +34,12 @@ function getSessionCreatedAt(session: ChatModel): number {
   return session.createdAt || firstMessage?.timestamp || firstMessage?.replyStartTime || 0;
 }
 
+function getVisibleAcpSessions(aiChatService: AcpChatInternalService): ChatModel[] {
+  return typeof aiChatService.getVisibleSessions === 'function'
+    ? aiChatService.getVisibleSessions()
+    : aiChatService.getSessions();
+}
+
 /**
  * ACP 专属的 ChatViewHeader
  * 与 DefaultChatViewHeader 的区别：
@@ -65,13 +71,16 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
 
   const [currentWorkspaceDir, setCurrentWorkspaceDir] = React.useState<string>(getCachedWorkspaceDir());
 
-  const enterDraftSession = React.useCallback(() => {
-    if (sessionSwitchingRef.current) {
-      return;
-    }
+  const enterDraftSession = React.useCallback(
+    (options?: { force?: boolean }) => {
+      if (sessionSwitchingRef.current) {
+        return;
+      }
 
-    aiChatService.enterDraftSession();
-  }, [aiChatService]);
+      aiChatService.enterDraftSession(options);
+    },
+    [aiChatService],
+  );
 
   // Sync state when cache is updated externally (e.g. by session provider on first init)
   React.useEffect(() => {
@@ -87,7 +96,7 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
     setCurrentWorkspaceDir(newDir);
     // Enter a draft; the ACP session will be created with the new cwd on first send
     if (newDir && newDir !== oldDir) {
-      enterDraftSession();
+      enterDraftSession({ force: true });
     }
   }, [workspaceService, quickPick, messageService, enterDraftSession]);
 
@@ -129,7 +138,7 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
    * 优先使用 session.title（服务端元数据），降级使用第一条消息内容
    */
   const getHistoryList = React.useCallback(async () => {
-    const sessions = aiChatService.getSessions();
+    const sessions = getVisibleAcpSessions(aiChatService);
 
     // Subscribe to thread status changes for any new sessions
     for (const session of sessions) {

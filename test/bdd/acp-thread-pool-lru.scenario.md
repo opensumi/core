@@ -2,12 +2,12 @@
 
 **Trigger:** `packages/ai-native/src/node/acp/acp-agent.service.ts` or `packages/ai-native/src/browser/chat/chat.internal.service.acp.ts`
 
-**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Deterministic ACP thread pool with controllable statuses, reservations, and pending loads. **Workspace mutation:** None. **Automation status:** Automated contract spec; visible loading-state checks may also run through the IDE.
+**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Deterministic ACP thread pool with controllable statuses, reservations, and pending loads. Process-backed subcases may use the mock ACP agent `--fixture=history` for reloadable sessions, `--fixture=long-stream` for `working` threads, and `--fixture=auth-required` for auth-required status/error recovery, but reservation and pending-load races still require a dedicated service harness. **Workspace mutation:** None. **Automation status:** Automated contract spec; visible loading-state checks may also run through the IDE.
 
 ## Given
 
 - Common preflight in `test/bdd/README.md` passes if this is run through the IDE.
-- ACP agent mode is enabled.
+- ACP agent mode is enabled, with the mock ACP agent configured for process-backed session/status subcases when the scenario is run through the real ACP process path.
 - The ACP thread pool limit is 3.
 - ACP sessions use raw node-side ACP session ids; browser session ids may use the `acp:` prefix only in browser models.
 - A reusable thread is one whose status is `idle` or `awaiting_prompt`, is not reserved by an in-flight `createSession`, and is not part of `pendingSessionLoads`.

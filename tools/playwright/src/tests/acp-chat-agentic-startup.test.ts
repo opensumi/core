@@ -23,7 +23,7 @@ test.describe('ACP Chat Agentic startup layout', () => {
     app.dispose();
   });
 
-  test('starts with a usable Agentic chat layout and safe default tool surface', async (_, testInfo) => {
+  test('starts with a usable Agentic chat layout and safe default tool surface', async (_fixtures, testInfo) => {
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-startup', {
       sourceScenario: 'test/bdd/acp-chat-agentic-startup.scenario.md',
       profile: 'default',

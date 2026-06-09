@@ -137,8 +137,32 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private sessionCreationPromise: Promise<ChatModel> | undefined;
 
+  private bootstrapSessionId: string | undefined;
+
+  private bootstrapSessionAttempted = false;
+
   private stripAcpPrefix(sessionId: string): string {
     return sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
+  }
+
+  private hasDraftSessionState(): boolean {
+    return Boolean(
+      this.draftSessionState.currentModeId ||
+        this.draftSessionState.modelId ||
+        this.draftSessionState.agentModes?.length ||
+        this.draftSessionState.agentModels?.length ||
+        this.draftSessionState.configOptions?.length,
+    );
+  }
+
+  private isUnusedBootstrapSession(model: ChatModel | undefined): boolean {
+    return Boolean(
+      model &&
+        this.bootstrapSessionId &&
+        model.sessionId === this.bootstrapSessionId &&
+        model.history.getMessages().length === 0 &&
+        model.requests.length === 0,
+    );
   }
 
   getAvailableCommands(): AvailableCommand[] {
@@ -152,6 +176,10 @@ export class AcpChatInternalService extends ChatInternalService {
 
   getDraftSessionState(): AcpDraftSessionState {
     return this.draftSessionState;
+  }
+
+  getVisibleSessions(): ChatModel[] {
+    return this.chatManagerService.getSessions().filter((session) => !this.isUnusedBootstrapSession(session));
   }
 
   public get onStorageInit() {
@@ -291,7 +319,31 @@ export class AcpChatInternalService extends ChatInternalService {
     return this.startSessionModel();
   }
 
-  enterDraftSession(): void {
+  async ensureBootstrapSessionModel(): Promise<ChatModel | undefined> {
+    if (!this.aiNativeConfigService.capabilities.supportsAgentMode || this._sessionModel) {
+      return this._sessionModel;
+    }
+
+    if (this.bootstrapSessionAttempted || this.hasDraftSessionState()) {
+      return undefined;
+    }
+
+    this.bootstrapSessionAttempted = true;
+    try {
+      const model = await this.startSessionModel();
+      this.bootstrapSessionId = model.sessionId;
+      return model;
+    } catch (error) {
+      this.logger.warn?.('[ACP Chat][Frontend] Failed to create bootstrap session', error);
+      return undefined;
+    }
+  }
+
+  enterDraftSession(options?: { force?: boolean }): void {
+    if (!options?.force && this.isUnusedBootstrapSession(this._sessionModel)) {
+      return;
+    }
+
     this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || this.draftSessionState;
     this._sessionModel = undefined as unknown as ChatModel;
     this.permissionBridgeService.setActiveSession(undefined);
@@ -471,7 +523,7 @@ export class AcpChatInternalService extends ChatInternalService {
   override async clearSessionModel(sessionId?: string) {
     sessionId = sessionId || this._sessionModel?.sessionId;
     if (!sessionId) {
-      this.enterDraftSession();
+      this.enterDraftSession({ force: true });
       return;
     }
     this._onWillClearSession.fire(sessionId);
@@ -482,7 +534,7 @@ export class AcpChatInternalService extends ChatInternalService {
       this.permissionBridgeService.clearSessionDialogs(clearedSessionId);
     }
     if (this._sessionModel && sessionId === this._sessionModel.sessionId) {
-      this.enterDraftSession();
+      this.enterDraftSession({ force: true });
     } else if (this._sessionModel) {
       this._onChangeSession.fire(this._sessionModel.sessionId);
     }
@@ -518,7 +570,7 @@ export class AcpChatInternalService extends ChatInternalService {
         this.messageService.info(
           `Session ${sessionId} not found. A new chat draft is ready, and a session will be created when you send a message.`,
         );
-        this.enterDraftSession();
+        this.enterDraftSession({ force: true });
         return;
       }
       this._sessionModel = updatedSession;
@@ -530,7 +582,7 @@ export class AcpChatInternalService extends ChatInternalService {
       this._onChangeSession.fire(this._sessionModel.sessionId);
     } catch (error) {
       this.messageService.info(formatAcpLoadSessionFallbackMessage(error));
-      this.enterDraftSession();
+      this.enterDraftSession({ force: true });
     } finally {
       this._onSessionLoadingChange.fire(false);
     }

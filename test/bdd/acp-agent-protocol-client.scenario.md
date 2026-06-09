@@ -2,13 +2,13 @@
 
 **Trigger:** `packages/ai-native/src/node/acp/acp-thread.ts`
 
-**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Deterministic ACP protocol process with controllable responses and notifications. **Workspace mutation:** None. **Automation status:** Automated contract spec; no browser click path is required.
+**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** The mock ACP agent at `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs` provides a real stdio ACP protocol process with controllable `stream-rich`, `long-stream`, `send-failure`, `load-failure`, `auth-required`, and `permission` responses/notifications. Unsupported protocol, early process exit, and file/terminal client-hook subcases still require specialized process fixtures if the mock agent does not drive those hooks. **Workspace mutation:** None. **Automation status:** Automated contract spec; no browser click path is required.
 
 ## Given
 
 - An `AcpThread` is created with a valid `AgentProcessConfig`.
 - The spawned agent speaks ACP protocol version `1`.
-- The test harness can observe thread events and status changes.
+- The test harness can observe thread events, status changes, and ACP debug-log lines from the mock process.
 
 ## When
 
@@ -43,10 +43,10 @@
 
 ### Part D - Tool And Permission Hooks
 
-17. Agent calls client `readTextFile`.
-18. Agent calls client `writeTextFile`.
-19. Agent calls client terminal create/output/wait/kill/release.
-20. Agent calls client `requestPermission`.
+17. Agent calls client `readTextFile` when a handler-driving process fixture is available.
+18. Agent calls client `writeTextFile` when a handler-driving process fixture is available.
+19. Agent calls client terminal create/output/wait/kill/release when a handler-driving process fixture is available.
+20. Agent calls client `requestPermission` through the mock ACP agent `--fixture=permission`.
 
 ### Part E - Process Exit And Reset
 
@@ -77,5 +77,5 @@
 
 ## Pass / Fail Judgment
 
-- **PASS** - the thread behaves as a protocol-safe ACP client with observable status and entry state.
+- **PASS** - the thread behaves as a protocol-safe ACP client with observable status and entry state; handler-hook subcases pass only when their specialized process fixture runs.
 - **FAIL** - unsupported protocol versions are accepted, foreign session notifications mutate state, or process exit leaves the thread appearing connected.

@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/permission-bridge.service.ts` or `packages/ai-native/src/browser/acp/webmcp-groups/acp-chat.webmcp-group.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `full` **Fixtures:** Two ACP sessions, a prepared relay permission request, and stable permission dialog selectors. **Workspace mutation:** None. **Automation status:** Automated through MCP plus Chrome DevTools MCP; blocked if the dialog lacks a stable Reject/close selector.
+**Layer:** `runtime-ui` **Required profile:** `full` **Fixtures:** Two ACP sessions from `--fixture=history` when relay setup needs seeded sessions, a prepared relay permission request or the mock ACP agent configured as `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=permission` for a visible permission request, and stable permission dialog selectors. A real LLM-backed ACP agent/prompt combination may be used only when it reliably triggers a visible permission request. **Workspace mutation:** None. **Automation status:** Automated through MCP plus Chrome DevTools MCP; live-agent runs may cover dialog observability only when the prompt/agent reliably triggers permission. Stable Reject/close selectors remain required.
 
 ## Given
 
@@ -11,7 +11,7 @@
 - `acp_chat_get_permission_state` is available in the default tool list.
 - Permission tools are referenced only by canonical `tool.name` values.
 - The test environment uses full WebMCP profile for this scenario.
-- There are at least two ACP sessions.
+- There are at least two ACP sessions when the relay path is used; direct mock-agent permission observability may run with one active session.
 
 ## When
 
@@ -35,6 +35,8 @@
 7. `chrome-devtools-mcp`: click the visible Reject or close control in the permission dialog. Do not use an ACP tool to decide.
 8. `mcp`: `acp_chat_get_permission_state({})` -> record `PERMISSION_AFTER_DISMISS`.
 
+If relay setup is unavailable but the mock `permission` fixture is configured, trigger the permission request by sending a deterministic prompt through the Agentic input, then execute Steps 5-8 against the visible dialog and permission state.
+
 ## Then
 
 - Step 1 returns `success: true`.
@@ -48,8 +50,13 @@
 - No step uses or expects `acp_handlePermissionDialog`.
 - No operational step invokes a legacy `_opensumi/acp_chat/*` identifier, and the runtime must not accept one as an alias.
 
+## Live Agent Execution
+
+- A real LLM-backed ACP agent may be used to observe a live permission dialog, permission counts/session id, and browser-only dismissal.
+- Live-agent mode must not assert permission body text, hidden decision options, model tool arguments/results, or generated assistant content. If a live prompt does not produce a dialog, the pending-permission portion is blocked and should not be marked passed.
+
 ## Pass / Fail Judgment
 
 - **PASS** - permission state is observable as counts/session id only, and pending dialogs are visible through both MCP state and Chrome DevTools MCP DOM.
-- **BLOCKED** - the run lacks full profile relay setup, two ACP sessions, or a stable permission dialog selector for the Reject/close control.
+- **BLOCKED** - the run lacks full profile, both relay setup and the mock ACP agent `permission` fallback, or a stable permission dialog selector for the Reject/close control.
 - **FAIL** - permission state is unavailable, leaks permission content, or exposes an automated approve/reject ACP tool.
