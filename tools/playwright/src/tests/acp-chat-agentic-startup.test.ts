@@ -8,19 +8,32 @@ import { OpenSumiApp } from '../app';
 import { OpenSumiWorkspace } from '../workspace';
 
 import test, { page } from './hooks';
+import {
+  aiNativeWorkbenchUrl,
+  ensureAgenticLayout,
+  waitForAcpChatReady,
+  waitForWorkbenchReady,
+  writeAiNativePanelLayoutSettings,
+} from './utils/acp-bdd-fixture';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 let app: OpenSumiApp;
+let workspace: OpenSumiWorkspace;
 
 test.describe('ACP Chat Agentic startup layout', () => {
   test.beforeAll(async () => {
     await page.setViewportSize({ width: 1800, height: 1000 });
-    const workspace = new OpenSumiWorkspace([path.resolve(__dirname, '../../src/tests/workspaces/default')]);
-    app = await OpenSumiApp.load(page, workspace);
+    workspace = new OpenSumiWorkspace([path.resolve(__dirname, '../../src/tests/workspaces/default')]);
+    await workspace.initWorksapce();
+    await writeAiNativePanelLayoutSettings(workspace.workspace.codeUri.fsPath, 'agentic');
+    app = new OpenSumiApp(page);
+    await page.goto(aiNativeWorkbenchUrl(workspace.workspace.codeUri.fsPath));
+    await waitForWorkbenchReady(page);
   });
 
   test.afterAll(() => {
     app.dispose();
+    workspace.dispose();
   });
 
   test('starts with a usable Agentic chat layout and safe default tool surface', async ({
@@ -38,14 +51,9 @@ test.describe('ACP Chat Agentic startup layout', () => {
       await (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {});
     });
 
-    const layoutLabel = page.getByText(/^(Agentic|Classic)$/).first();
-    if ((await layoutLabel.textContent())?.trim() === 'Classic') {
-      await layoutLabel.click();
-      await page.getByText('Agentic', { exact: true }).last().click();
-    }
-
-    await expect(page.getByText('Agentic', { exact: true }).first()).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
+    await ensureAgenticLayout(page);
+    await waitForAcpChatReady(page);
+    await expect(page.locator('.AI-Chat-slot')).not.toContainText('Initializing ACP service');
     await expect(page.getByRole('heading', { name: 'EXPLORER' })).toBeVisible();
 
     const layout = await page.evaluate(async () => {

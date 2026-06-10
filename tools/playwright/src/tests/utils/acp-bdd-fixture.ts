@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
 
-import { type Page, expect } from '@playwright/test';
+import { type Page } from '@playwright/test';
 
 import { OpenSumiApp } from '../../app';
 import { OpenSumiWorkspace } from '../../workspace';
@@ -21,10 +21,12 @@ export const ACP_BDD_FIXTURES = [
 
 export type AcpBddFixture = (typeof ACP_BDD_FIXTURES)[number];
 export type WebMcpProfile = 'default' | 'interactive' | 'full';
+export type AiNativePanelLayout = 'classic' | 'agentic';
 
 export interface AcpBddFixtureOptions {
   fixture: AcpBddFixture;
   profile?: WebMcpProfile;
+  panelLayout?: AiNativePanelLayout;
   workspaceFiles?: string[];
   delayMs?: number;
   longStreamTicks?: number;
@@ -60,6 +62,10 @@ const DEFAULT_AGENT_TYPE = 'claude-agent-acp';
 const LOCK_ROOT = path.join(os.tmpdir(), 'opensumi-bdd-acp-fixture-runtime');
 const LOCK_STALE_MS = 5 * 60 * 1000;
 const LOCK_TIMEOUT_MS = 90 * 1000;
+export const ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS = 120 * 1000;
+const MODEL_CONTEXT_TIMEOUT_MS = 60 * 1000;
+const ACP_CHAT_READY_TIMEOUT_MS = 60 * 1000;
+const AI_NATIVE_PANEL_LAYOUT_SETTING_ID = 'ai.native.panelLayout';
 let nextRuntimeId = 1;
 
 function assertSupportedFixture(fixture: string): asserts fixture is AcpBddFixture {
@@ -187,6 +193,20 @@ export async function writeMockAcpAgentSettings(workspaceDir: string, options: A
   await fs.writeFile(settingsPath, `${JSON.stringify(settings, null, 2)}\n`, 'utf8');
 }
 
+export async function writeAiNativePanelLayoutSettings(
+  workspaceDir: string,
+  panelLayout: AiNativePanelLayout,
+): Promise<void> {
+  const settingsDir = path.join(workspaceDir, '.sumi');
+  const settingsPath = path.join(settingsDir, 'settings.json');
+  const settings = await readJsonObject(settingsPath);
+
+  settings[AI_NATIVE_PANEL_LAYOUT_SETTING_ID] = panelLayout;
+
+  await fs.mkdir(settingsDir, { recursive: true });
+  await fs.writeFile(settingsPath, `${JSON.stringify(settings, null, 2)}\n`, 'utf8');
+}
+
 export async function waitForWorkbenchReady(page: Page): Promise<void> {
   await page.waitForSelector('.loading_indicator', { state: 'detached' });
   await page.waitForSelector('#main');
@@ -206,17 +226,56 @@ export async function waitForWorkbenchReady(page: Page): Promise<void> {
 }
 
 export async function ensureAgenticLayout(page: Page): Promise<void> {
-  const layoutLabel = page.getByText(/^(Agentic|Classic)$/).first();
-  await expect(layoutLabel).toBeVisible();
-  if ((await layoutLabel.textContent())?.trim() === 'Classic') {
-    await layoutLabel.click();
-    await page.getByText('Agentic', { exact: true }).last().click();
-  }
-  await expect(page.getByText('Agentic', { exact: true }).first()).toBeVisible();
+  await page.waitForFunction(
+    () => {
+      const aiChat = document.querySelector('.AI-Chat-slot')?.getBoundingClientRect();
+      const workbench = document.querySelector('#workbench-editor')?.getBoundingClientRect();
+
+      return Boolean(aiChat && workbench && aiChat.width >= 640 && aiChat.x < workbench.x);
+    },
+    undefined,
+    { timeout: 30_000 },
+  );
 }
 
-function fixtureUrl(workspaceDir: string, profile: WebMcpProfile): string {
-  const params = new URLSearchParams({ workspaceDir });
+export async function waitForAcpChatReady(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const slot = document.querySelector('.AI-Chat-slot');
+      if (!slot) {
+        return false;
+      }
+
+      const slotRect = slot.getBoundingClientRect();
+      const slotText = slot.textContent || '';
+      if (slotRect.width <= 0 || slotRect.height <= 0 || slotText.includes('Initializing ACP service')) {
+        return false;
+      }
+
+      const hasVisibleInput = Array.from(
+        slot.querySelectorAll('textarea, input, [role="textbox"], [contenteditable="true"]'),
+      ).some((element) => {
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+      });
+      const hasAcpHistory = Boolean(
+        slot.querySelector('[data-testid="acp-chat-history-inline"], [data-testid="acp-chat-history-button"]'),
+      );
+
+      return hasVisibleInput || hasAcpHistory || slotText.includes('AI Assistant');
+    },
+    undefined,
+    { timeout: ACP_CHAT_READY_TIMEOUT_MS },
+  );
+}
+
+export function aiNativeWorkbenchUrl(
+  workspaceDir: string,
+  profile: WebMcpProfile = 'default',
+  panelLayout: AiNativePanelLayout = 'agentic',
+): string {
+  const params = new URLSearchParams({ workspaceDir, aiNative: 'true', aiPanelLayout: panelLayout });
   if (profile !== 'default') {
     params.set('webMcpProfile', profile);
   }
@@ -240,23 +299,28 @@ export async function loadAcpBddFixtureWorkbench(
     }
 
     const profile = runtimeOptions.profile || 'default';
+    const panelLayout = runtimeOptions.panelLayout || 'agentic';
     workspace = new OpenSumiWorkspace(runtimeOptions.workspaceFiles || [ACP_BDD_DEFAULT_WORKSPACE]);
     await workspace.initWorksapce();
     const workspaceDir = workspace.workspace.codeUri.fsPath;
     await writeMockAcpAgentSettings(workspaceDir, runtimeOptions);
+    await writeAiNativePanelLayoutSettings(workspaceDir, panelLayout);
 
     app = new OpenSumiApp(page);
-    const url = fixtureUrl(workspaceDir, profile);
+    const url = aiNativeWorkbenchUrl(workspaceDir, profile, panelLayout);
     await page.goto(url);
     await waitForWorkbenchReady(page);
 
     if (runtimeOptions.waitForModelContext !== false || runtimeOptions.showChatView) {
-      await page.waitForFunction(() => Boolean((navigator as any).modelContext?.executeTool));
+      await page.waitForFunction(() => Boolean((navigator as any).modelContext?.executeTool), undefined, {
+        timeout: MODEL_CONTEXT_TIMEOUT_MS,
+      });
     }
     if (runtimeOptions.showChatView) {
       await page.evaluate(async () => {
         await (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {});
       });
+      await waitForAcpChatReady(page);
     }
     if (runtimeOptions.ensureAgenticLayout) {
       await ensureAgenticLayout(page);

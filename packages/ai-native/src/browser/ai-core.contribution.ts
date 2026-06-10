@@ -439,6 +439,8 @@ export class AINativeBrowserContribution
   }
 
   onDidStart() {
+    this.registerWebMcpSurface();
+
     runWhenIdle(() => {
       const { supportsRenameSuggestions, supportsInlineChat, supportsMCP, supportsCustomLLMSettings } =
         this.aiNativeConfigService.capabilities;
@@ -508,24 +510,30 @@ export class AINativeBrowserContribution
       if (supportsMCP) {
         this.initMCPServers();
       }
-
-      // Register WebMCP groups once, then expose the same registry through
-      // navigator.modelContext and the Node-side HTTP MCP server.
-      const groupRegistry = this.injector.get(WebMcpGroupRegistryToken);
-      groupRegistry.registerGroup(createOpenSumiMcpGroup(this.injector));
-      groupRegistry.registerGroup(createWorkspaceGroup(this.injector));
-      groupRegistry.registerGroup(createSearchGroup(this.injector));
-      groupRegistry.registerGroup(createDiagnosticsGroup(this.injector));
-      groupRegistry.registerGroup(createFileGroup(this.injector));
-      groupRegistry.registerGroup(createTerminalGroup(this.injector));
-      groupRegistry.registerGroup(createEditorGroup(this.injector));
-      groupRegistry.registerGroup(createAcpChatGroup(this.injector));
-      this.webMcpModelContextDisposable = registerWebMcpModelContextTools(groupRegistry);
     });
   }
 
   onStop() {
     this.webMcpModelContextDisposable?.dispose();
+  }
+
+  private registerWebMcpSurface() {
+    if (this.webMcpModelContextDisposable) {
+      return;
+    }
+
+    // Register WebMCP groups once, then expose the same registry through
+    // navigator.modelContext and the Node-side HTTP MCP server.
+    const groupRegistry = this.injector.get(WebMcpGroupRegistryToken);
+    groupRegistry.registerGroup(createOpenSumiMcpGroup(this.injector));
+    groupRegistry.registerGroup(createWorkspaceGroup(this.injector));
+    groupRegistry.registerGroup(createSearchGroup(this.injector));
+    groupRegistry.registerGroup(createDiagnosticsGroup(this.injector));
+    groupRegistry.registerGroup(createFileGroup(this.injector));
+    groupRegistry.registerGroup(createTerminalGroup(this.injector));
+    groupRegistry.registerGroup(createEditorGroup(this.injector));
+    groupRegistry.registerGroup(createAcpChatGroup(this.injector));
+    this.webMcpModelContextDisposable = registerWebMcpModelContextTools(groupRegistry);
   }
 
   private async initMCPServers() {

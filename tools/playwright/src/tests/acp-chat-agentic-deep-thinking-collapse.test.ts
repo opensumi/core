@@ -3,7 +3,11 @@
 import { expect } from '@playwright/test';
 
 import test, { page } from './hooks';
-import { type AcpBddFixtureRuntime, loadAcpBddFixtureWorkbench } from './utils/acp-bdd-fixture';
+import {
+  ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS,
+  type AcpBddFixtureRuntime,
+  loadAcpBddFixtureWorkbench,
+} from './utils/acp-bdd-fixture';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const FIRST_REASONING_SENTINEL = 'BDD_THOUGHT_STEP_1';
@@ -60,9 +64,10 @@ async function readAcpSessionState() {
 }
 
 test.describe('ACP Chat Agentic Deep Thinking collapse', () => {
-  test.setTimeout(120_000);
+  test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
 
   test.beforeAll(async () => {
+    test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
     await loadInteractiveStreamFixture();
   });
 
@@ -96,13 +101,15 @@ test.describe('ACP Chat Agentic Deep Thinking collapse', () => {
       'completed response keeps Deep Thinking content collapsed by default',
     );
 
+    const completedToggleCount = await deepThinkingToggles().count();
     const input = chatInput();
     await expect(input).toBeVisible();
     await input.click();
     await page.keyboard.type('BDD deep thinking expands while streaming');
     await page.getByRole('button', { name: 'Send' }).click();
 
-    const activeToggle = deepThinkingToggles().last();
+    await expect.poll(() => deepThinkingToggles().count(), { timeout: 30_000 }).toBeGreaterThan(completedToggleCount);
+    const activeToggle = deepThinkingToggles().nth(completedToggleCount);
     await expect(activeToggle).toBeVisible({ timeout: 30_000 });
 
     const collapsedWhileStreaming = await visibleTextSnapshot();

@@ -3,15 +3,20 @@
 import { expect } from '@playwright/test';
 
 import test, { page } from './hooks';
-import { type AcpBddFixtureRuntime, loadAcpBddFixtureWorkbench } from './utils/acp-bdd-fixture';
+import {
+  ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS,
+  type AcpBddFixtureRuntime,
+  loadAcpBddFixtureWorkbench,
+} from './utils/acp-bdd-fixture';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 let runtime: AcpBddFixtureRuntime;
 
 test.describe('Available commands deterministic fixture surface', () => {
-  test.setTimeout(120_000);
+  test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
 
   test.beforeAll(async () => {
+    test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
     runtime = await loadAcpBddFixtureWorkbench(page, {
       fixture: 'stream-rich',
       profile: 'interactive',

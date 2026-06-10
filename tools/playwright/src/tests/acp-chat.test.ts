@@ -8,21 +8,32 @@ import { OpenSumiApp } from '../app';
 import { OpenSumiWorkspace } from '../workspace';
 
 import test, { page } from './hooks';
+import {
+  aiNativeWorkbenchUrl,
+  waitForAcpChatReady,
+  waitForWorkbenchReady,
+  writeAiNativePanelLayoutSettings,
+} from './utils/acp-bdd-fixture';
 
 let app: OpenSumiApp;
+let workspace: OpenSumiWorkspace;
 
 test.describe('ACP Chat default WebMCP surface', () => {
   test.beforeAll(async () => {
-    const workspace = new OpenSumiWorkspace([path.resolve(__dirname, '../../src/tests/workspaces/default')]);
-    app = await OpenSumiApp.load(page, workspace);
+    workspace = new OpenSumiWorkspace([path.resolve(__dirname, '../../src/tests/workspaces/default')]);
+    await workspace.initWorksapce();
+    await writeAiNativePanelLayoutSettings(workspace.workspace.codeUri.fsPath, 'agentic');
+    app = new OpenSumiApp(page);
+    await page.goto(aiNativeWorkbenchUrl(workspace.workspace.codeUri.fsPath));
+    await waitForWorkbenchReady(page);
   });
 
   test.afterAll(() => {
     app.dispose();
+    workspace.dispose();
   });
 
   test('opens ACP chat and exposes safe metadata-only state tools', async () => {
-    await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
     await page.waitForFunction(() => Boolean((navigator as any).modelContext?.executeTool));
 
     const result = await page.evaluate(async () => {
@@ -61,6 +72,8 @@ test.describe('ACP Chat default WebMCP surface', () => {
         camelCaseResult,
       };
     });
+    await waitForAcpChatReady(page);
+    await expect(page.locator('.AI-Chat-slot')).toBeVisible();
 
     expect(result.acpTools).toEqual([
       'acp_chat_get_permission_state',

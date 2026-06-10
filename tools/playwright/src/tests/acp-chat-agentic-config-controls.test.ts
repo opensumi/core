@@ -3,7 +3,11 @@
 import { type Locator, expect } from '@playwright/test';
 
 import test, { page } from './hooks';
-import { type AcpBddFixtureRuntime, loadAcpBddFixtureWorkbench } from './utils/acp-bdd-fixture';
+import {
+  ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS,
+  type AcpBddFixtureRuntime,
+  loadAcpBddFixtureWorkbench,
+} from './utils/acp-bdd-fixture';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const CONFIG_SELECTOR = '[role="combobox"][class*="config_selector"]';
@@ -174,7 +178,9 @@ async function sendDeterministicPrompt() {
   await input.click();
   await page.keyboard.type('BDD config controls snapshot');
   await page.getByRole('button', { name: 'Send' }).click();
-  await expect(page.getByText('BDD_ASSISTANT_PART_2 completed.')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.AI-Chat-slot').getByText('BDD_ASSISTANT_PART_2 completed.')).toBeVisible({
+    timeout: 30_000,
+  });
   await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
 }
 
@@ -237,9 +243,10 @@ async function restoreDefaultConfigValues() {
 }
 
 test.describe('ACP Chat Agentic footer config controls', () => {
-  test.setTimeout(120_000);
+  test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
 
   test.beforeAll(async () => {
+    test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
     await loadFullProfileWorkbench();
   });
 

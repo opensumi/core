@@ -8,9 +8,17 @@ import { OpenSumiApp } from '../app';
 import { OpenSumiWorkspace } from '../workspace';
 
 import test, { page } from './hooks';
+import {
+  aiNativeWorkbenchUrl,
+  ensureAgenticLayout,
+  waitForAcpChatReady,
+  waitForWorkbenchReady,
+  writeAiNativePanelLayoutSettings,
+} from './utils/acp-bdd-fixture';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 let app: OpenSumiApp;
+let workspace: OpenSumiWorkspace;
 
 const STANDARD_LEFT_CONTAINER_IDS = ['explorer', 'search', 'scm', 'debug', 'extension'];
 
@@ -31,17 +39,7 @@ async function showAcpChatIfAvailable() {
       }
     })
     .catch(() => undefined);
-}
-
-async function switchPanelLayout(mode: 'Agentic' | 'Classic') {
-  const layoutLabel = page.getByText(/^(Agentic|Classic)$/).first();
-  await expect(layoutLabel).toBeVisible();
-  if ((await layoutLabel.textContent())?.trim() === mode) {
-    return;
-  }
-  await layoutLabel.click();
-  await page.getByText(mode, { exact: true }).last().click();
-  await expect(page.getByText(mode, { exact: true }).first()).toBeVisible();
+  await waitForAcpChatReady(page).catch(() => undefined);
 }
 
 async function getVisibleStandardSideEntries(): Promise<string[]> {
@@ -64,12 +62,17 @@ async function clickSideEntry(containerId: string) {
 test.describe('ACP Chat Agentic side entry filter', () => {
   test.beforeAll(async () => {
     await page.setViewportSize({ width: 1800, height: 1000 });
-    const workspace = new OpenSumiWorkspace([path.resolve(__dirname, '../../src/tests/workspaces/default')]);
-    app = await OpenSumiApp.load(page, workspace);
+    workspace = new OpenSumiWorkspace([path.resolve(__dirname, '../../src/tests/workspaces/default')]);
+    await workspace.initWorksapce();
+    await writeAiNativePanelLayoutSettings(workspace.workspace.codeUri.fsPath, 'agentic');
+    app = new OpenSumiApp(page);
+    await page.goto(aiNativeWorkbenchUrl(workspace.workspace.codeUri.fsPath));
+    await waitForWorkbenchReady(page);
   });
 
   test.afterAll(() => {
     app.dispose();
+    workspace.dispose();
   });
 
   test('shows only Explorer and Git side entries in Agentic layout', async ({ browser: _browser }, testInfo) => {
@@ -81,9 +84,8 @@ test.describe('ACP Chat Agentic side entry filter', () => {
     });
 
     await showAcpChatIfAvailable();
-    await switchPanelLayout('Agentic');
+    await ensureAgenticLayout(page);
 
-    await expect(page.getByText('Agentic', { exact: true }).first()).toBeVisible();
     const agenticEntries = await getVisibleStandardSideEntries();
     const agenticProof = await evidence.saveJson(
       '01-agentic-side-entries',
@@ -99,15 +101,19 @@ test.describe('ACP Chat Agentic side entry filter', () => {
     await clickSideEntry('explorer');
     await expect(page.getByRole('heading', { name: 'EXPLORER' })).toBeVisible();
 
-    await switchPanelLayout('Classic');
+    await writeAiNativePanelLayoutSettings(workspace.workspace.codeUri.fsPath, 'classic');
+    await page.goto(aiNativeWorkbenchUrl(workspace.workspace.codeUri.fsPath, 'default', 'classic'));
+    await waitForWorkbenchReady(page);
+    await showAcpChatIfAvailable();
+    await expect
+      .poll(getVisibleStandardSideEntries, { timeout: 30_000 })
+      .toEqual(expect.arrayContaining(['explorer', 'search', 'scm', 'debug', 'extension']));
     const classicEntries = await getVisibleStandardSideEntries();
     const classicProof = await evidence.saveJson(
       '02-classic-side-entries',
       { entries: classicEntries },
       'Classic left side entries',
     );
-
-    expect(classicEntries).toEqual(expect.arrayContaining(['explorer', 'search', 'scm', 'debug', 'extension']));
 
     evidence.recordCriticalPoint({
       id: 'CP1',
