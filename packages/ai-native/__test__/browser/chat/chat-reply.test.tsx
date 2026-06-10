@@ -142,7 +142,10 @@ interface ReasoningContent {
   content: string;
 }
 
+let requestIdPool = 0;
+
 function createRequest(responseContents: ReasoningContent[], isComplete: boolean) {
+  const requestId = `request-${requestIdPool++}`;
   const listeners = new Set<() => void>();
   const response = {
     errorDetails: undefined,
@@ -163,7 +166,7 @@ function createRequest(responseContents: ReasoningContent[], isComplete: boolean
   return {
     emitChange: () => listeners.forEach((listener) => listener()),
     request: {
-      requestId: 'request-1',
+      requestId,
       response,
     },
     response,
@@ -305,6 +308,23 @@ describe('ChatReply reasoning collapse state', () => {
       emitChange();
       await Promise.resolve();
     });
+
+    expect(container.textContent).toContain('stream thought updated');
+
+    response.isComplete = true;
+
+    await act(async () => {
+      emitChange();
+      await Promise.resolve();
+    });
+
+    expect(container.textContent).toContain('stream thought updated');
+
+    act(() => {
+      root.render(<React.Fragment />);
+    });
+
+    renderReply(request, true);
 
     expect(container.textContent).toContain('stream thought updated');
   });

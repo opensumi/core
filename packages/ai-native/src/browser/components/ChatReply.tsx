@@ -73,9 +73,13 @@ interface IChatReplyProps {
   collapseReasoningByDefault?: boolean;
 }
 
-const getReasoningIndexSet = (responseContents: IChatProgressResponseContent[]) =>
+const expandedThinkingIndexSetMap = new Map<string, Set<number>>();
+
+const getReasoningIndexSet = (responseContents: IChatProgressResponseContent[], excludeIndexSet?: Set<number>) =>
   new Set(
-    responseContents.map((item, index) => (item.kind === 'reasoning' ? index : -1)).filter((item) => item !== -1),
+    responseContents
+      .map((item, index) => (item.kind === 'reasoning' && !excludeIndexSet?.has(index) ? index : -1))
+      .filter((item) => item !== -1),
   );
 
 const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) => {
@@ -235,17 +239,22 @@ export const ChatReply = (props: IChatReplyProps) => {
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
-  const expandedThinkingIndexSetRef = useRef<Set<number>>(new Set());
+  const expandedThinkingIndexSetKey = request.requestId;
+  const expandedThinkingIndexSetRef = useRef<Set<number>>(
+    new Set(expandedThinkingIndexSetMap.get(expandedThinkingIndexSetKey)),
+  );
   const [collapseThinkingIndexSet, setCollapseThinkingIndexSet] = useState<Set<number>>(
     (!request.response.isComplete && !collapseReasoningByDefault) ||
       (keepReasoningExpandedOnComplete && !collapseReasoningByDefault)
       ? new Set()
-      : getReasoningIndexSet(request.response.responseContents),
+      : getReasoningIndexSet(request.response.responseContents, expandedThinkingIndexSetRef.current),
   );
 
   useEffect(() => {
     if (request.response.isComplete && !keepReasoningExpandedOnComplete && !collapseReasoningByDefault) {
-      setCollapseThinkingIndexSet(getReasoningIndexSet(request.response.responseContents));
+      setCollapseThinkingIndexSet(
+        getReasoningIndexSet(request.response.responseContents, expandedThinkingIndexSetRef.current),
+      );
     }
   }, [request.response.isComplete, keepReasoningExpandedOnComplete, collapseReasoningByDefault]);
 
@@ -284,9 +293,10 @@ export const ChatReply = (props: IChatReplyProps) => {
   }, [relationId, onDidChange, onDone]);
 
   const handleRegenerate = useCallback(() => {
+    expandedThinkingIndexSetMap.delete(expandedThinkingIndexSetKey);
     request.response.reset();
     onRegenerate?.();
-  }, [onRegenerate]);
+  }, [expandedThinkingIndexSetKey, onRegenerate, request.response]);
 
   const renderMarkdown = useCallback(
     (markdown: IMarkdownString) => {
@@ -347,6 +357,14 @@ export const ChatReply = (props: IChatReplyProps) => {
                       nextSet.add(index);
                       expandedThinkingIndexSetRef.current.delete(index);
                     }
+                    if (expandedThinkingIndexSetRef.current.size) {
+                      expandedThinkingIndexSetMap.set(
+                        expandedThinkingIndexSetKey,
+                        new Set(expandedThinkingIndexSetRef.current),
+                      );
+                    } else {
+                      expandedThinkingIndexSetMap.delete(expandedThinkingIndexSetKey);
+                    }
                     return nextSet;
                   });
                 }}
@@ -371,7 +389,12 @@ export const ChatReply = (props: IChatReplyProps) => {
         }
         return <Fragment key={`${item.kind}-${index}`}>{node}</Fragment>;
       }),
-    [request.response.responseContents, collapseThinkingIndexSet],
+    [
+      request.response.responseContents,
+      request.response.isComplete,
+      collapseReasoningByDefault,
+      collapseThinkingIndexSet,
+    ],
   );
 
   const followupNode = React.useMemo(() => {

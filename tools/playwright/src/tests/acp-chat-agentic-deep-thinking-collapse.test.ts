@@ -13,6 +13,8 @@ import { createBddEvidence } from './utils/bdd-evidence';
 const FIRST_REASONING_SENTINEL = 'BDD_THOUGHT_STEP_1';
 const SECOND_REASONING_SENTINEL = 'BDD_CONFIG_SNAPSHOT';
 const COMPLETION_SENTINEL = 'BDD_ASSISTANT_PART_2 completed.';
+const COLLAPSED_PROMPT = 'BDD deep thinking stays collapsed';
+const EXPANDED_PROMPT = 'BDD deep thinking expands while streaming';
 
 let runtime: AcpBddFixtureRuntime;
 
@@ -36,8 +38,15 @@ function deepThinkingToggles() {
   return page.getByRole('button', { name: /Deep Thinking/ });
 }
 
-async function visibleTextSnapshot() {
-  return page.evaluate(() => document.body.innerText || '');
+async function visibleTextSnapshot(afterText?: string) {
+  return page.evaluate((anchor) => {
+    const text = document.body.innerText || '';
+    if (!anchor) {
+      return text;
+    }
+    const index = text.lastIndexOf(anchor);
+    return index === -1 ? text : text.slice(index);
+  }, afterText);
 }
 
 async function sendPrompt(prompt: string, expectedCompletionCount: number) {
@@ -85,9 +94,9 @@ test.describe('ACP Chat Agentic Deep Thinking collapse', () => {
       hardeningVerdict: 'CONVERT',
     });
 
-    await sendPrompt('BDD deep thinking stays collapsed', 1);
+    await sendPrompt(COLLAPSED_PROMPT, 1);
 
-    const collapsedAfterCompletion = await visibleTextSnapshot();
+    const collapsedAfterCompletion = await visibleTextSnapshot(COLLAPSED_PROMPT);
     expect(collapsedAfterCompletion).toContain('Deep Thinking');
     expect(collapsedAfterCompletion).not.toContain(FIRST_REASONING_SENTINEL);
     expect(collapsedAfterCompletion).not.toContain(SECOND_REASONING_SENTINEL);
@@ -105,14 +114,14 @@ test.describe('ACP Chat Agentic Deep Thinking collapse', () => {
     const input = chatInput();
     await expect(input).toBeVisible();
     await input.click();
-    await page.keyboard.type('BDD deep thinking expands while streaming');
+    await page.keyboard.type(EXPANDED_PROMPT);
     await page.getByRole('button', { name: 'Send' }).click();
 
     await expect.poll(() => deepThinkingToggles().count(), { timeout: 30_000 }).toBeGreaterThan(completedToggleCount);
     const activeToggle = deepThinkingToggles().nth(completedToggleCount);
     await expect(activeToggle).toBeVisible({ timeout: 30_000 });
 
-    const collapsedWhileStreaming = await visibleTextSnapshot();
+    const collapsedWhileStreaming = await visibleTextSnapshot(EXPANDED_PROMPT);
     expect(collapsedWhileStreaming).not.toContain(FIRST_REASONING_SENTINEL);
     expect(collapsedWhileStreaming).not.toContain(SECOND_REASONING_SENTINEL);
 
@@ -129,7 +138,7 @@ test.describe('ACP Chat Agentic Deep Thinking collapse', () => {
       { timeout: 30_000 },
     );
 
-    const expandedAfterStream = await visibleTextSnapshot();
+    const expandedAfterStream = await visibleTextSnapshot(EXPANDED_PROMPT);
     expect(expandedAfterStream).toContain(FIRST_REASONING_SENTINEL);
     expect(expandedAfterStream).toContain(SECOND_REASONING_SENTINEL);
     const expandedProof = await evidence.saveJson(
@@ -143,7 +152,7 @@ test.describe('ACP Chat Agentic Deep Thinking collapse', () => {
     );
 
     await activeToggle.click();
-    const recollapsedAfterClick = await visibleTextSnapshot();
+    const recollapsedAfterClick = await visibleTextSnapshot(EXPANDED_PROMPT);
     expect(recollapsedAfterClick).not.toContain(FIRST_REASONING_SENTINEL);
     expect(recollapsedAfterClick).not.toContain(SECOND_REASONING_SENTINEL);
     const recollapsedProof = await evidence.saveJson(
