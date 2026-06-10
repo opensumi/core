@@ -72,7 +72,7 @@ test.describe('ACP Chat Agentic side entry filter', () => {
     app.dispose();
   });
 
-  test('shows only Explorer and Git side entries in Agentic layout', async (_fixtures, testInfo) => {
+  test('shows only Explorer and Git side entries in Agentic layout', async ({ browser: _browser }, testInfo) => {
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-side-entry-filter', {
       sourceScenario: 'test/bdd/acp-chat-agentic-side-entry-filter.scenario.md',
       profile: 'default',

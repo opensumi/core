@@ -26,7 +26,7 @@ test.describe('Available commands deterministic fixture surface', () => {
     await runtime?.dispose();
   });
 
-  test('exposes stable mock ACP command metadata through WebMCP', async (_fixtures, testInfo) => {
+  test('exposes stable mock ACP command metadata through WebMCP', async ({ browser: _browser }, testInfo) => {
     const evidence = createBddEvidence(testInfo, 'available-commands', {
       sourceScenario: 'test/bdd/available-commands.scenario.md',
       profile: 'interactive',

@@ -247,7 +247,7 @@ test.describe('ACP Chat Agentic footer config controls', () => {
     await runtime?.dispose();
   });
 
-  test('applies footer config options through ACP session config protocol', async (_fixtures, testInfo) => {
+  test('applies footer config options through ACP session config protocol', async ({ browser: _browser }, testInfo) => {
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-config-controls', {
       sourceScenario: 'test/bdd/acp-chat-agentic-config-controls.scenario.md',
       profile: 'full',

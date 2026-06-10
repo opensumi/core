@@ -70,7 +70,9 @@ test.describe('ACP Chat Agentic Deep Thinking collapse', () => {
     await runtime?.dispose();
   });
 
-  test('keeps Deep Thinking collapsed by default and expandable during streaming', async (_fixtures, testInfo) => {
+  test('keeps Deep Thinking collapsed by default and expandable during streaming', async ({
+    browser: _browser,
+  }, testInfo) => {
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-deep-thinking-collapse', {
       sourceScenario: 'test/bdd/acp-chat-agentic-deep-thinking-collapse.scenario.md',
       profile: 'interactive',
