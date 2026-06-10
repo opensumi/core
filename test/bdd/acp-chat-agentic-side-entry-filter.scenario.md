@@ -8,7 +8,7 @@
 
 - Common preflight in `test/bdd/README.md` passes.
 - The IDE is opened with a workspace that contains `editor.js` and `test/test.js`.
-- Agentic layout is available from the user-facing `View -> Panel Layout -> Agentic` menu or layout selector.
+- Agent layout is available from the user-facing `View -> Panel Layout -> Agent` menu or layout selector.
 - Classic layout is available for a control check.
 
 ## When

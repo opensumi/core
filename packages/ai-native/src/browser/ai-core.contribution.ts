@@ -1036,7 +1036,7 @@ export class AINativeBrowserContribution
     menus.registerMenuItem(AI_PANEL_LAYOUT_MENU, {
       command: {
         id: AI_PANEL_LAYOUT_SET.id,
-        label: 'Agentic',
+        label: 'Agent',
       },
       group: 'navigation',
       extraTailArgs: ['agentic'],

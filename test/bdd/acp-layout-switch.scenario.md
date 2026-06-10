@@ -25,7 +25,7 @@
    - `editor_get_active({})`
    - `file_exists({ path: "editor.js" })` when exposed by the active profile
    - `file_read({ path: "editor.js" })` when exposed by the active profile
-9. `chrome-devtools-mcp`: Switch to `agentic` with the user-facing menu path `View -> Panel Layout -> Agentic`.
+9. `chrome-devtools-mcp`: Switch to `agentic` with the user-facing menu path `View -> Panel Layout -> Agent`.
 10. `chrome-devtools-mcp`: Assert the AI chat slot is positioned before the Explorer/workbench area, and the Explorer remains visible.
 11. `chrome-devtools-mcp`: Drag the Agentic AI chat/workbench horizontal splitter in both directions and assert the AI chat width stays within its Agentic resize bounds: minimum `640px`, maximum `1440px`.
 12. Repeat steps 7 and 8 after the `agentic` switch.
