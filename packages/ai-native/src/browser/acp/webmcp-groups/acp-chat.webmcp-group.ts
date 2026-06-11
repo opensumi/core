@@ -258,7 +258,7 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
           }
           const permissionBridge = tryGetService<AcpPermissionBridgeService>(container, AcpPermissionBridgeService);
           try {
-            const sessions = chatInternalService.getSessions();
+            const sessions = await chatInternalService.getSessionsByAcp();
             const sortedSessions = sortSessionsByCreatedAtDesc(sessions);
             return successResult({
               sessions: sortedSessions.map((session) => toSessionSummary(session, permissionBridge)),

@@ -1797,6 +1797,26 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(result.sessions).toHaveLength(2);
       expect(result.nextCursor).toBeUndefined();
     });
+
+    it('should initialize an idle thread to list sessions when no sessions are active', async () => {
+      const { service, mockFactory, thread } = createService();
+      thread.listSessions.mockResolvedValue({
+        sessions: [{ sessionId: 'history-session', cwd: mockAgentProcessConfig.cwd, title: 'History Session' }],
+        nextCursor: 'cursor-1',
+      });
+
+      const result = await service.listSessions({ cwd: mockAgentProcessConfig.cwd }, mockAgentProcessConfig);
+
+      expect(mockFactory).toHaveBeenCalledTimes(1);
+      expect(thread.initialize).toHaveBeenCalledWith(expect.objectContaining(mockAgentProcessConfig));
+      expect(thread.listSessions).toHaveBeenCalledWith({ cwd: mockAgentProcessConfig.cwd });
+      expect(result).toEqual({
+        sessions: [{ sessionId: 'history-session', cwd: mockAgentProcessConfig.cwd, title: 'History Session' }],
+        nextCursor: 'cursor-1',
+      });
+      expect((service as any).sessions.size).toBe(0);
+      expect((service as any).reservedThreads.has(thread)).toBe(false);
+    });
   });
 
   // -----------------------------------------------------------------------
@@ -1891,6 +1911,61 @@ describe('AcpAgentService (Thread Pool)', () => {
 
       // The thread should have been reset (needsReset was true, so reset was called)
       expect(thread.reset).toHaveBeenCalled();
+    });
+
+    it('should dispose incompatible idle threads instead of reusing them for different agent process configs', async () => {
+      const firstThread = createMockThread({
+        newSession: jest.fn().mockResolvedValue({ sessionId: 'fixture-a-session' }),
+      });
+      const secondThread = createMockThread({
+        newSession: jest.fn().mockResolvedValue({ sessionId: 'fixture-b-session' }),
+      });
+      const mockFactory = jest.fn().mockReturnValueOnce(firstThread).mockReturnValueOnce(secondThread);
+      const service = setupServiceWithMockFactory(mockFactory);
+      const configA = {
+        ...mockAgentProcessConfig,
+        args: ['mock-acp-agent.mjs', '--fixture=load-failure'],
+        env: [{ name: 'OPENSUMI_ACP_BDD_FIXTURE', value: 'load-failure' }],
+        threadPoolSize: 1,
+      };
+      const configB = {
+        ...mockAgentProcessConfig,
+        args: ['mock-acp-agent.mjs', '--fixture=history'],
+        env: [{ name: 'OPENSUMI_ACP_BDD_FIXTURE', value: 'history' }],
+        threadPoolSize: 1,
+      };
+
+      setTimeout(() => {
+        firstThread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'fixture-a-session',
+            update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+          },
+        });
+      }, 10);
+      const result1 = await service.createSession(configA);
+
+      await service.disposeSession(result1.sessionId);
+
+      setTimeout(() => {
+        secondThread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'fixture-b-session',
+            update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+          },
+        });
+      }, 10);
+      const result2 = await service.createSession(configB);
+
+      expect(result2.sessionId).toBe('fixture-b-session');
+      expect(mockFactory).toHaveBeenCalledTimes(2);
+      expect(firstThread.dispose).toHaveBeenCalledTimes(1);
+      expect(firstThread.reset).not.toHaveBeenCalled();
+      expect(secondThread.initialize).toHaveBeenCalledWith(
+        expect.objectContaining({ args: configB.args, env: configB.env }),
+      );
     });
 
     it('should track maxPoolSize correctly', async () => {

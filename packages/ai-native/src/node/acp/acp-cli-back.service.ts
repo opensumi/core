@@ -714,7 +714,7 @@ ${input}`;
 
   async listSessions(config: AgentProcessConfig): Promise<ListSessionsResponse> {
     this.logger.log(`[ACP Back] listSessions called, cwd=${config?.cwd}`);
-    return this.agentService.listSessions(config?.cwd ? { cwd: config.cwd } : undefined);
+    return this.agentService.listSessions(config?.cwd ? { cwd: config.cwd } : undefined, config);
   }
 
   async dispose(): Promise<void> {

@@ -116,6 +116,8 @@ describe('WebMCP Group - ACP Chat', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockChatInternalService.getSessions.mockReturnValue([mockSession, targetSession]);
+    mockChatInternalService.getSessionsByAcp.mockResolvedValue([mockSession, targetSession]);
     mockSession.history.getMessages.mockReturnValue([{ id: 'msg-1' }, { id: 'msg-2' }]);
     targetSession.history.getMessages.mockReturnValue([]);
     mockPermissionBridge.showPermissionDialog.mockResolvedValue({
@@ -165,6 +167,24 @@ describe('WebMCP Group - ACP Chat', () => {
     });
     expect(JSON.stringify(result)).not.toContain('prompt');
     expect(JSON.stringify(result)).not.toContain('responseText');
+  });
+
+  it('loads ACP sessions before returning session list metadata', async () => {
+    mockChatInternalService.getSessions.mockReturnValueOnce([]);
+    mockChatInternalService.getSessionsByAcp.mockResolvedValueOnce([targetSession]);
+    const group = createAcpChatGroup(createMockContainer());
+    const tool = group.tools.find((item) => item.name === 'acp_chat_list_sessions')!;
+
+    const result = await tool.execute({});
+
+    expect(mockChatInternalService.getSessionsByAcp).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({
+      success: true,
+      result: {
+        total: 1,
+        sessions: [{ sessionId: 'acp:sess-2', rawSessionId: 'sess-2' }],
+      },
+    });
   });
 
   it('returns session list metadata newest first without prompt or response content', async () => {
@@ -238,7 +258,7 @@ describe('WebMCP Group - ACP Chat', () => {
         getMemorySummaries: jest.fn().mockReturnValue([]),
       },
     };
-    mockChatInternalService.getSessions.mockReturnValueOnce([
+    mockChatInternalService.getSessionsByAcp.mockResolvedValueOnce([
       oldSession,
       newestByFirstMessage,
       firstUntimestampedSession,

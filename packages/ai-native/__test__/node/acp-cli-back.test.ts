@@ -709,9 +709,12 @@ describe('AcpCliBackService', () => {
 
       const result = await service.listSessions(mockAgentSessionConfig);
 
-      expect(mockAgentService.listSessions).toHaveBeenCalledWith({
-        cwd: mockAgentSessionConfig.cwd,
-      });
+      expect(mockAgentService.listSessions).toHaveBeenCalledWith(
+        {
+          cwd: mockAgentSessionConfig.cwd,
+        },
+        mockAgentSessionConfig,
+      );
       expect(result.sessions).toHaveLength(1);
       expect(result.nextCursor).toBe('cursor-2');
     });
