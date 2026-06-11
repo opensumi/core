@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/permission-bridge.service.ts` or `packages/ai-native/src/browser/acp/webmcp-groups/acp-chat.webmcp-group.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `full` **Fixtures:** Two ACP sessions from `--fixture=history` when relay setup needs seeded sessions, a prepared relay permission request or the mock ACP agent configured as `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=permission` for a visible permission request, and stable permission dialog selectors. A real LLM-backed ACP agent/prompt combination may be used only when it reliably triggers a visible permission request. **Workspace mutation:** None. **Automation status:** Automated through MCP plus Chrome DevTools MCP; live-agent runs may cover dialog observability only when the prompt/agent reliably triggers permission. Stable Reject/close selectors remain required.
+**Layer:** `runtime-ui` **Required profile:** `full` **Fixtures:** Two ACP sessions from `--fixture=history` when relay setup needs seeded sessions, a prepared relay permission request or the mock ACP agent configured as `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=permission` for a visible permission request, and stable permission dialog selectors. A real LLM-backed ACP agent/prompt combination may be used only when it reliably triggers a visible permission request. **Workspace mutation:** None. **Automation status:** Converted to `tools/playwright/src/tests/permission-dialog.test.ts` for the deterministic `permission` fixture, full WebMCP profile, metadata-only permission state, and visible close/reject dismissal. Live-agent runs may cover dialog observability only when the prompt/agent reliably triggers permission.
 
 ## Given
 

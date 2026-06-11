@@ -126,6 +126,7 @@ export const PermissionDialogWidget: React.FC<PermissionDialogWidgetProps> = ({ 
               dialogManager.removeDialog(current.requestId);
             }}
             data-testid='acp-permission-dialog-close'
+            aria-label='Close permission dialog'
           >
             <span className={getIcon('close')} />
           </button>
@@ -152,6 +153,9 @@ export const PermissionDialogWidget: React.FC<PermissionDialogWidgetProps> = ({ 
                 }}
                 onMouseEnter={() => setFocusedIndex(index)}
                 data-testid={`acp-permission-dialog-option-${index}`}
+                data-option-id={option.optionId}
+                data-option-kind={option.kind}
+                aria-label={`Permission option ${option.name || option.optionId}`}
               >
                 <span className={styles.option_key}>{index + 1}</span>
                 <span className={styles.option_text}>{option.name || option.optionId}</span>

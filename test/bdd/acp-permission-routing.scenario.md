@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/node/acp/permission-routing.service.ts`, `packages/ai-native/src/node/acp/acp-thread.ts`, or `packages/ai-native/src/browser/acp/permission-bridge.service.ts`
 
-**Layer:** `node-contract` **Required profile:** `full` when validating visible permission dialogs. **Fixtures:** Registered ACP sessions from the mock ACP agent `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=permission`, permission bridge, and stable permission dialog selectors. **Workspace mutation:** None. **Automation status:** Automated contract spec; visible dialog assertions use Chrome DevTools MCP.
+**Layer:** `node-contract` **Required profile:** `full` when validating visible permission dialogs. **Fixtures:** Registered ACP sessions from the mock ACP agent `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=permission`, permission bridge, and stable permission dialog selectors. **Workspace mutation:** None. **Automation status:** Automated contract spec for routing/service behavior; permission-visible full-profile portions are converted in `tools/playwright/src/tests/permission-dialog.test.ts` using the deterministic `permission` fixture and browser UI dismissal.
 
 ## Given
 

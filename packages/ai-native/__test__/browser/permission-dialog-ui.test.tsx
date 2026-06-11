@@ -169,6 +169,9 @@ describe('PermissionDialogWidget - Rendering', () => {
     expect(container.querySelector('[data-testid="acp-permission-dialog-content"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="acp-permission-dialog-options"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="acp-permission-dialog-close"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-permission-dialog-close"]')?.getAttribute('aria-label')).toBe(
+      'Close permission dialog',
+    );
   });
 
   it('renders option buttons with indexed data-testid', () => {
@@ -180,6 +183,12 @@ describe('PermissionDialogWidget - Rendering', () => {
     expect(container.querySelector('[data-testid="acp-permission-dialog-option-0"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="acp-permission-dialog-option-1"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="acp-permission-dialog-option-2"]')).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="acp-permission-dialog-option-2"]')?.getAttribute('data-option-kind'),
+    ).toBe('reject');
+    expect(container.querySelector('[data-testid="acp-permission-dialog-option-2"]')?.getAttribute('aria-label')).toBe(
+      'Permission option Reject',
+    );
   });
 
   it('renders correct title for edit kind', () => {

@@ -316,6 +316,9 @@ const AcpPermissionDialogContainer: React.FC = () => {
         marginBottom: 8,
         backgroundColor: 'rgba(255, 0, 0, 0.2)',
       }}
+      data-testid='acp-permission-dialog'
+      role='dialog'
+      aria-label='ACP permission request'
     >
       <div
         ref={containerRef}
@@ -335,6 +338,7 @@ const AcpPermissionDialogContainer: React.FC = () => {
           width: 'calc(100% - 16px)',
         }}
         tabIndex={0}
+        data-testid='acp-permission-dialog-inner'
       >
         {/* 头部：标题和关闭按钮 */}
         <div
@@ -354,6 +358,7 @@ const AcpPermissionDialogContainer: React.FC = () => {
               alignItems: 'center',
               gap: 6,
             }}
+            data-testid='acp-permission-dialog-title'
           >
             <span
               style={{
@@ -385,6 +390,8 @@ const AcpPermissionDialogContainer: React.FC = () => {
               justifyContent: 'center',
               color: 'var(--app-secondary-foreground)',
             }}
+            aria-label='Close permission dialog'
+            data-testid='acp-permission-dialog-close'
           >
             <span className={getIcon('close')} style={{ fontSize: 14 }} />
           </button>
@@ -406,13 +413,14 @@ const AcpPermissionDialogContainer: React.FC = () => {
               backgroundColor: 'var(--app-input-background)',
               borderRadius: 4,
             }}
+            data-testid='acp-permission-dialog-content'
           >
             {params.content}
           </div>
         )}
 
         {/* 选项按钮 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid='acp-permission-dialog-options'>
           {(params.options || []).map((option, index) => {
             const isFocused = focusedIndex === index;
             const buttonStyle: React.CSSProperties = {
@@ -439,6 +447,10 @@ const AcpPermissionDialogContainer: React.FC = () => {
                 style={buttonStyle}
                 onClick={() => handleDialogSelect(option.optionId || '')}
                 onMouseEnter={() => setFocusedIndex(index)}
+                aria-label={`Permission option ${option.name || option.optionId}`}
+                data-testid={`acp-permission-dialog-option-${index}`}
+                data-option-id={option.optionId}
+                data-option-kind={option.kind}
               >
                 {/* 数字徽章 */}
                 <span
