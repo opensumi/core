@@ -103,7 +103,8 @@ test.describe('OpenSumi Debug', () => {
     await debugView.start();
     await expectTopStackFrame(glyphMarginModel);
     await expectTopStackFrameLine(glyphMarginModel);
-    await editor.close();
+    // Debug toolbar floats over editor tabs, use force click to close
+    await editor.close({ force: true });
     await debugView.stop();
     await page.waitForTimeout(1000);
   });
@@ -128,7 +129,8 @@ test.describe('OpenSumi Debug', () => {
     const text = (await page.evaluate('navigator.clipboard.readText()')) as string;
     expect(text.includes('Debugger attached.')).toBeTruthy();
 
-    await editor.close();
+    // Debug toolbar floats over editor tabs, use force click to close
+    await editor.close({ force: true });
     await debugView.stop();
     await page.waitForTimeout(1000);
   });

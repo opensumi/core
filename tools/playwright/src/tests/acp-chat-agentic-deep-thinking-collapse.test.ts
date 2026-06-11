@@ -138,6 +138,21 @@ test.describe('ACP Chat Agentic Deep Thinking collapse', () => {
       { timeout: 30_000 },
     );
 
+    // After stream completion, the Deep Thinking section may re-collapse briefly during re-render.
+    // Use expect.poll() to retry the snapshot check until sentinels are visible.
+    await expect
+      .poll(
+        async () => {
+          const expandedAfterStream = await visibleTextSnapshot(EXPANDED_PROMPT);
+          return {
+            hasFirst: expandedAfterStream.includes(FIRST_REASONING_SENTINEL),
+            hasSecond: expandedAfterStream.includes(SECOND_REASONING_SENTINEL),
+          };
+        },
+        { timeout: 10_000 },
+      )
+      .toEqual({ hasFirst: true, hasSecond: true });
+
     const expandedAfterStream = await visibleTextSnapshot(EXPANDED_PROMPT);
     expect(expandedAfterStream).toContain(FIRST_REASONING_SENTINEL);
     expect(expandedAfterStream).toContain(SECOND_REASONING_SENTINEL);

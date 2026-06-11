@@ -99,7 +99,8 @@ test.describe('ACP Chat Agentic side entry filter', () => {
     await expect(page.locator('#opensumi-left-tabbar li#scm')).toHaveClass(/active/);
 
     await clickSideEntry('explorer');
-    await expect(page.getByRole('heading', { name: 'EXPLORER' })).toBeVisible();
+    // EXPLORER section header is a div (not a heading element), so use text locator
+    await expect(page.getByText('EXPLORER', { exact: true }).first()).toBeVisible();
 
     await writeAiNativePanelLayoutSettings(workspace.workspace.codeUri.fsPath, 'classic');
     await page.goto(aiNativeWorkbenchUrl(workspace.workspace.codeUri.fsPath, 'default', 'classic'));

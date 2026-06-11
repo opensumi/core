@@ -54,7 +54,8 @@ test.describe('ACP Chat Agentic startup layout', () => {
     await ensureAgenticLayout(page);
     await waitForAcpChatReady(page);
     await expect(page.locator('.AI-Chat-slot')).not.toContainText('Initializing ACP service');
-    await expect(page.getByRole('heading', { name: 'EXPLORER' })).toBeVisible();
+    // EXPLORER section header is a div (not a heading element), so use text locator
+    await expect(page.getByText('EXPLORER', { exact: true }).first()).toBeVisible();
 
     const layout = await page.evaluate(async () => {
       const modelContext = (navigator as any).modelContext;
