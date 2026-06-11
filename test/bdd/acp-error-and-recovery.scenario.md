@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/node/acp/acp-error.ts`, `packages/ai-native/src/node/acp/acp-agent.service.ts`, `packages/ai-native/src/node/acp/acp-cli-back.service.ts`, `packages/ai-native/src/browser/acp/webmcp-utils.ts`, or `packages/ai-native/src/browser/acp/components/AcpChatViewWrapper.tsx`
 
-**Layer:** `node-contract` **Required profile:** `full` for complete WebMCP and browser recovery coverage. **Fixtures:** The mock ACP agent provides deterministic ACP process failures through `--fixture=create-failure`, `--fixture=load-failure`, `--fixture=send-failure`, `--fixture=auth-required`, and `--fixture=config-failure`; node service, browser provider, and WebMCP registry failures use their existing targeted harnesses. **Workspace mutation:** None. **Automation status:** Automated contract spec with runtime recovery checks through Chrome DevTools MCP.
+**Layer:** `node-contract` **Required profile:** `full` for complete WebMCP and browser recovery coverage. **Fixtures:** The mock ACP agent provides deterministic ACP process failures through `--fixture=create-failure`, `--fixture=load-failure`, `--fixture=send-failure`, `--fixture=auth-required`, and `--fixture=config-failure`; node service, browser provider, and WebMCP registry failures use their existing targeted harnesses. **Workspace mutation:** None. **Automation status:** Node/service contract coverage remains in focused Jest suites. The visible browser recovery portion is converted in `tools/playwright/src/tests/acp-chat-agentic-error-taxonomy.test.ts` for deterministic create, load, send, auth-required, and config failure passes plus follow-up `stream-rich` recovery.
 
 ## Given
 
@@ -42,7 +42,8 @@
 16. Open or show the ACP chat view.
 17. Trigger a deterministic create-session failure from the UI with the mock `create-failure` fixture.
 18. Trigger a deterministic send failure from the UI with the mock `send-failure` fixture.
-19. Retry with the mock `stream-rich` fixture.
+19. Trigger deterministic load, auth-required, and config failures from the UI with the matching mock fixtures.
+20. Retry after each visible failure with the mock `stream-rich` fixture.
 
 ## Then
 

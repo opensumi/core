@@ -8,13 +8,22 @@ import test, { page } from './hooks';
 import {
   ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS,
   type AcpBddFixture,
+  type AcpBddFixtureOptions,
   type AcpBddFixtureRuntime,
+  ensureAgenticLayout,
   loadAcpBddFixtureWorkbench,
+  waitForAcpChatReady,
+  waitForWorkbenchReady,
 } from './utils/acp-bdd-fixture';
 
 const FAILURE_TEST_TIMEOUT_MS = ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS * 2;
 const CONFIG_SELECTOR = '[role="combobox"][class*="config_selector"]';
 const STREAM_RECOVERY_PROMPT = 'BDD recovery smoke';
+const LOAD_FAILURE_SESSION_PREFIX = 'bdd-load-failure-history';
+const LOAD_FAILURE_SESSION_IDS = [
+  `acp:${LOAD_FAILURE_SESSION_PREFIX}-alpha`,
+  `acp:${LOAD_FAILURE_SESSION_PREFIX}-beta`,
+];
 
 interface FailureUiSnapshot {
   chatText: string;
@@ -29,7 +38,22 @@ interface FailureUiSnapshot {
   hasSecretLikeText: boolean;
 }
 
-async function withFixture<T>(fixture: AcpBddFixture, run: (runtime: AcpBddFixtureRuntime) => Promise<T>) {
+interface AcpSessionSummary {
+  sessionId: string;
+  rawSessionId?: string;
+  title: string;
+}
+
+interface HistoryRowProof {
+  id: string;
+  title: string;
+}
+
+async function withFixture<T>(
+  fixture: AcpBddFixture,
+  run: (runtime: AcpBddFixtureRuntime) => Promise<T>,
+  options: Partial<Omit<AcpBddFixtureOptions, 'fixture'>> = {},
+) {
   const runtime = await loadAcpBddFixtureWorkbench(page, {
     fixture,
     profile: 'interactive',
@@ -37,6 +61,7 @@ async function withFixture<T>(fixture: AcpBddFixture, run: (runtime: AcpBddFixtu
     showChatView: true,
     ensureAgenticLayout: true,
     viewport: { width: 1800, height: 1000 },
+    ...options,
   });
 
   try {
@@ -79,6 +104,19 @@ async function sendPrompt(prompt: string) {
 
 async function readSessionState() {
   return page.evaluate(async () => (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}));
+}
+
+async function executeAcpTool<T>(name: string, args: Record<string, unknown> = {}) {
+  return page.evaluate(
+    async ({ toolName, toolArgs }) => (navigator as any).modelContext.executeTool(toolName, toolArgs),
+    { toolName: name, toolArgs: args },
+  ) as Promise<{ success: boolean; result: T }>;
+}
+
+async function listSessions(): Promise<AcpSessionSummary[]> {
+  const result = await executeAcpTool<{ sessions: AcpSessionSummary[]; total: number }>('acp_chat_list_sessions');
+  expect(result.success).toBe(true);
+  return result.result.sessions;
 }
 
 async function readFailureUiSnapshot(): Promise<FailureUiSnapshot> {
@@ -128,6 +166,73 @@ async function expectInputRecovered() {
   await expect(sendButton()).toBeVisible({ timeout: 30_000 });
   await expect(chatInput()).toBeVisible();
   await expect(chatInput()).toBeEditable();
+}
+
+async function reloadFixtureWorkbench(runtime: AcpBddFixtureRuntime) {
+  await page.goto(runtime.url);
+  await waitForWorkbenchReady(page);
+  await page.waitForFunction(() => Boolean((navigator as any).modelContext?.executeTool));
+  await page.evaluate(async () => {
+    await (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {});
+  });
+  await waitForAcpChatReady(page);
+  await ensureAgenticLayout(page);
+  await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
+}
+
+async function ensureHistoryVisible() {
+  const inline = page.locator('[data-testid="acp-chat-history-inline"]');
+  if (await inline.isVisible().catch(() => false)) {
+    return;
+  }
+
+  const collapsed = page.locator('[data-testid="acp-chat-history-collapsed"]');
+  if (await collapsed.isVisible().catch(() => false)) {
+    await page.getByLabel(/Expand Chat History|展开聊天历史/).click();
+    await expect(inline).toBeVisible({ timeout: 30_000 });
+    return;
+  }
+
+  const popoverButton = page.locator('[data-testid="acp-chat-history-button"]');
+  await expect(popoverButton).toBeVisible({ timeout: 30_000 });
+  await popoverButton.click();
+  await expect(page.locator('[data-testid="acp-chat-history-popover"]')).toBeVisible({ timeout: 30_000 });
+}
+
+async function readHistoryRows(): Promise<HistoryRowProof[]> {
+  await ensureHistoryVisible();
+  return page.evaluate(() => {
+    const isVisible = (element: HTMLElement) => {
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+    };
+
+    return Array.from(document.querySelectorAll<HTMLElement>('[data-testid^="chat-history-item-"]'))
+      .filter(isVisible)
+      .map((element) => {
+        const id = element.getAttribute('data-testid')!.replace('chat-history-item-', '');
+        const title = document.getElementById(`chat-history-item-title-${id}`)?.textContent?.trim() || '';
+        return { id, title };
+      });
+  });
+}
+
+async function waitForVisibleSeededHistoryRows(): Promise<HistoryRowProof[]> {
+  await expect
+    .poll(
+      async () => {
+        const rows = await readHistoryRows();
+        return rows
+          .filter((row) => LOAD_FAILURE_SESSION_IDS.includes(row.id))
+          .map((row) => row.id)
+          .sort();
+      },
+      { timeout: 30_000 },
+    )
+    .toEqual([...LOAD_FAILURE_SESSION_IDS].sort());
+
+  return (await readHistoryRows()).filter((row) => LOAD_FAILURE_SESSION_IDS.includes(row.id));
 }
 
 async function expectStreamRichRecovery(label: string) {
@@ -238,31 +343,56 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
   });
 
   test('Recovery: load failure falls back to a usable draft from history selection', async () => {
-    await withFixture('load-failure', async () => {
-      const historyItem = page.getByText(/BDD History (alpha|beta)/).first();
-      await expect(historyItem).toBeVisible({ timeout: 30_000 });
-      await historyItem.click();
+    await withFixture(
+      'load-failure',
+      async (runtime) => {
+        await sendPrompt('BDD load failure history prewarm');
+        await expect.poll(async () => (await readSessionState()).result?.session?.requestCount ?? 0).toBeGreaterThan(0);
+        await expectInputRecovered();
 
-      await expect
-        .poll(
-          async () => {
-            const snapshot = await readFailureUiSnapshot();
-            const state = await readSessionState();
-            return {
-              hasRecoveryNotice: /history|new chat draft|session|not found|available/i.test(snapshot.notificationText),
-              infoNotificationCount: snapshot.infoNotificationCount,
-              active: state.result?.active,
-            };
-          },
-          { timeout: 30_000 },
-        )
-        .toMatchObject({ hasRecoveryNotice: true, active: false });
+        await reloadFixtureWorkbench(runtime);
+        await expect
+          .poll(
+            async () =>
+              (
+                await listSessions()
+              )
+                .filter((session) => LOAD_FAILURE_SESSION_IDS.includes(session.sessionId))
+                .map((session) => session.title)
+                .sort(),
+            { timeout: 30_000 },
+          )
+          .toEqual(['BDD History alpha', 'BDD History beta']);
 
-      const snapshot = await readFailureUiSnapshot();
-      expect(snapshot.infoNotificationCount).toBeGreaterThan(0);
-      await expectInputRecovered();
-      await expectSafeVisibleFailure(snapshot);
-    });
+        const rows = await waitForVisibleSeededHistoryRows();
+        const historyItem = page.locator(`[data-testid="chat-history-item-${rows[0].id}"]`).first();
+        await expect(historyItem).toBeVisible({ timeout: 30_000 });
+        await historyItem.click();
+
+        await expect
+          .poll(
+            async () => {
+              const snapshot = await readFailureUiSnapshot();
+              const state = await readSessionState();
+              return {
+                hasRecoveryNotice: /history|new chat draft|session|not found|available/i.test(
+                  snapshot.notificationText,
+                ),
+                infoNotificationCount: snapshot.infoNotificationCount,
+                active: state.result?.active,
+              };
+            },
+            { timeout: 30_000 },
+          )
+          .toMatchObject({ hasRecoveryNotice: true, active: false });
+
+        const snapshot = await readFailureUiSnapshot();
+        expect(snapshot.infoNotificationCount).toBeGreaterThan(0);
+        await expectInputRecovered();
+        await expectSafeVisibleFailure(snapshot);
+      },
+      { sessionPrefix: LOAD_FAILURE_SESSION_PREFIX },
+    );
 
     await expectStreamRichRecovery('load-failure');
   });
