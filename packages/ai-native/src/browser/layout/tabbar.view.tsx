@@ -257,15 +257,19 @@ const AILeftTabbarRenderer: React.FC = () => {
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const isAgenticLayout = panelLayoutService.getLayoutMode() === 'agentic';
 
-  const extendViewTabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.extendView);
-  const extendViewCurrentContainerId = useAutorun(extendViewTabbarService.currentContainerId);
+  // In Agentic layout, the tabbar and panel both render in SlotLocation.view,
+  // so they must share the same tabbar service. Using extendView here causes
+  // the panel (listening to `view`) to never see activations from the tabbar.
+  const activeSlot = isAgenticLayout ? SlotLocation.view : SlotLocation.extendView;
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(activeSlot);
+  const currentContainerId = useAutorun(tabbarService.currentContainerId);
 
   const extraMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
   const [navMenu] = useContextMenus(extraMenus);
 
   const renderOtherVisibleContainers = useCallback(
     ({ renderContainers }) => {
-      const visibleContainers = extendViewTabbarService.visibleContainers.filter((container) => {
+      const visibleContainers = tabbarService.visibleContainers.filter((container) => {
         if (container.options?.hideTab) {
           return false;
         }
@@ -276,18 +280,16 @@ const AILeftTabbarRenderer: React.FC = () => {
       return (
         <>
           {visibleContainers.length > 0 && <HorizontalVertical margin={'8px auto 0px'} width={'60%'} />}
-          {visibleContainers.map((component) =>
-            renderContainers(component, extendViewTabbarService, extendViewCurrentContainerId),
-          )}
+          {visibleContainers.map((component) => renderContainers(component, tabbarService, currentContainerId))}
         </>
       );
     },
-    [extendViewCurrentContainerId, extendViewTabbarService, isAgenticLayout],
+    [currentContainerId, tabbarService, isAgenticLayout],
   );
 
   return (
     <LeftTabbarRenderer
-      renderOtherVisibleContainers={renderOtherVisibleContainers}
+      renderOtherVisibleContainers={isAgenticLayout ? undefined : renderOtherVisibleContainers}
       isRenderExtraTopMenus={false}
       tabbarViewProps={isAgenticLayout ? { containerFilter: isAgenticVisibleViewContainer } : undefined}
       renderExtraMenus={

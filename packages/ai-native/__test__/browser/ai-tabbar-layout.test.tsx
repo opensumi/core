@@ -234,7 +234,7 @@ describe('AI tabbar layout BDD', () => {
     expect(container.querySelector('.agentic_view_tab_bar')).toBeTruthy();
     expect(mockCapturedLeftTabbarProps).toBeTruthy();
     expect(mockTabbarServiceFactory).toHaveBeenCalledWith('view');
-    expect(mockTabbarServiceFactory).toHaveBeenCalledWith('extendView');
+    expect(mockTabbarServiceFactory).not.toHaveBeenCalledWith('extendView');
   });
 
   it('Given agentic layout, when rendering side entries, then it allows only Explorer and SCM', async () => {
@@ -266,67 +266,17 @@ describe('AI tabbar layout BDD', () => {
         },
       },
     ];
-    mockExtendViewTabbarService.visibleContainers = [
-      {
-        options: {
-          containerId: 'debug',
-        },
-      },
-      {
-        options: {
-          containerId: 'extension',
-        },
-      },
-      {
-        options: {
-          containerId: 'search',
-        },
-      },
-      {
-        options: {
-          containerId: 'scm',
-        },
-      },
-      {
-        options: {
-          containerId: 'explorer',
-        },
-      },
-      {
-        options: {
-          containerId: 'scm-hidden',
-          hideTab: true,
-        },
-      },
-    ];
     const { AILeftTabRenderer } = await import('../../src/browser/layout/tabbar.view');
 
     act(() => {
       root.render(<AILeftTabRenderer className='slot-class' components={[]} />);
     });
 
-    const renderContainers = jest.fn((component) => <span key={component.options.containerId} />);
-    mockCapturedLeftTabbarProps.renderOtherVisibleContainers({ renderContainers });
-
     const containerFilter = mockCapturedLeftTabbarProps.tabbarViewProps.containerFilter;
     expect(
       mockViewTabbarService.visibleContainers.filter(containerFilter).map((container) => container.options.containerId),
     ).toEqual(['explorer', 'scm']);
-    expect(renderContainers).toHaveBeenCalledTimes(2);
-    expect(renderContainers.mock.calls.map(([component]) => component.options.containerId)).toEqual([
-      'scm',
-      'explorer',
-    ]);
-    expect(renderContainers).toHaveBeenCalledWith(
-      mockExtendViewTabbarService.visibleContainers[3],
-      mockExtendViewTabbarService,
-      'extend-view-current',
-    );
-    expect(renderContainers).toHaveBeenCalledWith(
-      mockExtendViewTabbarService.visibleContainers[4],
-      mockExtendViewTabbarService,
-      'extend-view-current',
-    );
+    expect(mockCapturedLeftTabbarProps.renderOtherVisibleContainers).toBeUndefined();
   });
 
   it('Given agentic layout, when the view slot restores size, then it uses the previous resize handle', async () => {

@@ -238,6 +238,23 @@ export async function ensureAgenticLayout(page: Page): Promise<void> {
   );
 }
 
+export async function waitForExplorerViewVisible(page: Page): Promise<void> {
+  await page.waitForFunction(() => {
+    const isVisible = (element: Element) => {
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+
+      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+    };
+
+    return Array.from(document.querySelectorAll('[data-viewlet-id="explorer"]')).some((element) => {
+      const text = element.textContent || '';
+
+      return isVisible(element) && (text.includes('OPENED EDITORS') || text.includes('WORKSPACE'));
+    });
+  });
+}
+
 export async function waitForAcpChatReady(page: Page): Promise<void> {
   await page.waitForFunction(
     () => {

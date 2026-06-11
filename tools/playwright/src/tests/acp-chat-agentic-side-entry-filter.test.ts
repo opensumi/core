@@ -12,6 +12,7 @@ import {
   aiNativeWorkbenchUrl,
   ensureAgenticLayout,
   waitForAcpChatReady,
+  waitForExplorerViewVisible,
   waitForWorkbenchReady,
   writeAiNativePanelLayoutSettings,
 } from './utils/acp-bdd-fixture';
@@ -99,8 +100,7 @@ test.describe('ACP Chat Agentic side entry filter', () => {
     await expect(page.locator('#opensumi-left-tabbar li#scm')).toHaveClass(/active/);
 
     await clickSideEntry('explorer');
-    // EXPLORER section header is a div (not a heading element), so use text locator
-    await expect(page.getByText('EXPLORER', { exact: true }).first()).toBeVisible();
+    await waitForExplorerViewVisible(page);
 
     await writeAiNativePanelLayoutSettings(workspace.workspace.codeUri.fsPath, 'classic');
     await page.goto(aiNativeWorkbenchUrl(workspace.workspace.codeUri.fsPath, 'default', 'classic'));

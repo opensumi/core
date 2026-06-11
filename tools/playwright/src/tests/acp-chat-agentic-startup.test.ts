@@ -12,6 +12,7 @@ import {
   aiNativeWorkbenchUrl,
   ensureAgenticLayout,
   waitForAcpChatReady,
+  waitForExplorerViewVisible,
   waitForWorkbenchReady,
   writeAiNativePanelLayoutSettings,
 } from './utils/acp-bdd-fixture';
@@ -54,8 +55,7 @@ test.describe('ACP Chat Agentic startup layout', () => {
     await ensureAgenticLayout(page);
     await waitForAcpChatReady(page);
     await expect(page.locator('.AI-Chat-slot')).not.toContainText('Initializing ACP service');
-    // EXPLORER section header is a div (not a heading element), so use text locator
-    await expect(page.getByText('EXPLORER', { exact: true }).first()).toBeVisible();
+    await waitForExplorerViewVisible(page);
 
     const layout = await page.evaluate(async () => {
       const modelContext = (navigator as any).modelContext;
