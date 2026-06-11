@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/chat/chat.view.acp.tsx`, `packages/ai-native/src/browser/chat/chat-manager.service.ts`, `packages/ai-native/src/browser/chat/acp-chat-agent.ts`, or `packages/ai-native/src/node/acp/acp-agent.service.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** Agentic startup has passed, the mock ACP agent is configured as `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=long-stream` with enough ticks/delay to expose the stop control, a `--fixture=stream-rich` pass is available for follow-up success recovery, a fresh MCP session runs in a profile exposing the required `acp_chat` tools, and a visible stop/cancel control exists. A real LLM-backed ACP agent may be used only when it reliably streams long enough for live stop coverage. **Workspace mutation:** None. **Automation status:** Automated through Chrome DevTools MCP; live-agent runs may verify visible stop/recovery behavior, but the mock long-stream fixture and stable stop/cancel selectors are required for hardening.
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** Agentic startup has passed, the mock ACP agent is configured as `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=long-stream` with enough ticks/delay to expose the stop control, a `--fixture=stream-rich` pass is available for follow-up success recovery, a fresh MCP session runs in a profile exposing the required `acp_chat` tools, and a visible stop/cancel control exists. A real LLM-backed ACP agent may be used only when it reliably streams long enough for live stop coverage. **Workspace mutation:** None. **Automation status:** Partially converted to deterministic Playwright coverage in `tools/playwright/src/tests/acp-chat-agentic-cancel-stop.test.ts` using `fixture=long-stream` and `profile=interactive`; remaining full follow-up-success/state-tool assertions require a second deterministic success fixture pass.
 
 ## Given
 
@@ -35,6 +35,12 @@
 
 - A real LLM-backed ACP agent may verify that a long-enough live stream exposes stop/cancel UI, returns the input to a usable state, preserves the user row, and permits a follow-up send.
 - Live-agent mode must not assert partial assistant text, exact cancellation timing, model-specific stop semantics, or generated follow-up content. If the live response completes before stop is observable, record the run as blocked for live stop coverage rather than passing the cancel assertions.
+
+## Deterministic Playwright Coverage
+
+- `tools/playwright/src/tests/acp-chat-agentic-cancel-stop.test.ts` runs `loadAcpBddFixtureWorkbench({ fixture: 'long-stream', profile: 'interactive' })`.
+- Covered: visible active long-stream sentinel, exactly one user row, visible scoped Stop affordance, Stop returning the scoped Send affordance, and editable input recovery.
+- Remaining blocked for this scenario: deterministic follow-up success in the same session, duplicate row/tool-card checks after retry, and metadata-only session-state checks after cancellation.
 
 ## Pass / Fail Judgment
 
