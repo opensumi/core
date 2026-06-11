@@ -199,7 +199,7 @@ describe('AcpChatManagerService', () => {
     expect(session.createdAt).toBe(67890);
   });
 
-  it('caches empty ACP session list results', async () => {
+  it('keeps the first empty ACP session list result retryable before caching confirmed empty history', async () => {
     const provider = createSessionProvider();
     const listSessions = jest.fn().mockResolvedValue({ sessions: [] });
     Object.defineProperty(provider, 'aiBackService', {
@@ -210,8 +210,9 @@ describe('AcpChatManagerService', () => {
 
     await expect(provider.loadSessions()).resolves.toEqual([]);
     await expect(provider.loadSessions()).resolves.toEqual([]);
+    await expect(provider.loadSessions()).resolves.toEqual([]);
 
-    expect(listSessions).toHaveBeenCalledTimes(1);
+    expect(listSessions).toHaveBeenCalledTimes(2);
   });
 
   it('reuses the in-flight ACP session list request', async () => {

@@ -28,6 +28,8 @@ export class ACPSessionProvider implements ISessionProvider {
 
   private loadingSessionsPromise: Promise<ISessionModel[]> | null = null;
 
+  private didRetryEmptySessionsResult = false;
+
   canHandle(mode: string): boolean {
     return mode.startsWith('acp');
   }
@@ -97,7 +99,7 @@ export class ACPSessionProvider implements ISessionProvider {
   private async doLoadSessions(): Promise<ISessionModel[]> {
     if (!this.aiBackService?.listSessions) {
       this.loadedSessionsResult = [];
-      return [];
+      return this.loadedSessionsResult;
     }
 
     try {
@@ -105,6 +107,12 @@ export class ACPSessionProvider implements ISessionProvider {
       const result = await this.aiBackService!.listSessions(config);
 
       if (!result?.sessions?.length) {
+        // The Agentic shell may ask for history before the ACP process has a thread.
+        // Leave the first empty result retryable, then cache a confirmed empty history.
+        if (!this.didRetryEmptySessionsResult) {
+          this.didRetryEmptySessionsResult = true;
+          return [];
+        }
         this.loadedSessionsResult = [];
         return this.loadedSessionsResult;
       }
@@ -126,6 +134,7 @@ export class ACPSessionProvider implements ISessionProvider {
         }));
 
       this.loadedSessionsResult = sessionModels as unknown as ISessionModel[];
+      this.didRetryEmptySessionsResult = false;
 
       return this.loadedSessionsResult;
     } catch (e) {

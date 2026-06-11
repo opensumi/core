@@ -75,7 +75,7 @@ Fixtures:
   load-failure      Fails deterministically during session/load.
   auth-required     Raises an ACP auth-required error during session/prompt.
   config-failure    Fails deterministic session/set_config_option calls.
-  history           Seeds deterministic list/load session metadata.
+  history           Seeds deterministic list/load session metadata and bounded rich replay updates.
 `);
   process.exit(0);
 }
@@ -197,6 +197,15 @@ function createSessionRecord(sessionId, cwd) {
   };
 }
 
+function createHistorySessionRecord(sessionId, cwd, seed, updatedAt) {
+  const session = createSessionRecord(sessionId, cwd);
+  session.title = `BDD History ${seed}`;
+  session.updatedAt = updatedAt;
+  session.historySeed = seed;
+  session.promptCount = 1;
+  return session;
+}
+
 function responseForSession(session) {
   return {
     sessionId: session.sessionId,
@@ -238,10 +247,19 @@ function createAgent(conn) {
   const pendingPrompts = new Map();
   let nextSessionNumber = 1;
 
-  if (options.fixture === 'history') {
-    for (const suffix of ['alpha', 'beta']) {
-      const session = createSessionRecord(`${options.sessionPrefix}-${suffix}`, process.cwd());
-      session.title = `BDD History ${suffix}`;
+  if (options.fixture === 'history' || options.fixture === 'load-failure') {
+    const seeds = [
+      { suffix: 'alpha', updatedAt: '2026-06-11T00:00:01.000Z' },
+      { suffix: 'beta', updatedAt: '2026-06-11T00:00:02.000Z' },
+    ];
+
+    for (const { suffix, updatedAt } of seeds) {
+      const session = createHistorySessionRecord(
+        `${options.sessionPrefix}-${suffix}`,
+        process.cwd(),
+        suffix,
+        updatedAt,
+      );
       sessions.set(session.sessionId, session);
     }
   }
@@ -362,6 +380,67 @@ function createAgent(conn) {
       sessionUpdate: 'usage_update',
       size: 4096,
       used: 128 + session.promptCount,
+    });
+  };
+
+  const emitHistoryReplay = async (session) => {
+    if (options.fixture !== 'history' || !session.historySeed) {
+      return;
+    }
+
+    const seed = String(session.historySeed);
+    const upperSeed = seed.toUpperCase();
+    const toolCallId = `bdd-history-${seed}-tool`;
+
+    await emit(session.sessionId, {
+      sessionUpdate: 'user_message_chunk',
+      content: text(`BDD_HISTORY_USER_${upperSeed}`),
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_thought_chunk',
+      content: text(`BDD_HISTORY_THOUGHT_${upperSeed}: deterministic replay.`),
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'plan',
+      entries: [
+        { content: `BDD history ${seed}: restore session`, status: 'completed', priority: 'high' },
+        { content: `BDD history ${seed}: keep replay bounded`, status: 'completed', priority: 'medium' },
+      ],
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_message_chunk',
+      content: text(`BDD_HISTORY_ASSISTANT_${upperSeed}_PART_1.`),
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'tool_call',
+      toolCallId,
+      title: 'BDD history deterministic tool',
+      kind: 'read',
+      status: 'pending',
+      rawInput: {
+        fixture: 'history',
+        sessionSeed: seed,
+        bounded: true,
+      },
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'tool_call_update',
+      toolCallId,
+      status: 'completed',
+      rawOutput: {
+        ok: true,
+        sentinel: 'BDD_HISTORY_TOOL_RESULT',
+        sessionSeed: seed,
+      },
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_message_chunk',
+      content: text(` BDD_HISTORY_ASSISTANT_${upperSeed}_PART_2.`),
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'usage_update',
+      size: 2048,
+      used: 96,
     });
   };
 
@@ -486,6 +565,7 @@ function createAgent(conn) {
       const session = getOrCreateSession(params.sessionId, params.cwd);
       session.updatedAt = nowIso();
       await emitInitialSessionUpdates(session);
+      await emitHistoryReplay(session);
       scheduleAvailableCommandsUpdate(session);
       return responseForSession(session);
     },
