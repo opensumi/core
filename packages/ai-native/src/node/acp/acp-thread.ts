@@ -159,6 +159,11 @@ const PROCESS_CONFIG = {
 } as const;
 
 const ACP_PROTOCOL_VERSION = 1;
+const ACP_AGENT_CONNECTION_CLOSED_DURING_PROMPT = 'ACP agent connection closed while waiting for prompt response.';
+
+function isConnectionClosedDuringPromptError(error: unknown): boolean {
+  return error instanceof Error && error.message === ACP_AGENT_CONNECTION_CLOSED_DURING_PROMPT;
+}
 
 // ---------------------------------------------------------------------------
 // Thread status state machine
@@ -696,6 +701,28 @@ export class AcpThread extends Disposable implements IAcpThread {
     this._connected = true;
   }
 
+  private async rejectOnConnectionClosed<T>(operation: Promise<T>, message: string): Promise<T> {
+    const closed = this._connection?.closed;
+    if (!closed || typeof closed.then !== 'function') {
+      return operation;
+    }
+
+    let settled = false;
+    const closedPromise = new Promise<T>((_resolve, reject) => {
+      void closed.then(() => {
+        if (!settled) {
+          reject(new Error(message));
+        }
+      });
+    });
+
+    try {
+      return await Promise.race([operation, closedPromise]);
+    } finally {
+      settled = true;
+    }
+  }
+
   private createClientImpl(): any {
     const self = this;
 
@@ -916,12 +943,16 @@ export class AcpThread extends Disposable implements IAcpThread {
 
     let response: PromptResponse;
     try {
-      response = await this._connection.prompt(params);
+      response = await this.rejectOnConnectionClosed(
+        this._connection.prompt(params),
+        ACP_AGENT_CONNECTION_CLOSED_DURING_PROMPT,
+      );
     } catch (error) {
       if (this._status === 'working') {
-        this.setStatus('awaiting_prompt');
+        const nextStatus = isConnectionClosedDuringPromptError(error) ? 'disconnected' : 'awaiting_prompt';
+        this.setStatus(nextStatus);
         this.logger?.log(
-          `[AcpThread:${this.threadId}] prompt() — failed, status→awaiting_prompt, entries=${this._entries.length}`,
+          `[AcpThread:${this.threadId}] prompt() — failed, status→${nextStatus}, entries=${this._entries.length}`,
         );
       }
       throw error;

@@ -5,6 +5,7 @@ import { Readable, Writable } from 'node:stream';
 
 const DEFAULT_DELAY_MS = 40;
 const DEFAULT_LONG_STREAM_TICKS = 80;
+const PROCESS_EXIT_FIXTURE_CODE = 17;
 
 function parseArgs(argv) {
   const options = {
@@ -75,6 +76,7 @@ Fixtures:
   load-failure      Fails deterministically during session/load.
   auth-required     Raises an ACP auth-required error during session/prompt.
   config-failure    Fails deterministic session/set_config_option calls.
+  process-exit      Emits prompt updates, then exits the ACP agent process.
   history           Seeds deterministic list/load session metadata and bounded rich replay updates.
 `);
   process.exit(0);
@@ -516,6 +518,21 @@ function createAgent(conn) {
     return { stopReason: allowed ? 'end_turn' : 'cancelled' };
   };
 
+  const runProcessExit = async (session) => {
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_thought_chunk',
+      content: text('BDD_PARTIAL_THOUGHT: prepared deterministic partial turn.'),
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_message_chunk',
+      content: text('BDD_ASSISTANT_BEFORE_STOP'),
+    });
+
+    log(`process-exit fixture exiting with code ${PROCESS_EXIT_FIXTURE_CODE}`);
+    process.exitCode = PROCESS_EXIT_FIXTURE_CODE;
+    process.exit(PROCESS_EXIT_FIXTURE_CODE);
+  };
+
   return {
     async initialize(params) {
       log('initialize', params?.protocolVersion);
@@ -649,6 +666,9 @@ function createAgent(conn) {
       }
       if (options.fixture === 'permission') {
         return runPermission(session);
+      }
+      if (options.fixture === 'process-exit') {
+        return runProcessExit(session);
       }
 
       await runRichStream(session, promptText);

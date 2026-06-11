@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/chat/chat.view.acp.tsx`, `packages/ai-native/src/browser/chat/chat.internal.service.acp.ts`, `packages/ai-native/src/browser/chat/acp-session-provider.ts`, `packages/ai-native/src/browser/chat/acp-chat-agent.ts`, or `packages/ai-native/src/node/acp/acp-agent.service.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** Agentic startup has passed, the mock ACP agent runs separate passes for `--fixture=create-failure`, `--fixture=load-failure`, `--fixture=send-failure`, `--fixture=auth-required`, `--fixture=config-failure`, and `--fixture=stream-rich` retry recovery, and a fresh MCP session runs in a profile exposing the required `acp_chat` tools. Disconnected coverage requires a separate process-exit harness if not supplied by the mock fixture. A real LLM-backed ACP agent may be used only for incidental live recovery observations when the environment naturally enters one of these states. **Workspace mutation:** None. **Automation status:** Converted to `tools/playwright/src/tests/acp-chat-agentic-error-taxonomy.test.ts` for deterministic create, load, send, auth-required, and config failure passes plus `stream-rich` recovery after each failure. The disconnected subcase remains `test.fixme()` until a deterministic process-exit harness exists.
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** Agentic startup has passed, the mock ACP agent runs separate passes for `--fixture=create-failure`, `--fixture=load-failure`, `--fixture=send-failure`, `--fixture=auth-required`, `--fixture=config-failure`, `--fixture=process-exit`, and `--fixture=stream-rich` retry recovery, and a fresh MCP session runs in a profile exposing the required `acp_chat` tools. A real LLM-backed ACP agent may be used only for incidental live recovery observations when the environment naturally enters one of these states. **Workspace mutation:** None. **Automation status:** Converted to `tools/playwright/src/tests/acp-chat-agentic-error-taxonomy.test.ts` for deterministic create, load, send, auth-required, config, and process-exit failure passes plus `stream-rich` recovery after each failure.
 
 ## Given
 
@@ -16,7 +16,7 @@
 2. Reset and run `--fixture=load-failure` from history selection.
 3. Reset and run `--fixture=send-failure` after a user row has rendered.
 4. Reset and run `--fixture=auth-required`.
-5. Reset and run the disconnected agent fixture if a process-exit harness is available; otherwise record this subcase as blocked.
+5. Reset and run `--fixture=process-exit` for the disconnected agent subcase.
 6. Reset and run `--fixture=config-failure`.
 7. After each failure, run `--fixture=stream-rich` and send a deterministic successful prompt.
 8. Record `acp_chat_get_session_state({})` and browser console errors without secrets.
@@ -39,5 +39,5 @@
 ## Pass / Fail Judgment
 
 - **PASS** - all scheduled deterministic ACP failure classes surface safe visible recovery and remain retryable.
-- **BLOCKED** - the run lacks interactive profile or the required mock ACP agent failure fixture pass; disconnected remains blocked unless a process-exit harness is available.
+- **BLOCKED** - the run lacks interactive profile or a required mock ACP agent failure fixture pass.
 - **FAIL** - errors are silent, unbounded, leaking, unrecoverable, or leave stale session/loading state.

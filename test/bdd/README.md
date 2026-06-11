@@ -128,6 +128,7 @@ The fixture can be selected either with `--fixture=<name>` or `OPENSUMI_ACP_BDD_
 | `load-failure` | History/session reload failure and `loadSessionOrNew` recovery. |
 | `auth-required` | Auth-required status/error recovery without relying on live credentials. |
 | `config-failure` | Footer config error and retry behavior. |
+| `process-exit` | Agent process/stdio disconnect recovery while `session/prompt` is pending. |
 | `history` | Multi-session history/list/switching, seeded session metadata, and bounded rich replay updates on `session/load`. |
 
 If a scenario needs more than one fixture class, run the subcases as separate deterministic fixture passes and record the fixture used for each pass in evidence. Do not mix these deterministic fixture assertions with live-agent assertions in a single PASS unless every fixture-only assertion actually ran.

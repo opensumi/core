@@ -16,6 +16,7 @@ export const ACP_BDD_FIXTURES = [
   'load-failure',
   'auth-required',
   'config-failure',
+  'process-exit',
   'history',
 ] as const;
 

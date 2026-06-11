@@ -288,6 +288,28 @@ describe('AcpThread', () => {
       ]);
     });
 
+    it('should reject a pending prompt when the connection closes', async () => {
+      let resolveClosed: (() => void) | undefined;
+      (thread as any)._connected = true;
+      (thread as any)._connection = {
+        prompt: jest.fn().mockImplementation(() => new Promise(() => undefined)),
+        closed: new Promise<void>((resolve) => {
+          resolveClosed = resolve;
+        }),
+      };
+      (thread as any)._initialized = true;
+
+      const promptPromise = thread.prompt({} as any);
+      await new Promise((r) => setTimeout(r, 10));
+
+      expect(thread.status).toBe('working');
+
+      resolveClosed!();
+
+      await expect(promptPromise).rejects.toThrow('ACP agent connection closed while waiting for prompt response.');
+      expect(thread.status).toBe('disconnected');
+    });
+
     it('should transition to disconnected on process exit', async () => {
       (thread as any)._processRunning = true;
       (thread as any)._connected = true;

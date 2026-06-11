@@ -24,6 +24,8 @@ const LOAD_FAILURE_SESSION_IDS = [
   `acp:${LOAD_FAILURE_SESSION_PREFIX}-alpha`,
   `acp:${LOAD_FAILURE_SESSION_PREFIX}-beta`,
 ];
+const DISCONNECTED_AGENT_ERROR_PATTERN =
+  /agent.*(disconnect|closed|exit|stopped|terminated)|disconnect|connection.*closed|closed.*connection|process.*exit|process.*stopped|transport.*closed|stream.*closed|channel.*closed|terminated/i;
 
 interface FailureUiSnapshot {
   chatText: string;
@@ -450,5 +452,36 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
     await expectStreamRichRecovery('config-failure');
   });
 
-  test.fixme('Error Taxonomy: disconnected agent recovery needs a deterministic process-exit fixture', async () => {});
+  test('Error Taxonomy: disconnected agent recovery handles process exit', async () => {
+    await withFixture('process-exit', async () => {
+      await sendPrompt('BDD process exit recovery case D');
+
+      await expect
+        .poll(
+          async () => {
+            const snapshot = await readFailureUiSnapshot();
+            const visibleFailureText = `${snapshot.chatText}\n${snapshot.notificationText}`;
+            return {
+              hasVisibleFailure: snapshot.chatErrorCount > 0 || snapshot.errorNotificationCount > 0,
+              hasDisconnectedCategory: DISCONNECTED_AGENT_ERROR_PATTERN.test(visibleFailureText),
+              hasUserRow: snapshot.userRowCount > 0,
+            };
+          },
+          { timeout: 30_000 },
+        )
+        .toMatchObject({
+          hasVisibleFailure: true,
+          hasDisconnectedCategory: true,
+          hasUserRow: true,
+        });
+
+      const snapshot = await readFailureUiSnapshot();
+      expect(snapshot.userRowCount).toBeGreaterThan(0);
+      expect(snapshot.chatErrorCount + snapshot.errorNotificationCount).toBeGreaterThan(0);
+      await expectInputRecovered();
+      await expectSafeVisibleFailure(snapshot);
+    });
+
+    await expectStreamRichRecovery('process-exit');
+  });
 });
