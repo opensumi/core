@@ -28,7 +28,7 @@ This contract summarizes the deterministic fixture modes consumed by BDD hardeni
 
 | Scenario | Required fixture mode(s) | Currently supported behavior | Missing behavior / owner request |
 | --- | --- | --- | --- |
-| `acp-chat-agentic-fallback` | none | Not an ACP mock-agent contract. | Scenario owner needs a yarn-start-safe backend-readiness failure provider where `aiBackService.ready()` rejects. |
+| `acp-chat-agentic-fallback` | none | Not an ACP mock-agent contract. Backend-readiness failure is covered by the local-loopback `acpBddBackendReadyFailure=reject` runtime fixture and Playwright coverage in `tools/playwright/src/tests/acp-chat-agentic-fallback.test.ts`. | No shared mock-agent fixture gap. |
 | `acp-layout-switch` | none | Not an ACP mock-agent contract. | Scenario owner needs stable user-facing Agentic/Classic layout switch control or a runtime-supported Classic override. |
 | `acp-chat-agentic-input-send` | `stream-rich`, `create-failure`, `send-failure` | All named fixture modes exist and are bounded. Recovery subcases are covered in `tools/playwright/src/tests/acp-chat-agentic-error-taxonomy.test.ts`. | Broader input, command, mention, attachment, and scroll subcases remain scenario-owned. |
 | `acp-chat-agentic-stream-rendering` | `stream-rich`, `send-failure` | Rich stream and send-failure recovery fixtures exist. | Scenario owner needs scheduled full matrix and stable render selectors. |

@@ -4,7 +4,12 @@ import path from 'path';
 
 import { expect, test } from '@playwright/test';
 
-import { writeMockAcpAgentSettings } from './utils/acp-bdd-fixture';
+import {
+  ACP_BDD_BACKEND_READY_FAILURE_QUERY_PARAM,
+  ACP_BDD_BACKEND_READY_FAILURE_QUERY_VALUE,
+  aiNativeWorkbenchUrl,
+  writeMockAcpAgentSettings,
+} from './utils/acp-bdd-fixture';
 
 async function readSettings(workspaceDir: string) {
   return JSON.parse(await fs.readFile(path.join(workspaceDir, '.sumi/settings.json'), 'utf8'));
@@ -58,5 +63,17 @@ test.describe('ACP BDD fixture scheduling', () => {
     } finally {
       await fs.rm(workspaceDir, { recursive: true, force: true });
     }
+  });
+
+  test('adds the backend readiness failure query only when requested', async () => {
+    const defaultUrl = aiNativeWorkbenchUrl('/tmp/workspace');
+    const fallbackUrl = aiNativeWorkbenchUrl('/tmp/workspace', 'default', 'agentic', {
+      forceAcpBackendReadyFailure: true,
+    });
+
+    expect(defaultUrl).not.toContain(ACP_BDD_BACKEND_READY_FAILURE_QUERY_PARAM);
+    expect(fallbackUrl).toContain(
+      `${ACP_BDD_BACKEND_READY_FAILURE_QUERY_PARAM}=${ACP_BDD_BACKEND_READY_FAILURE_QUERY_VALUE}`,
+    );
   });
 });

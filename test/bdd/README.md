@@ -100,6 +100,14 @@ Do not commit evidence artifacts. Do not store MCP bridge tokens, API keys, raw 
 
 When an ACP BDD scenario asks for a deterministic ACP provider, use the process-level mock ACP agent unless that scenario explicitly names a more specialized fixture. The mock agent speaks the real ACP stdio/JSON-RPC transport through `AcpThread`, so it exercises process spawn, protocol initialization, session updates, permission routing, debug logging, WebMCP injection, and browser state through the normal product path.
 
+`acp-chat-agentic-fallback` is not a mock ACP agent fixture. Use the local-loopback browser runtime fixture instead:
+
+```text
+http://localhost:8080/?workspaceDir=<absolute workspace path>&aiNative=true&aiPanelLayout=agentic&acpBddBackendReadyFailure=reject
+```
+
+The fixture is ignored unless the page is on a loopback host and `aiNative=true` is present. It forces the ACP readiness checkpoint to reject before ACP chat initialization so Agentic fallback rendering can be validated without a real ACP session.
+
 Configure the ACP agent command with `test/bdd/fixtures/acp-agent/mock-acp-agent.mjs`:
 
 ```json

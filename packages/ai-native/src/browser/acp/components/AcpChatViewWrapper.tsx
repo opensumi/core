@@ -20,6 +20,7 @@ import { AcpChatManagerService } from '../../chat/chat-manager.service.acp';
 import { AcpChatProxyService } from '../../chat/chat-proxy.service.acp';
 import { ChatInternalService } from '../../chat/chat.internal.service';
 import styles from '../../chat/chat.module.less';
+import { shouldForceAcpBackendReadinessFailure } from '../acp-bdd-runtime-fixtures';
 
 interface AcpChatViewWrapperProps {
   children: React.ReactNode;
@@ -67,6 +68,9 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
         while (!ready && retries < maxRetries) {
           if (cancelled()) {
             return;
+          }
+          if (shouldForceAcpBackendReadinessFailure()) {
+            throw new Error('ACP backend readiness failure fixture');
           }
           const isReady = await aiBackService.ready?.();
           ready = !!isReady;

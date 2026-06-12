@@ -24,6 +24,9 @@ export type AcpBddFixture = (typeof ACP_BDD_FIXTURES)[number];
 export type WebMcpProfile = 'default' | 'interactive' | 'full';
 export type AiNativePanelLayout = 'classic' | 'agentic';
 
+export const ACP_BDD_BACKEND_READY_FAILURE_QUERY_PARAM = 'acpBddBackendReadyFailure';
+export const ACP_BDD_BACKEND_READY_FAILURE_QUERY_VALUE = 'reject';
+
 export interface AcpBddFixtureOptions {
   fixture: AcpBddFixture;
   profile?: WebMcpProfile;
@@ -35,6 +38,7 @@ export interface AcpBddFixtureOptions {
   agentType?: string;
   showChatView?: boolean;
   ensureAgenticLayout?: boolean;
+  forceAcpBackendReadyFailure?: boolean;
   waitForModelContext?: boolean;
   viewport?: {
     width: number;
@@ -306,10 +310,14 @@ export function aiNativeWorkbenchUrl(
   workspaceDir: string,
   profile: WebMcpProfile = 'default',
   panelLayout: AiNativePanelLayout = 'agentic',
+  options: { forceAcpBackendReadyFailure?: boolean } = {},
 ): string {
   const params = new URLSearchParams({ workspaceDir, aiNative: 'true', aiPanelLayout: panelLayout });
   if (profile !== 'default') {
     params.set('webMcpProfile', profile);
+  }
+  if (options.forceAcpBackendReadyFailure) {
+    params.set(ACP_BDD_BACKEND_READY_FAILURE_QUERY_PARAM, ACP_BDD_BACKEND_READY_FAILURE_QUERY_VALUE);
   }
   return `/?${params.toString()}`;
 }
@@ -339,7 +347,9 @@ export async function loadAcpBddFixtureWorkbench(
     await writeAiNativePanelLayoutSettings(workspaceDir, panelLayout);
 
     app = new OpenSumiApp(page);
-    const url = aiNativeWorkbenchUrl(workspaceDir, profile, panelLayout);
+    const url = aiNativeWorkbenchUrl(workspaceDir, profile, panelLayout, {
+      forceAcpBackendReadyFailure: runtimeOptions.forceAcpBackendReadyFailure,
+    });
     await page.goto(url);
     await waitForWorkbenchReady(page);
 

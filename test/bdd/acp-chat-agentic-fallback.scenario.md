@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/components/AcpChatViewWrapper.tsx`, `packages/ai-native/src/browser/chat/chat.view.acp.tsx`, or `packages/ai-native/src/browser/chat/chat.internal.service.acp.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `default` **Fixtures:** IDE dev server with ACP backend readiness forced to fail or a test provider where `aiBackService.ready()` rejects before chat initialization. **Workspace mutation:** None. **Automation status:** Automated through Chrome DevTools MCP; blocked if no backend-failure fixture exists.
+**Layer:** `runtime-ui` **Required profile:** `default` **Fixtures:** IDE dev server with ACP backend readiness forced to fail by the local-loopback `acpBddBackendReadyFailure=reject` runtime fixture before chat initialization. **Workspace mutation:** None. **Automation status:** Automated through Playwright regression; Chrome DevTools MCP may be used for manual evidence.
 
 ## Given
 
