@@ -739,12 +739,13 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
         if (!hasAcpChatSendPayload({ message: newValue, images: imagePayload, command: currentCommand })) {
           return;
         }
-        onSend(newValue, imagePayload, currentAgentId, currentCommand, option);
+        const sendResult = onSend(newValue, imagePayload, currentAgentId, currentCommand, option);
         // 发送后重置 slash command 状态
         props.setTheme(null);
         props.setAgentId('');
         props.setCommand('');
         setImages(props.images || []);
+        return sendResult;
       };
 
       // 如果有 slash command，调用其 execute handler
@@ -757,7 +758,7 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
         }
       }
 
-      doSend();
+      return doSend();
     },
     [onSend, images, disabled, props.agentId, props.command, chatFeatureRegistry],
   );

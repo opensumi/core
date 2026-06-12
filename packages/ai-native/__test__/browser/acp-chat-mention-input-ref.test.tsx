@@ -2,6 +2,8 @@ import * as React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { act } from 'react-dom/test-utils';
 
+let mockMentionInputOnSend: ((content: string, option?: { model: string }) => unknown) | undefined;
+
 jest.mock('@opensumi/ide-core-browser', () => {
   const actual = jest.requireActual('@opensumi/ide-core-browser');
   return {
@@ -37,9 +39,10 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => ({
     defaultInput?: string;
     expanded?: boolean;
     footerConfig?: { defaultModel?: string; configOptions?: unknown[] };
-    onSend?: (content: string, option?: { model: string }) => void;
-  }) =>
-    require('react').createElement(
+    onSend?: (content: string, option?: { model: string }) => unknown;
+  }) => {
+    mockMentionInputOnSend = onSend;
+    return require('react').createElement(
       'div',
       null,
       require('react').createElement('textarea', {
@@ -69,7 +72,8 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => ({
         },
         'send empty html',
       ),
-    ),
+    );
+  },
 }));
 
 jest.mock('../../src/browser/components/components.module.less', () => ({
@@ -130,6 +134,7 @@ describe('AcpChatMentionInput ref contract', () => {
     unmountComponentAtNode(container);
     container.remove();
     consoleErrorSpy.mockRestore();
+    mockMentionInputOnSend = undefined;
     jest.clearAllMocks();
   });
 
@@ -356,5 +361,43 @@ describe('AcpChatMentionInput ref contract', () => {
     });
 
     expect(onSend).toHaveBeenCalledWith('   \n\t  ', [], 'default-agent', 'generate', { model: 'mock-model' });
+  });
+
+  it('returns the parent send promise to the contenteditable MentionInput', async () => {
+    let resolveSend!: () => void;
+    const sendResult = new Promise<void>((resolve) => {
+      resolveSend = resolve;
+    });
+    const onSend = jest.fn(() => sendResult);
+
+    act(() => {
+      render(
+        React.createElement(AcpChatMentionInput, {
+          onSend,
+          setTheme: jest.fn(),
+          agentId: 'default-agent',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+        } as any),
+        container,
+      );
+    });
+
+    let wrapperSendSettled = false;
+    const wrapperSendResult = mockMentionInputOnSend?.('hello', { model: 'mock-model' }) as Promise<void>;
+    void wrapperSendResult.then(() => {
+      wrapperSendSettled = true;
+    });
+
+    await Promise.resolve();
+
+    expect(onSend).toHaveBeenCalledWith('hello', [], 'default-agent', '', { model: 'mock-model' });
+    expect(wrapperSendSettled).toBe(false);
+
+    resolveSend();
+    await wrapperSendResult;
+
+    expect(wrapperSendSettled).toBe(true);
   });
 });

@@ -1468,15 +1468,21 @@ export const MentionInput: React.FC<
       setHistoryIndex(-1);
       setIsNavigatingHistory(false);
     }
+    let sendResult: unknown;
     if (onSend) {
       // 传递当前选择的模型和其他配置信息
-      onSend(processedContent, {
+      sendResult = onSend(processedContent, {
         model: selectedModel,
         ...footerConfig,
       });
     }
 
     editorRef.current.innerHTML = '';
+    prevMentionTagsRef.current = [];
+    void Promise.resolve(sendResult).then(
+      () => contextService?.cleanFileContext(),
+      () => contextService?.cleanFileContext(),
+    );
 
     // 重置编辑器高度和滚动条
     if (editorRef.current) {
