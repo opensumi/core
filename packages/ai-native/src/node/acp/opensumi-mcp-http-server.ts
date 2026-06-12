@@ -592,7 +592,7 @@ export class OpenSumiMcpHttpServer {
   ): Record<string, unknown> {
     const groupName = typeof args.group === 'string' ? args.group : '';
     const includeSchemas = args.includeSchemas === true;
-    const group = groupDefs.find((item) => item.name === groupName);
+    const group = [this.getCatalogGroupDef(), ...groupDefs].find((item) => item.name === groupName);
     if (!group) {
       return { success: false, error: 'GROUP_NOT_FOUND', details: `Group "${groupName}" not found` };
     }
@@ -625,7 +625,7 @@ export class OpenSumiMcpHttpServer {
 
   private describeTool(groupDefs: WebMcpGroupDefWithMeta[], args: Record<string, unknown>): Record<string, unknown> {
     const toolName = typeof args.tool === 'string' ? args.tool : '';
-    const target = this.resolveAnyTool(groupDefs, toolName);
+    const target = this.resolveAnyTool([this.getCatalogGroupDef(), ...groupDefs], toolName);
     if (!target) {
       return { success: false, error: 'TOOL_NOT_FOUND', details: `Tool "${toolName}" not found` };
     }

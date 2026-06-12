@@ -19,6 +19,8 @@ import type { WebMcpGroupDef, WebMcpToolResult } from '@opensumi/ide-core-common
 (global as any).fetch = require('node-fetch');
 
 const LOWER_SNAKE_TOOL_NAME = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/;
+const FILE_MUTATION_TOOL_NAMES = ['file_create', 'file_write', 'file_copy', 'file_move', 'file_delete'];
+const EDITOR_TERMINAL_MUTATION_TOOL_NAMES = ['editor_format', 'editor_save', 'terminal_dispose'];
 
 const testGroupDefs = [
   {
@@ -177,6 +179,143 @@ function createServer(caller: {
   return server;
 }
 
+function createFileMutationGroupDefs(profile: 'default' | 'interactive' | 'full'): WebMcpGroupDef[] {
+  return [
+    {
+      name: 'file',
+      description: 'File operations',
+      defaultLoaded: true,
+      profile,
+      tools: [
+        {
+          name: 'file_read',
+          description: 'Read file',
+          riskLevel: 'read',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              path: {
+                type: 'string',
+              },
+            },
+            required: ['path'],
+          },
+        },
+        ...FILE_MUTATION_TOOL_NAMES.map((name) => ({
+          name,
+          description: `${name} test tool`,
+          riskLevel: name === 'file_delete' ? 'destructive' : 'write',
+          profiles: ['full'],
+          inputSchema: {
+            type: 'object',
+            properties: {
+              path: {
+                type: 'string',
+              },
+            },
+          },
+        })),
+      ],
+    },
+  ] as WebMcpGroupDef[];
+}
+
+function createEditorTerminalMutationGroupDefs(profile: 'default' | 'interactive' | 'full'): WebMcpGroupDef[] {
+  return [
+    {
+      name: 'editor',
+      description: 'Editor operations',
+      defaultLoaded: true,
+      profile,
+      tools: [
+        {
+          name: 'editor_format',
+          description: 'Format editor buffer',
+          riskLevel: 'write',
+          profiles: ['full'],
+          inputSchema: {
+            type: 'object',
+            properties: {
+              path: {
+                type: 'string',
+              },
+            },
+            required: ['path'],
+          },
+        },
+        {
+          name: 'editor_save',
+          description: 'Save editor buffer',
+          riskLevel: 'write',
+          profiles: ['full'],
+          inputSchema: {
+            type: 'object',
+            properties: {
+              path: {
+                type: 'string',
+              },
+            },
+            required: ['path'],
+          },
+        },
+      ],
+    },
+    {
+      name: 'terminal',
+      description: 'Terminal operations',
+      defaultLoaded: true,
+      profile,
+      tools: [
+        {
+          name: 'terminal_dispose',
+          description: 'Dispose terminal',
+          riskLevel: 'destructive',
+          profiles: ['full'],
+          inputSchema: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+              },
+            },
+            required: ['id'],
+          },
+        },
+      ],
+    },
+  ] as WebMcpGroupDef[];
+}
+
+async function listMcpToolNames(groupDefs: WebMcpGroupDef[]): Promise<string[]> {
+  const caller = {
+    getGroupDefinitions: jest.fn().mockResolvedValue(groupDefs),
+    executeTool: jest.fn().mockResolvedValue({
+      success: true,
+    }),
+  };
+  const server = createServer(caller);
+  await server.start();
+  const client = new Client(
+    {
+      name: 'test-client',
+      version: '1.0.0',
+    },
+    {
+      capabilities: {},
+    },
+  );
+  const transport = new StreamableHTTPClientTransport(new URL(server.getUrl()));
+
+  try {
+    await client.connect(transport);
+    const tools = await client.listTools();
+    return tools.tools.map((tool) => tool.name).sort();
+  } finally {
+    await client.close();
+    await server.dispose();
+  }
+}
+
 describe('OpenSumiMcpHttpServer', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -268,6 +407,49 @@ describe('OpenSumiMcpHttpServer', () => {
           }),
         ]),
       );
+
+      for (const helperTool of [
+        'opensumi_discover_capabilities',
+        'opensumi_describe_capability_group',
+        'opensumi_describe_tool',
+      ]) {
+        const helperDescriptionResult = await client.callTool({
+          name: 'opensumi_describe_tool',
+          arguments: { tool: helperTool },
+        });
+        expect(helperDescriptionResult.isError).toBe(false);
+        expect(JSON.parse((helperDescriptionResult.content as any)[0].text)).toMatchObject({
+          success: true,
+          result: {
+            name: helperTool,
+            group: 'opensumi',
+            inputSchema: expect.objectContaining({
+              type: 'object',
+            }),
+          },
+        });
+      }
+
+      const catalogGroupDescriptionResult = await client.callTool({
+        name: 'opensumi_describe_capability_group',
+        arguments: { group: 'opensumi', includeSchemas: true },
+      });
+      expect(catalogGroupDescriptionResult.isError).toBe(false);
+      expect(JSON.parse((catalogGroupDescriptionResult.content as any)[0].text)).toMatchObject({
+        success: true,
+        result: {
+          group: 'opensumi',
+          toolCount: expect.any(Number),
+          tools: expect.arrayContaining([
+            expect.objectContaining({
+              name: 'opensumi_describe_tool',
+              inputSchema: expect.objectContaining({
+                type: 'object',
+              }),
+            }),
+          ]),
+        },
+      });
 
       const discoverResult = await client.callTool({
         name: 'opensumi_discover_capabilities',
@@ -411,5 +593,29 @@ describe('OpenSumiMcpHttpServer', () => {
       await client.close();
       await server.dispose();
     }
+  });
+
+  it('exposes full-profile file mutation tools through MCP tools/list only in the full profile', async () => {
+    await expect(listMcpToolNames(createFileMutationGroupDefs('default'))).resolves.not.toEqual(
+      expect.arrayContaining(FILE_MUTATION_TOOL_NAMES),
+    );
+    await expect(listMcpToolNames(createFileMutationGroupDefs('interactive'))).resolves.not.toEqual(
+      expect.arrayContaining(FILE_MUTATION_TOOL_NAMES),
+    );
+    await expect(listMcpToolNames(createFileMutationGroupDefs('full'))).resolves.toEqual(
+      expect.arrayContaining(FILE_MUTATION_TOOL_NAMES),
+    );
+  });
+
+  it('exposes full-profile editor and terminal mutation tools through MCP tools/list only in the full profile', async () => {
+    await expect(listMcpToolNames(createEditorTerminalMutationGroupDefs('default'))).resolves.not.toEqual(
+      expect.arrayContaining(EDITOR_TERMINAL_MUTATION_TOOL_NAMES),
+    );
+    await expect(listMcpToolNames(createEditorTerminalMutationGroupDefs('interactive'))).resolves.not.toEqual(
+      expect.arrayContaining(EDITOR_TERMINAL_MUTATION_TOOL_NAMES),
+    );
+    await expect(listMcpToolNames(createEditorTerminalMutationGroupDefs('full'))).resolves.toEqual(
+      expect.arrayContaining(EDITOR_TERMINAL_MUTATION_TOOL_NAMES),
+    );
   });
 });

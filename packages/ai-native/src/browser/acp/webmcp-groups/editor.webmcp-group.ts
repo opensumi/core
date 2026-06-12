@@ -16,6 +16,12 @@ import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { WebMcpGroupRegistration } from '../webmcp-group-registry';
 import { classifyError, errorResult, serviceUnavailableResult, successResult, tryGetService } from '../webmcp-utils';
 
+import {
+  resolveWorkspaceFilePath,
+  validateWorkspacePathAccess,
+  validateWritableWorkspaceTarget,
+} from './file-workspace-path';
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -64,6 +70,53 @@ function resolveEditorUri(container: Injector, pathOrUri: string): URI {
   const appConfig = tryGetService<AppConfig>(container, AppConfig);
   const workspaceDir = appConfig?.workspaceDir;
   return URI.file(workspaceDir ? `${workspaceDir}/${pathOrUri}`.replace(/\/+/g, '/') : pathOrUri);
+}
+
+function invalidPathResult(message: string) {
+  return errorResult('INVALID_INPUT', new Error(message));
+}
+
+async function resolveWorkspaceEditorUri(
+  container: Injector,
+  filePath: string,
+  access: 'read' | 'write',
+): Promise<
+  | {
+      ok: true;
+      uri: URI;
+      absolutePath: string;
+    }
+  | {
+      ok: false;
+      result: ReturnType<typeof errorResult>;
+    }
+> {
+  const appConfig = tryGetService<AppConfig>(container, AppConfig);
+  if (!appConfig || !appConfig.workspaceDir) {
+    return { ok: false, result: serviceUnavailableResult('AppConfig') };
+  }
+  const fileService = tryGetService<IFileServiceClient>(container, IFileServiceClient);
+  if (!fileService) {
+    return { ok: false, result: serviceUnavailableResult('IFileServiceClient') };
+  }
+
+  const resolved = resolveWorkspaceFilePath(appConfig.workspaceDir, filePath);
+  if (!resolved.ok) {
+    return { ok: false, result: invalidPathResult(resolved.message) };
+  }
+  const validation =
+    access === 'write'
+      ? await validateWritableWorkspaceTarget(fileService, appConfig.workspaceDir, resolved.value)
+      : await validateWorkspacePathAccess(fileService, appConfig.workspaceDir, resolved.value);
+  if (!validation.ok) {
+    return { ok: false, result: invalidPathResult(validation.message) };
+  }
+
+  return {
+    ok: true,
+    uri: URI.file(resolved.value.absolutePath),
+    absolutePath: resolved.value.absolutePath,
+  };
 }
 
 function toPositiveCappedNumber(value: unknown, fallback: number, cap: number): number {
@@ -648,7 +701,7 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         name: 'editor_format',
         description: 'Format the document at the given path using the editor format command.',
         riskLevel: 'write',
-        exposedByDefault: false,
+        profiles: ['full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -673,11 +726,15 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
             return serviceUnavailableResult('CommandService');
           }
           try {
-            // Open the file first to ensure it is the active editor
-            const uri = URI.file(filePath);
+            const resolved = await resolveWorkspaceEditorUri(container, filePath, 'write');
+            if (!resolved.ok) {
+              return resolved.result;
+            }
+            // Open the file first to ensure it is the active editor.
+            const uri = resolved.uri;
             await editorService.open(uri, { focus: true });
             await commandService.executeCommand('editor.action.formatDocument');
-            return successResult({ path: filePath, formatted: true });
+            return successResult({ path: resolved.absolutePath, formatted: true });
           } catch (err) {
             return errorResult(classifyError(err), err);
           }
@@ -785,7 +842,7 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
         name: 'editor_save',
         description: 'Save the file at the given path.',
         riskLevel: 'write',
-        exposedByDefault: false,
+        profiles: ['full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -806,9 +863,21 @@ export function createEditorGroup(container: Injector): WebMcpGroupRegistration 
             return serviceUnavailableResult('WorkbenchEditorService');
           }
           try {
-            const uri = URI.file(filePath);
-            await editorService.save(uri);
-            return successResult({ path: filePath, saved: true });
+            const resolved = await resolveWorkspaceEditorUri(container, filePath, 'write');
+            if (!resolved.ok) {
+              return resolved.result;
+            }
+            const isOpen = editorService.editorGroups.some((group) =>
+              group.resources.some((resource) => resource.uri.isEqual(resolved.uri)),
+            );
+            if (!isOpen) {
+              return errorResult('INVALID_INPUT', new Error(`Editor is not open for path: ${filePath}`));
+            }
+            const savedUri = await editorService.save(resolved.uri);
+            if (!savedUri) {
+              return errorResult('FILE_NOT_FOUND', new Error(`Editor not found for path: ${filePath}`));
+            }
+            return successResult({ path: resolved.absolutePath, saved: true });
           } catch (err) {
             return errorResult(classifyError(err), err);
           }

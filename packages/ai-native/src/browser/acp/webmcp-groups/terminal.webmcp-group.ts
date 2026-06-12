@@ -635,7 +635,7 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         description:
           'Close/kill a terminal session and its underlying shell process. Use this to clean up terminals that are no longer needed.',
         riskLevel: 'destructive',
-        exposedByDefault: false,
+        profiles: ['full'],
         inputSchema: {
           type: 'object',
           properties: {
@@ -649,15 +649,23 @@ export function createTerminalGroup(container: Injector): WebMcpGroupRegistratio
         execute: async (params: Record<string, unknown>) => {
           const id = params.id as string;
           if (!id) {
-            return errorResult('EXECUTION_ERROR', new Error('id is required'));
+            return errorResult('INVALID_INPUT', new Error('id is required'));
+          }
+          const terminalController = tryGetService<ITerminalController>(container, ITerminalController);
+          if (!terminalController) {
+            return serviceUnavailableResult('ITerminalController');
           }
           const terminalApi = tryGetService<ITerminalApiService>(container, ITerminalApiService);
           if (!terminalApi) {
             return serviceUnavailableResult('ITerminalApiService');
           }
           try {
+            const client = getTerminalClient(terminalController, id);
+            if (!client) {
+              return errorResult('INVALID_INPUT', new Error('terminal not found'));
+            }
             terminalApi.removeTerm(id);
-            return successResult({ terminalId: id, status: 'disposed' });
+            return successResult({ terminalId: id, disposed: true });
           } catch (err) {
             return errorResult('EXECUTION_ERROR', err);
           }

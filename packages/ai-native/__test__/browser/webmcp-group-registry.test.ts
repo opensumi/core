@@ -5,9 +5,11 @@ import {
   canUseWebMcpProfileQueryOverride,
   getWebMcpProfileFromSearch,
 } from '../../src/browser/acp/webmcp-group-registry';
+import { createEditorGroup } from '../../src/browser/acp/webmcp-groups/editor.webmcp-group';
+import { createTerminalGroup } from '../../src/browser/acp/webmcp-groups/terminal.webmcp-group';
 
 describe('WebMCP group registry policy', () => {
-  function createRegistry(profile: string) {
+  function createRegistryWithProfile(profile: string) {
     const registry = new WebMcpGroupRegistry();
     Object.defineProperty(registry, 'preferenceService', {
       value: {
@@ -15,6 +17,11 @@ describe('WebMCP group registry policy', () => {
       },
       writable: true,
     });
+    return registry;
+  }
+
+  function createRegistry(profile: string) {
+    const registry = createRegistryWithProfile(profile);
     registry.registerGroup({
       name: 'terminal',
       description: 'Terminal',
@@ -113,5 +120,21 @@ describe('WebMCP group registry policy', () => {
     } finally {
       window.history.pushState({}, '', previousUrl);
     }
+  });
+
+  it('exposes editor save/format and terminal disposal only in the full profile', () => {
+    const defaultRegistry = createRegistryWithProfile('default');
+    const fullRegistry = createRegistryWithProfile('full');
+    const container = {} as any;
+    for (const registry of [defaultRegistry, fullRegistry]) {
+      registry.registerGroup(createEditorGroup(container));
+      registry.registerGroup(createTerminalGroup(container));
+    }
+
+    const defaultTools = defaultRegistry.getGroupDefinitions().flatMap((group) => group.tools.map((tool) => tool.name));
+    expect(defaultTools).not.toEqual(expect.arrayContaining(['editor_format', 'editor_save', 'terminal_dispose']));
+
+    const fullTools = fullRegistry.getGroupDefinitions().flatMap((group) => group.tools.map((tool) => tool.name));
+    expect(fullTools).toEqual(expect.arrayContaining(['editor_format', 'editor_save', 'terminal_dispose']));
   });
 });
