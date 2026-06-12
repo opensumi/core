@@ -219,7 +219,7 @@ export interface IAcpAgentService {
   /**
    * Start and return the loopback HTTP MCP server connection for external MCP clients.
    */
-  getOpenSumiMcpServerConnection(): Promise<OpenSumiMcpServerConnectionInfo>;
+  getOpenSumiMcpServerConnection(clientId?: string): Promise<OpenSumiMcpServerConnectionInfo>;
 
   /**
    * Event fired when any session's thread status changes.
@@ -677,12 +677,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
   }
 
-  async getOpenSumiMcpServerConnection(): Promise<OpenSumiMcpServerConnectionInfo> {
+  async getOpenSumiMcpServerConnection(clientId?: string): Promise<OpenSumiMcpServerConnectionInfo> {
     if (!this.opensumiMcpHttpServer) {
       throw new Error('[AcpAgentService] OpenSumi MCP server is not available');
     }
     await this.opensumiMcpHttpServer.start();
-    return this.opensumiMcpHttpServer.getConnectionInfo();
+    return this.opensumiMcpHttpServer.getConnectionInfo(clientId);
   }
 
   // -----------------------------------------------------------------------

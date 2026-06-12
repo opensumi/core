@@ -25,12 +25,12 @@ export class AcpWebMcpCallerService extends RPCService<IAcpWebMcpBridgeService> 
   @Autowired(AcpBrowserRpcRegistry)
   private readonly browserRpcRegistry: AcpBrowserRpcRegistry;
 
-  private getRpcClient(): IAcpWebMcpBridgeService | undefined {
-    return this.client ?? this.browserRpcRegistry?.getWebMcpClient();
+  private getRpcClient(clientId?: string): IAcpWebMcpBridgeService | undefined {
+    return this.client ?? this.browserRpcRegistry?.getWebMcpClient(clientId);
   }
 
-  async getGroupDefinitions(options?: WebMcpGroupDefinitionOptions): Promise<WebMcpGroupDef[]> {
-    const rpcClient = this.getRpcClient();
+  async getGroupDefinitions(options?: WebMcpGroupDefinitionOptions, clientId?: string): Promise<WebMcpGroupDef[]> {
+    const rpcClient = this.getRpcClient(clientId);
     if (!rpcClient) {
       throw new Error('[AcpWebMcpCallerService] RPC client not available — browser connection not established');
     }
@@ -39,8 +39,13 @@ export class AcpWebMcpCallerService extends RPCService<IAcpWebMcpBridgeService> 
     );
   }
 
-  async executeTool(group: string, tool: string, params: Record<string, unknown>): Promise<WebMcpToolResult> {
-    const rpcClient = this.getRpcClient();
+  async executeTool(
+    group: string,
+    tool: string,
+    params: Record<string, unknown>,
+    clientId?: string,
+  ): Promise<WebMcpToolResult> {
+    const rpcClient = this.getRpcClient(clientId);
     if (!rpcClient) {
       throw new Error('[AcpWebMcpCallerService] RPC client not available — browser connection not established');
     }

@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   AvailableCommand,
+  CLIENT_ID_TOKEN,
   CancellationToken,
   IAIBackService,
   IAIBackServiceOption,
@@ -94,6 +95,9 @@ export class AcpCliBackService implements IAIBackService {
   @Autowired(AcpAgentServiceToken)
   private agentService: IAcpAgentService;
 
+  @Autowired(CLIENT_ID_TOKEN)
+  private readonly clientId: string | undefined;
+
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
@@ -108,7 +112,7 @@ export class AcpCliBackService implements IAIBackService {
   private threadStatusDisposable: any;
 
   async getOpenSumiMcpServerConnection() {
-    return this.agentService.getOpenSumiMcpServerConnection();
+    return this.agentService.getOpenSumiMcpServerConnection(this.clientId);
   }
 
   /**

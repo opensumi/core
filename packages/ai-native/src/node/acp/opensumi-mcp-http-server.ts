@@ -27,6 +27,7 @@ import type {
 const OPEN_SUMI_MCP_SERVER_NAME = 'opensumi-ide';
 const LOOPBACK_HOST = '127.0.0.1';
 const MCP_PATH_PREFIX = '/mcp/';
+const MCP_CLIENT_ID_QUERY_PARAM = 'clientId';
 const CATALOG_TOOL_NAMES = {
   discoverCapabilities: 'opensumi_discover_capabilities',
   describeCapabilityGroup: 'opensumi_describe_capability_group',
@@ -60,6 +61,7 @@ type WebMcpGroupDefWithMeta = Omit<WebMcpGroupDef, 'tools'> & {
 
 interface WebMcpSessionState {
   sessionId?: string;
+  browserClientId?: string;
   enabledGroups: Set<string>;
 }
 
@@ -131,29 +133,36 @@ export class OpenSumiMcpHttpServer {
     return OPEN_SUMI_MCP_SERVER_NAME;
   }
 
-  getUrl(): string {
+  getUrl(browserClientId?: string): string {
     if (!this.port) {
       throw new Error('[OpenSumiMcpHttpServer] Server is not started');
     }
-    return `http://${LOOPBACK_HOST}:${this.port}${MCP_PATH_PREFIX}${this.token}`;
+    const url = new URL(`http://${LOOPBACK_HOST}:${this.port}${MCP_PATH_PREFIX}${this.token}`);
+    if (browserClientId) {
+      url.searchParams.set(MCP_CLIENT_ID_QUERY_PARAM, browserClientId);
+    }
+    return url.toString();
   }
 
-  getConnectionInfo(): OpenSumiMcpServerConnectionInfo {
+  getConnectionInfo(browserClientId?: string): OpenSumiMcpServerConnectionInfo {
     return {
       name: this.getServerName(),
       type: 'http',
       transport: 'streamable-http',
-      url: this.getUrl(),
-      redactedUrl: this.getRedactedUrl(),
+      url: this.getUrl(browserClientId),
+      redactedUrl: this.getRedactedUrl(browserClientId),
       headers: [],
     };
   }
 
-  private getRedactedUrl(): string {
+  private getRedactedUrl(browserClientId?: string): string {
     if (!this.port) {
       throw new Error('[OpenSumiMcpHttpServer] Server is not started');
     }
-    return `http://${LOOPBACK_HOST}:${this.port}${MCP_PATH_PREFIX}<redacted>`;
+    const redactedUrl = `http://${LOOPBACK_HOST}:${this.port}${MCP_PATH_PREFIX}<redacted>`;
+    return browserClientId
+      ? `${redactedUrl}?${MCP_CLIENT_ID_QUERY_PARAM}=${encodeURIComponent('<redacted>')}`
+      : redactedUrl;
   }
 
   async dispose(): Promise<void> {
@@ -187,9 +196,12 @@ export class OpenSumiMcpHttpServer {
     );
 
     server.setRequestHandler(ListToolsRequestSchema, async () => {
-      const groupDefs = (await this.caller.getGroupDefinitions({
-        includeAllTools: true,
-      })) as WebMcpGroupDefWithMeta[];
+      const groupDefs = (await this.caller.getGroupDefinitions(
+        {
+          includeAllTools: true,
+        },
+        sessionState.browserClientId,
+      )) as WebMcpGroupDefWithMeta[];
       const exposedGroupDefs = this.getExposedGroupDefs(groupDefs, sessionState);
       const toolCount = groupDefs.reduce((count, group) => count + group.tools.length, 0);
       const exposedToolCount = exposedGroupDefs.reduce((count, group) => count + group.tools.length, 0);
@@ -230,9 +242,12 @@ export class OpenSumiMcpHttpServer {
 
     server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {
-        const groupDefs = (await this.caller.getGroupDefinitions({
-          includeAllTools: true,
-        })) as WebMcpGroupDefWithMeta[];
+        const groupDefs = (await this.caller.getGroupDefinitions(
+          {
+            includeAllTools: true,
+          },
+          sessionState.browserClientId,
+        )) as WebMcpGroupDefWithMeta[];
         const catalogResult = await this.handleCatalogTool(
           groupDefs,
           sessionState,
@@ -255,6 +270,7 @@ export class OpenSumiMcpHttpServer {
           target.group.name,
           target.name,
           (request.params.arguments ?? {}) as Record<string, unknown>,
+          sessionState.browserClientId,
         );
         this.logger?.log?.(
           `[OpenSumiMcpHttpServer] tools/call — tool=${request.params.name}, group=${target.group.name}, riskLevel=${
@@ -290,7 +306,7 @@ export class OpenSumiMcpHttpServer {
     }
     const createdTransport = !transport;
     if (!transport) {
-      transport = await this.createTransport();
+      transport = await this.createTransport(this.getBrowserClientId(req));
     }
 
     await transport.handleRequest(req, res);
@@ -312,9 +328,10 @@ export class OpenSumiMcpHttpServer {
     return this.transports.get(sessionId);
   }
 
-  private async createTransport(): Promise<StreamableHTTPServerTransport> {
+  private async createTransport(browserClientId?: string): Promise<StreamableHTTPServerTransport> {
     let transport: StreamableHTTPServerTransport;
     const sessionState: WebMcpSessionState = {
+      browserClientId,
       enabledGroups: new Set<string>(),
     };
     transport = new StreamableHTTPServerTransport({
@@ -333,6 +350,12 @@ export class OpenSumiMcpHttpServer {
   private getSessionId(req: http.IncomingMessage): string | undefined {
     const sessionId = req.headers['mcp-session-id'];
     return typeof sessionId === 'string' ? sessionId : undefined;
+  }
+
+  private getBrowserClientId(req: http.IncomingMessage): string | undefined {
+    const url = new URL(req.url ?? '/', `http://${LOOPBACK_HOST}`);
+    const clientId = url.searchParams.get(MCP_CLIENT_ID_QUERY_PARAM);
+    return clientId || undefined;
   }
 
   private isAllowedRequest(req: http.IncomingMessage): boolean {
@@ -716,7 +739,12 @@ export class OpenSumiMcpHttpServer {
       });
     }
 
-    const result = await this.caller.executeTool(target.group.name, target.name, toolArgs);
+    const result = await this.caller.executeTool(
+      target.group.name,
+      target.name,
+      toolArgs,
+      sessionState.browserClientId,
+    );
     this.logger?.log?.(
       `[OpenSumiMcpHttpServer] capabilities/invokeTool — tool=${target.name}, group=${target.group.name}, riskLevel=${
         target.tool.riskLevel ?? 'unknown'

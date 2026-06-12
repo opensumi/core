@@ -225,9 +225,9 @@ describe('AcpAgentService (Thread Pool)', () => {
       };
       (service as any).opensumiMcpHttpServer = opensumiMcpHttpServer;
 
-      await expect(service.getOpenSumiMcpServerConnection()).resolves.toBe(connection);
+      await expect(service.getOpenSumiMcpServerConnection('client-full')).resolves.toBe(connection);
       expect(opensumiMcpHttpServer.start).toHaveBeenCalled();
-      expect(opensumiMcpHttpServer.getConnectionInfo).toHaveBeenCalled();
+      expect(opensumiMcpHttpServer.getConnectionInfo).toHaveBeenCalledWith('client-full');
     });
 
     it('should append the built-in OpenSumi MCP server when the agent supports HTTP MCP', async () => {

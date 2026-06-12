@@ -170,8 +170,8 @@ const mockLogger: ILogger = {
 };
 
 function createServer(caller: {
-  getGroupDefinitions: jest.Mock<Promise<WebMcpGroupDef[]>, [Record<string, unknown>?]>;
-  executeTool: jest.Mock<Promise<WebMcpToolResult>, [string, string, Record<string, unknown>]>;
+  getGroupDefinitions: jest.Mock<Promise<WebMcpGroupDef[]>, [Record<string, unknown>?, string?]>;
+  executeTool: jest.Mock<Promise<WebMcpToolResult>, [string, string, Record<string, unknown>, string?]>;
 }): OpenSumiMcpHttpServer {
   const server = new OpenSumiMcpHttpServer();
   (server as any).caller = caller;
@@ -514,7 +514,7 @@ describe('OpenSumiMcpHttpServer', () => {
         arguments: { path: 'README.md' },
       });
 
-      expect(caller.executeTool).toHaveBeenCalledWith('file', 'file_read', { path: 'README.md' });
+      expect(caller.executeTool).toHaveBeenCalledWith('file', 'file_read', { path: 'README.md' }, undefined);
       expect(result.isError).toBe(false);
       expect(result.content).toEqual([
         {
@@ -564,21 +564,21 @@ describe('OpenSumiMcpHttpServer', () => {
         arguments: { tool: 'file_read', arguments: { path: 'README.md' } },
       });
       expect(fallbackResult.isError).toBe(false);
-      expect(caller.executeTool).toHaveBeenCalledWith('file', 'file_read', { path: 'README.md' });
+      expect(caller.executeTool).toHaveBeenCalledWith('file', 'file_read', { path: 'README.md' }, undefined);
 
       const nestedFallbackResult = await client.callTool({
         name: 'opensumi_invoke_capability_tool',
         arguments: { tool: 'file_read', arguments: { arguments: { path: 'README.md' } } },
       });
       expect(nestedFallbackResult.isError).toBe(false);
-      expect(caller.executeTool).toHaveBeenLastCalledWith('file', 'file_read', { path: 'README.md' });
+      expect(caller.executeTool).toHaveBeenLastCalledWith('file', 'file_read', { path: 'README.md' }, undefined);
 
       const nestedInvocationResult = await client.callTool({
         name: 'opensumi_invoke_capability_tool',
         arguments: { arguments: { tool: 'file_read', arguments: { path: 'README.md' } } },
       });
       expect(nestedInvocationResult.isError).toBe(false);
-      expect(caller.executeTool).toHaveBeenLastCalledWith('file', 'file_read', { path: 'README.md' });
+      expect(caller.executeTool).toHaveBeenLastCalledWith('file', 'file_read', { path: 'README.md' }, undefined);
 
       const invalidInvocationResult = await client.callTool({
         name: 'opensumi_invoke_capability_tool',
@@ -605,6 +605,56 @@ describe('OpenSumiMcpHttpServer', () => {
     await expect(listMcpToolNames(createFileMutationGroupDefs('full'))).resolves.toEqual(
       expect.arrayContaining(FILE_MUTATION_TOOL_NAMES),
     );
+  });
+
+  it('routes MCP sessions to the browser client id embedded in the connection URL', async () => {
+    const caller = {
+      getGroupDefinitions: jest.fn(async (_options?: Record<string, unknown>, clientId?: string) =>
+        createFileMutationGroupDefs(clientId === 'client-full' ? 'full' : 'interactive'),
+      ),
+      executeTool: jest.fn().mockResolvedValue({
+        success: true,
+      }),
+    };
+    const server = createServer(caller);
+    await server.start();
+    const connection = server.getConnectionInfo('client-full');
+    expect(connection.url).toContain('clientId=client-full');
+    expect(connection.redactedUrl).toContain('clientId=%3Credacted%3E');
+    expect(connection.redactedUrl).not.toContain('client-full');
+
+    const client = new Client(
+      {
+        name: 'test-client',
+        version: '1.0.0',
+      },
+      {
+        capabilities: {},
+      },
+    );
+    const transport = new StreamableHTTPClientTransport(new URL(connection.url));
+
+    try {
+      await client.connect(transport);
+      const tools = await client.listTools();
+      expect(tools.tools.map((tool) => tool.name)).toEqual(expect.arrayContaining(FILE_MUTATION_TOOL_NAMES));
+      expect(caller.getGroupDefinitions).toHaveBeenCalledWith({ includeAllTools: true }, 'client-full');
+
+      const fallbackResult = await client.callTool({
+        name: 'opensumi_invoke_capability_tool',
+        arguments: { tool: 'file_create', arguments: { path: '.tmp/acp-bdd/source.txt', content: 'hello' } },
+      });
+      expect(fallbackResult.isError).toBe(false);
+      expect(caller.executeTool).toHaveBeenCalledWith(
+        'file',
+        'file_create',
+        { path: '.tmp/acp-bdd/source.txt', content: 'hello' },
+        'client-full',
+      );
+    } finally {
+      await client.close();
+      await server.dispose();
+    }
   });
 
   it('exposes full-profile editor and terminal mutation tools through MCP tools/list only in the full profile', async () => {

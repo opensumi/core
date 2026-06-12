@@ -28,6 +28,11 @@ function invalidPathResult(message: string) {
   return errorResult('INVALID_INPUT', new Error(message));
 }
 
+function getStringParam(params: Record<string, unknown>, primaryKey: string, fallbackKey?: string): string {
+  const value = params[primaryKey] ?? (fallbackKey ? params[fallbackKey] : undefined);
+  return typeof value === 'string' ? value : '';
+}
+
 // ---------------------------------------------------------------------------
 // Group definition
 // ---------------------------------------------------------------------------
@@ -136,7 +141,6 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         description:
           'Write content to a file. Creates the file if it does not exist, overwrites if it does. Creates parent directories automatically.',
         riskLevel: 'write',
-        exposedByDefault: false,
         profiles: ['full'],
         inputSchema: {
           type: 'object',
@@ -398,10 +402,8 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
       // ----- file_create -----
       {
         name: 'file_create',
-        description:
-          'Create an empty file or a new directory. Use "type: directory" to create a folder instead of a file.',
+        description: 'Create a new file with optional content. Use "type: directory" to create a folder instead.',
         riskLevel: 'write',
-        exposedByDefault: false,
         profiles: ['full'],
         inputSchema: {
           type: 'object',
@@ -415,12 +417,17 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
               enum: ['file', 'directory'],
               description: 'Whether to create a "file" or "directory". Defaults to "file".',
             },
+            content: {
+              type: 'string',
+              description: 'Initial file content. Ignored when type is "directory".',
+            },
           },
           required: ['path'],
         },
         execute: async (params: Record<string, unknown>) => {
           const filePath = params.path as string;
           const createType = (params.type as 'file' | 'directory') || 'file';
+          const content = typeof params.content === 'string' ? params.content : undefined;
           if (!filePath) {
             return errorResult('INVALID_INPUT', new Error('path is required'));
           }
@@ -453,7 +460,7 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
             if (createType === 'directory') {
               await fileService.createFolder(uri);
             } else {
-              await fileService.createFile(uri);
+              await fileService.createFile(uri, { content });
             }
             return successResult({ path: filePath, type: createType, created: true });
           } catch (err) {
@@ -467,7 +474,6 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         name: 'file_delete',
         description: 'Delete a file or directory. Use recursive: true to delete a directory and its contents.',
         riskLevel: 'destructive',
-        exposedByDefault: false,
         profiles: ['full'],
         inputSchema: {
           type: 'object',
@@ -542,27 +548,26 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         name: 'file_move',
         description: 'Move or rename a file or directory from source to destination.',
         riskLevel: 'write',
-        exposedByDefault: false,
         profiles: ['full'],
         inputSchema: {
           type: 'object',
           properties: {
-            source: {
+            sourcePath: {
               type: 'string',
               description: 'The relative source path to move, from the workspace root.',
             },
-            destination: {
+            targetPath: {
               type: 'string',
               description: 'The relative destination path to move to, from the workspace root.',
             },
           },
-          required: ['source', 'destination'],
+          required: ['sourcePath', 'targetPath'],
         },
         execute: async (params: Record<string, unknown>) => {
-          const source = params.source as string;
-          const destination = params.destination as string;
+          const source = getStringParam(params, 'sourcePath', 'source');
+          const destination = getStringParam(params, 'targetPath', 'destination');
           if (!source || !destination) {
-            return errorResult('INVALID_INPUT', new Error('source and destination are required'));
+            return errorResult('INVALID_INPUT', new Error('sourcePath and targetPath are required'));
           }
           const appConfig = tryGetService<AppConfig>(container, AppConfig);
           if (!appConfig || !appConfig.workspaceDir) {
@@ -624,27 +629,26 @@ export function createFileGroup(container: Injector): WebMcpGroupRegistration {
         name: 'file_copy',
         description: 'Copy a file or directory from source to destination.',
         riskLevel: 'write',
-        exposedByDefault: false,
         profiles: ['full'],
         inputSchema: {
           type: 'object',
           properties: {
-            source: {
+            sourcePath: {
               type: 'string',
               description: 'The relative source path to copy, from the workspace root.',
             },
-            destination: {
+            targetPath: {
               type: 'string',
               description: 'The relative destination path to copy to, from the workspace root.',
             },
           },
-          required: ['source', 'destination'],
+          required: ['sourcePath', 'targetPath'],
         },
         execute: async (params: Record<string, unknown>) => {
-          const source = params.source as string;
-          const destination = params.destination as string;
+          const source = getStringParam(params, 'sourcePath', 'source');
+          const destination = getStringParam(params, 'targetPath', 'destination');
           if (!source || !destination) {
-            return errorResult('INVALID_INPUT', new Error('source and destination are required'));
+            return errorResult('INVALID_INPUT', new Error('sourcePath and targetPath are required'));
           }
           const appConfig = tryGetService<AppConfig>(container, AppConfig);
           if (!appConfig || !appConfig.workspaceDir) {

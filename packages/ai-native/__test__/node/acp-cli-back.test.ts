@@ -77,6 +77,7 @@ describe('AcpCliBackService', () => {
 
     service = new AcpCliBackService();
     Object.defineProperty(service, 'agentService', { value: mockAgentService, writable: true });
+    Object.defineProperty(service, 'clientId', { value: undefined, writable: true, configurable: true });
     Object.defineProperty(service, 'logger', { value: mockLogger, writable: true });
     Object.defineProperty(service, 'openAICompatibleModel', { value: mockOpenAIModel, writable: true });
     Object.defineProperty(service, 'threadStatusCaller', {
@@ -105,7 +106,23 @@ describe('AcpCliBackService', () => {
       mockAgentService.getOpenSumiMcpServerConnection.mockResolvedValue(connection);
 
       await expect(service.getOpenSumiMcpServerConnection()).resolves.toBe(connection);
-      expect(mockAgentService.getOpenSumiMcpServerConnection).toHaveBeenCalled();
+      expect(mockAgentService.getOpenSumiMcpServerConnection).toHaveBeenCalledWith(undefined);
+    });
+
+    it('should pass the browser client id to AcpAgentService', async () => {
+      const connection = {
+        name: 'opensumi-ide',
+        type: 'http',
+        transport: 'streamable-http',
+        url: 'http://127.0.0.1:12345/mcp/token?clientId=client-full',
+        redactedUrl: 'http://127.0.0.1:12345/mcp/<redacted>?clientId=%3Credacted%3E',
+        headers: [],
+      } as any;
+      Object.defineProperty(service, 'clientId', { value: 'client-full', writable: true, configurable: true });
+      mockAgentService.getOpenSumiMcpServerConnection.mockResolvedValue(connection);
+
+      await expect(service.getOpenSumiMcpServerConnection()).resolves.toBe(connection);
+      expect(mockAgentService.getOpenSumiMcpServerConnection).toHaveBeenCalledWith('client-full');
     });
   });
 
