@@ -99,7 +99,6 @@ test.describe('ACP Chat Agentic side entry filter', () => {
     await clickSideEntry('scm');
     await expect(page.locator('#opensumi-left-tabbar li#scm')).toHaveClass(/active/);
 
-    await clickSideEntry('explorer');
     await waitForExplorerViewVisible(page);
 
     await writeAiNativePanelLayoutSettings(workspace.workspace.codeUri.fsPath, 'classic');

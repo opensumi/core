@@ -66,6 +66,7 @@ const LOCK_TIMEOUT_MS = 90 * 1000;
 export const ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS = 120 * 1000;
 const MODEL_CONTEXT_TIMEOUT_MS = 60 * 1000;
 const ACP_CHAT_READY_TIMEOUT_MS = 60 * 1000;
+const EXPLORER_VIEW_READY_TIMEOUT_MS = 30 * 1000;
 const AI_NATIVE_PANEL_LAYOUT_SETTING_ID = 'ai.native.panelLayout';
 let nextRuntimeId = 1;
 
@@ -240,20 +241,33 @@ export async function ensureAgenticLayout(page: Page): Promise<void> {
 }
 
 export async function waitForExplorerViewVisible(page: Page): Promise<void> {
-  await page.waitForFunction(() => {
-    const isVisible = (element: Element) => {
-      const rect = element.getBoundingClientRect();
-      const style = window.getComputedStyle(element);
+  const explorerEntry = page.locator('#opensumi-left-tabbar li#explorer');
+  await explorerEntry.waitFor({ state: 'visible', timeout: EXPLORER_VIEW_READY_TIMEOUT_MS });
 
-      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
-    };
+  const isActive = await explorerEntry.evaluate((element) => element.classList.contains('active'));
+  if (!isActive) {
+    await explorerEntry.click();
+  }
 
-    return Array.from(document.querySelectorAll('[data-viewlet-id="explorer"]')).some((element) => {
-      const text = element.textContent || '';
+  await page.waitForFunction(
+    () => {
+      const isVisible = (element: Element) => {
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
 
-      return isVisible(element) && (text.includes('OPENED EDITORS') || text.includes('WORKSPACE'));
-    });
-  });
+        return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+      };
+
+      const explorerEntry = document.querySelector('#opensumi-left-tabbar li#explorer');
+      if (!explorerEntry || !isVisible(explorerEntry) || !explorerEntry.classList.contains('active')) {
+        return false;
+      }
+
+      return Array.from(document.querySelectorAll('[data-viewlet-id="explorer"]')).some(isVisible);
+    },
+    undefined,
+    { timeout: EXPLORER_VIEW_READY_TIMEOUT_MS },
+  );
 }
 
 export async function waitForAcpChatReady(page: Page): Promise<void> {
