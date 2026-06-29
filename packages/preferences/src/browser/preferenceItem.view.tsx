@@ -497,11 +497,16 @@ function SelectPreferenceItem({
   // 鼠标还没有划过来的时候，需要一个默认的描述信息
   const defaultDescription = useMemo((): string => {
     if (schema.enumDescriptions && schema.enum) {
-      return schema.enumDescriptions[schema.enum.indexOf(currentValue)] || '';
+      const index = schema.enum.findIndex((item) => String(item) === String(value));
+      return replaceLocalizePlaceholder(schema.enumDescriptions[index]) || '';
     }
     return '';
-  }, [schema]);
+  }, [schema.enum, schema.enumDescriptions, value]);
   const [description, setDescription] = useState<string>(defaultDescription);
+
+  useEffect(() => {
+    setDescription(defaultDescription);
+  }, [defaultDescription]);
 
   const handleValueChange = useCallback(
     (val) => {
@@ -549,7 +554,7 @@ function SelectPreferenceItem({
   const handleDescriptionChange = useCallback(
     (_, index) => {
       if (schema.enumDescriptions) {
-        const description = schema.enumDescriptions[index];
+        const description = replaceLocalizePlaceholder(schema.enumDescriptions[index]);
         if (description) {
           setDescription(description);
         } else {
