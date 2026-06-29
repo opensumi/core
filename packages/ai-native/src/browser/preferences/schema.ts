@@ -25,6 +25,11 @@ export enum EAIPanelLayout {
   agentic = 'agentic',
 }
 
+export enum EAcpDeliveryMode {
+  minimal = 'minimal',
+  stream = 'stream',
+}
+
 export const WEBMCP_PROFILE_SETTING_ID = 'ai.native.webmcp.profile';
 
 export const aiNativePreferenceSchema: PreferenceSchema = {
@@ -260,6 +265,16 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       default: DEFAULT_ACP_THREAD_POOL_SIZE,
       minimum: 1,
       description: '%preference.ai-native.acp.threadPoolSize.description%',
+    },
+    [AINativeSettingSectionsId.AcpDeliveryMode]: {
+      type: 'string',
+      enum: [EAcpDeliveryMode.minimal, EAcpDeliveryMode.stream],
+      enumDescriptions: [
+        '%preference.ai-native.acp.deliveryMode.minimal%',
+        '%preference.ai-native.acp.deliveryMode.stream%',
+      ],
+      default: EAcpDeliveryMode.minimal,
+      description: '%preference.ai-native.acp.deliveryMode.description%',
     },
     [AINativeSettingSectionsId.AgentConfigsOverride]: {
       type: 'object',

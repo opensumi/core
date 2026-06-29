@@ -186,12 +186,17 @@ export class AcpChatAgent implements IChatAgent {
     try {
       const config = await this.configProvider.resolveConfig();
       this.logger.log(`[ACP Chat] invoke: sessionId=${sessionId}, config=${JSON.stringify(config)}`);
+      const acpDeliveryMode = this.preferenceService.get<'minimal' | 'stream'>(
+        AINativeSettingSectionsId.AcpDeliveryMode,
+        'minimal',
+      );
 
       const requestOptions = {
         requestId: request.requestId,
         sessionId,
         history: [lastmessage],
         images: request.images,
+        acpDeliveryMode,
         ...(await this.getRequestOptions()),
         agentSessionConfig: config,
       };

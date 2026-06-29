@@ -1567,6 +1567,10 @@ export const localizationBundle = {
     'preference.ai.native.agent.configs.streaming.description': 'Whether streaming output is supported',
     'preference.ai.native.agent.configs.description.description': 'Agent description information',
     'preference.ai.native.agent.defaultType.description': 'Default Agent Type to use for AI chat and commands',
+    'preference.ai-native.acp.deliveryMode': 'ACP Delivery Mode',
+    'preference.ai-native.acp.deliveryMode.description': 'Controls how ACP Chat delivers agent output to the browser.',
+    'preference.ai-native.acp.deliveryMode.minimal': 'Minimal: deliver final replies and important state changes only.',
+    'preference.ai-native.acp.deliveryMode.stream': 'Stream: deliver all intermediate agent output for diagnostics.',
     // #endregion AI Native
 
     // #endregion merge editor

@@ -181,6 +181,8 @@ export interface IAIBackServiceResponse<T = string> {
   data?: T;
 }
 
+export type AcpDeliveryMode = 'minimal' | 'stream';
+
 export interface IAIBackServiceOption {
   type?: string;
   requestId?: string;
@@ -203,6 +205,7 @@ export interface IAIBackServiceOption {
   trimTexts?: [string, string];
   disabledTools?: string[];
   agentSessionConfig?: AgentProcessConfig;
+  acpDeliveryMode?: AcpDeliveryMode;
 }
 
 export interface AgentSessionModeOption {

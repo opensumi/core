@@ -1332,6 +1332,10 @@ export const localizationBundle = {
     'preference.ai.native.agent.configs.streaming.description': '是否支持流式输出',
     'preference.ai.native.agent.configs.description.description': 'Agent 描述信息',
     'preference.ai.native.agent.defaultType.description': '用于 AI 聊天和命令的默认 Agent 类型',
+    'preference.ai-native.acp.deliveryMode': 'ACP 消息交付模式',
+    'preference.ai-native.acp.deliveryMode.description': '控制 ACP Chat 如何向浏览器交付 Agent 输出。',
+    'preference.ai-native.acp.deliveryMode.minimal': '极简：仅交付最终回复和重要状态变化。',
+    'preference.ai-native.acp.deliveryMode.stream': '流式：交付所有中间 Agent 输出，用于诊断。',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

@@ -64,6 +64,11 @@ export enum AINativeSettingSectionsId {
   AcpThreadPoolSize = 'ai-native.acp.threadPoolSize',
 
   /**
+   * ACP: Browser delivery strategy for agent output.
+   */
+  AcpDeliveryMode = 'ai-native.acp.deliveryMode',
+
+  /**
    * Default Agent Type
    */
   DefaultAgentType = 'ai.native.agent.defaultType',

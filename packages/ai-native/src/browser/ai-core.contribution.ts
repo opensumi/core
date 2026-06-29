@@ -868,6 +868,10 @@ export class AINativeBrowserContribution
             id: AINativeSettingSectionsId.AcpThreadPoolSize,
             localized: 'preference.ai-native.acp.threadPoolSize',
           },
+          {
+            id: AINativeSettingSectionsId.AcpDeliveryMode,
+            localized: 'preference.ai-native.acp.deliveryMode',
+          },
         ],
       });
     }

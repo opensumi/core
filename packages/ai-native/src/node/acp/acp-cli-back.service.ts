@@ -440,8 +440,12 @@ ${input}`;
 
       const agentStream = this.agentService.sendMessage(request, config);
       const toolCallCache = new Map<string, IChatToolCall>();
+      const deliveryMode = this.getAcpDeliveryMode(options);
+      const lastThreadStatusRef: { current?: ThreadStatus } = {};
       let agentUpdateCount = 0;
       let hasLoggedFirstContent = false;
+      let bufferedFinalContent = '';
+      let discardedByCancellation = false;
 
       cancelToken?.onCancellationRequested(async () => {
         this.logger.warn(
@@ -449,6 +453,7 @@ ${input}`;
             options.requestId ?? '(empty)'
           }`,
         );
+        discardedByCancellation = true;
         await this.agentService.cancelRequest(sessionId);
         stream.end();
       });
@@ -465,6 +470,34 @@ ${input}`;
           );
           hasLoggedFirstContent = true;
         }
+
+        if (deliveryMode === 'minimal') {
+          if (update.type === 'message') {
+            bufferedFinalContent += update.content;
+          }
+          if (update.type === 'session_state') {
+            const progress = this.convertAgentUpdateToChatProgress(update, toolCallCache);
+            if (progress) {
+              stream.emitData(progress);
+            }
+          }
+
+          this.emitDistinctThreadStatus(stream, request.sessionId, update.threadStatus, lastThreadStatusRef);
+
+          if (update.type === 'done') {
+            this.logger.log(
+              `[ACP Back] agentStream done: sessionId=${request.sessionId}, requestId=${
+                options.requestId ?? '(empty)'
+              }, updates=${agentUpdateCount}, deliveryMode=minimal, finalChars=${bufferedFinalContent.length}`,
+            );
+            if (!discardedByCancellation && bufferedFinalContent) {
+              stream.emitData({ kind: 'content', content: bufferedFinalContent } as IChatContent);
+            }
+            stream.end();
+          }
+          return;
+        }
+
         const progress = this.convertAgentUpdateToChatProgress(update, toolCallCache);
         if (progress) {
           stream.emitData(progress);
@@ -507,6 +540,27 @@ ${input}`;
       );
       stream.emitError(normalizeAcpError(error));
     }
+  }
+
+  private getAcpDeliveryMode(options: IAIBackServiceOption): 'minimal' | 'stream' {
+    return options.acpDeliveryMode === 'stream' ? 'stream' : 'minimal';
+  }
+
+  private emitDistinctThreadStatus(
+    stream: SumiReadableStream<IChatProgress>,
+    sessionId: string,
+    status: ThreadStatus | undefined,
+    lastStatusRef: { current?: ThreadStatus },
+  ): void {
+    if (!status || status === lastStatusRef.current) {
+      return;
+    }
+    lastStatusRef.current = status;
+    stream.emitData({
+      kind: 'threadStatus',
+      threadStatus: status,
+      sessionId,
+    } as IChatThreadStatus);
   }
 
   private convertAgentUpdateToChatProgress(
