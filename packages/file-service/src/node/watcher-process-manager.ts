@@ -1,4 +1,5 @@
 import { ChildProcess, fork } from 'child_process';
+import { existsSync } from 'fs';
 import { Server, Socket, createServer } from 'net';
 import path from 'path';
 
@@ -116,12 +117,98 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
   }
 
   get watcherHost() {
-    return (
-      this.appConfig.watcherHost ||
-      (process.env.EXT_MODE === 'js'
-        ? path.join(__dirname, '../../lib/node/hosted/watcher.process.js')
-        : path.join(__dirname, 'hosted', 'watcher.process.' + processUtil.extFileType))
-    );
+    if (process.env.EXT_MODE === 'js') {
+      if (!this.appConfig.watcherHost || this.isDefaultBuiltWatcherHost(this.appConfig.watcherHost)) {
+        return this.getSourceWatcherHost();
+      }
+    }
+
+    return this.appConfig.watcherHost || this.getBuiltWatcherHost();
+  }
+
+  private getBuiltWatcherHost() {
+    return path.join(__dirname, 'hosted', 'watcher.process.' + processUtil.extFileType);
+  }
+
+  private getSourceWatcherHost() {
+    const sourceWatcherHost = path.join(__dirname, 'hosted', 'watcher.process.ts');
+    if (existsSync(sourceWatcherHost)) {
+      return sourceWatcherHost;
+    }
+    return path.join(__dirname, '../../src/node/hosted/watcher.process.ts');
+  }
+
+  private isDefaultBuiltWatcherHost(watcherHost: string) {
+    const resolvedWatcherHost = path.resolve(watcherHost);
+    const hostNames = Array.from(new Set(['watcher.process.js', 'watcher.process.' + processUtil.extFileType]));
+
+    return hostNames
+      .flatMap((hostName) => [
+        path.join(__dirname, 'hosted', hostName),
+        path.join(__dirname, '../../lib/node/hosted', hostName),
+      ])
+      .map((candidate) => path.resolve(candidate))
+      .includes(resolvedWatcherHost);
+  }
+
+  private getWatcherProcessExecArgv() {
+    if (process.env.EXT_MODE !== 'js') {
+      return process.execArgv;
+    }
+
+    const execArgv: string[] = [];
+    for (let index = 0; index < process.execArgv.length; index++) {
+      const arg = process.execArgv[index];
+      if (arg.startsWith('--inspect')) {
+        continue;
+      }
+      if (arg === '--require' || arg === '-r') {
+        const moduleName = process.execArgv[index + 1];
+        if (moduleName?.startsWith('ts-node/register') || moduleName === 'tsconfig-paths/register') {
+          index++;
+          continue;
+        }
+        if (moduleName) {
+          execArgv.push(arg, moduleName);
+        } else {
+          execArgv.push(arg);
+        }
+        index++;
+        continue;
+      }
+      if (arg.startsWith('--require=')) {
+        const moduleName = arg.slice('--require='.length);
+        if (moduleName.startsWith('ts-node/register') || moduleName === 'tsconfig-paths/register') {
+          continue;
+        }
+      }
+      execArgv.push(arg);
+    }
+    const ensureRequire = (moduleName: string) => {
+      if (
+        execArgv.includes(moduleName) ||
+        execArgv.includes(`--require=${moduleName}`) ||
+        execArgv.some((arg, index) => arg === '--require' && execArgv[index + 1] === moduleName) ||
+        execArgv.some((arg, index) => arg === '-r' && execArgv[index + 1] === moduleName)
+      ) {
+        return;
+      }
+      execArgv.unshift(moduleName);
+      execArgv.unshift('--require');
+    };
+
+    ensureRequire('tsconfig-paths/register');
+    ensureRequire('ts-node/register/transpile-only');
+
+    return execArgv;
+  }
+
+  private getWatcherProcessCwd() {
+    if (process.env.EXT_MODE !== 'js') {
+      return process.cwd();
+    }
+
+    return path.join(__dirname, '../../../..');
   }
 
   private async createWatcherProcess(clientId: string, ipcHandlerPath: string, backend?: RecursiveWatcherBackend) {
@@ -140,6 +227,8 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
     this.logger.log('Watcher process path: ', this.watcherHost);
     this.watcherProcess = fork(this.watcherHost, forkArgs, {
       silent: true,
+      execArgv: this.getWatcherProcessExecArgv(),
+      cwd: this.getWatcherProcessCwd(),
     });
 
     this.logger.log('Watcher process fork success, pid: ', this.watcherProcess.pid);

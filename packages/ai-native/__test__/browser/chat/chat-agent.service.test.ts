@@ -1,12 +1,12 @@
-import { CancellationToken, Emitter } from '@opensumi/ide-core-common';
+import { CancellationToken, Emitter, IAIReporter, ILogger } from '@opensumi/ide-core-common';
 import { ChatFeatureRegistryToken, ChatServiceToken } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-import { ChatAgentService } from '../../../lib/browser/chat/chat-agent.service';
-import { IChatAgent, IChatAgentMetadata, IChatAgentRequest, IChatManagerService } from '../../../lib/common';
-import { LLMContextServiceToken } from '../../../lib/common/llm-context';
-import { ChatAgentPromptProvider } from '../../../lib/common/prompts/context-prompt-provider';
+import { ChatAgentService } from '../../../src/browser/chat/chat-agent.service';
+import { IChatAgent, IChatAgentMetadata, IChatAgentRequest, IChatManagerService } from '../../../src/common';
+import { LLMContextServiceToken } from '../../../src/common/llm-context';
+import { ChatAgentPromptProvider } from '../../../src/common/prompts/context-prompt-provider';
 
 describe('ChatAgentService', () => {
   let injector: MockInjector;
@@ -33,15 +33,30 @@ describe('ChatAgentService', () => {
           useValue: {},
         },
         {
+          token: ILogger,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+          },
+        },
+        {
+          token: IAIReporter,
+          useValue: {
+            send: jest.fn(),
+          },
+        },
+        {
           token: LLMContextServiceToken,
           useValue: {
             onDidContextFilesChangeEvent: new Emitter().event,
-            serialize: () => {},
+            serialize: () => ({}),
           },
         },
         {
           token: ChatFeatureRegistryToken,
-          useValue: {},
+          useValue: {
+            registerWelcome: jest.fn(),
+          },
         },
       ]),
     );
@@ -66,6 +81,7 @@ describe('ChatAgentService', () => {
       id: 'agent1',
       metadata: {},
       provideSlashCommands: () => Promise.resolve([]),
+      provideChatWelcomeMessage: () => Promise.resolve(undefined),
       invoke: () => {},
     } as unknown as IChatAgent;
     chatAgentService.registerAgent(agent);
@@ -86,7 +102,11 @@ describe('ChatAgentService', () => {
     } as unknown as IChatAgent;
     chatAgentService.registerAgent(agent);
 
-    const request = {} as IChatAgentRequest;
+    const request = {
+      sessionId: 'session-1',
+      requestId: 'request-1',
+      message: 'Hello',
+    } as IChatAgentRequest;
     const progress = jest.fn();
     const history = [];
     const token = CancellationToken.None;

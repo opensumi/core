@@ -76,7 +76,7 @@ export class OpenSumiEditor extends OpenSumiView {
     await this.page.waitForTimeout(200);
   }
 
-  async close() {
+  async close(options?: { force?: boolean }) {
     const currentTab = await this.getTabElement();
     await currentTab?.hover({
       position: {
@@ -85,7 +85,7 @@ export class OpenSumiEditor extends OpenSumiView {
       },
     });
     const closeIcon = await currentTab?.$("[class*='close_tab___']");
-    await closeIcon?.click();
+    await closeIcon?.click({ force: options?.force ?? false });
   }
 
   async saveAndClose() {

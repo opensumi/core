@@ -1,4 +1,4 @@
-import { AINativeSettingSectionsId, PreferenceSchema } from '@opensumi/ide-core-browser';
+import { AINativeSettingSectionsId, DEFAULT_ACP_THREAD_POOL_SIZE, PreferenceSchema } from '@opensumi/ide-core-browser';
 
 import { CodeEditsRenderType } from '../contrib/intelligent-completions';
 
@@ -12,6 +12,20 @@ export enum ETerminalAutoExecutionPolicy {
   auto = 'auto',
   always = 'always',
 }
+
+export enum EWebMcpProfile {
+  minimal = 'minimal',
+  default = 'default',
+  interactive = 'interactive',
+  full = 'full',
+}
+
+export enum EAIPanelLayout {
+  classic = 'classic',
+  agentic = 'agentic',
+}
+
+export const WEBMCP_PROFILE_SETTING_ID = 'ai.native.webmcp.profile';
 
 export const aiNativePreferenceSchema: PreferenceSchema = {
   properties: {
@@ -40,6 +54,12 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'string',
       enum: ['never', 'always', 'default'],
       default: 'default',
+    },
+    [AINativeSettingSectionsId.PanelLayout]: {
+      type: 'string',
+      enum: [EAIPanelLayout.classic, EAIPanelLayout.agentic],
+      default: EAIPanelLayout.classic,
+      description: 'Controls the AI Native panel layout.',
     },
     [AINativeSettingSectionsId.IntelligentCompletionsPromptEngineeringEnabled]: {
       type: 'boolean',
@@ -206,6 +226,17 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       default: ETerminalAutoExecutionPolicy.auto,
       markdownDescription: '%ai.native.terminal.autorun.description%',
     },
+    [AINativeSettingSectionsId.WebMcpEnabled]: {
+      type: 'boolean',
+      default: true,
+      description: 'Controls whether OpenSumi built-in WebMCP IDE capabilities are exposed to ACP agents.',
+    },
+    [WEBMCP_PROFILE_SETTING_ID]: {
+      type: 'string',
+      enum: [EWebMcpProfile.minimal, EWebMcpProfile.default, EWebMcpProfile.interactive, EWebMcpProfile.full],
+      default: EWebMcpProfile.default,
+      description: 'Controls which OpenSumi WebMCP tools are exposed to ACP agents.',
+    },
     [AINativeSettingSectionsId.CodeEditsTyping]: {
       type: 'boolean',
       default: false,
@@ -218,6 +249,63 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'string',
       default: '',
       description: '%preference.ai.native.globalRules.description%',
+    },
+    [AINativeSettingSectionsId.NodePath]: {
+      type: 'string',
+      default: '',
+      description: '%preference.ai-native.acp.nodePath.description%',
+    },
+    [AINativeSettingSectionsId.AcpThreadPoolSize]: {
+      type: 'number',
+      default: DEFAULT_ACP_THREAD_POOL_SIZE,
+      minimum: 1,
+      description: '%preference.ai-native.acp.threadPoolSize.description%',
+    },
+    [AINativeSettingSectionsId.AgentConfigsOverride]: {
+      type: 'object',
+      description: '%preference.ai-native.acp.agents.description%',
+      markdownDescription: '%preference.ai-native.acp.agents.markdownDescription%',
+      additionalProperties: {
+        type: 'object',
+        properties: {
+          command: {
+            type: 'string',
+            description: '%preference.ai-native.acp.agentConfigsOverride.command.description%',
+          },
+          args: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+            default: [],
+            description: '%preference.ai-native.acp.agentConfigsOverride.args.description%',
+          },
+          env: {
+            type: 'object',
+            additionalProperties: {
+              type: 'string',
+            },
+            description: '%preference.ai-native.acp.agentConfigsOverride.env.description%',
+            default: {},
+          },
+          defaultModel: {
+            type: 'string',
+            description: 'Default ACP model id to apply when creating or loading a session.',
+          },
+          defaultMode: {
+            type: 'string',
+            description: 'Default ACP mode id to apply when creating or loading a session.',
+          },
+          defaultConfigOptions: {
+            type: 'object',
+            additionalProperties: {
+              anyOf: [{ type: 'string' }, { type: 'boolean' }],
+            },
+            description: 'Default ACP session config option values keyed by config option id.',
+            default: {},
+          },
+        },
+      },
     },
   },
 };

@@ -1,4 +1,5 @@
 node_modules
+tmp/**
 
 packages/process/scripts
 tools/electron/scripts

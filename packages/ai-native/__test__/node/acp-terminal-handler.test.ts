@@ -24,7 +24,6 @@ jest.mock('node-pty', () => ({
 
 import pty from 'node-pty';
 
-import { ACPErrorCode } from '../../src/node/acp/handlers/constants';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from '../../src/node/acp/handlers/terminal.handler';
 
 const mockLogger = {
@@ -73,15 +72,6 @@ describe('AcpTerminalHandler', () => {
     });
   });
 
-  describe('setPermissionCallback()', () => {
-    it('should set the callback', () => {
-      const cb = jest.fn();
-      handler.setPermissionCallback(cb);
-
-      expect((handler as any).permissionCallback).toBe(cb);
-    });
-  });
-
   describe('createTerminal()', () => {
     const baseRequest = {
       sessionId: 'sess-1',
@@ -95,38 +85,6 @@ describe('AcpTerminalHandler', () => {
       expect(result.terminalId).toBeDefined();
       expect(result.error).toBeUndefined();
       expect(pty.spawn).toHaveBeenCalledWith('bash', ['-c', 'echo hello'], expect.any(Object));
-    });
-
-    it('should default to /bin/sh when no command provided', async () => {
-      await handler.createTerminal({ sessionId: 'sess-1' });
-
-      expect(pty.spawn).toHaveBeenCalledWith('/bin/sh', [], expect.any(Object));
-    });
-
-    it('should deny creation when permission callback returns false', async () => {
-      handler.setPermissionCallback(jest.fn().mockResolvedValue(false));
-
-      const result = await handler.createTerminal(baseRequest);
-
-      expect(result.error).toBeDefined();
-      expect(result.error?.code).toBe(ACPErrorCode.FORBIDDEN);
-      expect(result.error?.message).toContain('permission denied');
-    });
-
-    it('should allow creation when permission callback returns true', async () => {
-      handler.setPermissionCallback(jest.fn().mockResolvedValue(true));
-
-      const result = await handler.createTerminal(baseRequest);
-
-      expect(result.error).toBeUndefined();
-      expect(result.terminalId).toBeDefined();
-    });
-
-    it('should create directly without permission callback', async () => {
-      const result = await handler.createTerminal(baseRequest);
-
-      expect(result.error).toBeUndefined();
-      expect(pty.spawn).toHaveBeenCalled();
     });
 
     it('should merge environment variables', async () => {
@@ -193,10 +151,7 @@ describe('AcpTerminalHandler', () => {
 
   describe('getTerminalOutput()', () => {
     it('should return terminal not found error for unknown terminal', async () => {
-      const result = await handler.getTerminalOutput({
-        sessionId: 'sess-1',
-        terminalId: 'unknown',
-      });
+      const result = await handler.getTerminalOutput('unknown', 'sess-1');
 
       expect(result.error).toBeDefined();
       expect(result.error?.message).toBe('Terminal not found');
@@ -206,10 +161,7 @@ describe('AcpTerminalHandler', () => {
       const createResult = await handler.createTerminal({ sessionId: 'sess-1', command: 'bash' });
       const terminalId = createResult.terminalId!;
 
-      const result = await handler.getTerminalOutput({
-        sessionId: 'sess-2',
-        terminalId,
-      });
+      const result = await handler.getTerminalOutput(terminalId, 'sess-2');
 
       expect(result.error).toBeDefined();
       expect(result.error?.message).toBe('Session mismatch');
@@ -223,7 +175,7 @@ describe('AcpTerminalHandler', () => {
       const session = (handler as any).terminals.get(terminalId);
       session.outputBuffer = 'hello world';
 
-      const result = await handler.getTerminalOutput({ sessionId: 'sess-1', terminalId });
+      const result = await handler.getTerminalOutput(terminalId, 'sess-1');
 
       expect(result.output).toBe('hello world');
       expect(result.truncated).toBe(false);
@@ -240,7 +192,7 @@ describe('AcpTerminalHandler', () => {
       const session = (handler as any).terminals.get(terminalId);
       session.outputBuffer = 'This is a long output string that exceeds the limit';
 
-      const result = await handler.getTerminalOutput({ sessionId: 'sess-1', terminalId });
+      const result = await handler.getTerminalOutput(terminalId, 'sess-1');
 
       expect(result.truncated).toBe(true);
     });
@@ -253,18 +205,18 @@ describe('AcpTerminalHandler', () => {
       session.exited = true;
       session.exitCode = 0;
 
-      const result = await handler.getTerminalOutput({ sessionId: 'sess-1', terminalId });
+      const result = await handler.getTerminalOutput(terminalId, 'sess-1');
 
       expect(result.exitStatus).toBe(0);
     });
 
-    it('should return null exitStatus when still running', async () => {
+    it('should return undefined exitStatus when still running', async () => {
       const createResult = await handler.createTerminal({ sessionId: 'sess-1', command: 'bash' });
       const terminalId = createResult.terminalId!;
 
-      const result = await handler.getTerminalOutput({ sessionId: 'sess-1', terminalId });
+      const result = await handler.getTerminalOutput(terminalId, 'sess-1');
 
-      expect(result.exitStatus).toBe(null);
+      expect(result.exitStatus).toBeUndefined();
     });
   });
 
@@ -277,16 +229,13 @@ describe('AcpTerminalHandler', () => {
       session.exited = true;
       session.exitCode = 42;
 
-      const result = await handler.waitForTerminalExit({ sessionId: 'sess-1', terminalId });
+      const result = await handler.waitForTerminalExit(terminalId, 'sess-1');
 
       expect(result.exitCode).toBe(42);
     });
 
     it('should return terminal not found error', async () => {
-      const result = await handler.waitForTerminalExit({
-        sessionId: 'sess-1',
-        terminalId: 'unknown',
-      });
+      const result = await handler.waitForTerminalExit('unknown', 'sess-1');
 
       expect(result.error).toBeDefined();
       expect(result.error?.message).toBe('Terminal not found');
@@ -296,45 +245,30 @@ describe('AcpTerminalHandler', () => {
       const createResult = await handler.createTerminal({ sessionId: 'sess-1', command: 'bash' });
       const terminalId = createResult.terminalId!;
 
-      const result = await handler.waitForTerminalExit({
-        sessionId: 'sess-2',
-        terminalId,
-      });
+      const result = await handler.waitForTerminalExit(terminalId, 'sess-2');
 
       expect(result.error).toBeDefined();
       expect(result.error?.message).toBe('Session mismatch');
     });
 
-    it('should return null exitStatus on timeout', async () => {
+    it('should return empty object on timeout', async () => {
       const createResult = await handler.createTerminal({ sessionId: 'sess-1', command: 'bash' });
       const terminalId = createResult.terminalId!;
 
-      const exitPromise = handler.waitForTerminalExit({
-        sessionId: 'sess-1',
-        terminalId,
-        timeout: 1000,
-      });
+      const exitPromise = handler.waitForTerminalExit(terminalId, 'sess-1');
 
-      jest.advanceTimersByTime(1500);
+      jest.advanceTimersByTime(31000);
 
       const result = await exitPromise;
-      expect(result.exitStatus).toBe(null);
+      expect(result.exitCode).toBeUndefined();
+      expect(result.error).toBeUndefined();
     });
 
     it('should return exitCode when terminal exits within timeout', async () => {
-      let exitCallback: Function | null = null;
-      mockPtyProcess.onExit.mockImplementation((cb: Function) => {
-        exitCallback = cb;
-      });
-
       const createResult = await handler.createTerminal({ sessionId: 'sess-1', command: 'bash' });
       const terminalId = createResult.terminalId!;
 
-      const exitPromise = handler.waitForTerminalExit({
-        sessionId: 'sess-1',
-        terminalId,
-        timeout: 5000,
-      });
+      const exitPromise = handler.waitForTerminalExit(terminalId, 'sess-1');
 
       // Simulate terminal exit
       const session = (handler as any).terminals.get(terminalId);
@@ -350,10 +284,7 @@ describe('AcpTerminalHandler', () => {
 
   describe('killTerminal()', () => {
     it('should return terminal not found error', async () => {
-      const result = await handler.killTerminal({
-        sessionId: 'sess-1',
-        terminalId: 'unknown',
-      });
+      const result = await handler.killTerminal('unknown', 'sess-1');
 
       expect(result.error).toBeDefined();
       expect(result.error?.message).toBe('Terminal not found');
@@ -363,16 +294,13 @@ describe('AcpTerminalHandler', () => {
       const createResult = await handler.createTerminal({ sessionId: 'sess-1', command: 'bash' });
       const terminalId = createResult.terminalId!;
 
-      const result = await handler.killTerminal({
-        sessionId: 'sess-2',
-        terminalId,
-      });
+      const result = await handler.killTerminal(terminalId, 'sess-2');
 
       expect(result.error).toBeDefined();
       expect(result.error?.message).toBe('Session mismatch');
     });
 
-    it('should return exitStatus when already exited', async () => {
+    it('should return empty when already exited', async () => {
       const createResult = await handler.createTerminal({ sessionId: 'sess-1', command: 'bash' });
       const terminalId = createResult.terminalId!;
 
@@ -380,9 +308,9 @@ describe('AcpTerminalHandler', () => {
       session.exited = true;
       session.exitCode = 1;
 
-      const result = await handler.killTerminal({ sessionId: 'sess-1', terminalId });
+      const result = await handler.killTerminal(terminalId, 'sess-1');
 
-      expect(result.exitStatus).toBe(1);
+      expect(result.error).toBeUndefined();
       expect(mockPtyProcess.kill).not.toHaveBeenCalled();
     });
 
@@ -390,7 +318,7 @@ describe('AcpTerminalHandler', () => {
       const createResult = await handler.createTerminal({ sessionId: 'sess-1', command: 'bash' });
       const terminalId = createResult.terminalId!;
 
-      const killPromise = handler.killTerminal({ sessionId: 'sess-1', terminalId });
+      const killPromise = handler.killTerminal(terminalId, 'sess-1');
 
       // Simulate exit after kill
       jest.advanceTimersByTime(50);
@@ -407,10 +335,7 @@ describe('AcpTerminalHandler', () => {
 
   describe('releaseTerminal()', () => {
     it('should return empty when terminal does not exist', async () => {
-      const result = await handler.releaseTerminal({
-        sessionId: 'sess-1',
-        terminalId: 'unknown',
-      });
+      const result = await handler.releaseTerminal('unknown', 'sess-1');
 
       expect(result).toEqual({});
     });
@@ -419,10 +344,7 @@ describe('AcpTerminalHandler', () => {
       const createResult = await handler.createTerminal({ sessionId: 'sess-1', command: 'bash' });
       const terminalId = createResult.terminalId!;
 
-      const result = await handler.releaseTerminal({
-        sessionId: 'sess-2',
-        terminalId,
-      });
+      const result = await handler.releaseTerminal(terminalId, 'sess-2');
 
       expect(result.error).toBeDefined();
       expect(result.error?.message).toBe('Session mismatch');
@@ -432,7 +354,7 @@ describe('AcpTerminalHandler', () => {
       const createResult = await handler.createTerminal({ sessionId: 'sess-1', command: 'bash' });
       const terminalId = createResult.terminalId!;
 
-      await handler.releaseTerminal({ sessionId: 'sess-1', terminalId });
+      await handler.releaseTerminal(terminalId, 'sess-1');
 
       expect((handler as any).terminals.has(terminalId)).toBe(false);
     });
@@ -441,7 +363,7 @@ describe('AcpTerminalHandler', () => {
       const createResult = await handler.createTerminal({ sessionId: 'sess-1', command: 'bash' });
       const terminalId = createResult.terminalId!;
 
-      await handler.releaseTerminal({ sessionId: 'sess-1', terminalId });
+      await handler.releaseTerminal(terminalId, 'sess-1');
 
       expect(mockPtyProcess.kill).toHaveBeenCalled();
     });

@@ -6,6 +6,8 @@ import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 import { LLMContextService } from '../../common/llm-context';
 
+import type { AcpSessionConfigOption, AcpSessionModelOption } from './session-provider';
+
 /**
  * Props interface for chat input components.
  * Based on AcpChatMentionInput's prop surface — all registered inputs must satisfy this contract.
@@ -39,6 +41,10 @@ export interface IChatInputProps {
   sessionModelId?: string;
   contextService?: LLMContextService;
   agentModes?: Array<{ id: string; name: string; description?: string }>;
+  currentModeId?: string;
+  agentModels?: AcpSessionModelOption[];
+  currentModelId?: string;
+  configOptions?: AcpSessionConfigOption[];
   agentCwd?: string;
 }
 

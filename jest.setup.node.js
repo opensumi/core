@@ -1,6 +1,15 @@
 require('./jest.setup.base');
 
+const nodeCrypto = require('crypto');
+
 const { JSDOM, ResourceLoader } = require('jsdom');
+
+if (!global.crypto || !global.crypto.getRandomValues || !global.crypto.subtle) {
+  Object.defineProperty(global, 'crypto', {
+    value: nodeCrypto.webcrypto,
+    configurable: true,
+  });
+}
 
 const resourceLoader = new ResourceLoader({
   strictSSL: false,

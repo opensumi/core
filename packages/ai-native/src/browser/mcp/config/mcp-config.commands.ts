@@ -3,20 +3,11 @@ import { CommandContribution, CommandRegistry, URI } from '@opensumi/ide-core-br
 import { Domain, MCPConfigServiceToken } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
-import { MCP_CONFIG_COMPONENTS_SCHEME_ID } from './mcp-config.contribution';
+import { MCPConfigCommands, MCP_CONFIG_COMPONENTS_SCHEME_ID } from './mcp-config.constants';
 import { MCPConfigService } from './mcp-config.service';
 
-export namespace MCPConfigCommands {
-  export const OPEN_MCP_CONFIG = {
-    id: 'mcp.openConfig',
-    label: 'Open MCP Configuration',
-  };
+export { MCPConfigCommands } from './mcp-config.constants';
 
-  export const OPEN_MCP_CONFIG_FILE = {
-    id: 'mcp.openConfigFile',
-    label: 'Open MCP Configuration (JSON)',
-  };
-}
 @Domain(CommandContribution)
 export class MCPConfigCommandContribution implements CommandContribution {
   @Autowired(WorkbenchEditorService)

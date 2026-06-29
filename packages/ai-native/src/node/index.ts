@@ -2,8 +2,10 @@ import { Injectable, Provider } from '@opensumi/di';
 import {
   AIBackSerivcePath,
   AIBackSerivceToken,
-  AcpCliClientServiceToken,
   AcpPermissionServicePath,
+  AcpThreadStatusServicePath,
+  AcpWebMcpBridgePath,
+  AcpWebMcpCallerServiceToken,
 } from '@opensumi/ide-core-common';
 import { NodeModule } from '@opensumi/ide-core-node';
 
@@ -15,17 +17,28 @@ import {
   AcpAgentRequestHandlerToken,
   AcpAgentService,
   AcpAgentServiceToken,
+  AcpBrowserRpcRegistry,
   AcpFileSystemHandler,
   AcpFileSystemHandlerToken,
-  AcpPermissionCallerManager,
-  AcpPermissionCallerManagerToken,
+  AcpPermissionCallerService,
+  AcpPermissionCallerServiceToken,
+  AcpPermissionRpcBridgeService,
+  AcpPermissionRpcBridgeServiceToken,
   AcpTerminalHandler,
   AcpTerminalHandlerToken,
-  CliAgentProcessManager,
-  CliAgentProcessManagerToken,
+  AcpThreadFactoryProvider,
+  AcpThreadStatusCallerService,
+  AcpThreadStatusCallerServiceToken,
+  AcpThreadStatusRpcBridgeService,
+  AcpThreadStatusRpcBridgeServiceToken,
+  AcpWebMcpCallerService,
+  AcpWebMcpRpcBridgeService,
+  AcpWebMcpRpcBridgeServiceToken,
+  OpenSumiMcpHttpServer,
+  PermissionRoutingService,
+  PermissionRoutingServiceToken,
 } from './acp';
 import { AcpCliBackService } from './acp/acp-cli-back.service';
-import { AcpCliClientService } from './acp/acp-cli-client.service';
 import { SumiMCPServerBackend } from './mcp/sumi-mcp-server';
 import { OpenAICompatibleModel } from './openai-compatible/openai-compatible-language-model';
 
@@ -37,20 +50,25 @@ export class AINativeModule extends NodeModule {
       useClass: AcpCliBackService,
     },
     {
-      token: AcpCliClientServiceToken,
-      useClass: AcpCliClientService,
-    },
-    {
-      token: CliAgentProcessManagerToken,
-      useClass: CliAgentProcessManager,
-    },
-    {
       token: AcpAgentServiceToken,
       useClass: AcpAgentService,
     },
     {
-      token: AcpPermissionCallerManagerToken,
-      useClass: AcpPermissionCallerManager,
+      token: AcpPermissionCallerServiceToken,
+      useClass: AcpPermissionCallerService,
+    },
+    AcpBrowserRpcRegistry,
+    {
+      token: AcpPermissionRpcBridgeServiceToken,
+      useClass: AcpPermissionRpcBridgeService,
+    },
+    {
+      token: AcpThreadStatusRpcBridgeServiceToken,
+      useClass: AcpThreadStatusRpcBridgeService,
+    },
+    {
+      token: AcpWebMcpRpcBridgeServiceToken,
+      useClass: AcpWebMcpRpcBridgeService,
     },
     {
       token: ToolInvocationRegistryManager,
@@ -72,6 +90,25 @@ export class AINativeModule extends NodeModule {
       token: AcpAgentRequestHandlerToken,
       useClass: AcpAgentRequestHandler,
     },
+    // Thread factory for creating AcpThread instances
+    AcpThreadFactoryProvider,
+    // Permission routing for multi-session permission requests
+    {
+      token: PermissionRoutingServiceToken,
+      useClass: PermissionRoutingService,
+    },
+    // Thread status notification caller (Node → Browser)
+    {
+      token: AcpThreadStatusCallerServiceToken,
+      useClass: AcpThreadStatusCallerService,
+    },
+    // WebMCP bridge caller (Node → Browser)
+    {
+      token: AcpWebMcpCallerServiceToken,
+      useClass: AcpWebMcpCallerService,
+    },
+    // Built-in HTTP MCP server for exposing WebMCP tools to ACP agents
+    OpenSumiMcpHttpServer,
     // Language models for non-ACP fallback
     OpenAICompatibleModel,
   ];
@@ -91,7 +128,15 @@ export class AINativeModule extends NodeModule {
     },
     {
       servicePath: AcpPermissionServicePath,
-      token: AcpPermissionCallerManagerToken,
+      token: AcpPermissionRpcBridgeServiceToken,
+    },
+    {
+      servicePath: AcpThreadStatusServicePath,
+      token: AcpThreadStatusRpcBridgeServiceToken,
+    },
+    {
+      servicePath: AcpWebMcpBridgePath,
+      token: AcpWebMcpRpcBridgeServiceToken,
     },
   ];
 }

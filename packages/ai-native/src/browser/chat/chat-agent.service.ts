@@ -143,28 +143,77 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     history: CoreMessage[],
     token: CancellationToken,
   ): Promise<IChatAgentResult> {
+    const invokeStartTime = Date.now();
+    this.logger.log(
+      `[ChatAgentService] invokeAgent start — agentId=${id}, sessionId=${request.sessionId}, requestId=${
+        request.requestId
+      }, messageChars=${request.message.length}, historyMessages=${history.length}, regenerate=${Boolean(
+        request.regenerate,
+      )}`,
+    );
     const data = this.agents.get(id);
     if (!data) {
+      this.logger.error(
+        `[ChatAgentService] invokeAgent missing agent — agentId=${id}, sessionId=${request.sessionId}, requestId=${
+          request.requestId
+        }, registeredAgents=${Array.from(this.agents.keys()).join(',') || '(empty)'}`,
+      );
       throw new Error(`No agent with id ${id},this.agents ${this.agents}`);
     }
 
     // 发送第一条消息时携带初始 context
     if (!this.initialUserMessageMap.has(request.sessionId)) {
+      this.logger.log(
+        `[ChatAgentService] invokeAgent context enhance initial — agentId=${id}, sessionId=${request.sessionId}, requestId=${request.requestId}`,
+      );
       this.initialUserMessageMap.set(request.sessionId, request.message);
       const rawMessage = request.message;
       request.message = await this.provideContextMessage(rawMessage, request.sessionId);
     } else if (this.shouldUpdateContext || request.regenerate || history.length === 0) {
+      this.logger.log(
+        `[ChatAgentService] invokeAgent context enhance refresh — agentId=${id}, sessionId=${
+          request.sessionId
+        }, requestId=${request.requestId}, shouldUpdateContext=${this.shouldUpdateContext}, regenerate=${Boolean(
+          request.regenerate,
+        )}, historyMessages=${history.length}`,
+      );
       request.message = await this.provideContextMessage(request.message, request.sessionId);
       this.shouldUpdateContext = false;
+    } else {
+      this.logger.log(
+        `[ChatAgentService] invokeAgent context enhance skipped — agentId=${id}, sessionId=${request.sessionId}, requestId=${request.requestId}`,
+      );
     }
 
+    this.logger.log(
+      `[ChatAgentService] invokeAgent calling agent — agentId=${id}, sessionId=${request.sessionId}, requestId=${request.requestId}, enhancedMessageChars=${request.message.length}`,
+    );
     const result = await data.agent.invoke(request, progress, history, token);
+    this.logger.log(
+      `[ChatAgentService] invokeAgent done — agentId=${id}, sessionId=${request.sessionId}, requestId=${
+        request.requestId
+      }, elapsedMs=${Date.now() - invokeStartTime}`,
+    );
     return result;
   }
 
   private async provideContextMessage(message: string, sessionId: string) {
+    const startTime = Date.now();
+    this.logger.log(
+      `[ChatAgentService] provideContextMessage serialize start — sessionId=${sessionId}, messageChars=${message.length}`,
+    );
     const context = await this.llmContextService.serialize();
+    this.logger.log(
+      `[ChatAgentService] provideContextMessage serialize done — sessionId=${sessionId}, elapsedMs=${
+        Date.now() - startTime
+      }, contextChars=${JSON.stringify(context).length}`,
+    );
     const fullMessage = await this.promptProvider.provideContextPrompt(context, message);
+    this.logger.log(
+      `[ChatAgentService] provideContextMessage prompt done — sessionId=${sessionId}, elapsedMs=${
+        Date.now() - startTime
+      }, fullMessageChars=${fullMessage.length}`,
+    );
     this.aiReporter.send({
       msgType: AIServiceType.Chat,
       actionType: ActionTypeEnum.ContextEnhance,
@@ -172,6 +221,11 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
       sessionId,
       message: fullMessage,
     });
+    this.logger.log(
+      `[ChatAgentService] provideContextMessage reporter sent — sessionId=${sessionId}, elapsedMs=${
+        Date.now() - startTime
+      }`,
+    );
     return fullMessage;
   }
 

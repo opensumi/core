@@ -1,0 +1,68 @@
+.container {
+  height: 100%;
+  padding: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--editor-background);
+  color: var(--foreground);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--kt-panelTab-border);
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.description {
+  margin: 6px 0 0;
+  color: var(--descriptionForeground);
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+
+  button {
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid var(--kt-button-border);
+    color: var(--button-foreground);
+    background: var(--button-background);
+    cursor: pointer;
+  }
+
+  button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.empty {
+  padding: 24px 0;
+  color: var(--descriptionForeground);
+  font-size: 13px;
+}
+
+.log {
+  flex: 1;
+  margin: 12px 0 0;
+  padding: 12px;
+  overflow: auto;
+  background: var(--input-background);
+  color: var(--editor-foreground);
+  border: 1px solid var(--kt-panelTab-border);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}

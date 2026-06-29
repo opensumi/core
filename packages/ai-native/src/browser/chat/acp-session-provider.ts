@@ -26,6 +26,10 @@ export class ACPSessionProvider implements ISessionProvider {
 
   private loadedSessionsResult: ISessionModel[] | null = null;
 
+  private loadingSessionsPromise: Promise<ISessionModel[]> | null = null;
+
+  private didRetryEmptySessionsResult = false;
+
   canHandle(mode: string): boolean {
     return mode.startsWith('acp');
   }
@@ -37,7 +41,7 @@ export class ACPSessionProvider implements ISessionProvider {
 
     try {
       const config = await this.configProvider.resolveConfig();
-      const result = await this.aiBackService.createSession(config);
+      const result = (await this.aiBackService.createSession(config)) as any;
 
       if (!result?.sessionId) {
         throw new Error('createSession did not return a valid sessionId');
@@ -45,10 +49,17 @@ export class ACPSessionProvider implements ISessionProvider {
 
       // 构造本地 Session ID（添加 acp: 前缀）
       const sessionId = `acp:${result.sessionId}`;
+      const createdAt = Date.now();
 
       // 构造空壳会话模型
       const sessionModel: ISessionModel & { extension?: ISessionModelExtension } = {
         sessionId,
+        createdAt,
+        modelId: result.currentModelId,
+        agentModes: result.modes,
+        currentModeId: result.currentModeId,
+        agentModels: result.models,
+        configOptions: result.configOptions,
         history: {
           additional: {},
           messages: [],
@@ -69,12 +80,26 @@ export class ACPSessionProvider implements ISessionProvider {
   }
 
   async loadSessions(): Promise<ISessionModel[]> {
-    if (this.loadedSessionsResult) {
+    if (Array.isArray(this.loadedSessionsResult)) {
       return this.loadedSessionsResult;
     }
 
+    if (this.loadingSessionsPromise) {
+      return this.loadingSessionsPromise;
+    }
+
+    this.loadingSessionsPromise = this.doLoadSessions();
+    try {
+      return await this.loadingSessionsPromise;
+    } finally {
+      this.loadingSessionsPromise = null;
+    }
+  }
+
+  private async doLoadSessions(): Promise<ISessionModel[]> {
     if (!this.aiBackService?.listSessions) {
-      return [];
+      this.loadedSessionsResult = [];
+      return this.loadedSessionsResult;
     }
 
     try {
@@ -82,7 +107,14 @@ export class ACPSessionProvider implements ISessionProvider {
       const result = await this.aiBackService!.listSessions(config);
 
       if (!result?.sessions?.length) {
-        return [];
+        // The Agentic shell may ask for history before the ACP process has a thread.
+        // Leave the first empty result retryable, then cache a confirmed empty history.
+        if (!this.didRetryEmptySessionsResult) {
+          this.didRetryEmptySessionsResult = true;
+          return [];
+        }
+        this.loadedSessionsResult = [];
+        return this.loadedSessionsResult;
       }
 
       // 只返回会话列表的元数据，不加载完整数据
@@ -101,12 +133,10 @@ export class ACPSessionProvider implements ISessionProvider {
           title: sessionMeta.title,
         }));
 
-      if (sessionModels.length === 0) {
-        return [];
-      }
       this.loadedSessionsResult = sessionModels as unknown as ISessionModel[];
+      this.didRetryEmptySessionsResult = false;
 
-      return this.loadedSessionsResult ?? [];
+      return this.loadedSessionsResult;
     } catch (e) {
       this.messageService.error(e.message);
       return [];
@@ -127,7 +157,7 @@ export class ACPSessionProvider implements ISessionProvider {
 
     try {
       const config = await this.configProvider.resolveConfig();
-      const agentSession = await this.aiBackService.loadAgentSession(config, agentSessionId);
+      const agentSession = (await this.aiBackService.loadAgentSession(config, agentSessionId)) as any;
 
       if (!agentSession) {
         return undefined;
@@ -150,6 +180,11 @@ export class ACPSessionProvider implements ISessionProvider {
     sessionId: string,
     agentSession: {
       sessionId: string;
+      modes?: ISessionModel['agentModes'];
+      currentModeId?: string;
+      models?: ISessionModel['agentModels'];
+      currentModelId?: string;
+      configOptions?: ISessionModel['configOptions'];
       messages: Array<{
         role: 'user' | 'assistant';
         content: string;
@@ -177,6 +212,12 @@ export class ACPSessionProvider implements ISessionProvider {
 
     const result = {
       sessionId,
+      createdAt: messages[0]?.timestamp,
+      modelId: agentSession.currentModelId,
+      agentModes: agentSession.modes,
+      currentModeId: agentSession.currentModeId,
+      agentModels: agentSession.models,
+      configOptions: agentSession.configOptions,
       history: {
         additional: {},
         messages,

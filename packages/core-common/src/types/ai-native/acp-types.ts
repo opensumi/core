@@ -42,9 +42,14 @@ export type {
   AvailableCommandsUpdate,
   CancelNotification,
   ClientCapabilities,
+  CloseSessionRequest,
+  CloseSessionResponse,
   ContentBlock,
   CreateTerminalRequest,
   CreateTerminalResponse,
+  EnvVariable,
+  ForkSessionRequest,
+  ForkSessionResponse,
   Implementation,
   InitializeRequest,
   InitializeResponse,
@@ -57,6 +62,10 @@ export type {
   NewSessionResponse,
   PermissionOption,
   PermissionOptionKind,
+  Plan,
+  PlanEntry,
+  PlanEntryPriority,
+  PlanEntryStatus,
   PromptCapabilities,
   PromptRequest,
   PromptResponse,
@@ -66,16 +75,26 @@ export type {
   ReleaseTerminalResponse,
   RequestPermissionRequest,
   RequestPermissionResponse,
+  ResumeSessionRequest,
+  ResumeSessionResponse,
   SessionCapabilities,
   SessionInfo,
   SessionMode,
   SessionModeState,
   SessionNotification,
+  SetSessionConfigOptionRequest,
+  SetSessionConfigOptionResponse,
   SetSessionModeRequest,
   SetSessionModeResponse,
+  SetSessionModelRequest,
+  SetSessionModelResponse,
   TerminalOutputRequest,
   TerminalOutputResponse,
+  ToolCall,
+  ToolCallContent,
+  ToolCallId,
   ToolCallLocation,
+  ToolCallStatus,
   ToolCallUpdate,
   WaitForTerminalExitRequest,
   WaitForTerminalExitResponse,
@@ -83,6 +102,11 @@ export type {
   WriteTextFileResponse,
   KillTerminalCommandResponse,
   KillTerminalCommandRequest,
+  HttpHeader,
+  McpServer,
+  McpServerHttp,
+  McpServerSse,
+  McpServerStdio,
   ToolKind,
 } from '@agentclientprotocol/sdk';
 
@@ -123,129 +147,94 @@ export interface IAcpPermissionService {
 
 export const AcpPermissionServiceToken = Symbol('AcpPermissionServiceToken');
 
-/**
- * Node-side caller interface (for internal use)
- * This is what Node layer uses to call browser
- * Implemented by AcpPermissionCallerManager (multi-instance, per clientId)
- */
-export interface IAcpPermissionCaller {
-  requestPermission(request: RequestPermissionRequest): Promise<RequestPermissionResponse>;
-  cancelRequest(requestId: string): Promise<void>;
+export const AcpThreadStatusServicePath = 'AcpThreadStatusServicePath';
+
+export interface IAcpThreadStatusService {
+  $onThreadStatusChange(sessionId: string, status: string): Promise<void>;
 }
 
-// ACP CLI Client Service Types
+export type AcpDebugLogDirection = 'incoming' | 'outgoing' | 'stderr' | 'system';
 
-/**
- * Connection state for ACP CLI client
- * Represents the lifecycle states of the JSON-RPC connection
- */
-export type ConnectionState = 'disconnected' | 'connecting' | 'connected';
-
-/**
- * ACP CLI 客户端服务接口 - 基于 JSON-RPC 2.0 协议的传输层
- */
-export interface IAcpCliClientService {
-  /**
-   * Set up transport streams for JSON-RPC communication
-   * @param stdout - Readable stream from agent process
-   * @param stdin - Writable stream to agent process
-   */
-  setTransport(stdout: NodeJS.ReadableStream, stdin: NodeJS.WritableStream): void;
-
-  /**
-   * Initialize the ACP connection
-   */
-  initialize(params?: InitializeRequest): Promise<InitializeResponse>;
-
-  /**
-   * Authenticate with the agent
-   */
-  authenticate(params: AuthenticateRequest): Promise<AuthenticateResponse>;
-
-  /**
-   * Create a new session
-   */
-  newSession(params: NewSessionRequest): Promise<NewSessionResponse>;
-
-  /**
-   * Load an existing session
-   */
-  loadSession(params: LoadSessionRequest): Promise<LoadSessionResponse>;
-
-  /**
-   * List all sessions
-   */
-  listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse>;
-
-  /**
-   * Send a prompt to the session
-   */
-  prompt(params: PromptRequest): Promise<PromptResponse>;
-
-  /**
-   * Cancel an ongoing operation
-   */
-  cancel(params: CancelNotification): Promise<void>;
-
-  /**
-   * Change the session mode
-   */
-  setSessionMode(params: SetSessionModeRequest): Promise<SetSessionModeResponse>;
-
-  /**
-   * Register a notification handler
-   * @returns Unsubscribe function
-   */
-  onNotification(handler: (notification: SessionNotification) => void): () => void;
-
-  /**
-   * Close the connection and cleanup resources
-   */
-  close(): Promise<void>;
-
-  /**
-   * Check if currently connected
-   */
-  isConnected(): boolean;
-
-  /**
-   * Handle unexpected disconnect
-   */
-  handleDisconnect(): void;
-
-  /**
-   * Register a disconnect handler, called when the connection is lost
-   * @returns Unsubscribe function
-   */
-  onDisconnect(handler: () => void): () => void;
-
-  /**
-   * Get the negotiated protocol version
-   */
-  getNegotiatedProtocolVersion(): number | null;
-
-  /**
-   * Get agent capabilities from initialize response
-   */
-  getAgentCapabilities(): AgentCapabilities | null;
-
-  /**
-   * Get agent info from initialize response
-   */
-  getAgentInfo(): Implementation | null;
-
-  /**
-   * Get available authentication methods
-   */
-  getAuthMethods(): AuthMethod[];
-
-  /**
-   * Get available session modes
-   */
-  getSessionModes(): SessionModeState | null;
+export interface AcpDebugLogEntry {
+  id: number;
+  timestamp: number;
+  direction: AcpDebugLogDirection;
+  agentId: string;
+  threadId: string;
+  sessionId?: string;
+  raw: string;
+  payload?: unknown;
 }
 
-/**
- * Symbol token for dependency injection
- */
-export const AcpCliClientServiceToken = Symbol('AcpCliClientServiceToken');
+// WebMCP Group types for OpenSumi IDE capability tools
+export const AcpWebMcpBridgePath = 'AcpWebMcpBridgePath';
+
+export type WebMcpToolRiskLevel = 'read' | 'write' | 'destructive' | 'shell' | 'ui';
+export type WebMcpProfile = 'minimal' | 'default' | 'interactive' | 'full';
+
+export interface WebMcpToolDef {
+  name: string; // "file_read"
+  description: string;
+  inputSchema: Record<string, unknown>;
+  /**
+   * Describes the tool's operational risk for catalog output, logging, and
+   * future policy evolution. It is not a complete authorization decision by
+   * itself; concrete tools still own their permission checks.
+   */
+  riskLevel?: WebMcpToolRiskLevel;
+  /**
+   * Lightweight escape hatch for tools that should stay out of normal MCP
+   * exposure while the capability model is still being validated in practice.
+   */
+  exposedByDefault?: boolean;
+  /**
+   * Controls the default tool surface for each WebMCP profile. Session-level
+   * capability enablement may reveal additional tools, but execution-time
+   * safety must still live in the target tool.
+   */
+  profiles?: WebMcpProfile[];
+}
+
+export interface WebMcpGroupDef {
+  name: string;
+  description: string;
+  defaultLoaded: boolean;
+  profile?: WebMcpProfile;
+  tools: WebMcpToolDef[];
+}
+
+export interface WebMcpToolResult {
+  success: boolean;
+  result?: unknown;
+  error?: string; // machine-readable error code
+  details?: string; // human-readable error description
+}
+
+export interface OpenSumiMcpServerConnectionInfo {
+  name: string;
+  type: 'http';
+  transport: 'streamable-http';
+  url: string;
+  redactedUrl: string;
+  headers: Array<{ name: string; value: string }>;
+}
+
+export interface WebMcpGroupInfo {
+  name: string;
+  description: string;
+  toolCount: number;
+  loaded: boolean;
+}
+
+export interface WebMcpGroupDefinitionOptions {
+  includeAllTools?: boolean;
+}
+
+export interface IAcpWebMcpBridgeService {
+  $getGroupDefinitions(options?: WebMcpGroupDefinitionOptions): Promise<WebMcpGroupDef[]>;
+  $executeTool(group: string, tool: string, params: Record<string, unknown>): Promise<WebMcpToolResult>;
+}
+
+export const AcpWebMcpCallerServiceToken = Symbol('AcpWebMcpCallerServiceToken');
+export const AcpWebMcpHandlerToken = Symbol('AcpWebMcpHandlerToken');
+export const WebMcpGroupRegistryToken = Symbol('WebMcpGroupRegistryToken');

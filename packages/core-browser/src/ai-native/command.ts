@@ -26,6 +26,14 @@ export const AI_CHAT_VISIBLE = {
   id: 'ai.chat.visible',
 };
 
+export const AI_PANEL_LAYOUT_SET = {
+  id: 'ai-native.panel-layout.set',
+};
+
+export const AI_PANEL_LAYOUT_TOGGLE = {
+  id: 'ai-native.panel-layout.toggle',
+};
+
 export const AI_CODE_ACTION = {
   id: 'ai.code.action',
 };

@@ -81,8 +81,12 @@ describe('AcpFileSystemHandler', () => {
 
     it('should reject path traversal with ..', () => {
       mockFs.realpathSync.mockImplementation((p: string) => {
-        if (p === '/test/workspace') {return '/test/workspace';}
-        if (p === '/test/workspace/../etc/passwd') {return '/etc/passwd';}
+        if (p === '/test/workspace') {
+          return '/test/workspace';
+        }
+        if (p === '/test/workspace/../etc/passwd') {
+          return '/etc/passwd';
+        }
         return p;
       });
 
@@ -193,13 +197,6 @@ describe('AcpFileSystemHandler', () => {
       expect(result.error).toBeDefined();
     });
 
-    it('should return error when content is missing', async () => {
-      const result = await handler.writeTextFile({ sessionId: 'sess-1', path: 'test.txt' });
-
-      expect(result.error).toBeDefined();
-      expect(result.error?.code).toBe(ACPErrorCode.INVALID_PARAMS);
-    });
-
     it('should create parent directories if needed', async () => {
       mockFileService.getFileStat
         .mockResolvedValueOnce(null) // parent doesn't exist
@@ -214,34 +211,6 @@ describe('AcpFileSystemHandler', () => {
       expect(mockFileService.createFolder).toHaveBeenCalled();
     });
 
-    it('should check permission callback before writing', async () => {
-      mockFileService.getFileStat.mockResolvedValueOnce({ isDirectory: true }).mockResolvedValueOnce(null);
-
-      const permitted = await handler.writeTextFile({
-        sessionId: 'sess-1',
-        path: 'test.txt',
-        content: 'Hello',
-      });
-
-      // No permission callback set by default, should proceed
-      expect(permitted.error).toBeUndefined();
-    });
-
-    it('should deny write when permission callback returns false', async () => {
-      const denyCallback = jest.fn().mockResolvedValue(false);
-      handler.setPermissionCallback(denyCallback);
-
-      const result = await handler.writeTextFile({
-        sessionId: 'sess-1',
-        path: 'test.txt',
-        content: 'Hello',
-      });
-
-      expect(result.error).toBeDefined();
-      expect(result.error?.code).toBe(ACPErrorCode.FORBIDDEN);
-      expect(denyCallback).toHaveBeenCalled();
-    });
-
     it('should update existing file', async () => {
       mockFileService.getFileStat
         .mockResolvedValueOnce({ isDirectory: true })
@@ -254,107 +223,6 @@ describe('AcpFileSystemHandler', () => {
       });
 
       expect(mockFileService.setContent).toHaveBeenCalled();
-    });
-  });
-
-  describe('getFileMeta()', () => {
-    it('should return meta for existing file', async () => {
-      mockFileService.getFileStat.mockResolvedValue({
-        size: 1024,
-        lastModification: 1234567890,
-        isDirectory: false,
-      });
-
-      const result = await handler.getFileMeta({ sessionId: 'sess-1', path: 'test.ts' });
-
-      expect(result.size).toBe(1024);
-      expect(result.mtime).toBe(1234567890);
-      expect(result.isFile).toBe(true);
-      expect(result.mimeType).toBe('application/typescript');
-    });
-
-    it('should return false for non-existing file', async () => {
-      mockFileService.getFileStat.mockResolvedValue(null);
-
-      const result = await handler.getFileMeta({ sessionId: 'sess-1', path: 'nonexistent.txt' });
-
-      expect(result.isFile).toBe(false);
-      expect(result.size).toBe(0);
-      expect(result.mtime).toBe(0);
-    });
-  });
-
-  describe('listDirectory()', () => {
-    it('should return entries for valid directory', async () => {
-      mockFileService.getFileStat.mockResolvedValue({
-        isDirectory: true,
-        children: [
-          { uri: 'file:///test/workspace/src', isDirectory: true, size: 0 },
-          { uri: 'file:///test/workspace/index.ts', isDirectory: false, size: 100 },
-        ],
-      });
-
-      const result = await handler.listDirectory({ sessionId: 'sess-1', path: '.' });
-
-      expect(result.entries).toHaveLength(2);
-      expect(result.entries![0].name).toBe('src');
-      expect(result.entries![1].name).toBe('index.ts');
-    });
-
-    it('should return error when path is a file', async () => {
-      mockFileService.getFileStat.mockResolvedValue({ isDirectory: false });
-
-      const result = await handler.listDirectory({ sessionId: 'sess-1', path: 'test.txt' });
-
-      expect(result.error).toBeDefined();
-      expect(result.error?.message).toContain('not a directory');
-    });
-
-    it('should return error when directory not found', async () => {
-      mockFileService.getFileStat.mockResolvedValue(null);
-
-      const result = await handler.listDirectory({ sessionId: 'sess-1', path: 'nonexistent' });
-
-      expect(result.error).toBeDefined();
-      expect(result.error?.code).toBe(ACPErrorCode.RESOURCE_NOT_FOUND);
-    });
-
-    it('should include subdirectory entries when recursive', async () => {
-      mockFileService.getFileStat.mockResolvedValue({
-        isDirectory: true,
-        children: [
-          {
-            uri: 'file:///test/workspace/src',
-            isDirectory: true,
-            size: 0,
-            children: [{ uri: 'file:///test/workspace/src/index.ts', isDirectory: false, size: 200 }],
-          },
-        ],
-      });
-
-      const result = await handler.listDirectory({ sessionId: 'sess-1', path: '.', recursive: true });
-
-      expect(result.entries).toHaveLength(2);
-      expect(result.entries![1].name).toBe('src/index.ts');
-    });
-  });
-
-  describe('createDirectory()', () => {
-    it('should create directory successfully', async () => {
-      const result = await handler.createDirectory({ sessionId: 'sess-1', path: 'new-dir' });
-
-      expect(result.error).toBeUndefined();
-      expect(mockFileService.createFolder).toHaveBeenCalled();
-    });
-
-    it('should check permission callback', async () => {
-      const denyCallback = jest.fn().mockResolvedValue(false);
-      handler.setPermissionCallback(denyCallback);
-
-      const result = await handler.createDirectory({ sessionId: 'sess-1', path: 'new-dir' });
-
-      expect(result.error).toBeDefined();
-      expect(result.error?.code).toBe(ACPErrorCode.FORBIDDEN);
     });
   });
 

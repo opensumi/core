@@ -23,16 +23,119 @@ import { PermissionDialogWidget } from '../permission-dialog-widget';
 import styles from './mention-input.module.less';
 import { ModeOption } from './types';
 
+import type { AcpSessionConfigOption } from '../../chat/session-provider';
+
 export const WHITE_SPACE_TEXT = '&nbsp;';
+
+interface NormalizedConfigOption {
+  id: string;
+  name: string;
+  description?: string;
+  currentValue: string;
+  isBoolean: boolean;
+  options: ExtendedModelOption[];
+}
+
+function readConfigId(option: AcpSessionConfigOption): string | undefined {
+  const rawId = option.id || option.configId;
+  if (typeof rawId === 'string') {
+    return rawId;
+  }
+  if (rawId && typeof rawId === 'object' && typeof (rawId as { id?: unknown }).id === 'string') {
+    return (rawId as { id: string }).id;
+  }
+  return undefined;
+}
+
+function readConfigCurrentValue(option: AcpSessionConfigOption): boolean | string | undefined {
+  const kind = option.kind && typeof option.kind === 'object' ? option.kind : undefined;
+  const value = kind?.currentValue ?? option.currentValue ?? option.current_value ?? option.value;
+  return typeof value === 'boolean' || typeof value === 'string' ? value : undefined;
+}
+
+function isBooleanConfig(option: AcpSessionConfigOption): boolean {
+  const kind = option.kind;
+  return (
+    kind === 'boolean' ||
+    option.type === 'boolean' ||
+    (kind && typeof kind === 'object' && kind.type === 'boolean') ||
+    typeof readConfigCurrentValue(option) === 'boolean'
+  );
+}
+
+function readConfigValueOptions(option: AcpSessionConfigOption): ExtendedModelOption[] {
+  if (isBooleanConfig(option)) {
+    return [
+      { label: 'On', value: 'true' },
+      { label: 'Off', value: 'false' },
+    ];
+  }
+
+  const roots = [
+    option.kind && typeof option.kind === 'object' ? option.kind.options : undefined,
+    option.options,
+    option.values,
+  ];
+  const values = roots.find((root) => Array.isArray(root)) || [];
+
+  return values
+    .map((item: any) => {
+      const value = item?.value ?? item?.id;
+      if (typeof value !== 'string') {
+        return undefined;
+      }
+      const label = item?.name || item?.label || value;
+      return {
+        label,
+        value,
+        description: item?.description || undefined,
+      };
+    })
+    .filter(Boolean) as ExtendedModelOption[];
+}
+
+function normalizeConfigOptions(configOptions?: AcpSessionConfigOption[]): NormalizedConfigOption[] {
+  return (configOptions || [])
+    .map((option) => {
+      const id = readConfigId(option);
+      if (!id) {
+        return undefined;
+      }
+
+      const options = readConfigValueOptions(option);
+      if (options.length === 0) {
+        return undefined;
+      }
+
+      const rawCurrentValue = readConfigCurrentValue(option);
+      const currentValue =
+        rawCurrentValue === undefined
+          ? options[0].value
+          : typeof rawCurrentValue === 'boolean'
+          ? String(rawCurrentValue)
+          : rawCurrentValue;
+      return {
+        id,
+        name: option.name || option.label || id,
+        description: option.description,
+        currentValue,
+        isBoolean: isBooleanConfig(option),
+        options: options.map((item) => ({ ...item, selected: item.value === currentValue })),
+      };
+    })
+    .filter(Boolean) as NormalizedConfigOption[];
+}
 
 export const MentionInput: React.FC<
   MentionInputProps & {
     defaultInput?: string;
     onDefaultInputConsumed?: () => void;
     onModeChange?: (modeId: string) => void;
+    onConfigOptionChange?: (configId: string, value: boolean | string) => void;
     onAgentChange?: (agentId: string) => void;
     modeOptions?: ModeOption[];
     currentMode?: string;
+    configOptions?: AcpSessionConfigOption[];
     slashCommands?: Array<{ nameWithSlash: string; icon?: string; name?: string; description?: string }>;
   }
 > = ({
@@ -52,11 +155,14 @@ export const MentionInput: React.FC<
     showModelSelector: false,
   },
   contextService,
+  expanded = false,
   defaultInput,
   onDefaultInputConsumed,
   onModeChange,
+  onConfigOptionChange,
   modeOptions,
   currentMode,
+  configOptions,
   slashCommands = [],
 }) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
@@ -466,12 +572,13 @@ export const MentionInput: React.FC<
       });
     }
 
-    // 判断是否刚输入了 /
+    // 判断是否刚输入了 /（仅当 / 是第一个非空白字符时触发）
     if (
       text[cursorPos - 1] === '/' &&
       !mentionState.active &&
       !mentionState.inlineSearchActive &&
-      slashCommands.length > 0
+      slashCommands.length > 0 &&
+      text.substring(0, cursorPos - 1).trim() === ''
     ) {
       setMentionState({
         active: true,
@@ -624,7 +731,7 @@ export const MentionInput: React.FC<
       });
     }
 
-    // 添加对 / 键的监听，支持在任意位置触发 slash command 菜单
+    // 添加对 / 键的监听，仅当 / 是第一个非空白字符时触发 slash command 菜单
     if (
       e.key === '/' &&
       !mentionState.active &&
@@ -633,6 +740,13 @@ export const MentionInput: React.FC<
       slashCommands.length > 0
     ) {
       const cursorPos = getCursorPosition(editorRef.current);
+      const text = editorRef.current.textContent || '';
+
+      // 检查 / 之前的字符是否全是空白
+      if (text.substring(0, cursorPos).trim() !== '') {
+        // 不是第一个非空白字符，不触发 slash 面板，但仍设置状态以支持后续过滤
+        return;
+      }
 
       setMentionState({
         active: true,
@@ -1295,6 +1409,18 @@ export const MentionInput: React.FC<
     [onModeChange],
   );
 
+  const normalizedConfigOptions = React.useMemo(
+    () => normalizeConfigOptions(configOptions || footerConfig.configOptions),
+    [configOptions, footerConfig.configOptions],
+  );
+
+  const handleConfigOptionChange = React.useCallback(
+    (config: NormalizedConfigOption, value: string) => {
+      onConfigOptionChange?.(config.id, config.isBoolean ? value === 'true' : value);
+    },
+    [onConfigOptionChange],
+  );
+
   // 修改 handleSend 函数
   const handleSend = () => {
     if (!editorRef.current) {
@@ -1342,15 +1468,21 @@ export const MentionInput: React.FC<
       setHistoryIndex(-1);
       setIsNavigatingHistory(false);
     }
+    let sendResult: unknown;
     if (onSend) {
       // 传递当前选择的模型和其他配置信息
-      onSend(processedContent, {
+      sendResult = onSend(processedContent, {
         model: selectedModel,
         ...footerConfig,
       });
     }
 
     editorRef.current.innerHTML = '';
+    prevMentionTagsRef.current = [];
+    void Promise.resolve(sendResult).then(
+      () => contextService?.cleanFileContext(),
+      () => contextService?.cleanFileContext(),
+    );
 
     // 重置编辑器高度和滚动条
     if (editorRef.current) {
@@ -1592,7 +1724,7 @@ export const MentionInput: React.FC<
   );
 
   return (
-    <div className={styles.input_container}>
+    <div className={cls(styles.input_container, expanded && styles.input_container_expanded)}>
       <PermissionDialogWidget dialogManager={permissionDialogManager} bottom={optionsBottomPosition} />
       {mentionState.active && (
         <div ref={mentionPanelContainerRef} className={styles.mention_panel_container}>
@@ -1627,7 +1759,12 @@ export const MentionInput: React.FC<
               const Component = item.component;
               return <Component key={item.id} />;
             })}
+          {renderButtons(FooterButtonPosition.LEFT)}
+          {renderContextPreview()}
+        </div>
+        <div className={styles.right_control}>
           {footerConfig.showModelSelector &&
+            normalizedConfigOptions.length === 0 &&
             renderModelSelectorTip(
               <MentionSelect
                 options={getExtendedModelOptions}
@@ -1644,6 +1781,7 @@ export const MentionInput: React.FC<
 
           {modeOptions &&
             modeOptions.length > 0 &&
+            normalizedConfigOptions.length === 0 &&
             renderModelSelectorTip(
               <MentionSelect
                 options={modeOptions.map((opt) => ({
@@ -1658,10 +1796,21 @@ export const MentionInput: React.FC<
               />,
             )}
 
-          {renderButtons(FooterButtonPosition.LEFT)}
-        </div>
-        {renderContextPreview()}
-        <div className={styles.right_control}>
+          <div className={styles.config_controls}>
+            {normalizedConfigOptions.map((config) =>
+              renderModelSelectorTip(
+                <MentionSelect
+                  key={config.id}
+                  options={config.options}
+                  value={config.currentValue}
+                  onChange={(value) => handleConfigOptionChange(config, value)}
+                  className={styles.config_selector}
+                  size='small'
+                />,
+              ),
+            )}
+          </div>
+
           {footerItems
             .filter((item) => item.position === FooterButtonPosition.RIGHT)
             .map((item) => {
@@ -1687,11 +1836,11 @@ export const MentionInput: React.FC<
             ) : (
               <EnhanceIcon
                 wrapperClassName={styles.stop_logo}
-                className={cls(getIcon('stop'), styles.stop_logo_icon)}
+                className={cls(getIcon('close'), styles.stop_logo_icon)}
+                onClick={handleStop}
                 tabIndex={0}
                 role='button'
                 ariaLabel={'Stop'}
-                onClick={handleStop}
               />
             )}
           </Popover>

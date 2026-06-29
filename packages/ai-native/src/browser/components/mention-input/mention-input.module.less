@@ -132,6 +132,30 @@
   }
 }
 
+.input_container_expanded {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  .editor_area {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+  }
+
+  .editor {
+    height: 100%;
+    max-height: none;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+
+  .footer {
+    flex: 0 0 auto;
+  }
+}
+
 .mention_panel_container {
   position: absolute;
   top: -20px;

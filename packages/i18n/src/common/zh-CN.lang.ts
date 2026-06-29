@@ -1225,7 +1225,7 @@ export const localizationBundle = {
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI 研发助手',
     'aiNative.chat.input.placeholder.default': '可以问我任何问题，输入 @ 可引用内容',
-    'aiNative.chat.input.placeholder.acp': '向 claude-agent-acp 发送消息，输入 @ 引用上下文，/ 使用命令',
+    'aiNative.chat.input.placeholder.acp': '输入 @ 添加上下文，/ 唤起命令',
     'aiNative.chat.stop.immediately': '我先不想了，有需要可以随时问我',
     'aiNative.chat.error.response': '当前与我互动的人太多，请稍后再试，感谢您的理解与支持',
     'aiNative.chat.code.insert': '插入代码',
@@ -1279,6 +1279,7 @@ export const localizationBundle = {
 
     'aiNative.chat.welcome.loading.text': '初始化中...',
     'aiNative.chat.acp.initializing.text': '正在初始化 ACP 服务...',
+    'aiNative.acp.permissionPending': '权限请求等待中',
     'aiNative.chat.ai.assistant.limit.message': '{0} 条最早的消息因输入 Tokens 限制而被丢弃',
     'aiNative.inlineDiff.acceptAll': '接受全部',
     'aiNative.inlineDiff.rejectAll': '拒绝全部',
@@ -1407,6 +1408,8 @@ export const localizationBundle = {
     'ai.native.terminal.autorun': '终端命令自动执行策略',
     'ai.native.terminal.autorun.description':
       'Agent终端命令的自动执行策略。`off` 表示永远不自动执行，`auto` 表示模型将根据命令决定是否自动执行（只适用于高级模型），`always` 表示永远自动执行。',
+    'preference.ai.native.webmcp.enabled': '向 Agent 暴露 OpenSumi IDE 能力',
+    'preference.ai.native.webmcp.profile': 'OpenSumi IDE 能力范围',
 
     'ai.native.terminal.autorun.denied': '默认情况下拒绝自动运行',
     'ai.native.terminal.autorun.question': '希望自动运行?',
@@ -1424,6 +1427,8 @@ export const localizationBundle = {
     'ai.native.mcp.type': '类型:',
     'ai.native.mcp.stdio': 'Command',
     'ai.native.mcp.sse': 'SSE',
+    'ai.native.layout.agentic': 'Agent',
+    'ai.native.layout.classic': 'Classic',
     'ai.native.mcp.buttonSave': '添加',
     'ai.native.mcp.buttonUpdate': '更新',
     'ai.native.mcp.buttonCancel': '取消',

@@ -28,8 +28,9 @@ import { ChatSlashCommandItemModel } from '../../chat/chat-model';
 import { ChatProxyService } from '../../chat/chat-proxy.service';
 import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
+import { hasAcpChatSendPayload } from '../../components/acp/chat-input-validation';
 import styles from '../../components/components.module.less';
-import { MCPConfigCommands } from '../../mcp/config/mcp-config.commands';
+import { MCPConfigCommands } from '../../mcp/config/mcp-config.constants';
 import { MCPServerProxyService } from '../../mcp/mcp-server-proxy.service';
 import { MCPToolsDialog } from '../../mcp/mcp-tools-dialog.view';
 import { IChatSlashCommandItem } from '../../types';
@@ -339,6 +340,9 @@ export const AcpChatInput = React.forwardRef((props: IAcpChatInputProps, ref) =>
     }
 
     const handleSendLogic = (newValue: string = value) => {
+      if (!hasAcpChatSendPayload({ message: newValue, command })) {
+        return;
+      }
       onSend(newValue, [], agentId, command);
       setValue('');
       setTheme('');
@@ -459,7 +463,7 @@ export const AcpChatInput = React.forwardRef((props: IAcpChatInputProps, ref) =>
   }, [isExpand]);
 
   return (
-    <div className={cls(styles.chat_input_container, focus ? styles.active : null)}>
+    <div data-testid='acp-chat-input' className={cls(styles.chat_input_container, focus ? styles.active : null)}>
       {isShowOptions && (
         <div ref={instructionRef}>
           <InstructionOptions

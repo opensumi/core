@@ -8,6 +8,7 @@ export enum AINativeSettingSectionsId {
   InlineChatCodeActionEnabled = 'ai.native.inlineChat.codeAction.enabled',
   InterfaceQuickNavigationEnabled = 'ai.native.interface.quickNavigation.enabled',
   ChatVisibleType = 'ai.native.chat.visible.type',
+  PanelLayout = 'ai.native.panelLayout',
 
   /**
    * Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.
@@ -48,11 +49,32 @@ export enum AINativeSettingSectionsId {
   AgentConfigs = 'ai.native.agent.configs',
 
   /**
+   * ACP: Node.js runtime path for agent subprocesses
+   */
+  NodePath = 'ai-native.acp.nodePath',
+
+  /**
+   * ACP: Per-agent spawn parameter overrides (command/args/env)
+   */
+  AgentConfigsOverride = 'ai-native.acp.agents',
+
+  /**
+   * ACP: Maximum number of reusable agent threads.
+   */
+  AcpThreadPoolSize = 'ai-native.acp.threadPoolSize',
+
+  /**
    * Default Agent Type
    */
   DefaultAgentType = 'ai.native.agent.defaultType',
 
   TerminalAutoRun = 'ai.native.terminal.autorun',
+
+  /**
+   * WebMCP tool exposure profile for ACP agents.
+   */
+  WebMcpEnabled = 'ai.native.webmcp.enabled',
+  WebMcpProfile = 'ai.native.webmcp.profile',
 
   /**
    * Rules settings
@@ -66,3 +88,4 @@ export enum AINativeSettingSectionsId {
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';
+export const DEFAULT_ACP_THREAD_POOL_SIZE = 10;

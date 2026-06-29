@@ -20,12 +20,15 @@ import {
 import {
   AcpPermissionServicePath,
   AcpPermissionServiceToken,
+  AcpThreadStatusServicePath,
+  AcpWebMcpBridgePath,
   IACPConfigProvider,
   IntelligentCompletionsRegistryToken,
   MCPConfigServiceToken,
   ProblemFixRegistryToken,
   RulesServiceToken,
   TerminalRegistryToken,
+  WebMcpGroupRegistryToken,
 } from '@opensumi/ide-core-common';
 import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
 
@@ -45,8 +48,17 @@ import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-man
 import { ChatAgentPromptProvider, DefaultChatAgentPromptProvider } from '../common/prompts/context-prompt-provider';
 import { ACPChatAgentPromptProvider } from '../common/prompts/empty-prompt-provider';
 
-import { AcpPermissionBridgeService, AcpPermissionRpcService } from './acp';
+import {
+  AcpChatRelayStore,
+  AcpChatRelaySummaryProvider,
+  AcpPermissionBridgeService,
+  AcpPermissionRpcService,
+  AcpThreadStatusRpcService,
+  AcpWebMcpRpcService,
+  WebMcpGroupRegistry,
+} from './acp';
 import { AcpFooterContribution } from './acp/components/AcpFooterContribution';
+import { AcpDebugLogContribution } from './acp/debug-log/acp-debug-log.contribution';
 import { AcpPermissionDialogContribution, PermissionDialogManager } from './acp/permission-dialog-container';
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AcpChatAgent } from './chat/acp-chat-agent';
@@ -85,6 +97,7 @@ import { RenameCandidatesProviderRegistry } from './contrib/rename/rename.featur
 import { TerminalAIContribution } from './contrib/terminal/terminal-ai.contributon';
 import { TerminalFeatureRegistry } from './contrib/terminal/terminal.feature.registry';
 import { LanguageParserService } from './languages/service';
+import { AIPanelLayoutService } from './layout/panel-layout.service';
 import { BaseApplyService } from './mcp/base-apply.service';
 import { MCPConfigCommandContribution } from './mcp/config/mcp-config.commands';
 import { MCPConfigContribution } from './mcp/config/mcp-config.contribution';
@@ -131,9 +144,13 @@ export class AINativeModule extends BrowserModule {
     MCPConfigContribution,
     MCPConfigCommandContribution,
     MCPPreferencesContribution,
+    AcpDebugLogContribution,
     AcpPermissionDialogContribution,
     PermissionDialogManager,
     AcpPermissionBridgeService,
+    AcpChatRelayStore,
+    AcpChatRelaySummaryProvider,
+    AIPanelLayoutService,
     {
       token: ISessionProviderRegistry,
       useClass: SessionProviderRegistry,
@@ -323,6 +340,19 @@ export class AINativeModule extends BrowserModule {
       token: AcpPermissionServiceToken,
       useClass: AcpPermissionRpcService,
     },
+    {
+      token: AcpThreadStatusServicePath,
+      useClass: AcpThreadStatusRpcService,
+    },
+    // WebMCP group registry and RPC bridge
+    {
+      token: WebMcpGroupRegistryToken,
+      useClass: WebMcpGroupRegistry,
+    },
+    {
+      token: AcpWebMcpBridgePath,
+      useClass: AcpWebMcpRpcService,
+    },
   ];
 
   backServices = [
@@ -342,6 +372,14 @@ export class AINativeModule extends BrowserModule {
     {
       servicePath: AcpPermissionServicePath,
       clientToken: AcpPermissionServiceToken,
+    },
+    {
+      servicePath: AcpThreadStatusServicePath,
+      clientToken: AcpThreadStatusServicePath,
+    },
+    {
+      servicePath: AcpWebMcpBridgePath,
+      clientToken: AcpWebMcpBridgePath,
     },
   ];
 }

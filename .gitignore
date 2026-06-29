@@ -100,3 +100,9 @@ tools/workspace
 
 *.tsbuildinfo
 .env
+
+# Claude Code
+.claude/
+.claudebak
+
+.understand-anything/

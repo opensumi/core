@@ -57,14 +57,20 @@ export class LayoutState {
     this.debounceSave(key, state);
   }
 
+  setStateSync(key: string, state: object) {
+    this.setStorageValue(key, state, this.shouldSaveWithWorkspace(key));
+  }
+
   private debounceSave = debounce((key, state) => {
-    this.setStorageValue(
-      key,
-      state,
-      LAYOUT_STATE.isScoped(key) ||
-        (this.saveLayoutWithWorkspace && (LAYOUT_STATE.isLayout(key) || LAYOUT_STATE.isStatusBar(key))),
-    );
+    this.setStorageValue(key, state, this.shouldSaveWithWorkspace(key));
   }, 200);
+
+  private shouldSaveWithWorkspace(key: string) {
+    return (
+      LAYOUT_STATE.isScoped(key) ||
+      (this.saveLayoutWithWorkspace && (LAYOUT_STATE.isLayout(key) || LAYOUT_STATE.isStatusBar(key)))
+    );
+  }
 
   private setStorageValue(key: string, state: object, scope?: boolean) {
     if (scope) {

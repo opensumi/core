@@ -4,14 +4,39 @@ import React, { FC, memo, useCallback, useEffect, useRef, useState } from 'react
 import { Icon, Input, Loading, Popover, PopoverPosition, PopoverTriggerType, getIcon } from '@opensumi/ide-components';
 import { localize } from '@opensumi/ide-core-browser';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { ThreadStatus } from '@opensumi/ide-core-common';
 
 import styles from '../../components/acp/chat-history.module.less';
+
+const threadStatusIcon: Record<ThreadStatus, string> = {
+  idle: 'disconnect',
+  working: 'loading',
+  awaiting_prompt: 'disconnect',
+  auth_required: 'disconnect',
+  errored: 'error',
+  disconnected: 'disconnect',
+};
+
+function renderThreadStatusIcon(status: ThreadStatus | undefined, loading: boolean, testId: string) {
+  const effectiveStatus: ThreadStatus = status ?? (loading ? 'working' : 'idle');
+  const iconName = threadStatusIcon[effectiveStatus] || threadStatusIcon.idle;
+  return (
+    <Icon
+      data-testid={testId}
+      iconClass={getIcon(iconName)}
+      animate={effectiveStatus === 'working' ? 'spin' : undefined}
+      style={{ fontSize: 14, marginRight: 4, flexShrink: 0, opacity: 0.6 }}
+    />
+  );
+}
 
 export interface IChatHistoryItem {
   id: string;
   title: string;
-  updatedAt: number;
+  createdAt: number;
   loading: boolean;
+  threadStatus?: ThreadStatus;
+  hasPendingPermission?: boolean;
 }
 
 export interface IChatHistoryProps {
@@ -19,9 +44,14 @@ export interface IChatHistoryProps {
   historyList: IChatHistoryItem[];
   currentId?: string;
   className?: string;
+  variant?: 'popover' | 'inline';
   historyLoading?: boolean;
   disabled?: boolean;
+  historyCollapsed?: boolean;
+  pendingPermissionBadge?: number;
   onNewChat: () => void;
+  onOpenMCPConfig?: () => void;
+  onToggleHistoryCollapsed?: () => void;
   onHistoryItemSelect: (item: IChatHistoryItem) => void;
   onHistoryItemDelete?: (item: IChatHistoryItem) => void;
   onHistoryItemChange: (item: IChatHistoryItem, title: string) => void;
@@ -41,12 +71,17 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     historyList,
     currentId,
     onNewChat,
+    onOpenMCPConfig,
     onHistoryItemSelect,
     onHistoryItemChange,
     onHistoryPopoverVisibleChange,
     historyLoading,
     disabled,
+    historyCollapsed,
     className,
+    variant = 'popover',
+    pendingPermissionBadge,
+    onToggleHistoryCollapsed,
   }) => {
     const [historyTitleEditable, setHistoryTitleEditable] = useState<{
       [key: string]: boolean;
@@ -110,6 +145,12 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
       }
     }, [historyTitleEditable]);
 
+    useEffect(() => {
+      if (variant === 'inline') {
+        onHistoryPopoverVisibleChange?.(true);
+      }
+    }, [onHistoryPopoverVisibleChange, variant]);
+
     // 获取时间标签
     const getTimeKey = useCallback((diff: number): string => {
       if (diff < 60 * 60 * 1000) {
@@ -139,8 +180,8 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
         const result = [] as { key: string; items: typeof list }[];
 
         list.forEach((item: IChatHistoryItem) => {
-          const updatedAt = new Date(item.updatedAt);
-          const diff = now.getTime() - updatedAt.getTime();
+          const createdAt = new Date(item.createdAt);
+          const diff = now.getTime() - createdAt.getTime();
           const key = getTimeKey(diff);
 
           const existingGroup = result.find((group) => group.key === key);
@@ -161,18 +202,39 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
       (item: IChatHistoryItem) => (
         <div
           key={item.id}
-          className={cls(styles.chat_history_item, item.id === currentId ? styles.chat_history_item_selected : '')}
+          data-testid={`chat-history-item-${item.id}`}
+          className={cls(
+            styles.chat_history_item,
+            item.id === currentId ? styles.chat_history_item_selected : '',
+            item.hasPendingPermission ? styles.chat_history_item_pending : '',
+          )}
           onClick={() => handleHistoryItemSelect(item)}
         >
+          {item.hasPendingPermission}
           <div className={styles.chat_history_item_content}>
-            {item.loading ? (
-              <Loading />
-            ) : (
-              <Icon icon='message' style={{ width: '16px', height: '16px', marginRight: 4 }} />
+            {!item.hasPendingPermission &&
+              renderThreadStatusIcon(
+                item.threadStatus,
+                item.loading,
+                `acp-thread-status-${item.id}-${item.threadStatus || 'default'}`,
+              )}
+            {item.hasPendingPermission && (
+              <span
+                data-testid={`acp-permission-pending-${item.id}`}
+                className={cls(styles.chat_history_item_pending_icon, getIcon('bell'))}
+                style={{ marginRight: 6, flexShrink: 0 }}
+                title={localize('aiNative.acp.permissionPending')}
+              />
             )}
+            {/* <span
+              data-testid={`thread-status-${item.id}`}
+              style={{ fontSize: 11, marginRight: 4, color: '#888', flexShrink: 0 }}
+            >
+              [{item.threadStatus ?? (item.loading ? 'working' : 'idle')}]
+            </span>*/}
             {!historyTitleEditable?.[item.id] ? (
               <span id={`chat-history-item-title-${item.id}`} className={styles.chat_history_item_title}>
-                {item.title}
+                {item.title || 'Untitled'}
               </span>
             ) : (
               <Input
@@ -202,21 +264,41 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     // 渲染历史记录列表
     const renderHistory = useCallback(() => {
       const filteredList = historyList
-        .slice(-MAX_HISTORY_LIST)
-        .reverse()
-        .filter((item) => item.title && item.title.includes(searchValue));
+        .map((item, index) => ({ item, index }))
+        .sort((a, b) => {
+          if (a.item.createdAt && b.item.createdAt && a.item.createdAt !== b.item.createdAt) {
+            return b.item.createdAt - a.item.createdAt;
+          }
+          if (a.item.createdAt && !b.item.createdAt) {
+            return -1;
+          }
+          if (!a.item.createdAt && b.item.createdAt) {
+            return 1;
+          }
+          return b.index - a.index;
+        })
+        .slice(0, MAX_HISTORY_LIST)
+        .map(({ item }) => item)
+        .filter((item) => item.title !== undefined && item.title.includes(searchValue));
 
       const groupedHistoryList = formatHistory(filteredList);
 
       return (
-        <div>
+        <div className={cls(variant === 'inline' && styles.chat_history_inline_content)}>
           <Input
             placeholder={localize('aiNative.operate.chatHistory.searchPlaceholder')}
             className={styles.chat_history_search}
             value={searchValue}
             onChange={handleSearchChange}
           />
-          <div className={cls(styles.chat_history_list, disabled && styles.chat_history_list_disabled)}>
+          <div
+            data-testid={variant === 'inline' ? 'acp-chat-history-inline' : 'acp-chat-history-popover'}
+            className={cls(
+              styles.chat_history_list,
+              variant === 'inline' && styles.chat_history_inline_list,
+              disabled && styles.chat_history_list_disabled,
+            )}
+          >
             {historyLoading ? (
               <div className={styles.chat_history_loading}>
                 <Loading />
@@ -231,54 +313,144 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
           </div>
         </div>
       );
-    }, [historyList, searchValue, formatHistory, handleSearchChange, renderHistoryItem, historyLoading, disabled]);
+    }, [
+      historyList,
+      searchValue,
+      formatHistory,
+      handleSearchChange,
+      renderHistoryItem,
+      historyLoading,
+      disabled,
+      variant,
+    ]);
 
     // getPopupContainer 处理函数
     const getPopupContainer = useCallback((triggerNode: HTMLElement) => triggerNode.parentElement!, []);
 
-    return (
-      <div className={cls(styles.chat_history_header, className)}>
+    const renderNewChatAction = () => (
+      <Popover
+        id={'ai-chat-header-new'}
+        position={PopoverPosition.top}
+        title={localize('aiNative.operate.newChat.title')}
+      >
+        {disabled ? (
+          <div className={cls(styles.chat_history_header_actions_new, styles.chat_history_header_actions_new_disabled)}>
+            <Loading />
+          </div>
+        ) : (
+          <EnhanceIcon
+            ariaLabel={localize('aiNative.operate.newChat.title')}
+            className={styles.chat_history_header_actions_new}
+            iconClass='codicon codicon-add'
+            onClick={handleNewChat}
+          />
+        )}
+      </Popover>
+    );
+
+    const renderMCPConfigAction = () => {
+      if (variant !== 'inline' || !onOpenMCPConfig) {
+        return null;
+      }
+
+      const mcpConfigTitle = localize('ai.native.mcp.config.title');
+
+      return (
+        <Popover id={'ai-chat-header-mcp-config'} position={PopoverPosition.top} title={mcpConfigTitle}>
+          <EnhanceIcon
+            ariaLabel={mcpConfigTitle}
+            className={styles.chat_history_header_actions_mcp}
+            iconClass={getIcon('mcp')}
+            onClick={onOpenMCPConfig}
+          />
+        </Popover>
+      );
+    };
+
+    const renderCollapseAction = () => {
+      if (variant !== 'inline' || !onToggleHistoryCollapsed) {
+        return null;
+      }
+
+      const collapseTitle = historyCollapsed
+        ? localize('aiNative.operate.chatHistory.expand', 'Expand Chat History')
+        : localize('aiNative.operate.chatHistory.collapse', 'Collapse Chat History');
+
+      return (
+        <Popover id={'ai-chat-header-collapse-history'} position={PopoverPosition.top} title={collapseTitle}>
+          <EnhanceIcon
+            ariaLabel={collapseTitle}
+            className={styles.chat_history_header_actions_collapse}
+            iconClass={historyCollapsed ? 'codicon codicon-chevron-right' : 'codicon codicon-chevron-left'}
+            onClick={onToggleHistoryCollapsed}
+          />
+        </Popover>
+      );
+    };
+
+    const renderHeader = () => (
+      <div className={styles.chat_history_header_bar}>
         <div className={styles.chat_history_header_title}>
-          <span>{title}</span>
-        </div>
-        <div className={styles.chat_history_header_actions}>
-          <Popover
-            id='chat-history-header-actions-history'
-            content={renderHistory()}
-            trigger={PopoverTriggerType.click}
-            position={PopoverPosition.bottomRight}
-            title={localize('aiNative.operate.chatHistory.title')}
-            getPopupContainer={getPopupContainer}
-            onVisibleChange={onHistoryPopoverVisibleChange}
-          >
-            <div
-              className={styles.chat_history_header_actions_history}
-              title={localize('aiNative.operate.chatHistory.title')}
-            >
-              <EnhanceIcon className={cls(styles.chat_history_header_actions_history, 'codicon codicon-history')} />
+          {variant === 'inline' ? (
+            <div className={styles.chat_history_header_inline_actions}>
+              {renderCollapseAction()}
+              {renderNewChatAction()}
+              {renderMCPConfigAction()}
             </div>
-          </Popover>
-          <Popover
-            id={'ai-chat-header-new'}
-            position={PopoverPosition.top}
-            title={localize('aiNative.operate.newChat.title')}
-          >
-            {disabled ? (
-              <div
-                className={cls(styles.chat_history_header_actions_new, styles.chat_history_header_actions_new_disabled)}
-              >
-                <Loading />
-              </div>
-            ) : (
-              <EnhanceIcon
-                className={cls(styles.chat_history_header_actions_new, getIcon('plus'))}
-                onClick={handleNewChat}
-              />
-            )}
-          </Popover>
+          ) : (
+            <span>{title}</span>
+          )}
+          {variant === 'inline' && pendingPermissionBadge && pendingPermissionBadge > 0 ? (
+            <span data-testid='acp-pending-permission-badge' className={styles.pending_permission_badge_inline}>
+              {pendingPermissionBadge > 99 ? '99+' : pendingPermissionBadge}
+            </span>
+          ) : null}
         </div>
+        {variant === 'popover' ? (
+          <div className={styles.chat_history_header_actions}>
+            <Popover
+              id='chat-history-header-actions-history'
+              content={renderHistory()}
+              trigger={PopoverTriggerType.click}
+              position={PopoverPosition.bottomRight}
+              title={localize('aiNative.operate.chatHistory.title')}
+              getPopupContainer={getPopupContainer}
+              onVisibleChange={onHistoryPopoverVisibleChange}
+            >
+              <div className={styles.chat_history_button_wrapper}>
+                <div
+                  data-testid='acp-chat-history-button'
+                  className={styles.chat_history_header_actions_history}
+                  title={localize('aiNative.operate.chatHistory.title')}
+                >
+                  <EnhanceIcon className={cls(styles.chat_history_header_actions_history, 'codicon codicon-history')} />
+                  {pendingPermissionBadge && pendingPermissionBadge > 0 ? (
+                    <span data-testid='acp-pending-permission-badge' className={styles.pending_permission_badge}>
+                      {pendingPermissionBadge > 99 ? '99+' : pendingPermissionBadge}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            </Popover>
+            {renderNewChatAction()}
+          </div>
+        ) : null}
       </div>
     );
+
+    if (variant === 'inline') {
+      return (
+        <div
+          data-testid={historyCollapsed ? 'acp-chat-history-collapsed' : undefined}
+          className={cls(styles.chat_history_header, styles.chat_history_inline, className)}
+        >
+          {renderHeader()}
+          {!historyCollapsed && renderHistory()}
+        </div>
+      );
+    }
+
+    return <div className={cls(styles.chat_history_header, className)}>{renderHeader()}</div>;
   },
 );
 

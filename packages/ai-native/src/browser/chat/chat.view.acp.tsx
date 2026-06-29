@@ -7,6 +7,7 @@ import {
   AppConfig,
   LabelService,
   getIcon,
+  localize,
   useInjectable,
   useUpdateOnEvent,
 } from '@opensumi/ide-core-browser';
@@ -19,7 +20,6 @@ import {
   CancellationToken,
   CancellationTokenSource,
   ChatFeatureRegistryToken,
-  ChatHistoryRegistryToken,
   ChatInputRegistryToken,
   ChatMessageRole,
   ChatRenderRegistryToken,
@@ -32,7 +32,6 @@ import {
   IChatContent,
   URI,
   formatLocalize,
-  localize,
   path,
   uuid,
 } from '@opensumi/ide-core-common';
@@ -51,10 +50,12 @@ import {
 } from '../../common/llm-context';
 import { CodeBlockData } from '../../common/types';
 import { cleanAttachedTextWrapper } from '../../common/utils';
+import ChatHistory, { IChatHistoryItem } from '../acp/components/AcpChatHistory';
 import { AcpChatViewWrapper } from '../acp/components/AcpChatViewWrapper';
+import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
+import { hasAcpChatSendPayload } from '../components/acp/chat-input-validation';
 import { FileChange, FileListDisplay } from '../components/ChangeList';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
-import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
@@ -64,7 +65,7 @@ import { WelcomeMessage } from '../components/WelcomeMsg';
 import { BaseApplyService } from '../mcp/base-apply.service';
 import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
-import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
+import { ChatModel, ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
 import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
@@ -75,6 +76,8 @@ import { AcpChatInternalService } from './chat.internal.service.acp';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
 
+import type { MsgHistoryManager } from '../model/msg-history-manager';
+
 const SCROLL_CLASSNAME = 'chat_scroll';
 
 interface TDispatchAction {
@@ -83,6 +86,21 @@ interface TDispatchAction {
 }
 
 const MAX_TITLE_LENGTH = 100;
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function getSessionCreatedAt(session: ChatModel): number {
+  const firstMessage = session.history.getMessages()[0];
+  return session.createdAt || firstMessage?.timestamp || firstMessage?.replyStartTime || 0;
+}
+
+function getVisibleAcpSessions(aiChatService: AcpChatInternalService): ChatModel[] {
+  return typeof aiChatService.getVisibleSessions === 'function'
+    ? aiChatService.getVisibleSessions()
+    : aiChatService.getSessions();
+}
 
 const getFileChanges = (codeBlocks: CodeBlockData[]) =>
   codeBlocks
@@ -140,10 +158,8 @@ export const AIChatViewACPContent = () => {
   const llmContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+  const messageService = useInjectable<IMessageService>(IMessageService);
   const msgHistoryManager = aiChatService.sessionModel?.history;
-  if (!msgHistoryManager) {
-    return null;
-  }
   const containerRef = React.useRef<HTMLDivElement>(null);
   const autoScroll = React.useRef<boolean>(true);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
@@ -234,6 +250,14 @@ export const AIChatViewACPContent = () => {
   }, [chatFeatureRegistry, chatAgentService]);
 
   useUpdateOnEvent(aiChatService.onChangeSession);
+  useUpdateOnEvent(aiChatService.onSessionModelChange);
+
+  const draftSessionState = aiChatService.getDraftSessionState();
+  const footerAgentModes = aiChatService.sessionModel?.agentModes || draftSessionState.agentModes;
+  const footerCurrentModeId = aiChatService.sessionModel?.currentModeId || draftSessionState.currentModeId;
+  const footerAgentModels = aiChatService.sessionModel?.agentModels || draftSessionState.agentModels;
+  const footerCurrentModelId = aiChatService.sessionModel?.modelId || draftSessionState.modelId;
+  const footerConfigOptions = aiChatService.sessionModel?.configOptions || draftSessionState.configOptions;
 
   const ChatInputWrapperRender = React.useMemo(() => {
     // 1. 优先使用 ChatInputRegistry 注册的输入组件（按优先级 + when 条件匹配）
@@ -339,6 +363,10 @@ export const AIChatViewACPContent = () => {
 
     disposer.addDispose(
       chatApiService.onChatReplyMessageLaunch((data) => {
+        if (!msgHistoryManager) {
+          return;
+        }
+
         if (data.kind === 'content') {
           const relationId = aiReporter.start(AIServiceType.CustomReply, {
             message: data.content,
@@ -472,12 +500,13 @@ export const AIChatViewACPContent = () => {
       relationId: string;
       requestId: string;
       startTime: number;
+      history: MsgHistoryManager;
       command?: string;
       agentId?: string;
     }) => {
-      const { userMessage, relationId, requestId, render, startTime, command, agentId } = value;
+      const { userMessage, relationId, requestId, render, startTime, history, command, agentId } = value;
 
-      msgHistoryManager.addAssistantMessage({
+      history.addAssistantMessage({
         type: 'component',
         content: '',
       });
@@ -501,7 +530,7 @@ export const AIChatViewACPContent = () => {
 
       handleDispatchMessage({ type: 'add', payload: [aiMessage] });
     },
-    [containerRef, msgHistoryManager],
+    [containerRef],
   );
 
   const renderUserMessage = React.useCallback(
@@ -554,8 +583,9 @@ export const AIChatViewACPContent = () => {
       command?: string;
       startTime: number;
       msgId: string;
+      history: MsgHistoryManager;
     }) => {
-      const { message, agentId, request, relationId, command, startTime, msgId } = renderModel;
+      const { message, agentId, request, relationId, command, startTime, msgId, history } = renderModel;
 
       const visibleAgentId = agentId === ChatProxyService.AGENT_ID ? '' : agentId;
 
@@ -569,6 +599,7 @@ export const AIChatViewACPContent = () => {
             relationId,
             requestId: request.requestId,
             startTime,
+            history,
             agentId,
             command,
           });
@@ -589,7 +620,7 @@ export const AIChatViewACPContent = () => {
             onDidChange={() => {
               scrollToBottom();
             }}
-            history={msgHistoryManager}
+            history={history}
             onDone={() => {
               setLoading(false);
             }}
@@ -599,12 +630,13 @@ export const AIChatViewACPContent = () => {
               }
             }}
             msgId={msgId}
+            collapseReasoningByDefault
           />
         ),
       });
       handleDispatchMessage({ type: 'add', payload: [aiMessage] });
     },
-    [chatRenderRegistry, msgHistoryManager, scrollToBottom],
+    [chatRenderRegistry, scrollToBottom],
   );
 
   const renderSimpleMarkdownReply = React.useCallback(
@@ -651,6 +683,19 @@ export const AIChatViewACPContent = () => {
       const { message, images, agentId, command, reportExtra } = value;
       const { actionType, actionSource } = reportExtra || {};
 
+      if (!hasAcpChatSendPayload({ message, images, command })) {
+        return false;
+      }
+
+      let sessionModel: ChatModel;
+      try {
+        sessionModel = await aiChatService.ensureSessionModel();
+      } catch (error) {
+        messageService.error(`Failed to create session. (${getErrorMessage(error)})`);
+        return false;
+      }
+
+      const activeHistory = sessionModel.history;
       const request = aiChatService.createRequest(
         message.replaceAll(LLM_CONTEXT_KEY_REGEX, ''),
         agentId!,
@@ -658,7 +703,7 @@ export const AIChatViewACPContent = () => {
         command,
       );
       if (!request) {
-        return;
+        return false;
       }
 
       setLoading(true);
@@ -674,12 +719,12 @@ export const AIChatViewACPContent = () => {
           userMessage: message,
           actionType,
           actionSource,
-          sessionId: aiChatService.sessionModel?.sessionId,
+          sessionId: sessionModel.sessionId,
         },
         // 由于涉及 tool 调用，超时时间设置长一点
         600 * 1000,
       );
-      msgHistoryManager.addUserMessage({
+      activeHistory.addUserMessage({
         content: message,
         images: images || [],
         agentId: agentId!,
@@ -697,7 +742,7 @@ export const AIChatViewACPContent = () => {
 
       aiChatService.sendRequest(request);
 
-      const msgId = msgHistoryManager.addAssistantMessage({
+      const msgId = activeHistory.addAssistantMessage({
         content: '',
         relationId,
         requestId: request.requestId,
@@ -707,7 +752,7 @@ export const AIChatViewACPContent = () => {
       // 创建消息时，设置当前活跃的消息信息，便于toolCall打点
       mcpServerRegistry.activeMessageInfo = {
         messageId: msgId,
-        sessionId: aiChatService.sessionModel?.sessionId,
+        sessionId: sessionModel.sessionId,
       };
 
       await renderReply({
@@ -718,13 +763,30 @@ export const AIChatViewACPContent = () => {
         command,
         request,
         msgId,
+        history: activeHistory,
       });
+      return true;
     },
-    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager, scrollToBottom, loading],
+    [
+      aiChatService,
+      aiReporter,
+      chatRenderRegistry,
+      chatRenderRegistry.chatUserRoleRender,
+      loading,
+      mcpServerRegistry,
+      messageService,
+      renderReply,
+      renderUserMessage,
+      scrollToBottom,
+    ],
   );
 
   const handleSend = React.useCallback(
     async (message: string, images?: string[], agentId?: string, command?: string) => {
+      if (!hasAcpChatSendPayload({ message, images, command })) {
+        return false;
+      }
+
       const reportExtra = {
         actionSource: ActionSourceEnum.Chat,
         actionType: ActionTypeEnum.Send,
@@ -784,8 +846,10 @@ export const AIChatViewACPContent = () => {
           );
         }
       }
-      return handleAgentReply({ message: processedContent, images, agentId, command, reportExtra }).finally(() => {
-        setHasUserSentMessage(true);
+      return handleAgentReply({ message: processedContent, images, agentId, command, reportExtra }).then((sent) => {
+        if (sent) {
+          setHasUserSentMessage(true);
+        }
       });
     },
     [handleAgentReply, setHasUserSentMessage],
@@ -820,6 +884,10 @@ export const AIChatViewACPContent = () => {
 
   const recover = React.useCallback(
     async (cancellationToken: CancellationToken) => {
+      if (!msgHistoryManager) {
+        return;
+      }
+
       for (const msg of msgHistoryManager.getMessages()) {
         if (cancellationToken.isCancellationRequested) {
           return;
@@ -846,6 +914,7 @@ export const AIChatViewACPContent = () => {
             command: msg.agentCommand,
             startTime: msg.replyStartTime!,
             request,
+            history: msgHistoryManager,
           });
         } else if (msg.role === ChatMessageRole.Assistant && msg.content) {
           await renderSimpleMarkdownReply({
@@ -864,7 +933,7 @@ export const AIChatViewACPContent = () => {
         }
       }
     },
-    [renderReply],
+    [msgHistoryManager, renderCustomComponent, renderReply, renderSimpleMarkdownReply, renderUserMessage],
   );
 
   React.useEffect(() => {
@@ -891,7 +960,7 @@ export const AIChatViewACPContent = () => {
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>
           <div className={styles.chat_container} ref={containerRef}>
-            {!hasUserSentMessage && chatRenderRegistry.chatWelcomePageRender ? (
+            {!hasUserSentMessage && messageListData.length <= 1 && chatRenderRegistry.chatWelcomePageRender ? (
               React.createElement(chatRenderRegistry.chatWelcomePageRender, {
                 onSend: handleSend,
                 agentId,
@@ -964,10 +1033,17 @@ export const AIChatViewACPContent = () => {
               setCommand={setCommand}
               contextService={llmContextService}
               ref={chatInputRef}
-              disableModelSelector={sessionModelId !== undefined || loading}
+              disableModelSelector={
+                aiNativeConfigService.capabilities.supportsAgentMode ? loading : sessionModelId !== undefined || loading
+              }
               sessionModelId={sessionModelId}
+              agentModes={footerAgentModes}
+              currentModeId={footerCurrentModeId}
+              agentModels={footerAgentModels}
+              currentModelId={footerCurrentModelId}
+              configOptions={footerConfigOptions}
               agentCwd={appConfig.workspaceDir}
-              placeholder='message claude-agent-acp @to include context, / for command'
+              placeholder={localize('aiNative.chat.input.placeholder.acp')}
             />
           </div>
         </div>
@@ -977,28 +1053,20 @@ export const AIChatViewACPContent = () => {
 };
 
 export function DefaultChatViewHeaderACP({
-  handleClear,
   handleCloseChatView,
 }: {
   handleClear: () => any;
   handleCloseChatView: () => any;
 }) {
   const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
-  const messageService = useInjectable<IMessageService>(IMessageService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
-  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
-  const chatHistoryRegistry = useInjectable<IChatHistoryRegistry>(ChatHistoryRegistryToken);
+  const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
+  const [pendingPermissionBadge, setPendingPermissionBadge] = React.useState(0);
   const handleNewChat = React.useCallback(() => {
-    if (aiChatService.sessionModel?.history.getMessages().length > 0) {
-      try {
-        aiChatService.createSessionModel();
-      } catch (error) {
-        messageService.error(error.message);
-      }
-    }
+    aiChatService.enterDraftSession();
   }, [aiChatService]);
   const handleHistoryItemSelect = React.useCallback(
     (item: IChatHistoryItem) => {
@@ -1038,8 +1106,26 @@ export function DefaultChatViewHeaderACP({
   const latestSummaryRequestRef = React.useRef<number>(0);
 
   React.useEffect(() => {
+    const toDispose = new DisposableCollection();
+    const sessionListenIds = new Set<string>();
+    const subscribedSessionIds = new Set<string>();
+
+    const subscribeThreadStatus = (model: ChatModel) => {
+      if (subscribedSessionIds.has(model.sessionId)) {
+        return;
+      }
+      subscribedSessionIds.add(model.sessionId);
+      toDispose.push(
+        model.onThreadStatusChange((status) => {
+          setHistoryList((prev) =>
+            prev.map((item) => (item.id === model.sessionId ? { ...item, threadStatus: status } : item)),
+          );
+        }),
+      );
+    };
+
     const getHistoryList = async () => {
-      const currentMessages = aiChatService.sessionModel?.history.getMessages();
+      const currentMessages = aiChatService.sessionModel?.history.getMessages() || [];
       const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
       const currentTitle = latestUserMessage
         ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
@@ -1067,27 +1153,49 @@ export function DefaultChatViewHeaderACP({
         }
       }
 
+      const sessions = getVisibleAcpSessions(aiChatService);
+      for (const session of sessions) {
+        subscribeThreadStatus(session);
+      }
+
       setHistoryList(
-        aiChatService.getSessions().map((session) => {
+        sessions.map((session) => {
           const history = session.history;
           const messages = history.getMessages();
-          const title =
+          const messageTitle =
             messages.length > 0 ? cleanAttachedTextWrapper(messages[0].content).slice(0, MAX_TITLE_LENGTH) : '';
-          const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
-          // const loading = session.requests[session.requests.length - 1]?.response.isComplete;
+          const title = session.title || messageTitle;
+          const createdAt = getSessionCreatedAt(session);
           return {
             id: session.sessionId,
             title,
-            updatedAt,
-            // TODO: 后续支持
+            createdAt,
             loading: false,
+            threadStatus: session.threadStatus,
+            hasPendingPermission: permissionBridgeService.hasPendingForSession(session.sessionId),
           };
         }),
       );
     };
     getHistoryList();
-    const toDispose = new DisposableCollection();
-    const sessionListenIds = new Set<string>();
+
+    // Subscribe to pending permission count changes
+    const refreshBadge = () => {
+      setPendingPermissionBadge(permissionBridgeService.getPendingCountExcludingActive());
+    };
+    toDispose.push(
+      permissionBridgeService.onPendingCountChange(() => {
+        refreshBadge();
+        getHistoryList();
+      }),
+    );
+    toDispose.push(
+      permissionBridgeService.onActiveSessionChange(() => {
+        refreshBadge();
+      }),
+    );
+    refreshBadge();
+
     toDispose.push(
       aiChatService.onChangeSession((sessionId) => {
         getHistoryList();
@@ -1095,18 +1203,24 @@ export function DefaultChatViewHeaderACP({
           return;
         }
         sessionListenIds.add(sessionId);
-        toDispose.push(
-          aiChatService.sessionModel?.history.onMessageChange(() => {
-            getHistoryList();
-          }),
-        );
+        const history = aiChatService.sessionModel?.history;
+        if (history) {
+          toDispose.push(
+            history.onMessageChange(() => {
+              getHistoryList();
+            }),
+          );
+        }
       }),
     );
-    toDispose.push(
-      aiChatService.sessionModel?.history.onMessageChange(() => {
-        getHistoryList();
-      }),
-    );
+    const activeHistory = aiChatService.sessionModel?.history;
+    if (activeHistory) {
+      toDispose.push(
+        activeHistory.onMessageChange(() => {
+          getHistoryList();
+        }),
+      );
+    }
     return () => {
       toDispose.dispose();
     };
@@ -1114,52 +1228,17 @@ export function DefaultChatViewHeaderACP({
 
   return (
     <div className={styles.header}>
-      {(() => {
-        // 1. 优先使用 ChatHistoryRegistry 注册的历史组件（按优先级 + when 条件匹配）
-        const activeHistory = chatHistoryRegistry.getActiveChatHistory();
-        if (activeHistory) {
-          const ChatHistoryComponent = activeHistory.component;
-          return (
-            <ChatHistoryComponent
-              className={styles.chat_history}
-              currentId={aiChatService.sessionModel?.sessionId}
-              title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
-              historyList={historyList}
-              onNewChat={handleNewChat}
-              onHistoryItemSelect={handleHistoryItemSelect}
-              onHistoryItemDelete={handleHistoryItemDelete}
-              onHistoryItemChange={() => {}}
-            />
-          );
-        }
-        // 2. 降级使用默认 ChatHistory 组件
-        return (
-          <ChatHistory
-            className={styles.chat_history}
-            currentId={aiChatService.sessionModel?.sessionId}
-            title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
-            historyList={historyList}
-            onNewChat={handleNewChat}
-            onHistoryItemSelect={handleHistoryItemSelect}
-            onHistoryItemDelete={handleHistoryItemDelete}
-            onHistoryItemChange={() => {}}
-          />
-        );
-      })()}
-      <Popover
-        overlayClassName={styles.popover_icon}
-        id={'ai-chat-header-clear'}
-        title={localize('aiNative.operate.clear.title')}
-      >
-        <EnhanceIcon
-          wrapperClassName={styles.action_btn}
-          className={getIcon('clear')}
-          onClick={handleClear}
-          tabIndex={0}
-          role='button'
-          ariaLabel={localize('aiNative.operate.clear.title')}
-        />
-      </Popover>
+      <ChatHistory
+        className={styles.chat_history}
+        currentId={aiChatService.sessionModel?.sessionId}
+        title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
+        historyList={historyList}
+        pendingPermissionBadge={pendingPermissionBadge}
+        onNewChat={handleNewChat}
+        onHistoryItemSelect={handleHistoryItemSelect}
+        onHistoryItemDelete={handleHistoryItemDelete}
+        onHistoryItemChange={() => {}}
+      />
       <Popover
         overlayClassName={styles.popover_icon}
         id={'ai-chat-header-close'}

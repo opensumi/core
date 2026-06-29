@@ -2,6 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, ILogger } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences';
 import {
+  AINativeSettingSectionsId,
   Deferred,
   Disposable,
   Emitter,
@@ -11,6 +12,7 @@ import {
   StorageProvider,
   localize,
 } from '@opensumi/ide-core-common';
+import { WebMcpGroupRegistryToken } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMessageService } from '@opensumi/ide-overlay';
 
@@ -22,9 +24,26 @@ import {
   StdioMCPServerDescription,
 } from '../../../common/mcp-server-manager';
 import { MCPServer, MCP_SERVER_TYPE } from '../../../common/types';
+import { WebMcpGroupRegistry } from '../../acp/webmcp-group-registry';
 import { MCPServerProxyService } from '../mcp-server-proxy.service';
 
 import { MCPServerFormData } from './components/mcp-server-form';
+
+import type {
+  EnvVariable,
+  McpServer,
+  WebMcpGroupDef,
+  WebMcpProfile,
+} from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
+
+export const WEBMCP_PROFILE_OPTIONS: WebMcpProfile[] = ['minimal', 'default', 'interactive', 'full'];
+
+export interface WebMcpGroupSummary {
+  name: string;
+  description: string;
+  defaultLoaded: boolean;
+  toolCount: number;
+}
 
 @Injectable()
 export class MCPConfigService extends Disposable {
@@ -51,6 +70,9 @@ export class MCPConfigService extends Disposable {
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
+
+  @Autowired(WebMcpGroupRegistryToken)
+  private readonly webMcpGroupRegistry: WebMcpGroupRegistry;
 
   private chatStorage: IStorage;
   private mcpConfigStorage: IStorage;
@@ -116,7 +138,14 @@ export class MCPConfigService extends Disposable {
     if (scope === PreferenceScope.Default) {
       const runningServers = await this.mcpServerProxyService.$getServers();
       const builtinServer = runningServers.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
-      return builtinServer ? [builtinServer] : [];
+      return builtinServer
+        ? [
+            {
+              ...builtinServer,
+              isStarted: await this.isBuiltinMCPEnabled(),
+            },
+          ]
+        : [];
     }
 
     const userServers = Object.keys(mcpConfig!.mcpServers).map((name) => {
@@ -155,13 +184,21 @@ export class MCPConfigService extends Disposable {
 
     // Add built-in server at the beginning if it exists
     if (builtinServer) {
-      allServers.unshift(builtinServer);
+      allServers.unshift({
+        ...builtinServer,
+        isStarted: await this.isBuiltinMCPEnabled(),
+      });
     }
 
     return allServers;
   }
 
   async controlServer(serverName: string, start: boolean): Promise<void> {
+    if (serverName === BUILTIN_MCP_SERVER_NAME) {
+      await this.setBuiltinMCPEnabled(start);
+      return;
+    }
+
     try {
       if (start) {
         await this.mcpServerProxyService.$startServer(serverName);
@@ -186,6 +223,62 @@ export class MCPConfigService extends Disposable {
       this.messageService.error(msg);
       throw error;
     }
+  }
+
+  async setBuiltinMCPEnabled(enabled: boolean): Promise<void> {
+    await this.whenReady;
+    try {
+      if (enabled) {
+        await this.mcpServerProxyService.$startServer(BUILTIN_MCP_SERVER_NAME);
+      } else {
+        await this.mcpServerProxyService.$stopServer(BUILTIN_MCP_SERVER_NAME);
+      }
+
+      const disabledMCPServers = this.chatStorage.get<string[]>(MCPServersDisabledKey, []);
+      const disabledMCPServersSet = new Set(disabledMCPServers);
+      if (enabled) {
+        disabledMCPServersSet.delete(BUILTIN_MCP_SERVER_NAME);
+      } else {
+        disabledMCPServersSet.add(BUILTIN_MCP_SERVER_NAME);
+      }
+      this.chatStorage.set(MCPServersDisabledKey, Array.from(disabledMCPServersSet));
+      await this.preferenceService.set(AINativeSettingSectionsId.WebMcpEnabled, enabled);
+      this.fireMCPServersChange();
+    } catch (error) {
+      const msg = error.message || error;
+      this.logger.error(`Failed to ${enabled ? 'start' : 'stop'} built-in MCP servers:`, msg);
+      this.messageService.error(msg);
+      throw error;
+    }
+  }
+
+  async isBuiltinMCPEnabled(): Promise<boolean> {
+    await this.whenReady;
+    const disabledMCPServers = this.chatStorage.get<string[]>(MCPServersDisabledKey, []);
+    const webMcpEnabled = this.preferenceService.get<boolean>(AINativeSettingSectionsId.WebMcpEnabled, true);
+    return !disabledMCPServers.includes(BUILTIN_MCP_SERVER_NAME) && webMcpEnabled !== false;
+  }
+
+  getWebMcpProfile(): WebMcpProfile {
+    const profile = this.preferenceService.get<WebMcpProfile>(AINativeSettingSectionsId.WebMcpProfile, 'default');
+    return WEBMCP_PROFILE_OPTIONS.includes(profile) ? profile : 'default';
+  }
+
+  async setWebMcpProfile(profile: WebMcpProfile): Promise<void> {
+    if (!WEBMCP_PROFILE_OPTIONS.includes(profile)) {
+      return;
+    }
+    await this.preferenceService.set(AINativeSettingSectionsId.WebMcpProfile, profile);
+    this.fireMCPServersChange();
+  }
+
+  getWebMcpGroups(): WebMcpGroupSummary[] {
+    return this.webMcpGroupRegistry.getGroupDefinitions().map((group: WebMcpGroupDef) => ({
+      name: group.name,
+      description: group.description,
+      defaultLoaded: group.defaultLoaded,
+      toolCount: group.tools.length,
+    }));
   }
 
   async saveServer(prev: MCPServerDescription | undefined, data: MCPServerFormData): Promise<void> {
@@ -273,6 +366,53 @@ export class MCPConfigService extends Disposable {
       }
     }
     return undefined;
+  }
+
+  async getACPServers(): Promise<McpServer[]> {
+    await this.whenReady;
+    const { value: mcpConfig, scope } = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
+      'mcp',
+      { mcpServers: {} },
+      undefined,
+    );
+
+    if (scope === PreferenceScope.Default) {
+      return [];
+    }
+
+    const serverNames = Object.keys(mcpConfig?.mcpServers ?? {});
+    const serverConfigs = await Promise.all(serverNames.map((name) => this.getServerConfigByName(name)));
+
+    return serverConfigs
+      .filter((server): server is MCPServerDescription => !!server && server.enabled !== false)
+      .map((server) => this.toACPServer(server))
+      .filter((server): server is McpServer => !!server);
+  }
+
+  private toACPServer(server: MCPServerDescription): McpServer | undefined {
+    if (server.type === MCP_SERVER_TYPE.SSE) {
+      return {
+        type: 'sse',
+        name: server.name,
+        url: server.url,
+        headers: [],
+      };
+    }
+
+    if (server.type === MCP_SERVER_TYPE.STDIO) {
+      return {
+        name: server.name,
+        command: server.command,
+        args: server.args ?? [],
+        env: this.toACPEnv(server.env),
+      };
+    }
+
+    return undefined;
+  }
+
+  private toACPEnv(env?: Record<string, string>): EnvVariable[] {
+    return Object.entries(env ?? {}).map(([name, value]) => ({ name, value }));
   }
 
   getReadableServerType(type: string): string {

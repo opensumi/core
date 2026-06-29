@@ -1511,6 +1511,7 @@ export const localizationBundle = {
 
     'aiNative.chat.welcome.loading.text': 'Initializing...',
     'aiNative.chat.acp.initializing.text': 'Initializing ACP service...',
+    'aiNative.acp.permissionPending': 'Permission pending',
     'aiNative.chat.ai.assistant.limit.message': '{0} earliest messages are dropped due to the input token limit',
     'aiNative.inlineDiff.acceptAll': 'Accept All',
     'aiNative.inlineDiff.rejectAll': 'Reject All',
@@ -1651,6 +1652,8 @@ export const localizationBundle = {
     'ai.native.terminal.autorun': 'Terminal auto execution policy',
     'ai.native.terminal.autorun.description':
       'The auto-execution policy for Agent terminal commands.   off means never auto-execute, auto means the model will decide whether to auto-execute based on the command (only available on premium models), Always means always auto-execute.',
+    'preference.ai.native.webmcp.enabled': 'Expose OpenSumi IDE capabilities to agents',
+    'preference.ai.native.webmcp.profile': 'OpenSumi IDE capability profile',
 
     'ai.native.terminal.autorun.denied': 'Auto-run denied by default',
     'ai.native.terminal.autorun.question': 'Want to run this automatically in the future?',
@@ -1669,6 +1672,8 @@ export const localizationBundle = {
     'ai.native.mcp.type': 'Type:',
     'ai.native.mcp.stdio': 'Command',
     'ai.native.mcp.sse': 'SSE',
+    'ai.native.layout.agentic': 'Agent',
+    'ai.native.layout.classic': 'Classic',
     'ai.native.mcp.buttonSave': 'Add',
     'ai.native.mcp.buttonUpdate': 'Update',
     'ai.native.mcp.buttonCancel': 'Cancel',

@@ -1,11 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { INodeLogger } from '@opensumi/ide-core-node';
+
+import { AcpBrowserRpcRegistry } from './acp-browser-rpc-registry';
 
 import type {
   AcpPermissionDecision,
   AcpPermissionDialogParams,
-  IAcpPermissionCaller,
   IAcpPermissionService,
   PermissionOption,
   PermissionOptionKind,
@@ -13,58 +13,44 @@ import type {
   RequestPermissionResponse,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
-export const AcpPermissionCallerManagerToken = Symbol('AcpPermissionCallerManagerToken');
+export const AcpPermissionCallerServiceToken = Symbol('AcpPermissionCallerServiceToken');
 
 /**
- * ACP Permission Caller Manager
+ * ACP Permission Caller Service
  *
+ * Node-side singleton that calls the browser-side permission dialog via RPC.
+ *
+ * Browser RPC clients are registered by per-connection bridge services in
+ * AcpBrowserRpcRegistry. This keeps connection wiring inside ai-native while
+ * allowing parent-injector consumers to reach the active browser connection.
+ *
+ * Each call to requestPermission() independently invokes
+ * this.client or the active registered RPC stub — no global lock,
+ * concurrent requests run independently.
  */
 @Injectable()
-export class AcpPermissionCallerManager extends RPCService<IAcpPermissionService> implements IAcpPermissionCaller {
-  @Autowired(INodeLogger)
-  private readonly logger: INodeLogger;
+export class AcpPermissionCallerService extends RPCService<IAcpPermissionService> {
+  @Autowired(AcpBrowserRpcRegistry)
+  private readonly browserRpcRegistry: AcpBrowserRpcRegistry;
 
   /**
-   * 当前活跃的 RPC 客户端（所有连接共享）
-   *
+   * Get the RPC client from the instance or from the active browser bridge.
    */
-  private static currentRpcClient: IAcpPermissionService | null = null;
-
-  private clientId: string | undefined;
-
-  /**
-   * 设置连接 clientId
-   *
-   * 注意：框架调用 setConnectionClientId 后才设置 rpcClient，
-   * 因此需要使用微任务延迟赋值，确保 rpcClient 已经准备好
-   */
-  setConnectionClientId(clientId: string): void {
-    this.clientId = clientId;
-
-    Promise.resolve().then(() => {
-      AcpPermissionCallerManager.currentRpcClient = this.client || null;
-    });
-  }
-
-  removeConnectionClientId(clientId: string): void {
-    if (this.clientId === clientId) {
-      if (AcpPermissionCallerManager.currentRpcClient === this.client) {
-        AcpPermissionCallerManager.currentRpcClient = null;
-      }
-      this.clientId = undefined;
-    }
+  private getRpcClient(): IAcpPermissionService | undefined {
+    return this.client ?? this.browserRpcRegistry?.getPermissionClient();
   }
 
   /**
-   * Request permission from the user via browser dialog
+   * Request permission from the user via browser dialog.
+   *
+   * @param params - The SDK RequestPermissionRequest from the agent.
+   * @param sessionId - The session that owns this request.
+   * @returns RequestPermissionResponse with the user's decision.
    */
-  async requestPermission(request: RequestPermissionRequest): Promise<RequestPermissionResponse> {
+  async requestPermission(params: RequestPermissionRequest, sessionId: string): Promise<RequestPermissionResponse> {
     // Check environment variable to skip permission confirmation
-    // Set SKIP_PERMISSION_CHECK=true to always allow without dialog
-    const skipPermissionCheck = process.env.SKIP_PERMISSION_CHECK === 'true';
-
-    if (skipPermissionCheck) {
-      const allowOptionId = this.findAllowOptionId(request.options);
+    if (process.env.SKIP_PERMISSION_CHECK === 'true') {
+      const allowOptionId = this.findAllowOptionId(params.options);
       return {
         outcome: {
           outcome: 'selected' as const,
@@ -73,48 +59,28 @@ export class AcpPermissionCallerManager extends RPCService<IAcpPermissionService
       };
     }
 
-    // 原有逻辑：等待前端弹窗返回
-    const rpcClient = AcpPermissionCallerManager.currentRpcClient || this.client;
-
+    const rpcClient = this.getRpcClient();
     if (!rpcClient) {
       throw new Error('[ACP Permission Caller] No active RPC client available');
     }
 
     const dialogParams: AcpPermissionDialogParams = {
-      requestId: `${request.sessionId}:${request.toolCall.toolCallId}`,
-      sessionId: request.sessionId,
-      title: request.toolCall.title ?? 'Permission Request',
-      kind: request.toolCall.kind ?? undefined,
-      content: this.buildPermissionContent(request),
-      locations: request.toolCall.locations?.map((loc) => ({
+      requestId: `${sessionId}:${params.toolCall.toolCallId}`,
+      sessionId,
+      title: params.toolCall.title ?? 'Permission Request',
+      kind: params.toolCall.kind ?? undefined,
+      content: this.buildPermissionContent(params),
+      locations: params.toolCall.locations?.map((loc) => ({
         path: loc.path,
         line: loc.line ?? undefined,
       })),
-      options: this.sortOptionsByKind(request.options),
+      options: this.sortOptionsByKind(params.options),
       timeout: 60000,
     };
 
     const decision = await rpcClient.$showPermissionDialog(dialogParams);
 
-    return this.buildPermissionResponse(decision, request.options);
-  }
-
-  /**
-   * Find the first "allow" option from the options list
-   */
-  private findAllowOptionId(options: PermissionOption[]): string {
-    // 优先返回 allow_once
-    const allowOnce = options.find((o) => o.kind === 'allow_once');
-    if (allowOnce) {
-      return allowOnce.optionId;
-    }
-    // 其次返回 allow_always
-    const allowAlways = options.find((o) => o.kind === 'allow_always');
-    if (allowAlways) {
-      return allowAlways.optionId;
-    }
-    // 兜底返回第一个选项
-    return options[0]?.optionId || '';
+    return this.buildPermissionResponse(decision, params.options);
   }
 
   /**
@@ -122,13 +88,28 @@ export class AcpPermissionCallerManager extends RPCService<IAcpPermissionService
    */
   async cancelRequest(requestId: string): Promise<void> {
     try {
-      const rpcClient = AcpPermissionCallerManager.currentRpcClient || this.client;
+      const rpcClient = this.getRpcClient();
       if (rpcClient) {
         await rpcClient.$cancelRequest(requestId);
       }
-    } catch (error) {
-      this.logger.error('[ACP Permission Caller] Failed to cancel request:', error);
+    } catch {
+      // Silently ignore cancellation errors
     }
+  }
+
+  /**
+   * Find the first "allow" option from the options list
+   */
+  private findAllowOptionId(options: PermissionOption[]): string {
+    const allowOnce = options.find((o) => o.kind === 'allow_once');
+    if (allowOnce) {
+      return allowOnce.optionId;
+    }
+    const allowAlways = options.find((o) => o.kind === 'allow_always');
+    if (allowAlways) {
+      return allowAlways.optionId;
+    }
+    return options[0]?.optionId || '';
   }
 
   private buildPermissionContent(request: RequestPermissionRequest): string {
@@ -158,7 +139,7 @@ export class AcpPermissionCallerManager extends RPCService<IAcpPermissionService
     switch (decision.type) {
       case 'allow':
       case 'reject': {
-        const optionId = decision.optionId || this.findOptionId(decision.type, options);
+        const optionId = decision.optionId ?? this.findOptionId(decision.type, options);
         return {
           outcome: {
             outcome: 'selected' as const,
@@ -202,7 +183,7 @@ export class AcpPermissionCallerManager extends RPCService<IAcpPermissionService
   }
 
   /**
-   * Sort permission options by kind to ensure consistent display order
+   * Sort permission options by kind to ensure consistent display order.
    * Order: allow_always > allow_once > reject_always > reject_once
    */
   private sortOptionsByKind(options: PermissionOption[]): PermissionOption[] {
@@ -220,3 +201,13 @@ export class AcpPermissionCallerManager extends RPCService<IAcpPermissionService
     });
   }
 }
+
+// ---------------------------------------------------------------------------
+// Backward compatibility alias — existing code referencing
+// AcpPermissionCallerManager / AcpPermissionCallerManagerToken continues to work.
+// ---------------------------------------------------------------------------
+/** @deprecated Use AcpPermissionCallerService instead */
+export const AcpPermissionCallerManagerToken = AcpPermissionCallerServiceToken;
+
+/** @deprecated Use AcpPermissionCallerService instead */
+export type AcpPermissionCallerManager = AcpPermissionCallerService;

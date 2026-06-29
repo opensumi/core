@@ -2,8 +2,7 @@
  * ACP 终端操作处理器
  *
  * 为 CLI Agent 提供进程级终端（命令执行）能力：
- * - createTerminal：创建新终端并执行命令，创建前可通过 permissionCallback 触发用户授权；
- *   自动收集输出并按 outputByteLimit 滑动截断
+ * - createTerminal：创建新终端并执行命令
  * - getTerminalOutput：读取终端当前输出缓冲及退出状态
  * - waitForTerminalExit：等待终端进程退出（带超时）
  * - killTerminal：强制终止终端进程
@@ -17,43 +16,44 @@ import { INodeLogger } from '@opensumi/ide-core-node';
 
 import { ACPErrorCode } from './constants';
 
-// Re-export the permission callback type for convenience
 export const AcpTerminalHandlerToken = Symbol('AcpTerminalHandlerToken');
 
-export type TerminalPermissionCallback = (
-  sessionId: string,
-  operation: 'command',
-  details: {
-    command: string;
-    args?: string[];
-    cwd?: string;
-    title: string;
-    kind: string;
-  },
-) => Promise<boolean>;
-
-export interface TerminalRequest {
+export interface CreateTerminalRequest {
   sessionId: string;
-  command?: string;
+  command: string;
   args?: string[];
   env?: Record<string, string>;
   cwd?: string;
   outputByteLimit?: number;
-  terminalId?: string;
-  timeout?: number;
 }
 
-export interface TerminalResponse {
-  error?: {
-    code: number;
-    message: string;
-  };
+export interface CreateTerminalResponse {
   terminalId?: string;
-  output?: string;
-  truncated?: boolean;
-  exitStatus?: number | null;
-  exitCode?: number;
-  signal?: string;
+  error?: { message: string };
+}
+
+export interface IAcpTerminalHandler {
+  createTerminal(req: CreateTerminalRequest): Promise<CreateTerminalResponse>;
+  getTerminalOutput(
+    terminalId: string,
+    sessionId: string,
+  ): Promise<{
+    output?: string;
+    truncated?: boolean;
+    exitStatus?: number;
+    error?: { message: string };
+  }>;
+  waitForTerminalExit(
+    terminalId: string,
+    sessionId: string,
+  ): Promise<{
+    exitCode?: number;
+    signal?: string;
+    error?: { message: string };
+  }>;
+  killTerminal(terminalId: string, sessionId: string): Promise<{ error?: { message: string } }>;
+  releaseTerminal(terminalId: string, sessionId: string): Promise<{ error?: { message: string } }>;
+  releaseSessionTerminals(sessionId: string): Promise<void>;
 }
 
 interface TerminalSession {
@@ -69,20 +69,12 @@ interface TerminalSession {
 }
 
 @Injectable()
-export class AcpTerminalHandler {
+export class AcpTerminalHandler implements IAcpTerminalHandler {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
   private terminals = new Map<string, TerminalSession>();
   private defaultOutputLimit = 1024 * 1024; // 1MB default
-  private permissionCallback: TerminalPermissionCallback | null = null;
-
-  /**
-   * Set the permission callback for terminal command execution
-   */
-  setPermissionCallback(callback: TerminalPermissionCallback): void {
-    this.permissionCallback = callback;
-  }
 
   configure(options: { outputLimit?: number }): void {
     if (options.outputLimit !== undefined) {
@@ -90,7 +82,7 @@ export class AcpTerminalHandler {
     }
   }
 
-  async createTerminal(request: TerminalRequest): Promise<TerminalResponse> {
+  async createTerminal(request: CreateTerminalRequest): Promise<CreateTerminalResponse> {
     const startTime = Date.now();
     this.logger?.log(
       `[AcpTerminalHandler] createTerminal called, sessionId=${request.sessionId}, command=${
@@ -102,44 +94,17 @@ export class AcpTerminalHandler {
       const terminalId = uuid();
       this.logger?.log(`[AcpTerminalHandler] Generated terminalId: ${terminalId}`);
 
-      // Check permission for command execution if callback is set
-      if (this.permissionCallback) {
-        const commandStr = [request.command, ...(request.args || [])].join(' ');
-        this.logger?.log(`[AcpTerminalHandler] Checking permission for command: ${commandStr}`);
-
-        const permitted = await this.permissionCallback(request.sessionId, 'command', {
-          command: commandStr,
-          args: request.args,
-          cwd: request.cwd,
-          title: `Run command: ${commandStr}`,
-          kind: 'command',
-        });
-
-        if (!permitted) {
-          this.logger?.warn(`[AcpTerminalHandler] Command execution permission denied: ${commandStr}`);
-          return {
-            error: {
-              code: ACPErrorCode.FORBIDDEN,
-              message: 'Command execution permission denied',
-            },
-          };
-        }
-        this.logger?.log(`[AcpTerminalHandler] Permission granted for command: ${commandStr}`);
-      }
-
       // Merge environment variables
       const env = {
         ...process.env,
         ...request.env,
       };
       this.logger?.log(
-        `[AcpTerminalHandler] Spawning PTY process: command=${request.command || '/bin/sh'}, cwd=${
-          request.cwd || process.cwd()
-        }`,
+        `[AcpTerminalHandler] Spawning PTY process: command=${request.command}, cwd=${request.cwd || process.cwd()}`,
       );
 
       // Create PTY process using node-pty
-      const ptyProcess = pty.spawn(request.command || '/bin/sh', request.args || [], {
+      const ptyProcess = pty.spawn(request.command, request.args || [], {
         name: 'xterm-256color',
         cwd: request.cwd || process.cwd(),
         env,
@@ -198,34 +163,39 @@ export class AcpTerminalHandler {
       this.logger?.error('[AcpTerminalHandler] Error creating terminal:', error);
       return {
         error: {
-          code: ACPErrorCode.SERVER_ERROR,
           message: error instanceof Error ? error.message : 'Failed to create terminal',
         },
       };
     }
   }
 
-  async getTerminalOutput(request: TerminalRequest): Promise<TerminalResponse> {
-    this.logger?.debug(`[AcpTerminalHandler] getTerminalOutput called, terminalId=${request.terminalId}`);
+  async getTerminalOutput(
+    terminalId: string,
+    sessionId: string,
+  ): Promise<{
+    output?: string;
+    truncated?: boolean;
+    exitStatus?: number;
+    error?: { message: string };
+  }> {
+    this.logger?.debug(`[AcpTerminalHandler] getTerminalOutput called, terminalId=${terminalId}`);
 
-    const terminalSession = this.terminals.get(request.terminalId || '');
+    const terminalSession = this.terminals.get(terminalId);
     if (!terminalSession) {
-      this.logger?.warn(`[AcpTerminalHandler] Terminal not found: ${request.terminalId}`);
+      this.logger?.warn(`[AcpTerminalHandler] Terminal not found: ${terminalId}`);
       return {
         error: {
-          code: ACPErrorCode.RESOURCE_NOT_FOUND,
           message: 'Terminal not found',
         },
       };
     }
 
-    if (terminalSession.sessionId !== request.sessionId) {
+    if (terminalSession.sessionId !== sessionId) {
       this.logger?.warn(
-        `[AcpTerminalHandler] Session mismatch: expected ${terminalSession.sessionId}, got ${request.sessionId}`,
+        `[AcpTerminalHandler] Session mismatch: expected ${terminalSession.sessionId}, got ${sessionId}`,
       );
       return {
         error: {
-          code: ACPErrorCode.SERVER_ERROR,
           message: 'Session mismatch',
         },
       };
@@ -242,35 +212,36 @@ export class AcpTerminalHandler {
     return {
       output,
       truncated,
-      exitStatus: terminalSession.exited ? terminalSession.exitCode ?? 0 : null,
+      exitStatus: terminalSession.exited ? terminalSession.exitCode ?? 0 : undefined,
     };
   }
 
-  async waitForTerminalExit(request: TerminalRequest): Promise<TerminalResponse> {
-    this.logger?.debug(
-      `[AcpTerminalHandler] waitForTerminalExit called, terminalId=${request.terminalId}, timeout=${
-        request.timeout ?? 30000
-      }ms`,
-    );
+  async waitForTerminalExit(
+    terminalId: string,
+    sessionId: string,
+  ): Promise<{
+    exitCode?: number;
+    signal?: string;
+    error?: { message: string };
+  }> {
+    this.logger?.debug(`[AcpTerminalHandler] waitForTerminalExit called, terminalId=${terminalId}`);
 
-    const terminalSession = this.terminals.get(request.terminalId || '');
+    const terminalSession = this.terminals.get(terminalId);
     if (!terminalSession) {
-      this.logger?.warn(`[AcpTerminalHandler] Terminal not found: ${request.terminalId}`);
+      this.logger?.warn(`[AcpTerminalHandler] Terminal not found: ${terminalId}`);
       return {
         error: {
-          code: ACPErrorCode.RESOURCE_NOT_FOUND,
           message: 'Terminal not found',
         },
       };
     }
 
-    if (terminalSession.sessionId !== request.sessionId) {
+    if (terminalSession.sessionId !== sessionId) {
       this.logger?.warn(
-        `[AcpTerminalHandler] Session mismatch: expected ${terminalSession.sessionId}, got ${request.sessionId}`,
+        `[AcpTerminalHandler] Session mismatch: expected ${terminalSession.sessionId}, got ${sessionId}`,
       );
       return {
         error: {
-          code: ACPErrorCode.SERVER_ERROR,
           message: 'Session mismatch',
         },
       };
@@ -278,18 +249,16 @@ export class AcpTerminalHandler {
 
     // If already exited, return immediately
     if (terminalSession.exited) {
-      this.logger?.log(
-        `[AcpTerminalHandler] Terminal ${request.terminalId} already exited, code=${terminalSession.exitCode}`,
-      );
+      this.logger?.log(`[AcpTerminalHandler] Terminal ${terminalId} already exited, code=${terminalSession.exitCode}`);
       return {
         exitCode: terminalSession.exitCode,
       };
     }
 
-    this.logger?.log(`[AcpTerminalHandler] Waiting for terminal ${request.terminalId} to exit...`);
+    this.logger?.log(`[AcpTerminalHandler] Waiting for terminal ${terminalId} to exit...`);
 
-    // Wait for exit with timeout
-    const timeout = request.timeout ?? 30000; // 30s default
+    // Wait for exit with timeout (30s default)
+    const timeout = 30000;
     const waitStartTime = Date.now();
 
     return new Promise((resolve) => {
@@ -299,7 +268,7 @@ export class AcpTerminalHandler {
           clearTimeout(timeoutId);
           const waitDuration = Date.now() - waitStartTime;
           this.logger?.log(
-            `[AcpTerminalHandler] Terminal ${request.terminalId} exited after ${waitDuration}ms, code=${terminalSession.exitCode}`,
+            `[AcpTerminalHandler] Terminal ${terminalId} exited after ${waitDuration}ms, code=${terminalSession.exitCode}`,
           );
           resolve({
             exitCode: terminalSession.exitCode,
@@ -311,31 +280,27 @@ export class AcpTerminalHandler {
         clearInterval(checkInterval);
         const waitDuration = Date.now() - waitStartTime;
         this.logger?.warn(
-          `[AcpTerminalHandler] waitForTerminalExit timeout after ${waitDuration}ms for terminal ${request.terminalId}`,
+          `[AcpTerminalHandler] waitForTerminalExit timeout after ${waitDuration}ms for terminal ${terminalId}`,
         );
-        // Return null exitStatus to indicate still running
-        resolve({
-          exitStatus: null,
-        });
+        resolve({});
       }, timeout);
     });
   }
 
-  async killTerminal(request: TerminalRequest): Promise<TerminalResponse> {
-    const terminalSession = this.terminals.get(request.terminalId || '');
+  async killTerminal(terminalId: string, sessionId: string): Promise<{ error?: { message: string } }> {
+    this.logger?.log(`[AcpTerminalHandler] killTerminal() — terminalId=${terminalId}`);
+    const terminalSession = this.terminals.get(terminalId);
     if (!terminalSession) {
       return {
         error: {
-          code: ACPErrorCode.RESOURCE_NOT_FOUND,
           message: 'Terminal not found',
         },
       };
     }
 
-    if (terminalSession.sessionId !== request.sessionId) {
+    if (terminalSession.sessionId !== sessionId) {
       return {
         error: {
-          code: ACPErrorCode.SERVER_ERROR,
           message: 'Session mismatch',
         },
       };
@@ -343,13 +308,11 @@ export class AcpTerminalHandler {
 
     // If already exited, just return success
     if (terminalSession.exited) {
-      return {
-        exitStatus: terminalSession.exitCode ?? 0,
-      };
+      return {};
     }
 
     try {
-      this.logger?.log(`Killing terminal ${request.terminalId}`);
+      this.logger?.log(`Killing terminal ${terminalId}`);
 
       terminalSession.killed = true;
 
@@ -377,57 +340,53 @@ export class AcpTerminalHandler {
         terminalSession.exited = true;
       }
 
-      return {
-        exitCode: terminalSession.exitCode ?? -1,
-      };
+      return {};
     } catch (error) {
       this.logger?.error('Error killing terminal:', error);
       return {
         error: {
-          code: ACPErrorCode.SERVER_ERROR,
           message: error instanceof Error ? error.message : 'Failed to kill terminal',
         },
       };
     }
   }
 
-  async releaseTerminal(request: TerminalRequest): Promise<TerminalResponse> {
-    const terminalSession = this.terminals.get(request.terminalId || '');
+  async releaseTerminal(terminalId: string, sessionId: string): Promise<{ error?: { message: string } }> {
+    this.logger?.log(`[AcpTerminalHandler] releaseTerminal() — terminalId=${terminalId}`);
+    const terminalSession = this.terminals.get(terminalId);
     if (!terminalSession) {
       // Already released or doesn't exist
       return {};
     }
 
-    if (terminalSession.sessionId !== request.sessionId) {
+    if (terminalSession.sessionId !== sessionId) {
       return {
         error: {
-          code: ACPErrorCode.SERVER_ERROR,
           message: 'Session mismatch',
         },
       };
     }
 
     try {
-      this.logger?.log(`Releasing terminal ${request.terminalId}`);
+      this.logger?.log(`Releasing terminal ${terminalId}`);
 
       // Kill the PTY process if not already exited
       if (!terminalSession.exited) {
         try {
           terminalSession.ptyProcess.kill();
         } catch (e) {
-          this.logger?.warn(`Failed to kill pty process ${request.terminalId}:`, e);
+          this.logger?.warn(`Failed to kill pty process ${terminalId}:`, e);
         }
       }
 
       // Remove from tracking
-      this.terminals.delete(request.terminalId || '');
+      this.terminals.delete(terminalId);
 
       return {};
     } catch (error) {
       this.logger?.error('Error releasing terminal:', error);
       return {
         error: {
-          code: ACPErrorCode.SERVER_ERROR,
           message: error instanceof Error ? error.message : 'Failed to release terminal',
         },
       };
@@ -447,10 +406,7 @@ export class AcpTerminalHandler {
     }
 
     for (const terminalId of terminalsToRelease) {
-      await this.releaseTerminal({
-        sessionId,
-        terminalId,
-      });
+      await this.releaseTerminal(terminalId, sessionId);
     }
 
     this.logger?.log(`Released ${terminalsToRelease.length} terminals for session ${sessionId}`);

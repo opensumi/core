@@ -3,7 +3,7 @@
  *
  * 为 ACP 模式提供包装层，封装：
  * - ACP 初始化逻辑（等待 Agent 准备）
- * - 等待 sessionModel 准备好
+ * - 等待历史会话元数据准备好
  * - Loading/Error 状态处理
  * - 权限弹窗
  *
@@ -16,18 +16,20 @@ import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { AIBackSerivcePath, IAIBackService, localize } from '@opensumi/ide-core-common';
 
 import { ChatProxyServiceToken, IChatManagerService } from '../../../common';
-import { ChatManagerService } from '../../chat/chat-manager.service';
 import { AcpChatManagerService } from '../../chat/chat-manager.service.acp';
-import { ChatProxyService } from '../../chat/chat-proxy.service';
 import { AcpChatProxyService } from '../../chat/chat-proxy.service.acp';
 import { ChatInternalService } from '../../chat/chat.internal.service';
-import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
+import { shouldForceAcpBackendReadinessFailure } from '../acp-bdd-runtime-fixtures';
 
 interface AcpChatViewWrapperProps {
   children: React.ReactNode;
   aiChatService: ChatInternalService;
 }
+
+type AcpBootstrapChatService = ChatInternalService & {
+  ensureBootstrapSessionModel?: () => Promise<unknown>;
+};
 
 export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapperProps) {
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
@@ -42,33 +44,18 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
     initialized: false,
   });
 
-  // ACP 模式：等待 sessionModel 准备好
-  const [sessionReady, setSessionReady] = useState(false);
-
-  // 初始化超时状态：超过 30s 未完成时展示重试按钮
-  const [timedOut, setTimedOut] = useState(false);
-
-  // 重试 key：变化时触发重新初始化
-  const [retryKey, setRetryKey] = useState(0);
-
-  // 用于取消上一轮初始化的 cancelled flag
+  // 用于取消当前初始化的 cancelled flag
   const cancelledRef = useRef(false);
 
-  // ACP 模式：只在第一次渲染或重试时触发初始化
+  // ACP 模式：组件 mount 时触发初始化
   useEffect(() => {
     // 非 ACP 模式不需要延迟初始化
     if (!aiNativeConfigService.capabilities.supportsAgentMode) {
       setInitState({ initialized: true });
-      setSessionReady(true);
       return;
     }
 
-    // 取消上一轮初始化，重置状态
     cancelledRef.current = false;
-    setInitState({ initialized: false });
-    setSessionReady(false);
-    setTimedOut(false);
-
     const cancelled = () => cancelledRef.current;
 
     const initializeACP = async () => {
@@ -81,6 +68,9 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
         while (!ready && retries < maxRetries) {
           if (cancelled()) {
             return;
+          }
+          if (shouldForceAcpBackendReadinessFailure()) {
+            throw new Error('ACP backend readiness failure fixture');
           }
           const isReady = await aiBackService.ready?.();
           ready = !!isReady;
@@ -101,15 +91,19 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
 
         // 先调用 aiChatService.init() 注册 onStorageInit 监听器
         aiChatService.init();
-        // 创建新会话
-        await aiChatService.createSessionModel();
+
+        // 加载历史会话列表（用于 history 下拉展示）
+        await chatManagerService.loadSessionList();
 
         if (cancelled()) {
           return;
         }
 
-        // 加载历史会话列表（用于 history 下拉展示）
-        await chatManagerService.loadSessionList();
+        try {
+          await (aiChatService as AcpBootstrapChatService).ensureBootstrapSessionModel?.();
+        } catch {
+          // Bootstrap is a UX warm-up only. The first real send still creates a session lazily.
+        }
 
         if (cancelled()) {
           return;
@@ -123,91 +117,34 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
         // Fallback to default agent when ACP is unavailable
         chatManagerService.fallbackToLocal();
         chatProxyService.registerFallbackAgent();
-        // Re-create session model using the local provider
-        await aiChatService.createSessionModel();
+        if (!aiChatService.sessionModel) {
+          await aiChatService.createSessionModel();
+        }
         setInitState({ initialized: true });
       }
     };
-
-    // 30s 超时 timer
-    const timeoutTimer = window.setTimeout(() => {
-      setTimedOut(true);
-    }, 30000);
 
     initializeACP();
 
     return () => {
       cancelledRef.current = true;
-      clearTimeout(timeoutTimer);
     };
-  }, [retryKey]);
+  }, []);
 
-  const handleRetry = () => {
-    setRetryKey((k) => k + 1);
-  };
-
-  // 等待 sessionModel 准备好
-  useEffect(() => {
-    if (!aiNativeConfigService.capabilities.supportsAgentMode) {
-      setSessionReady(true);
-      return;
-    }
-
-    if (!initState.initialized) {
-      return;
-    }
-
-    // 检查 sessionModel 是否已准备好
-    if (aiChatService.sessionModel) {
-      setSessionReady(true);
-      return;
-    }
-
-    // 轮询检查 sessionModel，直到就绪
-    let pollCount = 0;
-    const MAX_POLL_COUNT = 12000; // 1200s at 100ms intervals
-
-    const interval = window.setInterval(() => {
-      pollCount++;
-      if (aiChatService.sessionModel) {
-        setSessionReady(true);
-        clearInterval(interval);
-        return;
-      }
-      if (pollCount >= MAX_POLL_COUNT) {
-        clearInterval(interval);
-        setInitState({ initialized: true });
-      }
-    }, 100);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [initState.initialized, retryKey]);
   if (!aiNativeConfigService.capabilities.supportsAgentMode) {
     return children;
   }
 
-  // ACP 模式或初始化完成且 session 准备好，渲染子组件
-  if (initState.initialized && sessionReady) {
+  // ACP 模式初始化完成后渲染子组件；真正的 session 会在首次发送时创建。
+  if (initState.initialized) {
     return <>{children}</>;
   }
 
-  // 初始化中或等待 session
+  // 初始化中
   return (
     <div className={styles.loading_container}>
       <Progress loading={true} />
       <div>{localize('aiNative.chat.acp.initializing.text', 'Initializing ACP service...')}</div>
-      {timedOut && (
-        <>
-          <div className={styles.timeout_hint}>
-            {localize('aiNative.chat.acp.timeout.hint', 'Initialization is taking longer than expected')}
-          </div>
-          <button className={styles.retry_button} onClick={handleRetry}>
-            {localize('aiNative.chat.acp.retry', 'Retry')}
-          </button>
-        </>
-      )}
     </div>
   );
 }

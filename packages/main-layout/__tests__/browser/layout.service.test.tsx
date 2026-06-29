@@ -17,15 +17,14 @@ import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { CommonServerPath, Deferred, ILoggerManagerClient, OS } from '@opensumi/ide-core-common';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { MainLayoutModule } from '@opensumi/ide-main-layout/lib/browser';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { MainLayoutModuleContribution } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
 import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
-
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 
 const MockView = (props) => <div>Test view{props.message && <p id='test-unique-id'>has prop.message</p>}</div>;
 
@@ -119,7 +118,7 @@ describe('main layout test', () => {
           ready: Promise.resolve(),
           get: () => undefined,
           onPreferenceChanged: () => Disposable.create(() => {}),
-          onSpecificPreferenceChange: (func: any) => Disposable.create(() => {}),
+          onSpecificPreferenceChange: () => Disposable.create(() => {}),
         },
       },
       {
@@ -443,5 +442,95 @@ describe('main layout test', () => {
       service.toggleSlot(SlotLocation.extendView, false);
     });
     expect(service.isVisible(SlotLocation.extendView)).toBeFalsy();
+  });
+
+  it('should store tabbar state into the active layout state key', () => {
+    const layoutStorageKey = 'layout.ai.agentic';
+    const layoutState = injector.get(LayoutState);
+    const setStateSpy = jest.spyOn(layoutState, 'setState');
+
+    act(() => {
+      service.setLayoutStateKey(layoutStorageKey);
+      service.storeState(
+        {
+          location: 'AI-Chat',
+          prevSize: 1080,
+        } as any,
+        'AI-Chat-Container',
+      );
+    });
+
+    expect(setStateSpy).toHaveBeenCalledWith(
+      layoutStorageKey,
+      expect.objectContaining({
+        'AI-Chat': {
+          currentId: 'AI-Chat-Container',
+          size: 1080,
+        },
+      }),
+    );
+    act(() => {
+      service.setLayoutStateKey('layout');
+    });
+    setStateSpy.mockRestore();
+  });
+
+  it('should store delayed tabbar state into the captured layout state key', () => {
+    const layoutStorageKey = 'layout.ai.agentic';
+    const layoutState = injector.get(LayoutState);
+    const setStateSpy = jest.spyOn(layoutState, 'setState');
+
+    act(() => {
+      service.setLayoutStateKey('layout');
+      service.storeState(
+        {
+          location: 'AI-Chat',
+          prevSize: 1080,
+        } as any,
+        'AI-Chat-Container',
+        layoutStorageKey,
+      );
+    });
+
+    expect(setStateSpy).toHaveBeenCalledWith(
+      layoutStorageKey,
+      expect.objectContaining({
+        'AI-Chat': {
+          currentId: 'AI-Chat-Container',
+          size: 1080,
+        },
+      }),
+    );
+    setStateSpy.mockRestore();
+  });
+
+  it('should force restore tabbar services when setting the active layout state key again', () => {
+    const layoutStorageKey = 'layout.ai.agentic';
+    const layoutState = injector.get(LayoutState);
+    const rightTabbarService = service.getTabbarService(SlotLocation.extendView);
+    const setSizeSpy = jest.spyOn(rightTabbarService.resizeHandle!, 'setSize').mockImplementation(() => {});
+
+    layoutState.setStateSync(layoutStorageKey, {
+      [SlotLocation.extendView]: {
+        currentId: testContainerId,
+        size: 321,
+      },
+    });
+
+    act(() => {
+      service.setLayoutStateKey(layoutStorageKey, { saveCurrent: false });
+    });
+    setSizeSpy.mockClear();
+
+    act(() => {
+      service.setLayoutStateKey(layoutStorageKey, { saveCurrent: false, forceRestore: true });
+    });
+
+    expect(setSizeSpy).toHaveBeenCalledWith(321);
+
+    act(() => {
+      service.setLayoutStateKey('layout');
+    });
+    setSizeSpy.mockRestore();
   });
 });

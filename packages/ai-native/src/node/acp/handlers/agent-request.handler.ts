@@ -31,8 +31,8 @@ import {
 } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
-import { AcpPermissionCallerManagerToken } from '../../acp';
-import { AcpPermissionCallerManager } from '../acp-permission-caller.service';
+import { AcpPermissionCallerManagerToken, AcpPermissionCallerServiceToken } from '../../acp';
+import { AcpPermissionCallerService } from '../acp-permission-caller.service';
 
 import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './file-system.handler';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './terminal.handler';
@@ -54,10 +54,11 @@ export const AcpAgentRequestHandlerToken = Symbol('AcpAgentRequestHandlerToken')
  * ### Injector 层级问题
  *
  * 由于 `AcpAgentRequestHandler` 在主 Injector 中创建，它通过 `@Autowired` 注入的
- * `AcpPermissionCallerManager` 不是 childInjector 中与 RPC 连接关联的实例。
+ * `AcpPermissionCallerService` 不是 childInjector 中与 RPC 连接关联的实例。
  *
- * 解决方案：`AcpPermissionCallerManager` 使用静态变量 `currentRpcClient` 共享 RPC client，
- * 确保权限对话框在用户当前活跃的 Browser Tab 中显示。
+ * 解决方案：per-connection 的 ACP permission bridge 在连接建立时登记 Browser RPC client，
+ * `AcpPermissionCallerService` 再从 registry 取当前活跃的 client 调用 Browser 端
+ * `AcpPermissionRpcService`。
  *
  * @see {@link /docs/ai-native/architecture/injector-hierarchy.md} 详细设计文档
  */
@@ -69,8 +70,8 @@ export class AcpAgentRequestHandler {
   @Autowired(AcpTerminalHandlerToken)
   private terminalHandler: AcpTerminalHandler;
 
-  @Autowired(AcpPermissionCallerManagerToken)
-  private permissionCaller: AcpPermissionCallerManager;
+  @Autowired(AcpPermissionCallerServiceToken)
+  private permissionCaller: AcpPermissionCallerService;
 
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
@@ -101,7 +102,7 @@ export class AcpAgentRequestHandler {
   async handlePermissionRequest(request: RequestPermissionRequest): Promise<RequestPermissionResponse> {
     try {
       // Call browser-side permission dialog via RPC
-      const response = await this.permissionCaller.requestPermission(request);
+      const response = await this.permissionCaller.requestPermission(request, request.sessionId);
 
       return response;
     } catch (error) {
@@ -149,23 +150,26 @@ export class AcpAgentRequestHandler {
   async handleWriteTextFile(request: WriteTextFileRequest): Promise<WriteTextFileResponse> {
     try {
       // For write operations, request permission from user first
-      const permissionResponse = await this.permissionCaller.requestPermission({
-        sessionId: request.sessionId,
-        toolCall: {
-          toolCallId: `write-${Date.now()}`,
-          title: `Write file: ${request.path}`,
-          kind: 'write' as any,
-          status: 'pending',
-          locations: [{ path: request.path }],
-          rawInput: { path: request.path, contentLength: request.content?.length },
+      const permissionResponse = await this.permissionCaller.requestPermission(
+        {
+          sessionId: request.sessionId,
+          toolCall: {
+            toolCallId: `write-${Date.now()}`,
+            title: `Write file: ${request.path}`,
+            kind: 'write' as any,
+            status: 'pending',
+            locations: [{ path: request.path }],
+            rawInput: { path: request.path, contentLength: request.content?.length },
+          },
+          // 默认 options - 实际项目中应根据后端 ACP Agent 传入的 options 为准
+          options: [
+            { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
+            { optionId: 'allow_always', name: 'Allow Always', kind: 'allow_always' },
+            { optionId: 'reject_once', name: 'Reject Once', kind: 'reject_once' },
+          ],
         },
-        // 默认 options - 实际项目中应根据后端 ACP Agent 传入的 options 为准
-        options: [
-          { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
-          { optionId: 'allow_always', name: 'Allow Always', kind: 'allow_always' },
-          { optionId: 'reject_once', name: 'Reject Once', kind: 'reject_once' },
-        ],
-      });
+        request.sessionId,
+      );
 
       if (
         permissionResponse.outcome.outcome !== 'selected' ||
@@ -204,22 +208,25 @@ export class AcpAgentRequestHandler {
     try {
       // For command execution, request permission from user first
       const commandStr = [request.command, ...(request.args || [])].join(' ');
-      const permissionResponse = await this.permissionCaller.requestPermission({
-        sessionId: request.sessionId,
-        toolCall: {
-          toolCallId: `terminal-${Date.now()}`,
-          title: `Run command: ${commandStr}`,
-          kind: 'execute',
-          status: 'pending',
-          rawInput: { command: request.command, args: request.args, cwd: request.cwd },
+      const permissionResponse = await this.permissionCaller.requestPermission(
+        {
+          sessionId: request.sessionId,
+          toolCall: {
+            toolCallId: `terminal-${Date.now()}`,
+            title: `Run command: ${commandStr}`,
+            kind: 'execute',
+            status: 'pending',
+            rawInput: { command: request.command, args: request.args, cwd: request.cwd },
+          },
+          // 默认 options - 实际项目中应根据后端 ACP Agent 传入的 options 为准
+          options: [
+            { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
+            { optionId: 'allow_always', name: 'Allow Always', kind: 'allow_always' },
+            { optionId: 'reject_once', name: 'Reject Once', kind: 'reject_once' },
+          ],
         },
-        // 默认 options - 实际项目中应根据后端 ACP Agent 传入的 options 为准
-        options: [
-          { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
-          { optionId: 'allow_always', name: 'Allow Always', kind: 'allow_always' },
-          { optionId: 'reject_once', name: 'Reject Once', kind: 'reject_once' },
-        ],
-      });
+        request.sessionId,
+      );
 
       if (
         permissionResponse.outcome.outcome !== 'selected' ||
@@ -264,10 +271,7 @@ export class AcpAgentRequestHandler {
    */
   async handleTerminalOutput(request: TerminalOutputRequest): Promise<TerminalOutputResponse> {
     try {
-      const result = await this.terminalHandler.getTerminalOutput({
-        sessionId: request.sessionId,
-        terminalId: request.terminalId,
-      });
+      const result = await this.terminalHandler.getTerminalOutput(request.terminalId, request.sessionId);
 
       if (result.error) {
         this.logger.error(`[ACP] Terminal output error: ${result.error.message}`);
@@ -290,10 +294,7 @@ export class AcpAgentRequestHandler {
    */
   async handleWaitForTerminalExit(request: WaitForTerminalExitRequest): Promise<WaitForTerminalExitResponse> {
     try {
-      const result = await this.terminalHandler.waitForTerminalExit({
-        sessionId: request.sessionId,
-        terminalId: request.terminalId,
-      });
+      const result = await this.terminalHandler.waitForTerminalExit(request.terminalId, request.sessionId);
 
       if (result.error) {
         this.logger.error(`[ACP] Wait for exit error: ${result.error.message}`);
@@ -315,10 +316,7 @@ export class AcpAgentRequestHandler {
    */
   async handleKillTerminal(request: KillTerminalCommandRequest): Promise<KillTerminalCommandResponse> {
     try {
-      const result = await this.terminalHandler.killTerminal({
-        sessionId: request.sessionId,
-        terminalId: request.terminalId,
-      });
+      const result = await this.terminalHandler.killTerminal(request.terminalId, request.sessionId);
 
       if (result.error) {
         this.logger.error(`[ACP] Kill terminal error: ${result.error.message}`);
@@ -337,10 +335,7 @@ export class AcpAgentRequestHandler {
    */
   async handleReleaseTerminal(request: ReleaseTerminalRequest): Promise<ReleaseTerminalResponse> {
     try {
-      const result = await this.terminalHandler.releaseTerminal({
-        sessionId: request.sessionId,
-        terminalId: request.terminalId,
-      });
+      const result = await this.terminalHandler.releaseTerminal(request.terminalId, request.sessionId);
 
       if (result.error) {
         this.logger.error(`[ACP] Release terminal error: ${result.error.message}`);

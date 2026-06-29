@@ -65,6 +65,7 @@ export interface ITabbarViewProps {
   // tab上预留的位置，用来控制tab过多的显示效果
   margin?: number;
   canHideTabbar?: boolean;
+  containerFilter?: (component: ComponentRegistryInfo) => boolean;
   renderOtherVisibleContainers?: FC<{
     props: ITabbarViewProps;
     renderContainers: (
@@ -87,6 +88,7 @@ export const TabbarViewBase: FC<ITabbarViewProps> = (props) => {
     margin,
     tabSize,
     canHideTabbar,
+    containerFilter,
     renderOtherVisibleContainers = () => null,
     disableAutoAdjust,
   } = props;
@@ -98,11 +100,15 @@ export const TabbarViewBase: FC<ITabbarViewProps> = (props) => {
     () => (disableAutoAdjust ? Number.MAX_SAFE_INTEGER : Math.floor(fullSize - (margin || 0) / tabSize)),
     [disableAutoAdjust, fullSize, margin, tabSize],
   );
+  const getVisibleContainers = useCallback(
+    () =>
+      tabbarService.visibleContainers.filter(
+        (container) => !container.options?.hideTab && (!containerFilter || containerFilter(container)),
+      ),
+    [containerFilter, tabbarService],
+  );
   const [containers, setContainers] = useState<ComponentRegistryInfo[][]>(
-    splitVisibleTabs(
-      tabbarService.visibleContainers.filter((container) => !container.options?.hideTab),
-      visibleCount,
-    ),
+    splitVisibleTabs(getVisibleContainers(), visibleCount),
   );
 
   useEffect(() => {
@@ -112,12 +118,7 @@ export const TabbarViewBase: FC<ITabbarViewProps> = (props) => {
 
   useEffect(() => {
     const updateContainers = () => {
-      setContainers(
-        splitVisibleTabs(
-          tabbarService.visibleContainers.filter((container) => !container.options?.hideTab),
-          visibleCount,
-        ),
-      );
+      setContainers(splitVisibleTabs(getVisibleContainers(), visibleCount));
     };
 
     updateContainers();
@@ -128,7 +129,7 @@ export const TabbarViewBase: FC<ITabbarViewProps> = (props) => {
     return () => {
       disposable.dispose();
     };
-  }, [visibleCount]);
+  }, [getVisibleContainers, visibleCount]);
 
   const currentContainerId = useAutorun(tabbarService.currentContainerId);
   const hideTabBarWhenHidePanel = usePreference<boolean>('workbench.hideSlotTabBarWhenHidePanel', false);

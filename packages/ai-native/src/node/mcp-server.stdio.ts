@@ -8,6 +8,8 @@ import pkg from '../../package.json';
 import { IMCPServer } from '../common/mcp-server-manager';
 import { toClaudeToolName } from '../common/utils';
 
+import { summarizeMcpEnv, summarizeMcpTools } from './mcp-log-utils';
+
 export class StdioMCPServer implements IMCPServer {
   private name: string;
   public command: string;
@@ -50,9 +52,9 @@ export class StdioMCPServer implements IMCPServer {
       return;
     }
     this.logger?.log(
-      `Starting server "${this.name}" with command: ${this.command} and args: ${this.args?.join(
-        ' ',
-      )} and env: ${JSON.stringify(this.env)} and cwd: ${this.cwd}`,
+      `Starting server "${this.name}" with command: ${this.command}, args=${JSON.stringify(this.args ?? [])}, cwd=${
+        this.cwd
+      }, envSummary=${JSON.stringify(summarizeMcpEnv(this.env))}`,
     );
     // Filter process.env to exclude undefined values
     const sanitizedEnv: Record<string, string> = Object.fromEntries(
@@ -91,7 +93,7 @@ export class StdioMCPServer implements IMCPServer {
     this.started = true;
   }
 
-  async callTool(toolName: string, toolCallId: string, arg_string: string) {
+  async callTool(toolName: string, toolCallId: string, arg_string: string): Promise<any> {
     let args;
     try {
       args = JSON.parse(arg_string);
@@ -112,7 +114,7 @@ export class StdioMCPServer implements IMCPServer {
     return this.client.callTool(params);
   }
 
-  async getTools() {
+  async getTools(): Promise<any> {
     const originalTools = await this.client.listTools();
     this.toolNameMap.clear();
     // Process tool names to remove Chinese characters and create mapping
@@ -130,8 +132,15 @@ export class StdioMCPServer implements IMCPServer {
       ...originalTools,
       tools: sanitizedToolsArray,
     };
-    this.logger?.log(`Got tools from MCP server "${this.name}":`, sanitizedTools);
-    this.logger?.log('Tool name mapping: ', Object.fromEntries(this.toolNameMap));
+    this.logger?.log(
+      `Got tools from MCP server "${this.name}": ${JSON.stringify({
+        ...summarizeMcpTools(sanitizedTools),
+        renamedTools: this.toolNameMap.size,
+      })}`,
+    );
+    if (this.toolNameMap.size > 0) {
+      this.logger?.debug?.('Tool name mapping: ', Object.fromEntries(this.toolNameMap));
+    }
     return sanitizedTools;
   }
 

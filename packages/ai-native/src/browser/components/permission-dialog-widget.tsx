@@ -16,7 +16,10 @@ export interface PermissionDialogWidgetProps {
 }
 
 export const PermissionDialogWidget: React.FC<PermissionDialogWidgetProps> = ({ dialogManager, bottom }) => {
-  const [dialogs, setDialogs] = React.useState<Array<{ requestId: string; params: ShowPermissionDialogParams }>>([]);
+  const [allDialogs, setAllDialogs] = React.useState<Array<{ requestId: string; params: ShowPermissionDialogParams }>>(
+    [],
+  );
+  const [activeSessionId, setActiveSessionId] = React.useState<string | undefined>();
   const [focusedIndex, setFocusedIndex] = React.useState(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -24,13 +27,25 @@ export const PermissionDialogWidget: React.FC<PermissionDialogWidgetProps> = ({ 
 
   React.useEffect(() => {
     const unsubscribe = dialogManager.subscribe((newDialogs) => {
-      setDialogs(newDialogs);
+      setAllDialogs(newDialogs);
       setFocusedIndex(0);
     });
     const initialDialogs = dialogManager.getDialogs();
-    setDialogs(initialDialogs);
+    setAllDialogs(initialDialogs);
     return unsubscribe;
   }, [dialogManager]);
+
+  React.useEffect(() => {
+    const disposable = permissionBridgeService.onActiveSessionChange((sessionId) => {
+      setActiveSessionId(sessionId);
+      setFocusedIndex(0);
+    });
+    setActiveSessionId(permissionBridgeService.getActiveSession());
+    return () => disposable.dispose();
+  }, [permissionBridgeService]);
+
+  // Filter dialogs for the active session only
+  const dialogs = activeSessionId ? allDialogs.filter((d) => d.params.sessionId === activeSessionId) : [];
 
   React.useEffect(() => {
     if (dialogs.length > 0) {
@@ -95,11 +110,12 @@ export const PermissionDialogWidget: React.FC<PermissionDialogWidgetProps> = ({ 
       className={styles.permission_dialog_container}
       style={{ bottom: `calc(100% + ${bottom + 8}px)` }}
       tabIndex={0}
+      data-testid='acp-permission-dialog'
     >
-      <div className={styles.permission_dialog}>
+      <div className={styles.permission_dialog} data-testid='acp-permission-dialog-inner'>
         {/* 标题栏 */}
         <div className={cls(styles.header, shouldShowContent && styles.has_content)}>
-          <div className={styles.title}>
+          <div className={styles.title} data-testid='acp-permission-dialog-title'>
             <span className={styles.warning_icon}>!</span>
             {smartTitle}
           </div>
@@ -109,16 +125,22 @@ export const PermissionDialogWidget: React.FC<PermissionDialogWidgetProps> = ({ 
               permissionBridgeService.handleDialogClose(current.requestId);
               dialogManager.removeDialog(current.requestId);
             }}
+            data-testid='acp-permission-dialog-close'
+            aria-label='Close permission dialog'
           >
             <span className={getIcon('close')} />
           </button>
         </div>
 
         {/* 内容 */}
-        {shouldShowContent && params.content && <div className={styles.content}>{params.content}</div>}
+        {shouldShowContent && params.content && (
+          <div className={styles.content} data-testid='acp-permission-dialog-content'>
+            {params.content}
+          </div>
+        )}
 
         {/* 选项 */}
-        <div className={styles.options}>
+        <div className={styles.options} data-testid='acp-permission-dialog-options'>
           {(params.options || []).map((option, index) => {
             const isFocused = focusedIndex === index;
             return (
@@ -130,6 +152,10 @@ export const PermissionDialogWidget: React.FC<PermissionDialogWidgetProps> = ({ 
                   dialogManager.removeDialog(current.requestId);
                 }}
                 onMouseEnter={() => setFocusedIndex(index)}
+                data-testid={`acp-permission-dialog-option-${index}`}
+                data-option-id={option.optionId}
+                data-option-kind={option.kind}
+                aria-label={`Permission option ${option.name || option.optionId}`}
               >
                 <span className={styles.option_key}>{index + 1}</span>
                 <span className={styles.option_text}>{option.name || option.optionId}</span>

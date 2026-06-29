@@ -16,10 +16,10 @@ import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
 
 import { MCPConfigView } from './components/mcp-config.view';
-import { MCPConfigCommands } from './mcp-config.commands';
+import { MCPConfigCommands, MCP_CONFIG_COMPONENTS_SCHEME_ID } from './mcp-config.constants';
 
 const COMPONENTS_ID = 'opensumi-mcp-config-viewer';
-export const MCP_CONFIG_COMPONENTS_SCHEME_ID = 'mcp-config';
+export { MCP_CONFIG_COMPONENTS_SCHEME_ID } from './mcp-config.constants';
 
 export type IMCPConfigResource = IResource<{ configType: string }>;
 

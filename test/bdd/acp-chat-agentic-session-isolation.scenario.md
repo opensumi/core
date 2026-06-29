@@ -1,0 +1,43 @@
+# Scenario: ACP Chat Agentic Session Isolation - Concurrent Status and Updates
+
+**Trigger:** `packages/ai-native/src/browser/chat/chat.view.acp.tsx`, `packages/ai-native/src/browser/chat/chat.internal.service.acp.ts`, `packages/ai-native/src/browser/chat/chat-manager.service.acp.ts`, or `packages/ai-native/src/node/acp/acp-agent.service.ts`
+
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** The mock ACP agent uses `--fixture=history` for two deterministic ACP sessions, `--fixture=long-stream` for a controlled active stream, and `--fixture=stream-rich` for completed stream assertions. A real LLM-backed ACP agent may be used only for live two-session smoke coverage. History surface is available, and a fresh MCP session runs in a profile exposing `acp_chat_get_session_state` and `acp_chat_list_sessions`. **Workspace mutation:** None. **Automation status:** History-backed isolation is converted to `tools/playwright/src/tests/acp-chat-agentic-session-isolation.test.ts` with `fixture=history`, `profile=interactive`, deterministic per-session send/switch assertions, and metadata-only state/list checks. Concurrent long-stream isolation remains blocked until a fixture pass can preserve an active stream while switching sessions.
+
+## Given
+
+- Agentic AI Chat is visible.
+- Session A can stream for a controlled duration with the mock `long-stream` fixture.
+- Session B can complete a short deterministic response with the mock `stream-rich` fixture, or the subcase is recorded as blocked if the harness cannot switch fixtures while preserving both sessions.
+
+## When
+
+1. Select or create Session A.
+2. Start a long-running deterministic stream in Session A.
+3. Switch to Session B from the history surface while Session A is still working.
+4. Send a short deterministic prompt in Session B and wait for completion.
+5. Record visible rows, loading state, and current session marker.
+6. Let Session A emit more stream updates while Session B remains selected.
+7. Record whether Session B DOM changes.
+8. Switch back to Session A and record its stream/status state.
+9. Record `acp_chat_get_session_state({})` and `acp_chat_list_sessions({})`.
+
+## Then
+
+- Session B does not receive Session A content, reasoning, tool cards, status, or permission badges.
+- Session A working status remains scoped to Session A while another session is selected.
+- Session B can send and complete while Session A is still active or pending.
+- Switching back to Session A shows only Session A rows and active status.
+- Current markers and state tool active session id agree after each selection.
+- List/state tools remain metadata-only.
+
+## Live Agent Execution
+
+- A real LLM-backed ACP agent may verify that two live sessions can be listed, selected, and kept visually separate while state/list tools remain metadata-only.
+- Live-agent mode must not assert concurrent stream timing, exact status transitions, exact history order, or model-generated content per session. Wrong-session update isolation remains deterministic-fixture only.
+
+## Pass / Fail Judgment
+
+- **PASS** - concurrent Agentic session updates remain isolated in visible UI, history, and metadata.
+- **BLOCKED** - the run lacks interactive profile, two deterministic sessions, controllable long-stream fixture, or a harness that can preserve sessions across the required fixture passes.
+- **FAIL** - cross-session updates appear in the wrong chat, active markers drift, or a non-active session blocks the active session UI.

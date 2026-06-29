@@ -5,8 +5,9 @@
     position: absolute;
     bottom: -15px;
     padding-top: 12px;
-    left: -9px;
-    width: 105%;
+    left: 0;
+    right: 0;
+    overflow: hidden;
   }
 
   .block {
@@ -100,6 +101,21 @@
   background-color: var(--design-chatInput-background);
   &.active {
     border-color: var(--design-inputOption-activeForeground);
+  }
+
+  &.chat_input_container_expanded {
+    height: 70vh;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat_input_body {
+    min-height: 0;
+  }
+
+  &.chat_input_container_expanded .chat_input_body {
+    flex: 1 1 auto;
   }
 
   .theme_container {

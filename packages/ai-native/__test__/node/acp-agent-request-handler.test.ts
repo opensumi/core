@@ -27,9 +27,6 @@ const mockLogger = {
 const mockFileSystemHandler = {
   readTextFile: jest.fn(),
   writeTextFile: jest.fn(),
-  getFileMeta: jest.fn(),
-  listDirectory: jest.fn(),
-  createDirectory: jest.fn(),
 };
 
 const mockTerminalHandler = {
@@ -166,6 +163,7 @@ describe('AcpAgentRequestHandler', () => {
             kind: 'write',
           }),
         }),
+        'sess-1',
       );
     });
 
@@ -217,6 +215,7 @@ describe('AcpAgentRequestHandler', () => {
             title: expect.stringContaining('Run command'),
           }),
         }),
+        'sess-1',
       );
     });
 

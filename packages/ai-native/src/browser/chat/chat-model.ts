@@ -3,13 +3,16 @@ import { Injectable } from '@opensumi/di';
 import {
   Disposable,
   Emitter,
+  Event,
   IChatAsyncContent,
   IChatComponent,
   IChatMarkdownContent,
   IChatProgress,
   IChatReasoning,
+  IChatThreadStatus,
   IChatToolContent,
   IChatTreeData,
+  ThreadStatus,
   uuid,
 } from '@opensumi/ide-core-common';
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
@@ -29,6 +32,8 @@ import { MsgHistoryManager } from '../model/msg-history-manager';
 import { IChatSlashCommandItem } from '../types';
 
 import { ChatFeatureRegistry } from './chat.feature.registry';
+
+import type { AcpSessionConfigOption, AcpSessionModeOption, AcpSessionModelOption } from './session-provider';
 
 export type IChatProgressResponseContent =
   | IChatMarkdownContent
@@ -300,13 +305,28 @@ export class ChatModel extends Disposable implements IChatModel {
 
   constructor(
     private chatFeatureRegistry: ChatFeatureRegistry,
-    initParams?: { sessionId?: string; history?: MsgHistoryManager; modelId?: string; title?: string },
+    initParams?: {
+      sessionId?: string;
+      createdAt?: number;
+      history?: MsgHistoryManager;
+      modelId?: string;
+      title?: string;
+      agentModes?: AcpSessionModeOption[];
+      currentModeId?: string;
+      agentModels?: AcpSessionModelOption[];
+      configOptions?: AcpSessionConfigOption[];
+    },
   ) {
     super();
     this.#sessionId = initParams?.sessionId ?? uuid();
+    this.#createdAt = initParams?.createdAt ?? Date.now();
     this.history = initParams?.history ?? new MsgHistoryManager(this.chatFeatureRegistry);
     this.#modelId = initParams?.modelId;
     this.#title = initParams?.title ?? '';
+    this.#agentModes = initParams?.agentModes ?? [];
+    this.#currentModeId = initParams?.currentModeId;
+    this.#agentModels = initParams?.agentModels ?? [];
+    this.#configOptions = initParams?.configOptions ?? [];
   }
 
   #title: string;
@@ -314,9 +334,18 @@ export class ChatModel extends Disposable implements IChatModel {
     return this.#title;
   }
 
+  setTitle(title: string): void {
+    this.#title = title;
+  }
+
   #sessionId: string;
   get sessionId(): string {
     return this.#sessionId;
+  }
+
+  #createdAt: number;
+  get createdAt(): number {
+    return this.#createdAt;
   }
 
   #requests: Map<string, ChatRequestModel> = new Map();
@@ -346,6 +375,63 @@ export class ChatModel extends Disposable implements IChatModel {
   set modelId(modelId: string | undefined) {
     this.#modelId = modelId;
   }
+
+  #agentModes: AcpSessionModeOption[] = [];
+
+  public get agentModes(): AcpSessionModeOption[] {
+    return this.#agentModes;
+  }
+
+  set agentModes(agentModes: AcpSessionModeOption[] | undefined) {
+    this.#agentModes = agentModes ?? [];
+  }
+
+  #currentModeId?: string;
+
+  public get currentModeId(): string | undefined {
+    return this.#currentModeId;
+  }
+
+  set currentModeId(currentModeId: string | undefined) {
+    this.#currentModeId = currentModeId;
+  }
+
+  #agentModels: AcpSessionModelOption[] = [];
+
+  public get agentModels(): AcpSessionModelOption[] {
+    return this.#agentModels;
+  }
+
+  set agentModels(agentModels: AcpSessionModelOption[] | undefined) {
+    this.#agentModels = agentModels ?? [];
+  }
+
+  #configOptions: AcpSessionConfigOption[] = [];
+
+  public get configOptions(): AcpSessionConfigOption[] {
+    return this.#configOptions;
+  }
+
+  set configOptions(configOptions: AcpSessionConfigOption[] | undefined) {
+    this.#configOptions = configOptions ?? [];
+  }
+
+  #threadStatus: ThreadStatus = 'idle';
+
+  get threadStatus(): ThreadStatus {
+    return this.#threadStatus;
+  }
+
+  setThreadStatus(status: ThreadStatus): void {
+    if (this.#threadStatus === status) {
+      return;
+    }
+    this.#threadStatus = status;
+    this._onThreadStatusChange.fire(status);
+  }
+
+  private _onThreadStatusChange = new Emitter<ThreadStatus>();
+  public readonly onThreadStatusChange: Event<ThreadStatus> = this._onThreadStatusChange.event;
 
   private processMemorySummaries(): CoreMessage[] {
     const memorySummaries = this.history.getMemorySummaries();
@@ -520,13 +606,19 @@ export class ChatModel extends Disposable implements IChatModel {
 
   override dispose(): void {
     super.dispose();
+    this._onThreadStatusChange.dispose();
     this.#requests.forEach((r) => r.response.dispose());
   }
 
   toJSON() {
     return {
       sessionId: this.sessionId,
+      createdAt: this.createdAt,
       modelId: this.modelId,
+      agentModes: this.agentModes,
+      currentModeId: this.currentModeId,
+      agentModels: this.agentModels,
+      configOptions: this.configOptions,
       history: this.history,
       requests: this.requests,
     };

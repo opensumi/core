@@ -39,6 +39,8 @@ import {
   AI_INLINE_COMPLETION_REPORTER,
   AI_INLINE_COMPLETION_VISIBLE,
   AI_INLINE_DIFF_PARTIAL_EDIT,
+  AI_PANEL_LAYOUT_SET,
+  AI_PANEL_LAYOUT_TOGGLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import {
   InlineChatIsVisible,
@@ -48,11 +50,11 @@ import {
   InlineInputWidgetIsVisible,
 } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
-  ChatHistoryRegistryToken,
   ChatInputRegistryToken,
   ChatRenderRegistryToken,
   ChatServiceToken,
@@ -62,6 +64,7 @@ import {
   InlineChatFeatureRegistryToken,
   IntelligentCompletionsRegistryToken,
   MCPConfigServiceToken,
+  PanelLayoutMode,
   PreferenceScope,
   ProblemFixRegistryToken,
   RenameCandidatesProviderRegistryToken,
@@ -70,7 +73,7 @@ import {
   StorageProvider,
   TerminalRegistryToken,
   URI,
-  isUndefined,
+  WebMcpGroupRegistryToken,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
@@ -111,18 +114,26 @@ import { MCP_SERVER_TYPE } from '../common/types';
 
 import { AcpChatInput } from './acp/components/AcpChatInput';
 import { AcpChatMentionInput } from './acp/components/AcpChatMentionInput';
+import { WebMcpGroupRegistry } from './acp/webmcp-group-registry';
+import { createAcpChatGroup } from './acp/webmcp-groups/acp-chat.webmcp-group';
+import { createDiagnosticsGroup } from './acp/webmcp-groups/diagnostics.webmcp-group';
+import { createEditorGroup } from './acp/webmcp-groups/editor.webmcp-group';
+import { createFileGroup } from './acp/webmcp-groups/file.webmcp-group';
+import { createOpenSumiMcpGroup } from './acp/webmcp-groups/opensumi-mcp.webmcp-group';
+import { createSearchGroup } from './acp/webmcp-groups/search.webmcp-group';
+import { createTerminalGroup } from './acp/webmcp-groups/terminal.webmcp-group';
+import { createWorkspaceGroup } from './acp/webmcp-groups/workspace.webmcp-group';
+import { registerWebMcpModelContextTools } from './acp/webmcp-model-context-adapter';
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatService } from './chat/chat.api.service';
-import { IChatHistoryRegistry } from './chat/chat.history.registry';
 import { IChatInputRegistry } from './chat/chat.input.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { AIChatView } from './chat/chat.view';
 import { AIChatViewACP } from './chat/chat.view.acp';
 import { IChatViewRegistry } from './chat/chat.view.registry';
-import ChatHistoryACP from './components/ChatHistory.acp';
 import { ChatInput } from './components/ChatInput';
 import { ChatMentionInput } from './components/ChatMentionInput';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
@@ -133,6 +144,7 @@ import { IntelligentCompletionsController } from './contrib/intelligent-completi
 import { ProblemFixController } from './contrib/problem-fix/problem-fix.controller';
 import { RenameSingleHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
+import { AIPanelLayoutService, AI_PANEL_LAYOUT_CONTEXT, AI_PANEL_LAYOUT_MENU } from './layout/panel-layout.service';
 import {
   AIChatTabRenderer,
   AIChatTabRendererWithTab,
@@ -185,6 +197,7 @@ const DynamicChatViewWrapper: React.FC = () => {
   KeybindingContribution,
   ComponentContribution,
   SlotRendererContribution,
+  MenuContribution,
   MonacoContribution,
   MultiDiffSourceContribution,
 )
@@ -197,6 +210,7 @@ export class AINativeBrowserContribution
     KeybindingContribution,
     ComponentContribution,
     SlotRendererContribution,
+    MenuContribution,
     MonacoContribution,
     MultiDiffSourceContribution
 {
@@ -233,9 +247,6 @@ export class AINativeBrowserContribution
   @Autowired(ChatViewRegistryToken)
   private readonly chatViewRegistry: IChatViewRegistry;
 
-  @Autowired(ChatHistoryRegistryToken)
-  private readonly chatHistoryRegistry: IChatHistoryRegistry;
-
   @Autowired(ResolveConflictRegistryToken)
   private readonly resolveConflictRegistry: IResolveConflictRegistry;
 
@@ -256,6 +267,9 @@ export class AINativeBrowserContribution
 
   @Autowired(DesignLayoutConfig)
   private readonly designLayoutConfig: DesignLayoutConfig;
+
+  @Autowired(AIPanelLayoutService)
+  private readonly panelLayoutService: AIPanelLayoutService;
 
   @Autowired(AICompletionsService)
   private readonly aiCompletionsService: AICompletionsService;
@@ -329,6 +343,8 @@ export class AINativeBrowserContribution
   @Autowired()
   private readonly chatMultiDiffResolver: ChatMultiDiffResolver;
 
+  private webMcpModelContextDisposable: IDisposable | undefined;
+
   constructor() {
     this.registerFeature();
   }
@@ -342,6 +358,8 @@ export class AINativeBrowserContribution
   }
 
   async initialize() {
+    this.panelLayoutService.initialize();
+
     const { supportsChatAssistant, supportsAgentMode } = this.aiNativeConfigService.capabilities;
 
     if (supportsChatAssistant) {
@@ -421,6 +439,8 @@ export class AINativeBrowserContribution
   }
 
   onDidStart() {
+    this.registerWebMcpSurface();
+
     runWhenIdle(() => {
       const { supportsRenameSuggestions, supportsInlineChat, supportsMCP, supportsCustomLLMSettings } =
         this.aiNativeConfigService.capabilities;
@@ -493,6 +513,29 @@ export class AINativeBrowserContribution
     });
   }
 
+  onStop() {
+    this.webMcpModelContextDisposable?.dispose();
+  }
+
+  private registerWebMcpSurface() {
+    if (this.webMcpModelContextDisposable) {
+      return;
+    }
+
+    // Register WebMCP groups once, then expose the same registry through
+    // navigator.modelContext and the Node-side HTTP MCP server.
+    const groupRegistry = this.injector.get(WebMcpGroupRegistryToken);
+    groupRegistry.registerGroup(createOpenSumiMcpGroup(this.injector));
+    groupRegistry.registerGroup(createWorkspaceGroup(this.injector));
+    groupRegistry.registerGroup(createSearchGroup(this.injector));
+    groupRegistry.registerGroup(createDiagnosticsGroup(this.injector));
+    groupRegistry.registerGroup(createFileGroup(this.injector));
+    groupRegistry.registerGroup(createTerminalGroup(this.injector));
+    groupRegistry.registerGroup(createEditorGroup(this.injector));
+    groupRegistry.registerGroup(createAcpChatGroup(this.injector));
+    this.webMcpModelContextDisposable = registerWebMcpModelContextTools(groupRegistry);
+  }
+
   private async initMCPServers() {
     const storage = await this.storageProvider(STORAGE_NAMESPACE.CHAT);
     let disabledMCPServers = storage.get<string[]>(MCPServersDisabledKey, []);
@@ -545,7 +588,10 @@ export class AINativeBrowserContribution
     }
     const userServers = mcpServerFromWorkspace.value?.mcpServers;
     // 总是初始化内置服务器，根据禁用列表决定是否启用
-    this.sumiMCPServerBackendProxy.$initBuiltinMCPServer(!disabledMCPServers.includes(BUILTIN_MCP_SERVER_NAME));
+    const webMcpEnabled = this.preferenceService.get<boolean>(AINativeSettingSectionsId.WebMcpEnabled, true);
+    this.sumiMCPServerBackendProxy.$initBuiltinMCPServer(
+      !disabledMCPServers.includes(BUILTIN_MCP_SERVER_NAME) && webMcpEnabled !== false,
+    );
 
     if (userServers && Object.keys(userServers).length > 0) {
       const mcpServers = (
@@ -660,13 +706,6 @@ export class AINativeBrowserContribution
       when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
     });
 
-    this.chatHistoryRegistry.registerChatHistory({
-      id: 'acp-chat-history',
-      component: ChatHistoryACP,
-      priority: 200,
-      when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
-    });
-
     this.chatViewRegistry.registerChatView({
       id: 'default-chat-view',
       component: AIChatView,
@@ -687,6 +726,10 @@ export class AINativeBrowserContribution
         {
           id: AINativeSettingSectionsId.ChatVisibleType,
           localized: 'preference.ai.native.chat.visible.type',
+        },
+        {
+          id: AINativeSettingSectionsId.PanelLayout,
+          localized: 'preference.ai.native.panelLayout',
         },
       ],
     });
@@ -821,6 +864,10 @@ export class AINativeBrowserContribution
             id: AINativeSettingSectionsId.DefaultAgentType,
             localized: 'preference.ai.native.agent.defaultType',
           },
+          {
+            id: AINativeSettingSectionsId.AcpThreadPoolSize,
+            localized: 'preference.ai-native.acp.threadPoolSize',
+          },
         ],
       });
     }
@@ -939,8 +986,20 @@ export class AINativeBrowserContribution
 
     commands.registerCommand(AI_CHAT_VISIBLE, {
       execute: (visible?: boolean) => {
-        this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, isUndefined(visible) ? true : visible);
+        if (visible === false) {
+          this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, false);
+          return;
+        }
+        this.panelLayoutService.showAIChatView();
       },
+    });
+
+    commands.registerCommand(AI_PANEL_LAYOUT_SET, {
+      execute: (mode: PanelLayoutMode) => this.panelLayoutService.setLayoutMode(mode),
+    });
+
+    commands.registerCommand(AI_PANEL_LAYOUT_TOGGLE, {
+      execute: () => this.panelLayoutService.toggleLayoutMode(),
     });
 
     commands.registerCommand(AI_INLINE_COMPLETION_VISIBLE, {
@@ -964,6 +1023,32 @@ export class AINativeBrowserContribution
      */
     commands.afterExecuteCommand(HideInlineCompletion.ID, () => {
       this.commandService.executeCommand(AI_INLINE_COMPLETION_VISIBLE.id, false);
+    });
+  }
+
+  registerMenus(menus: IMenuRegistry): void {
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      submenu: AI_PANEL_LAYOUT_MENU,
+      label: 'Panel Layout',
+      group: '5_panel',
+    });
+    menus.registerMenuItem(AI_PANEL_LAYOUT_MENU, {
+      command: {
+        id: AI_PANEL_LAYOUT_SET.id,
+        label: 'Classic',
+      },
+      group: 'navigation',
+      extraTailArgs: ['classic'],
+      toggledWhen: `${AI_PANEL_LAYOUT_CONTEXT} == classic`,
+    });
+    menus.registerMenuItem(AI_PANEL_LAYOUT_MENU, {
+      command: {
+        id: AI_PANEL_LAYOUT_SET.id,
+        label: 'Agent',
+      },
+      group: 'navigation',
+      extraTailArgs: ['agentic'],
+      toggledWhen: `${AI_PANEL_LAYOUT_CONTEXT} == agentic`,
     });
   }
 

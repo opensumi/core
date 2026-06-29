@@ -50,6 +50,21 @@ class PermissionDialogManager {
     return [...this.dialogs];
   }
 
+  getDialogsForSession(sessionId: string | undefined): DialogState[] {
+    if (!sessionId) {
+      return [];
+    }
+    return this.dialogs.filter((d) => d.params.sessionId === sessionId);
+  }
+
+  clearDialogsForSession(sessionId: string | undefined): void {
+    if (!sessionId) {
+      return;
+    }
+    this.dialogs = this.dialogs.filter((d) => d.params.sessionId !== sessionId);
+    this.notifyListeners();
+  }
+
   subscribe(listener: (dialogs: DialogState[]) => void) {
     this.listeners.push(listener);
     return () => {
@@ -141,6 +156,7 @@ export class AcpPermissionDialogContribution implements ComponentContribution {
 const AcpPermissionDialogContainer: React.FC = () => {
   // 状态管理
   const [dialogs, setDialogs] = useState<DialogState[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | undefined>();
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   const functionComponentDialogManager = useInjectable<PermissionDialogManager>(PermissionDialogManager);
@@ -162,12 +178,26 @@ const AcpPermissionDialogContainer: React.FC = () => {
     return unsubscribe;
   }, []);
 
+  // Subscribe to active session changes
+  useEffect(() => {
+    const disposable = permissionBridgeService.onActiveSessionChange((sessionId) => {
+      setActiveSessionId(sessionId);
+      setFocusedIndex(0);
+    });
+    // Initialize with current session
+    setActiveSessionId(permissionBridgeService.getActiveSession());
+    return () => disposable.dispose();
+  }, []);
+
+  // Filter dialogs for active session only
+  const sessionDialogs = functionComponentDialogManager.getDialogsForSession(activeSessionId);
+
   // 键盘导航处理函数（使用 useCallback 优化性能）
   const handleKeyboardNavigation = useCallback(
     (e: KeyboardEvent) => {
-      const options = dialogs[0]?.params.options || [];
+      const options = sessionDialogs[0]?.params.options || [];
 
-      if (dialogs.length === 0) {
+      if (sessionDialogs.length === 0) {
         return;
       }
 
@@ -205,12 +235,12 @@ const AcpPermissionDialogContainer: React.FC = () => {
         handleDialogClose();
       }
     },
-    [dialogs, focusedIndex],
+    [sessionDialogs, focusedIndex],
   );
 
   // 组件更新：动态添加/移除键盘监听
   useEffect(() => {
-    if (dialogs.length > 0) {
+    if (sessionDialogs.length > 0) {
       window.addEventListener('keydown', handleKeyboardNavigation);
       // 添加焦点
       if (containerRef.current) {
@@ -223,16 +253,16 @@ const AcpPermissionDialogContainer: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyboardNavigation);
     };
-  }, [dialogs.length, handleKeyboardNavigation]);
+  }, [sessionDialogs.length, handleKeyboardNavigation]);
 
   // 处理用户选择
   const handleDialogSelect = useCallback(
     (_optionId: string) => {
-      if (dialogs.length === 0) {
+      if (sessionDialogs.length === 0) {
         return;
       }
-      const requestId = dialogs[0].requestId;
-      const params = dialogs[0].params;
+      const requestId = sessionDialogs[0].requestId;
+      const params = sessionDialogs[0].params;
 
       // Find the selected option to get its kind
       const selectedOption = params.options.find((opt) => opt.optionId === _optionId);
@@ -249,27 +279,27 @@ const AcpPermissionDialogContainer: React.FC = () => {
       // Close dialog
       functionComponentDialogManager.removeDialog(requestId);
     },
-    [dialogs, permissionBridgeService],
+    [sessionDialogs, permissionBridgeService],
   );
 
   // 处理对话框关闭
   const handleDialogClose = useCallback(() => {
-    if (dialogs.length === 0) {
+    if (sessionDialogs.length === 0) {
       return;
     }
-    const requestId = dialogs[0].requestId;
+    const requestId = sessionDialogs[0].requestId;
     // Notify the permission bridge service that the dialog was cancelled
     permissionBridgeService.handleDialogClose(requestId);
     // Close dialog
     functionComponentDialogManager.removeDialog(requestId);
-  }, [dialogs, permissionBridgeService]);
+  }, [sessionDialogs, permissionBridgeService]);
 
   // 如果没有对话框，返回null
-  if (dialogs.length === 0) {
+  if (sessionDialogs.length === 0) {
     return null;
   }
 
-  const currentDialog = dialogs[0];
+  const currentDialog = sessionDialogs[0];
   const params = currentDialog.params;
   const smartTitle = getSmartTitle(params);
   const shouldShowDescription =
@@ -286,6 +316,9 @@ const AcpPermissionDialogContainer: React.FC = () => {
         marginBottom: 8,
         backgroundColor: 'rgba(255, 0, 0, 0.2)',
       }}
+      data-testid='acp-permission-dialog'
+      role='dialog'
+      aria-label='ACP permission request'
     >
       <div
         ref={containerRef}
@@ -305,6 +338,7 @@ const AcpPermissionDialogContainer: React.FC = () => {
           width: 'calc(100% - 16px)',
         }}
         tabIndex={0}
+        data-testid='acp-permission-dialog-inner'
       >
         {/* 头部：标题和关闭按钮 */}
         <div
@@ -324,6 +358,7 @@ const AcpPermissionDialogContainer: React.FC = () => {
               alignItems: 'center',
               gap: 6,
             }}
+            data-testid='acp-permission-dialog-title'
           >
             <span
               style={{
@@ -355,6 +390,8 @@ const AcpPermissionDialogContainer: React.FC = () => {
               justifyContent: 'center',
               color: 'var(--app-secondary-foreground)',
             }}
+            aria-label='Close permission dialog'
+            data-testid='acp-permission-dialog-close'
           >
             <span className={getIcon('close')} style={{ fontSize: 14 }} />
           </button>
@@ -376,13 +413,14 @@ const AcpPermissionDialogContainer: React.FC = () => {
               backgroundColor: 'var(--app-input-background)',
               borderRadius: 4,
             }}
+            data-testid='acp-permission-dialog-content'
           >
             {params.content}
           </div>
         )}
 
         {/* 选项按钮 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid='acp-permission-dialog-options'>
           {(params.options || []).map((option, index) => {
             const isFocused = focusedIndex === index;
             const buttonStyle: React.CSSProperties = {
@@ -409,6 +447,10 @@ const AcpPermissionDialogContainer: React.FC = () => {
                 style={buttonStyle}
                 onClick={() => handleDialogSelect(option.optionId || '')}
                 onMouseEnter={() => setFocusedIndex(index)}
+                aria-label={`Permission option ${option.name || option.optionId}`}
+                data-testid={`acp-permission-dialog-option-${index}`}
+                data-option-id={option.optionId}
+                data-option-kind={option.kind}
               >
                 {/* 数字徽章 */}
                 <span

@@ -5,13 +5,15 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
 
-import { AvailableCommand, ListSessionsResponse } from './acp-types';
+import { AcpDebugLogEntry, AvailableCommand, ListSessionsResponse, OpenSumiMcpServerConnectionInfo } from './acp-types';
 import { AgentProcessConfig } from './agent-types';
 import { IAIReportCompletionOption } from './reporter';
 
 import type { CoreMessage } from 'ai';
 export * from './reporter';
 export type { AvailableCommand };
+
+export type PanelLayoutMode = 'classic' | 'agentic';
 
 export interface IAINativeCapabilities {
   /**
@@ -86,6 +88,10 @@ export interface IDesignLayoutConfig {
    * 是否支持插件注册 Chat 面板
    */
   supportExternalChatPanel?: boolean;
+  /**
+   * Panel layout mode for AI Native.
+   */
+  panelLayout?: PanelLayoutMode;
 }
 
 export interface IAINativeInlineChatConfig {
@@ -199,6 +205,40 @@ export interface IAIBackServiceOption {
   agentSessionConfig?: AgentProcessConfig;
 }
 
+export interface AgentSessionModeOption {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export interface AgentSessionModelOption {
+  modelId: string;
+  name: string;
+  description?: string | null;
+}
+
+export interface AgentSessionStateResult {
+  modes?: AgentSessionModeOption[];
+  currentModeId?: string;
+  models?: AgentSessionModelOption[];
+  currentModelId?: string;
+  configOptions?: Record<string, any>[];
+}
+
+export interface AgentSessionCreateResult extends AgentSessionStateResult {
+  sessionId: string;
+  availableCommands: AvailableCommand[];
+}
+
+export interface AgentSessionLoadResult extends AgentSessionStateResult {
+  sessionId: string;
+  messages: Array<{
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp?: number;
+  }>;
+}
+
 /**
  * 补全请求对象
  */
@@ -257,26 +297,18 @@ export interface IAIBackService<
    */
   reportCompletion?<I extends IAIReportCompletionOption>(input: I): Promise<void>;
 
-  loadAgentSession?(
-    config: AgentProcessConfig,
-    agentSessionId: string,
-  ): Promise<{
-    sessionId: string;
-    messages: Array<{
-      role: 'user' | 'assistant';
-      content: string;
-      timestamp?: number;
-    }>;
-  }>;
+  loadAgentSession?(config: AgentProcessConfig, agentSessionId: string): Promise<AgentSessionLoadResult>;
 
   listSessions?(config: AgentProcessConfig): Promise<ListSessionsResponse>;
 
-  createSession?(config: AgentProcessConfig): Promise<{
-    sessionId: string;
-    availableCommands: AvailableCommand[];
-  }>;
+  createSession?(config: AgentProcessConfig): Promise<AgentSessionCreateResult>;
 
   setSessionMode?(sessionId: string, modeId: string): Promise<void>;
+  setSessionConfigOption?(sessionId: string, configId: string, value: boolean | string): Promise<void>;
+  setSessionModel?(sessionId: string, model: string): Promise<void>;
+  getAcpDebugLog?(): Promise<AcpDebugLogEntry[]>;
+  clearAcpDebugLog?(): Promise<void>;
+  getOpenSumiMcpServerConnection?(): Promise<OpenSumiMcpServerConnectionInfo>;
 
   ready?(): Promise<boolean>;
 }
@@ -466,6 +498,26 @@ export interface IChatReasoning {
   kind: 'reasoning';
 }
 
+/**
+ * Thread status for ACP agent sessions.
+ * Mirrors the server-side AcpThread ThreadStatus type.
+ */
+export type ThreadStatus = 'idle' | 'working' | 'awaiting_prompt' | 'auth_required' | 'errored' | 'disconnected';
+
+export interface IChatThreadStatus {
+  kind: 'threadStatus';
+  threadStatus: ThreadStatus;
+  sessionId: string;
+}
+
+export interface IChatSessionState {
+  kind: 'sessionState';
+  sessionId: string;
+  currentModeId?: string;
+  currentModelId?: string;
+  configOptions?: Record<string, any>[];
+}
+
 export type IChatProgress =
   | IChatContent
   | IChatMarkdownContent
@@ -473,7 +525,9 @@ export type IChatProgress =
   | IChatTreeData
   | IChatComponent
   | IChatToolContent
-  | IChatReasoning;
+  | IChatReasoning
+  | IChatThreadStatus
+  | IChatSessionState;
 
 export interface IChatMessage {
   role: ChatMessageRole;
@@ -499,6 +553,7 @@ export interface IHistoryChatMessage extends IChatMessage {
   id: string;
   order: number;
   isSummarized?: boolean; // 添加这个属性，表示消息是否已被总结
+  timestamp?: number;
 
   type?: 'string' | 'component';
   images?: string[];

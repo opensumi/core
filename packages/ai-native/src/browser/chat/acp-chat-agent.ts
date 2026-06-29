@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { ILogger, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancellationToken,
@@ -10,7 +10,9 @@ import {
   IAIReporter,
   IApplicationService,
   IChatProgress,
+  IChatSessionState,
   MCPConfigServiceToken,
+  ThreadStatus,
 } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
@@ -26,9 +28,12 @@ import {
   IChatAgentResult,
   IChatAgentService,
   IChatAgentWelcomeMessage,
+  IChatManagerService,
 } from '../../common/index';
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
+import { ChatManagerService } from './chat-manager.service';
+import { AcpChatManagerService } from './chat-manager.service.acp';
 import { ChatFeatureRegistry } from './chat.feature.registry';
 
 /**
@@ -68,6 +73,12 @@ export class AcpChatAgent implements IChatAgent {
   @Autowired(IACPConfigProvider)
   protected readonly configProvider: IACPConfigProvider;
 
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
+
+  @Autowired(IChatManagerService)
+  protected readonly chatManagerService: ChatManagerService;
+
   public id = AcpChatAgent.AGENT_ID;
 
   public get metadata(): IChatAgentMetadata {
@@ -100,6 +111,12 @@ export class AcpChatAgent implements IChatAgent {
     const agent = this.chatAgentService.getAgent(AcpChatAgent.AGENT_ID);
     const disabledTools = await this.mcpConfigService.getDisabledTools();
 
+    this.logger.log(
+      `[ACP Chat] getRequestOptions: model=${model}, modelId=${modelId}, apiKey=${
+        apiKey ? apiKey.slice(0, 8) + '***' : '(empty)'
+      }, baseURL=${baseURL}, maxTokens=${maxTokens}`,
+    );
+
     return {
       clientId: this.applicationService.clientId,
       model,
@@ -120,6 +137,11 @@ export class AcpChatAgent implements IChatAgent {
   ): Promise<IChatAgentResult> {
     const chatDeferred = new Deferred<void>();
     const { message, command } = request;
+    this.logger.log(
+      `[ACP Chat] invoke start — rawSessionId=${request.sessionId}, requestId=${request.requestId}, command=${
+        command || '(empty)'
+      }, messageChars=${message.length}, images=${request.images?.length ?? 0}, historyMessages=${history.length}`,
+    );
     let prompt: string = message;
     if (command) {
       const commandHandler = this.chatFeatureRegistry.getSlashCommandHandler(command);
@@ -127,6 +149,9 @@ export class AcpChatAgent implements IChatAgent {
         const editor = this.monacoCommandRegistry.getActiveCodeEditor();
         const slashCommandPrompt = await commandHandler.providerPrompt(message, editor);
         prompt = slashCommandPrompt;
+        this.logger.log(
+          `[ACP Chat] invoke slash prompt resolved — requestId=${request.requestId}, command=${command}, promptChars=${prompt.length}`,
+        );
       }
     }
 
@@ -134,6 +159,9 @@ export class AcpChatAgent implements IChatAgent {
     if (command) {
       const commandHandler = this.chatFeatureRegistry.getSlashCommandHandler(command);
       if (commandHandler?.invoke) {
+        this.logger.log(
+          `[ACP Chat] invoke custom slash handler — requestId=${request.requestId}, command=${command}, promptChars=${prompt.length}`,
+        );
         await commandHandler.invoke(prompt, progress, token);
         chatDeferred.resolve();
         return {};
@@ -149,30 +177,75 @@ export class AcpChatAgent implements IChatAgent {
     }
     // agent 模式只需要发送最后一条数据
     const lastmessage = history[history.length - 1];
+    this.logger.log(
+      `[ACP Chat] invoke normalized — sessionId=${sessionId}, requestId=${request.requestId}, promptChars=${
+        prompt.length
+      }, lastMessageRole=${lastmessage?.role ?? '(empty)'}`,
+    );
 
     try {
       const config = await this.configProvider.resolveConfig();
-      const stream = await this.aiBackService.requestStream(
-        prompt,
-        {
-          requestId: request.requestId,
-          sessionId,
-          history: [lastmessage],
-          images: request.images,
-          ...(await this.getRequestOptions()),
-          agentSessionConfig: config,
-        },
-        token,
+      this.logger.log(`[ACP Chat] invoke: sessionId=${sessionId}, config=${JSON.stringify(config)}`);
+
+      const requestOptions = {
+        requestId: request.requestId,
+        sessionId,
+        history: [lastmessage],
+        images: request.images,
+        ...(await this.getRequestOptions()),
+        agentSessionConfig: config,
+      };
+      this.logger.log(
+        `[ACP Chat] invoking aiBackService.requestStream: agentSessionConfig=${!!requestOptions.agentSessionConfig}, apiKey=${
+          requestOptions.apiKey ? requestOptions.apiKey.slice(0, 8) + '***' : '(empty)'
+        }`,
       );
+
+      const stream = await this.aiBackService.requestStream(prompt, requestOptions, token);
+      this.logger.log(
+        `[ACP Chat] requestStream opened — sessionId=${sessionId}, requestId=${request.requestId}, historyMessages=${requestOptions.history.length}`,
+      );
+      let streamDataCount = 0;
+      let hasLoggedFirstContent = false;
 
       listenReadable<IChatProgress>(stream, {
         onData: (data) => {
-          progress(data);
+          streamDataCount += 1;
+          const kind = data.kind;
+          if (data.kind === 'threadStatus') {
+            this.logger.log(
+              `[ACP Chat] stream data — sessionId=${sessionId}, requestId=${request.requestId}, kind=threadStatus, status=${data.threadStatus}`,
+            );
+            this.handleThreadStatusUpdate(data.threadStatus, data.sessionId);
+          } else if (data.kind === 'sessionState') {
+            this.logger.log(
+              `[ACP Chat] stream data — sessionId=${sessionId}, requestId=${
+                request.requestId
+              }, kind=sessionState, currentModeId=${data.currentModeId ?? '(empty)'}`,
+            );
+            this.handleSessionStateUpdate(data, sessionId);
+          } else {
+            const shouldLogData =
+              !hasLoggedFirstContent || (kind !== 'content' && kind !== 'markdownContent' && kind !== 'reasoning');
+            if (shouldLogData) {
+              this.logger.log(
+                `[ACP Chat] stream data — sessionId=${sessionId}, requestId=${request.requestId}, kind=${kind}, count=${streamDataCount}`,
+              );
+              hasLoggedFirstContent = true;
+            }
+            progress(data);
+          }
         },
         onEnd: () => {
+          this.logger.log(
+            `[ACP Chat] stream end — sessionId=${sessionId}, requestId=${request.requestId}, dataCount=${streamDataCount}`,
+          );
           chatDeferred.resolve();
         },
         onError: (error) => {
+          this.logger.error(
+            `[ACP Chat] stream error — sessionId=${sessionId}, requestId=${request.requestId}, error=${error.message}`,
+          );
           this.messageService.error(error.message);
           this.aiReporter.end(sessionId + '_' + request.requestId, {
             message: error.message,
@@ -185,10 +258,35 @@ export class AcpChatAgent implements IChatAgent {
 
       await chatDeferred.promise;
     } catch (e) {
-      this.messageService.error(e.message);
-      chatDeferred.reject(e);
+      const message = e instanceof Error ? e.message : String(e);
+      this.logger.error(
+        `[ACP Chat] invoke error — sessionId=${sessionId}, requestId=${request.requestId}, error=${message}`,
+      );
+      this.messageService.error(message);
+      return {
+        errorDetails: { message },
+      };
     }
     return {};
+  }
+
+  private handleThreadStatusUpdate(status: ThreadStatus, sessionId: string): void {
+    // The node layer receives sessionId without the 'acp:' prefix (stripped in invoke()),
+    // but sessionModels map keys include the prefix. Re-add it for lookup.
+    const lookupKey = sessionId.startsWith('acp:') ? sessionId : `acp:${sessionId}`;
+    const model = this.chatManagerService.getSession(lookupKey);
+    if (model) {
+      model.setThreadStatus(status);
+    }
+  }
+
+  private handleSessionStateUpdate(state: IChatSessionState, fallbackSessionId: string): void {
+    const manager = this.chatManagerService as AcpChatManagerService;
+    manager.applySessionStateUpdate?.(state.sessionId || fallbackSessionId, {
+      currentModeId: state.currentModeId,
+      currentModelId: state.currentModelId,
+      configOptions: state.configOptions,
+    });
   }
 
   async provideSlashCommands(): Promise<IChatAgentCommand[]> {

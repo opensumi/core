@@ -4,6 +4,7 @@ import React, { FC, memo, useCallback, useEffect, useRef, useState } from 'react
 import { Icon, Input, Loading, Popover, PopoverPosition, PopoverTriggerType, getIcon } from '@opensumi/ide-components';
 import { localize } from '@opensumi/ide-core-browser';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { ThreadStatus } from '@opensumi/ide-core-common';
 
 import styles from './chat-history.module.less';
 
@@ -12,6 +13,8 @@ export interface IChatHistoryItem {
   title: string;
   updatedAt: number;
   loading: boolean;
+  threadStatus?: ThreadStatus;
+  hasPendingPermission?: boolean;
 }
 
 export interface IChatHistoryProps {
@@ -19,6 +22,8 @@ export interface IChatHistoryProps {
   historyList: IChatHistoryItem[];
   currentId?: string;
   className?: string;
+  historyLoading?: boolean;
+  pendingPermissionBadge?: number;
   onNewChat: () => void;
   onHistoryItemSelect: (item: IChatHistoryItem) => void;
   onHistoryItemDelete: (item: IChatHistoryItem) => void;
@@ -38,6 +43,8 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
     onHistoryItemChange,
     onHistoryItemDelete,
     className,
+    pendingPermissionBadge,
+    historyLoading,
   }) => {
     const [historyTitleEditable, setHistoryTitleEditable] = useState<{
       [key: string]: boolean;
@@ -167,7 +174,14 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
           onClick={() => handleHistoryItemSelect(item)}
         >
           <div className={styles.chat_history_item_content}>
-            {item.loading ? (
+            {item.hasPendingPermission && item.id !== currentId ? (
+              <span
+                data-testid={`acp-permission-pending-${item.id}`}
+                className={cls(styles.chat_history_item_pending_icon, getIcon('bell'))}
+                style={{ width: 18, height: 18, marginRight: 6, flexShrink: 0 }}
+                title={localize('aiNative.acp.permissionPending')}
+              />
+            ) : item.loading ? (
               <Loading />
             ) : (
               <Icon icon='message' style={{ width: '16px', height: '16px', marginRight: 4 }} />
@@ -259,11 +273,18 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
             title={localize('aiNative.operate.chatHistory.title')}
             getPopupContainer={getPopupContainer}
           >
-            <div
-              className={styles.chat_history_header_actions_history}
-              title={localize('aiNative.operate.chatHistory.title')}
-            >
-              <EnhanceIcon className={cls(styles.chat_history_header_actions_history, 'codicon codicon-history')} />
+            <div className={styles.chat_history_button_wrapper}>
+              <div
+                className={styles.chat_history_header_actions_history}
+                title={localize('aiNative.operate.chatHistory.title')}
+              >
+                <EnhanceIcon className={cls(styles.chat_history_header_actions_history, 'codicon codicon-history')} />
+                {pendingPermissionBadge && pendingPermissionBadge > 0 ? (
+                  <span data-testid='acp-pending-permission-badge' className={styles.pending_permission_badge}>
+                    {pendingPermissionBadge > 99 ? '99+' : pendingPermissionBadge}
+                  </span>
+                ) : null}
+              </div>
             </div>
           </Popover>
           <Popover

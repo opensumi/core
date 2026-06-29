@@ -1,4 +1,5 @@
 import { DataContent } from 'ai';
+import cls from 'classnames';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Image } from '@opensumi/ide-components/lib/image';
@@ -9,7 +10,7 @@ import {
   getSymbolIcon,
   useInjectable,
 } from '@opensumi/ide-core-browser';
-import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import {
   AINativeSettingSectionsId,
   ChatFeatureRegistryToken,
@@ -36,13 +37,16 @@ import { LLMContextService } from '../../../common/llm-context';
 import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import { ChatRenderRegistry } from '../../chat/chat.render.registry';
+import { hasAcpChatSendPayload } from '../../components/acp/chat-input-validation';
 import { MentionInput } from '../../components/acp/MentionInput';
 import { ModeOption } from '../../components/acp/types';
 import styles from '../../components/components.module.less';
 import { FooterButtonPosition, FooterConfig, MentionItem, MentionType } from '../../components/mention-input/types';
-import { MCPConfigCommands } from '../../mcp/config/mcp-config.commands';
+import { MCPConfigCommands } from '../../mcp/config/mcp-config.constants';
 import { RulesCommands } from '../../rules/rules.contribution';
 import { RulesService } from '../../rules/rules.service';
+
+import type { AcpSessionConfigOption, AcpSessionModelOption } from '../../chat/session-provider';
 
 export interface IChatMentionInputProps {
   onSend: (
@@ -71,6 +75,10 @@ export interface IChatMentionInputProps {
   setCommand: (command: string) => void;
   disableModelSelector?: boolean;
   sessionModelId?: string;
+  currentModeId?: string;
+  agentModels?: AcpSessionModelOption[];
+  currentModelId?: string;
+  configOptions?: AcpSessionConfigOption[];
   contextService?: LLMContextService;
   agentModes?: Array<{ id: string; name: string; description?: string }>;
   agentCwd?: string;
@@ -82,12 +90,12 @@ export interface IChatMentionInputProps {
  * - 文件选择器：无搜索词时递归加载工作区文件（限制 50 个）
  * - 文件夹选择器：无搜索词时加载工作区根目录下的文件夹
  */
-export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
+export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputProps, ref) => {
   const { onSend, disabled = false, contextService, agentCwd } = props;
 
   const [value, setValue] = useState(props.value || '');
   const [images, setImages] = useState(props.images || []);
-  const [currentMode, setCurrentMode] = useState<string>(props.agentModes?.[0]?.id || 'default');
+  const [currentMode, setCurrentMode] = useState<string>(props.currentModeId || props.agentModes?.[0]?.id || 'default');
   const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const commandService = useInjectable<CommandService>(CommandService);
@@ -107,6 +115,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
     props.placeholder || localize('aiNative.chat.input.placeholder.default'),
   );
   const [defaultInput, setDefaultInput] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const rulesService = useInjectable<RulesService>(RulesServiceToken);
 
@@ -128,10 +137,14 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
 
   // 当 agentModes 变化时，更新 currentMode 为第一个 mode
   useEffect(() => {
+    if (props.currentModeId) {
+      setCurrentMode(props.currentModeId);
+      return;
+    }
     if (props.agentModes?.length && !props.agentModes.find((m) => m.id === currentMode)) {
       setCurrentMode(props.agentModes[0].id);
     }
-  }, [props.agentModes]);
+  }, [props.agentModes, props.currentModeId]);
 
   // 当 slash command 变化时，更新 placeholder 和 defaultInput
   useEffect(() => {
@@ -160,6 +173,18 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
       setValue(props.value || '');
     }
   }, [props.value]);
+
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      setInputValue: (inputValue: string) => {
+        setDefaultInput(inputValue);
+        setValue(inputValue);
+        props.onValueChange?.(inputValue);
+      },
+    }),
+    [props.onValueChange],
+  );
 
   const resolveSymbols = useCallback(
     async (parent?: OutlineCompositeTreeNode, symbols: (OutlineTreeNode | OutlineCompositeTreeNode)[] = []) => {
@@ -536,13 +561,24 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
     },
   ];
 
+  const hasConfigOptions = (props.configOptions?.length || 0) > 0;
+
   // Mode 选项
   const modeOptions: ModeOption[] = useMemo(
+    () => (hasConfigOptions ? [] : props.agentModes || []),
+    [hasConfigOptions, props.agentModes],
+  );
+
+  const modelOptions = useMemo(
     () =>
-      props.agentModes?.length
-        ? props.agentModes
-        : [{ id: 'default', name: 'Default', description: 'Require approval for edits' }],
-    [props.agentModes],
+      hasConfigOptions
+        ? []
+        : props.agentModels?.map((model) => ({
+            value: model.modelId,
+            label: model.name || model.modelId,
+            description: model.description || undefined,
+          })) || [],
+    [hasConfigOptions, props.agentModels],
   );
 
   const slashCommands = useMemo(
@@ -587,43 +623,48 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
       defaultMode: modeOptions[0]?.id || 'default',
       currentMode,
       showModeSelector: modeOptions.length > 1,
-      modelOptions: [
-        {
-          value: 'qwen-plus-latest',
-          label: 'Qwen 3',
-          iconClass: iconService.fromIcon(
-            '',
-            'https://img.alicdn.com/imgextra/i3/O1CN01LFMrZj28YrnrzeebY_!!6000000007945-55-tps-16-16.svg',
-            IconType.Background,
-          ),
-          tags: ['思考链', '擅长代码'],
-          description: '高性能代码模型，支持思考链',
-        },
-        {
-          label: 'Claude 4 Sonnet',
-          value: 'claude_sonnet4',
-          iconClass: iconService.fromIcon(
-            '',
-            'https://img.alicdn.com/imgextra/i3/O1CN01p0mziz1Nsl40lp1HO_!!6000000001626-55-tps-92-65.svg',
-            IconType.Background,
-          ),
-          tags: ['多模态', '长上下文理解', '思考模式'],
-          description: '高性能模型，支持多模态输入',
-        },
-        {
-          label: 'DeepSeek R1',
-          value: 'DeepSeek-R1-0528',
-          iconClass: iconService.fromIcon(
-            '',
-            'https://img.alicdn.com/imgextra/i3/O1CN01ClcK2w1JwdxcbAB3a_!!6000000001093-55-tps-30-30.svg',
-            IconType.Background,
-          ),
-          tags: ['思考模式', '长上下文理解'],
-          description: '专业创作，支持多模态输入',
-        },
-      ],
+      modelOptions: aiNativeConfigService.capabilities.supportsAgentMode
+        ? modelOptions
+        : [
+            {
+              value: 'qwen-plus-latest',
+              label: 'Qwen 3',
+              iconClass: iconService.fromIcon(
+                '',
+                'https://img.alicdn.com/imgextra/i3/O1CN01LFMrZj28YrnrzeebY_!!6000000007945-55-tps-16-16.svg',
+                IconType.Background,
+              ),
+              tags: ['思考链', '擅长代码'],
+              description: '高性能代码模型，支持思考链',
+            },
+            {
+              label: 'Claude 4 Sonnet',
+              value: 'claude_sonnet4',
+              iconClass: iconService.fromIcon(
+                '',
+                'https://img.alicdn.com/imgextra/i3/O1CN01p0mziz1Nsl40lp1HO_!!6000000001626-55-tps-92-65.svg',
+                IconType.Background,
+              ),
+              tags: ['多模态', '长上下文理解', '思考模式'],
+              description: '高性能模型，支持多模态输入',
+            },
+            {
+              label: 'DeepSeek R1',
+              value: 'DeepSeek-R1-0528',
+              iconClass: iconService.fromIcon(
+                '',
+                'https://img.alicdn.com/imgextra/i3/O1CN01ClcK2w1JwdxcbAB3a_!!6000000001093-55-tps-30-30.svg',
+                IconType.Background,
+              ),
+              tags: ['思考模式', '长上下文理解'],
+              description: '专业创作，支持多模态输入',
+            },
+          ],
       defaultModel:
-        props.sessionModelId || preferenceService.get<string>(AINativeSettingSectionsId.ModelID) || 'deepseek-r1',
+        props.currentModelId ||
+        props.sessionModelId ||
+        preferenceService.get<string>(AINativeSettingSectionsId.ModelID) ||
+        'deepseek-r1',
       buttons: aiNativeConfigService.capabilities.supportsAgentMode
         ? []
         : [
@@ -660,8 +701,9 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
               position: FooterButtonPosition.LEFT,
             },
           ],
-      showModelSelector: aiNativeConfigService.capabilities.supportsAgentMode ? false : true,
+      showModelSelector: aiNativeConfigService.capabilities.supportsAgentMode ? modelOptions.length > 0 : true,
       disableModelSelector: props.disableModelSelector,
+      configOptions: props.configOptions,
     }),
     [
       iconService,
@@ -669,8 +711,11 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
       handleShowRules,
       props.disableModelSelector,
       props.sessionModelId,
+      props.currentModelId,
+      props.configOptions,
       currentMode,
       modeOptions,
+      modelOptions,
       aiNativeConfigService.capabilities.supportsAgentMode,
       preferenceService,
     ],
@@ -690,18 +735,17 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
       const currentAgentId = props.agentId;
 
       const doSend = (newValue: string = content) => {
-        onSend(
-          newValue,
-          images.map((image) => image.toString()),
-          currentAgentId,
-          currentCommand,
-          option,
-        );
+        const imagePayload = images.map((image) => image.toString());
+        if (!hasAcpChatSendPayload({ message: newValue, images: imagePayload, command: currentCommand })) {
+          return;
+        }
+        const sendResult = onSend(newValue, imagePayload, currentAgentId, currentCommand, option);
         // 发送后重置 slash command 状态
         props.setTheme(null);
         props.setAgentId('');
         props.setCommand('');
         setImages(props.images || []);
+        return sendResult;
       };
 
       // 如果有 slash command，调用其 execute handler
@@ -714,7 +758,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
         }
       }
 
-      doSend();
+      return doSend();
     },
     [onSend, images, disabled, props.agentId, props.command, chatFeatureRegistry],
   );
@@ -754,6 +798,30 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
     [aiChatService, messageService],
   );
 
+  const handleModelChange = useCallback(
+    async (modelId: string) => {
+      try {
+        await aiChatService.setSessionModel(modelId);
+      } catch (error) {
+        messageService.error('Failed to switch model: ' + (error instanceof Error ? error.message : String(error)));
+      }
+    },
+    [aiChatService, messageService],
+  );
+
+  const handleConfigOptionChange = useCallback(
+    async (configId: string, value: boolean | string) => {
+      try {
+        await aiChatService.setSessionConfigOption(configId, value);
+      } catch (error) {
+        messageService.error(
+          'Failed to update ACP config: ' + (error instanceof Error ? error.message : String(error)),
+        );
+      }
+    },
+    [aiChatService, messageService],
+  );
+
   const handleDeleteImage = useCallback(
     (index: number) => {
       setImages(images.filter((_, i) => i !== index));
@@ -773,33 +841,56 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
     [chatFeatureRegistry],
   );
 
+  const handleExpandClick = useCallback(() => {
+    const nextExpanded = !isExpanded;
+    setIsExpanded(nextExpanded);
+    props.onExpand?.(nextExpanded);
+  }, [isExpanded, props.onExpand]);
+
   return (
-    <div className={styles.chat_input_container}>
+    <div className={cls(styles.chat_input_container, isExpanded && styles.chat_input_container_expanded)}>
+      <div className={styles.expand_icon} onClick={handleExpandClick}>
+        <Popover
+          id={'ai_chat_input_expand'}
+          title={localize(isExpanded ? 'aiNative.chat.expand.unfullscreen' : 'aiNative.chat.expand.fullescreen')}
+          position={PopoverPosition.top}
+        >
+          <Icon className={cls(isExpanded ? getIcon('unfullscreen') : getIcon('fullescreen'))} />
+        </Popover>
+      </div>
       {images.length > 0 && <ImagePreviewer images={images} onDelete={handleDeleteImage} />}
-      <MentionInput
-        mentionItems={
-          chatRenderRegistry.enabledMentionTypes
-            ? defaultMenuItems.filter((item) => chatRenderRegistry.enabledMentionTypes!.includes(item.id))
-            : defaultMenuItems
-        }
-        slashCommands={[...slashCommands, ...acpSlashCommands]}
-        onSend={handleSend}
-        onStop={handleStop}
-        loading={disabled}
-        labelService={labelService}
-        workspaceService={workspaceService}
-        placeholder={placeholder}
-        footerConfig={defaultMentionInputFooterOptions}
-        onImageUpload={handleImageUpload}
-        contextService={contextService}
-        onModeChange={handleModeChange}
-        defaultInput={defaultInput}
-        onDefaultInputConsumed={() => setDefaultInput('')}
-        onSlashSelect={handleSlashSelect}
-      />
+      <div className={styles.chat_input_body}>
+        <MentionInput
+          mentionItems={
+            chatRenderRegistry.enabledMentionTypes
+              ? defaultMenuItems.filter((item) => chatRenderRegistry.enabledMentionTypes!.includes(item.id))
+              : defaultMenuItems
+          }
+          slashCommands={[...slashCommands, ...acpSlashCommands]}
+          onSend={handleSend}
+          onStop={handleStop}
+          loading={disabled}
+          labelService={labelService}
+          workspaceService={workspaceService}
+          placeholder={placeholder}
+          footerConfig={defaultMentionInputFooterOptions}
+          onImageUpload={handleImageUpload}
+          modeOptions={modeOptions}
+          currentMode={currentMode}
+          configOptions={props.configOptions}
+          onSelectionChange={handleModelChange}
+          contextService={contextService}
+          onModeChange={handleModeChange}
+          onConfigOptionChange={handleConfigOptionChange}
+          defaultInput={defaultInput}
+          onDefaultInputConsumed={() => setDefaultInput('')}
+          onSlashSelect={handleSlashSelect}
+          expanded={isExpanded}
+        />
+      </div>
     </div>
   );
-};
+});
 
 const ImagePreviewer = ({
   images,

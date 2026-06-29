@@ -1,5 +1,3 @@
-import { zodToJsonSchema } from 'zod-to-json-schema';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { ILogger } from '@opensumi/ide-core-browser';
 import { Emitter, Event } from '@opensumi/ide-core-common';
@@ -8,6 +6,40 @@ import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend, SumiMCPServerProxyServi
 import { ImageCompressionOptions, compressToolResultSmart } from '../../common/image-compression';
 import { IMCPServerProxyService, IMCPToolResult } from '../../common/types';
 import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
+
+function getJsonSchemaSourceSchema(inputSchema: any): any {
+  const def = inputSchema?._def ?? inputSchema?.def;
+  if (def?.type === 'pipe' && def.in) {
+    return getJsonSchemaSourceSchema(def.in);
+  }
+  if (def?.typeName === 'ZodEffects' && def.schema) {
+    return getJsonSchemaSourceSchema(def.schema);
+  }
+  return inputSchema;
+}
+
+function toJSONSchema(inputSchema: any): any {
+  const sourceSchema = getJsonSchemaSourceSchema(inputSchema);
+  if (typeof sourceSchema?.toJSONSchema === 'function') {
+    return sourceSchema.toJSONSchema();
+  }
+  return sourceSchema;
+}
+
+function summarizeMCPTools(tools: Array<{ name: string; inputSchema: any }>) {
+  const toolStats = tools.map((tool) => {
+    const schemaBytes = Buffer.byteLength(JSON.stringify(tool.inputSchema ?? null), 'utf8');
+    return {
+      name: tool.name,
+      schemaBytes,
+    };
+  });
+  return {
+    toolCount: tools.length,
+    schemaBytes: toolStats.reduce((total, tool) => total + tool.schemaBytes, 0),
+    largestSchemas: [...toolStats].sort((a, b) => b.schemaBytes - a.schemaBytes).slice(0, 5),
+  };
+}
 
 @Injectable()
 export class MCPServerProxyService implements IMCPServerProxyService {
@@ -30,17 +62,18 @@ export class MCPServerProxyService implements IMCPServerProxyService {
 
   // 获取 OpenSumi 内部注册的 MCP tools
   async $getBuiltinMCPTools() {
-    const tools = await this.mcpServerRegistry.getMCPTools().map((tool) =>
-      // 不要传递 handler
-      ({
+    const tools = await this.mcpServerRegistry.getMCPTools().map((tool) => {
+      const jsonSchema = toJSONSchema(tool.inputSchema);
+
+      return {
         name: tool.name,
         description: tool.description,
-        inputSchema: zodToJsonSchema(tool.inputSchema),
+        inputSchema: jsonSchema,
         providerName: BUILTIN_MCP_SERVER_NAME,
-      }),
-    );
+      };
+    });
 
-    this.logger.log('SUMI MCP tools', tools);
+    this.logger.log('SUMI MCP tools', summarizeMCPTools(tools));
 
     return tools;
   }

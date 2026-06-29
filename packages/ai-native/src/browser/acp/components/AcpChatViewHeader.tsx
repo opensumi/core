@@ -1,10 +1,12 @@
+import cls from 'classnames';
 import React from 'react';
 
-import { QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   ChatMessageRole,
+  CommandService,
   DisposableCollection,
   IDisposable,
   formatLocalize,
@@ -15,14 +17,28 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../../common';
 import { cleanAttachedTextWrapper } from '../../../common/utils';
-import { ChatInternalService } from '../../chat/chat.internal.service';
+import { ChatModel } from '../../chat/chat-model';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
 import { getCachedWorkspaceDir, switchWorkspaceDir } from '../../chat/pick-workspace-dir';
+import { AIPanelLayoutService } from '../../layout/panel-layout.service';
+import { MCPConfigCommands } from '../../mcp/config/mcp-config.constants';
+import { AcpPermissionBridgeService } from '../permission-bridge.service';
 
 import AcpChatHistory, { IChatHistoryItem } from './AcpChatHistory';
 
 const MAX_TITLE_LENGTH = 100;
+
+function getSessionCreatedAt(session: ChatModel): number {
+  const firstMessage = session.history.getMessages()[0];
+  return session.createdAt || firstMessage?.timestamp || firstMessage?.replyStartTime || 0;
+}
+
+function getVisibleAcpSessions(aiChatService: AcpChatInternalService): ChatModel[] {
+  return typeof aiChatService.getVisibleSessions === 'function'
+    ? aiChatService.getVisibleSessions()
+    : aiChatService.getSessions();
+}
 
 /**
  * ACP 专属的 ChatViewHeader
@@ -30,25 +46,41 @@ const MAX_TITLE_LENGTH = 100;
  * - 使用 session.title（服务端返回的标题）构建 historyList，而非从消息内容推导
  * - 不显示删除按钮（ACP 模式下由服务端管理会话生命周期）
  */
-export function AcpChatViewHeader({
-  handleClear,
-  handleCloseChatView,
-}: {
-  handleClear: () => any;
-  handleCloseChatView: () => any;
-}) {
+export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => any; handleCloseChatView: () => any }) {
   const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const quickPick = useInjectable<QuickPickService>(QuickPickService);
+  const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const commandService = useInjectable<CommandService>(CommandService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const [historyLoading, setHistoryLoading] = React.useState(false);
   const [sessionSwitching, setSessionSwitching] = React.useState(false);
+  const [pendingPermissionBadge, setPendingPermissionBadge] = React.useState(0);
+  const [panelLayout, setPanelLayout] = React.useState(() => panelLayoutService.getLayoutMode());
+  const [historyCollapsed, setHistoryCollapsed] = React.useState(false);
   const isMultiRoot = workspaceService.isMultiRootWorkspaceOpened;
 
+  const subscribedSessionIdsRef = React.useRef<Set<string>>(new Set());
+  const toDisposeRef = React.useRef<DisposableCollection>(new DisposableCollection());
+  const sessionSwitchingRef = React.useRef(false);
+
   const [currentWorkspaceDir, setCurrentWorkspaceDir] = React.useState<string>(getCachedWorkspaceDir());
+
+  const enterDraftSession = React.useCallback(
+    (options?: { force?: boolean }) => {
+      if (sessionSwitchingRef.current) {
+        return;
+      }
+
+      aiChatService.enterDraftSession(options);
+    },
+    [aiChatService],
+  );
 
   // Sync state when cache is updated externally (e.g. by session provider on first init)
   React.useEffect(() => {
@@ -62,35 +94,32 @@ export function AcpChatViewHeader({
     const oldDir = getCachedWorkspaceDir();
     const newDir = await switchWorkspaceDir(workspaceService, quickPick, messageService);
     setCurrentWorkspaceDir(newDir);
-    // Create new session with new cwd if path actually changed
+    // Enter a draft; the ACP session will be created with the new cwd on first send
     if (newDir && newDir !== oldDir) {
-      try {
-        aiChatService.createSessionModel();
-      } catch (error) {
-        messageService.error(error.message);
-      }
+      enterDraftSession({ force: true });
     }
-  }, [workspaceService, quickPick, messageService, aiChatService]);
+  }, [workspaceService, quickPick, messageService, enterDraftSession]);
 
   React.useEffect(() => {
     const dispose = aiChatService.onSessionLoadingChange((loading) => {
+      sessionSwitchingRef.current = loading;
       setSessionSwitching(loading);
     });
     return () => dispose.dispose();
   }, [aiChatService]);
 
+  React.useEffect(() => {
+    const disposable = panelLayoutService.onDidChangePanelLayout((mode) => {
+      setPanelLayout(mode);
+    });
+    setPanelLayout(panelLayoutService.getLayoutMode());
+
+    return () => disposable.dispose();
+  }, [panelLayoutService]);
+
   const handleNewChat = React.useCallback(() => {
-    if (sessionSwitching) {
-      return;
-    }
-    if (aiChatService.sessionModel && aiChatService.sessionModel.history.getMessages().length > 0) {
-      try {
-        aiChatService.createSessionModel();
-      } catch (error) {
-        messageService.error(error.message);
-      }
-    }
-  }, [aiChatService, sessionSwitching]);
+    enterDraftSession();
+  }, [enterDraftSession]);
 
   const handleHistoryItemSelect = React.useCallback(
     (item: IChatHistoryItem) => {
@@ -109,7 +138,22 @@ export function AcpChatViewHeader({
    * 优先使用 session.title（服务端元数据），降级使用第一条消息内容
    */
   const getHistoryList = React.useCallback(async () => {
-    const sessions = aiChatService.getSessions();
+    const sessions = getVisibleAcpSessions(aiChatService);
+
+    // Subscribe to thread status changes for any new sessions
+    for (const session of sessions) {
+      const model = session as ChatModel;
+      if (!subscribedSessionIdsRef.current.has(model.sessionId)) {
+        subscribedSessionIdsRef.current.add(model.sessionId);
+        toDisposeRef.current.push(
+          model.onThreadStatusChange((status) => {
+            setHistoryList((prev) =>
+              prev.map((item) => (item.id === model.sessionId ? { ...item, threadStatus: status } : item)),
+            );
+          }),
+        );
+      }
+    }
 
     // 当前会话标题
     const currentMessages = aiChatService.sessionModel?.history.getMessages() || [];
@@ -131,13 +175,15 @@ export function AcpChatViewHeader({
           sessionTitle = cleanAttachedTextWrapper(messages[0].content).slice(0, MAX_TITLE_LENGTH);
         }
 
-        const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
+        const createdAt = getSessionCreatedAt(session as ChatModel);
 
         return {
           id: session.sessionId,
           title: sessionTitle,
-          updatedAt,
+          createdAt,
           loading: false,
+          threadStatus: (session as ChatModel).threadStatus,
+          hasPendingPermission: permissionBridgeService.hasPendingForSession(session.sessionId),
         };
       }),
     );
@@ -162,8 +208,24 @@ export function AcpChatViewHeader({
   React.useEffect(() => {
     getHistoryList();
 
-    const toDispose = new DisposableCollection();
+    const toDispose = toDisposeRef.current;
     let previousMessageChangeDisposable: IDisposable | undefined;
+
+    const refreshBadge = () => {
+      setPendingPermissionBadge(permissionBridgeService.getPendingCountExcludingActive());
+    };
+    refreshBadge();
+    toDispose.push(
+      permissionBridgeService.onPendingCountChange(() => {
+        refreshBadge();
+        getHistoryList();
+      }),
+    );
+    toDispose.push(
+      permissionBridgeService.onActiveSessionChange(() => {
+        refreshBadge();
+      }),
+    );
 
     toDispose.push(
       aiChatService.onChangeSession(() => {
@@ -189,19 +251,47 @@ export function AcpChatViewHeader({
 
     return () => {
       toDispose.dispose();
+      subscribedSessionIdsRef.current.clear();
     };
   }, [aiChatService]);
 
+  const isAgenticLayout = panelLayout === 'agentic';
+
+  React.useEffect(() => {
+    if (!isAgenticLayout) {
+      setHistoryCollapsed(false);
+    }
+  }, [isAgenticLayout]);
+
+  const handleToggleHistoryCollapsed = React.useCallback(() => {
+    setHistoryCollapsed((collapsed) => !collapsed);
+  }, []);
+
+  const handleOpenMCPConfig = React.useCallback(() => {
+    commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
+  }, [commandService]);
+
   return (
-    <div className={styles.header}>
+    <div className={cls(styles.header, isAgenticLayout && styles.header_agentic)}>
       <AcpChatHistory
-        className={styles.chat_history}
+        className={cls(
+          styles.chat_history,
+          isAgenticLayout && styles.chat_history_agentic,
+          isAgenticLayout && historyCollapsed && styles.chat_history_agentic_collapsed,
+        )}
         currentId={aiChatService.sessionModel?.sessionId}
         title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
         historyList={historyList}
+        variant={isAgenticLayout ? 'inline' : 'popover'}
         historyLoading={historyLoading}
+        historyCollapsed={isAgenticLayout && historyCollapsed}
         disabled={sessionSwitching}
+        pendingPermissionBadge={pendingPermissionBadge}
         onNewChat={handleNewChat}
+        onOpenMCPConfig={
+          isAgenticLayout && aiNativeConfigService.capabilities.supportsMCP ? handleOpenMCPConfig : undefined
+        }
+        onToggleHistoryCollapsed={isAgenticLayout ? handleToggleHistoryCollapsed : undefined}
         onHistoryItemSelect={handleHistoryItemSelect}
         onHistoryItemDelete={() => {}}
         onHistoryItemChange={handleHistoryItemChange}
@@ -228,35 +318,23 @@ export function AcpChatViewHeader({
           />
         </Popover>
       )}
-      <Popover
-        overlayClassName={styles.popover_icon}
-        id={'ai-chat-header-clear'}
-        title={localize('aiNative.operate.clear.title')}
-      >
-        <EnhanceIcon
-          wrapperClassName={styles.action_btn}
-          className={getIcon('clear')}
-          onClick={handleClear}
-          tabIndex={0}
-          role='button'
-          ariaLabel={localize('aiNative.operate.clear.title')}
-        />
-      </Popover>
-      <Popover
-        overlayClassName={styles.popover_icon}
-        id={'ai-chat-header-close'}
-        position={PopoverPosition.left}
-        title={localize('aiNative.operate.close.title')}
-      >
-        <EnhanceIcon
-          wrapperClassName={styles.action_btn}
-          className={getIcon('window-close')}
-          onClick={handleCloseChatView}
-          tabIndex={0}
-          role='button'
-          ariaLabel={localize('aiNative.operate.close.title')}
-        />
-      </Popover>
+      {!isAgenticLayout && (
+        <Popover
+          overlayClassName={styles.popover_icon}
+          id={'ai-chat-header-close'}
+          position={PopoverPosition.left}
+          title={localize('aiNative.operate.close.title')}
+        >
+          <EnhanceIcon
+            wrapperClassName={styles.action_btn}
+            className={getIcon('window-close')}
+            onClick={handleCloseChatView}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.operate.close.title')}
+          />
+        </Popover>
+      )}
     </div>
   );
 }

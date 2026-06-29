@@ -21,7 +21,13 @@ export const ChatToolResult: React.FC<ChatToolResultProps> = ({ result, relation
   const parseResult = React.useCallback((resultStr: string): ResultContent[] => {
     try {
       const parsed = JSON.parse(resultStr);
-      return parsed.content || [];
+      if (Array.isArray(parsed)) {
+        return parsed as ResultContent[];
+      }
+      if (parsed && Array.isArray(parsed.content)) {
+        return parsed.content as ResultContent[];
+      }
+      return [{ type: 'text', text: resultStr }];
     } catch (error) {
       return [{ type: 'text', text: resultStr }];
     }
