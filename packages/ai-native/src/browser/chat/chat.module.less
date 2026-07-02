@@ -170,6 +170,110 @@
         background-color: var(--panel-background);
         border-radius: 0 0 0 12px;
 
+        .queued_messages {
+          display: flex;
+          flex-direction: column;
+          margin-bottom: 8px;
+          overflow: hidden;
+          border: 1px solid var(--panel-border);
+          border-radius: 6px;
+          background: var(--editor-background);
+
+          button {
+            border: 0;
+            background: transparent;
+            color: var(--descriptionForeground);
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 18px;
+
+            &:hover {
+              color: var(--design-text-hoverForeground);
+            }
+          }
+
+          .queued_messages_header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 8px;
+          }
+
+          .queued_messages_summary {
+            display: flex;
+            min-width: 0;
+            align-items: center;
+            gap: 6px;
+            padding: 0;
+            color: var(--descriptionForeground);
+            text-align: left;
+          }
+
+          .queued_messages_disclosure {
+            width: 10px;
+            color: var(--descriptionForeground);
+            font-size: 11px;
+          }
+
+          .queued_messages_clear {
+            flex: 0 0 auto;
+            padding: 0;
+          }
+
+          .queued_messages_list {
+            display: flex;
+            flex-direction: column;
+            max-height: 160px;
+            overflow-y: auto;
+            border-top: 1px solid var(--panel-border);
+          }
+
+          .queued_message_item {
+            display: grid;
+            grid-template-columns: 18px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 8px;
+
+            & + .queued_message_item {
+              border-top: 1px solid var(--panel-border);
+            }
+          }
+
+          .queued_message_index {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--design-block-hoverBackground);
+            color: var(--descriptionForeground);
+            font-size: 11px;
+            line-height: 18px;
+            text-align: center;
+          }
+
+          .queued_message_preview {
+            min-width: 0;
+            overflow: hidden;
+            color: var(--design-text-foreground);
+            font-size: 12px;
+            line-height: 18px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .queued_message_actions {
+            display: flex;
+            flex: 0 0 auto;
+            align-items: center;
+            gap: 6px;
+
+            button {
+              padding: 0 2px;
+            }
+          }
+        }
+
         .header_operate {
           display: flex;
           align-items: center;

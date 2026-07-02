@@ -168,6 +168,7 @@ export interface IAcpChatInputProps {
   placeholder?: string;
   enableOptions?: boolean;
   disabled?: boolean;
+  loading?: boolean;
   sendBtnClassName?: string;
   defaultHeight?: number;
   value?: string;
@@ -187,6 +188,7 @@ export const AcpChatInput = React.forwardRef((props: IAcpChatInputProps, ref) =>
     onValueChange,
     enableOptions = false,
     disabled = false,
+    loading = disabled,
     defaultHeight = 32,
     autoFocus,
     setTheme,
@@ -498,6 +500,7 @@ export const AcpChatInput = React.forwardRef((props: IAcpChatInputProps, ref) =>
         className={styles.input_wrapper}
         onSend={handleSend}
         onStop={handleStop}
+        loading={loading}
         sendBtnClassName={sendBtnClassName}
         onHeightChange={handleHeightChange}
         height={inputHeight}

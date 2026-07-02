@@ -25,6 +25,7 @@ export interface IChatInputProps {
   placeholder?: string;
   enableOptions?: boolean;
   disabled?: boolean;
+  loading?: boolean;
   sendBtnClassName?: string;
   defaultHeight?: number;
   value?: string;
