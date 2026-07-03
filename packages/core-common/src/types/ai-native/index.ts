@@ -519,6 +519,7 @@ export interface IChatSessionState {
   currentModeId?: string;
   currentModelId?: string;
   configOptions?: Record<string, any>[];
+  availableCommands?: AvailableCommand[];
 }
 
 export type IChatProgress =

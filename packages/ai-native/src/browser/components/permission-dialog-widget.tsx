@@ -80,7 +80,7 @@ export const PermissionDialogWidget: React.FC<PermissionDialogWidgetProps> = ({ 
     } else if (e.key === 'Escape') {
       e.preventDefault();
       dialogManager.removeDialog(dialogs[0].requestId);
-      // Escape 视为超时/取消
+      // Escape 视为取消
       permissionBridgeService.handleDialogClose(dialogs[0].requestId);
     }
   };

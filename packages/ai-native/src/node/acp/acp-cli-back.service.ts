@@ -585,6 +585,7 @@ ${input}`;
           ...(update.currentModeId !== undefined ? { currentModeId: update.currentModeId } : {}),
           ...(update.currentModelId !== undefined ? { currentModelId: update.currentModelId } : {}),
           ...(update.configOptions !== undefined ? { configOptions: update.configOptions } : {}),
+          ...(update.availableCommands !== undefined ? { availableCommands: update.availableCommands } : {}),
         } as IChatSessionState;
       case 'tool_call': {
         const toolCall: IChatToolCall = {

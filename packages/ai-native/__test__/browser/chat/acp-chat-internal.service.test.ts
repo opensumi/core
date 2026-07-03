@@ -80,6 +80,39 @@ describe('AcpChatInternalService', () => {
     expect(modeChanges).toEqual([]);
   });
 
+  it('notifies available command listeners for active ACP session state changes', () => {
+    const service = new AcpChatInternalService() as any;
+    const stateEmitter = new Emitter<any>();
+    const model = new ChatModel(new ChatFeatureRegistry(), {
+      sessionId: 'acp:sess-1',
+      currentModeId: 'code',
+    });
+    const availableCommands = [{ name: 'help', description: 'Show help' }];
+    const availableCommandsChanges: any[] = [];
+
+    Object.defineProperty(service, 'chatManagerService', {
+      value: {
+        onDidApplySessionState: stateEmitter.event,
+        onStorageInit: jest.fn(() => ({ dispose: jest.fn() })),
+      },
+    });
+    Object.defineProperty(service, 'aiNativeConfigService', {
+      value: { capabilities: { supportsAgentMode: true } },
+    });
+    service._sessionModel = model;
+    service.onAvailableCommandsChange((commands) => availableCommandsChanges.push(commands));
+
+    service.init();
+    stateEmitter.fire({
+      sessionId: 'acp:sess-1',
+      model,
+      availableCommands,
+    });
+
+    expect(service.getAvailableCommands()).toEqual(availableCommands);
+    expect(availableCommandsChanges).toEqual([availableCommands]);
+  });
+
   describe('draft session lifecycle', () => {
     function createService() {
       const service = new AcpChatInternalService() as any;

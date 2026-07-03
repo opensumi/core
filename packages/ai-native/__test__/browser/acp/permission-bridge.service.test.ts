@@ -3,7 +3,7 @@ import { Emitter } from '@opensumi/ide-core-common';
 import {
   AcpPermissionBridgeService,
   ShowPermissionDialogParams,
-} from '../../../lib/browser/acp/permission-bridge.service';
+} from '../../../src/browser/acp/permission-bridge.service';
 
 // Mock @opensumi/di to make decorators no-ops
 jest.mock('@opensumi/di', () => {
@@ -34,6 +34,7 @@ describe('AcpPermissionBridgeService', () => {
 
   const mockParams: ShowPermissionDialogParams = {
     requestId: 'req-001',
+    sessionId: 'session-1',
     title: 'Test permission',
     kind: 'write',
     content: 'Edit file.txt',
@@ -127,13 +128,13 @@ describe('AcpPermissionBridgeService', () => {
   });
 
   describe('handleDialogClose()', () => {
-    it('should resolve with timeout when dialog closes', async () => {
+    it('should resolve with cancelled when dialog closes', async () => {
       const promise = service.showPermissionDialog(mockParams);
 
       service.handleDialogClose('req-001');
 
       const result = await promise;
-      expect(result).toEqual({ type: 'timeout' });
+      expect(result).toEqual({ type: 'cancelled' });
     });
 
     it('should do nothing when no pending decision', () => {
@@ -141,7 +142,7 @@ describe('AcpPermissionBridgeService', () => {
       service.handleDialogClose('non-existent-id');
     });
 
-    it('should fire onDidReceivePermissionResult with timeout decision', async () => {
+    it('should fire onDidReceivePermissionResult with cancelled decision', async () => {
       const results: any[] = [];
       service.onDidReceivePermissionResult((result) => results.push(result));
 
@@ -150,18 +151,18 @@ describe('AcpPermissionBridgeService', () => {
       await promise;
 
       expect(results).toHaveLength(1);
-      expect(results[0].decision.type).toBe('timeout');
+      expect(results[0].decision.type).toBe('cancelled');
     });
   });
 
   describe('cancelRequest()', () => {
-    it('should resolve with timeout (same as handleDialogClose)', async () => {
+    it('should resolve with cancelled (same as handleDialogClose)', async () => {
       const promise = service.showPermissionDialog(mockParams);
 
       service.cancelRequest('req-001');
 
       const result = await promise;
-      expect(result).toEqual({ type: 'timeout' });
+      expect(result).toEqual({ type: 'cancelled' });
     });
   });
 

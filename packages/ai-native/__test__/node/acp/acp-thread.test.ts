@@ -178,6 +178,7 @@ describe('AcpThread', () => {
       (thread as any)._childProcess = null;
       (thread as any)._processRunning = false;
     } catch {}
+    jest.useRealTimers();
     jest.restoreAllMocks();
   });
 
@@ -1292,6 +1293,72 @@ describe('AcpThread', () => {
       expect(response).toEqual({ outcome: { outcome: 'allowed' } });
       expect((thread as any)._pendingPermissionRequests.size).toBe(0);
       expect(getToolCallData(thread.entries[0])!.status).toBe('completed');
+    });
+
+    it('should keep waiting after 60 seconds until a permission response arrives', async () => {
+      jest.useFakeTimers();
+      (thread as any)._sessionId = 's1';
+
+      let resolvePermission!: (value: any) => void;
+      mockPermissionRouting.routePermissionRequest.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolvePermission = resolve;
+        }),
+      );
+
+      const responsePromise = (thread as any).handlePermissionRequest({
+        sessionId: 's1',
+        toolCall: {
+          toolCallId: 'tc-wait',
+        },
+      });
+
+      let settled = false;
+      responsePromise.then(
+        () => {
+          settled = true;
+        },
+        () => {
+          settled = true;
+        },
+      );
+
+      await Promise.resolve();
+      jest.advanceTimersByTime(60001);
+      await Promise.resolve();
+
+      expect(settled).toBe(false);
+      expect((thread as any)._pendingPermissionRequests.has('s1:tc-wait')).toBe(true);
+
+      const response = { outcome: { outcome: 'selected', optionId: 'allow_once' } };
+      resolvePermission(response);
+
+      await expect(responsePromise).resolves.toEqual(response);
+      expect((thread as any)._pendingPermissionRequests.size).toBe(0);
+
+      jest.useRealTimers();
+    });
+
+    it('should resolve pending permission requests as cancelled when the thread is disposed', async () => {
+      (thread as any)._sessionId = 's1';
+      mockPermissionRouting.routePermissionRequest.mockReturnValueOnce(new Promise(() => undefined));
+
+      const responsePromise = (thread as any).handlePermissionRequest({
+        sessionId: 's1',
+        toolCall: {
+          toolCallId: 'tc-dispose',
+        },
+      });
+
+      await Promise.resolve();
+      await thread.dispose();
+
+      await expect(responsePromise).resolves.toEqual({
+        outcome: {
+          outcome: 'cancelled',
+        },
+      });
+      expect((thread as any)._pendingPermissionRequests.size).toBe(0);
     });
   });
 

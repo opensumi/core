@@ -12,6 +12,10 @@ OpenSumi core is the IDE platform context for browser, node, extension, and AI-n
 
 **Final ACP Response**: The complete assistant response delivered after an ACP Chat request finishes successfully. _Avoid_: truncated response, intermediate output
 
+**ACP Available Command**: Session-scoped command metadata exposed by an ACP agent for the active ACP Chat session. _Avoid_: Codex skill, MCP tool, command palette action
+
+**Chat Slash Command**: A user-selectable `/` command in the chat input that represents an intended chat action before the message is sent. _Avoid_: shell command, command palette action, MCP tool
+
 **Agentic Layout**: An AI-native panel layout where ACP Chat is treated as the primary agent workspace beside the workbench. _Avoid_: agent layout, agent mode
 
 **ACP Permission Request**: A user decision prompt raised by ACP Chat when an agent asks to run a tool operation that requires approval. It remains a user decision until the user allows, rejects, cancels, or the owning session ends. _Avoid_: permission notification, unread permission, timed approval

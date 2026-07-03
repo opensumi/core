@@ -274,6 +274,9 @@ export class AcpChatInternalService extends ChatInternalService {
       }
 
       this._onSessionModelChange.fire(this._sessionModel);
+      if (event.availableCommands !== undefined) {
+        this.setAvailableCommands(event.availableCommands);
+      }
       if (event.currentModeId !== undefined && event.currentModeId !== event.previousModeId) {
         this._onModeChange.fire(event.currentModeId);
       }

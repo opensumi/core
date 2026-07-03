@@ -345,6 +345,7 @@ describe('WebMCP Group - ACP Chat', () => {
         ],
       }),
     );
+    expect(mockPermissionBridge.showPermissionDialog.mock.calls[0][0]).not.toHaveProperty('timeout');
     expect(mockChatInternalService.activateSession).toHaveBeenNthCalledWith(1, 'acp:sess-2');
     expect(mockChatService.sendMessage).toHaveBeenCalledWith(
       expect.objectContaining({

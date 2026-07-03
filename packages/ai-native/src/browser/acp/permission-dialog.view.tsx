@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { Button, Dialog, Icon } from '@opensumi/ide-components';
 
@@ -19,7 +19,7 @@ export interface PermissionDialogProps {
     name: string;
     kind: PermissionOptionKind;
   }>;
-  timeout: number;
+  timeout?: number;
   onSelect: (requestId: string, optionId: string, kind: PermissionOptionKind) => void;
   onClose: (requestId: string) => void;
 }
@@ -33,32 +33,10 @@ export const PermissionDialog: React.FC<PermissionDialogProps> = ({
   locations,
   command,
   options,
-  timeout,
   onSelect,
   onClose,
 }) => {
-  const [remainingTime, setRemainingTime] = useState(timeout);
   // const [theme] = useDesignTheme();
-
-  // Countdown timer
-  useEffect(() => {
-    if (!visible || remainingTime <= 0) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setRemainingTime((prev) => {
-        if (prev <= 100) {
-          clearInterval(interval);
-          onClose(requestId);
-          return 0;
-        }
-        return prev - 100;
-      });
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, [visible, remainingTime, requestId, onClose]);
 
   const handleOptionSelect = (optionId: string, kind: PermissionOptionKind) => {
     onSelect(requestId, optionId, kind);
@@ -79,8 +57,6 @@ export const PermissionDialog: React.FC<PermissionDialogProps> = ({
         return 'file';
     }
   };
-
-  // const progressPercent = (remainingTime / timeout) * 100;
 
   return (
     <Dialog
@@ -152,19 +128,6 @@ export const PermissionDialog: React.FC<PermissionDialogProps> = ({
               </div>
             </div>
           )}
-        </div>
-
-        {/* Timeout progress */}
-        <div className={styles.timeoutSection}>
-          <div className={styles.timeoutHeader}>
-            <span>Auto-reject in</span>
-            <span className={styles.timeoutValue}>{Math.ceil(remainingTime / 1000)}s</span>
-          </div>
-          {/* <Progress
-            value={progressPercent}
-            color={remainingTime < 10000 ? '#f5222d' : theme.colorPrimary}
-            size='small'
-          /> */}
         </div>
 
         {/* Warning message */}

@@ -148,9 +148,9 @@ describe('AcpPermissionCallerService', () => {
           content: expect.any(String),
           locations: [{ path: '/src/test.ts', line: 10 }],
           options: [{ optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' }],
-          timeout: 60000,
         }),
       );
+      expect(mockRpcClient.$showPermissionDialog.mock.calls[0][0]).not.toHaveProperty('timeout');
       expect(result.outcome.outcome).toBe('selected');
       expect((result.outcome as any).optionId).toBe('allow_once');
     });

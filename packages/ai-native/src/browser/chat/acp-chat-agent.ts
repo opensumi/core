@@ -291,6 +291,7 @@ export class AcpChatAgent implements IChatAgent {
       currentModeId: state.currentModeId,
       currentModelId: state.currentModelId,
       configOptions: state.configOptions,
+      availableCommands: state.availableCommands,
     });
   }
 

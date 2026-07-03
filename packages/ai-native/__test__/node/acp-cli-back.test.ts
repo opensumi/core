@@ -446,6 +446,25 @@ describe('AcpCliBackService', () => {
       });
     });
 
+    it('should convert native available_commands_update to a session_state update', () => {
+      const availableCommands = [{ name: 'help', description: 'Show help' }];
+
+      expect(
+        toAgentUpdate({
+          sessionId: 'sess-1',
+          update: {
+            sessionUpdate: 'available_commands_update',
+            availableCommands,
+          },
+        } as any),
+      ).toEqual({
+        type: 'session_state',
+        content: '',
+        sessionId: 'sess-1',
+        availableCommands,
+      });
+    });
+
     it('should convert native top-level plan entries to plan update content', () => {
       expect(
         toAgentUpdate({

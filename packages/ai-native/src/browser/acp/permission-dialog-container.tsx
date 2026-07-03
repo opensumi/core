@@ -133,9 +133,9 @@ export class AcpPermissionDialogContribution implements ComponentContribution {
       this.dialogManager.addDialog(params);
     });
 
-    // 监听权限结果事件 - 处理超时等结果
+    // 监听权限结果事件 - 处理取消等结果
     this.permissionBridgeService.onDidReceivePermissionResult((result) => {
-      // 超时或取消时关闭对话框
+      // 取消时关闭对话框
       if (result.decision.type === 'timeout' || result.decision.type === 'cancelled') {
         this.dialogManager.removeDialog(result.requestId);
       }

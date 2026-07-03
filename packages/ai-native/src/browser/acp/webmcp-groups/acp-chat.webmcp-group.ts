@@ -535,7 +535,6 @@ export function createAcpChatGroup(container: Injector): WebMcpGroupRegistration
                 { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
                 { optionId: 'reject', name: 'Reject', kind: 'reject_once' },
               ],
-              timeout: 60000,
             });
             logger?.log?.(
               `[WebMCP][acp_chat] postPreparedRelay permission result — digestId=${digestId}, requestId=${permissionRequestId}, decision=${
