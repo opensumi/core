@@ -6,10 +6,13 @@ const mockExecuteCommand = jest.fn();
 const mockGetCommand = jest.fn();
 const mockCurrentContainerIdGet = jest.fn(() => 'explorer');
 const mockOnCurrentChange = jest.fn(() => ({ dispose: jest.fn() }));
+const mockGetContextKeyValue = jest.fn();
+const mockOnDidChangeContext = jest.fn();
 
 const mockCommandServiceToken = Symbol('CommandService');
 const mockCommandRegistryToken = Symbol('CommandRegistry');
 const mockMainLayoutServiceToken = Symbol('IMainLayoutService');
+const mockContextKeyServiceToken = Symbol('IContextKeyService');
 
 jest.mock('@opensumi/ide-core-common', () => ({
   CommandService: mockCommandServiceToken,
@@ -20,6 +23,7 @@ jest.mock('@opensumi/ide-core-browser', () => {
   const React = require('react');
   return {
     AINativeConfigService: class AINativeConfigService {},
+    IContextKeyService: mockContextKeyServiceToken,
     SlotLocation: {
       view: 'view',
     },
@@ -48,6 +52,12 @@ jest.mock('@opensumi/ide-core-browser', () => {
             },
             onCurrentChange: mockOnCurrentChange,
           }),
+        };
+      }
+      if (token === mockContextKeyServiceToken) {
+        return {
+          getContextKeyValue: mockGetContextKeyValue,
+          onDidChangeContext: mockOnDidChangeContext,
         };
       }
       if (token?.name === 'AINativeConfigService') {
@@ -138,6 +148,7 @@ jest.mock('../../src/browser/menu-bar/menu-bar.module.less', () => ({
   ai_enhance_menu: 'ai_enhance_menu',
   caret_icon: 'caret_icon',
   container: 'container',
+  dividing: 'dividing',
   enhance_menu: 'enhance_menu',
   extra_top_icon: 'extra_top_icon',
   left: 'left',
@@ -151,6 +162,8 @@ describe('DesignMenuBarView', () => {
   let container: HTMLDivElement;
   let root: Root;
   let agenticWorkbenchVisible = true;
+  let panelLayoutMode: 'classic' | 'agentic' | undefined = 'classic';
+  let contextChangeListeners: Array<(event: { payload: { affectsSome: (keys: Set<string>) => boolean } }) => void>;
   let originalRequestAnimationFrame: typeof requestAnimationFrame;
 
   const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -165,6 +178,19 @@ describe('DesignMenuBarView', () => {
     document.body.appendChild(container);
     root = createRoot(container);
     agenticWorkbenchVisible = true;
+    panelLayoutMode = 'classic';
+    contextChangeListeners = [];
+    mockGetContextKeyValue.mockImplementation((key: string) =>
+      key === 'aiNative.panelLayout' ? panelLayoutMode : undefined,
+    );
+    mockOnDidChangeContext.mockImplementation((listener) => {
+      contextChangeListeners.push(listener);
+      return {
+        dispose: jest.fn(() => {
+          contextChangeListeners = contextChangeListeners.filter((item) => item !== listener);
+        }),
+      };
+    });
     mockCurrentContainerIdGet.mockReturnValue('explorer');
     mockGetCommand.mockImplementation((id: string) =>
       id === 'ai-native.agentic-workbench.toggle' || id === 'ai-native.agentic-workbench.is-visible'
@@ -203,19 +229,71 @@ describe('DesignMenuBarView', () => {
 
   const getToggle = () => container.querySelector<HTMLElement>('[data-testid="left-panel-toggle"]')!;
   const getLogo = () => container.querySelector<HTMLElement>('[data-testid="menu-logo"]')!;
+  const getTopMenusBar = () => container.querySelector<HTMLElement>('.top_menus_bar')!;
 
-  it('renders the logo action in the right group before the top toggle', async () => {
+  const emitPanelLayoutChange = async (mode: 'classic' | 'agentic') => {
+    panelLayoutMode = mode;
+
+    await act(async () => {
+      contextChangeListeners.forEach((listener) =>
+        listener({
+          payload: {
+            affectsSome: (keys: Set<string>) => keys.has('aiNative.panelLayout'),
+          },
+        }),
+      );
+      await flushPromises();
+    });
+  };
+
+  it('renders the top menus and panel toggle in the left group for classic layout', async () => {
     await renderMenuBar();
 
+    const left = container.querySelector<HTMLElement>('.left')!;
+    const right = container.querySelector<HTMLElement>('.right')!;
+    const leftSlot = left.querySelector<HTMLElement>('#design-menubar-left')!;
+    const toggle = getToggle();
+    const divider = left.querySelector<HTMLElement>('.dividing')!;
+    const topMenusBar = getTopMenusBar();
+
+    expect(left.contains(toggle)).toBeTruthy();
+    expect(left.contains(topMenusBar)).toBeTruthy();
+    expect(right.contains(toggle)).toBeFalsy();
+    expect(right.contains(topMenusBar)).toBeFalsy();
+    expect(toggle.compareDocumentPosition(divider) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(divider.compareDocumentPosition(topMenusBar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(topMenusBar.compareDocumentPosition(leftSlot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('renders the top menus and panel toggle in the right group for agentic layout', async () => {
+    panelLayoutMode = 'agentic';
+
+    await renderMenuBar();
+
+    const left = container.querySelector<HTMLElement>('.left')!;
     const right = container.querySelector<HTMLElement>('.right')!;
     const rightSlot = right.querySelector<HTMLElement>('#design-menubar-right')!;
-    const logo = getLogo();
+    const topMenusBar = getTopMenusBar();
     const toggle = getToggle();
 
-    expect(container.querySelector('.left [data-testid="menu-logo"]')).toBeNull();
-    expect(right.contains(logo)).toBeTruthy();
-    expect(rightSlot.compareDocumentPosition(logo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(logo.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(left.contains(topMenusBar)).toBeFalsy();
+    expect(left.contains(toggle)).toBeFalsy();
+    expect(right.contains(topMenusBar)).toBeTruthy();
+    expect(right.contains(toggle)).toBeTruthy();
+    expect(rightSlot.compareDocumentPosition(topMenusBar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(topMenusBar.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('repositions the top menus and panel toggle when the panel layout changes', async () => {
+    await renderMenuBar();
+
+    expect(container.querySelector('.left .top_menus_bar')).not.toBeNull();
+    expect(container.querySelector('.right .top_menus_bar')).toBeNull();
+
+    await emitPanelLayoutChange('agentic');
+
+    expect(container.querySelector('.left .top_menus_bar')).toBeNull();
+    expect(container.querySelector('.right .top_menus_bar')).not.toBeNull();
   });
 
   it('uses the agentic workbench command and returned visibility for the top toggle', async () => {

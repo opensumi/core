@@ -1,5 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IContextKeyService, PreferenceService, fastdom } from '@opensumi/ide-core-browser';
+import { AI_PANEL_LAYOUT_CONTEXT } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { AINativeSettingSectionsId, Emitter, PanelLayoutMode, PreferenceScope } from '@opensumi/ide-core-common';
@@ -7,7 +8,7 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_CHAT_VIEW_ID } from '../../common';
 
-export const AI_PANEL_LAYOUT_CONTEXT = 'aiNative.panelLayout';
+export { AI_PANEL_LAYOUT_CONTEXT };
 export const AI_PANEL_LAYOUT_MENU = 'aiNative/panelLayout';
 export const AI_AGENTIC_LAYOUT_STORAGE_KEY = 'layout.ai.agentic';
 export const AI_AGENTIC_CHAT_DEFAULT_SIZE = 840;

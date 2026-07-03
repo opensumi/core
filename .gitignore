@@ -9,6 +9,7 @@
 .DS_Store
 
 .package-temp-dir
+.tmp/
 
 # Logs
 logs

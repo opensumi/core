@@ -41,6 +41,7 @@ import {
   AI_INLINE_COMPLETION_REPORTER,
   AI_INLINE_COMPLETION_VISIBLE,
   AI_INLINE_DIFF_PARTIAL_EDIT,
+  AI_PANEL_LAYOUT_GET,
   AI_PANEL_LAYOUT_SET,
   AI_PANEL_LAYOUT_TOGGLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
@@ -998,6 +999,10 @@ export class AINativeBrowserContribution
 
     commands.registerCommand(AI_PANEL_LAYOUT_SET, {
       execute: (mode: PanelLayoutMode) => this.panelLayoutService.setLayoutMode(mode),
+    });
+
+    commands.registerCommand(AI_PANEL_LAYOUT_GET, {
+      execute: () => this.panelLayoutService.getLayoutMode(),
     });
 
     commands.registerCommand(AI_PANEL_LAYOUT_TOGGLE, {

@@ -1,17 +1,26 @@
 import cls from 'classnames';
 import * as React from 'react';
 
-import { AINativeConfigService, SlotLocation, SlotRenderer, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  AINativeConfigService,
+  IContextKeyService,
+  SlotLocation,
+  SlotRenderer,
+  getIcon,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import {
   AI_AGENTIC_WORKBENCH_IS_VISIBLE,
   AI_AGENTIC_WORKBENCH_TOGGLE,
+  AI_PANEL_LAYOUT_CONTEXT,
+  AI_PANEL_LAYOUT_GET,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { Icon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { CommandRegistry, CommandService } from '@opensumi/ide-core-common';
+import { CommandRegistry, CommandService, PanelLayoutMode } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ToolBar } from '@opensumi/ide-toolbar/lib/browser/toolbar.view';
 
@@ -19,6 +28,10 @@ import { DESIGN_MENU_BAR_LEFT, DESIGN_MENU_BAR_RIGHT } from '../../common';
 
 import OpenSumiLogo from './logo.svg';
 import styles from './menu-bar.module.less';
+
+const panelLayoutContextKeys = new Set([AI_PANEL_LAYOUT_CONTEXT]);
+
+const normalizePanelLayoutMode = (mode: unknown): PanelLayoutMode => (mode === 'agentic' ? 'agentic' : 'classic');
 
 const DesignMenuBarRender = () => {
   const contextmenuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
@@ -95,9 +108,13 @@ const DesignMenuBarRender = () => {
 export const DesignMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
+  const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
   const mainLayoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const [isLeftPanelVisible, setIsVisiablePanel] = React.useState<boolean>(false);
+  const [panelLayout, setPanelLayout] = React.useState<PanelLayoutMode>(() =>
+    normalizePanelLayoutMode(contextKeyService.getContextKeyValue(AI_PANEL_LAYOUT_CONTEXT)),
+  );
 
   const isVisiable = React.useCallback(() => {
     const tabbarService = mainLayoutService.getTabbarService(SlotLocation.view);
@@ -124,6 +141,24 @@ export const DesignMenuBarView = () => {
     });
   }, [getAgenticWorkbenchVisible, isVisiable]);
 
+  const refreshPanelLayout = React.useCallback(() => {
+    const contextPanelLayout = contextKeyService.getContextKeyValue<PanelLayoutMode>(AI_PANEL_LAYOUT_CONTEXT);
+    if (contextPanelLayout === 'classic' || contextPanelLayout === 'agentic') {
+      setPanelLayout(contextPanelLayout);
+      return;
+    }
+
+    if (!commandRegistry.getCommand(AI_PANEL_LAYOUT_GET.id)) {
+      setPanelLayout('classic');
+      return;
+    }
+
+    void commandService
+      .executeCommand<PanelLayoutMode | undefined>(AI_PANEL_LAYOUT_GET.id)
+      .then((mode) => setPanelLayout(normalizePanelLayoutMode(mode)))
+      .catch(() => setPanelLayout('classic'));
+  }, [commandRegistry, commandService, contextKeyService]);
+
   React.useEffect(() => {
     refreshPanelVisible();
     const tabbarService = mainLayoutService.getTabbarService(SlotLocation.view);
@@ -133,6 +168,19 @@ export const DesignMenuBarView = () => {
       toDispose.dispose();
     };
   }, [mainLayoutService, refreshPanelVisible]);
+
+  React.useEffect(() => {
+    refreshPanelLayout();
+    const toDispose = contextKeyService.onDidChangeContext((event) => {
+      if (event.payload.affectsSome(panelLayoutContextKeys)) {
+        refreshPanelLayout();
+      }
+    });
+
+    return () => {
+      toDispose.dispose();
+    };
+  }, [contextKeyService, refreshPanelLayout]);
 
   const handleLeftMenuVisiable = React.useCallback(async () => {
     if (commandRegistry.getCommand(AI_AGENTIC_WORKBENCH_TOGGLE.id)) {
@@ -157,6 +205,12 @@ export const DesignMenuBarView = () => {
       onClick={handleLeftMenuVisiable}
     />
   );
+  const topMenusBar = (
+    <div className={styles.top_menus_bar}>
+      <DesignMenuBarRender />
+    </div>
+  );
+  const isAgenticLayout = panelLayout === 'agentic';
 
   return (
     <div
@@ -166,15 +220,16 @@ export const DesignMenuBarView = () => {
     >
       <div className={styles.container}>
         <div className={styles.left}>
+          {!isAgenticLayout && leftPanelToggle}
+          {!isAgenticLayout && <span className={styles.dividing}></span>}
+          {!isAgenticLayout && topMenusBar}
           <SlotRenderer id='design-menubar-left' slot={DESIGN_MENU_BAR_LEFT} flex={1} />
         </div>
         <div className={styles.right}>
           <ToolBar />
           <SlotRenderer id='design-menubar-right' slot={DESIGN_MENU_BAR_RIGHT} flex={1} />
-          <div className={styles.top_menus_bar}>
-            <DesignMenuBarRender />
-          </div>
-          {leftPanelToggle}
+          {isAgenticLayout && topMenusBar}
+          {isAgenticLayout && leftPanelToggle}
         </div>
       </div>
     </div>
