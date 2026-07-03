@@ -377,7 +377,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
         : localize('aiNative.operate.chatHistory.collapse', 'Collapse Chat History');
 
       return (
-        <Popover id={'ai-chat-header-collapse-history'} position={PopoverPosition.top} title={collapseTitle}>
+        <Popover id={'ai-chat-header-collapse-history'} position={PopoverPosition.topLeft} title={collapseTitle}>
           <EnhanceIcon
             ariaLabel={collapseTitle}
             className={styles.chat_history_header_actions_collapse}

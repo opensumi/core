@@ -24,5 +24,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 96px;
+  min-width: 86px;
+}
+
+.layout_switch_button {
+  min-width: 86px;
+  height: 22px;
+  padding: 0 3px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--kt-menubar-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 20px;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--menubar-selectionForeground);
+    background: var(--menubar-selectionBackground);
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--focusBorder);
+    outline-offset: 1px;
+  }
 }

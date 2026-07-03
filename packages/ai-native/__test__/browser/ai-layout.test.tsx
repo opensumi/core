@@ -8,6 +8,8 @@ let storedLayouts: Record<string, Record<string, { currentId?: string; size?: nu
 const mockToggleSlot = jest.fn();
 const mockPreferenceServiceToken = Symbol('PreferenceService');
 let panelLayoutChangeListener: ((mode: 'classic' | 'agentic') => void) | undefined;
+let agenticWorkbenchVisible = true;
+const agenticWorkbenchVisibilityListeners = new Set<(visible: boolean) => void>();
 
 jest.mock('@opensumi/ide-core-browser', () => {
   const React = require('react');
@@ -59,6 +61,11 @@ jest.mock('@opensumi/ide-core-browser', () => {
           onDidChangePanelLayout: (listener: (mode: 'classic' | 'agentic') => void) => {
             panelLayoutChangeListener = listener;
             return { dispose: jest.fn() };
+          },
+          isAgenticWorkbenchVisible: () => (panelLayoutMode === 'agentic' ? agenticWorkbenchVisible : undefined),
+          onDidChangeAgenticWorkbenchVisibility: (listener: (visible: boolean) => void) => {
+            agenticWorkbenchVisibilityListeners.add(listener);
+            return { dispose: () => agenticWorkbenchVisibilityListeners.delete(listener) };
           },
         };
       }
@@ -183,6 +190,8 @@ describe('AILayout BDD', () => {
     storedLayout = {};
     storedLayouts = {};
     panelLayoutChangeListener = undefined;
+    agenticWorkbenchVisible = true;
+    agenticWorkbenchVisibilityListeners.clear();
     mockToggleSlot.mockClear();
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -298,6 +307,40 @@ describe('AILayout BDD', () => {
     expect(getSlots()).toEqual(['top', 'AI-Chat', 'main', 'panel', 'view', 'statusBar']);
     expect(container.querySelector('[data-split="main-horizontal-ai-agentic"]')).toBeTruthy();
     expect(getSplitProps('main-horizontal-ai-agentic')).toEqual({ initialResizeOnMount: 'false' });
+    expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat', 'main-horizontal-agentic']);
+    expect(getSplitChildIds('main-horizontal-agentic')).toEqual(['main-vertical-agentic', 'view']);
+  });
+
+  it('Given agentic workbench is collapsed, when it renders, then AI chat is the only main split child', async () => {
+    panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = false;
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    act(() => {
+      root.render(<AILayout />);
+    });
+
+    expect(getSlots()).toEqual(['top', 'AI-Chat', 'statusBar']);
+    expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat']);
+    expect(container.querySelector('[data-split="main-horizontal-agentic"]')).toBeFalsy();
+  });
+
+  it('Given agentic workbench is collapsed, when it becomes visible, then the editor and Explorer return', async () => {
+    panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = false;
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    act(() => {
+      root.render(<AILayout />);
+    });
+
+    expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat']);
+
+    act(() => {
+      agenticWorkbenchVisible = true;
+      agenticWorkbenchVisibilityListeners.forEach((listener) => listener(true));
+    });
+
     expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat', 'main-horizontal-agentic']);
     expect(getSplitChildIds('main-horizontal-agentic')).toEqual(['main-vertical-agentic', 'view']);
   });

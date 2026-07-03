@@ -32,6 +32,8 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import {
+  AI_AGENTIC_WORKBENCH_IS_VISIBLE,
+  AI_AGENTIC_WORKBENCH_TOGGLE,
   AI_CHAT_VISIBLE,
   AI_INLINE_CHAT_INTERACTIVE_INPUT_CANCEL,
   AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE,
@@ -87,7 +89,6 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IMultiDiffSourceResolverService } from '@opensumi/ide-editor/lib/common/multi-diff';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { HideInlineCompletion } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/commands';
@@ -288,9 +289,6 @@ export class AINativeBrowserContribution
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
-
-  @Autowired(IMainLayoutService)
-  private readonly layoutService: IMainLayoutService;
 
   @Autowired(ChatProxyServiceToken)
   private readonly chatProxyService: ChatProxyService;
@@ -991,7 +989,7 @@ export class AINativeBrowserContribution
     commands.registerCommand(AI_CHAT_VISIBLE, {
       execute: (visible?: boolean) => {
         if (visible === false) {
-          this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, false);
+          this.panelLayoutService.hideAIChatView();
           return;
         }
         this.panelLayoutService.showAIChatView();
@@ -1004,6 +1002,14 @@ export class AINativeBrowserContribution
 
     commands.registerCommand(AI_PANEL_LAYOUT_TOGGLE, {
       execute: () => this.panelLayoutService.toggleLayoutMode(),
+    });
+
+    commands.registerCommand(AI_AGENTIC_WORKBENCH_TOGGLE, {
+      execute: (visible?: boolean) => this.panelLayoutService.toggleAgenticWorkbenchVisibility(visible),
+    });
+
+    commands.registerCommand(AI_AGENTIC_WORKBENCH_IS_VISIBLE, {
+      execute: () => this.panelLayoutService.isAgenticWorkbenchVisible(),
     });
 
     commands.registerCommand(AI_INLINE_COMPLETION_VISIBLE, {

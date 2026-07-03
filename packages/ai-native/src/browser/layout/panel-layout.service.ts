@@ -45,9 +45,13 @@ export class AIPanelLayoutService {
   private readonly onDidChangePanelLayoutEmitter = new Emitter<PanelLayoutMode>();
   readonly onDidChangePanelLayout = this.onDidChangePanelLayoutEmitter.event;
 
+  private readonly onDidChangeAgenticWorkbenchVisibilityEmitter = new Emitter<boolean>();
+  readonly onDidChangeAgenticWorkbenchVisibility = this.onDidChangeAgenticWorkbenchVisibilityEmitter.event;
+
   private panelLayoutContextKey?: ReturnType<IContextKeyService['createKey']>;
   private initialized = false;
   private isSettingLayoutMode = false;
+  private agenticWorkbenchVisible = true;
 
   initialize(): void {
     if (this.initialized) {
@@ -126,8 +130,23 @@ export class AIPanelLayoutService {
     this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, this.getAIChatOpenSize(normalizedMode));
   }
 
+  hideAIChatView(mode: PanelLayoutMode = this.getLayoutMode()): void {
+    const normalizedMode = normalizePanelLayoutMode(mode);
+    if (normalizedMode === 'agentic') {
+      this.showAIChatView(normalizedMode);
+      return;
+    }
+
+    this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, false);
+  }
+
   toggleAIChatView(mode: PanelLayoutMode = this.getLayoutMode()): void {
     const normalizedMode = normalizePanelLayoutMode(mode);
+    if (normalizedMode === 'agentic') {
+      this.showAIChatView(normalizedMode);
+      return;
+    }
+
     const isVisible = this.layoutService.isVisible(AI_CHAT_VIEW_ID);
     this.layoutService.toggleSlot(
       AI_CHAT_VIEW_ID,
@@ -136,7 +155,35 @@ export class AIPanelLayoutService {
     );
   }
 
+  isAgenticWorkbenchVisible(): boolean | undefined {
+    if (this.getLayoutMode() !== 'agentic') {
+      return undefined;
+    }
+
+    return this.agenticWorkbenchVisible;
+  }
+
+  toggleAgenticWorkbenchVisibility(visible?: boolean): boolean | undefined {
+    if (this.getLayoutMode() !== 'agentic') {
+      return undefined;
+    }
+
+    const nextVisible = visible ?? !this.agenticWorkbenchVisible;
+    this.setAgenticWorkbenchVisibility(nextVisible);
+    return this.agenticWorkbenchVisible;
+  }
+
+  private setAgenticWorkbenchVisibility(visible: boolean): void {
+    if (this.agenticWorkbenchVisible === visible) {
+      return;
+    }
+
+    this.agenticWorkbenchVisible = visible;
+    this.onDidChangeAgenticWorkbenchVisibilityEmitter.fire(visible);
+  }
+
   private activateLayoutMode(mode: PanelLayoutMode, restoreAIChat = false): void {
+    this.setAgenticWorkbenchVisibility(true);
     this.applyLayoutMode(mode);
     if (restoreAIChat) {
       this.showAIChatView(mode);

@@ -18,6 +18,7 @@ export const ACP_BDD_FIXTURES = [
   'config-failure',
   'process-exit',
   'history',
+  'file-link',
 ] as const;
 
 export type AcpBddFixture = (typeof ACP_BDD_FIXTURES)[number];

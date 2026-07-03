@@ -177,7 +177,14 @@ async function sendPromptAndWaitForRichUi(prompt: string) {
   ).toBeVisible({
     timeout: 30_000,
   });
-  await expect(page.locator('.AI-Chat-slot').getByText('Called MCP Tool').last()).toBeVisible({ timeout: 30_000 });
+  await expect(
+    page
+      .locator('.AI-Chat-slot')
+      .getByText(/Called (?:MCP )?Tool/)
+      .last(),
+  ).toBeVisible({
+    timeout: 30_000,
+  });
   await expect(sendButton()).toBeVisible({ timeout: 30_000 });
 }
 
@@ -202,7 +209,7 @@ async function readRichUiProof(): Promise<RichUiProof> {
       userRows: slot?.querySelectorAll('.rce-user-msg').length || 0,
       assistantRows: slot?.querySelectorAll('.rce-ai-msg').length || 0,
       reasoningToggleCount: visibleButtons.filter((button) => /Deep Thinking|深度思考/.test(button.innerText)).length,
-      toolCardCount: countText('Called MCP Tool'),
+      toolCardCount: countText('Called MCP Tool') + countText('Called Tool'),
       hasPlanChecklistText: text.includes('BDD plan:'),
       sendVisible: hasVisibleButton(/Send|发送/),
       stopVisible: hasVisibleButton(/Stop|停止/),

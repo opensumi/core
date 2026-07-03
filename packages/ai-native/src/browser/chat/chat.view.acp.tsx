@@ -36,12 +36,11 @@ import {
   uuid,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IMessageService } from '@opensumi/ide-overlay';
 import 'react-chat-elements/dist/main.css';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
+import { IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
 import {
   LLMContextService,
   LLMContextServiceToken,
@@ -62,6 +61,7 @@ import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
+import { AIPanelLayoutService } from '../layout/panel-layout.service';
 import { BaseApplyService } from '../mcp/base-apply.service';
 import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
@@ -76,6 +76,8 @@ import {
   resumeAcpQueuedMessages,
 } from './acp-chat-queued-messages';
 import { AcpQueuedMessages } from './AcpQueuedMessages';
+import { AgenticChatHeaderMaximizeAction } from './AgenticChatHeaderMaximizeAction';
+import { AgenticChatPanelHeader } from './AgenticChatPanelHeader';
 import { ChatModel, ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
 import { ChatService } from './chat.api.service';
@@ -169,7 +171,7 @@ export const AIChatViewACPContent = () => {
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const llmContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
 
-  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const msgHistoryManager = aiChatService.sessionModel?.history;
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -1043,8 +1045,8 @@ export const AIChatViewACPContent = () => {
   );
 
   const handleCloseChatView = React.useCallback(() => {
-    layoutService.toggleSlot(AI_CHAT_VIEW_ID);
-  }, [layoutService]);
+    panelLayoutService.hideAIChatView();
+  }, [panelLayoutService]);
 
   const HeaderRender: ChatViewHeaderRender = chatRenderRegistry.chatViewHeaderRender || DefaultChatViewHeaderACP;
 
@@ -1126,6 +1128,7 @@ export const AIChatViewACPContent = () => {
       </div>
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>
+          <AgenticChatPanelHeader preferSessionTitle={true} sessionModel={aiChatService.sessionModel} />
           <div className={styles.chat_container} ref={containerRef}>
             {!hasUserSentMessage && messageListData.length <= 1 && chatRenderRegistry.chatWelcomePageRender ? (
               React.createElement(chatRenderRegistry.chatWelcomePageRender, {
@@ -1238,10 +1241,21 @@ export function DefaultChatViewHeaderACP({
   const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const [pendingPermissionBadge, setPendingPermissionBadge] = React.useState(0);
+  const [panelLayout, setPanelLayout] = React.useState(() => panelLayoutService.getLayoutMode());
+
+  React.useEffect(() => {
+    setPanelLayout(panelLayoutService.getLayoutMode());
+    const disposable = panelLayoutService.onDidChangePanelLayout((mode) => {
+      setPanelLayout(mode);
+    });
+    return () => disposable.dispose();
+  }, [panelLayoutService]);
+
   const handleNewChat = React.useCallback(() => {
     aiChatService.enterDraftSession();
   }, [aiChatService]);
@@ -1304,9 +1318,9 @@ export function DefaultChatViewHeaderACP({
     const getHistoryList = async () => {
       const currentMessages = aiChatService.sessionModel?.history.getMessages() || [];
       const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
-      const currentTitle = latestUserMessage
-        ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
-        : '';
+      const currentTitle =
+        aiChatService.sessionModel?.title?.slice(0, MAX_TITLE_LENGTH) ||
+        (latestUserMessage ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH) : '');
 
       // 设置初始标题
       setCurrentTitle(currentTitle);
@@ -1416,21 +1430,24 @@ export function DefaultChatViewHeaderACP({
         onHistoryItemDelete={handleHistoryItemDelete}
         onHistoryItemChange={() => {}}
       />
-      <Popover
-        overlayClassName={styles.popover_icon}
-        id={'ai-chat-header-close'}
-        position={PopoverPosition.left}
-        title={localize('aiNative.operate.close.title')}
-      >
-        <EnhanceIcon
-          wrapperClassName={styles.action_btn}
-          className={getIcon('window-close')}
-          onClick={handleCloseChatView}
-          tabIndex={0}
-          role='button'
-          ariaLabel={localize('aiNative.operate.close.title')}
-        />
-      </Popover>
+      <AgenticChatHeaderMaximizeAction />
+      {panelLayout !== 'agentic' && (
+        <Popover
+          overlayClassName={styles.popover_icon}
+          id={'ai-chat-header-close'}
+          position={PopoverPosition.left}
+          title={localize('aiNative.operate.close.title')}
+        >
+          <EnhanceIcon
+            wrapperClassName={styles.action_btn}
+            className={getIcon('window-close')}
+            onClick={handleCloseChatView}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.operate.close.title')}
+          />
+        </Popover>
+      )}
     </div>
   );
 }

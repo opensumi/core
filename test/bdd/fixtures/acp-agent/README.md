@@ -24,8 +24,10 @@ Use it in an ACP BDD runtime by overriding the configured ACP agent command:
 }
 ```
 
-The fixture can also be selected with `OPENSUMI_ACP_BDD_FIXTURE`. Supported fixture modes include `stream-rich`, `long-stream`, `permission`, `send-failure`, `create-failure`, `load-failure`, `auth-required`, `config-failure`, `process-exit`, and `history`.
+The fixture can also be selected with `OPENSUMI_ACP_BDD_FIXTURE`. Supported fixture modes include `stream-rich`, `long-stream`, `permission`, `send-failure`, `create-failure`, `load-failure`, `auth-required`, `config-failure`, `process-exit`, `history`, and `file-link`.
 
 `stream-rich` exposes deterministic ACP `configOptions` for `bdd-mode`, `bdd-model`, `bdd-thought-level`, and `bdd-web-search`. After `session/set_config_option`, it returns the complete `configOptions` list. During `session/prompt`, it emits a `BDD_CONFIG_SNAPSHOT` and a tool-call `rawInput.configSnapshot` so tests can prove the prompt turn used the selected footer values without asserting LLM-generated content.
+
+`file-link` emits bounded assistant markdown with a plain workspace file path, an inline-code path, an external markdown link whose label is a file path, and a fenced-code path. Use it for Agentic chat file-link opening and non-linking regression coverage.
 
 Keep fixture assertions deterministic: assert ACP/UI state, sentinel text prefixed with `BDD_`, fixed command/config metadata, and bounded safe-state responses. Do not add real credentials or LLM output to this agent.

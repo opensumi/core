@@ -1678,6 +1678,8 @@ export const localizationBundle = {
     'ai.native.mcp.sse': 'SSE',
     'ai.native.layout.agentic': 'Agent',
     'ai.native.layout.classic': 'Classic',
+    'ai.native.layout.openAgentic': 'Open Agent layout',
+    'ai.native.layout.openClassic': 'Open IDE layout',
     'ai.native.mcp.buttonSave': 'Add',
     'ai.native.mcp.buttonUpdate': 'Update',
     'ai.native.mcp.buttonCancel': 'Cancel',

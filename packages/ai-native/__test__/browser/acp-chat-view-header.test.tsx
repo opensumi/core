@@ -65,7 +65,12 @@ jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
   }: any) =>
     require('react').createElement(
       'div',
-      { 'data-testid': 'acp-chat-history', 'data-collapsed': String(!!historyCollapsed), 'data-variant': variant },
+      {
+        'data-testid': 'acp-chat-history',
+        'data-collapsed': String(!!historyCollapsed),
+        'data-title': title,
+        'data-variant': variant,
+      },
       title,
       historyList.map((item: any) =>
         require('react').createElement(
@@ -100,6 +105,37 @@ jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
           },
           'collapse',
         ),
+    ),
+}));
+
+jest.mock('../../src/browser/components/ChatHistory', () => ({
+  __esModule: true,
+  default: ({ title, historyList = [], onHistoryItemSelect, onNewChat }: any) =>
+    require('react').createElement(
+      'div',
+      { 'data-testid': 'chat-history' },
+      title,
+      historyList.map((item: any) =>
+        require('react').createElement(
+          'button',
+          {
+            key: item.id,
+            'data-testid': `chat-history-item-${item.id}`,
+            onClick: () => onHistoryItemSelect?.(item),
+            type: 'button',
+          },
+          item.title,
+        ),
+      ),
+      require('react').createElement(
+        'button',
+        {
+          'data-testid': 'chat-history-new',
+          onClick: onNewChat,
+          type: 'button',
+        },
+        'new',
+      ),
     ),
 }));
 
@@ -139,13 +175,17 @@ jest.mock('../../src/browser/components/ChatInput', () => ({
   ChatInput: () => null,
 }));
 
+jest.mock('../../src/browser/components/ChatMentionInput', () => ({
+  ChatMentionInput: () => null,
+}));
+
 jest.mock('../../src/browser/components/ChatMarkdown', () => ({
   ChatMarkdown: () => null,
 }));
 
 jest.mock('../../src/browser/components/ChatReply', () => ({
   ChatNotify: () => null,
-  ChatReply: () => null,
+  ChatReply: () => require('react').createElement('div', { 'data-testid': 'chat-reply' }),
 }));
 
 jest.mock('../../src/browser/components/SlashCustomRender', () => ({
@@ -202,6 +242,7 @@ jest.mock('../../src/browser/chat/chat.render.registry', () => ({
 import { ChatMessageRole } from '@opensumi/ide-core-common';
 
 import { AcpChatViewHeader } from '../../src/browser/acp/components/AcpChatViewHeader';
+import { DefaultChatViewHeader } from '../../src/browser/chat/chat.view';
 import { AIChatViewACPContent, DefaultChatViewHeaderACP } from '../../src/browser/chat/chat.view.acp';
 
 const disposable = () => ({ dispose: jest.fn() });
@@ -210,6 +251,7 @@ const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 function createMockSession({
   createdAt,
   messages,
+  title = 'Current ACP session',
 }: {
   createdAt?: number;
   messages?: Array<{
@@ -218,6 +260,7 @@ function createMockSession({
     replyStartTime?: number;
     timestamp?: number;
   }>;
+  title?: string;
 } = {}) {
   const history = {
     addAssistantMessage: jest.fn(() => 'assistant-message'),
@@ -238,7 +281,7 @@ function createMockSession({
   return {
     sessionId: 'acp:current',
     createdAt,
-    title: 'Current ACP session',
+    title,
     history,
     threadStatus: 'idle',
     onThreadStatusChange: jest.fn(() => disposable()),
@@ -255,6 +298,7 @@ function createMockServices({
   sendRequest,
   session,
   sessions,
+  chatViewHeaderRender,
 }: {
   isMultiRoot?: boolean;
   panelLayout?: 'classic' | 'agentic';
@@ -265,12 +309,15 @@ function createMockServices({
   sendRequest?: jest.Mock;
   session?: ReturnType<typeof createMockSession> | null;
   sessions?: ReturnType<typeof createMockSession>[];
+  chatViewHeaderRender?: any;
 } = {}) {
   const currentSession = session === undefined ? createMockSession() : session;
   const sessionList = sessions || (currentSession ? [currentSession] : []);
   const panelLayoutListeners = new Set<(mode: 'classic' | 'agentic') => void>();
+  const agenticWorkbenchVisibilityListeners = new Set<(visible: boolean) => void>();
   const cancelRequestListeners = new Set<() => void>();
   let currentPanelLayout = panelLayout;
+  let agenticWorkbenchVisible = true;
   const aiChatService = {
     sessionModel: currentSession,
     activateSession: jest.fn(),
@@ -412,7 +459,9 @@ function createMockServices({
         component: ChatInputForTest,
       })),
     },
-    chatRenderRegistry: {},
+    chatRenderRegistry: {
+      chatViewHeaderRender,
+    },
     commandService: {},
     editorService: {
       open: jest.fn(),
@@ -434,6 +483,9 @@ function createMockServices({
     },
     panelLayoutService: {
       getLayoutMode: jest.fn(() => currentPanelLayout),
+      isAgenticWorkbenchVisible: jest.fn(() =>
+        currentPanelLayout === 'agentic' ? agenticWorkbenchVisible : undefined,
+      ),
       onDidChangePanelLayout: jest.fn((listener: (mode: 'classic' | 'agentic') => void) => {
         panelLayoutListeners.add(listener);
         return {
@@ -442,10 +494,26 @@ function createMockServices({
           }),
         };
       }),
+      onDidChangeAgenticWorkbenchVisibility: jest.fn((listener: (visible: boolean) => void) => {
+        agenticWorkbenchVisibilityListeners.add(listener);
+        return {
+          dispose: jest.fn(() => {
+            agenticWorkbenchVisibilityListeners.delete(listener);
+          }),
+        };
+      }),
       setLayoutModeForTest: (mode: 'classic' | 'agentic') => {
         currentPanelLayout = mode;
         panelLayoutListeners.forEach((listener) => listener(mode));
       },
+      toggleAgenticWorkbenchVisibility: jest.fn((visible?: boolean) => {
+        if (currentPanelLayout !== 'agentic') {
+          return undefined;
+        }
+        agenticWorkbenchVisible = visible ?? !agenticWorkbenchVisible;
+        agenticWorkbenchVisibilityListeners.forEach((listener) => listener(agenticWorkbenchVisible));
+        return agenticWorkbenchVisible;
+      }),
     },
     quickPick: {},
     workspaceService: {
@@ -588,6 +656,69 @@ describe('ACP chat view headers', () => {
     expect(container.querySelector('[data-testid="acp-chat-history"]')).not.toBeNull();
   });
 
+  it('hides the close action in the default ACP chat header when panel layout is agentic', async () => {
+    installInjectableMocks(createMockServices({ panelLayout: 'agentic' }));
+
+    await renderHeader(
+      React.createElement(DefaultChatViewHeaderACP, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(container.querySelector('#ai-chat-header-close')).toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history"]')).not.toBeNull();
+  });
+
+  it('shows current session title and maximizes the default ACP chat header in agentic layout', async () => {
+    const session = createMockSession({
+      title: 'Server session title',
+      messages: [
+        {
+          role: ChatMessageRole.User,
+          content: 'Message fallback title',
+          replyStartTime: 1,
+        },
+      ],
+    });
+    const services = createMockServices({ panelLayout: 'agentic', session });
+    installInjectableMocks(services);
+
+    await renderHeader(
+      React.createElement(DefaultChatViewHeaderACP, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-title')).toBe(
+      'Server session title',
+    );
+
+    const maximize = container.querySelector('#ai-chat-header-maximize button') as HTMLButtonElement;
+    expect(maximize).not.toBeNull();
+
+    await act(async () => {
+      maximize.click();
+      await Promise.resolve();
+    });
+
+    expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(false);
+  });
+
+  it('does not show the maximize action in the default ACP chat header in classic layout', async () => {
+    installInjectableMocks(createMockServices({ panelLayout: 'classic' }));
+
+    await renderHeader(
+      React.createElement(DefaultChatViewHeaderACP, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(container.querySelector('#ai-chat-header-maximize')).toBeNull();
+  });
+
   it('hides the clear action in the ACP-specific header while keeping workspace switch and close actions', async () => {
     installInjectableMocks(createMockServices({ isMultiRoot: true }));
 
@@ -671,6 +802,75 @@ describe('ACP chat view headers', () => {
 
     expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('inline');
     expect(container.querySelector('#ai-chat-header-close')).toBeNull();
+  });
+
+  it('toggles maximize and restore from the agentic chat panel header', async () => {
+    const services = createMockServices({
+      panelLayout: 'agentic',
+      session: createMockSession({
+        title: 'ACP-specific server title',
+        messages: [
+          {
+            role: ChatMessageRole.User,
+            content: 'ACP-specific message fallback',
+          },
+        ],
+      }),
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    expect(container.querySelector('[data-testid="agentic-chat-panel-header-title"]')?.textContent).toBe(
+      'ACP-specific server title',
+    );
+    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-title')).toBe(
+      'ACP-specific server title',
+    );
+    expect(container.querySelector('#ai-chat-header-maximize')).toBeNull();
+
+    const getAction = () =>
+      container.querySelector('#agentic-chat-panel-header-maximize button') as HTMLButtonElement | null;
+    expect(getAction()?.className).toBe('icon-fullescreen');
+
+    await act(async () => {
+      getAction()?.click();
+      await Promise.resolve();
+    });
+
+    expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(false);
+    expect(getAction()?.className).toBe('icon-unfullscreen');
+
+    await act(async () => {
+      getAction()?.click();
+      await Promise.resolve();
+    });
+
+    expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(true);
+    expect(getAction()?.className).toBe('icon-fullescreen');
+  });
+
+  it('maximizes the default chat header in agentic layout', async () => {
+    const services = createMockServices({ panelLayout: 'agentic' });
+    installInjectableMocks(services);
+
+    await renderHeader(
+      React.createElement(DefaultChatViewHeader, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    const maximize = container.querySelector('#ai-chat-header-maximize button') as HTMLButtonElement;
+    expect(maximize).not.toBeNull();
+
+    await act(async () => {
+      maximize.click();
+      await Promise.resolve();
+    });
+
+    expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(false);
   });
 
   it('collapses ACP history in agentic layout when the collapse action is clicked', async () => {

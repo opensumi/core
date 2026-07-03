@@ -34,6 +34,14 @@ export const AI_PANEL_LAYOUT_TOGGLE = {
   id: 'ai-native.panel-layout.toggle',
 };
 
+export const AI_AGENTIC_WORKBENCH_TOGGLE = {
+  id: 'ai-native.agentic-workbench.toggle',
+};
+
+export const AI_AGENTIC_WORKBENCH_IS_VISIBLE = {
+  id: 'ai-native.agentic-workbench.is-visible',
+};
+
 export const AI_CODE_ACTION = {
   id: 'ai.code.action',
 };

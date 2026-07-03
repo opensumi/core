@@ -22,9 +22,11 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
   if (!value || !value.function || !value.id) {
     return null;
   }
-  const toolName = mcpServerFeatureRegistry.getMCPTool(value.function.name)?.label || value.function.name;
+  const mcpTool = mcpServerFeatureRegistry.getMCPTool(value.function.name);
+  const toolName = mcpTool?.label || value.function.name;
   const parts = toolName.split(TOOL_NAME_SEPARATOR);
   const label = parts.length >= 3 ? parts[2] : toolName;
+  const toolPrefix = mcpTool ? 'Called MCP Tool' : 'Called Tool';
 
   const ToolComponent = mcpServerFeatureRegistry.getToolComponent(value.function.name);
 
@@ -80,7 +82,7 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
 
   // 处理 JSON 字符串中的转义字符
   const unescapeJsonString = (str: string): string =>
-     str
+    str
       .replace(/\\n/g, '\n') // 换行符
       .replace(/\\t/g, '\t') // 制表符
       .replace(/\\r/g, '\r') // 回车符
@@ -90,9 +92,7 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
       .replace(/\\f/g, '\f') // 换页符
       .replace(/\\b/g, '\b') // 退格符
       .replace(/\\v/g, '\v') // 垂直制表符
-      .replace(/\\0/g, '\0') // 空字符
-  ;
-
+      .replace(/\\0/g, '\0'); // 空字符
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
@@ -115,7 +115,7 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
           <Icon iconClass={`codicon codicon-chevron-${isExpanded ? 'down' : 'right'}`} />
           <Icon size='small' iconClass={cls('codicon codicon-tools', styles.tool_icon)} />
           <span className={styles.tool_label}>
-            <span className={styles.tool_prefix}>Called MCP Tool</span>
+            <span className={styles.tool_prefix}>{toolPrefix}</span>
             <span className={styles.tool_name} title={label}>
               {label}
             </span>

@@ -2,12 +2,16 @@ import cls from 'classnames';
 import * as React from 'react';
 
 import { AINativeConfigService, SlotLocation, SlotRenderer, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  AI_AGENTIC_WORKBENCH_IS_VISIBLE,
+  AI_AGENTIC_WORKBENCH_TOGGLE,
+} from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { Icon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { CommandService } from '@opensumi/ide-core-common';
+import { CommandRegistry, CommandService } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ToolBar } from '@opensumi/ide-toolbar/lib/browser/toolbar.view';
 
@@ -90,40 +94,69 @@ const DesignMenuBarRender = () => {
 
 export const DesignMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
+  const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
   const mainLayoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const [isLeftPanelVisible, setIsVisiablePanel] = React.useState<boolean>(false);
-
-  React.useEffect(() => {
-    requestAnimationFrame(() => {
-      setIsVisiablePanel(isVisiable());
-    });
-
-    const tabbarService = mainLayoutService.getTabbarService(SlotLocation.view);
-    const toDispose = tabbarService.onCurrentChange(({ previousId, currentId }) => {
-      if (previousId && !currentId) {
-        setIsVisiablePanel(false);
-      } else if (!previousId && currentId) {
-        setIsVisiablePanel(true);
-      }
-    });
-
-    return () => {
-      toDispose.dispose();
-    };
-  }, []);
-
-  const handleLeftMenuVisiable = React.useCallback(() => {
-    commandService.executeCommand('main-layout.left-panel.toggle');
-    requestAnimationFrame(() => {
-      setIsVisiablePanel(isVisiable());
-    });
-  }, []);
 
   const isVisiable = React.useCallback(() => {
     const tabbarService = mainLayoutService.getTabbarService(SlotLocation.view);
     return !!tabbarService.currentContainerId.get();
   }, [mainLayoutService]);
+
+  const getAgenticWorkbenchVisible = React.useCallback(async () => {
+    if (!commandRegistry.getCommand(AI_AGENTIC_WORKBENCH_IS_VISIBLE.id)) {
+      return undefined;
+    }
+
+    try {
+      return await commandService.executeCommand<boolean | undefined>(AI_AGENTIC_WORKBENCH_IS_VISIBLE.id);
+    } catch {
+      return undefined;
+    }
+  }, [commandRegistry, commandService]);
+
+  const refreshPanelVisible = React.useCallback(() => {
+    requestAnimationFrame(() => {
+      void getAgenticWorkbenchVisible().then((visible) => {
+        setIsVisiablePanel(typeof visible === 'boolean' ? visible : isVisiable());
+      });
+    });
+  }, [getAgenticWorkbenchVisible, isVisiable]);
+
+  React.useEffect(() => {
+    refreshPanelVisible();
+    const tabbarService = mainLayoutService.getTabbarService(SlotLocation.view);
+    const toDispose = tabbarService.onCurrentChange(() => refreshPanelVisible());
+
+    return () => {
+      toDispose.dispose();
+    };
+  }, [mainLayoutService, refreshPanelVisible]);
+
+  const handleLeftMenuVisiable = React.useCallback(async () => {
+    if (commandRegistry.getCommand(AI_AGENTIC_WORKBENCH_TOGGLE.id)) {
+      const visible = await commandService
+        .executeCommand<boolean | undefined>(AI_AGENTIC_WORKBENCH_TOGGLE.id)
+        .catch(() => undefined);
+
+      if (typeof visible === 'boolean') {
+        setIsVisiablePanel(visible);
+        return;
+      }
+    }
+
+    await commandService.executeCommand('main-layout.left-panel.toggle');
+    refreshPanelVisible();
+  }, [commandRegistry, commandService, refreshPanelVisible]);
+
+  const leftPanelToggle = (
+    <EnhanceIcon
+      wrapperClassName={styles.enhance_menu}
+      icon={isLeftPanelVisible ? 'left-nav-open' : 'left-nav-close'}
+      onClick={handleLeftMenuVisiable}
+    />
+  );
 
   return (
     <div
@@ -133,20 +166,15 @@ export const DesignMenuBarView = () => {
     >
       <div className={styles.container}>
         <div className={styles.left}>
-          <EnhanceIcon
-            wrapperClassName={styles.enhance_menu}
-            icon={isLeftPanelVisible ? 'left-nav-open' : 'left-nav-close'}
-            onClick={handleLeftMenuVisiable}
-          />
-          <span className={styles.dividing}></span>
-          <div className={styles.top_menus_bar}>
-            <DesignMenuBarRender />
-          </div>
           <SlotRenderer id='design-menubar-left' slot={DESIGN_MENU_BAR_LEFT} flex={1} />
         </div>
         <div className={styles.right}>
           <ToolBar />
           <SlotRenderer id='design-menubar-right' slot={DESIGN_MENU_BAR_RIGHT} flex={1} />
+          <div className={styles.top_menus_bar}>
+            <DesignMenuBarRender />
+          </div>
+          {leftPanelToggle}
         </div>
       </div>
     </div>

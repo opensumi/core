@@ -28,16 +28,17 @@ jest.mock('@opensumi/ide-components', () => {
         },
       }),
     Loading: () => React.createElement('span', { 'data-testid': 'acp-chat-history-loading' }),
-    Popover: ({ children, content, title }: any) =>
+    Popover: ({ children, content, id, position, title }: any) =>
       React.createElement(
         'div',
-        { 'data-testid': 'mock-popover', title },
+        { 'data-testid': 'mock-popover', 'data-popover-id': id, 'data-position': position, title },
         children,
         React.createElement('div', { 'data-testid': 'mock-popover-content' }, content),
       ),
     PopoverPosition: {
       bottomRight: 'bottomRight',
       top: 'top',
+      topLeft: 'topLeft',
     },
     PopoverTriggerType: {
       click: 'click',
@@ -292,6 +293,15 @@ describe('AcpChatHistory BDD', () => {
     });
 
     expect(onToggleHistoryCollapsed).toHaveBeenCalledTimes(1);
+  });
+
+  it('Given inline variant supports collapse, when the collapse action renders at the left edge, then its tooltip opens toward the right', () => {
+    renderHistory({ variant: 'inline', onToggleHistoryCollapsed: jest.fn() });
+
+    const collapsePopover = container.querySelector('[data-popover-id="ai-chat-header-collapse-history"]');
+
+    expect(collapsePopover).not.toBeNull();
+    expect(collapsePopover?.getAttribute('data-position')).toBe('topLeft');
   });
 
   it('Given inline history is collapsed, when it renders, then it keeps header actions and hides the history list', () => {

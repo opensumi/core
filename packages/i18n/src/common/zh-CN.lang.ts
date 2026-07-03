@@ -1433,6 +1433,8 @@ export const localizationBundle = {
     'ai.native.mcp.sse': 'SSE',
     'ai.native.layout.agentic': 'Agent',
     'ai.native.layout.classic': 'Classic',
+    'ai.native.layout.openAgentic': '打开Agent布局',
+    'ai.native.layout.openClassic': '打开IDE布局',
     'ai.native.mcp.buttonSave': '添加',
     'ai.native.mcp.buttonUpdate': '更新',
     'ai.native.mcp.buttonCancel': '取消',
