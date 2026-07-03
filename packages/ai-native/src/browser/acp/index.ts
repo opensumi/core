@@ -8,6 +8,7 @@ export type {
   AcpChatRelaySummarySession,
 } from './acp-chat-relay-summary-provider';
 export { AcpPermissionBridgeService, ShowPermissionDialogParams } from './permission-bridge.service';
+export { AcpPermissionTitleIndicatorService } from './permission-title-indicator.service';
 export { AcpPermissionRpcService } from './acp-permission-rpc.service';
 export { AcpThreadStatusRpcService } from './acp-thread-status-rpc.service';
 export { PermissionDialog, PermissionDialogProps } from './permission-dialog.view';

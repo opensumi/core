@@ -133,7 +133,7 @@ describe('AcpPermissionBridgeService - session binding', () => {
       // Now manually resolve
       service.handleDialogClose('session-1:tool-timeout');
       const result = await promise;
-      expect(result.type).toBe('timeout');
+      expect(result.type).toBe('cancelled');
     });
 
     it('should persist dialog until explicitly resolved', async () => {
@@ -157,6 +157,31 @@ describe('AcpPermissionBridgeService - session binding', () => {
       service.handleUserDecision('session-1:tool-persist', 'allow_once', 'allow_once');
       const result = await promise;
       expect(result.type).toBe('allow');
+    });
+  });
+
+  describe('getPendingCount', () => {
+    it('should count pending permission requests across all sessions', async () => {
+      const promise1 = service.showPermissionDialog({
+        ...mockParams,
+        requestId: 'session-1:tool-count-1',
+      });
+      const promise2 = service.showPermissionDialog({
+        ...mockParams,
+        requestId: 'session-2:tool-count-2',
+        sessionId: 'session-2',
+      });
+
+      expect(service.getPendingCount()).toBe(2);
+
+      service.handleUserDecision('session-1:tool-count-1', 'allow_once', 'allow_once');
+      expect(service.getPendingCount()).toBe(1);
+
+      service.handleDialogClose('session-2:tool-count-2');
+      expect(service.getPendingCount()).toBe(0);
+
+      await expect(promise1).resolves.toMatchObject({ type: 'allow' });
+      await expect(promise2).resolves.toEqual({ type: 'cancelled' });
     });
   });
 });
@@ -297,7 +322,7 @@ describe('AcpPermissionBridgeService - clearSessionDialogs', () => {
     expect((service as any).pendingDecisions.has('session-2:tool-2')).toBe(true);
 
     service.handleDialogClose('session-2:tool-2');
-    expect(await promise2).toEqual({ type: 'timeout' });
+    expect(await promise2).toEqual({ type: 'cancelled' });
   });
 
   it('should do nothing for sessions with no dialogs', () => {

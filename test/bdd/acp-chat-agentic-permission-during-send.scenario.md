@@ -15,17 +15,19 @@
 1. Record `acp_chat_get_permission_state({})` before send.
 2. Send the deterministic permission prompt through the Agentic input.
 3. Wait until the permission dialog is visible while the request is still active.
-4. Record active dialog count, history badge count, active session id, input disabled state, and visible dialog text presence.
+4. Record active dialog count, history badge count, active session id, input disabled state, visible dialog text presence, and the browser tab title.
 5. Click the visible Reject or close control.
 6. Wait until the dialog is dismissed and the input is editable.
-7. Record `acp_chat_get_permission_state({})`, visible error/recovery UI, row counts, and history badge state.
+7. Record `acp_chat_get_permission_state({})`, visible error/recovery UI, row counts, history badge state, and the browser tab title.
 8. If the permission fixture supports a non-permission follow-up in the same process, send it in the same session. Otherwise, restart the mock agent with `--fixture=stream-rich` and record normal-send recovery as a separate fixture pass.
 
 ## Then
 
 - Pending permission is visible in both browser dialog UI and permission count metadata.
+- While permission is pending on Web Agentic Layout, the browser tab title shows `(<count>) permission <base title>`.
 - The active chat/session badge is scoped to the session that requested permission.
 - Dismissing permission through UI clears the active dialog count.
+- After dismissal, the browser tab title no longer has the permission prefix.
 - The input does not stay disabled after permission dismissal.
 - The rejected send leaves a recoverable visible state and does not create an empty duplicate session.
 - A later normal send succeeds in the same session when the fixture supports per-prompt permission branching; otherwise the separate `stream-rich` recovery pass proves the UI can recover to normal send behavior after fixture reset.

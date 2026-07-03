@@ -17,6 +17,7 @@ const PERMISSION_CLOSE_SELECTOR = '[data-testid="acp-permission-dialog-close"]';
 const PERMISSION_REJECT_SELECTOR = '[data-testid^="acp-permission-dialog-option-"][data-option-kind^="reject"]';
 const PERMISSION_TITLE_SELECTOR = '[data-testid="acp-permission-dialog-title"]';
 const PERMISSION_OPTIONS_SELECTOR = '[data-testid="acp-permission-dialog-options"]';
+const PERMISSION_TAB_TITLE_PREFIX = /^\((\d+)\) permission\s+/;
 const PERMISSION_SOURCE_SCENARIOS = [
   'test/bdd/permission-dialog.scenario.md',
   'test/bdd/acp-chat-agentic-permission-during-send.scenario.md',
@@ -117,6 +118,10 @@ async function waitForPendingPermission(): Promise<PermissionStateResult> {
   expect(pendingState.result.activeDialogCount).toBeGreaterThanOrEqual(1);
   expect(pendingState.result.activeSessionId).toEqual(expect.any(String));
 
+  await expect.poll(async () => page.title(), { timeout: 10_000 }).toMatch(PERMISSION_TAB_TITLE_PREFIX);
+  const permissionTitleMatch = (await page.title()).match(PERMISSION_TAB_TITLE_PREFIX);
+  expect(Number(permissionTitleMatch?.[1])).toBe(pendingState.result.activeDialogCount);
+
   const titleText = (await page.locator(PERMISSION_TITLE_SELECTOR).textContent()) || '';
   expect(titleText.trim().length).toBeGreaterThan(0);
 
@@ -136,6 +141,7 @@ async function waitForPermissionDismissed() {
   await expect(chatInput()).toBeVisible({ timeout: 30_000 });
   await expect(chatInput()).toBeEditable({ timeout: 30_000 });
   await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
+  await expect.poll(async () => page.title(), { timeout: 10_000 }).not.toMatch(PERMISSION_TAB_TITLE_PREFIX);
 }
 
 async function readVisiblePermissionProof() {
@@ -143,6 +149,8 @@ async function readVisiblePermissionProof() {
   const close = page.locator(PERMISSION_CLOSE_SELECTOR);
   const reject = page.locator(PERMISSION_REJECT_SELECTOR).first();
   const titleText = (await page.locator(PERMISSION_TITLE_SELECTOR).textContent()) || '';
+  const tabTitle = await page.title();
+  const tabTitleMatch = tabTitle.match(PERMISSION_TAB_TITLE_PREFIX);
 
   return {
     permissionState: state.result,
@@ -151,6 +159,9 @@ async function readVisiblePermissionProof() {
     closeVisible: await close.isVisible(),
     rejectVisible: await reject.isVisible(),
     rejectOptionCount: await page.locator(PERMISSION_REJECT_SELECTOR).count(),
+    tabTitle,
+    tabTitlePermissionCount: tabTitleMatch ? Number(tabTitleMatch[1]) : null,
+    tabTitleHasPermissionPrefix: Boolean(tabTitleMatch),
     activeSessionBadgeVisible: state.result.activeSessionId
       ? await page.locator(`[data-testid="acp-permission-pending-acp:${state.result.activeSessionId}"]`).isVisible()
       : false,
@@ -194,6 +205,8 @@ test.describe('Permission dialog deterministic observability', () => {
       titleHasVisibleText: true,
       closeVisible: true,
       activeSessionBadgeVisible: true,
+      tabTitleHasPermissionPrefix: true,
+      tabTitlePermissionCount: pendingState.result.activeDialogCount,
     });
 
     await page.locator(PERMISSION_CLOSE_SELECTOR).click();
@@ -210,6 +223,7 @@ test.describe('Permission dialog deterministic observability', () => {
         pending: pendingState.result,
         pendingProof,
         afterDismiss: afterDismiss.result,
+        afterDismissTabTitle: await page.title(),
       },
       'metadata-only permission state and visible close dismissal proof',
     );
@@ -223,13 +237,15 @@ test.describe('Permission dialog deterministic observability', () => {
     });
     evidence.recordCriticalPoint({
       id: 'CP2',
-      requirement: 'The permission fixture creates a visible active-session dialog and pending badge/count metadata.',
+      requirement:
+        'The permission fixture creates a visible active-session dialog, pending badge/count metadata, and matching permission tab title count.',
       status: 'pass',
       evidence: [proof].filter(Boolean) as string[],
     });
     evidence.recordCriticalPoint({
       id: 'CP3',
-      requirement: 'A visible close control dismisses the permission dialog and restores editable input.',
+      requirement:
+        'A visible close control dismisses the permission dialog, restores editable input, and clears the permission tab title prefix.',
       status: 'pass',
       evidence: [proof, screenshot].filter(Boolean) as string[],
     });
@@ -277,6 +293,8 @@ test.describe('Permission dialog deterministic observability', () => {
       titleHasVisibleText: true,
       rejectVisible: true,
       activeSessionBadgeVisible: true,
+      tabTitleHasPermissionPrefix: true,
+      tabTitlePermissionCount: pendingState.result.activeDialogCount,
     });
     expect(pendingProof.rejectOptionCount).toBeGreaterThanOrEqual(1);
 
@@ -305,6 +323,7 @@ test.describe('Permission dialog deterministic observability', () => {
         pending: pendingState.result,
         pendingProof,
         afterDismiss: afterDismiss.result,
+        afterDismissTabTitle: await page.title(),
         sessionState: sessionState.result.active
           ? {
               active: true,
@@ -329,13 +348,15 @@ test.describe('Permission dialog deterministic observability', () => {
 
     evidence.recordCriticalPoint({
       id: 'CP1',
-      requirement: 'The permission fixture exposes pending state through acp_chat_get_permission_state only.',
+      requirement:
+        'The permission fixture exposes pending state through acp_chat_get_permission_state only and mirrors the count in the Web tab title.',
       status: 'pass',
       evidence: [proof].filter(Boolean) as string[],
     });
     evidence.recordCriticalPoint({
       id: 'CP2',
-      requirement: 'A visible reject control dismisses the permission dialog and clears active pending state.',
+      requirement:
+        'A visible reject control dismisses the permission dialog, clears active pending state, and clears the permission tab title prefix.',
       status: 'pass',
       evidence: [proof, screenshot].filter(Boolean) as string[],
     });
