@@ -501,6 +501,11 @@ export interface IChatReasoning {
   kind: 'reasoning';
 }
 
+export interface IChatSafeProgress {
+  content: string;
+  kind: 'safeProgress';
+}
+
 /**
  * Thread status for ACP agent sessions.
  * Mirrors the server-side AcpThread ThreadStatus type.
@@ -530,6 +535,7 @@ export type IChatProgress =
   | IChatComponent
   | IChatToolContent
   | IChatReasoning
+  | IChatSafeProgress
   | IChatThreadStatus
   | IChatSessionState;
 

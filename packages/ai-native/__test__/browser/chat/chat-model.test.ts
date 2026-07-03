@@ -37,6 +37,7 @@ describe('ChatResponseModel', () => {
     expect(chatResponseModel.isCanceled).toBe(false);
     expect(chatResponseModel.requestId).toBe('requestId');
     expect(chatResponseModel.responseText).toBe('');
+    expect(chatResponseModel.safeProgress).toBeUndefined();
     expect(chatResponseModel.errorDetails).toBeUndefined();
     expect(chatResponseModel.followups).toBeUndefined();
   });
@@ -73,16 +74,21 @@ describe('ChatResponseModel', () => {
   });
 
   it('should complete and cancel correctly', () => {
+    chatResponseModel.updateSafeProgress({ kind: 'safeProgress', content: 'Agent is working...' });
     chatResponseModel.complete();
     expect(chatResponseModel.isComplete).toBe(true);
+    expect(chatResponseModel.safeProgress).toBeUndefined();
 
+    chatResponseModel.updateSafeProgress({ kind: 'safeProgress', content: 'Agent is working...' });
     chatResponseModel.cancel();
     expect(chatResponseModel.isComplete).toBe(true);
     expect(chatResponseModel.isCanceled).toBe(true);
+    expect(chatResponseModel.safeProgress).toBeUndefined();
   });
 
   it('should reset to default values', () => {
     chatResponseModel.updateContent({ kind: 'content', content: 'Hello' });
+    chatResponseModel.updateSafeProgress({ kind: 'safeProgress', content: 'Agent is working...' });
     chatResponseModel.complete();
     chatResponseModel.setErrorDetails({ message: 'Error' });
     chatResponseModel.setFollowups([{ kind: 'reply', message: 'Followup' }]);
@@ -92,10 +98,27 @@ describe('ChatResponseModel', () => {
     expect(chatResponseModel.responseParts).toEqual([]);
     expect(chatResponseModel.responseContents).toEqual([]);
     expect(chatResponseModel.responseText).toBe('');
+    expect(chatResponseModel.safeProgress).toBeUndefined();
     expect(chatResponseModel.isCanceled).toBe(false);
     expect(chatResponseModel.isComplete).toBe(false);
     expect(chatResponseModel.errorDetails).toBeUndefined();
     expect(chatResponseModel.followups).toBeUndefined();
+  });
+
+  it('should keep safe progress transient', () => {
+    chatResponseModel.updateSafeProgress({ kind: 'safeProgress', content: 'Planning: 1/2 steps complete' });
+
+    expect(chatResponseModel.safeProgress).toEqual({
+      kind: 'safeProgress',
+      content: 'Planning: 1/2 steps complete',
+    });
+    expect(chatResponseModel.responseParts).toEqual([]);
+    expect(chatResponseModel.responseContents).toEqual([]);
+    expect(chatResponseModel.responseText).toBe('');
+    expect(JSON.stringify(chatResponseModel.toJSON())).not.toContain('safeProgress');
+
+    chatResponseModel.updateSafeProgress({ kind: 'safeProgress', content: '' });
+    expect(chatResponseModel.safeProgress).toBeUndefined();
   });
 });
 
@@ -137,6 +160,17 @@ describe('ChatModel', () => {
 
     expect(request.response.responseParts).toEqual([{ kind: 'markdownContent', content: new MarkdownString('Hello') }]);
     expect(request.response.responseText).toBe('Hello');
+  });
+
+  it('should accept safe progress without adding response content', () => {
+    const message = { agentId: 'agentId', prompt: 'Hello' };
+    const request = chatModel.addRequest(message);
+
+    chatModel.acceptResponseProgress(request, { kind: 'safeProgress', content: 'Running tool' });
+
+    expect(request.response.safeProgress).toEqual({ kind: 'safeProgress', content: 'Running tool' });
+    expect(request.response.responseParts).toEqual([]);
+    expect(request.response.responseText).toBe('');
   });
 
   it('should dispose correctly', () => {

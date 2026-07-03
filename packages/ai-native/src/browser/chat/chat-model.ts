@@ -9,6 +9,7 @@ import {
   IChatMarkdownContent,
   IChatProgress,
   IChatReasoning,
+  IChatSafeProgress,
   IChatThreadStatus,
   IChatToolContent,
   IChatTreeData,
@@ -72,6 +73,11 @@ export class ChatResponseModel extends Disposable {
   #responseText = '';
   get responseText() {
     return this.#responseText;
+  }
+
+  #safeProgress: IChatSafeProgress | undefined;
+  get safeProgress() {
+    return this.#safeProgress;
   }
 
   #errorDetails: IChatResponseErrorDetails | undefined;
@@ -188,6 +194,16 @@ export class ChatResponseModel extends Disposable {
     }
   }
 
+  updateSafeProgress(progress?: IChatSafeProgress): void {
+    const nextProgress = progress?.content.trim() ? progress : undefined;
+    if (this.#safeProgress?.content === nextProgress?.content) {
+      return;
+    }
+
+    this.#safeProgress = nextProgress;
+    this.#onDidChange.fire();
+  }
+
   #updateResponseText(quiet?: boolean) {
     this.#responseText = this.#responseParts
       .map((part) => {
@@ -234,12 +250,14 @@ export class ChatResponseModel extends Disposable {
 
   complete(): void {
     this.#isComplete = true;
+    this.#safeProgress = undefined;
     this.#onDidChange.fire();
   }
 
   cancel(): void {
     this.#isComplete = true;
     this.#isCanceled = true;
+    this.#safeProgress = undefined;
     this.#onDidChange.fire();
   }
 
@@ -247,6 +265,7 @@ export class ChatResponseModel extends Disposable {
     this.#responseContents = [];
     this.#responseParts = [];
     this.#responseText = '';
+    this.#safeProgress = undefined;
     this.#isCanceled = false;
     this.#isComplete = false;
     this.#errorDetails = undefined;
@@ -592,6 +611,8 @@ export class ChatModel extends Disposable implements IChatModel {
 
     if (basicKind.includes(kind)) {
       request.response.updateContent(progress, quiet);
+    } else if (kind === 'safeProgress') {
+      request.response.updateSafeProgress(progress);
     } else {
       // Couldn't handle progress
     }

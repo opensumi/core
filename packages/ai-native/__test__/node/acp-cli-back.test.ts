@@ -304,9 +304,49 @@ describe('AcpCliBackService', () => {
 
       expect(receivedData).toEqual([
         { kind: 'threadStatus', threadStatus: 'working', sessionId: 'new-session' },
+        { kind: 'safeProgress', content: 'Running tool' },
         { kind: 'threadStatus', threadStatus: 'awaiting_prompt', sessionId: 'new-session' },
         { kind: 'content', content: 'Hello world' },
       ]);
+    });
+
+    it('should emit throttled aggregate safe progress in minimal mode', async () => {
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+      const nowSpy = jest.spyOn(Date, 'now');
+
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'minimal',
+      });
+      const receivedData: any[] = [];
+      output.onData((data) => receivedData.push(data));
+
+      try {
+        nowSpy.mockReturnValue(1000);
+        agentStream.emitData({
+          type: 'plan',
+          content: '- [x] Inspect workspace\n- [ ] Run secret command\n\n',
+          threadStatus: 'working',
+        });
+        nowSpy.mockReturnValue(1500);
+        agentStream.emitData({ type: 'tool_call_status', content: 'reading /secret/file', threadStatus: 'working' });
+        nowSpy.mockReturnValue(2100);
+        agentStream.emitData({ type: 'tool_call_status', content: 'reading /secret/file', threadStatus: 'working' });
+        agentStream.emitData({ type: 'done', content: '', threadStatus: 'awaiting_prompt' });
+
+        expect(receivedData).toEqual([
+          { kind: 'threadStatus', threadStatus: 'working', sessionId: 'new-session' },
+          { kind: 'safeProgress', content: 'Planning: 1/2 steps complete' },
+          { kind: 'safeProgress', content: 'Running tool' },
+          { kind: 'threadStatus', threadStatus: 'awaiting_prompt', sessionId: 'new-session' },
+        ]);
+        expect(JSON.stringify(receivedData)).not.toContain('Inspect workspace');
+        expect(JSON.stringify(receivedData)).not.toContain('secret');
+      } finally {
+        nowSpy.mockRestore();
+      }
     });
 
     it('should preserve full streaming behavior in stream mode', async () => {

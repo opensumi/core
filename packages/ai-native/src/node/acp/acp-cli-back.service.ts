@@ -9,6 +9,7 @@ import {
   IChatContent,
   IChatProgress,
   IChatReasoning,
+  IChatSafeProgress,
   IChatSessionState,
   IChatThreadStatus,
   IChatToolCall,
@@ -33,6 +34,16 @@ import { AcpThreadStatusCallerServiceToken } from './acp-thread-status-caller.se
 import type { CoreMessage } from 'ai';
 
 export const AcpCliBackServiceToken = Symbol('AcpCliBackServiceToken');
+
+const ACP_SAFE_PROGRESS_MAX_EVENTS = 5;
+const ACP_SAFE_PROGRESS_MIN_INTERVAL = 1000;
+const ACP_SAFE_PROGRESS_MAX_LENGTH = 120;
+
+interface AcpSafeProgressState {
+  count: number;
+  lastContent?: string;
+  lastEmittedAt: number;
+}
 
 /**
  * Type guard to check if a value is a valid CoreMessage
@@ -446,6 +457,10 @@ ${input}`;
       let hasLoggedFirstContent = false;
       let bufferedFinalContent = '';
       let discardedByCancellation = false;
+      const safeProgressState: AcpSafeProgressState = {
+        count: 0,
+        lastEmittedAt: 0,
+      };
 
       cancelToken?.onCancellationRequested(async () => {
         this.logger.warn(
@@ -483,6 +498,7 @@ ${input}`;
           }
 
           this.emitDistinctThreadStatus(stream, request.sessionId, update.threadStatus, lastThreadStatusRef);
+          this.emitSafeProgress(stream, update, safeProgressState);
 
           if (update.type === 'done') {
             this.logger.log(
@@ -561,6 +577,60 @@ ${input}`;
       threadStatus: status,
       sessionId,
     } as IChatThreadStatus);
+  }
+
+  private emitSafeProgress(
+    stream: SumiReadableStream<IChatProgress>,
+    update: AgentUpdate,
+    state: AcpSafeProgressState,
+  ): void {
+    const content = this.getSafeProgressContent(update);
+    if (!content || content === state.lastContent || state.count >= ACP_SAFE_PROGRESS_MAX_EVENTS) {
+      return;
+    }
+
+    const now = Date.now();
+    if (state.lastEmittedAt && now - state.lastEmittedAt < ACP_SAFE_PROGRESS_MIN_INTERVAL) {
+      return;
+    }
+
+    state.count += 1;
+    state.lastContent = content;
+    state.lastEmittedAt = now;
+    stream.emitData({
+      kind: 'safeProgress',
+      content,
+    } as IChatSafeProgress);
+  }
+
+  private getSafeProgressContent(update: AgentUpdate): string | undefined {
+    switch (update.type) {
+      case 'plan':
+        return this.getPlanSafeProgress(update.content);
+      case 'tool_call':
+      case 'tool_call_status':
+        return 'Running tool';
+      default:
+        return undefined;
+    }
+  }
+
+  private getPlanSafeProgress(content: string): string {
+    const entries = content.split(/\r?\n/).filter((line) => /^- \[[ xX]\]/.test(line));
+    if (!entries.length) {
+      return 'Planning';
+    }
+
+    const completed = entries.filter((line) => /^- \[[xX]\]/.test(line)).length;
+    return this.normalizeSafeProgressContent(`Planning: ${completed}/${entries.length} steps complete`);
+  }
+
+  private normalizeSafeProgressContent(content: string): string {
+    const normalized = content.replace(/\s+/g, ' ').trim();
+    if (normalized.length <= ACP_SAFE_PROGRESS_MAX_LENGTH) {
+      return normalized;
+    }
+    return `${normalized.slice(0, ACP_SAFE_PROGRESS_MAX_LENGTH - 3)}...`;
   }
 
   private convertAgentUpdateToChatProgress(

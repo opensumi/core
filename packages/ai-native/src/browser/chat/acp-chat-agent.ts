@@ -13,6 +13,7 @@ import {
   IChatSessionState,
   MCPConfigServiceToken,
   ThreadStatus,
+  localize,
 } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
@@ -222,6 +223,7 @@ export class AcpChatAgent implements IChatAgent {
               `[ACP Chat] stream data — sessionId=${sessionId}, requestId=${request.requestId}, kind=threadStatus, status=${data.threadStatus}`,
             );
             this.handleThreadStatusUpdate(data.threadStatus, data.sessionId);
+            progress({ kind: 'safeProgress', content: this.getThreadStatusSafeProgress(data.threadStatus) });
           } else if (data.kind === 'sessionState') {
             this.logger.log(
               `[ACP Chat] stream data — sessionId=${sessionId}, requestId=${
@@ -282,6 +284,23 @@ export class AcpChatAgent implements IChatAgent {
     const model = this.chatManagerService.getSession(lookupKey);
     if (model) {
       model.setThreadStatus(status);
+    }
+  }
+
+  private getThreadStatusSafeProgress(status: ThreadStatus): string {
+    switch (status) {
+      case 'working':
+        return localize('aiNative.chat.safeProgress.agentWorking');
+      case 'auth_required':
+        return localize('aiNative.chat.safeProgress.authRequired');
+      case 'errored':
+        return localize('aiNative.chat.safeProgress.errored');
+      case 'disconnected':
+        return localize('aiNative.chat.safeProgress.disconnected');
+      case 'idle':
+      case 'awaiting_prompt':
+      default:
+        return '';
     }
   }
 

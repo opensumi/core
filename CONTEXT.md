@@ -6,11 +6,13 @@ OpenSumi core is the IDE platform context for browser, node, extension, and AI-n
 
 **ACP Intermediate Output**: Non-final ACP Chat output produced while an agent is working, before the final assistant response or a user interaction request. _Avoid_: logs, terminal output, IDE logger output
 
-**Minimal ACP Delivery**: The default ACP Chat delivery mode where intermediate output is not delivered to the browser, while final assistant responses, distinct status changes, and user interaction requests remain visible. _Avoid_: frontend-only hiding, full streaming
+**Minimal ACP Delivery**: The default low-volume ACP Chat delivery mode where ACP Intermediate Output is not delivered to the browser, while final assistant responses, ACP Safe Progress Signals, and user interaction requests remain visible. _Avoid_: frontend-only hiding, full streaming, silent delivery
 
 **Streaming ACP Delivery**: An ACP Chat delivery mode for diagnostics where intermediate output remains visible as it is produced. _Avoid_: default delivery, minimal delivery
 
 **Final ACP Response**: The complete assistant response delivered after an ACP Chat request finishes successfully. _Avoid_: truncated response, intermediate output
+
+**ACP Safe Progress Signal**: Low-volume, non-sensitive ACP Chat progress, such as status, aggregated plan progress, or tool activity labels, that helps the user understand that the agent is still working without exposing ACP Intermediate Output or becoming part of the Final ACP Response. _Avoid_: thought text, raw reasoning, partial answer text, raw plan item text, raw tool input, raw tool output
 
 **ACP Available Command**: Session-scoped command metadata exposed by an ACP agent for the active ACP Chat session. _Avoid_: Codex skill, MCP tool, command palette action
 

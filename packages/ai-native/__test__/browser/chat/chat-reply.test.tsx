@@ -129,8 +129,12 @@ jest.mock('../../../src/browser/components/ChatMarkdown', () => ({
 }));
 
 jest.mock('../../../src/browser/components/ChatThinking', () => ({
-  ChatThinking: ({ children }: { children: React.ReactNode }) =>
-    require('react').createElement('div', { 'data-testid': 'chat-thinking' }, children),
+  ChatThinking: ({ children, thinkingText }: { children: React.ReactNode; thinkingText?: string }) =>
+    require('react').createElement(
+      'div',
+      { 'data-testid': 'chat-thinking' },
+      React.Children.count(children) ? children : thinkingText,
+    ),
   ChatThinkingResult: ({ children }: { children: React.ReactNode }) =>
     require('react').createElement('div', { 'data-testid': 'chat-thinking-result' }, children),
 }));
@@ -161,6 +165,7 @@ function createRequest(responseContents: ReasoningContent[], isComplete: boolean
     responseContents,
     responseParts: responseContents,
     responseText: '',
+    safeProgress: undefined,
   };
 
   return {
@@ -336,5 +341,15 @@ describe('ChatReply reasoning collapse state', () => {
 
     expect(container.textContent).toContain('Deep Thinking');
     expect(container.textContent).toContain('normal stream thought');
+  });
+
+  it('renders safe progress for an incomplete empty response without writing history', () => {
+    const { request, response } = createRequest([], false);
+    response.safeProgress = { kind: 'safeProgress', content: 'Running tool' };
+
+    renderReply(request);
+
+    expect(container.textContent).toContain('Running tool');
+    expect(history.updateAssistantMessage).not.toHaveBeenCalled();
   });
 });
