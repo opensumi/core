@@ -6,6 +6,33 @@ import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 
 import styles from './mention-select.module.less';
 
+const DROPDOWN_EDGE_PADDING = 8;
+const DEFAULT_DROPDOWN_WIDTH = 300;
+
+function isClippingOverflow(value: string): boolean {
+  return value === 'auto' || value === 'scroll' || value === 'hidden' || value === 'clip';
+}
+
+function getHorizontalClippingRect(element: HTMLElement): Pick<DOMRect, 'left' | 'right'> {
+  let parent = element.parentElement;
+  while (parent) {
+    const style = window.getComputedStyle(parent);
+    if (
+      isClippingOverflow(style.overflow) ||
+      isClippingOverflow(style.overflowX) ||
+      isClippingOverflow(style.overflowY)
+    ) {
+      return parent.getBoundingClientRect();
+    }
+    parent = parent.parentElement;
+  }
+
+  return {
+    left: 0,
+    right: window.innerWidth || document.documentElement.clientWidth,
+  };
+}
+
 export interface ExtendedModelOption {
   label: string;
   value: string;
@@ -63,6 +90,8 @@ export const MentionSelect: React.FC<MentionSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [dropdownDirection, setDropdownDirection] = useState<'up' | 'down'>('up');
+  const [dropdownAlign, setDropdownAlign] = useState<'left' | 'right'>('left');
+  const [dropdownMaxWidth, setDropdownMaxWidth] = useState<number | undefined>();
   const selectRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -139,6 +168,17 @@ export const MentionSelect: React.FC<MentionSelectProps> = ({
       } else {
         setDropdownDirection('up');
       }
+
+      const clippingRect = getHorizontalClippingRect(selectRef.current);
+      const boundaryWidth = Math.max(0, clippingRect.right - clippingRect.left - DROPDOWN_EDGE_PADDING * 2);
+      const measuredDropdownWidth = dropdownRef.current?.getBoundingClientRect().width || 0;
+      const dropdownWidth = Math.max(measuredDropdownWidth, selectRect.width, DEFAULT_DROPDOWN_WIDTH);
+      const effectiveDropdownWidth = boundaryWidth > 0 ? Math.min(dropdownWidth, boundaryWidth) : dropdownWidth;
+      const overflowsRight = selectRect.left + effectiveDropdownWidth > clippingRect.right - DROPDOWN_EDGE_PADDING;
+      const fitsRightAligned = selectRect.right - effectiveDropdownWidth >= clippingRect.left + DROPDOWN_EDGE_PADDING;
+
+      setDropdownAlign(overflowsRight && fitsRightAligned ? 'right' : 'left');
+      setDropdownMaxWidth(boundaryWidth || undefined);
     }
   }, [isOpen, options.length]);
 
@@ -166,6 +206,8 @@ export const MentionSelect: React.FC<MentionSelectProps> = ({
             [styles.open]: isOpen,
             [styles.dropdown_up]: dropdownDirection === 'up',
             [styles.dropdown_down]: dropdownDirection === 'down',
+            [styles.dropdown_align_left]: dropdownAlign === 'left',
+            [styles.dropdown_align_right]: dropdownAlign === 'right',
           },
           className,
         )}
@@ -200,7 +242,12 @@ export const MentionSelect: React.FC<MentionSelectProps> = ({
         </div>
 
         {isOpen && (
-          <div ref={dropdownRef} className={styles.dropdown} role='listbox'>
+          <div
+            ref={dropdownRef}
+            className={styles.dropdown}
+            role='listbox'
+            style={dropdownMaxWidth ? { maxWidth: dropdownMaxWidth } : undefined}
+          >
             {showThinking && onThinkingChange && (
               <div className={styles.thinking_section}>
                 <ThinkingToggle enabled={thinkingEnabled} onChange={onThinkingChange} />

@@ -102,14 +102,17 @@
   .dropdown {
     position: absolute;
     left: 0;
-    right: 0;
+    right: auto;
     z-index: 1000;
     background-color: var(--editor-background);
     border: 1px solid var(--dropdown-border);
     border-radius: 6px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.05);
     max-height: 400px;
-    min-width: 300px;
+    width: 300px;
+    min-width: 100%;
+    max-width: calc(100vw - 32px);
+    box-sizing: border-box;
     overflow-y: auto;
     padding: 4px;
     animation: dropdownFadeIn 0.15s ease-out;
@@ -132,6 +135,16 @@
     &::-webkit-scrollbar-thumb:hover {
       background: var(--scrollbar-thumb-hover);
     }
+  }
+
+  &.dropdown_align_left .dropdown {
+    left: 0;
+    right: auto;
+  }
+
+  &.dropdown_align_right .dropdown {
+    left: auto;
+    right: 0;
   }
 
   @keyframes dropdownFadeIn {
@@ -203,7 +216,7 @@
     transition: all 0.2s;
     position: relative;
     border: 1px solid transparent;
-    box-sizing: content-box;
+    box-sizing: border-box;
     margin-bottom: 4px;
     &:last-child {
       margin-bottom: 0;
