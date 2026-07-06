@@ -1,5 +1,5 @@
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { AINativeSettingSectionsId, PreferenceScope } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId, PreferenceScope, URI } from '@opensumi/ide-core-common';
 
 import {
   AIPanelLayoutService,
@@ -19,12 +19,14 @@ describe('AIPanelLayoutService', () => {
     setError,
     aiChatPrevSize,
     aiChatVisible = false,
+    editorOpenResult = { group: { name: 'group-1' }, resource: {} },
   }: {
     designLayout?: 'classic' | 'agentic';
     inspectValue?: { globalValue?: unknown; workspaceValue?: unknown; workspaceFolderValue?: unknown };
     setError?: Error;
     aiChatPrevSize?: number;
     aiChatVisible?: boolean;
+    editorOpenResult?: unknown;
   } = {}) => {
     let inspectValue = initialInspectValue;
     const contextKey = {
@@ -62,6 +64,9 @@ describe('AIPanelLayoutService', () => {
         prevSize: aiChatPrevSize,
       })),
     };
+    const workbenchEditorService = {
+      open: jest.fn(() => Promise.resolve(editorOpenResult)),
+    };
     const service = new AIPanelLayoutService();
 
     Object.defineProperty(service, 'preferenceService', {
@@ -78,12 +83,16 @@ describe('AIPanelLayoutService', () => {
     Object.defineProperty(service, 'layoutService', {
       value: layoutService,
     });
+    Object.defineProperty(service, 'workbenchEditorService', {
+      value: workbenchEditorService,
+    });
 
     return {
       contextKey,
       layoutService,
       preferenceService,
       service,
+      workbenchEditorService,
       triggerPreferenceChange: () => preferenceChangeCallback?.(),
     };
   };
@@ -270,6 +279,39 @@ describe('AIPanelLayoutService', () => {
     expect(listener).toHaveBeenCalledWith(false);
 
     disposable.dispose();
+  });
+
+  it('should reveal hidden agentic workbench when a foreground editor target opens', async () => {
+    const { service, workbenchEditorService } = createService({ inspectValue: { globalValue: 'agentic' } });
+
+    service.initialize();
+
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+
+    await workbenchEditorService.open(new URI('file:///workspace/file.ts'), { preview: true });
+
+    expect(service.isAgenticWorkbenchVisible()).toBe(true);
+  });
+
+  it('should keep hidden agentic workbench hidden when a backend editor target opens', async () => {
+    const { service, workbenchEditorService } = createService({ inspectValue: { globalValue: 'agentic' } });
+
+    service.initialize();
+    await workbenchEditorService.open(new URI('file:///workspace/file.ts'), { backend: true });
+
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+  });
+
+  it('should keep hidden agentic workbench hidden when editor target opening fails', async () => {
+    const { service, workbenchEditorService } = createService({
+      inspectValue: { globalValue: 'agentic' },
+      editorOpenResult: false,
+    });
+
+    service.initialize();
+    await workbenchEditorService.open(new URI('file:///workspace/file.ts'), { preview: false });
+
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
   });
 
   it('should reset agentic workbench visibility when layout mode changes', async () => {

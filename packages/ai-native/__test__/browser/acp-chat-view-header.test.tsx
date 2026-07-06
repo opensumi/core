@@ -973,9 +973,10 @@ describe('ACP chat view headers', () => {
     );
   });
 
-  it('opens agent configuration settings from the agentic chat panel header menu', async () => {
+  it('writes default agent configs before opening settings from the agentic chat panel header menu', async () => {
     const services = createMockServices({
       panelLayout: 'agentic',
+      agentConfigs: 'acp' as any,
       chatViewHeaderRender: AcpChatViewHeader,
     });
     installInjectableMocks(services);
@@ -998,6 +999,24 @@ describe('ACP chat view headers', () => {
       await Promise.resolve();
     });
 
+    expect(services.preferenceService.set).toHaveBeenCalledWith(
+      AINativeSettingSectionsId.AgentConfigs,
+      {
+        qwen: {
+          command: 'qwen',
+          args: ['--acp', '--channel=ACP', '--input-format=stream-json', '--output-format=stream-json'],
+          streaming: true,
+          description: 'Qwen CLI Agent',
+        },
+        'claude-agent-acp': {
+          command: 'claude-agent-acp',
+          args: [],
+          streaming: true,
+          description: 'Claude Code ACP Agent',
+        },
+      },
+      PreferenceScope.User,
+    );
     expect(services.commandService.executeCommand).toHaveBeenCalledWith(
       'core.openpreference',
       AINativeSettingSectionsId.AgentConfigs,

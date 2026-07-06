@@ -26,6 +26,8 @@ OpenSumi core is the IDE platform context for browser, node, extension, and AI-n
 
 **Classic Layout**: The standard AI-native panel layout where ACP Chat remains a secondary panel alongside the regular IDE workbench. _Avoid_: IDE layout, old layout, standard layout
 
+**Editor-hosted Workbench Target**: A foreground destination that must be viewed or operated inside the workbench editor area. _Avoid_: hidden editor target, invisible settings, agentic fallback view
+
 **ACP Permission Request**: A user decision prompt raised by ACP Chat when an agent asks to run a tool operation that requires approval. It remains a user decision until the user allows, rejects, cancels, or the owning session ends. _Avoid_: permission notification, unread permission, timed approval
 
 **Pending ACP Permission**: An ACP Permission Request that is still waiting for the user to allow, reject, cancel, or otherwise resolve it. _Avoid_: permission badge, unresolved approval, expired approval

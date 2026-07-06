@@ -187,10 +187,18 @@ export function AgenticChatHeaderAgentSelector() {
     setIsMenuOpen((open) => !open);
   }, []);
 
-  const handleOpenAgentConfigurations = React.useCallback(() => {
+  const handleOpenAgentConfigurations = React.useCallback(async () => {
     setIsMenuOpen(false);
-    commandService.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id, AINativeSettingSectionsId.AgentConfigs);
-  }, [commandService]);
+    try {
+      await preferenceService.set(
+        AINativeSettingSectionsId.AgentConfigs,
+        getAvailableAgentConfigs(preferenceService),
+        PreferenceScope.User,
+      );
+    } finally {
+      commandService.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id, AINativeSettingSectionsId.AgentConfigs);
+    }
+  }, [commandService, preferenceService]);
 
   const selectedAgent = agentOptions.find((option) => option.value === agentType) || agentOptions[0];
   const tooltip = localize(

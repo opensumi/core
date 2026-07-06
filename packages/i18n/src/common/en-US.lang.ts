@@ -1576,7 +1576,7 @@ export const localizationBundle = {
       'Agent Configs must be a JSON object keyed by agent id, not a string.',
     'preference.ai.native.agent.configs.item.errorMessage':
       'Each agent config must be an object with a non-empty command.',
-    'preference.ai.native.agent.configs.snippet.description': 'Insert a valid ACP agent configuration object.',
+    'preference.ai.native.agent.configs.snippet.description': 'Insert the built-in ACP agent configuration object.',
     'preference.ai.native.agent.configs.command.description': 'Command to start the Agent',
     'preference.ai.native.agent.configs.args.description': 'Arguments passed to the Agent',
     'preference.ai.native.agent.configs.streaming.description': 'Whether streaming output is supported',

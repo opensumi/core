@@ -10,22 +10,42 @@ describe('AI Native agent configuration preference schema', () => {
 
   it('guides settings.json users toward the object-map format', () => {
     expect(agentConfigsSchema.type).toBe('object');
-    expect(agentConfigsSchema.default).toEqual({});
+    expect(agentConfigsSchema.default).toEqual({
+      qwen: {
+        command: 'qwen',
+        args: ['--acp', '--channel=ACP', '--input-format=stream-json', '--output-format=stream-json'],
+        streaming: true,
+        description: 'Qwen CLI Agent',
+      },
+      'claude-agent-acp': {
+        command: 'claude-agent-acp',
+        args: [],
+        streaming: true,
+        description: 'Claude Code ACP Agent',
+      },
+    });
+    expect(validateAgentConfigs(agentConfigsSchema.default)).toBe(true);
     expect(agentConfigsSchema.defaultSnippets).toEqual([
       {
-        label: 'acp agent configs',
+        label: 'acp default agent configs',
         description: '%preference.ai.native.agent.configs.snippet.description%',
         bodyText:
-          '{\n\t"${1:custom-agent}": {\n\t\t"command": "${2:custom-agent}",\n\t\t"args": ["${3:--acp}"],\n\t\t"streaming": true,\n\t\t"description": "${4:Custom Agent}"\n\t}\n}',
+          '{\n\t"qwen": {\n\t\t"command": "qwen",\n\t\t"args": ["--acp", "--channel=ACP", "--input-format=stream-json", "--output-format=stream-json"],\n\t\t"streaming": true,\n\t\t"description": "Qwen CLI Agent"\n\t},\n\t"claude-agent-acp": {\n\t\t"command": "claude-agent-acp",\n\t\t"args": [],\n\t\t"streaming": true,\n\t\t"description": "Claude Code ACP Agent"\n\t}\n}',
       },
     ]);
     expect(agentConfigsSchema.examples).toEqual([
       {
-        'custom-agent': {
-          command: 'custom-agent',
-          args: ['--acp'],
+        qwen: {
+          command: 'qwen',
+          args: ['--acp', '--channel=ACP', '--input-format=stream-json', '--output-format=stream-json'],
           streaming: true,
-          description: 'Custom Agent',
+          description: 'Qwen CLI Agent',
+        },
+        'claude-agent-acp': {
+          command: 'claude-agent-acp',
+          args: [],
+          streaming: true,
+          description: 'Claude Code ACP Agent',
         },
       },
     ]);

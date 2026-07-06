@@ -1341,7 +1341,7 @@ export const localizationBundle = {
     'preference.ai.native.agent.configs.errorMessage':
       'Agent 配置必须是以 agent id 为 key 的 JSON 对象，不能是字符串。',
     'preference.ai.native.agent.configs.item.errorMessage': '每个 agent 配置都必须是对象，并包含非空 command。',
-    'preference.ai.native.agent.configs.snippet.description': '插入合法的 ACP agent 配置对象。',
+    'preference.ai.native.agent.configs.snippet.description': '插入内置 ACP agent 配置对象。',
     'preference.ai.native.agent.configs.command.description': '启动 Agent 的命令',
     'preference.ai.native.agent.configs.args.description': '传递给 Agent 的参数',
     'preference.ai.native.agent.configs.streaming.description': '是否支持流式输出',

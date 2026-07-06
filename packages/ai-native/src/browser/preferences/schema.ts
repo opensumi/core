@@ -32,6 +32,21 @@ export enum EAcpDeliveryMode {
 
 export const WEBMCP_PROFILE_SETTING_ID = 'ai.native.webmcp.profile';
 
+const DEFAULT_AGENT_CONFIGS_PREFERENCE = {
+  qwen: {
+    command: 'qwen',
+    args: ['--acp', '--channel=ACP', '--input-format=stream-json', '--output-format=stream-json'],
+    streaming: true,
+    description: 'Qwen CLI Agent',
+  },
+  'claude-agent-acp': {
+    command: 'claude-agent-acp',
+    args: [],
+    streaming: true,
+    description: 'Claude Code ACP Agent',
+  },
+};
+
 export const aiNativePreferenceSchema: PreferenceSchema = {
   properties: {
     [AINativeSettingSectionsId.InlineDiffPreviewMode]: {
@@ -190,25 +205,16 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     },
     [AINativeSettingSectionsId.AgentConfigs]: {
       type: 'object',
-      default: {},
+      default: DEFAULT_AGENT_CONFIGS_PREFERENCE,
       defaultSnippets: [
         {
-          label: 'acp agent configs',
+          label: 'acp default agent configs',
           description: '%preference.ai.native.agent.configs.snippet.description%',
           bodyText:
-            '{\n\t"${1:custom-agent}": {\n\t\t"command": "${2:custom-agent}",\n\t\t"args": ["${3:--acp}"],\n\t\t"streaming": true,\n\t\t"description": "${4:Custom Agent}"\n\t}\n}',
+            '{\n\t"qwen": {\n\t\t"command": "qwen",\n\t\t"args": ["--acp", "--channel=ACP", "--input-format=stream-json", "--output-format=stream-json"],\n\t\t"streaming": true,\n\t\t"description": "Qwen CLI Agent"\n\t},\n\t"claude-agent-acp": {\n\t\t"command": "claude-agent-acp",\n\t\t"args": [],\n\t\t"streaming": true,\n\t\t"description": "Claude Code ACP Agent"\n\t}\n}',
         },
       ],
-      examples: [
-        {
-          'custom-agent': {
-            command: 'custom-agent',
-            args: ['--acp'],
-            streaming: true,
-            description: 'Custom Agent',
-          },
-        },
-      ],
+      examples: [DEFAULT_AGENT_CONFIGS_PREFERENCE],
       description: '%preference.ai.native.agent.configs.description%',
       markdownDescription: '%preference.ai.native.agent.configs.markdownDescription%',
       errorMessage: '%preference.ai.native.agent.configs.errorMessage%',

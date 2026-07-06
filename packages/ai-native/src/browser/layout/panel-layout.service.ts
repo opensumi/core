@@ -4,6 +4,7 @@ import { AI_PANEL_LAYOUT_CONTEXT } from '@opensumi/ide-core-browser/lib/ai-nativ
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { AINativeSettingSectionsId, Emitter, PanelLayoutMode, PreferenceScope } from '@opensumi/ide-core-common';
+import { IResourceOpenOptions, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_CHAT_VIEW_ID } from '../../common';
@@ -43,6 +44,9 @@ export class AIPanelLayoutService {
   @Autowired(IMainLayoutService)
   private readonly layoutService: IMainLayoutService;
 
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorService;
+
   private readonly onDidChangePanelLayoutEmitter = new Emitter<PanelLayoutMode>();
   readonly onDidChangePanelLayout = this.onDidChangePanelLayoutEmitter.event;
 
@@ -59,6 +63,7 @@ export class AIPanelLayoutService {
       return;
     }
     this.initialized = true;
+    this.registerEditorHostedWorkbenchTargetReveal();
     void this.preferenceService.ready.then(() => {
       const initialMode = this.getLayoutMode();
       this.applyLayoutMode(initialMode, false);
@@ -172,6 +177,19 @@ export class AIPanelLayoutService {
     const nextVisible = visible ?? !this.agenticWorkbenchVisible;
     this.setAgenticWorkbenchVisibility(nextVisible);
     return this.agenticWorkbenchVisible;
+  }
+
+  private registerEditorHostedWorkbenchTargetReveal(): void {
+    const openEditorTarget = this.workbenchEditorService.open.bind(this.workbenchEditorService);
+
+    this.workbenchEditorService.open = async (uri, options?: IResourceOpenOptions) => {
+      const result = await openEditorTarget(uri, options);
+      if (result && !options?.backend) {
+        this.toggleAgenticWorkbenchVisibility(true);
+      }
+
+      return result;
+    };
   }
 
   private setAgenticWorkbenchVisibility(visible: boolean): void {
