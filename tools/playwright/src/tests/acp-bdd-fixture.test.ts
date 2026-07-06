@@ -34,6 +34,7 @@ test.describe('ACP BDD fixture scheduling', () => {
       let settings = await readSettings(workspaceDir);
       let agent = readDefaultAgent(settings);
       expect(settings['ai.native.agent.defaultType']).toBe('claude-agent-acp');
+      expect(settings['ai-native.acp.deliveryMode']).toBe('stream');
       expect(agent.args).toEqual(expect.arrayContaining(['--fixture=stream-rich', '--delay-ms=5']));
       expect(agent.env).toMatchObject({
         OPENSUMI_ACP_BDD_FIXTURE: 'stream-rich',

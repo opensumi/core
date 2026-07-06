@@ -1242,6 +1242,11 @@ export const localizationBundle = {
     'aiNative.chat.safeProgress.authRequired': '需要登录认证',
     'aiNative.chat.safeProgress.errored': 'Agent 遇到错误',
     'aiNative.chat.safeProgress.disconnected': 'Agent 连接已断开',
+    'aiNative.chat.agentSelector.label': 'Agent',
+    'aiNative.chat.agentSelector.tooltip': '{0} · 将应用于新的对话',
+    'aiNative.chat.agentSelector.appliesToNewChats': '将应用于新的对话',
+    'aiNative.chat.agentSelector.moreActions': 'Agent 操作',
+    'aiNative.chat.agentSelector.configureAgents': 'Agent 配置',
     'aiNative.chat.imageUpload': '上传图片',
     'aiNative.chat.clearContext': '清空上下文',
     'aiNative.chat.context.description': '共 {0} 个引用',
@@ -1329,9 +1334,14 @@ export const localizationBundle = {
 
     'preference.ai.native.agent.configs.title': 'Agent 配置',
     'preference.ai.native.agent.configs': 'Agent 配置',
-    'preference.ai.native.agent.configs.description': 'Agent 配置，用于配置不同 Agent 的启动命令和参数',
+    'preference.ai.native.agent.configs.description':
+      'Agent 配置，用于配置不同 Agent 的启动命令和参数。这里必须是 JSON 对象，不能是字符串。',
     'preference.ai.native.agent.configs.markdownDescription':
-      '配置 AI Agent 的命令和参数。示例：\n```json\n{\n  "qwen": {\n    "command": "qwen",\n    "args": ["--acp", "--channel=ACP"],\n    "streaming": true,\n    "description": "Qwen CLI Agent"\n  },\n  "claude-agent-acp": {\n    "command": "claude-agent-acp",\n    "args": [],\n    "streaming": true,\n    "description": "Claude Code ACP Agent"\n  }\n}\n```',
+      '用 JSON 对象配置 AI Agent，key 是 agent id。每个 agent 必须配置非空 `command`；不要写成 `"acp"` 这样的字符串。示例：\n```json\n{\n  "qwen": {\n    "command": "qwen",\n    "args": ["--acp", "--channel=ACP"],\n    "streaming": true,\n    "description": "Qwen CLI Agent"\n  },\n  "claude-agent-acp": {\n    "command": "claude-agent-acp",\n    "args": [],\n    "streaming": true,\n    "description": "Claude Code ACP Agent"\n  },\n  "custom-agent": {\n    "command": "custom-agent",\n    "args": ["--acp"],\n    "streaming": true,\n    "description": "Custom Agent"\n  }\n}\n```',
+    'preference.ai.native.agent.configs.errorMessage':
+      'Agent 配置必须是以 agent id 为 key 的 JSON 对象，不能是字符串。',
+    'preference.ai.native.agent.configs.item.errorMessage': '每个 agent 配置都必须是对象，并包含非空 command。',
+    'preference.ai.native.agent.configs.snippet.description': '插入合法的 ACP agent 配置对象。',
     'preference.ai.native.agent.configs.command.description': '启动 Agent 的命令',
     'preference.ai.native.agent.configs.args.description': '传递给 Agent 的参数',
     'preference.ai.native.agent.configs.streaming.description': '是否支持流式输出',

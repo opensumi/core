@@ -73,6 +73,7 @@ const MODEL_CONTEXT_TIMEOUT_MS = 60 * 1000;
 const ACP_CHAT_READY_TIMEOUT_MS = 60 * 1000;
 const EXPLORER_VIEW_READY_TIMEOUT_MS = 30 * 1000;
 const AI_NATIVE_PANEL_LAYOUT_SETTING_ID = 'ai.native.panelLayout';
+const ACP_DELIVERY_MODE_SETTING_ID = 'ai-native.acp.deliveryMode';
 let nextRuntimeId = 1;
 
 function assertSupportedFixture(fixture: string): asserts fixture is AcpBddFixture {
@@ -195,6 +196,7 @@ export async function writeMockAcpAgentSettings(workspaceDir: string, options: A
   agents[agentType] = getMockAcpAgentCommand({ ...options, agentType });
   settings['ai.native.agent.defaultType'] = agentType;
   settings['ai-native.acp.agents'] = agents;
+  settings[ACP_DELIVERY_MODE_SETTING_ID] = 'stream';
 
   await fs.mkdir(settingsDir, { recursive: true });
   await fs.writeFile(settingsPath, `${JSON.stringify(settings, null, 2)}\n`, 'utf8');

@@ -7,6 +7,7 @@ import { Disposable, URI } from '@opensumi/ide-utils';
 
 export class OpenSumiWorkspace extends Disposable {
   private workspacePath: string;
+  private preferenceDirName: string;
 
   constructor(private filesToWorkspace: string[]) {
     super();
@@ -17,10 +18,15 @@ export class OpenSumiWorkspace extends Disposable {
       },
     });
     this.workspacePath = fse.realpathSync(path.join(temp.mkdirSync('workspace')));
+    this.preferenceDirName = `playwright-${path.basename(this.workspacePath)}`;
   }
 
   get workspace() {
     return new URI(this.workspacePath);
+  }
+
+  get userPreferenceDirName() {
+    return this.preferenceDirName;
   }
 
   async initWorksapce() {

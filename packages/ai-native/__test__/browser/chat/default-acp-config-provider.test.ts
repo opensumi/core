@@ -5,6 +5,8 @@ describe('DefaultACPConfigProvider', () => {
   interface ProviderFixtureOptions {
     webMcpEnabled?: boolean;
     isMultiRoot?: boolean;
+    defaultAgentType?: string;
+    agentConfigs?: Record<string, { command?: string; args?: string[]; description?: string; streaming?: boolean }>;
     quickPickResult?: string | undefined | Promise<string | undefined>;
   }
 
@@ -49,10 +51,10 @@ describe('DefaultACPConfigProvider', () => {
           value: {
             get: jest.fn((id: string, fallback: unknown) => {
               if (id === AINativeSettingSectionsId.DefaultAgentType) {
-                return 'claude-agent-acp';
+                return options.defaultAgentType || 'claude-agent-acp';
               }
               if (id === AINativeSettingSectionsId.AgentConfigs) {
-                return {};
+                return options.agentConfigs || {};
               }
               if (id === 'ai-native.acp.nodePath') {
                 return '';
@@ -107,6 +109,35 @@ describe('DefaultACPConfigProvider', () => {
     expect((provider as any).mcpConfigService.getACPServers).toHaveBeenCalled();
     expect(config.webMcp).toEqual({ enabled: false });
     expect(config.cwd).toBe(rootA);
+  });
+
+  it('resolves a custom ACP agent config from preferences', async () => {
+    const provider = await createProvider({
+      defaultAgentType: 'codex-acp',
+      agentConfigs: {
+        'codex-acp': {
+          command: 'codex-acp',
+          args: [],
+          description: 'Codex ACP Agent',
+        },
+      },
+    });
+
+    const config = await provider.resolveConfig();
+
+    expect(config.agentId).toBe('codex-acp');
+    expect(config.command).toBe('codex-acp');
+    expect(config.args).toEqual([]);
+  });
+
+  it('falls back to the built-in Claude ACP agent when the selected custom agent is missing', async () => {
+    const provider = await createProvider({ defaultAgentType: 'missing-agent' });
+
+    const config = await provider.resolveConfig();
+
+    expect(config.agentId).toBe('claude-agent-acp');
+    expect(config.command).toBe('claude-agent-acp');
+    expect(config.args).toEqual([]);
   });
 
   it('uses the selected multi-root workspace directory for ACP cwd', async () => {

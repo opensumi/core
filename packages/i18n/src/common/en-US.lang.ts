@@ -1474,6 +1474,11 @@ export const localizationBundle = {
     'aiNative.chat.safeProgress.authRequired': 'Authentication required',
     'aiNative.chat.safeProgress.errored': 'Agent encountered an error',
     'aiNative.chat.safeProgress.disconnected': 'Agent disconnected',
+    'aiNative.chat.agentSelector.label': 'Agent',
+    'aiNative.chat.agentSelector.tooltip': '{0} · Applies to new chats',
+    'aiNative.chat.agentSelector.appliesToNewChats': 'Applies to new chats',
+    'aiNative.chat.agentSelector.moreActions': 'Agent actions',
+    'aiNative.chat.agentSelector.configureAgents': 'Agent Configurations',
     'aiNative.chat.imageUpload': 'Upload Image',
     'aiNative.chat.clearContext': 'Clear Context',
     'aiNative.chat.context.description': 'Total {0} References',
@@ -1564,9 +1569,14 @@ export const localizationBundle = {
     'preference.ai.native.agent.configs.title': 'Agent Configurations',
     'preference.ai.native.agent.configs': 'Agent Configs',
     'preference.ai.native.agent.configs.description':
-      'Agent configurations for setting up different Agent commands and arguments',
+      'Agent configurations for setting up different Agent commands and arguments. This setting must be a JSON object, not a string.',
     'preference.ai.native.agent.configs.markdownDescription':
-      'Configure AI Agents with their command and arguments. Example:\n```json\n{\n  "qwen": {\n    "command": "qwen",\n    "args": ["--acp", "--channel=ACP"],\n    "streaming": true,\n    "description": "Qwen CLI Agent"\n  },\n  "claude-agent-acp": {\n    "command": "claude-agent-acp",\n    "args": [],\n    "streaming": true,\n    "description": "Claude Code ACP Agent"\n  }\n}\n```',
+      'Configure AI Agents with a JSON object whose keys are agent ids. Each agent must define a non-empty `command`; do not set this to a string like `"acp"`. Example:\n```json\n{\n  "qwen": {\n    "command": "qwen",\n    "args": ["--acp", "--channel=ACP"],\n    "streaming": true,\n    "description": "Qwen CLI Agent"\n  },\n  "claude-agent-acp": {\n    "command": "claude-agent-acp",\n    "args": [],\n    "streaming": true,\n    "description": "Claude Code ACP Agent"\n  },\n  "custom-agent": {\n    "command": "custom-agent",\n    "args": ["--acp"],\n    "streaming": true,\n    "description": "Custom Agent"\n  }\n}\n```',
+    'preference.ai.native.agent.configs.errorMessage':
+      'Agent Configs must be a JSON object keyed by agent id, not a string.',
+    'preference.ai.native.agent.configs.item.errorMessage':
+      'Each agent config must be an object with a non-empty command.',
+    'preference.ai.native.agent.configs.snippet.description': 'Insert a valid ACP agent configuration object.',
     'preference.ai.native.agent.configs.command.description': 'Command to start the Agent',
     'preference.ai.native.agent.configs.args.description': 'Arguments passed to the Agent',
     'preference.ai.native.agent.configs.streaming.description': 'Whether streaming output is supported',

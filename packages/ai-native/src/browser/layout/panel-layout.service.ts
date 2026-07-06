@@ -52,7 +52,7 @@ export class AIPanelLayoutService {
   private panelLayoutContextKey?: ReturnType<IContextKeyService['createKey']>;
   private initialized = false;
   private isSettingLayoutMode = false;
-  private agenticWorkbenchVisible = true;
+  private agenticWorkbenchVisible = false;
 
   initialize(): void {
     if (this.initialized) {
@@ -183,8 +183,12 @@ export class AIPanelLayoutService {
     this.onDidChangeAgenticWorkbenchVisibilityEmitter.fire(visible);
   }
 
+  private getDefaultAgenticWorkbenchVisibility(mode: PanelLayoutMode): boolean {
+    return normalizePanelLayoutMode(mode) !== 'agentic';
+  }
+
   private activateLayoutMode(mode: PanelLayoutMode, restoreAIChat = false): void {
-    this.setAgenticWorkbenchVisibility(true);
+    this.setAgenticWorkbenchVisibility(this.getDefaultAgenticWorkbenchVisibility(mode));
     this.applyLayoutMode(mode);
     if (restoreAIChat) {
       this.showAIChatView(mode);

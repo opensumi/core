@@ -190,13 +190,37 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     },
     [AINativeSettingSectionsId.AgentConfigs]: {
       type: 'object',
+      default: {},
+      defaultSnippets: [
+        {
+          label: 'acp agent configs',
+          description: '%preference.ai.native.agent.configs.snippet.description%',
+          bodyText:
+            '{\n\t"${1:custom-agent}": {\n\t\t"command": "${2:custom-agent}",\n\t\t"args": ["${3:--acp}"],\n\t\t"streaming": true,\n\t\t"description": "${4:Custom Agent}"\n\t}\n}',
+        },
+      ],
+      examples: [
+        {
+          'custom-agent': {
+            command: 'custom-agent',
+            args: ['--acp'],
+            streaming: true,
+            description: 'Custom Agent',
+          },
+        },
+      ],
       description: '%preference.ai.native.agent.configs.description%',
       markdownDescription: '%preference.ai.native.agent.configs.markdownDescription%',
+      errorMessage: '%preference.ai.native.agent.configs.errorMessage%',
       additionalProperties: {
         type: 'object',
+        required: ['command'],
+        additionalProperties: false,
+        errorMessage: '%preference.ai.native.agent.configs.item.errorMessage%',
         properties: {
           command: {
             type: 'string',
+            minLength: 1,
             description: '%preference.ai.native.agent.configs.command.description%',
           },
           args: {
@@ -221,7 +245,6 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     },
     [AINativeSettingSectionsId.DefaultAgentType]: {
       type: 'string',
-      enum: ['qwen', 'claude-agent-acp'],
       default: 'claude-agent-acp',
       description: '%preference.ai.native.agent.defaultType.description%',
     },

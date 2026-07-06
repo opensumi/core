@@ -16,6 +16,10 @@ OpenSumi core is the IDE platform context for browser, node, extension, and AI-n
 
 **ACP Available Command**: Session-scoped command metadata exposed by an ACP agent for the active ACP Chat session. _Avoid_: Codex skill, MCP tool, command palette action
 
+**ACP Agent Type**: A user-selectable ACP runtime family that ACP Chat uses to choose which agent handles ACP sessions. _Avoid_: chat agent, model, layout
+
+**ACP Agent Configuration**: User-editable launch settings that define ACP Agent Types available to ACP Chat, such as command, arguments, and description. _Avoid_: ACP runtime override, chat agent metadata, model configuration
+
 **Chat Slash Command**: A user-selectable `/` command in the chat input that represents an intended chat action before the message is sent. _Avoid_: shell command, command palette action, MCP tool
 
 **Agentic Layout**: An AI-native panel layout where ACP Chat is treated as the primary agent workspace beside the workbench. _Avoid_: agent layout, agent mode

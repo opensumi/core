@@ -56,6 +56,12 @@ export class OpenSumiSCMView extends OpenSumiPanel {
     return this._openedEditorView;
   }
 
+  async open() {
+    await this.scmView.open();
+    this.view = await this.page.$(this.viewSelector);
+    return this;
+  }
+
   async getTreeItems() {
     const treeItems = await (await this.scmView.getViewElement())?.$$('[class*="scm_tree_node___"]');
     const node: OpenSumiSCMFileStatNode[] = [];

@@ -10,6 +10,21 @@ export class OpenSumiSourceControlView extends OpenSumiView {
     });
   }
 
+  async open(): Promise<OpenSumiView | undefined> {
+    const scmEntry = this.page.locator('#opensumi-left-tabbar li#scm').first();
+    if ((await scmEntry.count()) > 0 && (await scmEntry.isVisible())) {
+      await scmEntry.click();
+      try {
+        await this.waitForVisible(3000);
+        return this;
+      } catch {
+        // Fall back to quick open when the activity icon is selected but the side panel stays collapsed.
+      }
+    }
+
+    return super.open();
+  }
+
   async getTreeNode() {
     return await this.page.$('[class*="scm_tree_node_content___"]');
   }

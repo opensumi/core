@@ -215,19 +215,19 @@ export class OpenSumiSearchView extends OpenSumiPanel {
       return;
     }
     if (isDefined(options.isMatchCase)) {
-      (await options.isMatchCase)
+      await (options.isMatchCase
         ? this.activeSearchAction(SEARCH_OPTIONS.MATCH_CASE)
-        : this.deactiveSearchAction(SEARCH_OPTIONS.MATCH_CASE);
+        : this.deactiveSearchAction(SEARCH_OPTIONS.MATCH_CASE));
     }
     if (isDefined(options.isMatchWhileWord)) {
-      (await options.isMatchWhileWord)
+      await (options.isMatchWhileWord
         ? this.activeSearchAction(SEARCH_OPTIONS.MATCH_WHOLE_WORD)
-        : this.deactiveSearchAction(SEARCH_OPTIONS.MATCH_WHOLE_WORD);
+        : this.deactiveSearchAction(SEARCH_OPTIONS.MATCH_WHOLE_WORD));
     }
     if (isDefined(options.useRegexp)) {
-      (await options.useRegexp)
+      await (options.useRegexp
         ? this.activeSearchAction(SEARCH_OPTIONS.USE_REGEXP)
-        : this.deactiveSearchAction(SEARCH_OPTIONS.USE_REGEXP);
+        : this.deactiveSearchAction(SEARCH_OPTIONS.USE_REGEXP));
     }
     if (options.exclude || options.include || isDefined(options.useDefaultExclude)) {
       await this.toggleDisplaySearchRules(true);
@@ -248,6 +248,7 @@ export class OpenSumiSearchView extends OpenSumiPanel {
   }
 
   async getTreeNodeByIndex(index: number) {
+    await this.view?.waitForSelector('[class*="search_node___"]', { timeout: 10000 });
     const treeItems = await this.view?.$$('[class*="search_node___"]');
     if (!treeItems) {
       return;

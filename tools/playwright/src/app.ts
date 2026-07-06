@@ -65,13 +65,18 @@ export class OpenSumiApp extends Disposable {
   protected async load(workspace: OpenSumiWorkspace): Promise<void> {
     this.disposables.push(workspace);
     const now = Date.now();
-    await this.loadOrReload(this.page, `/?workspaceDir=${workspace.workspace.codeUri.fsPath}`);
+    const query = new URLSearchParams({
+      workspaceDir: workspace.workspace.codeUri.fsPath,
+      userPreferenceDirName: workspace.userPreferenceDirName,
+    });
+    await this.loadOrReload(this.page, `/?${query.toString()}`);
     await this.page.waitForSelector(this.appData.loadingSelector, { state: 'detached' });
     const time = Date.now() - now;
     // eslint-disable-next-line no-console
     console.log(`Loading page cost ${time} ms`);
     await this.page.waitForSelector(this.appData.mainSelector);
     await this.waitForInitialized();
+    await this.recoverCrashedExtensionHost();
   }
 
   protected async loadOrReload(page: Page, url = '/') {
@@ -93,6 +98,7 @@ export class OpenSumiApp extends Disposable {
   }
 
   async open<T extends OpenSumiPanel>(PanelConstruction: new (app: OpenSumiApp) => T) {
+    await this.recoverCrashedExtensionHost();
     const panel = new PanelConstruction(this);
     if (await panel.isVisible()) {
       return panel;
@@ -107,6 +113,7 @@ export class OpenSumiApp extends Disposable {
     filePath: string,
     preview = true,
   ) {
+    await this.recoverCrashedExtensionHost();
     await explorer.open();
     const node = await explorer.getFileStatTreeNodeByPath(filePath);
     if (!node || (await node?.isFolder())) {
@@ -132,10 +139,11 @@ export class OpenSumiApp extends Disposable {
   async getDialogButton(value: string): Promise<ElementHandle<SVGElement | HTMLElement> | void> {
     const buttonWrapper = await this.page.$('.kt-dialog-buttonWrap');
     const buttons = await buttonWrapper?.$$('.kt-button');
+    const expected = value.trim().toLocaleLowerCase();
     if (buttons) {
       for (const button of buttons) {
         const text = await button.textContent();
-        if (text === value) {
+        if (text?.trim().toLocaleLowerCase() === expected) {
           return button;
         }
       }
@@ -145,5 +153,36 @@ export class OpenSumiApp extends Disposable {
   async waitForInitialized(): Promise<void> {
     // custom app initialize process.
     // empty by default
+  }
+
+  async recoverCrashedExtensionHost(): Promise<void> {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const crashMessage = this.page.getByText('Extension Host Process is crashed');
+      if (await crashMessage.isVisible({ timeout: 500 }).catch(() => false)) {
+        const restartButton = this.page.getByRole('button', { name: 'Yes' }).last();
+        if (await restartButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+          await restartButton.click();
+          await crashMessage.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => undefined);
+        }
+      }
+
+      const restartingMessage = this.page.getByText('Extension Host Process is restarting');
+      if (!(await restartingMessage.isVisible({ timeout: 500 }).catch(() => false))) {
+        return;
+      }
+
+      const refreshButton = this.page.getByRole('button', { name: 'Refresh' }).last();
+      if (!(await refreshButton.isVisible({ timeout: 1000 }).catch(() => false))) {
+        await restartingMessage.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => undefined);
+        return;
+      }
+
+      await refreshButton.click();
+      await this.page
+        .waitForSelector(this.appData.loadingSelector, { state: 'detached', timeout: 60000 })
+        .catch(() => undefined);
+      await this.page.waitForSelector(this.appData.mainSelector, { timeout: 60000 }).catch(() => undefined);
+      await this.waitForInitialized();
+    }
   }
 }

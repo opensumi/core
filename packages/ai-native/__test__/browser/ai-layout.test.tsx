@@ -190,7 +190,7 @@ describe('AILayout BDD', () => {
     storedLayout = {};
     storedLayouts = {};
     panelLayoutChangeListener = undefined;
-    agenticWorkbenchVisible = true;
+    agenticWorkbenchVisible = false;
     agenticWorkbenchVisibilityListeners.clear();
     mockToggleSlot.mockClear();
     container = document.createElement('div');
@@ -298,6 +298,7 @@ describe('AILayout BDD', () => {
 
   it('Given agentic layout, when it renders, then AI chat is before the workbench', async () => {
     panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = true;
     const { AILayout } = await import('../../src/browser/layout/ai-layout');
 
     act(() => {
@@ -311,9 +312,8 @@ describe('AILayout BDD', () => {
     expect(getSplitChildIds('main-horizontal-agentic')).toEqual(['main-vertical-agentic', 'view']);
   });
 
-  it('Given agentic workbench is collapsed, when it renders, then AI chat is the only main split child', async () => {
+  it('Given agentic layout, when it renders by default, then AI chat is the only main split child', async () => {
     panelLayoutMode = 'agentic';
-    agenticWorkbenchVisible = false;
     const { AILayout } = await import('../../src/browser/layout/ai-layout');
 
     act(() => {
@@ -347,6 +347,7 @@ describe('AILayout BDD', () => {
 
   it('Given agentic layout, when dragging the AI split handle, then the workbench is the flex-grow resize target', async () => {
     panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = true;
     const { AILayout } = await import('../../src/browser/layout/ai-layout');
 
     act(() => {
@@ -361,6 +362,7 @@ describe('AILayout BDD', () => {
 
   it('Given agentic layout, when the workbench renders, then editor stays left of Explorer with a minimum size', async () => {
     panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = true;
     const { AILayout } = await import('../../src/browser/layout/ai-layout');
 
     act(() => {
@@ -375,6 +377,7 @@ describe('AILayout BDD', () => {
 
   it('Given agentic layout has no AI chat cache, when it renders, then AI chat opens with the agentic default size', async () => {
     panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = true;
     const { AILayout } = await import('../../src/browser/layout/ai-layout');
 
     act(() => {
@@ -393,6 +396,7 @@ describe('AILayout BDD', () => {
 
   it('Given agentic layout has oversized side slot cache, when it renders, then Explorer is capped and extend view is omitted', async () => {
     panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = true;
     storedLayout = {
       view: {
         currentId: 'explorer',
@@ -415,6 +419,7 @@ describe('AILayout BDD', () => {
 
   it('Given agentic layout has cached collapsed AI chat, when it renders, then AI chat opens with the agentic default size', async () => {
     panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = true;
     storedLayout = {
       'AI-Chat': {
         currentId: '',
@@ -437,6 +442,7 @@ describe('AILayout BDD', () => {
 
   it('Given agentic layout has cached active AI chat, when it renders, then AI chat restores the cached size', async () => {
     panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = true;
     storedLayout = {
       'AI-Chat': {
         currentId: 'AI-Chat-Container',
@@ -459,6 +465,7 @@ describe('AILayout BDD', () => {
 
   it('Given agentic layout has cached active AI chat without size, when it renders, then AI chat falls back to the agentic default size', async () => {
     panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = true;
     storedLayout = {
       'AI-Chat': {
         currentId: 'AI-Chat-Container',
@@ -480,6 +487,7 @@ describe('AILayout BDD', () => {
 
   it('Given each panel layout has its own cache, when agentic renders, then it uses the agentic layout cache', async () => {
     panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = true;
     storedLayouts = {
       layout: {
         'AI-Chat': {

@@ -32,12 +32,20 @@ export class OpenSumiCommandPalette extends OpenSumiViewBase {
     if (!(await this.isOpen())) {
       await this.open();
     }
-    let selected = await this.selectedCommand();
-    while (!((await selected?.getAttribute('aria-label')) === commandName)) {
+    const seen = new Set<string>();
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const selected = await this.selectedCommand();
+      const label = await selected?.getAttribute('aria-label');
+      if (label === commandName) {
+        await this.page.keyboard.press('Enter');
+        return;
+      }
+      if (label) {
+        seen.add(label);
+      }
       await this.page.keyboard.press('ArrowDown');
-      selected = await this.selectedCommand();
     }
-    await this.page.keyboard.press('Enter');
+    throw new Error(`Command palette item "${commandName}" was not found. Seen: ${Array.from(seen).join(', ')}`);
   }
 
   async type(command: string): Promise<void> {
