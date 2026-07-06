@@ -228,6 +228,7 @@ export async function waitForWorkbenchReady(page: Page): Promise<void> {
     const workbenchVisible =
       text.includes('EXPLORER') ||
       text.includes('Agentic') ||
+      text.includes('AI Assistant') ||
       text.includes('editor.js') ||
       !!document.querySelector('.monaco-editor');
     return shellReady && workbenchVisible;

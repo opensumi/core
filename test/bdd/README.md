@@ -23,12 +23,13 @@ const shellReady =
 const workbenchVisible =
   text.includes('EXPLORER') ||
   text.includes('Agentic') ||
+  text.includes('AI Assistant') ||
   text.includes('editor.js') ||
   !!document.querySelector('.monaco-editor');
 shellReady && workbenchVisible;
 ```
 
-`EXPLORER` remains a useful Explorer-specific signal, but it is not the only valid readiness marker for Agentic-first layouts. Chrome DevTools MCP is used for browser startup, DOM readiness, UI interaction, and dialog observability. ACP tool execution uses the current OpenSumi MCP bridge when a scenario explicitly requires MCP transport. `navigator.modelContext` remains a supported WebMCP surface for browser runtime checks and is validated against MCP only where a scenario explicitly compares browser and MCP tool exposure.
+`EXPLORER` remains a useful Explorer-specific signal, but it is not the only valid readiness marker for Agentic-first layouts. `AI Assistant` is also a valid readiness marker when the Agentic workbench starts hidden. Chrome DevTools MCP is used for browser startup, DOM readiness, UI interaction, and dialog observability. ACP tool execution uses the current OpenSumi MCP bridge when a scenario explicitly requires MCP transport. `navigator.modelContext` remains a supported WebMCP surface for browser runtime checks and is validated against MCP only where a scenario explicitly compares browser and MCP tool exposure.
 
 ## Scenario Layers
 

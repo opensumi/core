@@ -29,6 +29,7 @@
    const workbenchVisible =
      text.includes('EXPLORER') ||
      text.includes('Agentic') ||
+     text.includes('AI Assistant') ||
      text.includes('editor.js') ||
      !!document.querySelector('.monaco-editor');
    shellReady && workbenchVisible;
@@ -88,7 +89,7 @@
   - browser `navigator.modelContext`, or
   - connected MCP `opensumi-ide` server with catalog tools.
 - Browser and MCP surfaces expose canonical underscore tool names only when those surfaces are available.
-- The literal `EXPLORER` text is a useful Explorer-specific signal, but it is not the only valid readiness marker for Agentic-first layouts.
+- The literal `EXPLORER` text is a useful Explorer-specific signal, but it is not the only valid readiness marker for Agentic-first layouts; `AI Assistant` is valid when the Agentic workbench starts hidden.
 - Extension host or worker-host console errors are recorded as diagnostics. They fail preflight only when they prevent shell readiness, block the scenario's required UI surface, or leak secrets.
 - Runtime diagnostics must redact MCP token paths and secret-like query values.
 - If no supported execution surface is available, downstream scenarios are marked **BLOCKED** instead of failed.
