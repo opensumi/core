@@ -7,6 +7,8 @@ const folderName = 'tools/playwright';
 (async () => {
   if (argv.ci) {
     await run(`cd ${folderName} && yarn run ui-tests-ci`);
+  } else if (argv.concurrentSmoke) {
+    await run(`cd ${folderName} && yarn run ui-tests-concurrent-smoke`);
   } else if (argv.headful) {
     // 默认 playwright 会开启 headless
     await run(`cd ${folderName} && yarn run ui-tests-headful`);

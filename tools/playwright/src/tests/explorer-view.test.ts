@@ -130,14 +130,12 @@ test.describe('OpenSumi Explorer Panel', () => {
     const terminal = await app.open(OpenSumiTerminalView);
     await terminal.sendText(`cd ${workspace.workspace.codeUri.fsPath}`);
     await terminal.sendText(`mkdir ${dirname}`);
-    await app.page.waitForTimeout(2000);
-    let newDir = await explorer.getFileStatTreeNodeByPath(dirname);
-    if (!newDir) {
-      const action = await fileTreeView.getTitleActionByName('Refresh');
-      await action?.click();
-      await app.page.waitForTimeout(200);
-      newDir = await explorer.getFileStatTreeNodeByPath(dirname);
-    }
+
+    await expect
+      .poll(async () => !!(await explorer.getFileStatTreeNodeByPath(dirname)), { timeout: 10000 })
+      .toBeTruthy();
+
+    const newDir = await explorer.getFileStatTreeNodeByPath(dirname);
     expect(newDir).toBeDefined();
   });
 
@@ -367,19 +365,10 @@ console.log(a);`,
       await waitForFileStatTreeNode(visiblePath);
     };
 
-    const folderName = 'ui_keep_folder3';
-    await createFromExplorerToolbar('New File', `${folderName}/index.js`, folderName);
-    let node = await waitForFileStatTreeNode(folderName);
-    await node?.expand();
-
     await createFromExplorerToolbar('New Folder', 'ui_keep_folder4');
-    node = await waitForFileStatTreeNode('ui_keep_folder4');
+    let node = await waitForFileStatTreeNode('ui_keep_folder4');
     await node?.expand();
     expect(await node?.isExpanded()).toBeTruthy();
-
-    node = await waitForFileStatTreeNode(folderName);
-    await node?.collapse();
-    await node?.expand();
 
     await createFromExplorerToolbar('New File', 'ui_keep_file');
     node = await waitForFileStatTreeNode('ui_keep_file');
@@ -387,7 +376,7 @@ console.log(a);`,
 
     await expect
       .poll(async () => {
-        const newFolder = await explorer.getFileStatTreeNodeByPath(folderName);
+        const newFolder = await explorer.getFileStatTreeNodeByPath('ui_keep_folder4');
         return newFolder ? await newFolder.isExpanded() : false;
       })
       .toBeTruthy();

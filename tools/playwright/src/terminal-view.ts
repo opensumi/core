@@ -9,11 +9,28 @@ export class OpenSumiTerminalView extends OpenSumiPanel {
     super(app, 'TERMINAL');
   }
 
+  async waitForTerminalReady() {
+    await this.waitForVisible(10000);
+    const terminalSelector = `${this.viewSelector} .xterm-screen, ${this.viewSelector} .xterm-rows, ${this.viewSelector} textarea.xterm-helper-textarea`;
+    await this.page.waitForFunction(
+      (selector) =>
+        Array.from(document.querySelectorAll(selector)).some((element) => {
+          const style = window.getComputedStyle(element);
+          const rect = element.getBoundingClientRect();
+          return style.visibility !== 'hidden' && style.display !== 'none' && rect.width > 0 && rect.height > 0;
+        }),
+      terminalSelector,
+      { timeout: 10000 },
+    );
+    this.view = await this.page.$(this.viewSelector);
+  }
+
   async sendText(text: string) {
     const visible = await this.isVisible();
     if (!visible) {
       await this.open();
     }
+    await this.waitForTerminalReady();
     await this.focus();
     const box = await this.view?.boundingBox();
     if (box) {

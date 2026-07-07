@@ -33,6 +33,65 @@ export abstract class OpenSumiTreeNode {
     return parent.asElement();
   }
 
+  private async getCurrentElementHandle(parent: ElementHandle | null, dataId: string | null) {
+    if (!parent || !dataId) {
+      return this.elementHandle;
+    }
+
+    const current = await parent.evaluateHandle(
+      (parentElement: Element, id: string) =>
+        Array.from(parentElement.querySelectorAll<HTMLElement>('[data-id]')).find(
+          (item) => item.getAttribute('data-id') === id,
+        ),
+      dataId,
+    );
+    const currentElement = current.asElement();
+    if (currentElement) {
+      this.elementHandle = currentElement as ElementHandle<SVGElement | HTMLElement>;
+    }
+
+    return this.elementHandle;
+  }
+
+  private getDataIdSelector(dataId: string) {
+    return `[data-id="${dataId.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"]`;
+  }
+
+  private async waitForCollapsedState(collapsed: boolean, parent: ElementHandle | null, dataId: string | null) {
+    if (!parent || !dataId) {
+      const selector = collapsed
+        ? this.selector.collapsedClass
+        : `${this.selector.toggleClass}:not(${this.selector.collapsedClass})`;
+      await this.elementHandle.waitForSelector(selector);
+      return;
+    }
+
+    const nodeSelector = this.getDataIdSelector(dataId);
+    const selector = collapsed
+      ? `${nodeSelector} ${this.selector.collapsedClass}`
+      : `${nodeSelector} ${this.selector.toggleClass}:not(${this.selector.collapsedClass})`;
+    await parent.waitForSelector(selector, { timeout: 10_000 });
+    await this.getCurrentElementHandle(parent, dataId);
+  }
+
+  private async clickToggle(parent: ElementHandle | null, dataId: string | null) {
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await this.getCurrentElementHandle(parent, dataId);
+      const toggle = await this.elementHandle.waitForSelector(this.selector.toggleClass);
+      try {
+        await toggle.evaluate((element) => (element as HTMLElement).click());
+        return;
+      } catch (error) {
+        lastError = error;
+        await this.app.page.waitForTimeout(100);
+      }
+    }
+
+    throw lastError;
+  }
+
   async label() {
     const labelElement = await this.elementHandle.$(this.selector.labelClass);
     if (!labelElement) {
@@ -75,18 +134,20 @@ export abstract class OpenSumiTreeNode {
     if (await this.isExpanded()) {
       return;
     }
-    const toggle = await this.elementHandle.waitForSelector(this.selector.toggleClass);
-    await toggle.click();
-    await this.elementHandle.waitForSelector(`${this.selector.toggleClass}:not(${this.selector.collapsedClass})`);
+    const dataId = await this.elementHandle.getAttribute('data-id');
+    const parent = await this.parentElementHandle();
+    await this.clickToggle(parent, dataId);
+    await this.waitForCollapsedState(false, parent, dataId);
   }
 
   async collapse() {
     if (await this.isCollapsed()) {
       return;
     }
-    const toggle = await this.elementHandle.waitForSelector(this.selector.toggleClass);
-    await toggle.click();
-    await this.elementHandle.waitForSelector(`${this.selector.collapsedClass}`);
+    const dataId = await this.elementHandle.getAttribute('data-id');
+    const parent = await this.parentElementHandle();
+    await this.clickToggle(parent, dataId);
+    await this.waitForCollapsedState(true, parent, dataId);
   }
 
   async openContextMenu() {
