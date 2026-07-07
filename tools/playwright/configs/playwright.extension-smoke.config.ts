@@ -4,8 +4,8 @@ import { PlaywrightTestConfig } from '@playwright/test';
 
 const config: PlaywrightTestConfig = {
   testDir: '../lib/tests',
-  testMatch: ['**/explorer-view.test.js', '**/scm.test.js'],
-  workers: 2,
+  testMatch: ['**/extension.test.js'],
+  workers: 1,
   timeout: 60 * 1000,
   use: {
     baseURL: 'http://localhost:8080',

@@ -395,7 +395,6 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
             <div className={styles.chat_history_header_inline_actions}>
               {renderCollapseAction()}
               {renderMCPConfigAction()}
-              {renderNewChatAction()}
             </div>
           ) : (
             <span>{title}</span>

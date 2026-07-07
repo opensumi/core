@@ -24,6 +24,7 @@
     "ui-tests-ci": "yarn run build:runtime && yarn run build && playwright test --config=./configs/playwright.ci.config.ts",
     "ui-tests-concurrent-smoke": "yarn run build:runtime && yarn run build && yarn run ui-tests-concurrent-smoke:run",
     "ui-tests-concurrent-smoke:run": "playwright test --config=./configs/playwright.concurrent.config.ts",
+    "ui-tests-extension-smoke:run": "playwright test --config=./configs/playwright.extension-smoke.config.ts",
     "ui-tests-headful": "yarn run build:runtime && yarn run build && playwright test --config=./configs/playwright.headful.config.ts",
     "ui-tests-report-generate": "allure generate ./allure-results --clean -o allure-results/allure-report",
     "ui-tests-report": "yarn run build ui-tests-report-generate && allure open allure-results/allure-report"

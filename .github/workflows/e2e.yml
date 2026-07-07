@@ -55,7 +55,7 @@ jobs:
           yarn run download-extension
           yarn run rebuild:node
           SUPPORT_LOAD_WORKSPACE_BY_HASH=true yarn start:e2e &
-          bash tools/playwright/scripts/wait.sh && cd tools/playwright && yarn run ui-tests-ci && yarn run ui-tests-concurrent-smoke:run
+          bash tools/playwright/scripts/wait.sh && cd tools/playwright && yarn run ui-tests-ci && yarn run ui-tests-concurrent-smoke:run && yarn run ui-tests-extension-smoke:run
 
       - name: Upload test results
         if: always()
