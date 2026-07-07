@@ -12,6 +12,19 @@ import { createBddEvidence } from './utils/bdd-evidence';
 
 let runtime: AcpBddFixtureRuntime;
 
+async function createAcpSessionForCommandMetadata() {
+  const completion = page.locator('.AI-Chat-slot').getByText('BDD_ASSISTANT_PART_2 completed.');
+  const completionCount = await completion.count();
+  const input = page.locator('.AI-Chat-slot [contenteditable="true"]').last();
+
+  await expect(input).toBeVisible();
+  await input.click();
+  await page.keyboard.type('BDD available commands metadata bootstrap');
+  await page.getByRole('button', { name: 'Send' }).click();
+  await expect(completion).toHaveCount(completionCount + 1, { timeout: 30_000 });
+  await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
+}
+
 test.describe('Available commands deterministic fixture surface', () => {
   test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
 
@@ -38,6 +51,8 @@ test.describe('Available commands deterministic fixture surface', () => {
       executionMode: 'deterministic-fixture',
       hardeningVerdict: 'CONVERT',
     });
+
+    await createAcpSessionForCommandMetadata();
 
     await expect
       .poll(

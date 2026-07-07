@@ -92,16 +92,17 @@ jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
           item.title,
         ),
       ),
-      require('react').createElement(
-        'button',
-        {
-          'data-testid': 'acp-chat-history-new',
-          disabled,
-          onClick: onNewChat,
-          type: 'button',
-        },
-        'new',
-      ),
+      variant !== 'inline' &&
+        require('react').createElement(
+          'button',
+          {
+            'data-testid': 'acp-chat-history-new',
+            disabled,
+            onClick: onNewChat,
+            type: 'button',
+          },
+          'new',
+        ),
       onToggleHistoryCollapsed &&
         require('react').createElement(
           'button',
@@ -909,24 +910,32 @@ describe('ACP chat view headers', () => {
     expect(getAction()?.className).toBe('icon-fullescreen');
   });
 
-  it('updates the default ACP agent type from the agentic chat panel header selector', async () => {
+  it('updates the default ACP agent type and creates a session from the agentic chat panel header menu', async () => {
+    const createSessionModel = jest.fn(async () => undefined);
     const services = createMockServices({
       defaultAgentType: 'claude-agent-acp',
       panelLayout: 'agentic',
+      createSessionModel,
       chatViewHeaderRender: AcpChatViewHeader,
     });
     installInjectableMocks(services);
 
     await renderHeader(React.createElement(AIChatViewACPContent));
 
-    const selector = container.querySelector('[data-testid="agentic-chat-agent-selector"]') as HTMLSelectElement | null;
-    expect(selector?.value).toBe('claude-agent-acp');
-    expect(selector?.textContent).toContain('Claude');
-    expect(selector?.textContent).toContain('Qwen');
+    const menuButton = container.querySelector(
+      '[data-testid="agentic-chat-new-session-button"]',
+    ) as HTMLButtonElement | null;
 
     await act(async () => {
-      selector!.value = 'qwen';
-      selector!.dispatchEvent(new Event('change', { bubbles: true }));
+      menuButton!.click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain('Claude');
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain('Qwen');
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-chat-new-session-agent-qwen"]') as HTMLButtonElement).click();
       await Promise.resolve();
     });
 
@@ -935,11 +944,10 @@ describe('ACP chat view headers', () => {
       'qwen',
       PreferenceScope.User,
     );
-    expect(services.messageService.info).toHaveBeenCalledWith('Applies to new chats');
-    expect(services.aiChatService.createSessionModel).not.toHaveBeenCalled();
+    expect(createSessionModel).toHaveBeenCalledTimes(1);
   });
 
-  it('lists custom ACP agent configurations in the agentic chat panel header selector', async () => {
+  it('lists custom ACP agent configurations in the agentic chat panel header menu', async () => {
     const services = createMockServices({
       agentConfigs: {
         'custom-agent': {
@@ -956,13 +964,21 @@ describe('ACP chat view headers', () => {
 
     await renderHeader(React.createElement(AIChatViewACPContent));
 
-    const selector = container.querySelector('[data-testid="agentic-chat-agent-selector"]') as HTMLSelectElement | null;
-    expect(selector?.value).toBe('custom-agent');
-    expect(selector?.textContent).toContain('Custom Agent');
+    const menuButton = container.querySelector(
+      '[data-testid="agentic-chat-new-session-button"]',
+    ) as HTMLButtonElement | null;
 
     await act(async () => {
-      selector!.value = 'qwen';
-      selector!.dispatchEvent(new Event('change', { bubbles: true }));
+      menuButton!.click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain(
+      'Custom Agent',
+    );
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-chat-new-session-agent-qwen"]') as HTMLButtonElement).click();
       await Promise.resolve();
     });
 
@@ -984,7 +1000,7 @@ describe('ACP chat view headers', () => {
     await renderHeader(React.createElement(AIChatViewACPContent));
 
     const menuButton = container.querySelector(
-      '[data-testid="agentic-chat-agent-config-button"]',
+      '[data-testid="agentic-chat-new-session-button"]',
     ) as HTMLButtonElement | null;
 
     await act(async () => {
@@ -992,7 +1008,7 @@ describe('ACP chat view headers', () => {
       await Promise.resolve();
     });
 
-    expect(container.querySelector('[data-testid="agentic-chat-agent-config-menu"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')).not.toBeNull();
 
     await act(async () => {
       (container.querySelector('[data-testid="agentic-chat-agent-config-menu-item"]') as HTMLButtonElement).click();
@@ -1086,7 +1102,7 @@ describe('ACP chat view headers', () => {
     expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('inline');
   });
 
-  it('enters draft when creating a new ACP chat without creating a session', async () => {
+  it('does not expose a new-chat action from the inline ACP history in agentic layout', async () => {
     const createSessionModel = jest.fn();
     const enterDraftSession = jest.fn();
     const services = createMockServices({ panelLayout: 'agentic', createSessionModel, enterDraftSession });
@@ -1099,13 +1115,8 @@ describe('ACP chat view headers', () => {
       }),
     );
 
-    const newChatButton = container.querySelector('[data-testid="acp-chat-history-new"]') as HTMLButtonElement;
-
-    await act(async () => {
-      newChatButton.click();
-      await Promise.resolve();
-    });
-    expect(enterDraftSession).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[data-testid="acp-chat-history-new"]')).toBeNull();
+    expect(enterDraftSession).not.toHaveBeenCalled();
     expect(createSessionModel).not.toHaveBeenCalled();
   });
 

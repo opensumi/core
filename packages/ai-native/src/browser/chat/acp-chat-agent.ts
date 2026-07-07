@@ -189,7 +189,7 @@ export class AcpChatAgent implements IChatAgent {
       this.logger.log(`[ACP Chat] invoke: sessionId=${sessionId}, config=${JSON.stringify(config)}`);
       const acpDeliveryMode = this.preferenceService.get<'minimal' | 'stream'>(
         AINativeSettingSectionsId.AcpDeliveryMode,
-        'minimal',
+        'stream',
       );
 
       const requestOptions = {

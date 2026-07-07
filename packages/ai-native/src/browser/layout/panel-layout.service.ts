@@ -179,13 +179,17 @@ export class AIPanelLayoutService {
     return this.agenticWorkbenchVisible;
   }
 
+  revealAgenticWorkbench(): boolean | undefined {
+    return this.toggleAgenticWorkbenchVisibility(true);
+  }
+
   private registerEditorHostedWorkbenchTargetReveal(): void {
     const openEditorTarget = this.workbenchEditorService.open.bind(this.workbenchEditorService);
 
     this.workbenchEditorService.open = async (uri, options?: IResourceOpenOptions) => {
       const result = await openEditorTarget(uri, options);
       if (result && !options?.backend) {
-        this.toggleAgenticWorkbenchVisibility(true);
+        this.revealAgenticWorkbench();
       }
 
       return result;

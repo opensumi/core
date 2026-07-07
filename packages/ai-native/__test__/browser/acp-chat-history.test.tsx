@@ -226,7 +226,7 @@ describe('AcpChatHistory BDD', () => {
     expect(getRenderedItemIds()).toEqual(['acp:current', 'acp:middle', 'acp:oldest']);
   });
 
-  it('Given inline variant, when the header renders, then the title is replaced by the new-chat action', () => {
+  it('Given inline variant, when the header renders, then the title is replaced by inline actions without new chat', () => {
     const onNewChat = jest.fn();
     renderHistory({ variant: 'inline', title: 'AI Assistant', onNewChat });
 
@@ -234,16 +234,11 @@ describe('AcpChatHistory BDD', () => {
     const newChatAction = title.querySelector('.chat_history_header_actions_new') as HTMLElement;
 
     expect(title.textContent).not.toContain('AI Assistant');
-    expect(newChatAction).not.toBeNull();
-
-    act(() => {
-      newChatAction.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-
-    expect(onNewChat).toHaveBeenCalledTimes(1);
+    expect(newChatAction).toBeNull();
+    expect(onNewChat).not.toHaveBeenCalled();
   });
 
-  it('Given inline variant has an MCP config action, when the header renders, then it appears after the new-chat action and opens MCP config', () => {
+  it('Given inline variant has an MCP config action, when the header renders, then it appears after collapse and opens MCP config', () => {
     const onOpenMCPConfig = jest.fn();
     renderHistory({ variant: 'inline', onOpenMCPConfig, onToggleHistoryCollapsed: jest.fn() });
 
@@ -255,11 +250,7 @@ describe('AcpChatHistory BDD', () => {
     ).map((action) => action.className);
     const mcpAction = inlineActions.querySelector('.chat_history_header_actions_mcp') as HTMLElement;
 
-    expect(actionClasses).toEqual([
-      'chat_history_header_actions_collapse',
-      'chat_history_header_actions_new',
-      'chat_history_header_actions_mcp',
-    ]);
+    expect(actionClasses).toEqual(['chat_history_header_actions_collapse', 'chat_history_header_actions_mcp']);
     expect(mcpAction).not.toBeNull();
 
     act(() => {
@@ -307,8 +298,8 @@ describe('AcpChatHistory BDD', () => {
   it('Given inline history is collapsed, when it renders, then it keeps header actions and hides the history list', () => {
     renderHistory({ variant: 'inline', historyCollapsed: true, onToggleHistoryCollapsed: jest.fn() });
 
-    expect(container.querySelector('.chat_history_header_actions_new')).not.toBeNull();
     expect(container.querySelector('.chat_history_header_actions_collapse')).not.toBeNull();
+    expect(container.querySelector('.chat_history_header_actions_new')).toBeNull();
     expect(container.querySelector('[data-testid="acp-chat-history-collapsed"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="acp-chat-history-inline"]')).toBeNull();
   });

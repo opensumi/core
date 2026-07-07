@@ -559,7 +559,7 @@ ${input}`;
   }
 
   private getAcpDeliveryMode(options: IAIBackServiceOption): 'minimal' | 'stream' {
-    return options.acpDeliveryMode === 'stream' ? 'stream' : 'minimal';
+    return options.acpDeliveryMode === 'minimal' ? 'minimal' : 'stream';
   }
 
   private emitDistinctThreadStatus(

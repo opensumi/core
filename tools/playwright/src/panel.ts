@@ -22,12 +22,16 @@ export abstract class OpenSumiPanel extends OpenSumiViewBase {
 
   async isVisible() {
     await this.whenReady;
-    return this.view?.isVisible();
+    this.view = await this.page.$(this.viewSelector);
+    return (await this.view?.isVisible()) || false;
   }
 
   async open() {
     if (!this.viewId) {
       return;
+    }
+    if (await this.isVisible()) {
+      return this;
     }
     const viewletId = this.viewId.toLocaleLowerCase();
     const tab = this.page

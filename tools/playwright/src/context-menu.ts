@@ -4,6 +4,8 @@ import { OpenSumiApp } from './app';
 import { OpenSumiMenu } from './menu';
 
 export class OpenSumiContextMenu extends OpenSumiMenu {
+  selector = '.rc-trigger-popup:not(.rc-trigger-popup-hidden) .kt-inner-menu';
+
   public static async openAt(app: OpenSumiApp, x: number, y: number): Promise<OpenSumiContextMenu> {
     await app.page.mouse.move(x, y);
     await app.page.mouse.click(x, y, { button: 'right' });

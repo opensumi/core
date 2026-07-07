@@ -263,6 +263,7 @@ describe('AIPanelLayoutService', () => {
 
     expect(service.isAgenticWorkbenchVisible()).toBeUndefined();
     expect(service.toggleAgenticWorkbenchVisibility()).toBeUndefined();
+    expect(service.revealAgenticWorkbench()).toBeUndefined();
   });
 
   it('should toggle agentic workbench visibility and notify listeners', () => {
@@ -279,6 +280,14 @@ describe('AIPanelLayoutService', () => {
     expect(listener).toHaveBeenCalledWith(false);
 
     disposable.dispose();
+  });
+
+  it('should reveal the agentic workbench only in agentic mode', () => {
+    const { service } = createService({ inspectValue: { globalValue: 'agentic' } });
+
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+    expect(service.revealAgenticWorkbench()).toBe(true);
+    expect(service.isAgenticWorkbenchVisible()).toBe(true);
   });
 
   it('should reveal hidden agentic workbench when a foreground editor target opens', async () => {

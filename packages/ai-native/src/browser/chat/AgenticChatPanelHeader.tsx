@@ -1,22 +1,17 @@
+import cls from 'classnames';
 import React from 'react';
 
 import { COMMON_COMMANDS, PreferenceService, getIcon, localize, useInjectable } from '@opensumi/ide-core-browser';
-import {
-  ACPAgentType,
-  AgentConfig,
-  ChatMessageRole,
-  CommandService,
-  DEFAULT_AGENT_TYPE,
-  PreferenceScope,
-} from '@opensumi/ide-core-common';
+import { ACPAgentType, AgentConfig, ChatMessageRole, CommandService, PreferenceScope } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
-import { IMessageService } from '@opensumi/ide-overlay';
 
+import { IChatInternalService } from '../../common';
 import { cleanAttachedTextWrapper } from '../../common/utils';
 import { AIPanelLayoutService } from '../layout/panel-layout.service';
 
 import { AgenticChatHeaderMaximizeAction } from './AgenticChatHeaderMaximizeAction';
 import { ChatModel } from './chat-model';
+import { AcpChatInternalService } from './chat.internal.service.acp';
 import styles from './chat.module.less';
 import { getAvailableAgentConfigs, getDefaultAgentType } from './get-default-agent-type';
 
@@ -110,21 +105,22 @@ export function AgenticChatPanelHeader({
         {title}
       </div>
       <div className={styles.agentic_chat_panel_actions}>
-        <AgenticChatHeaderAgentSelector />
+        <AgenticChatHeaderNewSessionMenu />
         <AgenticChatHeaderMaximizeAction id='agentic-chat-panel-header-maximize' />
       </div>
     </div>
   );
 }
 
-export function AgenticChatHeaderAgentSelector() {
+export function AgenticChatHeaderNewSessionMenu() {
+  const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const commandService = useInjectable<CommandService>(CommandService);
-  const messageService = useInjectable<IMessageService>(IMessageService);
   const [agentOptions, setAgentOptions] = React.useState<AgentSelectorOption[]>(() =>
     getAgentSelectorOptions(preferenceService),
   );
   const [agentType, setAgentType] = React.useState<ACPAgentType>(() => getDefaultAgentType(preferenceService));
+  const [isCreatingSession, setIsCreatingSession] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const closeMenuTimerRef = React.useRef<number | undefined>(undefined);
 
@@ -149,23 +145,16 @@ export function AgenticChatHeaderAgentSelector() {
     };
   }, [preferenceService, refreshAgentSelector]);
 
-  const handleAgentTypeChange = React.useCallback(
-    async (event: React.ChangeEvent<HTMLSelectElement>) => {
-      const nextAgentType = event.target.value as ACPAgentType;
-      setAgentType(nextAgentType);
-      await preferenceService.set(AINativeSettingSectionsId.DefaultAgentType, nextAgentType, PreferenceScope.User);
-      messageService.info?.(localize('aiNative.chat.agentSelector.appliesToNewChats', 'Applies to new chats'));
-    },
-    [messageService, preferenceService],
-  );
-
   const openMenu = React.useCallback(() => {
+    if (isCreatingSession) {
+      return;
+    }
     if (closeMenuTimerRef.current) {
       window.clearTimeout(closeMenuTimerRef.current);
       closeMenuTimerRef.current = undefined;
     }
     setIsMenuOpen(true);
-  }, []);
+  }, [isCreatingSession]);
 
   const closeMenu = React.useCallback(() => {
     closeMenuTimerRef.current = window.setTimeout(() => {
@@ -184,8 +173,26 @@ export function AgenticChatHeaderAgentSelector() {
   );
 
   const toggleMenu = React.useCallback(() => {
+    if (isCreatingSession) {
+      return;
+    }
     setIsMenuOpen((open) => !open);
-  }, []);
+  }, [isCreatingSession]);
+
+  const handleCreateSessionWithAgent = React.useCallback(
+    async (nextAgentType: ACPAgentType) => {
+      setIsMenuOpen(false);
+      setIsCreatingSession(true);
+      try {
+        setAgentType(nextAgentType);
+        await preferenceService.set(AINativeSettingSectionsId.DefaultAgentType, nextAgentType, PreferenceScope.User);
+        await aiChatService.createSessionModel();
+      } finally {
+        setIsCreatingSession(false);
+      }
+    },
+    [aiChatService, preferenceService],
+  );
 
   const handleOpenAgentConfigurations = React.useCallback(async () => {
     setIsMenuOpen(false);
@@ -201,55 +208,58 @@ export function AgenticChatHeaderAgentSelector() {
   }, [commandService, preferenceService]);
 
   const selectedAgent = agentOptions.find((option) => option.value === agentType) || agentOptions[0];
-  const tooltip = localize(
-    'aiNative.chat.agentSelector.tooltip',
-    '{0} · Applies to new chats',
-    selectedAgent?.title || DEFAULT_AGENT_TYPE,
-  );
+  const tooltip = localize('aiNative.operate.newChat.title');
 
   return (
-    <div className={styles.agentic_chat_agent_selector_group}>
-      <select
-        aria-label={localize('aiNative.chat.agentSelector.label', 'Agent')}
-        className={styles.agentic_chat_agent_selector}
-        data-testid='agentic-chat-agent-selector'
-        onChange={handleAgentTypeChange}
-        title={tooltip}
-        value={selectedAgent?.value || DEFAULT_AGENT_TYPE}
-      >
-        {agentOptions.map((option) => (
-          <option key={option.value} title={option.title} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <div className={styles.agentic_chat_agent_config_menu_container} onMouseEnter={openMenu} onMouseLeave={closeMenu}>
+    <div className={styles.agentic_chat_new_session_menu_group}>
+      <div className={styles.agentic_chat_new_session_menu_container} onMouseEnter={openMenu} onMouseLeave={closeMenu}>
         <button
+          aria-disabled={isCreatingSession}
           aria-expanded={isMenuOpen}
           aria-haspopup='menu'
-          aria-label={localize('aiNative.chat.agentSelector.moreActions', 'Agent actions')}
-          className={styles.agentic_chat_agent_config_button}
-          data-testid='agentic-chat-agent-config-button'
+          aria-label={tooltip}
+          className={styles.agentic_chat_new_session_button}
+          data-testid='agentic-chat-new-session-button'
+          disabled={isCreatingSession}
           onClick={toggleMenu}
-          title={localize('aiNative.chat.agentSelector.moreActions', 'Agent actions')}
+          title={selectedAgent ? `${tooltip} · ${selectedAgent.title}` : tooltip}
           type='button'
         >
-          <span className={getIcon('ellipsis')} />
+          <span className='codicon codicon-add' />
         </button>
         {isMenuOpen && (
-          <div
-            className={styles.agentic_chat_agent_config_menu}
-            data-testid='agentic-chat-agent-config-menu'
-            role='menu'
-          >
+          <div className={styles.agentic_chat_new_session_menu} data-testid='agentic-chat-new-session-menu' role='menu'>
+            {agentOptions.map((option) => {
+              const selected = option.value === agentType;
+              return (
+                <button
+                  className={cls(
+                    styles.agentic_chat_new_session_menu_item,
+                    selected && styles.agentic_chat_new_session_menu_item_selected,
+                  )}
+                  data-testid={`agentic-chat-new-session-agent-${option.value}`}
+                  key={option.value}
+                  onClick={() => handleCreateSessionWithAgent(option.value)}
+                  role='menuitem'
+                  title={option.title}
+                  type='button'
+                >
+                  <span className={styles.agentic_chat_new_session_menu_item_label}>{option.label}</span>
+                  {selected && (
+                    <span className={cls(styles.agentic_chat_new_session_menu_item_check, getIcon('check'))} />
+                  )}
+                </button>
+              );
+            })}
+            <div className={styles.agentic_chat_new_session_menu_separator} />
             <button
-              className={styles.agentic_chat_agent_config_menu_item}
+              className={styles.agentic_chat_new_session_menu_item}
               data-testid='agentic-chat-agent-config-menu-item'
               onClick={handleOpenAgentConfigurations}
               role='menuitem'
               type='button'
             >
-              {localize('aiNative.chat.agentSelector.configureAgents', 'Agent Configurations')}
+              {localize('aiNative.chat.agentSelector.configureAgents', 'Agent 配置')}
             </button>
           </div>
         )}

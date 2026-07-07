@@ -302,7 +302,7 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
         '%preference.ai-native.acp.deliveryMode.minimal%',
         '%preference.ai-native.acp.deliveryMode.stream%',
       ],
-      default: EAcpDeliveryMode.minimal,
+      default: EAcpDeliveryMode.stream,
       description: '%preference.ai-native.acp.deliveryMode.description%',
     },
     [AINativeSettingSectionsId.AgentConfigsOverride]: {

@@ -192,7 +192,7 @@ async function readRichUiProof(): Promise<RichUiProof> {
   return page.evaluate(() => {
     const slot = document.querySelector('.AI-Chat-slot') as HTMLElement | null;
     const text = slot?.innerText || '';
-    const countText = (needle: string) => text.split(needle).length - 1;
+    const countPattern = (pattern: RegExp) => text.match(pattern)?.length || 0;
     const visibleButtons = Array.from(
       slot?.querySelectorAll<HTMLElement>('button, [role="button"], [aria-label]') || [],
     ).filter((button) => {
@@ -209,7 +209,7 @@ async function readRichUiProof(): Promise<RichUiProof> {
       userRows: slot?.querySelectorAll('.rce-user-msg').length || 0,
       assistantRows: slot?.querySelectorAll('.rce-ai-msg').length || 0,
       reasoningToggleCount: visibleButtons.filter((button) => /Deep Thinking|深度思考/.test(button.innerText)).length,
-      toolCardCount: countText('Called MCP Tool') + countText('Called Tool'),
+      toolCardCount: countPattern(/Called\s+(?:MCP\s+)?Tool/g),
       hasPlanChecklistText: text.includes('BDD plan:'),
       sendVisible: hasVisibleButton(/Send|发送/),
       stopVisible: hasVisibleButton(/Stop|停止/),
@@ -225,6 +225,28 @@ function expectRichUiRestored(proof: RichUiProof, baseline: RichUiProof) {
   expect(proof.hasPlanChecklistText).toBe(true);
   expect(proof.sendVisible).toBe(true);
   expect(proof.stopVisible).toBe(false);
+}
+
+async function waitForRichUiRestored(baseline: RichUiProof): Promise<RichUiProof> {
+  let proof = await readRichUiProof();
+
+  await expect
+    .poll(
+      async () => {
+        proof = await readRichUiProof();
+        try {
+          expectRichUiRestored(proof, baseline);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+
+  expectRichUiRestored(proof, baseline);
+  return proof;
 }
 
 function expectMetadataOnly(value: unknown) {
@@ -264,8 +286,7 @@ test.describe('ACP Chat Agentic Rich History Restore', () => {
     const richBaseline = await readRichUiProof();
     await sendPromptAndWaitForRichUi(RICH_PROMPT);
 
-    const initialRichProof = await readRichUiProof();
-    expectRichUiRestored(initialRichProof, richBaseline);
+    const initialRichProof = await waitForRichUiRestored(richBaseline);
     const initialProof = await evidence.saveJson(
       '01-rich-ui-before-switch',
       { activeSession: await getSessionState(), ui: initialRichProof },
@@ -280,8 +301,7 @@ test.describe('ACP Chat Agentic Rich History Restore', () => {
     expect(otherSessionProof.reasoningToggleCount).toBe(otherBaseline.reasoningToggleCount);
 
     await clickHistoryItem(richSession.sessionId);
-    const restoredRichProof = await readRichUiProof();
-    expectRichUiRestored(restoredRichProof, richBaseline);
+    const restoredRichProof = await waitForRichUiRestored(richBaseline);
     const restoredProof = await evidence.saveJson(
       '02-rich-ui-after-switch-back',
       { activeSession: await getSessionState(), ui: restoredRichProof },

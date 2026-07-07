@@ -72,6 +72,8 @@ export const ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS = 120 * 1000;
 const MODEL_CONTEXT_TIMEOUT_MS = 60 * 1000;
 const ACP_CHAT_READY_TIMEOUT_MS = 60 * 1000;
 const EXPLORER_VIEW_READY_TIMEOUT_MS = 30 * 1000;
+const AGENTIC_LAYOUT_TIMEOUT_MS = 30 * 1000;
+const AGENTIC_WORKBENCH_TOGGLE_SELECTOR = '#agentic-chat-panel-header-maximize';
 const AI_NATIVE_PANEL_LAYOUT_SETTING_ID = 'ai.native.panelLayout';
 const ACP_DELIVERY_MODE_SETTING_ID = 'ai-native.acp.deliveryMode';
 let nextRuntimeId = 1;
@@ -230,12 +232,14 @@ export async function waitForWorkbenchReady(page: Page): Promise<void> {
       text.includes('Agentic') ||
       text.includes('AI Assistant') ||
       text.includes('editor.js') ||
-      !!document.querySelector('.monaco-editor');
+      !!document.querySelector('.monaco-editor') ||
+      !!document.querySelector('#main-horizontal-ai-agentic');
     return shellReady && workbenchVisible;
   });
 }
 
 export async function ensureAgenticLayout(page: Page): Promise<void> {
+  await showAgenticWorkbench(page);
   await page.waitForFunction(
     () => {
       const aiChat = document.querySelector('.AI-Chat-slot')?.getBoundingClientRect();
@@ -244,7 +248,46 @@ export async function ensureAgenticLayout(page: Page): Promise<void> {
       return Boolean(aiChat && workbench && aiChat.width >= 640 && aiChat.x < workbench.x);
     },
     undefined,
-    { timeout: 30_000 },
+    { timeout: AGENTIC_LAYOUT_TIMEOUT_MS },
+  );
+}
+
+export async function showAgenticWorkbench(page: Page): Promise<void> {
+  await page.waitForSelector('.AI-Chat-slot', { state: 'visible', timeout: AGENTIC_LAYOUT_TIMEOUT_MS });
+
+  const isWorkbenchVisible = await page.evaluate(() => {
+    const workbench = document.querySelector('#workbench-editor');
+    if (!workbench) {
+      return false;
+    }
+    const rect = workbench.getBoundingClientRect();
+    const style = window.getComputedStyle(workbench);
+    return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+  });
+  if (isWorkbenchVisible) {
+    return;
+  }
+
+  const toggle = page.locator(`${AGENTIC_WORKBENCH_TOGGLE_SELECTOR} [role="button"]`).first();
+  await toggle.waitFor({ state: 'visible', timeout: AGENTIC_LAYOUT_TIMEOUT_MS });
+
+  const visibleState = await page.locator(AGENTIC_WORKBENCH_TOGGLE_SELECTOR).getAttribute('data-workbench-visible');
+  if (visibleState !== 'true') {
+    await toggle.click();
+  }
+
+  await page.waitForFunction(
+    () => {
+      const workbench = document.querySelector('#workbench-editor');
+      if (!workbench) {
+        return false;
+      }
+      const rect = workbench.getBoundingClientRect();
+      const style = window.getComputedStyle(workbench);
+      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+    },
+    undefined,
+    { timeout: AGENTIC_LAYOUT_TIMEOUT_MS },
   );
 }
 

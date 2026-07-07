@@ -1585,7 +1585,7 @@ export const localizationBundle = {
     'preference.ai-native.acp.deliveryMode': 'ACP Delivery Mode',
     'preference.ai-native.acp.deliveryMode.description': 'Controls how ACP Chat delivers agent output to the browser.',
     'preference.ai-native.acp.deliveryMode.minimal': 'Minimal: deliver final replies and important state changes only.',
-    'preference.ai-native.acp.deliveryMode.stream': 'Stream: deliver all intermediate agent output for diagnostics.',
+    'preference.ai-native.acp.deliveryMode.stream': 'Stream: deliver intermediate agent output as it is produced.',
     // #endregion AI Native
 
     // #endregion merge editor

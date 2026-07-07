@@ -3,6 +3,7 @@ import { isDefined } from '@opensumi/ide-utils';
 import { OpenSumiApp } from './app';
 import { OpenSumiPanel } from './panel';
 import { OpenSumiTreeNode } from './tree-node';
+import { keypressWithCmdCtrlAndShift } from './utils/key';
 
 export interface ISearchOptions {
   search: string;
@@ -53,6 +54,33 @@ export class OpenSumiSearchFileStatNode extends OpenSumiTreeNode {
 export class OpenSumiSearchView extends OpenSumiPanel {
   constructor(app: OpenSumiApp) {
     super(app, 'SEARCH');
+  }
+
+  async open() {
+    const tab = this.page.locator('#opensumi-left-tabbar li#search, #opensumi-bottom-tabbar li#search').first();
+    if ((await tab.count()) > 0 && (await tab.isVisible())) {
+      await tab.click();
+      try {
+        await this.waitForVisible(5000);
+        this.view = await this.page.$(this.viewSelector);
+        return this;
+      } catch {
+        // Fall back to the command palette when the tab is selected but the panel stays collapsed or hidden.
+      }
+    } else {
+      await this.app.page.keyboard.press(keypressWithCmdCtrlAndShift('KeyF'));
+      try {
+        await this.waitForVisible(5000);
+        this.view = await this.page.$(this.viewSelector);
+        return this;
+      } catch {
+        // Fall back to the command palette when the shortcut does not reveal the panel.
+      }
+    }
+
+    await super.open();
+    this.view = await this.page.$(this.viewSelector);
+    return this;
   }
 
   get searchInputSelector() {

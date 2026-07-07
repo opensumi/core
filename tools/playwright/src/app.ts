@@ -68,13 +68,24 @@ export class OpenSumiApp extends Disposable {
     const query = new URLSearchParams({
       workspaceDir: workspace.workspace.codeUri.fsPath,
       userPreferenceDirName: workspace.userPreferenceDirName,
+      aiPanelLayout: 'classic',
     });
     await this.loadOrReload(this.page, `/?${query.toString()}`);
-    await this.page.waitForSelector(this.appData.loadingSelector, { state: 'detached' });
     const time = Date.now() - now;
     // eslint-disable-next-line no-console
     console.log(`Loading page cost ${time} ms`);
+    await this.waitForWorkbenchReady();
+  }
+
+  async reload(): Promise<void> {
+    await this.loadOrReload(this.page);
+    await this.waitForWorkbenchReady();
+  }
+
+  protected async waitForWorkbenchReady(): Promise<void> {
+    await this.page.waitForSelector(this.appData.loadingSelector, { state: 'detached' });
     await this.page.waitForSelector(this.appData.mainSelector);
+    await this.ensureClassicLayout();
     await this.waitForInitialized();
     await this.recoverCrashedExtensionHost();
   }
@@ -153,6 +164,35 @@ export class OpenSumiApp extends Disposable {
   async waitForInitialized(): Promise<void> {
     // custom app initialize process.
     // empty by default
+  }
+
+  protected async ensureClassicLayout(): Promise<void> {
+    const openClassicLayout = this.page.getByText('Open IDE layout', { exact: true });
+    if (await openClassicLayout.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await openClassicLayout.click();
+      await this.page.waitForSelector('#opensumi-left-tabbar li#explorer', { state: 'visible', timeout: 30000 });
+    }
+
+    await this.hideAIChatView();
+  }
+
+  protected async hideAIChatView(): Promise<void> {
+    const aiChatSlot = this.page.locator('.AI-Chat-slot').first();
+    if (!(await aiChatSlot.isVisible({ timeout: 1000 }).catch(() => false))) {
+      return;
+    }
+
+    const closeButtons = this.page.locator(
+      '#ai-chat-header-close [role="button"], #ai_right_panel_header_close [role="button"]',
+    );
+    for (let index = 0; index < (await closeButtons.count()); index++) {
+      const closeButton = closeButtons.nth(index);
+      if (await closeButton.isVisible().catch(() => false)) {
+        await closeButton.click();
+        await aiChatSlot.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => undefined);
+        return;
+      }
+    }
   }
 
   async recoverCrashedExtensionHost(): Promise<void> {

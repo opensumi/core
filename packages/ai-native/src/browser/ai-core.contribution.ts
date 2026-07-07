@@ -90,6 +90,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IMultiDiffSourceResolverService } from '@opensumi/ide-editor/lib/common/multi-diff';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { HideInlineCompletion } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/commands';
@@ -146,6 +147,7 @@ import { IntelligentCompletionsController } from './contrib/intelligent-completi
 import { ProblemFixController } from './contrib/problem-fix/problem-fix.controller';
 import { RenameSingleHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
+import { registerAgenticWorkbenchRevealCommandInterceptors } from './layout/agentic-workbench-command-reveal';
 import { AIPanelLayoutService, AI_PANEL_LAYOUT_CONTEXT, AI_PANEL_LAYOUT_MENU } from './layout/panel-layout.service';
 import {
   AIChatTabRenderer,
@@ -317,6 +319,9 @@ export class AINativeBrowserContribution
 
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
+
+  @Autowired(IMainLayoutService)
+  private readonly mainLayoutService: IMainLayoutService;
 
   @Autowired(IChatManagerService)
   private readonly chatManagerService: ChatManagerService;
@@ -929,6 +934,8 @@ export class AINativeBrowserContribution
   }
 
   registerCommands(commands: CommandRegistry): void {
+    registerAgenticWorkbenchRevealCommandInterceptors(commands, this.panelLayoutService, this.mainLayoutService);
+
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
         this.aiInlineChatService._onInlineChatVisible.fire(value);

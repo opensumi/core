@@ -2,6 +2,8 @@ import { OpenSumiApp } from './app';
 import { OpenSumiView } from './view';
 
 export class OpenSumiSourceControlView extends OpenSumiView {
+  private readonly treeNodeSelector = '[data-view-id="scm_view"] [class*="scm_tree_node_content___"]';
+
   constructor(app: OpenSumiApp, name: string) {
     super(app, {
       viewSelector: '[data-view-id="scm_view"]',
@@ -26,7 +28,11 @@ export class OpenSumiSourceControlView extends OpenSumiView {
   }
 
   async getTreeNode() {
-    return await this.page.$('[class*="scm_tree_node_content___"]');
+    return await this.page.$(this.treeNodeSelector);
+  }
+
+  async waitForTreeNode(timeout = 10000) {
+    return await this.page.waitForSelector(this.treeNodeSelector, { state: 'visible', timeout });
   }
 
   async getTreeNodeActionById(id: string) {

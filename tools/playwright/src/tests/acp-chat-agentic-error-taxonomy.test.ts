@@ -285,6 +285,16 @@ async function selectFooterConfig(comboIndex: number, label: string) {
   await option.click();
 }
 
+async function createConfigFailureSession() {
+  const completion = chatSlot().getByText('BDD_ASSISTANT_PART_2 completed.');
+  const completionCount = await completion.count();
+
+  await sendPrompt('BDD config failure bootstrap');
+  await expect(completion).toHaveCount(completionCount + 1, { timeout: 30_000 });
+  await expect(sendButton()).toBeVisible({ timeout: 30_000 });
+  await expect.poll(async () => configSelectors().count(), { timeout: 30_000 }).toBeGreaterThanOrEqual(4);
+}
+
 test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
   test.setTimeout(FAILURE_TEST_TIMEOUT_MS);
 
@@ -426,7 +436,7 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
 
   test('Error Taxonomy: config failure keeps footer controls and input usable', async () => {
     await withFixture('config-failure', async () => {
-      await expect.poll(async () => configSelectors().count(), { timeout: 30_000 }).toBeGreaterThanOrEqual(4);
+      await createConfigFailureSession();
       await selectFooterConfig(0, 'Chat');
 
       await expect

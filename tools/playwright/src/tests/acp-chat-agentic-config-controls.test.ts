@@ -52,6 +52,7 @@ async function loadFullProfileWorkbench() {
     viewport: { width: 1800, height: 1000 },
   });
   await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
+  await createConfigSession();
 }
 
 function configSelectors(): Locator {
@@ -173,15 +174,30 @@ function expectProofValue(proof: ConfigProof[], configId: string, value: string 
 }
 
 async function sendDeterministicPrompt() {
+  const completion = page.locator('.AI-Chat-slot').getByText('BDD_ASSISTANT_PART_2 completed.');
+  const completionCount = await completion.count();
   const input = page.locator('.AI-Chat-slot [contenteditable="true"]').last();
   await expect(input).toBeVisible();
   await input.click();
   await page.keyboard.type('BDD config controls snapshot');
   await page.getByRole('button', { name: 'Send' }).click();
-  await expect(page.locator('.AI-Chat-slot').getByText('BDD_ASSISTANT_PART_2 completed.')).toBeVisible({
+  await expect(completion).toHaveCount(completionCount + 1, {
     timeout: 30_000,
   });
   await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
+}
+
+async function createConfigSession() {
+  const completion = page.locator('.AI-Chat-slot').getByText('BDD_ASSISTANT_PART_2 completed.');
+  const completionCount = await completion.count();
+  const input = page.locator('.AI-Chat-slot [contenteditable="true"]').last();
+  await expect(input).toBeVisible();
+  await input.click();
+  await page.keyboard.type('BDD config controls bootstrap');
+  await page.getByRole('button', { name: 'Send' }).click();
+  await expect(completion).toHaveCount(completionCount + 1, { timeout: 30_000 });
+  await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
+  await expect(configSelectors()).toHaveCount(4, { timeout: 30_000 });
 }
 
 async function waitForPromptConfigSnapshot() {

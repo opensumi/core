@@ -259,14 +259,13 @@ describe('AcpCliBackService', () => {
       expect(mockAgentService.createSession).toHaveBeenCalledWith(mockAgentSessionConfig);
     });
 
-    it('should forward agent updates to the output stream', async () => {
+    it('should default to forwarding agent updates to the output stream', async () => {
       mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
       const output = await service.requestStream('prompt', {
         agentSessionConfig: mockAgentSessionConfig,
-        acpDeliveryMode: 'stream',
       });
 
       const receivedData: any[] = [];

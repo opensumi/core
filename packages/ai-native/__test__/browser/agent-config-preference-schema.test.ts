@@ -6,7 +6,12 @@ import { aiNativePreferenceSchema } from '../../src/browser/preferences/schema';
 
 describe('AI Native agent configuration preference schema', () => {
   const agentConfigsSchema = aiNativePreferenceSchema.properties[AINativeSettingSectionsId.AgentConfigs];
+  const acpDeliveryModeSchema = aiNativePreferenceSchema.properties[AINativeSettingSectionsId.AcpDeliveryMode];
   const validateAgentConfigs = new Ajv().compile(agentConfigsSchema);
+
+  it('defaults ACP delivery mode to stream', () => {
+    expect(acpDeliveryModeSchema.default).toBe('stream');
+  });
 
   it('guides settings.json users toward the object-map format', () => {
     expect(agentConfigsSchema.type).toBe('object');
