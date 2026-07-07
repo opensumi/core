@@ -18,6 +18,9 @@ let workspace: OpenSumiWorkspace;
 
 test.describe.configure({ mode: 'serial' });
 
+const DEFINITION_FILE_NAME = 'definition.ts';
+const DEFINITION_PREVIEW_TEXT = 'export class Definition';
+
 class ExtensionDefinitionProviderLanguageApp extends OpenSumiApp {
   protected async load(workspace: OpenSumiWorkspace): Promise<void> {
     this.disposables.push(workspace);
@@ -56,25 +59,69 @@ async function openSelectedDefinitionFromPeek() {
     return;
   }
 
-  await peek.locator('.monaco-list-row', { hasText: 'export class Definition' }).first().dblclick();
-  await peek.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
+  const definitionRow = peek
+    .locator('.monaco-list-row')
+    .filter({ hasText: DEFINITION_FILE_NAME })
+    .filter({ hasText: DEFINITION_PREVIEW_TEXT })
+    .first();
+  if (
+    await definitionRow
+      .waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => true)
+      .catch(() => false)
+  ) {
+    await definitionRow.dblclick();
+    await peek.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
+    return;
+  }
+
+  const rowsWithDefinitionPreview = peek.locator('.monaco-list-row', {
+    hasText: DEFINITION_PREVIEW_TEXT,
+  });
+  await rowsWithDefinitionPreview.first().waitFor({ state: 'visible', timeout: 5000 });
+
+  const peekFileName = peek.locator('.head .peekview-title .filename').first();
+  const inspectedRows: string[] = [];
+  const rowCount = await rowsWithDefinitionPreview.count();
+  for (let index = 0; index < rowCount; index++) {
+    const row = rowsWithDefinitionPreview.nth(index);
+    await row.click();
+
+    const fileName = (await peekFileName.textContent({ timeout: 1000 }).catch(() => undefined))?.trim();
+    const rowText = (await row.textContent().catch(() => undefined))?.trim();
+    inspectedRows.push(`${fileName || '(unknown file)'}: ${rowText || '(empty row)'}`);
+
+    if (fileName === DEFINITION_FILE_NAME) {
+      await row.dblclick();
+      await peek.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
+      return;
+    }
+  }
+
+  throw new Error(`Could not find ${DEFINITION_FILE_NAME} in peek definition results: ${inspectedRows.join(' | ')}`);
 }
 
-async function expectDefinitionOpenedByCmdClick() {
+async function expectCurrentDefinitionTab() {
+  await expect
+    .poll(async () => await (await editor.getCurrentTab())?.textContent())
+    .toStrictEqual(` ${DEFINITION_FILE_NAME}`);
+}
+
+async function expectDefinitionOpenedByCmdClick(position: { line: number; column: number } = { line: 4, column: 20 }) {
   const folder = await explorer.getFileStatTreeNodeByPath('language');
   await folder?.open();
 
   editor = await app.openEditor(OpenSumiTextEditor, explorer, 'reference.ts', false);
   await editor.activate();
   await app.page.waitForTimeout(2000);
-  await editor.placeCursorInLineWithPosition(4, 20);
+  await editor.placeCursorInLineWithPosition(position.line, position.column);
   let cursorHandle = await editor.getCursorElement();
   await cursorHandle?.click({ modifiers: [isMacintosh ? 'Meta' : 'Control'] });
   await openSelectedDefinitionFromPeek();
-  await expect.poll(async () => await (await editor.getCurrentTab())?.textContent()).toStrictEqual(' definition.ts');
+  await expectCurrentDefinitionTab();
   await expect
     .poll(async () => {
-      const definitionTree = await explorer.getFileStatTreeNodeByPath('definition.ts');
+      const definitionTree = await explorer.getFileStatTreeNodeByPath(DEFINITION_FILE_NAME);
       return !!(await definitionTree?.isSelected());
     })
     .toBeTruthy();
@@ -82,7 +129,7 @@ async function expectDefinitionOpenedByCmdClick() {
   cursorHandle = await editor.getCursorElement();
   const cursorLineNumber = await editor.getCursorLineNumber(cursorHandle?.asElement());
   expect(cursorLineNumber).toBe(1);
-  expect(await editor.textContentOfLineByLineNumber(cursorLineNumber!)).toBe('export class Definition {');
+  expect(await editor.textContentOfLineByLineNumber(cursorLineNumber!)).toBe(`${DEFINITION_PREVIEW_TEXT} {`);
 
   await editor.close();
 }
