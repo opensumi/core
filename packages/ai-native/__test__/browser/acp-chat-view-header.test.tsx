@@ -910,12 +910,14 @@ describe('ACP chat view headers', () => {
     expect(getAction()?.className).toBe('icon-fullescreen');
   });
 
-  it('updates the default ACP agent type and creates a session from the agentic chat panel header menu', async () => {
+  it('updates the default ACP agent type and enters draft from the agentic chat panel header menu', async () => {
     const createSessionModel = jest.fn(async () => undefined);
+    const enterDraftSession = jest.fn();
     const services = createMockServices({
       defaultAgentType: 'claude-agent-acp',
       panelLayout: 'agentic',
       createSessionModel,
+      enterDraftSession,
       chatViewHeaderRender: AcpChatViewHeader,
     });
     installInjectableMocks(services);
@@ -944,7 +946,36 @@ describe('ACP chat view headers', () => {
       'qwen',
       PreferenceScope.User,
     );
-    expect(createSessionModel).toHaveBeenCalledTimes(1);
+    expect(enterDraftSession).toHaveBeenCalledTimes(1);
+    expect(createSessionModel).not.toHaveBeenCalled();
+  });
+
+  it('keeps the agentic new session menu open when clicking after mouse hover opens it', async () => {
+    const services = createMockServices({
+      defaultAgentType: 'claude-agent-acp',
+      panelLayout: 'agentic',
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    const menuButton = container.querySelector(
+      '[data-testid="agentic-chat-new-session-button"]',
+    ) as HTMLButtonElement | null;
+
+    await act(async () => {
+      menuButton!.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, relatedTarget: document.body }));
+      await Promise.resolve();
+    });
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')).not.toBeNull();
+
+    await act(async () => {
+      menuButton!.click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain('Claude');
   });
 
   it('lists custom ACP agent configurations in the agentic chat panel header menu', async () => {

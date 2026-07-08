@@ -172,13 +172,6 @@ export function AgenticChatHeaderNewSessionMenu() {
     [],
   );
 
-  const toggleMenu = React.useCallback(() => {
-    if (isCreatingSession) {
-      return;
-    }
-    setIsMenuOpen((open) => !open);
-  }, [isCreatingSession]);
-
   const handleCreateSessionWithAgent = React.useCallback(
     async (nextAgentType: ACPAgentType) => {
       setIsMenuOpen(false);
@@ -186,7 +179,7 @@ export function AgenticChatHeaderNewSessionMenu() {
       try {
         setAgentType(nextAgentType);
         await preferenceService.set(AINativeSettingSectionsId.DefaultAgentType, nextAgentType, PreferenceScope.User);
-        await aiChatService.createSessionModel();
+        aiChatService.enterDraftSession();
       } finally {
         setIsCreatingSession(false);
       }
@@ -221,7 +214,7 @@ export function AgenticChatHeaderNewSessionMenu() {
           className={styles.agentic_chat_new_session_button}
           data-testid='agentic-chat-new-session-button'
           disabled={isCreatingSession}
-          onClick={toggleMenu}
+          onClick={openMenu}
           title={selectedAgent ? `${tooltip} · ${selectedAgent.title}` : tooltip}
           type='button'
         >
