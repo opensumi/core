@@ -3,6 +3,17 @@ import { ElementHandle } from '@playwright/test';
 import { OpenSumiApp } from './app';
 import { OpenSumiContextMenu } from './context-menu';
 
+interface ITreeNodeMatchArgs {
+  dataId: string | null;
+  fsPath?: string | null;
+}
+
+interface ITreeNodeStateMatchArgs extends ITreeNodeMatchArgs {
+  collapsed: boolean;
+  collapsedClass: string;
+  toggleClass: string;
+}
+
 export interface IOpenSumiTreeNodeSelector {
   labelClass: string;
   descriptionClass: string;
@@ -33,32 +44,119 @@ export abstract class OpenSumiTreeNode {
     return parent.asElement();
   }
 
-  private async getCurrentElementHandle(parent: ElementHandle | null, dataId: string | null) {
-    if (!parent || !dataId) {
-      return this.elementHandle;
+  private async findVisibleMatchingNodeHandle(
+    parent: ElementHandle | null,
+    dataId: string | null,
+    fsPath?: string | null,
+  ) {
+    if (!dataId && !fsPath) {
+      return null;
     }
 
-    const current = await parent.evaluateHandle(
-      (parentElement: Element, id: string) =>
-        Array.from(parentElement.querySelectorAll<HTMLElement>('[data-id]')).find(
-          (item) => item.getAttribute('data-id') === id,
-        ),
-      dataId,
-    );
-    const currentElement = current.asElement();
+    const args = { dataId, fsPath };
+    const current = parent
+      ? await parent.evaluateHandle((scope: Element, matchArgs: ITreeNodeMatchArgs) => {
+          const isVisible = (element: Element) => {
+            const rect = element.getBoundingClientRect();
+            const style = window.getComputedStyle(element);
+            return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+          };
+          const nodes = Array.from(scope.querySelectorAll<HTMLElement>('[data-id]')).filter(isVisible);
+          return (
+            (matchArgs.fsPath ? nodes.find((item) => item.getAttribute('title') === matchArgs.fsPath) : undefined) ||
+            (matchArgs.dataId ? nodes.find((item) => item.getAttribute('data-id') === matchArgs.dataId) : undefined) ||
+            null
+          );
+        }, args)
+      : await this.app.page.evaluateHandle((matchArgs: ITreeNodeMatchArgs) => {
+          const isVisible = (element: Element) => {
+            const rect = element.getBoundingClientRect();
+            const style = window.getComputedStyle(element);
+            return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+          };
+          const nodes = Array.from(document.querySelectorAll<HTMLElement>('[data-id]')).filter(isVisible);
+          return (
+            (matchArgs.fsPath ? nodes.find((item) => item.getAttribute('title') === matchArgs.fsPath) : undefined) ||
+            (matchArgs.dataId ? nodes.find((item) => item.getAttribute('data-id') === matchArgs.dataId) : undefined) ||
+            null
+          );
+        }, args);
+    return current.asElement() as ElementHandle<SVGElement | HTMLElement> | null;
+  }
+
+  private async getCurrentElementHandle(parent: ElementHandle | null, dataId: string | null, fsPath?: string | null) {
+    const currentElement = await this.findVisibleMatchingNodeHandle(parent, dataId, fsPath);
     if (currentElement) {
-      this.elementHandle = currentElement as ElementHandle<SVGElement | HTMLElement>;
+      this.elementHandle = currentElement;
+      return this.elementHandle;
     }
 
     return this.elementHandle;
   }
 
-  private getDataIdSelector(dataId: string) {
-    return `[data-id="${dataId.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"]`;
+  private async hasCollapsedStateInScope(
+    parent: ElementHandle | null,
+    collapsed: boolean,
+    dataId: string | null,
+    fsPath?: string | null,
+  ) {
+    const args = {
+      collapsed,
+      collapsedClass: this.selector.collapsedClass,
+      dataId,
+      fsPath,
+      toggleClass: this.selector.toggleClass,
+    };
+    return parent
+      ? parent.evaluate((scope: Element, matchArgs: ITreeNodeStateMatchArgs) => {
+          const isVisible = (element: Element) => {
+            const rect = element.getBoundingClientRect();
+            const style = window.getComputedStyle(element);
+            return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+          };
+
+          const nodes = Array.from(scope.querySelectorAll<HTMLElement>('[data-id]')).filter((item) => {
+            const matchesDataId = matchArgs.dataId && item.getAttribute('data-id') === matchArgs.dataId;
+            const matchesPath = matchArgs.fsPath && item.getAttribute('title') === matchArgs.fsPath;
+            return isVisible(item) && (matchesDataId || matchesPath);
+          });
+
+          return nodes.some((node) => {
+            const stateElement = matchArgs.collapsed
+              ? node.querySelector(matchArgs.collapsedClass)
+              : node.querySelector(`${matchArgs.toggleClass}:not(${matchArgs.collapsedClass})`);
+            return !!stateElement && isVisible(stateElement);
+          });
+        }, args)
+      : this.app.page.evaluate((matchArgs: ITreeNodeStateMatchArgs) => {
+          const isVisible = (element: Element) => {
+            const rect = element.getBoundingClientRect();
+            const style = window.getComputedStyle(element);
+            return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+          };
+
+          const nodes = Array.from(document.querySelectorAll<HTMLElement>('[data-id]')).filter((item) => {
+            const matchesDataId = matchArgs.dataId && item.getAttribute('data-id') === matchArgs.dataId;
+            const matchesPath = matchArgs.fsPath && item.getAttribute('title') === matchArgs.fsPath;
+            return isVisible(item) && (matchesDataId || matchesPath);
+          });
+
+          return nodes.some((node) => {
+            const stateElement = matchArgs.collapsed
+              ? node.querySelector(matchArgs.collapsedClass)
+              : node.querySelector(`${matchArgs.toggleClass}:not(${matchArgs.collapsedClass})`);
+            return !!stateElement && isVisible(stateElement);
+          });
+        }, args);
   }
 
-  private async waitForCollapsedState(collapsed: boolean, parent: ElementHandle | null, dataId: string | null) {
-    if (!parent || !dataId) {
+  private async waitForCollapsedState(
+    collapsed: boolean,
+    parent: ElementHandle | null,
+    dataId: string | null,
+    fsPath?: string | null,
+  ) {
+    if (!parent && !dataId && !fsPath) {
       const selector = collapsed
         ? this.selector.collapsedClass
         : `${this.selector.toggleClass}:not(${this.selector.collapsedClass})`;
@@ -66,19 +164,23 @@ export abstract class OpenSumiTreeNode {
       return;
     }
 
-    const nodeSelector = this.getDataIdSelector(dataId);
-    const selector = collapsed
-      ? `${nodeSelector} ${this.selector.collapsedClass}`
-      : `${nodeSelector} ${this.selector.toggleClass}:not(${this.selector.collapsedClass})`;
-    await parent.waitForSelector(selector, { timeout: 10_000 });
-    await this.getCurrentElementHandle(parent, dataId);
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < 10_000) {
+      if (await this.hasCollapsedStateInScope(parent, collapsed, dataId, fsPath)) {
+        await this.getCurrentElementHandle(parent, dataId, fsPath);
+        return;
+      }
+      await this.app.page.waitForTimeout(100);
+    }
+
+    throw new Error(`Timed out waiting for tree node collapsed state: ${collapsed ? 'collapsed' : 'expanded'}`);
   }
 
-  private async clickToggle(parent: ElementHandle | null, dataId: string | null) {
+  private async clickToggle(parent: ElementHandle | null, dataId: string | null, fsPath?: string | null) {
     let lastError: unknown;
 
     for (let attempt = 0; attempt < 3; attempt++) {
-      await this.getCurrentElementHandle(parent, dataId);
+      await this.getCurrentElementHandle(parent, dataId, fsPath);
       const toggle = await this.elementHandle.waitForSelector(this.selector.toggleClass);
       try {
         await toggle.evaluate((element) => (element as HTMLElement).click());
@@ -134,20 +236,22 @@ export abstract class OpenSumiTreeNode {
     if (await this.isExpanded()) {
       return;
     }
+    const fsPath = await this.getFsPath();
     const dataId = await this.elementHandle.getAttribute('data-id');
     const parent = await this.parentElementHandle();
-    await this.clickToggle(parent, dataId);
-    await this.waitForCollapsedState(false, parent, dataId);
+    await this.clickToggle(parent, dataId, fsPath);
+    await this.waitForCollapsedState(false, parent, dataId, fsPath);
   }
 
   async collapse() {
     if (await this.isCollapsed()) {
       return;
     }
+    const fsPath = await this.getFsPath();
     const dataId = await this.elementHandle.getAttribute('data-id');
     const parent = await this.parentElementHandle();
-    await this.clickToggle(parent, dataId);
-    await this.waitForCollapsedState(true, parent, dataId);
+    await this.clickToggle(parent, dataId, fsPath);
+    await this.waitForCollapsedState(true, parent, dataId, fsPath);
   }
 
   async openContextMenu() {

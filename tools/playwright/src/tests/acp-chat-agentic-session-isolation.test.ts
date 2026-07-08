@@ -171,25 +171,30 @@ async function readSessionShellProof(): Promise<SessionShellProof> {
   const state = await getSessionState();
   const ui = await page.evaluate(() => {
     const slot = document.querySelector('.AI-Chat-slot') as HTMLElement | null;
+    const isVisible = (element: HTMLElement) => {
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+    };
     const text = slot?.innerText || '';
-    const countText = (needle: string) => text.split(needle).length - 1;
+    const normalizedText = text.replace(/\s+/g, ' ');
+    const countToolText = () => normalizedText.match(/Called\s+(?:MCP\s+)?Tool/g)?.length || 0;
     const visibleButtons = Array.from(
       slot?.querySelectorAll<HTMLElement>('button, [role="button"], [aria-label]') || [],
-    ).filter((button) => {
-      const rect = button.getBoundingClientRect();
-      const style = window.getComputedStyle(button);
-      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
-    });
+    ).filter(isVisible);
+    const visibleToolCards = Array.from(
+      slot?.querySelectorAll<HTMLElement>('[class*="chat_tool_render"]') || [],
+    ).filter(isVisible).length;
     const hasVisibleButton = (pattern: RegExp) =>
       visibleButtons.some((button) =>
         pattern.test([button.innerText, button.getAttribute('aria-label'), button.getAttribute('title')].join(' ')),
       );
 
     return {
-      userRows: slot?.querySelectorAll('.rce-user-msg').length || 0,
-      assistantRows: slot?.querySelectorAll('.rce-ai-msg').length || 0,
+      userRows: Array.from(slot?.querySelectorAll<HTMLElement>('.rce-user-msg') || []).filter(isVisible).length,
+      assistantRows: Array.from(slot?.querySelectorAll<HTMLElement>('.rce-ai-msg') || []).filter(isVisible).length,
       reasoningToggleCount: visibleButtons.filter((button) => /Deep Thinking|深度思考/.test(button.innerText)).length,
-      toolCardCount: countText('Called MCP Tool') + countText('Called Tool'),
+      toolCardCount: Math.max(visibleToolCards, countToolText()),
       sendVisible: hasVisibleButton(/Send|发送/),
       stopVisible: hasVisibleButton(/Stop|停止/),
     };
@@ -201,6 +206,14 @@ async function readSessionShellProof(): Promise<SessionShellProof> {
   };
 }
 
+function expectHistorySessionShell(proof: SessionShellProof, sessionId: string) {
+  expect(proof.activeSessionId).toBe(sessionId);
+  expect(proof.userRows).toBeGreaterThanOrEqual(1);
+  expect(proof.assistantRows).toBeGreaterThanOrEqual(1);
+  expect(proof.sendVisible).toBe(true);
+  expect(proof.stopVisible).toBe(false);
+}
+
 function expectCompletedSingleTurnShell(proof: SessionShellProof, sessionId: string, baseline: SessionShellProof) {
   expect(proof.activeSessionId).toBe(sessionId);
   expect(proof.userRows).toBe(baseline.userRows + 1);
@@ -210,6 +223,76 @@ function expectCompletedSingleTurnShell(proof: SessionShellProof, sessionId: str
   expect(proof.toolCardCount).toBe(baseline.toolCardCount + 1);
   expect(proof.sendVisible).toBe(true);
   expect(proof.stopVisible).toBe(false);
+}
+
+function expectSessionShellUnchanged(proof: SessionShellProof, sessionId: string, baseline: SessionShellProof) {
+  expect(proof.activeSessionId).toBe(sessionId);
+  expect(proof.userRows).toBe(baseline.userRows);
+  expect(proof.assistantRows).toBe(baseline.assistantRows);
+  expect(proof.toolCardCount).toBe(baseline.toolCardCount);
+  expect(proof.reasoningToggleCount).toBe(baseline.reasoningToggleCount);
+  expect(proof.sendVisible).toBe(true);
+  expect(proof.stopVisible).toBe(false);
+}
+
+function sessionShellSignature(proof: SessionShellProof): string {
+  return [
+    proof.activeSessionId,
+    proof.userRows,
+    proof.assistantRows,
+    proof.reasoningToggleCount,
+    proof.toolCardCount,
+    proof.sendVisible,
+    proof.stopVisible,
+  ].join(':');
+}
+
+async function waitForSettledSessionShell(assertShell: (proof: SessionShellProof) => void): Promise<SessionShellProof> {
+  let proof = await readSessionShellProof();
+
+  await expect
+    .poll(
+      async () => {
+        const first = await readSessionShellProof();
+        try {
+          assertShell(first);
+        } catch {
+          return false;
+        }
+
+        await page.waitForTimeout(150);
+        const second = await readSessionShellProof();
+        try {
+          assertShell(second);
+        } catch {
+          return false;
+        }
+
+        if (sessionShellSignature(first) !== sessionShellSignature(second)) {
+          return false;
+        }
+
+        proof = second;
+        return true;
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+
+  assertShell(proof);
+  return proof;
+}
+
+function waitForHistorySessionShell(sessionId: string): Promise<SessionShellProof> {
+  return waitForSettledSessionShell((proof) => expectHistorySessionShell(proof, sessionId));
+}
+
+function waitForCompletedSingleTurnShell(sessionId: string, baseline: SessionShellProof): Promise<SessionShellProof> {
+  return waitForSettledSessionShell((proof) => expectCompletedSingleTurnShell(proof, sessionId, baseline));
+}
+
+function waitForSessionShellUnchanged(sessionId: string, baseline: SessionShellProof): Promise<SessionShellProof> {
+  return waitForSettledSessionShell((proof) => expectSessionShellUnchanged(proof, sessionId, baseline));
 }
 
 function expectMetadataOnly(value: unknown) {
@@ -240,6 +323,8 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
   test('Session Isolation keeps history-backed sessions visually and metrically separate', async ({
     browser: _browser,
   }, testInfo) => {
+    void _browser;
+
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-session-isolation', {
       sourceScenario: 'test/bdd/acp-chat-agentic-session-isolation.scenario.md',
       profile: 'interactive',
@@ -250,14 +335,13 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
     const [sessionA, sessionB] = await waitForSeededSessions();
 
     await clickHistoryItem(sessionA.sessionId);
-    const sessionABaseline = await readSessionShellProof();
+    const sessionABaseline = await waitForHistorySessionShell(sessionA.sessionId);
     await clickHistoryItem(sessionB.sessionId);
-    const sessionBBaseline = await readSessionShellProof();
+    const sessionBBaseline = await waitForHistorySessionShell(sessionB.sessionId);
 
     await clickHistoryItem(sessionA.sessionId);
     await sendPromptAndWaitForResult(SESSION_A_PROMPT);
-    const sessionAAfterSend = await readSessionShellProof();
-    expectCompletedSingleTurnShell(sessionAAfterSend, sessionA.sessionId, sessionABaseline);
+    const sessionAAfterSend = await waitForCompletedSingleTurnShell(sessionA.sessionId, sessionABaseline);
     const sessionAProof = await evidence.saveJson(
       '01-session-a-complete',
       sessionAAfterSend,
@@ -265,12 +349,7 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
     );
 
     await clickHistoryItem(sessionB.sessionId);
-    const sessionBUnchanged = await readSessionShellProof();
-    expect(sessionBUnchanged.activeSessionId).toBe(sessionB.sessionId);
-    expect(sessionBUnchanged.userRows).toBe(sessionBBaseline.userRows);
-    expect(sessionBUnchanged.assistantRows).toBe(sessionBBaseline.assistantRows);
-    expect(sessionBUnchanged.toolCardCount).toBe(sessionBBaseline.toolCardCount);
-    expect(sessionBUnchanged.reasoningToggleCount).toBe(sessionBBaseline.reasoningToggleCount);
+    const sessionBUnchanged = await waitForSessionShellUnchanged(sessionB.sessionId, sessionBBaseline);
     const emptySessionBProof = await evidence.saveJson(
       '02-session-b-empty-after-a',
       sessionBUnchanged,
@@ -278,8 +357,7 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
     );
 
     await sendPromptAndWaitForResult(SESSION_B_PROMPT);
-    const sessionBAfterSend = await readSessionShellProof();
-    expectCompletedSingleTurnShell(sessionBAfterSend, sessionB.sessionId, sessionBBaseline);
+    const sessionBAfterSend = await waitForCompletedSingleTurnShell(sessionB.sessionId, sessionBBaseline);
     const sessionBProof = await evidence.saveJson(
       '03-session-b-complete',
       sessionBAfterSend,
@@ -287,12 +365,10 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
     );
 
     await clickHistoryItem(sessionA.sessionId);
-    const sessionARestored = await readSessionShellProof();
-    expectCompletedSingleTurnShell(sessionARestored, sessionA.sessionId, sessionABaseline);
+    const sessionARestored = await waitForCompletedSingleTurnShell(sessionA.sessionId, sessionABaseline);
 
     await clickHistoryItem(sessionB.sessionId);
-    const sessionBRestored = await readSessionShellProof();
-    expectCompletedSingleTurnShell(sessionBRestored, sessionB.sessionId, sessionBBaseline);
+    const sessionBRestored = await waitForCompletedSingleTurnShell(sessionB.sessionId, sessionBBaseline);
     const restoredProof = await evidence.saveJson(
       '04-switch-back-and-forth',
       { sessionA: sessionARestored, sessionB: sessionBRestored },
