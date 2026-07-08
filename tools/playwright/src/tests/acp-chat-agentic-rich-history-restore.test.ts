@@ -192,24 +192,29 @@ async function readRichUiProof(): Promise<RichUiProof> {
   return page.evaluate(() => {
     const slot = document.querySelector('.AI-Chat-slot') as HTMLElement | null;
     const text = slot?.innerText || '';
-    const countPattern = (pattern: RegExp) => text.match(pattern)?.length || 0;
+    const normalizedText = text.replace(/\s+/g, ' ');
+    const countToolText = () => normalizedText.match(/Called\s+(?:MCP\s+)?Tool/g)?.length || 0;
+    const isVisible = (element: HTMLElement) => {
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+    };
     const visibleButtons = Array.from(
       slot?.querySelectorAll<HTMLElement>('button, [role="button"], [aria-label]') || [],
-    ).filter((button) => {
-      const rect = button.getBoundingClientRect();
-      const style = window.getComputedStyle(button);
-      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
-    });
+    ).filter(isVisible);
+    const visibleToolCards = Array.from(
+      slot?.querySelectorAll<HTMLElement>('[class*="chat_tool_render"]') || [],
+    ).filter(isVisible).length;
     const hasVisibleButton = (pattern: RegExp) =>
       visibleButtons.some((button) =>
         pattern.test([button.innerText, button.getAttribute('aria-label'), button.getAttribute('title')].join(' ')),
       );
 
     return {
-      userRows: slot?.querySelectorAll('.rce-user-msg').length || 0,
-      assistantRows: slot?.querySelectorAll('.rce-ai-msg').length || 0,
+      userRows: Array.from(slot?.querySelectorAll<HTMLElement>('.rce-user-msg') || []).filter(isVisible).length,
+      assistantRows: Array.from(slot?.querySelectorAll<HTMLElement>('.rce-ai-msg') || []).filter(isVisible).length,
       reasoningToggleCount: visibleButtons.filter((button) => /Deep Thinking|深度思考/.test(button.innerText)).length,
-      toolCardCount: countPattern(/Called\s+(?:MCP\s+)?Tool/g),
+      toolCardCount: Math.max(visibleToolCards, countToolText()),
       hasPlanChecklistText: text.includes('BDD plan:'),
       sendVisible: hasVisibleButton(/Send|发送/),
       stopVisible: hasVisibleButton(/Stop|停止/),
@@ -220,6 +225,7 @@ async function readRichUiProof(): Promise<RichUiProof> {
 function expectRichUiRestored(proof: RichUiProof, baseline: RichUiProof) {
   expect(proof.userRows).toBe(baseline.userRows + 1);
   expect(proof.assistantRows).toBeGreaterThanOrEqual(baseline.assistantRows + 1);
+  expect(proof.assistantRows).toBeLessThanOrEqual(baseline.assistantRows + 2);
   expect(proof.reasoningToggleCount).toBeGreaterThanOrEqual(baseline.reasoningToggleCount + 1);
   expect(proof.toolCardCount).toBeGreaterThanOrEqual(baseline.toolCardCount + 1);
   expect(proof.hasPlanChecklistText).toBe(true);
@@ -227,25 +233,91 @@ function expectRichUiRestored(proof: RichUiProof, baseline: RichUiProof) {
   expect(proof.stopVisible).toBe(false);
 }
 
-async function waitForRichUiRestored(baseline: RichUiProof): Promise<RichUiProof> {
+function expectRichUiUnchanged(proof: RichUiProof, baseline: RichUiProof) {
+  expect(proof.userRows).toBe(baseline.userRows);
+  expect(proof.assistantRows).toBe(baseline.assistantRows);
+  expect(proof.toolCardCount).toBe(baseline.toolCardCount);
+  expect(proof.reasoningToggleCount).toBe(baseline.reasoningToggleCount);
+  expect(proof.sendVisible).toBe(true);
+  expect(proof.stopVisible).toBe(false);
+}
+
+function richUiSignature(proof: RichUiProof): string {
+  return [
+    proof.userRows,
+    proof.assistantRows,
+    proof.reasoningToggleCount,
+    proof.toolCardCount,
+    proof.hasPlanChecklistText,
+    proof.sendVisible,
+    proof.stopVisible,
+  ].join(':');
+}
+
+async function waitForSettledRichUi(assertProof: (proof: RichUiProof) => void): Promise<RichUiProof> {
   let proof = await readRichUiProof();
 
   await expect
     .poll(
       async () => {
-        proof = await readRichUiProof();
+        const first = await readRichUiProof();
         try {
-          expectRichUiRestored(proof, baseline);
-          return true;
+          assertProof(first);
         } catch {
           return false;
         }
+
+        await page.waitForTimeout(150);
+        const second = await readRichUiProof();
+        try {
+          assertProof(second);
+        } catch {
+          return false;
+        }
+
+        if (richUiSignature(first) !== richUiSignature(second)) {
+          return false;
+        }
+
+        proof = second;
+        return true;
       },
       { timeout: 30_000 },
     )
     .toBe(true);
 
-  expectRichUiRestored(proof, baseline);
+  assertProof(proof);
+  return proof;
+}
+
+async function waitForRichUiRestored(baseline: RichUiProof): Promise<RichUiProof> {
+  return waitForSettledRichUi((proof) => expectRichUiRestored(proof, baseline));
+}
+
+async function waitForRichUiUnchanged(baseline: RichUiProof): Promise<RichUiProof> {
+  return waitForSettledRichUi((proof) => expectRichUiUnchanged(proof, baseline));
+}
+
+async function waitForStableRichUiShell(): Promise<RichUiProof> {
+  let proof = await readRichUiProof();
+
+  await expect
+    .poll(
+      async () => {
+        const first = await readRichUiProof();
+        await page.waitForTimeout(150);
+        const second = await readRichUiProof();
+        if (richUiSignature(first) !== richUiSignature(second)) {
+          return false;
+        }
+
+        proof = second;
+        return proof.sendVisible && !proof.stopVisible;
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+
   return proof;
 }
 
@@ -271,6 +343,8 @@ test.describe('ACP Chat Agentic Rich History Restore', () => {
   test('Rich History Restore keeps structured fixture UI across session switching', async ({
     browser: _browser,
   }, testInfo) => {
+    void _browser;
+
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-rich-history-restore', {
       sourceScenario: 'test/bdd/acp-chat-agentic-rich-history-restore.scenario.md',
       profile: 'interactive',
@@ -280,10 +354,10 @@ test.describe('ACP Chat Agentic Rich History Restore', () => {
 
     const [richSession, otherSession] = await waitForSeededSessions();
     await clickHistoryItem(otherSession.sessionId);
-    const otherBaseline = await readRichUiProof();
+    const otherBaseline = await waitForStableRichUiShell();
 
     await clickHistoryItem(richSession.sessionId);
-    const richBaseline = await readRichUiProof();
+    const richBaseline = await waitForStableRichUiShell();
     await sendPromptAndWaitForRichUi(RICH_PROMPT);
 
     const initialRichProof = await waitForRichUiRestored(richBaseline);
@@ -294,11 +368,7 @@ test.describe('ACP Chat Agentic Rich History Restore', () => {
     );
 
     await clickHistoryItem(otherSession.sessionId);
-    const otherSessionProof = await readRichUiProof();
-    expect(otherSessionProof.userRows).toBe(otherBaseline.userRows);
-    expect(otherSessionProof.assistantRows).toBe(otherBaseline.assistantRows);
-    expect(otherSessionProof.toolCardCount).toBe(otherBaseline.toolCardCount);
-    expect(otherSessionProof.reasoningToggleCount).toBe(otherBaseline.reasoningToggleCount);
+    await waitForRichUiUnchanged(otherBaseline);
 
     await clickHistoryItem(richSession.sessionId);
     const restoredRichProof = await waitForRichUiRestored(richBaseline);

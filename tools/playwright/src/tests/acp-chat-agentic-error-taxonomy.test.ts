@@ -170,6 +170,29 @@ async function expectInputRecovered() {
   await expect(chatInput()).toBeEditable();
 }
 
+async function waitForStreamRichRecoverySnapshot(): Promise<FailureUiSnapshot> {
+  let snapshot = await readFailureUiSnapshot();
+
+  await expect
+    .poll(
+      async () => {
+        snapshot = await readFailureUiSnapshot();
+        return (
+          snapshot.chatErrorCount === 0 &&
+          snapshot.userRowCount > 0 &&
+          snapshot.assistantRowCount > 0 &&
+          !snapshot.hasStackTrace &&
+          !snapshot.hasRawRpcPayload &&
+          !snapshot.hasSecretLikeText
+        );
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+
+  return snapshot;
+}
+
 async function reloadFixtureWorkbench(runtime: AcpBddFixtureRuntime) {
   await page.goto(runtime.url);
   await waitForWorkbenchReady(page);
@@ -265,7 +288,7 @@ async function expectStreamRichRecovery(label: string) {
     await expect.poll(async () => (await readSessionState()).result?.session?.requestCount ?? 0).toBeGreaterThan(0);
     await expectInputRecovered();
 
-    const snapshot = await readFailureUiSnapshot();
+    const snapshot = await waitForStreamRichRecoverySnapshot();
     expect(snapshot.chatErrorCount).toBe(0);
     expect(snapshot.userRowCount).toBeGreaterThan(0);
     expect(snapshot.assistantRowCount).toBeGreaterThan(0);

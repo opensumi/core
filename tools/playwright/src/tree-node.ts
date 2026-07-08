@@ -54,33 +54,43 @@ export abstract class OpenSumiTreeNode {
     }
 
     const args = { dataId, fsPath };
-    const current = parent
-      ? await parent.evaluateHandle((scope: Element, matchArgs: ITreeNodeMatchArgs) => {
-          const isVisible = (element: Element) => {
-            const rect = element.getBoundingClientRect();
-            const style = window.getComputedStyle(element);
-            return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-          };
-          const nodes = Array.from(scope.querySelectorAll<HTMLElement>('[data-id]')).filter(isVisible);
-          return (
-            (matchArgs.fsPath ? nodes.find((item) => item.getAttribute('title') === matchArgs.fsPath) : undefined) ||
-            (matchArgs.dataId ? nodes.find((item) => item.getAttribute('data-id') === matchArgs.dataId) : undefined) ||
-            null
-          );
-        }, args)
-      : await this.app.page.evaluateHandle((matchArgs: ITreeNodeMatchArgs) => {
-          const isVisible = (element: Element) => {
-            const rect = element.getBoundingClientRect();
-            const style = window.getComputedStyle(element);
-            return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-          };
-          const nodes = Array.from(document.querySelectorAll<HTMLElement>('[data-id]')).filter(isVisible);
-          return (
-            (matchArgs.fsPath ? nodes.find((item) => item.getAttribute('title') === matchArgs.fsPath) : undefined) ||
-            (matchArgs.dataId ? nodes.find((item) => item.getAttribute('data-id') === matchArgs.dataId) : undefined) ||
-            null
-          );
-        }, args);
+    if (parent) {
+      const current = await parent.evaluateHandle((scope: Element, matchArgs: ITreeNodeMatchArgs) => {
+        if (!scope.isConnected) {
+          return null;
+        }
+
+        const isVisible = (element: Element) => {
+          const rect = element.getBoundingClientRect();
+          const style = window.getComputedStyle(element);
+          return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+        };
+        const nodes = Array.from(scope.querySelectorAll<HTMLElement>('[data-id]')).filter(isVisible);
+        return (
+          (matchArgs.fsPath ? nodes.find((item) => item.getAttribute('title') === matchArgs.fsPath) : undefined) ||
+          (matchArgs.dataId ? nodes.find((item) => item.getAttribute('data-id') === matchArgs.dataId) : undefined) ||
+          null
+        );
+      }, args);
+      const currentElement = current.asElement() as ElementHandle<SVGElement | HTMLElement> | null;
+      if (currentElement) {
+        return currentElement;
+      }
+    }
+
+    const current = await this.app.page.evaluateHandle((matchArgs: ITreeNodeMatchArgs) => {
+      const isVisible = (element: Element) => {
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+      };
+      const nodes = Array.from(document.querySelectorAll<HTMLElement>('[data-id]')).filter(isVisible);
+      return (
+        (matchArgs.fsPath ? nodes.find((item) => item.getAttribute('title') === matchArgs.fsPath) : undefined) ||
+        (matchArgs.dataId ? nodes.find((item) => item.getAttribute('data-id') === matchArgs.dataId) : undefined) ||
+        null
+      );
+    }, args);
     return current.asElement() as ElementHandle<SVGElement | HTMLElement> | null;
   }
 
@@ -107,47 +117,75 @@ export abstract class OpenSumiTreeNode {
       fsPath,
       toggleClass: this.selector.toggleClass,
     };
-    return parent
-      ? parent.evaluate((scope: Element, matchArgs: ITreeNodeStateMatchArgs) => {
-          const isVisible = (element: Element) => {
-            const rect = element.getBoundingClientRect();
-            const style = window.getComputedStyle(element);
-            return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-          };
+    const hasStateInScope = async () => {
+      if (!parent) {
+        return false;
+      }
 
-          const nodes = Array.from(scope.querySelectorAll<HTMLElement>('[data-id]')).filter((item) => {
-            const matchesDataId = matchArgs.dataId && item.getAttribute('data-id') === matchArgs.dataId;
-            const matchesPath = matchArgs.fsPath && item.getAttribute('title') === matchArgs.fsPath;
-            return isVisible(item) && (matchesDataId || matchesPath);
-          });
+      return parent.evaluate((scope: Element, matchArgs: ITreeNodeStateMatchArgs) => {
+        if (!scope.isConnected) {
+          return false;
+        }
 
-          return nodes.some((node) => {
-            const stateElement = matchArgs.collapsed
-              ? node.querySelector(matchArgs.collapsedClass)
-              : node.querySelector(`${matchArgs.toggleClass}:not(${matchArgs.collapsedClass})`);
-            return !!stateElement && isVisible(stateElement);
-          });
-        }, args)
-      : this.app.page.evaluate((matchArgs: ITreeNodeStateMatchArgs) => {
-          const isVisible = (element: Element) => {
-            const rect = element.getBoundingClientRect();
-            const style = window.getComputedStyle(element);
-            return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-          };
+        const isVisible = (element: Element) => {
+          const rect = element.getBoundingClientRect();
+          const style = window.getComputedStyle(element);
+          return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+        };
 
-          const nodes = Array.from(document.querySelectorAll<HTMLElement>('[data-id]')).filter((item) => {
-            const matchesDataId = matchArgs.dataId && item.getAttribute('data-id') === matchArgs.dataId;
-            const matchesPath = matchArgs.fsPath && item.getAttribute('title') === matchArgs.fsPath;
-            return isVisible(item) && (matchesDataId || matchesPath);
-          });
+        const matchesState = (node: HTMLElement) => {
+          const stateElement = node.querySelector(matchArgs.toggleClass);
+          return (
+            !!stateElement &&
+            stateElement.matches(
+              matchArgs.collapsed
+                ? `${matchArgs.toggleClass}${matchArgs.collapsedClass}`
+                : `${matchArgs.toggleClass}:not(${matchArgs.collapsedClass})`,
+            )
+          );
+        };
 
-          return nodes.some((node) => {
-            const stateElement = matchArgs.collapsed
-              ? node.querySelector(matchArgs.collapsedClass)
-              : node.querySelector(`${matchArgs.toggleClass}:not(${matchArgs.collapsedClass})`);
-            return !!stateElement && isVisible(stateElement);
-          });
-        }, args);
+        const nodes = Array.from(scope.querySelectorAll<HTMLElement>('[data-id]')).filter((item) => {
+          const matchesDataId = matchArgs.dataId && item.getAttribute('data-id') === matchArgs.dataId;
+          const matchesPath = matchArgs.fsPath && item.getAttribute('title') === matchArgs.fsPath;
+          return isVisible(item) && (matchesDataId || matchesPath);
+        });
+
+        return nodes.some(matchesState);
+      }, args);
+    };
+
+    if (await hasStateInScope()) {
+      return true;
+    }
+
+    return this.app.page.evaluate((matchArgs: ITreeNodeStateMatchArgs) => {
+      const isVisible = (element: Element) => {
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+      };
+
+      const matchesState = (node: HTMLElement) => {
+        const stateElement = node.querySelector(matchArgs.toggleClass);
+        return (
+          !!stateElement &&
+          stateElement.matches(
+            matchArgs.collapsed
+              ? `${matchArgs.toggleClass}${matchArgs.collapsedClass}`
+              : `${matchArgs.toggleClass}:not(${matchArgs.collapsedClass})`,
+          )
+        );
+      };
+
+      const nodes = Array.from(document.querySelectorAll<HTMLElement>('[data-id]')).filter((item) => {
+        const matchesDataId = matchArgs.dataId && item.getAttribute('data-id') === matchArgs.dataId;
+        const matchesPath = matchArgs.fsPath && item.getAttribute('title') === matchArgs.fsPath;
+        return isVisible(item) && (matchesDataId || matchesPath);
+      });
+
+      return nodes.some(matchesState);
+    }, args);
   }
 
   private async waitForCollapsedState(

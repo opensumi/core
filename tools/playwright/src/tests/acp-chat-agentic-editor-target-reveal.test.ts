@@ -44,6 +44,9 @@ async function readRevealProof(): Promise<EditorTargetRevealProof> {
         .find((element) => isVisible(element));
     const visibleText = document.body.innerText || '';
     const workbench = document.querySelector('#workbench-editor');
+    const maximizeWrapper =
+      document.querySelector('#agentic-chat-panel-header-maximize') ||
+      document.querySelector('#ai-chat-header-maximize');
 
     return {
       aiChatVisible: isVisible(document.querySelector('.AI-Chat-slot')),
@@ -53,9 +56,7 @@ async function readRevealProof(): Promise<EditorTargetRevealProof> {
         firstVisible(['[data-viewlet-id="explorer"]', '#opensumi-left-tabbar li#explorer.active']),
       ),
       settingsVisible: Boolean(firstVisible(['#workbench-editor [class*="preferences___"]'])),
-      maximizeWorkbenchVisibleState: document
-        .querySelector('#agentic-chat-panel-header-maximize')
-        ?.getAttribute('data-workbench-visible'),
+      maximizeWorkbenchVisibleState: maximizeWrapper?.getAttribute('data-workbench-visible'),
       currentTabUris: Array.from(document.querySelectorAll('#workbench-editor [data-uri]'))
         .map((element) => element.getAttribute('data-uri') || '')
         .filter(Boolean),
@@ -117,6 +118,8 @@ test.describe('ACP Chat Agentic Editor Target Reveal', () => {
   test('Settings opens the hidden Agentic workbench as a foreground editor target', async ({
     browser: _browser,
   }, testInfo) => {
+    void _browser;
+
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-editor-target-reveal', {
       sourceScenario: 'test/bdd/acp-chat-agentic-editor-target-reveal.scenario.md',
       profile: 'default',

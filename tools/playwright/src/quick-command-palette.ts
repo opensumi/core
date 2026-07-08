@@ -36,7 +36,7 @@ export class OpenSumiCommandPalette extends OpenSumiViewBase {
     const existingInput = await this.quickpickInput()
       .inputValue()
       .catch(() => '');
-    if (!existingInput.trim()) {
+    if (!this.hasMeaningfulFilter(existingInput)) {
       await this.filterCommand(commandName);
     }
 
@@ -109,6 +109,10 @@ export class OpenSumiCommandPalette extends OpenSumiViewBase {
     );
     await input.fill('');
     await input.fill(commandName);
+  }
+
+  private hasMeaningfulFilter(inputValue: string): boolean {
+    return inputValue.trim().replace(/^>\s*/, '').length > 0;
   }
 
   private async visibleCommandLabels(): Promise<string[]> {
