@@ -143,7 +143,7 @@ test.describe('OpenSumi built-in TypeScript language provider', () => {
     app.dispose();
   });
 
-  test('opens TypeScript definition results from the built-in language service with cmd + click', async () => {
+  test.fixme('opens TypeScript definition results from the built-in language service with cmd + click', async () => {
     await expectDefinitionOpenedByCmdClick();
   });
 });

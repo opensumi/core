@@ -18,7 +18,7 @@
 3. `mcp`: `acp_chat_list_sessions({})` directly or through the fallback broker -> record `SESSIONS_AFTER_NEW_CHAT`.
 4. Send one short prompt through the UI in the new draft and wait for the mock `stream-rich` fixture to finish.
 5. Open the Agentic chat history surface from the header.
-6. Record history visibility, item count, item ids/titles/timestamps/current markers, New Chat action count, collapse/expand state, and pending permission badge counts.
+6. Record history visibility, item count, item ids/titles/timestamps/current markers, absence of a history-header New Chat action in agentic layout, collapse/expand state, and pending permission badge counts.
 7. `mcp`: `acp_chat_list_sessions({})` -> record `SESSIONS_WITH_HISTORY_OPEN`.
 8. If at least two sessions are visible, select the older item, record state/header/message view, then select the newer item and record state/header/message view.
 9. Collapse and reopen history.
@@ -32,8 +32,35 @@
 - Each visible history item has a stable session id and a non-empty safe title.
 - Selected/current markers follow `acp_chat_get_session_state` after selection and reselection.
 - History collapse/reopen preserves active session selection and does not duplicate header actions.
+- In agentic layout, the inline history header does not expose a New Chat action; New Chat is initiated from the Agentic chat panel header.
 - History item titles are allowed metadata. `acp_chat_list_sessions` remains metadata-only and must not include full message bodies, assistant content, tool-call results, or permission content.
 - Pending permission badges show counts/scoped state only and do not expose approval/rejection controls or permission content.
+
+## Scenario: Agentic Header New Chat Enters Draft Without Persisting Empty Session
+
+### Given
+
+- Agentic AI Chat is visible in the `interactive` profile.
+- The mock ACP agent runs with `--fixture=history`.
+- The inline Agentic history surface is visible and contains at least two seeded sessions.
+- The inline history header does not expose a New Chat action.
+- `acp_chat_get_session_state({})` reports one seeded session as active after selecting it.
+- `acp_chat_list_sessions({})` returns only metadata and includes the seeded session ids.
+
+### When
+
+1. Click the Agentic chat panel header New Chat action.
+2. `mcp`: `acp_chat_get_session_state({})` -> record `STATE_AFTER_AGENTIC_HEADER_NEW_CHAT`.
+3. `mcp`: `acp_chat_list_sessions({})` -> record `SESSIONS_AFTER_AGENTIC_HEADER_NEW_CHAT`.
+4. Read the visible inline history rows.
+
+### Then
+
+- `acp_chat_get_session_state({})` returns `{ active: false, session: null }`.
+- The seeded session ids are still present in `acp_chat_list_sessions({})`.
+- No new empty persisted row appears in visible history.
+- No visible history row title is `New Session` or `(untitled)`.
+- Session state and session list remain metadata-only and do not include message bodies, assistant content, thought content, tool results, or permission content.
 
 ## Live Agent Execution
 

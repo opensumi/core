@@ -164,10 +164,15 @@ async function clickHistoryItem(sessionId: string) {
 
 async function clickNewChat() {
   await ensureHistoryVisible();
-  await page
-    .getByLabel(/New Chat|新建聊天/)
-    .first()
-    .click();
+  await expect(page.locator('[data-testid="acp-chat-history-inline-new-chat"]')).toHaveCount(0);
+
+  const newSessionButton = page.locator('[data-testid="agentic-chat-new-session-button"]').first();
+  await expect(newSessionButton).toBeVisible({ timeout: 30_000 });
+  await newSessionButton.click();
+
+  const newSessionMenu = page.locator('[data-testid="agentic-chat-new-session-menu"]').first();
+  await expect(newSessionMenu).toBeVisible({ timeout: 30_000 });
+  await newSessionMenu.locator('[data-testid^="agentic-chat-new-session-agent-"]').first().click();
 }
 
 function expectMetadataOnly(value: unknown) {
