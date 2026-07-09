@@ -5,7 +5,6 @@ import { promisify } from 'util';
 import { expect } from '@playwright/test';
 
 import { OpenSumiApp } from '../app';
-import { OpenSumiExplorerView } from '../explorer-view';
 import { OpenSumiSCMView } from '../scm-view';
 import { OpenSumiWorkspace } from '../workspace';
 
@@ -14,7 +13,6 @@ import test, { page } from './hooks';
 const execFileAsync = promisify(execFile);
 
 let app: OpenSumiApp;
-let explorer: OpenSumiExplorerView;
 let scm: OpenSumiSCMView;
 let workspace: OpenSumiWorkspace;
 
@@ -25,8 +23,6 @@ test.describe('OpenSumi Extension', () => {
     await workspace.initWorksapce();
     await execFileAsync('git', ['init'], { cwd: workspace.workspace.codeUri.fsPath });
     app = await OpenSumiApp.load(page, workspace);
-    explorer = await app.open(OpenSumiExplorerView);
-    explorer.initFileTreeView(workspace.workspace.displayName);
   });
 
   test.afterAll(() => {
