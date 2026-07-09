@@ -82,6 +82,16 @@ export class OpenSumiApp extends Disposable {
     await this.waitForWorkbenchReady();
   }
 
+  async executeCommand<T = unknown>(commandId: string, ...args: unknown[]): Promise<T> {
+    await this.page.waitForFunction(() => !!(window as any).__OPENSUMI_E2E__?.executeCommand, null, {
+      timeout: 10000,
+    });
+    return this.page.evaluate(
+      ({ commandId, args }) => (window as any).__OPENSUMI_E2E__.executeCommand(commandId, ...args),
+      { commandId, args },
+    );
+  }
+
   protected async waitForWorkbenchReady(): Promise<void> {
     await this.page.waitForSelector(this.appData.loadingSelector, { state: 'detached' });
     await this.page.waitForSelector(this.appData.mainSelector);

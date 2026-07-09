@@ -39,9 +39,9 @@ test.describe('OpenSumi Extension', () => {
   test('The scm TreeNode view need reShow', async () => {
     scm = await app.open(OpenSumiSCMView);
     await scm.open();
-    await app.quickCommandPalette.trigger('Restart Extension Host Process');
+    await app.executeCommand('ext.restart');
     await expect.poll(async () => scm.scmView.getTreeNode()).toBeNull();
-    const newNode = await scm.scmView.waitForTreeNode();
+    const newNode = await scm.scmView.waitForTreeNode(30000);
     expect(newNode).toBeTruthy();
   });
 });

@@ -20,7 +20,7 @@ import '@opensumi/ide-i18n';
 import { Injector } from '@opensumi/di';
 import { BrowserModule, IClientAppOpts, SlotLocation, registerLocalStorageProvider } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
-import { ConstructorOf, GeneralSettingsId, findFirstTruthy, uuid } from '@opensumi/ide-core-common';
+import { CommandService, ConstructorOf, GeneralSettingsId, findFirstTruthy, uuid } from '@opensumi/ide-core-common';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
@@ -74,6 +74,13 @@ export async function renderApp(opts: IClientAppOpts) {
   app.fireOnReload = (forcedReload: boolean) => {
     window.location.reload();
   };
+
+  if (process.env.OPENSUMI_E2E_COMMANDS) {
+    (window as any).__OPENSUMI_E2E__ = {
+      executeCommand: (commandId: string, ...args: any[]) =>
+        app.injector.get<CommandService>(CommandService).executeCommand(commandId, ...args),
+    };
+  }
 
   app.start(document.getElementById('main')!, 'web');
 }

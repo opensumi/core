@@ -57,6 +57,10 @@ export class OpenSumiSCMView extends OpenSumiPanel {
   }
 
   async open() {
+    if (await this.scmView.isDisplayed()) {
+      this.view = await this.page.$(this.viewSelector);
+      return this;
+    }
     await this.scmView.open();
     this.view = await this.page.$(this.viewSelector);
     return this;
