@@ -89,8 +89,8 @@ import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 import { EditorTopPaddingContribution } from './view/topPadding';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 interface ResourceArgs {
-  group: EditorGroup;
-  uri: URI;
+  group?: EditorGroup;
+  uri?: URI;
 }
 
 @Domain(
@@ -306,15 +306,15 @@ export class EditorContribution
     group?: EditorGroup;
     uri?: URI;
   } {
-    let group: EditorGroup;
-    let uri: URI;
+    let group: EditorGroup | undefined;
+    let uri: URI | undefined;
     if (resource instanceof URI) {
       group = editorGroup || this.workbenchEditorService.currentEditorGroup;
-      uri = resource || (group && group.currentResource && group.currentResource.uri);
+      uri = resource || group?.currentResource?.uri || undefined;
     } else {
       const resourceArgs = resource || {};
       group = resourceArgs.group || this.workbenchEditorService.currentEditorGroup;
-      uri = resourceArgs.uri || (group && group.currentResource && group.currentResource.uri);
+      uri = resourceArgs.uri || group?.currentResource?.uri || undefined;
     }
     return {
       group,
@@ -399,6 +399,10 @@ export class EditorContribution
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PIN_CURRENT.id,
       keybinding: 'ctrlcmd+k enter',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.TOGGLE_PINNED_TAB.id,
+      keybinding: 'ctrlcmd+k shift+enter',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.COPY_CURRENT_PATH.id,
@@ -636,15 +640,17 @@ export class EditorContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE, {
-      execute: async (resource: ResourceArgs) => {
-        resource = resource || {};
-        const {
-          group = this.workbenchEditorService.currentEditorGroup,
-          uri = group && group.currentResource && group.currentResource.uri,
-        } = resource;
-        if (group && uri) {
-          await group.close(uri);
+      execute: async (resource?: ResourceArgs | URI) => {
+        const explicitTarget = resource instanceof URI || !!resource?.uri;
+        const { group, uri } = this.extractGroupAndUriFromArgs(resource || {});
+        if (!group || !uri) {
+          return;
         }
+        if (!explicitTarget && group.isPinned(uri)) {
+          await group.activateFirstUnpinned();
+          return;
+        }
+        await group.close(uri);
       },
     });
 
@@ -674,6 +680,15 @@ export class EditorContribution
         const group = this.workbenchEditorService.currentEditorGroup;
         if (group) {
           group.pinPreviewed();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.TOGGLE_PINNED_TAB, {
+      execute: (resource?: ResourceArgs) => {
+        const { group, uri } = this.extractGroupAndUriFromArgs(resource || {});
+        if (group && uri) {
+          group.togglePinTab(uri);
         }
       },
     });
@@ -1325,6 +1340,24 @@ export class EditorContribution
     menus.registerMenuItem(MenuId.EditorTitleContext, {
       command: EDITOR_COMMANDS.SPLIT_TO_BOTTOM.id,
       group: '9_split',
+    });
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: {
+        id: EDITOR_COMMANDS.TOGGLE_PINNED_TAB.id,
+        label: localize('editor.title.context.pinTab'),
+      },
+      group: '0_tab',
+      order: 0,
+      when: '!editorTabPinned',
+    });
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: {
+        id: EDITOR_COMMANDS.TOGGLE_PINNED_TAB.id,
+        label: localize('editor.title.context.unpinTab'),
+      },
+      group: '0_tab',
+      order: 0,
+      when: 'editorTabPinned',
     });
     menus.registerMenuItem(MenuId.EditorTitleContext, {
       command: {

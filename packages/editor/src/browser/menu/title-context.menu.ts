@@ -32,6 +32,8 @@ export class TabTitleMenuService {
     const titleContext = (group as EditorGroup).contextKeyService.createScoped();
     const resourceContext = new ResourceContextKey(titleContext);
     resourceContext.set(uri);
+    const pinnedContext = titleContext.createKey<boolean>('editorTabPinned', false);
+    pinnedContext.set((group as EditorGroup).isPinned(uri));
     this.editorTitleContextKey.set(true);
 
     const menus = this.ctxMenuService.createMenu({

@@ -520,17 +520,18 @@ describe('editor menu test', () => {
 
   it('editor title context menu test', () => {
     const service = injector.get(TabTitleMenuService);
+    const pinnedKey = { set: jest.fn(), get: jest.fn(), reset: jest.fn() };
+    const createKey = jest.fn((name: string) =>
+      name === 'editorTabPinned' ? pinnedKey : { set: jest.fn(), get: jest.fn(), reset: jest.fn() },
+    );
     service.show(0, 0, new URI('file:///test1.ts'), {
+      isPinned: jest.fn(() => true),
       contextKeyService: {
-        createScoped: jest.fn(() => ({
-          createKey: jest.fn(() => ({
-            set: jest.fn(),
-            get: jest.fn(),
-          })),
-          dispose: () => null,
-        })),
+        createScoped: jest.fn(() => ({ createKey, dispose: jest.fn() })),
       },
     } as any);
+    expect(createKey).toHaveBeenCalledWith('editorTabPinned', false);
+    expect(pinnedKey.set).toHaveBeenCalledWith(true);
     expect(injector.get<ICtxMenuRenderer>(ICtxMenuRenderer).show).toHaveBeenCalled();
   });
 });

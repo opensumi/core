@@ -572,6 +572,12 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const TOGGLE_PINNED_TAB: Command = {
+    id: 'editor.togglePinnedTab',
+    category: CATEGORY,
+    label: '%editor.togglePinnedTab%',
+  };
+
   export const COPY_CURRENT_PATH: Command = {
     id: 'editor.copyCurrentPath',
     category: CATEGORY,
