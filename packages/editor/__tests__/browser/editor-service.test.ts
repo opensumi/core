@@ -417,9 +417,7 @@ describe('workbench editor service tests', () => {
     while (group.pinnedTabCount > 0) {
       group.unpinTab(group.resources[0].uri);
     }
-    for (const resource of [...group.resources]) {
-      await group.close(resource.uri, { force: true });
-    }
+    await group.closeAll();
   });
 
   it('should keep open a preview when it becomes pinned and never restore preview on unpin', async () => {
