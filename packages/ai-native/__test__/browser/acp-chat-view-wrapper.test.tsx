@@ -43,9 +43,11 @@ function createServices({
   ready = jest.fn(() => Promise.resolve(true)),
   sessionModel,
   supportsAgentMode = true,
+  loadSessionList = jest.fn(() => Promise.resolve()),
 }: {
   createSessionModel?: jest.Mock;
   ensureBootstrapSessionModel?: jest.Mock;
+  loadSessionList?: jest.Mock;
   ready?: jest.Mock;
   sessionModel?: unknown;
   supportsAgentMode?: boolean;
@@ -61,7 +63,7 @@ function createServices({
   };
   const chatManagerService = {
     fallbackToLocal: jest.fn(),
-    loadSessionList: jest.fn(() => Promise.resolve()),
+    loadSessionList,
   };
   const chatProxyService = {
     registerFallbackAgent: jest.fn(),
@@ -109,6 +111,7 @@ describe('AcpChatViewWrapper', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     act(() => {
       root.unmount();
     });
@@ -131,7 +134,7 @@ describe('AcpChatViewWrapper', () => {
     });
   }
 
-  it('initializes ACP and creates one bootstrap session before rendering children', async () => {
+  it('initializes ACP without creating a bootstrap session before rendering children', async () => {
     const services = createServices();
 
     await renderWrapper(services.aiChatService);
@@ -139,7 +142,7 @@ describe('AcpChatViewWrapper', () => {
     expect(services.aiBackService.ready).toHaveBeenCalled();
     expect(services.aiChatService.init).toHaveBeenCalledTimes(1);
     expect(services.aiChatService.createSessionModel).not.toHaveBeenCalled();
-    expect(services.aiChatService.ensureBootstrapSessionModel).toHaveBeenCalledTimes(1);
+    expect(services.aiChatService.ensureBootstrapSessionModel).not.toHaveBeenCalled();
     expect(services.chatManagerService.loadSessionList).toHaveBeenCalledTimes(1);
     expect(container.querySelector('[data-testid="child"]')).not.toBeNull();
   });
@@ -154,12 +157,12 @@ describe('AcpChatViewWrapper', () => {
     expect(services.aiBackService.ready).toHaveBeenCalled();
     expect(services.aiChatService.init).toHaveBeenCalledTimes(1);
     expect(services.aiChatService.createSessionModel).not.toHaveBeenCalled();
-    expect(services.aiChatService.ensureBootstrapSessionModel).toHaveBeenCalledTimes(1);
+    expect(services.aiChatService.ensureBootstrapSessionModel).not.toHaveBeenCalled();
     expect(services.chatManagerService.loadSessionList).toHaveBeenCalledTimes(1);
     expect(container.querySelector('[data-testid="child"]')).not.toBeNull();
   });
 
-  it('renders children without falling back when bootstrap session creation fails', async () => {
+  it('does not call bootstrap session creation during ACP startup', async () => {
     const services = createServices({
       ensureBootstrapSessionModel: jest.fn(() => Promise.reject(new Error('session/new failed'))),
     });
@@ -169,6 +172,19 @@ describe('AcpChatViewWrapper', () => {
     expect(services.chatManagerService.fallbackToLocal).not.toHaveBeenCalled();
     expect(services.chatProxyService.registerFallbackAgent).not.toHaveBeenCalled();
     expect(services.aiChatService.createSessionModel).not.toHaveBeenCalled();
+    expect(services.aiChatService.ensureBootstrapSessionModel).not.toHaveBeenCalled();
+    expect(container.querySelector('[data-testid="child"]')).not.toBeNull();
+  });
+
+  it('renders children when ACP session list loading hangs', async () => {
+    const services = createServices({
+      loadSessionList: jest.fn(() => new Promise(() => {})),
+    });
+
+    await renderWrapper(services.aiChatService);
+
+    expect(services.chatManagerService.fallbackToLocal).not.toHaveBeenCalled();
+    expect(services.aiChatService.ensureBootstrapSessionModel).not.toHaveBeenCalled();
     expect(container.querySelector('[data-testid="child"]')).not.toBeNull();
   });
 

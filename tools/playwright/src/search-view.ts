@@ -3,6 +3,7 @@ import { isDefined } from '@opensumi/ide-utils';
 import { OpenSumiApp } from './app';
 import { OpenSumiPanel } from './panel';
 import { OpenSumiTreeNode } from './tree-node';
+import { keypressWithCmdCtrlAndShift } from './utils/key';
 
 export interface ISearchOptions {
   search: string;
@@ -53,6 +54,33 @@ export class OpenSumiSearchFileStatNode extends OpenSumiTreeNode {
 export class OpenSumiSearchView extends OpenSumiPanel {
   constructor(app: OpenSumiApp) {
     super(app, 'SEARCH');
+  }
+
+  async open() {
+    const tab = this.page.locator('#opensumi-left-tabbar li#search, #opensumi-bottom-tabbar li#search').first();
+    if ((await tab.count()) > 0 && (await tab.isVisible())) {
+      await tab.click();
+      try {
+        await this.waitForVisible(5000);
+        this.view = await this.page.$(this.viewSelector);
+        return this;
+      } catch {
+        // Fall back to the command palette when the tab is selected but the panel stays collapsed or hidden.
+      }
+    } else {
+      await this.app.page.keyboard.press(keypressWithCmdCtrlAndShift('KeyF'));
+      try {
+        await this.waitForVisible(5000);
+        this.view = await this.page.$(this.viewSelector);
+        return this;
+      } catch {
+        // Fall back to the command palette when the shortcut does not reveal the panel.
+      }
+    }
+
+    await super.open();
+    this.view = await this.page.$(this.viewSelector);
+    return this;
   }
 
   get searchInputSelector() {
@@ -215,19 +243,19 @@ export class OpenSumiSearchView extends OpenSumiPanel {
       return;
     }
     if (isDefined(options.isMatchCase)) {
-      (await options.isMatchCase)
+      await (options.isMatchCase
         ? this.activeSearchAction(SEARCH_OPTIONS.MATCH_CASE)
-        : this.deactiveSearchAction(SEARCH_OPTIONS.MATCH_CASE);
+        : this.deactiveSearchAction(SEARCH_OPTIONS.MATCH_CASE));
     }
     if (isDefined(options.isMatchWhileWord)) {
-      (await options.isMatchWhileWord)
+      await (options.isMatchWhileWord
         ? this.activeSearchAction(SEARCH_OPTIONS.MATCH_WHOLE_WORD)
-        : this.deactiveSearchAction(SEARCH_OPTIONS.MATCH_WHOLE_WORD);
+        : this.deactiveSearchAction(SEARCH_OPTIONS.MATCH_WHOLE_WORD));
     }
     if (isDefined(options.useRegexp)) {
-      (await options.useRegexp)
+      await (options.useRegexp
         ? this.activeSearchAction(SEARCH_OPTIONS.USE_REGEXP)
-        : this.deactiveSearchAction(SEARCH_OPTIONS.USE_REGEXP);
+        : this.deactiveSearchAction(SEARCH_OPTIONS.USE_REGEXP));
     }
     if (options.exclude || options.include || isDefined(options.useDefaultExclude)) {
       await this.toggleDisplaySearchRules(true);
@@ -248,6 +276,7 @@ export class OpenSumiSearchView extends OpenSumiPanel {
   }
 
   async getTreeNodeByIndex(index: number) {
+    await this.view?.waitForSelector('[class*="search_node___"]', { timeout: 10000 });
     const treeItems = await this.view?.$$('[class*="search_node___"]');
     if (!treeItems) {
       return;

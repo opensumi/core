@@ -25,7 +25,27 @@ export enum EAIPanelLayout {
   agentic = 'agentic',
 }
 
+export enum EAcpDeliveryMode {
+  minimal = 'minimal',
+  stream = 'stream',
+}
+
 export const WEBMCP_PROFILE_SETTING_ID = 'ai.native.webmcp.profile';
+
+const DEFAULT_AGENT_CONFIGS_PREFERENCE = {
+  qwen: {
+    command: 'qwen',
+    args: ['--acp', '--channel=ACP', '--input-format=stream-json', '--output-format=stream-json'],
+    streaming: true,
+    description: 'Qwen CLI Agent',
+  },
+  'claude-agent-acp': {
+    command: 'claude-agent-acp',
+    args: [],
+    streaming: true,
+    description: 'Claude Code ACP Agent',
+  },
+};
 
 export const aiNativePreferenceSchema: PreferenceSchema = {
   properties: {
@@ -185,13 +205,28 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     },
     [AINativeSettingSectionsId.AgentConfigs]: {
       type: 'object',
+      default: DEFAULT_AGENT_CONFIGS_PREFERENCE,
+      defaultSnippets: [
+        {
+          label: 'acp default agent configs',
+          description: '%preference.ai.native.agent.configs.snippet.description%',
+          bodyText:
+            '{\n\t"qwen": {\n\t\t"command": "qwen",\n\t\t"args": ["--acp", "--channel=ACP", "--input-format=stream-json", "--output-format=stream-json"],\n\t\t"streaming": true,\n\t\t"description": "Qwen CLI Agent"\n\t},\n\t"claude-agent-acp": {\n\t\t"command": "claude-agent-acp",\n\t\t"args": [],\n\t\t"streaming": true,\n\t\t"description": "Claude Code ACP Agent"\n\t}\n}',
+        },
+      ],
+      examples: [DEFAULT_AGENT_CONFIGS_PREFERENCE],
       description: '%preference.ai.native.agent.configs.description%',
       markdownDescription: '%preference.ai.native.agent.configs.markdownDescription%',
+      errorMessage: '%preference.ai.native.agent.configs.errorMessage%',
       additionalProperties: {
         type: 'object',
+        required: ['command'],
+        additionalProperties: false,
+        errorMessage: '%preference.ai.native.agent.configs.item.errorMessage%',
         properties: {
           command: {
             type: 'string',
+            minLength: 1,
             description: '%preference.ai.native.agent.configs.command.description%',
           },
           args: {
@@ -216,7 +251,6 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     },
     [AINativeSettingSectionsId.DefaultAgentType]: {
       type: 'string',
-      enum: ['qwen', 'claude-agent-acp'],
       default: 'claude-agent-acp',
       description: '%preference.ai.native.agent.defaultType.description%',
     },
@@ -260,6 +294,16 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       default: DEFAULT_ACP_THREAD_POOL_SIZE,
       minimum: 1,
       description: '%preference.ai-native.acp.threadPoolSize.description%',
+    },
+    [AINativeSettingSectionsId.AcpDeliveryMode]: {
+      type: 'string',
+      enum: [EAcpDeliveryMode.minimal, EAcpDeliveryMode.stream],
+      enumDescriptions: [
+        '%preference.ai-native.acp.deliveryMode.minimal%',
+        '%preference.ai-native.acp.deliveryMode.stream%',
+      ],
+      default: EAcpDeliveryMode.stream,
+      description: '%preference.ai-native.acp.deliveryMode.description%',
     },
     [AINativeSettingSectionsId.AgentConfigsOverride]: {
       type: 'object',

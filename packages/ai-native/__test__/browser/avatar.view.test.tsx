@@ -35,24 +35,6 @@ jest.mock('@opensumi/ide-core-browser', () => ({
   },
 }));
 
-jest.mock('@opensumi/ide-components', () => {
-  const React = require('react');
-  return {
-    Select: ({ value, onChange, options }: any) =>
-      React.createElement(
-        'select',
-        {
-          'data-testid': 'layout-select',
-          value,
-          onChange: (event: React.ChangeEvent<HTMLSelectElement>) => onChange?.(event.target.value),
-        },
-        (options || []).map((option: { label: string; value: string }) =>
-          React.createElement('option', { key: option.value, value: option.value }, option.label),
-        ),
-      ),
-  };
-});
-
 jest.mock('@opensumi/ide-core-browser/lib/components/ai-native', () => {
   const React = require('react');
   return {
@@ -74,6 +56,7 @@ jest.mock('../../src/browser/layout/view/avatar/avatar.module.less', () => ({
   ai_switch: 'ai_switch',
   avatar_icon_large: 'avatar_icon_large',
   layout_switch: 'layout_switch',
+  layout_switch_button: 'layout_switch_button',
 }));
 
 describe('AIChatLogoAvatar', () => {
@@ -102,17 +85,27 @@ describe('AIChatLogoAvatar', () => {
     });
   }
 
-  it('renders the layout select with the current mode', () => {
+  it('renders the layout switch button with the target agentic label', () => {
+    mockGetLayoutMode.mockReturnValue('classic');
     renderAvatar();
 
-    const select = container.querySelector<HTMLSelectElement>('[data-testid="layout-select"]');
-    expect(select).not.toBeNull();
-    expect(select!.value).toBe('agentic');
-    const options = Array.from(select!.querySelectorAll('option')).map((option) => option.value);
-    expect(options).toEqual(['agentic', 'classic']);
+    const button = container.querySelector<HTMLButtonElement>('[data-testid="layout-switch-button"]');
+    expect(button).not.toBeNull();
+    expect(button!.textContent).toBe('ai.native.layout.openAgentic');
   });
 
-  it('clicks the AI icon without changing layout mode', () => {
+  it('hides the AI icon while keeping the layout switch button in agentic layout', () => {
+    renderAvatar();
+
+    expect(container.querySelector('[data-testid="ai-logo-avatar"]')).toBeNull();
+
+    const button = container.querySelector<HTMLButtonElement>('[data-testid="layout-switch-button"]');
+    expect(button).not.toBeNull();
+    expect(button!.textContent).toBe('ai.native.layout.openClassic');
+  });
+
+  it('clicks the AI icon in classic layout without changing layout mode', () => {
+    mockGetLayoutMode.mockReturnValue('classic');
     renderAvatar();
 
     const aiLogoAvatar = container.querySelector('[data-testid="ai-logo-avatar"]');
@@ -122,7 +115,7 @@ describe('AIChatLogoAvatar', () => {
       Simulate.click(aiLogoAvatar!.parentElement as Element);
     });
 
-    expect(mockToggleAIChatView).toHaveBeenCalledWith('agentic');
+    expect(mockToggleAIChatView).toHaveBeenCalledWith('classic');
     expect(mockSetLayoutMode).not.toHaveBeenCalled();
   });
 
@@ -140,18 +133,34 @@ describe('AIChatLogoAvatar', () => {
     expect(mockToggleAIChatView).toHaveBeenCalledWith('classic');
   });
 
-  it('calls setLayoutMode when the select value changes', () => {
+  it('switches to classic layout when the button is clicked from agentic layout', () => {
     renderAvatar();
 
-    const select = container.querySelector<HTMLSelectElement>('[data-testid="layout-select"]');
-    expect(select).not.toBeNull();
+    const button = container.querySelector<HTMLButtonElement>('[data-testid="layout-switch-button"]');
+    expect(button).not.toBeNull();
+    expect(button!.textContent).toBe('ai.native.layout.openClassic');
 
     act(() => {
-      select!.value = 'classic';
-      Simulate.change(select!);
+      Simulate.click(button!);
     });
 
     expect(mockSetLayoutMode).toHaveBeenCalledWith('classic');
+    expect(mockToggleAIChatView).not.toHaveBeenCalled();
+  });
+
+  it('switches to agentic layout when the button is clicked from classic layout', () => {
+    mockGetLayoutMode.mockReturnValue('classic');
+    renderAvatar();
+
+    const button = container.querySelector<HTMLButtonElement>('[data-testid="layout-switch-button"]');
+    expect(button).not.toBeNull();
+    expect(button!.textContent).toBe('ai.native.layout.openAgentic');
+
+    act(() => {
+      Simulate.click(button!);
+    });
+
+    expect(mockSetLayoutMode).toHaveBeenCalledWith('agentic');
     expect(mockToggleAIChatView).not.toHaveBeenCalled();
   });
 
@@ -164,7 +173,7 @@ describe('AIChatLogoAvatar', () => {
       layoutChangeListeners.forEach((listener) => listener('classic'));
     });
 
-    const select = container.querySelector<HTMLSelectElement>('[data-testid="layout-select"]');
-    expect(select!.value).toBe('classic');
+    const button = container.querySelector<HTMLButtonElement>('[data-testid="layout-switch-button"]');
+    expect(button!.textContent).toBe('ai.native.layout.openAgentic');
   });
 });

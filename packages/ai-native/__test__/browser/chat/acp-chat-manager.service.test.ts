@@ -743,4 +743,28 @@ describe('AcpChatManagerService', () => {
       }),
     ]);
   });
+
+  it('applies ACP available command updates and emits a change event', () => {
+    const { service } = createConstructedService();
+    const model = new ChatModel(new ChatFeatureRegistry(), {
+      sessionId: 'acp:sess-1',
+    });
+    const availableCommands = [{ name: 'help', description: 'Show help' }];
+    const changes: any[] = [];
+
+    (service as any).sessionModels.set(model.sessionId, model);
+    service.onDidApplySessionState((event) => changes.push(event));
+
+    service.applySessionStateUpdate('sess-1', {
+      availableCommands,
+    } as any);
+
+    expect(service.getAvailableCommands()).toEqual(availableCommands);
+    expect(changes).toEqual([
+      expect.objectContaining({
+        sessionId: 'acp:sess-1',
+        model,
+      }),
+    ]);
+  });
 });

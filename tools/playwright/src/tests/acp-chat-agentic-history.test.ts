@@ -23,7 +23,6 @@ const METADATA_LEAK_SENTINELS = [
   'BDD_HISTORY_ASSISTANT',
   'BDD_HISTORY_TOOL_RESULT',
 ];
-
 let runtime: AcpBddFixtureRuntime;
 
 interface AcpSessionSummary {
@@ -165,10 +164,15 @@ async function clickHistoryItem(sessionId: string) {
 
 async function clickNewChat() {
   await ensureHistoryVisible();
-  await page
-    .getByLabel(/New Chat|新建聊天/)
-    .first()
-    .click();
+  await expect(page.locator('[data-testid="acp-chat-history-inline-new-chat"]')).toHaveCount(0);
+
+  const newSessionButton = page.locator('[data-testid="agentic-chat-new-session-button"]').first();
+  await expect(newSessionButton).toBeVisible({ timeout: 30_000 });
+  await newSessionButton.click();
+
+  const newSessionMenu = page.locator('[data-testid="agentic-chat-new-session-menu"]').first();
+  await expect(newSessionMenu).toBeVisible({ timeout: 30_000 });
+  await newSessionMenu.locator('[data-testid^="agentic-chat-new-session-agent-"]').first().click();
 }
 
 function expectMetadataOnly(value: unknown) {
@@ -268,6 +272,10 @@ test.describe('ACP Chat Agentic History', () => {
     expect(selectedSeededRows).toHaveLength(1);
     expect(selectedSeededRows[0].id).toBe(newerSession.sessionId);
 
+    const stateAfterSwitching = await getSessionState();
+    const sessionsAfterSwitching = await listSessions();
+    expectMetadataOnly({ sessionsAfterSwitching, stateAfterSwitching });
+
     await clickNewChat();
     await expect
       .poll(
@@ -275,7 +283,7 @@ test.describe('ACP Chat Agentic History', () => {
           const nextState = await getSessionState();
           return nextState.active;
         },
-        { timeout: 30_000 },
+        { message: 'New Chat should enter inactive draft state before the next send', timeout: 30_000 },
       )
       .toBe(false);
 
@@ -325,6 +333,12 @@ test.describe('ACP Chat Agentic History', () => {
       requirement: 'New Chat enters draft state without creating duplicate empty history rows.',
       status: 'pass',
       evidence: [draftProof].filter(Boolean) as string[],
+    });
+    evidence.recordCriticalPoint({
+      id: 'CP5',
+      requirement: 'Session state and list tools stay metadata-only after history switching and New Chat.',
+      status: 'pass',
+      evidence: [rowProof, draftProof].filter(Boolean) as string[],
     });
 
     await evidence.finalize({

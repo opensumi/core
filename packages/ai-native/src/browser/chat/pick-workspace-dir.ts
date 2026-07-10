@@ -1,9 +1,11 @@
-import { QuickPickService } from '@opensumi/ide-core-browser';
+import { HideReason, QuickPickService } from '@opensumi/ide-core-browser';
 import { URI, formatLocalize, localize } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 let cachedWorkspaceDir: string | null = null;
+
+const ACP_CWD_PICK_TIMEOUT_MS = 3000;
 
 /**
  * Resolve the workspace directory for ACP operations.
@@ -20,7 +22,7 @@ export async function pickWorkspaceDir(
     return cachedWorkspaceDir;
   }
 
-  const dir = await doPickWorkspaceDir(workspaceService, quickPick, messageService);
+  const dir = await doPickWorkspaceDir(workspaceService, quickPick, messageService, ACP_CWD_PICK_TIMEOUT_MS);
   cachedWorkspaceDir = dir;
   return dir;
 }
@@ -51,14 +53,17 @@ async function doPickWorkspaceDir(
   workspaceService: IWorkspaceService,
   quickPick: QuickPickService,
   messageService: IMessageService,
+  pickTimeoutMs?: number,
 ): Promise<string> {
   await workspaceService.whenReady;
 
   if (workspaceService.isMultiRootWorkspaceOpened) {
     const roots = workspaceService.tryGetRoots();
-    const choose = await quickPick.show(
+    const choose = await showWorkspaceDirQuickPick(
+      quickPick,
       roots.map((file) => new URI(file.uri).codeUri.fsPath),
       { placeholder: localize('chat.selectCWDForACP') },
+      pickTimeoutMs,
     );
     if (choose) {
       return choose;
@@ -74,4 +79,33 @@ async function doPickWorkspaceDir(
   }
 
   return '';
+}
+
+async function showWorkspaceDirQuickPick(
+  quickPick: QuickPickService,
+  roots: string[],
+  options: { placeholder: string },
+  pickTimeoutMs?: number,
+): Promise<string | undefined> {
+  const pickPromise = quickPick.show(roots, options);
+  if (!pickTimeoutMs) {
+    return pickPromise;
+  }
+
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<undefined>((resolve) => {
+    timeout = setTimeout(() => {
+      timeout = undefined;
+      quickPick.hide(HideReason.CANCELED);
+      resolve(undefined);
+    }, pickTimeoutMs);
+  });
+
+  try {
+    return await Promise.race([pickPromise, timeoutPromise]);
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+  }
 }

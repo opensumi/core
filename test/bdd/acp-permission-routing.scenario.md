@@ -56,7 +56,7 @@
 - `pendingCountExcludingActive` excludes the active session and counts other sessions only.
 - `hasPendingForSession` accepts both `acp:<id>` and raw `<id>`.
 - Reject returns a reject outcome and removes the dialog from pending indexes.
-- Close returns `timeout` or cancelled-equivalent outcome and removes pending indexes.
+- Close returns a cancelled outcome and removes pending indexes.
 - A duplicate pending `requestId` returns cancelled and does not replace the existing dialog resolver.
 - Unregistered sessions return cancelled without showing a browser dialog.
 - `clearSessionDialogs(sessionId)` resolves matching pending decisions as cancelled and leaves other sessions' dialogs untouched.

@@ -2,6 +2,8 @@ import { OpenSumiApp } from './app';
 import { OpenSumiView } from './view';
 
 export class OpenSumiSourceControlView extends OpenSumiView {
+  private readonly treeNodeSelector = '[data-view-id="scm_view"] [class*="scm_tree_node_content___"]';
+
   constructor(app: OpenSumiApp, name: string) {
     super(app, {
       viewSelector: '[data-view-id="scm_view"]',
@@ -10,8 +12,31 @@ export class OpenSumiSourceControlView extends OpenSumiView {
     });
   }
 
+  async open(): Promise<OpenSumiView | undefined> {
+    const scmEntry = this.page.locator('#opensumi-left-tabbar li#scm').first();
+    const scmEntryVisible = await scmEntry.waitFor({ state: 'visible', timeout: 30000 }).then(
+      () => true,
+      () => false,
+    );
+    if (scmEntryVisible) {
+      await scmEntry.click();
+      try {
+        await this.waitForVisible(30000);
+        return this;
+      } catch {
+        // Fall back to quick open when the activity icon is selected but the side panel stays collapsed.
+      }
+    }
+
+    return super.open();
+  }
+
   async getTreeNode() {
-    return await this.page.$('[class*="scm_tree_node_content___"]');
+    return await this.page.$(this.treeNodeSelector);
+  }
+
+  async waitForTreeNode(timeout = 10000) {
+    return await this.page.waitForSelector(this.treeNodeSelector, { state: 'visible', timeout });
   }
 
   async getTreeNodeActionById(id: string) {

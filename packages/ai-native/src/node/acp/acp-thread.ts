@@ -1127,7 +1127,7 @@ export class AcpThread extends Disposable implements IAcpThread {
     this._needsReset = false;
     this.clearSessionState();
     // NOTE: Do NOT clear _initialized — thread remains initialized and reusable
-    this._pendingPermissionRequests.clear();
+    this.resolvePendingPermissionRequestsAsCancelled();
     this.setStatus('idle');
   }
 
@@ -1135,11 +1135,11 @@ export class AcpThread extends Disposable implements IAcpThread {
     this.logger?.log(
       `[AcpThread:${this.threadId}] dispose() — status=${this._status}, entries=${this._entries.length}`,
     );
+    this.resolvePendingPermissionRequestsAsCancelled();
     this._eventEmitter.dispose();
     await this.killProcess();
     this._connection = null;
     this._connected = false;
-    this._pendingPermissionRequests.clear();
     super.dispose();
   }
 
@@ -1529,24 +1529,9 @@ export class AcpThread extends Disposable implements IAcpThread {
     const requestId = `${sessionId}:${toolCallId}`;
 
     return new Promise<RequestPermissionResponse>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        this._pendingPermissionRequests.delete(requestId);
-        resolve({
-          outcome: {
-            outcome: 'cancelled',
-          },
-        });
-      }, 60000); // 60s timeout
-
       this._pendingPermissionRequests.set(requestId, {
-        resolve: (resp) => {
-          clearTimeout(timeout);
-          resolve(resp);
-        },
-        reject: (err) => {
-          clearTimeout(timeout);
-          reject(err);
-        },
+        resolve,
+        reject,
       });
 
       // Forward to browser via permission caller
@@ -1567,8 +1552,8 @@ export class AcpThread extends Disposable implements IAcpThread {
       if (pending) {
         this._pendingPermissionRequests.delete(requestId);
         pending.resolve(response);
+        this.respondToToolCall(toolCallId, response.outcome.outcome !== 'cancelled');
       }
-      this.respondToToolCall(toolCallId, response.outcome.outcome !== 'cancelled');
     } catch (err) {
       const pending = this._pendingPermissionRequests.get(requestId);
       if (pending) {
@@ -1576,6 +1561,23 @@ export class AcpThread extends Disposable implements IAcpThread {
         this._pendingPermissionRequests.delete(requestId);
       }
     }
+  }
+
+  private resolvePendingPermissionRequestsAsCancelled(): void {
+    if (this._pendingPermissionRequests.size === 0) {
+      return;
+    }
+
+    const response: RequestPermissionResponse = {
+      outcome: {
+        outcome: 'cancelled',
+      },
+    };
+
+    for (const pending of this._pendingPermissionRequests.values()) {
+      pending.resolve(response);
+    }
+    this._pendingPermissionRequests.clear();
   }
 
   // -----------------------------------------------------------------------

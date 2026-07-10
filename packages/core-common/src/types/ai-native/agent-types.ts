@@ -5,8 +5,8 @@
 
 import type { EnvVariable, McpServer } from './acp-types';
 
-// ACP Agent 类型
-export type ACPAgentType = 'qwen' | 'claude-agent-acp';
+// ACP Agent 类型，内置为 qwen / claude-agent-acp，用户也可以通过配置扩展自定义类型。
+export type ACPAgentType = string;
 
 // Default agent type (fallback when no preference is set)
 export const DEFAULT_AGENT_TYPE: ACPAgentType = 'claude-agent-acp';

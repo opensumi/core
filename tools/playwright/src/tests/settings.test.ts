@@ -4,7 +4,6 @@ import { expect } from '@playwright/test';
 
 import { OpenSumiApp } from '../app';
 import { OpenSumiComponentEditor } from '../component-editor';
-import { OPENSUMI_VIEW_CONTAINERS } from '../constans';
 import { OpenSumiContextMenu } from '../context-menu';
 import { OpenSumiExplorerView } from '../explorer-view';
 import { keypressWithCmdCtrl } from '../utils';
@@ -29,9 +28,11 @@ test.describe('OpenSumi Shortcuts', () => {
   });
 
   const openSettingsView = async () => {
-    const leftTabbar = await app.page.waitForSelector(`#${OPENSUMI_VIEW_CONTAINERS.LEFT_TABBAR}`);
-    const settingsButton = await leftTabbar.$('[class*="titleActions___"] span');
-    await settingsButton?.click();
+    const settingsButton = app.page
+      .locator('[aria-label="Open Preference Panel"], [title="Open Preference Panel"]')
+      .last();
+    await settingsButton.waitFor({ state: 'visible' });
+    await settingsButton.click();
     const menu = new OpenSumiContextMenu(app);
     await menu.clickMenuItem('Settings');
   };

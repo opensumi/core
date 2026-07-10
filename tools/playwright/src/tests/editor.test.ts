@@ -11,10 +11,38 @@ import { OpenSumiWorkspace } from '../workspace';
 
 import test, { page } from './hooks';
 
+interface MenuWithItems {
+  menuItemByName(name: string): Promise<{ click(): Promise<void> } | undefined>;
+  visibleMenuItems(): Promise<(string | undefined)[]>;
+}
+
 let app: OpenSumiApp;
 let explorer: OpenSumiExplorerView;
 let editor: OpenSumiTextEditor;
 let workspace: OpenSumiWorkspace;
+
+const editorMenuLabels = {
+  copyPath: ['Copy Path', '复制路径'],
+  copyRelativePath: ['Copy Relative Path', '复制相对路径'],
+  paste: ['Paste', '粘贴'],
+  goToSymbol: ['Go to Symbol...', '转到符号...'],
+};
+
+async function menuItemByAnyName(menu: MenuWithItems | undefined, names: string[]) {
+  if (!menu) {
+    throw new Error(`Cannot find menu item "${names.join('" or "')}" because the menu did not open`);
+  }
+
+  for (const name of names) {
+    const item = await menu.menuItemByName(name);
+    if (item) {
+      return item;
+    }
+  }
+
+  const visibleMenuItems = (await menu.visibleMenuItems()).join(', ');
+  throw new Error(`Cannot find menu item "${names.join('" or "')}". Visible menu items: ${visibleMenuItems}`);
+}
 
 test.describe('OpenSumi Editor', () => {
   test.beforeAll(async () => {
@@ -91,36 +119,37 @@ console.log(a);`,
     const node = await explorer.getFileStatTreeNodeByPath('editor3.js');
     let fileMenu = await node?.openContextMenu();
     expect(await fileMenu?.isOpen()).toBeTruthy();
-    const copyPath = await fileMenu?.menuItemByName('Copy Path');
+    const copyRelativePath = await menuItemByAnyName(fileMenu, editorMenuLabels.copyRelativePath);
     await app.page.waitForTimeout(400);
-    await copyPath?.click();
+    await copyRelativePath.click();
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor3.js');
     await editor.addTextToNewLineAfterLineByLineNumber(1, 'File Path: ');
+    await editor.addTextToNewLineAfterLineByLineNumber(2, 'File Relative Path: ');
     await app.page.waitForTimeout(400);
-    let editorMenu = await editor.openLineContextMenuByLineNumber(2);
+    let editorMenu = await editor.openLineContextMenuByLineNumber(3);
     expect(await editorMenu?.isOpen()).toBeTruthy();
-    let paste = await editorMenu?.menuItemByName('Paste');
-    await paste?.click();
+    let paste = await menuItemByAnyName(editorMenu, editorMenuLabels.paste);
+    await paste.click();
     await app.page.waitForTimeout(200);
-    expect(await editor.numberOfLines()).toBe(2);
+    expect(await editor.numberOfLines()).toBe(3);
+    expect(await editor.textContentOfLineContainingText('File Relative Path: editor3.js')).toBeTruthy();
+
+    const absolutePathNode = await explorer.getFileStatTreeNodeByPath('editor3.js');
+    fileMenu = await absolutePathNode?.openContextMenu();
+    const copyPath = await menuItemByAnyName(fileMenu, editorMenuLabels.copyPath);
+    await copyPath.click();
+    await app.page.waitForTimeout(200);
+    editorMenu = await editor.openLineContextMenuByLineNumber(2);
+    expect(await editorMenu?.isOpen()).toBeTruthy();
+    paste = await menuItemByAnyName(editorMenu, editorMenuLabels.paste);
+    await paste.click();
+    await app.page.waitForTimeout(200);
+    expect(await editor.numberOfLines()).toBe(3);
     expect(
       await editor.textContentOfLineContainingText(
         `File Path: ${workspace.workspace.resolve('editor3.js').codeUri.fsPath.toString()}`,
       ),
     ).toBeTruthy();
-    fileMenu = await node?.openContextMenu();
-    const copyRelativePath = await fileMenu?.menuItemByName('Copy Relative Path');
-    await copyRelativePath?.click();
-    await app.page.waitForTimeout(200);
-    await editor.addTextToNewLineAfterLineByLineNumber(2, 'File Relative Path: ');
-    await app.page.waitForTimeout(400);
-    editorMenu = await editor.openLineContextMenuByLineNumber(3);
-    expect(await editorMenu?.isOpen()).toBeTruthy();
-    paste = await editorMenu?.menuItemByName('Paste');
-    await paste?.click();
-    await app.page.waitForTimeout(200);
-    expect(await editor.numberOfLines()).toBe(3);
-    expect(await editor.textContentOfLineContainingText('File Relative Path: editor3.js')).toBeTruthy();
   });
 
   test('Go to Symbol... should be worked', async () => {
@@ -129,8 +158,8 @@ console.log(a);`,
     await app.page.waitForTimeout(2000);
     const editorMenu = await editor.openLineContextMenuByLineNumber(3);
     expect(await editorMenu?.isOpen()).toBeTruthy();
-    const goto = await editorMenu?.menuItemByName('Go to Symbol...');
-    await goto?.click();
+    const goto = await menuItemByAnyName(editorMenu, editorMenuLabels.goToSymbol);
+    await goto.click();
     await app.page.waitForSelector(`#${OPENSUMI_VIEW_CONTAINERS.QUICKPICK_INPUT}`);
     await app.page.keyboard.press(keypressWithCmdCtrl('KeyA'));
     await app.page.keyboard.press('Delete');

@@ -14,16 +14,24 @@ export class OpenSumiOutputView extends OpenSumiPanel {
     const titleBar = await this.view?.$('[class*="panel_title_bar___"]');
     const select = await titleBar?.$('.kt-select-option');
     if (select) {
+      const current = await select.textContent();
+      if (current?.trim() === type) {
+        return;
+      }
       await select.click();
-      const wrapper = await titleBar?.$('.kt-select-options');
+      const wrapper =
+        (await this.page
+          .waitForSelector('.kt-select-options', { state: 'visible', timeout: 5000 })
+          .catch(() => null)) || (await titleBar?.$('.kt-select-options'));
       const options = await wrapper?.$$('span');
       if (!options) {
         return;
       }
       for (const option of options) {
         const text = await option.textContent();
-        if (text === type) {
+        if (text?.trim() === type) {
           await option.click();
+          await this.page.waitForTimeout(200);
           return;
         }
       }

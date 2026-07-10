@@ -13,6 +13,7 @@ import {
   IChatSessionState,
   MCPConfigServiceToken,
   ThreadStatus,
+  localize,
 } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
@@ -186,12 +187,17 @@ export class AcpChatAgent implements IChatAgent {
     try {
       const config = await this.configProvider.resolveConfig();
       this.logger.log(`[ACP Chat] invoke: sessionId=${sessionId}, config=${JSON.stringify(config)}`);
+      const acpDeliveryMode = this.preferenceService.get<'minimal' | 'stream'>(
+        AINativeSettingSectionsId.AcpDeliveryMode,
+        'stream',
+      );
 
       const requestOptions = {
         requestId: request.requestId,
         sessionId,
         history: [lastmessage],
         images: request.images,
+        acpDeliveryMode,
         ...(await this.getRequestOptions()),
         agentSessionConfig: config,
       };
@@ -217,6 +223,7 @@ export class AcpChatAgent implements IChatAgent {
               `[ACP Chat] stream data — sessionId=${sessionId}, requestId=${request.requestId}, kind=threadStatus, status=${data.threadStatus}`,
             );
             this.handleThreadStatusUpdate(data.threadStatus, data.sessionId);
+            progress({ kind: 'safeProgress', content: this.getThreadStatusSafeProgress(data.threadStatus) });
           } else if (data.kind === 'sessionState') {
             this.logger.log(
               `[ACP Chat] stream data — sessionId=${sessionId}, requestId=${
@@ -280,12 +287,30 @@ export class AcpChatAgent implements IChatAgent {
     }
   }
 
+  private getThreadStatusSafeProgress(status: ThreadStatus): string {
+    switch (status) {
+      case 'working':
+        return localize('aiNative.chat.safeProgress.agentWorking');
+      case 'auth_required':
+        return localize('aiNative.chat.safeProgress.authRequired');
+      case 'errored':
+        return localize('aiNative.chat.safeProgress.errored');
+      case 'disconnected':
+        return localize('aiNative.chat.safeProgress.disconnected');
+      case 'idle':
+      case 'awaiting_prompt':
+      default:
+        return '';
+    }
+  }
+
   private handleSessionStateUpdate(state: IChatSessionState, fallbackSessionId: string): void {
     const manager = this.chatManagerService as AcpChatManagerService;
     manager.applySessionStateUpdate?.(state.sessionId || fallbackSessionId, {
       currentModeId: state.currentModeId,
       currentModelId: state.currentModelId,
       configOptions: state.configOptions,
+      availableCommands: state.availableCommands,
     });
   }
 

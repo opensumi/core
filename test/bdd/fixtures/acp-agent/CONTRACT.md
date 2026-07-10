@@ -23,6 +23,7 @@ This contract summarizes the deterministic fixture modes consumed by BDD hardeni
 | `config-failure` | Deterministic `session/set_config_option` failure. |
 | `process-exit` | Emits deterministic prompt updates, then exits the ACP agent process with a fixed non-zero code. |
 | `history` | Two deterministic seeded sessions, stable list ordering, normal modes/models/config/options, and bounded rich replay on `session/load` using user, thought, plan, assistant, tool-call, tool-result, and usage updates. |
+| `file-link` | Bounded assistant markdown containing plain, inline-code, external-label, and fenced-code file path cases for file-link UI regression coverage. |
 
 ## Capability Matrix
 
@@ -45,6 +46,7 @@ This contract summarizes the deterministic fixture modes consumed by BDD hardeni
 | `acp-chat-agentic-debug-log-from-chat` | `stream-rich` | Rich deterministic ACP traffic exists for log correlation. | Product/scenario owner needs debug-log viewer/store pass and redacted render/copy contract. |
 | `acp-chat-agentic-theme-persistence` | none | Optional deterministic chat content can use `stream-rich`, but the core contract is not ACP fixture behavior. | Scenario owner needs stable theme/layout preference controls. |
 | `acp-chat-agentic-history` | `history`, `stream-rich` | Seeded sessions, stable ordering, rich replay, and normal send fixture exist. Hardened Playwright coverage exists in `tools/playwright/src/tests/acp-chat-agentic-history.test.ts`. | No shared mock-agent fixture gap for the history-backed pass. |
+| `acp-chat-agentic-file-link-open` | `file-link` | Deterministic file-link markdown exists for opening workspace file paths from Agentic chat, including main editor/Explorer recovery after workbench collapse. | No shared mock-agent fixture gap. |
 | `acp-chat-agentic-layout-interop` | none | Not an ACP mock-agent contract. | Scenario owner needs stable Agentic/Classic layout switch control; read-only layout checks can proceed separately. |
 | `session-mode` | session with `agent` and `chat` modes | Mock-agent session responses include `agent` and `chat` modes and mode updates. | Scenario owner needs to run against deterministic mock session or product must expose required mode state through the full-profile MCP state path. |
 | `session-relay` | `history` | `history` now supplies two seeded sessions and bounded replay data; stable permission dialog selectors are available for the relay permission gate. | Scenario owner still needs prepared relay digest state and scheduled relay-specific full-profile coverage. |

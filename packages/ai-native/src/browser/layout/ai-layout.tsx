@@ -116,13 +116,32 @@ export const ClassicShell = () => {
 
 export const AgenticShell = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const clientApp = useInjectable<IClientApp>(IClientApp);
   const didDefaultOpenAIChat = useRef(false);
   const { layout } = getStorageValue(getPanelLayoutStorageKey('agentic'));
+  const [isWorkbenchVisible, setIsWorkbenchVisible] = useState(
+    () => panelLayoutService.isAgenticWorkbenchVisible() !== false,
+  );
 
   useEffect(() => {
     layoutService.setLayoutStateKey(getPanelLayoutStorageKey('agentic'), { saveCurrent: false });
   }, [layoutService]);
+
+  useEffect(() => {
+    const currentVisibility = panelLayoutService.isAgenticWorkbenchVisible();
+    if (typeof currentVisibility === 'boolean') {
+      setIsWorkbenchVisible(currentVisibility);
+    }
+
+    const disposable = panelLayoutService.onDidChangeAgenticWorkbenchVisibility((visible) => {
+      setIsWorkbenchVisible(visible);
+    });
+
+    return () => {
+      disposable.dispose();
+    };
+  }, [panelLayoutService]);
 
   const aiChatLayout = layout[AI_CHAT_VIEW_ID];
   const shouldDefaultOpenAIChat = !aiChatLayout?.currentId;
@@ -175,6 +194,15 @@ export const AgenticShell = () => {
       minSize={0}
     />
   );
+
+  const expandedAIChatSlot = aiChatSlot;
+  const collapsedAIChatSlot = React.cloneElement(aiChatSlot, {
+    defaultSize: undefined,
+    flex: 1,
+    flexGrow: 1,
+    maxResize: undefined,
+    minResize: 0,
+  });
 
   const editorWithBottomPanel = (id: string) => (
     <SplitPanel
@@ -230,7 +258,7 @@ export const AgenticShell = () => {
         direction={'left-to-right'}
         resizeHandleClassName={'design-slot_resize_horizontal'}
       >
-        {[aiChatSlot, workbench]}
+        {isWorkbenchVisible ? [expandedAIChatSlot, workbench] : [collapsedAIChatSlot]}
       </SplitPanel>
       <SlotRenderer id='statusbar' defaultSize={24} slot='statusBar' />
     </BoxPanel>

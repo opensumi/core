@@ -259,12 +259,14 @@ describe('AcpCliBackService', () => {
       expect(mockAgentService.createSession).toHaveBeenCalledWith(mockAgentSessionConfig);
     });
 
-    it('should forward agent updates to the output stream', async () => {
+    it('should default to forwarding agent updates to the output stream', async () => {
       mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
-      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+      });
 
       const receivedData: any[] = [];
       output.onData((data) => receivedData.push(data));
@@ -279,12 +281,104 @@ describe('AcpCliBackService', () => {
       expect(receivedData[1]).toEqual({ kind: 'reasoning', content: 'Thinking...' });
     });
 
+    it('should deliver only final message and distinct thread status in minimal mode', async () => {
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'minimal',
+      });
+      const receivedData: any[] = [];
+      output.onData((data) => receivedData.push(data));
+
+      agentStream.emitData({ type: 'thread_status', content: '', threadStatus: 'working' });
+      agentStream.emitData({ type: 'thought', content: 'hidden thought', threadStatus: 'working' });
+      agentStream.emitData({ type: 'message', content: 'Hello ', threadStatus: 'working' });
+      agentStream.emitData({ type: 'tool_call_status', content: 'running', threadStatus: 'working' });
+      agentStream.emitData({ type: 'message', content: 'world', threadStatus: 'working' });
+      agentStream.emitData({ type: 'thread_status', content: '', threadStatus: 'awaiting_prompt' });
+      agentStream.emitData({ type: 'done', content: '', threadStatus: 'awaiting_prompt' });
+
+      expect(receivedData).toEqual([
+        { kind: 'threadStatus', threadStatus: 'working', sessionId: 'new-session' },
+        { kind: 'safeProgress', content: 'Running tool' },
+        { kind: 'threadStatus', threadStatus: 'awaiting_prompt', sessionId: 'new-session' },
+        { kind: 'content', content: 'Hello world' },
+      ]);
+    });
+
+    it('should emit throttled aggregate safe progress in minimal mode', async () => {
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+      const nowSpy = jest.spyOn(Date, 'now');
+
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'minimal',
+      });
+      const receivedData: any[] = [];
+      output.onData((data) => receivedData.push(data));
+
+      try {
+        nowSpy.mockReturnValue(1000);
+        agentStream.emitData({
+          type: 'plan',
+          content: '- [x] Inspect workspace\n- [ ] Run secret command\n\n',
+          threadStatus: 'working',
+        });
+        nowSpy.mockReturnValue(1500);
+        agentStream.emitData({ type: 'tool_call_status', content: 'reading /secret/file', threadStatus: 'working' });
+        nowSpy.mockReturnValue(2100);
+        agentStream.emitData({ type: 'tool_call_status', content: 'reading /secret/file', threadStatus: 'working' });
+        agentStream.emitData({ type: 'done', content: '', threadStatus: 'awaiting_prompt' });
+
+        expect(receivedData).toEqual([
+          { kind: 'threadStatus', threadStatus: 'working', sessionId: 'new-session' },
+          { kind: 'safeProgress', content: 'Planning: 1/2 steps complete' },
+          { kind: 'safeProgress', content: 'Running tool' },
+          { kind: 'threadStatus', threadStatus: 'awaiting_prompt', sessionId: 'new-session' },
+        ]);
+        expect(JSON.stringify(receivedData)).not.toContain('Inspect workspace');
+        expect(JSON.stringify(receivedData)).not.toContain('secret');
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
+
+    it('should preserve full streaming behavior in stream mode', async () => {
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'stream',
+      });
+      const receivedData: any[] = [];
+      output.onData((data) => receivedData.push(data));
+
+      agentStream.emitData({ type: 'message', content: 'Hello' });
+      agentStream.emitData({ type: 'thought', content: 'Thinking' });
+      agentStream.emitData({ type: 'done', content: '' });
+
+      expect(receivedData).toEqual([
+        { kind: 'content', content: 'Hello' },
+        { kind: 'reasoning', content: 'Thinking' },
+      ]);
+    });
+
     it('should emit error when agent stream fails', async () => {
       mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
-      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'stream',
+      });
 
       const receivedError: Error[] = [];
       output.onError((err) => receivedError.push(err));
@@ -300,7 +394,10 @@ describe('AcpCliBackService', () => {
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
-      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'stream',
+      });
 
       const receivedError: Error[] = [];
       output.onError((err) => receivedError.push(err));
@@ -388,6 +485,25 @@ describe('AcpCliBackService', () => {
       });
     });
 
+    it('should convert native available_commands_update to a session_state update', () => {
+      const availableCommands = [{ name: 'help', description: 'Show help' }];
+
+      expect(
+        toAgentUpdate({
+          sessionId: 'sess-1',
+          update: {
+            sessionUpdate: 'available_commands_update',
+            availableCommands,
+          },
+        } as any),
+      ).toEqual({
+        type: 'session_state',
+        content: '',
+        sessionId: 'sess-1',
+        availableCommands,
+      });
+    });
+
     it('should convert native top-level plan entries to plan update content', () => {
       expect(
         toAgentUpdate({
@@ -411,7 +527,10 @@ describe('AcpCliBackService', () => {
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
-      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'stream',
+      });
       const receivedData: any[] = [];
       output.onData((data) => receivedData.push(data));
 
@@ -426,7 +545,10 @@ describe('AcpCliBackService', () => {
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
-      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'stream',
+      });
       const receivedData: any[] = [];
       output.onData((data) => receivedData.push(data));
 
@@ -441,7 +563,10 @@ describe('AcpCliBackService', () => {
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
-      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'stream',
+      });
       const receivedData: any[] = [];
       output.onData((data) => receivedData.push(data));
 
@@ -472,7 +597,10 @@ describe('AcpCliBackService', () => {
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
-      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'stream',
+      });
       const receivedData: any[] = [];
       output.onData((data) => receivedData.push(data));
 
@@ -487,7 +615,10 @@ describe('AcpCliBackService', () => {
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
-      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'stream',
+      });
       const receivedData: any[] = [];
       output.onData((data) => receivedData.push(data));
 
@@ -516,7 +647,10 @@ describe('AcpCliBackService', () => {
       const agentStream = new SumiReadableStream<AgentUpdate>();
       mockAgentService.sendMessage.mockReturnValue(agentStream);
 
-      const output = await service.requestStream('prompt', { agentSessionConfig: mockAgentSessionConfig });
+      const output = await service.requestStream('prompt', {
+        agentSessionConfig: mockAgentSessionConfig,
+        acpDeliveryMode: 'stream',
+      });
       const receivedData: any[] = [];
       output.onData((data) => receivedData.push(data));
 

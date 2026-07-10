@@ -78,6 +78,7 @@ Fixtures:
   config-failure    Fails deterministic session/set_config_option calls.
   process-exit      Emits prompt updates, then exits the ACP agent process.
   history           Seeds deterministic list/load session metadata and bounded rich replay updates.
+  file-link         Emits deterministic assistant markdown with file-link cases.
 `);
   process.exit(0);
 }
@@ -533,6 +534,22 @@ function createAgent(conn) {
     process.exit(PROCESS_EXIT_FIXTURE_CODE);
   };
 
+  const runFileLinkStream = async (session) => {
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_message_chunk',
+      content: text(`BDD_FILE_LINK_READY
+
+Open test/test.js:L1-L2
+Inline \`test/test.js:1:1\`
+External label [test/test.js](https://example.com/opensumi-file-link-label)
+
+\`\`\`text
+test/test.js
+\`\`\`
+`),
+    });
+  };
+
   return {
     async initialize(params) {
       log('initialize', params?.protocolVersion);
@@ -669,6 +686,18 @@ function createAgent(conn) {
       }
       if (options.fixture === 'process-exit') {
         return runProcessExit(session);
+      }
+      if (options.fixture === 'file-link') {
+        await runFileLinkStream(session);
+        return {
+          stopReason: 'end_turn',
+          usage: {
+            inputTokens: Math.max(1, promptText.length),
+            outputTokens: 24,
+            totalTokens: Math.max(1, promptText.length) + 24,
+            thoughtTokens: 0,
+          },
+        };
       }
 
       await runRichStream(session, promptText);

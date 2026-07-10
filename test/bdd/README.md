@@ -23,12 +23,13 @@ const shellReady =
 const workbenchVisible =
   text.includes('EXPLORER') ||
   text.includes('Agentic') ||
+  text.includes('AI Assistant') ||
   text.includes('editor.js') ||
   !!document.querySelector('.monaco-editor');
 shellReady && workbenchVisible;
 ```
 
-`EXPLORER` remains a useful Explorer-specific signal, but it is not the only valid readiness marker for Agentic-first layouts. Chrome DevTools MCP is used for browser startup, DOM readiness, UI interaction, and dialog observability. ACP tool execution uses the current OpenSumi MCP bridge when a scenario explicitly requires MCP transport. `navigator.modelContext` remains a supported WebMCP surface for browser runtime checks and is validated against MCP only where a scenario explicitly compares browser and MCP tool exposure.
+`EXPLORER` remains a useful Explorer-specific signal, but it is not the only valid readiness marker for Agentic-first layouts. `AI Assistant` is also a valid readiness marker when the Agentic workbench starts hidden. Chrome DevTools MCP is used for browser startup, DOM readiness, UI interaction, and dialog observability. ACP tool execution uses the current OpenSumi MCP bridge when a scenario explicitly requires MCP transport. `navigator.modelContext` remains a supported WebMCP surface for browser runtime checks and is validated against MCP only where a scenario explicitly compares browser and MCP tool exposure.
 
 ## Scenario Layers
 
@@ -270,6 +271,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-keyboard-a11y.scenario.md` | `runtime-ui` | `interactive` | Keyboard-only input, commands, history, dialogs, and tool-card interaction. |
 | `acp-chat-agentic-debug-log-from-chat.scenario.md` | `runtime-ui` | `full` | Debug log viewer correlation and controls after a chat stream; redaction audit is blocked until product support exists. |
 | `acp-chat-agentic-theme-persistence.scenario.md` | `runtime-ui` | `default` | Theme, Agentic layout preference, geometry, and visual usability persistence. |
+| `acp-chat-agentic-header-maximize.scenario.md` | `runtime-ui` | `interactive` | Chat header active-session title and maximize action collapsing workbench/editor/Explorer while keeping AI Chat visible. |
 | `acp-chat-agentic-history.scenario.md` | `runtime-ui` | `interactive` | New Chat, persisted history, session switching, and permission badges. |
 | `acp-chat-agentic-layout-interop.scenario.md` | `runtime-ui` | `interactive` | Explorer/editor interop, resize, reload, and Agentic/Classic round trip. |
 | `available-commands.scenario.md` | `mcp-contract` | `interactive/full` | Command metadata through profile-granted `acp_chat`. |

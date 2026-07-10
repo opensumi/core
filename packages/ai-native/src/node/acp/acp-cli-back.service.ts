@@ -9,6 +9,7 @@ import {
   IChatContent,
   IChatProgress,
   IChatReasoning,
+  IChatSafeProgress,
   IChatSessionState,
   IChatThreadStatus,
   IChatToolCall,
@@ -33,6 +34,16 @@ import { AcpThreadStatusCallerServiceToken } from './acp-thread-status-caller.se
 import type { CoreMessage } from 'ai';
 
 export const AcpCliBackServiceToken = Symbol('AcpCliBackServiceToken');
+
+const ACP_SAFE_PROGRESS_MAX_EVENTS = 5;
+const ACP_SAFE_PROGRESS_MIN_INTERVAL = 1000;
+const ACP_SAFE_PROGRESS_MAX_LENGTH = 120;
+
+interface AcpSafeProgressState {
+  count: number;
+  lastContent?: string;
+  lastEmittedAt: number;
+}
 
 /**
  * Type guard to check if a value is a valid CoreMessage
@@ -440,8 +451,16 @@ ${input}`;
 
       const agentStream = this.agentService.sendMessage(request, config);
       const toolCallCache = new Map<string, IChatToolCall>();
+      const deliveryMode = this.getAcpDeliveryMode(options);
+      const lastThreadStatusRef: { current?: ThreadStatus } = {};
       let agentUpdateCount = 0;
       let hasLoggedFirstContent = false;
+      let bufferedFinalContent = '';
+      let discardedByCancellation = false;
+      const safeProgressState: AcpSafeProgressState = {
+        count: 0,
+        lastEmittedAt: 0,
+      };
 
       cancelToken?.onCancellationRequested(async () => {
         this.logger.warn(
@@ -449,6 +468,7 @@ ${input}`;
             options.requestId ?? '(empty)'
           }`,
         );
+        discardedByCancellation = true;
         await this.agentService.cancelRequest(sessionId);
         stream.end();
       });
@@ -465,6 +485,35 @@ ${input}`;
           );
           hasLoggedFirstContent = true;
         }
+
+        if (deliveryMode === 'minimal') {
+          if (update.type === 'message') {
+            bufferedFinalContent += update.content;
+          }
+          if (update.type === 'session_state') {
+            const progress = this.convertAgentUpdateToChatProgress(update, toolCallCache);
+            if (progress) {
+              stream.emitData(progress);
+            }
+          }
+
+          this.emitDistinctThreadStatus(stream, request.sessionId, update.threadStatus, lastThreadStatusRef);
+          this.emitSafeProgress(stream, update, safeProgressState);
+
+          if (update.type === 'done') {
+            this.logger.log(
+              `[ACP Back] agentStream done: sessionId=${request.sessionId}, requestId=${
+                options.requestId ?? '(empty)'
+              }, updates=${agentUpdateCount}, deliveryMode=minimal, finalChars=${bufferedFinalContent.length}`,
+            );
+            if (!discardedByCancellation && bufferedFinalContent) {
+              stream.emitData({ kind: 'content', content: bufferedFinalContent } as IChatContent);
+            }
+            stream.end();
+          }
+          return;
+        }
+
         const progress = this.convertAgentUpdateToChatProgress(update, toolCallCache);
         if (progress) {
           stream.emitData(progress);
@@ -509,6 +558,81 @@ ${input}`;
     }
   }
 
+  private getAcpDeliveryMode(options: IAIBackServiceOption): 'minimal' | 'stream' {
+    return options.acpDeliveryMode === 'minimal' ? 'minimal' : 'stream';
+  }
+
+  private emitDistinctThreadStatus(
+    stream: SumiReadableStream<IChatProgress>,
+    sessionId: string,
+    status: ThreadStatus | undefined,
+    lastStatusRef: { current?: ThreadStatus },
+  ): void {
+    if (!status || status === lastStatusRef.current) {
+      return;
+    }
+    lastStatusRef.current = status;
+    stream.emitData({
+      kind: 'threadStatus',
+      threadStatus: status,
+      sessionId,
+    } as IChatThreadStatus);
+  }
+
+  private emitSafeProgress(
+    stream: SumiReadableStream<IChatProgress>,
+    update: AgentUpdate,
+    state: AcpSafeProgressState,
+  ): void {
+    const content = this.getSafeProgressContent(update);
+    if (!content || content === state.lastContent || state.count >= ACP_SAFE_PROGRESS_MAX_EVENTS) {
+      return;
+    }
+
+    const now = Date.now();
+    if (state.lastEmittedAt && now - state.lastEmittedAt < ACP_SAFE_PROGRESS_MIN_INTERVAL) {
+      return;
+    }
+
+    state.count += 1;
+    state.lastContent = content;
+    state.lastEmittedAt = now;
+    stream.emitData({
+      kind: 'safeProgress',
+      content,
+    } as IChatSafeProgress);
+  }
+
+  private getSafeProgressContent(update: AgentUpdate): string | undefined {
+    switch (update.type) {
+      case 'plan':
+        return this.getPlanSafeProgress(update.content);
+      case 'tool_call':
+      case 'tool_call_status':
+        return 'Running tool';
+      default:
+        return undefined;
+    }
+  }
+
+  private getPlanSafeProgress(content: string): string {
+    const entries = content.split(/\r?\n/).filter((line) => /^- \[[ xX]\]/.test(line));
+    if (!entries.length) {
+      return 'Planning';
+    }
+
+    const completed = entries.filter((line) => /^- \[[xX]\]/.test(line)).length;
+    return this.normalizeSafeProgressContent(`Planning: ${completed}/${entries.length} steps complete`);
+  }
+
+  private normalizeSafeProgressContent(content: string): string {
+    const normalized = content.replace(/\s+/g, ' ').trim();
+    if (normalized.length <= ACP_SAFE_PROGRESS_MAX_LENGTH) {
+      return normalized;
+    }
+    return `${normalized.slice(0, ACP_SAFE_PROGRESS_MAX_LENGTH - 3)}...`;
+  }
+
   private convertAgentUpdateToChatProgress(
     update: AgentUpdate,
     toolCallCache: Map<string, IChatToolCall>,
@@ -531,6 +655,7 @@ ${input}`;
           ...(update.currentModeId !== undefined ? { currentModeId: update.currentModeId } : {}),
           ...(update.currentModelId !== undefined ? { currentModelId: update.currentModelId } : {}),
           ...(update.configOptions !== undefined ? { configOptions: update.configOptions } : {}),
+          ...(update.availableCommands !== undefined ? { availableCommands: update.availableCommands } : {}),
         } as IChatSessionState;
       case 'tool_call': {
         const toolCall: IChatToolCall = {

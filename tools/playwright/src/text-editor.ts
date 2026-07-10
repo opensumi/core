@@ -1,4 +1,4 @@
-import { ElementHandle, Page } from '@playwright/test';
+import { ElementHandle, Locator, Page } from '@playwright/test';
 
 import { OpenSumiApp } from './app';
 import { OpenSumiContextMenu } from './context-menu';
@@ -104,6 +104,7 @@ class OverlaysModel extends ViewsModel {
 export class OpenSumiTextEditor extends OpenSumiEditor {
   private glyphMarginModel: GlyphMarginModel;
   private overlaysModel: OverlaysModel;
+  private lineNumberByHandle = new WeakMap<ElementHandle<SVGElement | HTMLElement>, number>();
 
   constructor(app: OpenSumiApp, filestatElement: OpenSumiTreeNode) {
     super(app, filestatElement);
@@ -172,17 +173,27 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   }
 
   async typeText(text: string): Promise<void> {
+    await this.waitForEditorTextFocus();
     await this.page.keyboard.type(text);
+    await this.waitForEditorDone();
+    if (text) {
+      await this.page.keyboard.press('ArrowLeft');
+      await this.page.keyboard.press('ArrowRight');
+      await this.waitForEditorDone();
+    }
   }
   async saveByKeyboard(): Promise<void> {
-    await this.page.keyboard.press(keypressWithCmdCtrl('s'));
+    await this.waitForEditorTextFocus();
+    await this.page.keyboard.press(keypressWithCmdCtrl('KeyS'));
     await this.waitForEditorDone();
   }
   async undoByKeyboard(): Promise<void> {
+    await this.waitForEditorTextFocus();
     await this.page.keyboard.press(keypressWithCmdCtrl('z'));
     await this.waitForEditorDone();
   }
   async redoByKeyboard(): Promise<void> {
+    await this.waitForEditorTextFocus();
     await this.page.keyboard.press(keypressWithCmdCtrlAndShift('z'));
     await this.waitForEditorDone();
   }
@@ -252,13 +263,14 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   }
   async lineByLineNumber(lineNumber: number): Promise<ElementHandle<SVGElement | HTMLElement> | undefined> {
     await this.activate();
-    const viewElement = await this.getViewElement();
-
-    const lineNode = await viewElement!.$(`.view-lines > div:nth-child(${lineNumber})`);
+    const line = this.lineByLineNumberLocator(lineNumber);
+    await line.waitFor({ state: 'visible' });
+    const lineNode = await line.elementHandle();
 
     if (!lineNode) {
       throw new Error(`Couldn't retrieve lines of text editor ${this.tabSelector}`);
     }
+    this.lineNumberByHandle.set(lineNode, lineNumber);
     return lineNode.asElement();
   }
 
@@ -322,7 +334,14 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   }
 
   protected async selectLine(lineElement: ElementHandle<SVGElement | HTMLElement> | undefined): Promise<void> {
+    const lineNumber = lineElement ? this.lineNumberByHandle.get(lineElement) : undefined;
+    if (lineNumber) {
+      await this.clickLineByLineNumber(lineNumber, { clickCount: 3 });
+      return;
+    }
+
     await lineElement?.click({ clickCount: 3 });
+    await this.waitForEditorTextFocus();
   }
 
   async placeCursorInLine(
@@ -333,14 +352,22 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
       return;
     }
 
+    const lineNumber = this.lineNumberByHandle.get(lineElement);
+    if (lineNumber) {
+      await this.clickLineByLineNumber(lineNumber, { point });
+      return;
+    }
+
     if (point === 'start') {
       await lineElement.click({
         position: { x: 0, y: 0 },
       });
+      await this.waitForEditorTextFocus();
       return;
     }
 
     await lineElement.click();
+    await this.waitForEditorTextFocus();
   }
 
   protected replaceEditorSymbolsWithSpace(content: string): string | Promise<string | undefined> {
@@ -368,5 +395,39 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
     await this.placeCursorInLine(line);
     await this.page.keyboard.press(keypressWithCmdCtrl('KeyA'));
     await this.page.keyboard.press('Delete');
+  }
+
+  private lineByLineNumberLocator(lineNumber: number): Locator {
+    return this.page.locator(`${this.viewSelector} .view-lines > div`).nth(lineNumber - 1);
+  }
+
+  private async clickLineByLineNumber(
+    lineNumber: number,
+    options: { point?: 'start' | 'end'; clickCount?: number } = {},
+  ): Promise<void> {
+    await this.activate();
+    const line = this.lineByLineNumberLocator(lineNumber);
+    await line.waitFor({ state: 'visible' });
+    await line.scrollIntoViewIfNeeded();
+
+    if (options.point === 'start') {
+      await line.click({ position: { x: 1, y: 5 }, clickCount: options.clickCount });
+    } else {
+      await line.click({ clickCount: options.clickCount });
+    }
+
+    await this.waitForEditorTextFocus();
+  }
+
+  private async waitForEditorTextFocus(): Promise<void> {
+    await this.page.waitForFunction(
+      (selector) => {
+        const editor = document.querySelector(selector);
+        const activeElement = document.activeElement;
+        return !!editor && !!activeElement && editor.contains(activeElement);
+      },
+      `${this.viewSelector} .monaco-editor`,
+      { timeout: 3000 },
+    );
   }
 }

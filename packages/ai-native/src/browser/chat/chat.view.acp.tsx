@@ -36,12 +36,11 @@ import {
   uuid,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IMessageService } from '@opensumi/ide-overlay';
 import 'react-chat-elements/dist/main.css';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
+import { IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
 import {
   LLMContextService,
   LLMContextServiceToken,
@@ -62,9 +61,23 @@ import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
+import { AIPanelLayoutService } from '../layout/panel-layout.service';
 import { BaseApplyService } from '../mcp/base-apply.service';
 import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
+import {
+  clearAcpQueuedMessages,
+  completeAcpQueuedTurn,
+  createAcpQueuedMessagesState,
+  enqueueAcpQueuedMessage,
+  pauseAcpQueuedMessages,
+  removeAcpQueuedMessage,
+  requestAcpQueuedMessageSendNow,
+  resumeAcpQueuedMessages,
+} from './acp-chat-queued-messages';
+import { AcpQueuedMessages } from './AcpQueuedMessages';
+import { AgenticChatHeaderMaximizeAction } from './AgenticChatHeaderMaximizeAction';
+import { AgenticChatPanelHeader } from './AgenticChatPanelHeader';
 import { ChatModel, ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
 import { ChatService } from './chat.api.service';
@@ -76,6 +89,7 @@ import { AcpChatInternalService } from './chat.internal.service.acp';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
 
+import type { AcpQueuedMessage, AcpQueuedMessagesState } from './acp-chat-queued-messages';
 import type { MsgHistoryManager } from '../model/msg-history-manager';
 
 const SCROLL_CLASSNAME = 'chat_scroll';
@@ -157,7 +171,7 @@ export const AIChatViewACPContent = () => {
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const llmContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
 
-  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const msgHistoryManager = aiChatService.sessionModel?.history;
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -191,11 +205,49 @@ export const AIChatViewACPContent = () => {
   }, []);
 
   const [loading, setLoading] = React.useState(false);
+  const loadingRef = React.useRef(false);
+  const [queuedMessagesState, setQueuedMessagesState] = React.useState(createAcpQueuedMessagesState);
+  const queuedMessagesStateRef = React.useRef(queuedMessagesState);
+  const [queuedMessagesExpanded, setQueuedMessagesExpanded] = React.useState(true);
+  const sendQueuedMessageRef = React.useRef<(entry: AcpQueuedMessage) => Promise<unknown>>(async () => undefined);
+  const suppressNextCancelQueuePauseRef = React.useRef(false);
   const [sessionLoading, setSessionLoading] = React.useState(false);
   const [agentId, setAgentId] = React.useState('');
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
+
+  const setChatLoading = React.useCallback((isLoading: boolean) => {
+    loadingRef.current = isLoading;
+    setLoading(isLoading);
+  }, []);
+
+  const updateQueuedMessagesState = React.useCallback(
+    (updater: (state: AcpQueuedMessagesState) => AcpQueuedMessagesState) => {
+      const nextState = updater(queuedMessagesStateRef.current);
+      queuedMessagesStateRef.current = nextState;
+      setQueuedMessagesState(nextState);
+      return nextState;
+    },
+    [],
+  );
+
+  const resetQueuedMessages = React.useCallback(() => {
+    const nextState = createAcpQueuedMessagesState();
+    queuedMessagesStateRef.current = nextState;
+    setQueuedMessagesState(nextState);
+    setQueuedMessagesExpanded(true);
+  }, []);
+
+  const finishCurrentTurn = React.useCallback(() => {
+    setChatLoading(false);
+    const result = completeAcpQueuedTurn(queuedMessagesStateRef.current);
+    queuedMessagesStateRef.current = result.state;
+    setQueuedMessagesState(result.state);
+    if (result.entry) {
+      void sendQueuedMessageRef.current(result.entry);
+    }
+  }, [setChatLoading]);
   // 切换session或Agent输出状态变化时
   React.useEffect(() => {
     setSessionModelId(aiChatService.sessionModel?.modelId);
@@ -207,6 +259,17 @@ export const AIChatViewACPContent = () => {
     });
     return () => dispose.dispose();
   }, [aiChatService]);
+
+  React.useEffect(() => {
+    const dispose = aiChatService.onCancelRequest(() => {
+      if (suppressNextCancelQueuePauseRef.current) {
+        suppressNextCancelQueuePauseRef.current = false;
+        return;
+      }
+      updateQueuedMessagesState(pauseAcpQueuedMessages);
+    });
+    return () => dispose.dispose();
+  }, [aiChatService, updateQueuedMessagesState]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
@@ -592,7 +655,7 @@ export const AIChatViewACPContent = () => {
       if (agentId === ChatProxyService.AGENT_ID && command) {
         const commandHandler = chatFeatureRegistry.getSlashCommandHandler(command);
         if (commandHandler && commandHandler.providerRender) {
-          setLoading(false);
+          finishCurrentTurn();
           return handleSlashCustomRender({
             userMessage: message,
             render: commandHandler.providerRender,
@@ -622,7 +685,7 @@ export const AIChatViewACPContent = () => {
             }}
             history={history}
             onDone={() => {
-              setLoading(false);
+              finishCurrentTurn();
             }}
             onRegenerate={() => {
               if (request) {
@@ -706,7 +769,7 @@ export const AIChatViewACPContent = () => {
         return false;
       }
 
-      setLoading(true);
+      setChatLoading(true);
       aiChatService.setLatestRequestId(request.requestId);
 
       const startTime = Date.now();
@@ -781,7 +844,7 @@ export const AIChatViewACPContent = () => {
     ],
   );
 
-  const handleSend = React.useCallback(
+  const sendMessageNow = React.useCallback(
     async (message: string, images?: string[], agentId?: string, command?: string) => {
       if (!hasAcpChatSendPayload({ message, images, command })) {
         return false;
@@ -791,7 +854,7 @@ export const AIChatViewACPContent = () => {
         actionSource: ActionSourceEnum.Chat,
         actionType: ActionTypeEnum.Send,
       };
-      agentId = agentId ? agentId : ChatProxyService.AGENT_ID;
+      const resolvedAgentId = agentId || ChatProxyService.AGENT_ID;
       // 提取并替换 {{@file:xxx}} 中的文件内容
       let processedContent = message;
       const filePattern = /\{\{@file:(.*?)\}\}/g;
@@ -846,21 +909,70 @@ export const AIChatViewACPContent = () => {
           );
         }
       }
-      return handleAgentReply({ message: processedContent, images, agentId, command, reportExtra }).then((sent) => {
+      return handleAgentReply({
+        message: processedContent,
+        images,
+        agentId: resolvedAgentId,
+        command,
+        reportExtra,
+      }).then((sent) => {
         if (sent) {
           setHasUserSentMessage(true);
         }
+        return sent;
       });
     },
-    [handleAgentReply, setHasUserSentMessage],
+    [handleAgentReply, setHasUserSentMessage, workspaceService],
+  );
+
+  React.useEffect(() => {
+    sendQueuedMessageRef.current = (entry: AcpQueuedMessage) =>
+      sendMessageNow(entry.message, entry.images, entry.agentId, entry.command);
+  }, [sendMessageNow]);
+
+  const handleSend = React.useCallback(
+    async (
+      message: string,
+      images?: string[],
+      agentId?: string,
+      command?: string,
+      option?: { model: string; [key: string]: unknown },
+    ) => {
+      if (!hasAcpChatSendPayload({ message, images, command })) {
+        return false;
+      }
+
+      const resolvedAgentId = agentId || ChatProxyService.AGENT_ID;
+
+      if (loadingRef.current) {
+        updateQueuedMessagesState(
+          (state) =>
+            enqueueAcpQueuedMessage(state, {
+              message,
+              images,
+              agentId: resolvedAgentId,
+              command,
+              option,
+            }).state,
+        );
+        setQueuedMessagesExpanded(true);
+        setHasUserSentMessage(true);
+        return true;
+      }
+
+      updateQueuedMessagesState(resumeAcpQueuedMessages);
+      return sendMessageNow(message, images, resolvedAgentId, command);
+    },
+    [sendMessageNow, updateQueuedMessagesState],
   );
 
   const handleClear = React.useCallback(() => {
     aiChatService.clearSessionModel();
     chatApiService.clearHistoryMessages();
     clearChatContent();
+    resetQueuedMessages();
     setHasUserSentMessage(false);
-  }, [messageListData]);
+  }, [messageListData, resetQueuedMessages]);
 
   const clearChatContent = React.useCallback(() => {
     containerRef?.current?.classList.remove(SCROLL_CLASSNAME);
@@ -876,9 +988,65 @@ export const AIChatViewACPContent = () => {
     setCommand(commandModel.command!);
   };
 
+  const handleQueuedMessageDelete = React.useCallback(
+    (id: string) => {
+      updateQueuedMessagesState((state) => removeAcpQueuedMessage(state, id).state);
+    },
+    [updateQueuedMessagesState],
+  );
+
+  const handleQueuedMessageClear = React.useCallback(() => {
+    updateQueuedMessagesState(clearAcpQueuedMessages);
+  }, [updateQueuedMessagesState]);
+
+  const handleQueuedMessageEdit = React.useCallback(
+    (id: string) => {
+      let removedEntry: AcpQueuedMessage | undefined;
+      updateQueuedMessagesState((state) => {
+        const result = removeAcpQueuedMessage(state, id);
+        removedEntry = result.entry;
+        return result.state;
+      });
+
+      if (!removedEntry) {
+        return;
+      }
+
+      chatInputRef.current?.setInputValue(removedEntry.message);
+      setAgentId(removedEntry.agentId || '');
+      setCommand(removedEntry.command || '');
+      setTheme(null);
+    },
+    [updateQueuedMessagesState],
+  );
+
+  const handleQueuedMessageSendNow = React.useCallback(
+    (id: string) => {
+      let entryToSend: AcpQueuedMessage | undefined;
+      let shouldCancelCurrentTurn = false;
+      updateQueuedMessagesState((state) => {
+        const result = requestAcpQueuedMessageSendNow(state, id, loadingRef.current);
+        entryToSend = result.entry;
+        shouldCancelCurrentTurn = result.shouldCancelCurrentTurn;
+        return result.state;
+      });
+
+      if (shouldCancelCurrentTurn) {
+        suppressNextCancelQueuePauseRef.current = true;
+        aiChatService.cancelRequest();
+        return;
+      }
+
+      if (entryToSend) {
+        void sendQueuedMessageRef.current(entryToSend);
+      }
+    },
+    [aiChatService, updateQueuedMessagesState],
+  );
+
   const handleCloseChatView = React.useCallback(() => {
-    layoutService.toggleSlot(AI_CHAT_VIEW_ID);
-  }, [layoutService]);
+    panelLayoutService.hideAIChatView();
+  }, [panelLayoutService]);
 
   const HeaderRender: ChatViewHeaderRender = chatRenderRegistry.chatViewHeaderRender || DefaultChatViewHeaderACP;
 
@@ -904,7 +1072,7 @@ export const AIChatViewACPContent = () => {
           const request = aiChatService.sessionModel?.getRequest(msg.requestId)!;
           // 从storage恢复时，request为undefined
           if (request && !request.response.isComplete) {
-            setLoading(true);
+            setChatLoading(true);
           }
           await renderReply({
             msgId: msg.id,
@@ -941,7 +1109,8 @@ export const AIChatViewACPContent = () => {
     clearChatContent();
     setHasUserSentMessage(false);
     const cancellationTokenSource = new CancellationTokenSource();
-    setLoading(false);
+    setChatLoading(false);
+    resetQueuedMessages();
     recover(cancellationTokenSource.token);
     return () => {
       cancellationTokenSource.cancel();
@@ -959,6 +1128,7 @@ export const AIChatViewACPContent = () => {
       </div>
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>
+          <AgenticChatPanelHeader preferSessionTitle={true} sessionModel={aiChatService.sessionModel} />
           <div className={styles.chat_container} ref={containerRef}>
             {!hasUserSentMessage && messageListData.length <= 1 && chatRenderRegistry.chatWelcomePageRender ? (
               React.createElement(chatRenderRegistry.chatWelcomePageRender, {
@@ -989,6 +1159,15 @@ export const AIChatViewACPContent = () => {
             </div>
           ) : null}
           <div className={styles.chat_input_wrap}>
+            <AcpQueuedMessages
+              entries={queuedMessagesState.entries}
+              expanded={queuedMessagesExpanded}
+              onToggleExpanded={() => setQueuedMessagesExpanded((expanded) => !expanded)}
+              onClear={handleQueuedMessageClear}
+              onDelete={handleQueuedMessageDelete}
+              onEdit={handleQueuedMessageEdit}
+              onSendNow={handleQueuedMessageSendNow}
+            />
             <div className={styles.header_operate}>
               {/* 定制需求。不需要透出shortcut*/}
               {/* <div className={styles.header_operate_left}>
@@ -1022,7 +1201,8 @@ export const AIChatViewACPContent = () => {
             )}
             <ChatInputWrapperRender
               onSend={handleSend}
-              disabled={loading || sessionLoading}
+              disabled={sessionLoading}
+              loading={loading || sessionLoading}
               enableOptions={true}
               theme={theme}
               setTheme={setTheme}
@@ -1061,10 +1241,21 @@ export function DefaultChatViewHeaderACP({
   const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const [pendingPermissionBadge, setPendingPermissionBadge] = React.useState(0);
+  const [panelLayout, setPanelLayout] = React.useState(() => panelLayoutService.getLayoutMode());
+
+  React.useEffect(() => {
+    setPanelLayout(panelLayoutService.getLayoutMode());
+    const disposable = panelLayoutService.onDidChangePanelLayout((mode) => {
+      setPanelLayout(mode);
+    });
+    return () => disposable.dispose();
+  }, [panelLayoutService]);
+
   const handleNewChat = React.useCallback(() => {
     aiChatService.enterDraftSession();
   }, [aiChatService]);
@@ -1127,9 +1318,9 @@ export function DefaultChatViewHeaderACP({
     const getHistoryList = async () => {
       const currentMessages = aiChatService.sessionModel?.history.getMessages() || [];
       const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
-      const currentTitle = latestUserMessage
-        ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
-        : '';
+      const currentTitle =
+        aiChatService.sessionModel?.title?.slice(0, MAX_TITLE_LENGTH) ||
+        (latestUserMessage ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH) : '');
 
       // 设置初始标题
       setCurrentTitle(currentTitle);
@@ -1239,21 +1430,24 @@ export function DefaultChatViewHeaderACP({
         onHistoryItemDelete={handleHistoryItemDelete}
         onHistoryItemChange={() => {}}
       />
-      <Popover
-        overlayClassName={styles.popover_icon}
-        id={'ai-chat-header-close'}
-        position={PopoverPosition.left}
-        title={localize('aiNative.operate.close.title')}
-      >
-        <EnhanceIcon
-          wrapperClassName={styles.action_btn}
-          className={getIcon('window-close')}
-          onClick={handleCloseChatView}
-          tabIndex={0}
-          role='button'
-          ariaLabel={localize('aiNative.operate.close.title')}
-        />
-      </Popover>
+      <AgenticChatHeaderMaximizeAction />
+      {panelLayout !== 'agentic' && (
+        <Popover
+          overlayClassName={styles.popover_icon}
+          id={'ai-chat-header-close'}
+          position={PopoverPosition.left}
+          title={localize('aiNative.operate.close.title')}
+        >
+          <EnhanceIcon
+            wrapperClassName={styles.action_btn}
+            className={getIcon('window-close')}
+            onClick={handleCloseChatView}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.operate.close.title')}
+          />
+        </Popover>
+      )}
     </div>
   );
 }

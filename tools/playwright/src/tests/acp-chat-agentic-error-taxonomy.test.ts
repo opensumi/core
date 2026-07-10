@@ -170,6 +170,29 @@ async function expectInputRecovered() {
   await expect(chatInput()).toBeEditable();
 }
 
+async function waitForStreamRichRecoverySnapshot(): Promise<FailureUiSnapshot> {
+  let snapshot = await readFailureUiSnapshot();
+
+  await expect
+    .poll(
+      async () => {
+        snapshot = await readFailureUiSnapshot();
+        return (
+          snapshot.chatErrorCount === 0 &&
+          snapshot.userRowCount > 0 &&
+          snapshot.assistantRowCount > 0 &&
+          !snapshot.hasStackTrace &&
+          !snapshot.hasRawRpcPayload &&
+          !snapshot.hasSecretLikeText
+        );
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+
+  return snapshot;
+}
+
 async function reloadFixtureWorkbench(runtime: AcpBddFixtureRuntime) {
   await page.goto(runtime.url);
   await waitForWorkbenchReady(page);
@@ -265,7 +288,7 @@ async function expectStreamRichRecovery(label: string) {
     await expect.poll(async () => (await readSessionState()).result?.session?.requestCount ?? 0).toBeGreaterThan(0);
     await expectInputRecovered();
 
-    const snapshot = await readFailureUiSnapshot();
+    const snapshot = await waitForStreamRichRecoverySnapshot();
     expect(snapshot.chatErrorCount).toBe(0);
     expect(snapshot.userRowCount).toBeGreaterThan(0);
     expect(snapshot.assistantRowCount).toBeGreaterThan(0);
@@ -283,6 +306,16 @@ async function selectFooterConfig(comboIndex: number, label: string) {
     .first();
   await expect(option).toBeVisible();
   await option.click();
+}
+
+async function createConfigFailureSession() {
+  const completion = chatSlot().getByText('BDD_ASSISTANT_PART_2 completed.');
+  const completionCount = await completion.count();
+
+  await sendPrompt('BDD config failure bootstrap');
+  await expect(completion).toHaveCount(completionCount + 1, { timeout: 30_000 });
+  await expect(sendButton()).toBeVisible({ timeout: 30_000 });
+  await expect.poll(async () => configSelectors().count(), { timeout: 30_000 }).toBeGreaterThanOrEqual(4);
 }
 
 test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
@@ -426,7 +459,7 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
 
   test('Error Taxonomy: config failure keeps footer controls and input usable', async () => {
     await withFixture('config-failure', async () => {
-      await expect.poll(async () => configSelectors().count(), { timeout: 30_000 }).toBeGreaterThanOrEqual(4);
+      await createConfigFailureSession();
       await selectFooterConfig(0, 'Chat');
 
       await expect

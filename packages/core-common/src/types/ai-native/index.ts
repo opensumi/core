@@ -181,6 +181,8 @@ export interface IAIBackServiceResponse<T = string> {
   data?: T;
 }
 
+export type AcpDeliveryMode = 'minimal' | 'stream';
+
 export interface IAIBackServiceOption {
   type?: string;
   requestId?: string;
@@ -203,6 +205,7 @@ export interface IAIBackServiceOption {
   trimTexts?: [string, string];
   disabledTools?: string[];
   agentSessionConfig?: AgentProcessConfig;
+  acpDeliveryMode?: AcpDeliveryMode;
 }
 
 export interface AgentSessionModeOption {
@@ -498,6 +501,11 @@ export interface IChatReasoning {
   kind: 'reasoning';
 }
 
+export interface IChatSafeProgress {
+  content: string;
+  kind: 'safeProgress';
+}
+
 /**
  * Thread status for ACP agent sessions.
  * Mirrors the server-side AcpThread ThreadStatus type.
@@ -516,6 +524,7 @@ export interface IChatSessionState {
   currentModeId?: string;
   currentModelId?: string;
   configOptions?: Record<string, any>[];
+  availableCommands?: AvailableCommand[];
 }
 
 export type IChatProgress =
@@ -526,6 +535,7 @@ export type IChatProgress =
   | IChatComponent
   | IChatToolContent
   | IChatReasoning
+  | IChatSafeProgress
   | IChatThreadStatus
   | IChatSessionState;
 

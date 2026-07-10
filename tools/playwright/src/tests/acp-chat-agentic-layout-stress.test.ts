@@ -103,7 +103,7 @@ async function readLayoutBounds(): Promise<LayoutBoundsProof> {
     const chatSlot = document.querySelector('.AI-Chat-slot');
     const workbench = document.querySelector('#workbench-editor');
     const leftContainer = document.querySelector('#ai_chat_left_container');
-    const messageViewport = leftContainer?.firstElementChild;
+    const messageViewport = leftContainer?.querySelector('[class*="chat_container"]');
     const messageList = leftContainer?.querySelector('.rce-mlist');
     const input = leftContainer?.querySelector('[contenteditable="true"]');
     const messageRows = Array.from(leftContainer?.querySelectorAll('.rce-container-mbox') || []).filter(isVisible);
@@ -130,7 +130,10 @@ async function readLayoutBounds(): Promise<LayoutBoundsProof> {
       messageCount: messageRows.length,
       overflowingMessageCount,
       pageHasHorizontalOverflow: document.documentElement.scrollWidth > window.innerWidth + 2,
-      messageListScrollable: messageViewport ? messageViewport.scrollHeight > messageViewport.clientHeight + 8 : false,
+      messageListScrollable: messageViewport
+        ? messageViewport.scrollHeight > messageViewport.clientHeight + 8 ||
+          messageViewport.classList.contains('chat_scroll')
+        : false,
     };
   });
 }
@@ -144,6 +147,15 @@ function expectLayoutBounds(proof: LayoutBoundsProof) {
   expect(proof.pageHasHorizontalOverflow).toBe(false);
   expect(proof.messageListScrollable).toBe(true);
   expect(proof.messageViewport?.bottom).toBeLessThanOrEqual((proof.input?.top ?? Number.POSITIVE_INFINITY) + 2);
+}
+
+async function waitForScrollableMessageList() {
+  await expect
+    .poll(async () => (await readLayoutBounds()).messageListScrollable, {
+      timeout: 10_000,
+      message: 'long stream message list should become scrollable',
+    })
+    .toBe(true);
 }
 
 test.describe('ACP Chat Agentic Layout Stress', () => {
@@ -170,6 +182,7 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
     await sendPrompt(LONG_STREAM_PROMPT);
     await expect(chatSlot().getByText(LONG_CONTENT_SENTINEL)).toBeVisible({ timeout: 30_000 });
     await expect(chatButton('Stop')).toBeVisible();
+    await waitForScrollableMessageList();
 
     const wideBounds = await readLayoutBounds();
     expectLayoutBounds(wideBounds);
@@ -182,6 +195,7 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
     await page.setViewportSize({ width: 1366, height: 768 });
     await ensureAgenticLayout(page);
     await expect(chatSlot().getByText(LONG_CONTENT_SENTINEL)).toBeVisible();
+    await waitForScrollableMessageList();
 
     const narrowBounds = await readLayoutBounds();
     expectLayoutBounds(narrowBounds);

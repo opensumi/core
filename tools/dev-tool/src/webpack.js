@@ -207,6 +207,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           'process.env.IS_DEV': JSON.stringify(process.env.NODE_ENV === 'development' ? 1 : 0),
           'process.env.WORKSPACE_DIR': JSON.stringify(process.env.MY_WORKSPACE || defaultWorkspace),
           'process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH': JSON.stringify(process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH),
+          'process.env.OPENSUMI_E2E_COMMANDS': JSON.stringify(process.env.OPENSUMI_E2E_COMMANDS),
           'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
           'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
           'process.env.OTHER_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../../other')),

@@ -9,10 +9,17 @@ jest.mock('react-chat-elements', () => ({
 jest.mock('@opensumi/ide-core-browser', () => ({
   AINativeConfigService: Symbol('AINativeConfigService'),
   AppConfig: Symbol('AppConfig'),
+  COMMON_COMMANDS: {
+    OPEN_PREFERENCES: {
+      id: 'core.openpreference',
+    },
+  },
   LabelService: Symbol('LabelService'),
+  PreferenceService: Symbol('PreferenceService'),
   QuickPickService: Symbol('QuickPickService'),
   getIcon: (name: string) => `icon-${name}`,
-  localize: (_key: string, defaultValue?: string) => defaultValue || _key,
+  localize: (_key: string, defaultValue?: string, ...args: string[]) =>
+    (defaultValue || _key).replace(/\{(\d+)\}/g, (_, index) => args[Number(index)] || ''),
   useInjectable: jest.fn(),
   useUpdateOnEvent: jest.fn(),
 }));
@@ -65,7 +72,12 @@ jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
   }: any) =>
     require('react').createElement(
       'div',
-      { 'data-testid': 'acp-chat-history', 'data-collapsed': String(!!historyCollapsed), 'data-variant': variant },
+      {
+        'data-testid': 'acp-chat-history',
+        'data-collapsed': String(!!historyCollapsed),
+        'data-title': title,
+        'data-variant': variant,
+      },
       title,
       historyList.map((item: any) =>
         require('react').createElement(
@@ -80,16 +92,17 @@ jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
           item.title,
         ),
       ),
-      require('react').createElement(
-        'button',
-        {
-          'data-testid': 'acp-chat-history-new',
-          disabled,
-          onClick: onNewChat,
-          type: 'button',
-        },
-        'new',
-      ),
+      variant !== 'inline' &&
+        require('react').createElement(
+          'button',
+          {
+            'data-testid': 'acp-chat-history-new',
+            disabled,
+            onClick: onNewChat,
+            type: 'button',
+          },
+          'new',
+        ),
       onToggleHistoryCollapsed &&
         require('react').createElement(
           'button',
@@ -100,6 +113,37 @@ jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
           },
           'collapse',
         ),
+    ),
+}));
+
+jest.mock('../../src/browser/components/ChatHistory', () => ({
+  __esModule: true,
+  default: ({ title, historyList = [], onHistoryItemSelect, onNewChat }: any) =>
+    require('react').createElement(
+      'div',
+      { 'data-testid': 'chat-history' },
+      title,
+      historyList.map((item: any) =>
+        require('react').createElement(
+          'button',
+          {
+            key: item.id,
+            'data-testid': `chat-history-item-${item.id}`,
+            onClick: () => onHistoryItemSelect?.(item),
+            type: 'button',
+          },
+          item.title,
+        ),
+      ),
+      require('react').createElement(
+        'button',
+        {
+          'data-testid': 'chat-history-new',
+          onClick: onNewChat,
+          type: 'button',
+        },
+        'new',
+      ),
     ),
 }));
 
@@ -139,13 +183,17 @@ jest.mock('../../src/browser/components/ChatInput', () => ({
   ChatInput: () => null,
 }));
 
+jest.mock('../../src/browser/components/ChatMentionInput', () => ({
+  ChatMentionInput: () => null,
+}));
+
 jest.mock('../../src/browser/components/ChatMarkdown', () => ({
   ChatMarkdown: () => null,
 }));
 
 jest.mock('../../src/browser/components/ChatReply', () => ({
   ChatNotify: () => null,
-  ChatReply: () => null,
+  ChatReply: () => require('react').createElement('div', { 'data-testid': 'chat-reply' }),
 }));
 
 jest.mock('../../src/browser/components/SlashCustomRender', () => ({
@@ -199,9 +247,11 @@ jest.mock('../../src/browser/chat/chat.render.registry', () => ({
   ChatRenderRegistry: class ChatRenderRegistry {},
 }));
 
-import { ChatMessageRole } from '@opensumi/ide-core-common';
+import { ChatMessageRole, PreferenceScope } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 
 import { AcpChatViewHeader } from '../../src/browser/acp/components/AcpChatViewHeader';
+import { DefaultChatViewHeader } from '../../src/browser/chat/chat.view';
 import { AIChatViewACPContent, DefaultChatViewHeaderACP } from '../../src/browser/chat/chat.view.acp';
 
 const disposable = () => ({ dispose: jest.fn() });
@@ -210,6 +260,7 @@ const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 function createMockSession({
   createdAt,
   messages,
+  title = 'Current ACP session',
 }: {
   createdAt?: number;
   messages?: Array<{
@@ -218,6 +269,7 @@ function createMockSession({
     replyStartTime?: number;
     timestamp?: number;
   }>;
+  title?: string;
 } = {}) {
   const history = {
     addAssistantMessage: jest.fn(() => 'assistant-message'),
@@ -238,7 +290,7 @@ function createMockSession({
   return {
     sessionId: 'acp:current',
     createdAt,
-    title: 'Current ACP session',
+    title,
     history,
     threadStatus: 'idle',
     onThreadStatusChange: jest.fn(() => disposable()),
@@ -248,6 +300,8 @@ function createMockSession({
 function createMockServices({
   isMultiRoot = false,
   panelLayout = 'classic',
+  defaultAgentType = 'claude-agent-acp',
+  agentConfigs = {},
   createSessionModel,
   enterDraftSession,
   ensureSessionModel,
@@ -255,9 +309,12 @@ function createMockServices({
   sendRequest,
   session,
   sessions,
+  chatViewHeaderRender,
 }: {
   isMultiRoot?: boolean;
   panelLayout?: 'classic' | 'agentic';
+  defaultAgentType?: string;
+  agentConfigs?: Record<string, { command?: string; args?: string[]; description?: string; streaming?: boolean }>;
   createSessionModel?: jest.Mock;
   createRequest?: jest.Mock;
   enterDraftSession?: jest.Mock;
@@ -265,14 +322,25 @@ function createMockServices({
   sendRequest?: jest.Mock;
   session?: ReturnType<typeof createMockSession> | null;
   sessions?: ReturnType<typeof createMockSession>[];
+  chatViewHeaderRender?: any;
 } = {}) {
   const currentSession = session === undefined ? createMockSession() : session;
   const sessionList = sessions || (currentSession ? [currentSession] : []);
   const panelLayoutListeners = new Set<(mode: 'classic' | 'agentic') => void>();
+  const agenticWorkbenchVisibilityListeners = new Set<(visible: boolean) => void>();
+  const defaultAgentTypeListeners = new Set<(change: { newValue: string }) => void>();
+  const agentConfigListeners = new Set<(change: { newValue: typeof agentConfigs }) => void>();
+  const cancelRequestListeners = new Set<() => void>();
   let currentPanelLayout = panelLayout;
+  let currentDefaultAgentType = defaultAgentType;
+  let currentAgentConfigs = agentConfigs;
+  let agenticWorkbenchVisible = true;
   const aiChatService = {
     sessionModel: currentSession,
     activateSession: jest.fn(),
+    cancelRequest: jest.fn(() => {
+      cancelRequestListeners.forEach((listener) => listener());
+    }),
     clearSessionModel: jest.fn(),
     createRequest:
       createRequest ||
@@ -300,6 +368,14 @@ function createMockServices({
     getSessions: jest.fn(() => sessionList),
     getSessionsByAcp: jest.fn(() => Promise.resolve(sessionList)),
     latestRequestId: 'request-1',
+    onCancelRequest: jest.fn((listener: () => void) => {
+      cancelRequestListeners.add(listener);
+      return {
+        dispose: jest.fn(() => {
+          cancelRequestListeners.delete(listener);
+        }),
+      };
+    }),
     onChangeSession: jest.fn(() => disposable()),
     onSessionModelChange: jest.fn(() => disposable()),
     onSessionLoadingChange: jest.fn(() => disposable()),
@@ -319,6 +395,15 @@ function createMockServices({
           type: 'button',
         },
         'send',
+      ),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'acp-chat-send-followup',
+          onClick: () => props.onSend('follow up'),
+          type: 'button',
+        },
+        'send followup',
       ),
       React.createElement(
         'button',
@@ -391,8 +476,12 @@ function createMockServices({
         component: ChatInputForTest,
       })),
     },
-    chatRenderRegistry: {},
-    commandService: {},
+    chatRenderRegistry: {
+      chatViewHeaderRender,
+    },
+    commandService: {
+      executeCommand: jest.fn(),
+    },
     editorService: {
       open: jest.fn(),
     },
@@ -403,6 +492,7 @@ function createMockServices({
     llmContextService: {},
     messageService: {
       error: jest.fn(),
+      info: jest.fn(),
     },
     mcpServerRegistry: {},
     permissionBridgeService: {
@@ -411,8 +501,46 @@ function createMockServices({
       onActiveSessionChange: jest.fn(() => disposable()),
       onPendingCountChange: jest.fn(() => disposable()),
     },
+    preferenceService: {
+      get: jest.fn((preferenceName: string, fallback: unknown) => {
+        if (preferenceName === AINativeSettingSectionsId.DefaultAgentType) {
+          return currentDefaultAgentType;
+        }
+        if (preferenceName === AINativeSettingSectionsId.AgentConfigs) {
+          return currentAgentConfigs;
+        }
+        return fallback;
+      }),
+      onSpecificPreferenceChange: jest.fn((preferenceName: string, listener: any) => {
+        if (preferenceName === AINativeSettingSectionsId.DefaultAgentType) {
+          defaultAgentTypeListeners.add(listener);
+        }
+        if (preferenceName === AINativeSettingSectionsId.AgentConfigs) {
+          agentConfigListeners.add(listener);
+        }
+        return {
+          dispose: jest.fn(() => {
+            defaultAgentTypeListeners.delete(listener);
+            agentConfigListeners.delete(listener);
+          }),
+        };
+      }),
+      set: jest.fn(async (preferenceName: string, value: string) => {
+        if (preferenceName === AINativeSettingSectionsId.DefaultAgentType) {
+          currentDefaultAgentType = value;
+          defaultAgentTypeListeners.forEach((listener) => listener({ newValue: value }));
+        }
+        if (preferenceName === AINativeSettingSectionsId.AgentConfigs) {
+          currentAgentConfigs = value as any;
+          agentConfigListeners.forEach((listener) => listener({ newValue: currentAgentConfigs }));
+        }
+      }),
+    },
     panelLayoutService: {
       getLayoutMode: jest.fn(() => currentPanelLayout),
+      isAgenticWorkbenchVisible: jest.fn(() =>
+        currentPanelLayout === 'agentic' ? agenticWorkbenchVisible : undefined,
+      ),
       onDidChangePanelLayout: jest.fn((listener: (mode: 'classic' | 'agentic') => void) => {
         panelLayoutListeners.add(listener);
         return {
@@ -421,10 +549,26 @@ function createMockServices({
           }),
         };
       }),
+      onDidChangeAgenticWorkbenchVisibility: jest.fn((listener: (visible: boolean) => void) => {
+        agenticWorkbenchVisibilityListeners.add(listener);
+        return {
+          dispose: jest.fn(() => {
+            agenticWorkbenchVisibilityListeners.delete(listener);
+          }),
+        };
+      }),
       setLayoutModeForTest: (mode: 'classic' | 'agentic') => {
         currentPanelLayout = mode;
         panelLayoutListeners.forEach((listener) => listener(mode));
       },
+      toggleAgenticWorkbenchVisibility: jest.fn((visible?: boolean) => {
+        if (currentPanelLayout !== 'agentic') {
+          return undefined;
+        }
+        agenticWorkbenchVisible = visible ?? !agenticWorkbenchVisible;
+        agenticWorkbenchVisibilityListeners.forEach((listener) => listener(agenticWorkbenchVisible));
+        return agenticWorkbenchVisible;
+      }),
     },
     quickPick: {},
     workspaceService: {
@@ -489,6 +633,10 @@ function installInjectableMocks(services: ReturnType<typeof createMockServices>)
 
     if (key.includes('LabelService')) {
       return services.labelService;
+    }
+
+    if (key.includes('PreferenceService')) {
+      return services.preferenceService;
     }
 
     if (key.includes('LLMContextServiceToken')) {
@@ -565,6 +713,69 @@ describe('ACP chat view headers', () => {
     expect(container.querySelector('#ai-chat-header-clear')).toBeNull();
     expect(container.querySelector('#ai-chat-header-close')).not.toBeNull();
     expect(container.querySelector('[data-testid="acp-chat-history"]')).not.toBeNull();
+  });
+
+  it('hides the close action in the default ACP chat header when panel layout is agentic', async () => {
+    installInjectableMocks(createMockServices({ panelLayout: 'agentic' }));
+
+    await renderHeader(
+      React.createElement(DefaultChatViewHeaderACP, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(container.querySelector('#ai-chat-header-close')).toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history"]')).not.toBeNull();
+  });
+
+  it('shows current session title and maximizes the default ACP chat header in agentic layout', async () => {
+    const session = createMockSession({
+      title: 'Server session title',
+      messages: [
+        {
+          role: ChatMessageRole.User,
+          content: 'Message fallback title',
+          replyStartTime: 1,
+        },
+      ],
+    });
+    const services = createMockServices({ panelLayout: 'agentic', session });
+    installInjectableMocks(services);
+
+    await renderHeader(
+      React.createElement(DefaultChatViewHeaderACP, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-title')).toBe(
+      'Server session title',
+    );
+
+    const maximize = container.querySelector('#ai-chat-header-maximize button') as HTMLButtonElement;
+    expect(maximize).not.toBeNull();
+
+    await act(async () => {
+      maximize.click();
+      await Promise.resolve();
+    });
+
+    expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(false);
+  });
+
+  it('does not show the maximize action in the default ACP chat header in classic layout', async () => {
+    installInjectableMocks(createMockServices({ panelLayout: 'classic' }));
+
+    await renderHeader(
+      React.createElement(DefaultChatViewHeaderACP, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    expect(container.querySelector('#ai-chat-header-maximize')).toBeNull();
   });
 
   it('hides the clear action in the ACP-specific header while keeping workspace switch and close actions', async () => {
@@ -652,6 +863,235 @@ describe('ACP chat view headers', () => {
     expect(container.querySelector('#ai-chat-header-close')).toBeNull();
   });
 
+  it('toggles maximize and restore from the agentic chat panel header', async () => {
+    const services = createMockServices({
+      panelLayout: 'agentic',
+      session: createMockSession({
+        title: 'ACP-specific server title',
+        messages: [
+          {
+            role: ChatMessageRole.User,
+            content: 'ACP-specific message fallback',
+          },
+        ],
+      }),
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    expect(container.querySelector('[data-testid="agentic-chat-panel-header-title"]')?.textContent).toBe(
+      'ACP-specific server title',
+    );
+    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-title')).toBe(
+      'ACP-specific server title',
+    );
+    expect(container.querySelector('#ai-chat-header-maximize')).toBeNull();
+
+    const getAction = () =>
+      container.querySelector('#agentic-chat-panel-header-maximize button') as HTMLButtonElement | null;
+    expect(getAction()?.className).toBe('icon-fullescreen');
+
+    await act(async () => {
+      getAction()?.click();
+      await Promise.resolve();
+    });
+
+    expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(false);
+    expect(getAction()?.className).toBe('icon-unfullscreen');
+
+    await act(async () => {
+      getAction()?.click();
+      await Promise.resolve();
+    });
+
+    expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(true);
+    expect(getAction()?.className).toBe('icon-fullescreen');
+  });
+
+  it('updates the default ACP agent type and enters draft from the agentic chat panel header menu', async () => {
+    const createSessionModel = jest.fn(async () => undefined);
+    const enterDraftSession = jest.fn();
+    const services = createMockServices({
+      defaultAgentType: 'claude-agent-acp',
+      panelLayout: 'agentic',
+      createSessionModel,
+      enterDraftSession,
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    const menuButton = container.querySelector(
+      '[data-testid="agentic-chat-new-session-button"]',
+    ) as HTMLButtonElement | null;
+
+    await act(async () => {
+      menuButton!.click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain('Claude');
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain('Qwen');
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-chat-new-session-agent-qwen"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(services.preferenceService.set).toHaveBeenCalledWith(
+      AINativeSettingSectionsId.DefaultAgentType,
+      'qwen',
+      PreferenceScope.User,
+    );
+    expect(enterDraftSession).toHaveBeenCalledTimes(1);
+    expect(createSessionModel).not.toHaveBeenCalled();
+  });
+
+  it('keeps the agentic new session menu open when clicking after mouse hover opens it', async () => {
+    const services = createMockServices({
+      defaultAgentType: 'claude-agent-acp',
+      panelLayout: 'agentic',
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    const menuButton = container.querySelector(
+      '[data-testid="agentic-chat-new-session-button"]',
+    ) as HTMLButtonElement | null;
+
+    await act(async () => {
+      menuButton!.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, relatedTarget: document.body }));
+      await Promise.resolve();
+    });
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')).not.toBeNull();
+
+    await act(async () => {
+      menuButton!.click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain('Claude');
+  });
+
+  it('lists custom ACP agent configurations in the agentic chat panel header menu', async () => {
+    const services = createMockServices({
+      agentConfigs: {
+        'custom-agent': {
+          command: 'custom-agent',
+          args: ['--acp'],
+          description: 'Custom Agent',
+        },
+      },
+      defaultAgentType: 'custom-agent',
+      panelLayout: 'agentic',
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    const menuButton = container.querySelector(
+      '[data-testid="agentic-chat-new-session-button"]',
+    ) as HTMLButtonElement | null;
+
+    await act(async () => {
+      menuButton!.click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain(
+      'Custom Agent',
+    );
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-chat-new-session-agent-qwen"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(services.preferenceService.set).toHaveBeenCalledWith(
+      AINativeSettingSectionsId.DefaultAgentType,
+      'qwen',
+      PreferenceScope.User,
+    );
+  });
+
+  it('writes default agent configs before opening settings from the agentic chat panel header menu', async () => {
+    const services = createMockServices({
+      panelLayout: 'agentic',
+      agentConfigs: 'acp' as any,
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    const menuButton = container.querySelector(
+      '[data-testid="agentic-chat-new-session-button"]',
+    ) as HTMLButtonElement | null;
+
+    await act(async () => {
+      menuButton!.click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')).not.toBeNull();
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-chat-agent-config-menu-item"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(services.preferenceService.set).toHaveBeenCalledWith(
+      AINativeSettingSectionsId.AgentConfigs,
+      {
+        qwen: {
+          command: 'qwen',
+          args: ['--acp', '--channel=ACP', '--input-format=stream-json', '--output-format=stream-json'],
+          streaming: true,
+          description: 'Qwen CLI Agent',
+        },
+        'claude-agent-acp': {
+          command: 'claude-agent-acp',
+          args: [],
+          streaming: true,
+          description: 'Claude Code ACP Agent',
+        },
+      },
+      PreferenceScope.User,
+    );
+    expect(services.commandService.executeCommand).toHaveBeenCalledWith(
+      'core.openpreference',
+      AINativeSettingSectionsId.AgentConfigs,
+    );
+  });
+
+  it('maximizes the default chat header in agentic layout', async () => {
+    const services = createMockServices({ panelLayout: 'agentic' });
+    installInjectableMocks(services);
+
+    await renderHeader(
+      React.createElement(DefaultChatViewHeader, {
+        handleClear: jest.fn(),
+        handleCloseChatView: jest.fn(),
+      }),
+    );
+
+    const maximize = container.querySelector('#ai-chat-header-maximize button') as HTMLButtonElement;
+    expect(maximize).not.toBeNull();
+
+    await act(async () => {
+      maximize.click();
+      await Promise.resolve();
+    });
+
+    expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(false);
+  });
+
   it('collapses ACP history in agentic layout when the collapse action is clicked', async () => {
     installInjectableMocks(createMockServices({ panelLayout: 'agentic' }));
 
@@ -693,7 +1133,7 @@ describe('ACP chat view headers', () => {
     expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('inline');
   });
 
-  it('enters draft when creating a new ACP chat without creating a session', async () => {
+  it('does not expose a new-chat action from the inline ACP history in agentic layout', async () => {
     const createSessionModel = jest.fn();
     const enterDraftSession = jest.fn();
     const services = createMockServices({ panelLayout: 'agentic', createSessionModel, enterDraftSession });
@@ -706,13 +1146,8 @@ describe('ACP chat view headers', () => {
       }),
     );
 
-    const newChatButton = container.querySelector('[data-testid="acp-chat-history-new"]') as HTMLButtonElement;
-
-    await act(async () => {
-      newChatButton.click();
-      await Promise.resolve();
-    });
-    expect(enterDraftSession).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[data-testid="acp-chat-history-new"]')).toBeNull();
+    expect(enterDraftSession).not.toHaveBeenCalled();
     expect(createSessionModel).not.toHaveBeenCalled();
   });
 
@@ -852,6 +1287,67 @@ describe('ACP chat view headers', () => {
       .find((text) => text?.props?.request);
     expect(chatReplyElement.props.collapseReasoningByDefault).toBe(true);
     expect(chatReplyElement.props.keepReasoningExpandedOnComplete).toBeUndefined();
+  });
+
+  it('queues follow-up ACP messages while a reply is loading and sends them after the reply completes', async () => {
+    const session = createMockSession({ messages: [] });
+    const createRequest = jest
+      .fn()
+      .mockImplementation((message: string, agentId: string, images?: string[], command?: string) => ({
+        message: {
+          agentId,
+          command,
+          images,
+          prompt: message,
+        },
+        requestId: `request-${createRequest.mock.calls.length + 1}`,
+        response: {
+          isComplete: false,
+        },
+      }));
+    const sendRequest = jest.fn();
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel: jest.fn(async () => session),
+      sendRequest,
+      session: null,
+      sessions: [],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(sendRequest).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(sendRequest).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[data-testid="acp-queued-messages-summary"]')?.textContent).toContain(
+      '1 Queued Message',
+    );
+    expect(container.querySelector('[data-testid="acp-queued-message-preview"]')?.textContent).toContain('follow up');
+
+    const createMessageByAI = jest.requireMock('../../src/browser/components/utils').createMessageByAI as jest.Mock;
+    const chatReplyElement = createMessageByAI.mock.calls
+      .map(([message]) => message.text)
+      .find((text) => text?.props?.request);
+
+    await act(async () => {
+      chatReplyElement.props.onDone();
+      await flushPromises();
+    });
+
+    expect(createRequest).toHaveBeenNthCalledWith(2, 'follow up', 'default-agent', undefined, undefined);
+    expect(sendRequest).toHaveBeenCalledTimes(2);
+    expect(container.querySelector('[data-testid="acp-queued-messages-summary"]')).toBeNull();
   });
 
   it('ignores whitespace-only draft sends before creating an ACP session', async () => {

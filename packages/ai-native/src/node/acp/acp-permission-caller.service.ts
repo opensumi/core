@@ -75,7 +75,6 @@ export class AcpPermissionCallerService extends RPCService<IAcpPermissionService
         line: loc.line ?? undefined,
       })),
       options: this.sortOptionsByKind(params.options),
-      timeout: 60000,
     };
 
     const decision = await rpcClient.$showPermissionDialog(dialogParams);

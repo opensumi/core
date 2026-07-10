@@ -1,0 +1,13 @@
+{
+  "name": "opensumi-playwright-language-definition-provider",
+  "displayName": "OpenSumi Playwright Language Definition Provider",
+  "version": "1.0.0",
+  "publisher": "opensumi",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "activationEvents": [
+    "onLanguage:typescript"
+  ],
+  "main": "./extension.js"
+}

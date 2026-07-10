@@ -60,6 +60,7 @@
     "test:module": "cross-env NODE_OPTIONS=--max-old-space-size=5120 tsx ./scripts/module-jest",
     "test:ui": "tsx ./scripts/run-ui-tests",
     "test:ui-ci": "tsx ./scripts/run-ui-tests --ci=true",
+    "test:ui-concurrent-smoke": "tsx ./scripts/run-ui-tests --concurrentSmoke=true",
     "test:ui-headful": "tsx ./scripts/run-ui-tests --headful=true",
     "test:ui-report": "tsx ./scripts/run-ui-tests --report=true",
     "update-disttag": "tsx ./scripts/dist-tag",

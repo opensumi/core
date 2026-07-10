@@ -299,10 +299,13 @@ const AILeftTabbarRenderer: React.FC = () => {
                 <EnhanceIconWithCtxMenu
                   key={menu.id}
                   id={menu.id}
+                  ariaLabel={menu.label}
                   wrapperClassName={styles.extra_bottom_icon}
                   iconClass={menu.icon}
                   menuNodes={menu.children}
+                  role='button'
                   skew={{ x: -8, y: -4 }}
+                  tabIndex={0}
                 />
               ))
             : null}

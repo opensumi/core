@@ -158,9 +158,9 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
     // 当前会话标题
     const currentMessages = aiChatService.sessionModel?.history.getMessages() || [];
     const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
-    const title = latestUserMessage
-      ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
-      : '';
+    const title =
+      aiChatService.sessionModel?.title?.slice(0, MAX_TITLE_LENGTH) ||
+      (latestUserMessage ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH) : '');
     setCurrentTitle(title);
 
     setHistoryList(
@@ -271,6 +271,28 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
     commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
   }, [commandService]);
 
+  const switchWorkspaceDirAction = isMultiRoot ? (
+    <Popover
+      key={`switch-cwd-${currentWorkspaceDir}`}
+      overlayClassName={styles.popover_icon}
+      id={'ai-chat-header-switch-cwd'}
+      title={
+        currentWorkspaceDir
+          ? formatLocalize('chat.switchWorkspaceDirHint', currentWorkspaceDir)
+          : localize('chat.switchWorkspaceDir')
+      }
+    >
+      <EnhanceIcon
+        wrapperClassName={styles.action_btn}
+        className={getIcon('folder')}
+        onClick={handleSwitchWorkspaceDir}
+        tabIndex={0}
+        role='button'
+        ariaLabel={localize('chat.switchWorkspaceDir')}
+      />
+    </Popover>
+  ) : null;
+
   return (
     <div className={cls(styles.header, isAgenticLayout && styles.header_agentic)}>
       <AcpChatHistory
@@ -297,26 +319,10 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
         onHistoryItemChange={handleHistoryItemChange}
         onHistoryPopoverVisibleChange={handleHistoryPopoverVisibleChange}
       />
-      {isMultiRoot && (
-        <Popover
-          key={`switch-cwd-${currentWorkspaceDir}`}
-          overlayClassName={styles.popover_icon}
-          id={'ai-chat-header-switch-cwd'}
-          title={
-            currentWorkspaceDir
-              ? formatLocalize('chat.switchWorkspaceDirHint', currentWorkspaceDir)
-              : localize('chat.switchWorkspaceDir')
-          }
-        >
-          <EnhanceIcon
-            wrapperClassName={styles.action_btn}
-            className={getIcon('folder')}
-            onClick={handleSwitchWorkspaceDir}
-            tabIndex={0}
-            role='button'
-            ariaLabel={localize('chat.switchWorkspaceDir')}
-          />
-        </Popover>
+      {isAgenticLayout && switchWorkspaceDirAction ? (
+        <div className={styles.agentic_header_actions}>{switchWorkspaceDirAction}</div>
+      ) : (
+        switchWorkspaceDirAction
       )}
       {!isAgenticLayout && (
         <Popover

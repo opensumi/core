@@ -32,6 +32,8 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import {
+  AI_AGENTIC_WORKBENCH_IS_VISIBLE,
+  AI_AGENTIC_WORKBENCH_TOGGLE,
   AI_CHAT_VISIBLE,
   AI_INLINE_CHAT_INTERACTIVE_INPUT_CANCEL,
   AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE,
@@ -39,6 +41,7 @@ import {
   AI_INLINE_COMPLETION_REPORTER,
   AI_INLINE_COMPLETION_VISIBLE,
   AI_INLINE_DIFF_PARTIAL_EDIT,
+  AI_PANEL_LAYOUT_GET,
   AI_PANEL_LAYOUT_SET,
   AI_PANEL_LAYOUT_TOGGLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
@@ -144,6 +147,7 @@ import { IntelligentCompletionsController } from './contrib/intelligent-completi
 import { ProblemFixController } from './contrib/problem-fix/problem-fix.controller';
 import { RenameSingleHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
+import { registerAgenticWorkbenchRevealCommandInterceptors } from './layout/agentic-workbench-command-reveal';
 import { AIPanelLayoutService, AI_PANEL_LAYOUT_CONTEXT, AI_PANEL_LAYOUT_MENU } from './layout/panel-layout.service';
 import {
   AIChatTabRenderer,
@@ -289,9 +293,6 @@ export class AINativeBrowserContribution
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
-  @Autowired(IMainLayoutService)
-  private readonly layoutService: IMainLayoutService;
-
   @Autowired(ChatProxyServiceToken)
   private readonly chatProxyService: ChatProxyService;
 
@@ -318,6 +319,9 @@ export class AINativeBrowserContribution
 
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
+
+  @Autowired(IMainLayoutService)
+  private readonly mainLayoutService: IMainLayoutService;
 
   @Autowired(IChatManagerService)
   private readonly chatManagerService: ChatManagerService;
@@ -868,6 +872,10 @@ export class AINativeBrowserContribution
             id: AINativeSettingSectionsId.AcpThreadPoolSize,
             localized: 'preference.ai-native.acp.threadPoolSize',
           },
+          {
+            id: AINativeSettingSectionsId.AcpDeliveryMode,
+            localized: 'preference.ai-native.acp.deliveryMode',
+          },
         ],
       });
     }
@@ -926,6 +934,8 @@ export class AINativeBrowserContribution
   }
 
   registerCommands(commands: CommandRegistry): void {
+    registerAgenticWorkbenchRevealCommandInterceptors(commands, this.panelLayoutService, this.mainLayoutService);
+
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
         this.aiInlineChatService._onInlineChatVisible.fire(value);
@@ -987,7 +997,7 @@ export class AINativeBrowserContribution
     commands.registerCommand(AI_CHAT_VISIBLE, {
       execute: (visible?: boolean) => {
         if (visible === false) {
-          this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, false);
+          this.panelLayoutService.hideAIChatView();
           return;
         }
         this.panelLayoutService.showAIChatView();
@@ -998,8 +1008,20 @@ export class AINativeBrowserContribution
       execute: (mode: PanelLayoutMode) => this.panelLayoutService.setLayoutMode(mode),
     });
 
+    commands.registerCommand(AI_PANEL_LAYOUT_GET, {
+      execute: () => this.panelLayoutService.getLayoutMode(),
+    });
+
     commands.registerCommand(AI_PANEL_LAYOUT_TOGGLE, {
       execute: () => this.panelLayoutService.toggleLayoutMode(),
+    });
+
+    commands.registerCommand(AI_AGENTIC_WORKBENCH_TOGGLE, {
+      execute: (visible?: boolean) => this.panelLayoutService.toggleAgenticWorkbenchVisibility(visible),
+    });
+
+    commands.registerCommand(AI_AGENTIC_WORKBENCH_IS_VISIBLE, {
+      execute: () => this.panelLayoutService.isAgenticWorkbenchVisible(),
     });
 
     commands.registerCommand(AI_INLINE_COMPLETION_VISIBLE, {

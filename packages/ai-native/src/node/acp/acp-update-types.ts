@@ -4,6 +4,8 @@
  */
 
 import type { ThreadStatus } from './acp-thread';
+import type { AvailableCommand } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
+
 
 export type AgentUpdateType =
   | 'thought'
@@ -33,4 +35,5 @@ export interface AgentUpdate {
   currentModeId?: string;
   currentModelId?: string;
   configOptions?: Record<string, any>[];
+  availableCommands?: AvailableCommand[];
 }

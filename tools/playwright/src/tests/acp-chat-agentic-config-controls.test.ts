@@ -27,6 +27,12 @@ interface ConfigProof {
   }>;
 }
 
+interface AcpSessionSummary {
+  sessionId: string;
+  rawSessionId?: string;
+  requestCount: number;
+}
+
 interface PromptConfigSnapshotProof {
   hasSnapshotText: boolean;
   hasAssistantCompletion: boolean;
@@ -60,6 +66,45 @@ function configSelectors(): Locator {
 
 async function readFooterConfigValues(): Promise<string[]> {
   return (await configSelectors().allTextContents()).map((value) => value.replace(/\s+/g, ' ').trim());
+}
+
+async function executeAcpTool<T>(name: string, args: Record<string, unknown> = {}) {
+  return page.evaluate(
+    async ({ toolName, toolArgs }) => (navigator as any).modelContext.executeTool(toolName, toolArgs),
+    { toolName: name, toolArgs: args },
+  ) as Promise<{ success: boolean; result: T }>;
+}
+
+async function getSessionState() {
+  const result = await executeAcpTool<{ active: boolean; session: AcpSessionSummary | null }>(
+    'acp_chat_get_session_state',
+  );
+  expect(result.success).toBe(true);
+  return result.result;
+}
+
+async function waitForActiveConfigSession() {
+  await expect
+    .poll(
+      async () => {
+        const state = await getSessionState();
+        return {
+          active: state.active,
+          rawSessionId: state.session?.rawSessionId || state.session?.sessionId?.replace(/^acp:/, '') || '',
+          requestReady: (state.session?.requestCount ?? 0) > 0,
+          configCount: await configSelectors().count(),
+        };
+      },
+      { message: 'ACP config session did not become active after bootstrap prompt', timeout: 30_000 },
+    )
+    .toMatchObject({
+      active: true,
+      rawSessionId: expect.stringMatching(/^bdd-session-/),
+      requestReady: true,
+      configCount: 4,
+    });
+
+  return getSessionState();
 }
 
 async function selectFooterConfig(comboIndex: number, label: string) {
@@ -173,15 +218,31 @@ function expectProofValue(proof: ConfigProof[], configId: string, value: string 
 }
 
 async function sendDeterministicPrompt() {
+  const completion = page.locator('.AI-Chat-slot').getByText('BDD_ASSISTANT_PART_2 completed.');
+  const completionCount = await completion.count();
   const input = page.locator('.AI-Chat-slot [contenteditable="true"]').last();
   await expect(input).toBeVisible();
   await input.click();
   await page.keyboard.type('BDD config controls snapshot');
   await page.getByRole('button', { name: 'Send' }).click();
-  await expect(page.locator('.AI-Chat-slot').getByText('BDD_ASSISTANT_PART_2 completed.')).toBeVisible({
+  await expect(completion).toHaveCount(completionCount + 1, {
     timeout: 30_000,
   });
   await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
+}
+
+async function createConfigSession() {
+  const completion = page.locator('.AI-Chat-slot').getByText('BDD_ASSISTANT_PART_2 completed.');
+  const completionCount = await completion.count();
+  const input = page.locator('.AI-Chat-slot [contenteditable="true"]').last();
+  await expect(input).toBeVisible();
+  await input.click();
+  await page.keyboard.type('BDD config controls bootstrap');
+  await page.getByRole('button', { name: 'Send' }).click();
+  await expect(completion).toHaveCount(completionCount + 1, { timeout: 30_000 });
+  await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
+  await expect(configSelectors()).toHaveCount(4, { timeout: 30_000 });
+  return waitForActiveConfigSession();
 }
 
 async function waitForPromptConfigSnapshot() {
@@ -263,13 +324,14 @@ test.describe('ACP Chat Agentic footer config controls', () => {
     });
 
     await openAndClearAcpDebugLog();
+    const activeConfigSession = await createConfigSession();
 
     await expect(configSelectors()).toHaveCount(4);
     const initialFooterValues = await readFooterConfigValues();
     expect(initialFooterValues).toEqual(['Agent', 'BDD Small', 'Medium', 'Off']);
     const initialFooterProof = await evidence.saveJson(
       '01-initial-footer-config',
-      { values: initialFooterValues },
+      { values: initialFooterValues, activeSession: activeConfigSession.session },
       'initial ACP footer config values',
     );
 

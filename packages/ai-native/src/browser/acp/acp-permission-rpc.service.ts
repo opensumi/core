@@ -46,7 +46,7 @@ export class AcpPermissionRpcService extends RPCService implements IAcpPermissio
         locations: params.locations,
         command: params.command,
         options: params.options,
-        timeout: params.timeout,
+        ...(params.timeout === undefined ? {} : { timeout: params.timeout }),
       });
 
       return decision;

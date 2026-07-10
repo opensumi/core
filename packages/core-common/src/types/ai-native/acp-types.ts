@@ -125,7 +125,7 @@ export interface AcpPermissionDialogParams {
   locations?: Array<{ path: string; line?: number }>;
   command?: string;
   options: PermissionOption[];
-  timeout: number;
+  timeout?: number;
 }
 
 export type AcpPermissionDecision =

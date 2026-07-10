@@ -61,6 +61,7 @@ export interface IChatMentionInputProps {
   placeholder?: string;
   enableOptions?: boolean;
   disabled?: boolean;
+  loading?: boolean;
   sendBtnClassName?: string;
   defaultHeight?: number;
   value?: string;
@@ -91,7 +92,7 @@ export interface IChatMentionInputProps {
  * - 文件夹选择器：无搜索词时加载工作区根目录下的文件夹
  */
 export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputProps, ref) => {
-  const { onSend, disabled = false, contextService, agentCwd } = props;
+  const { onSend, disabled = false, loading = disabled, contextService, agentCwd } = props;
 
   const [value, setValue] = useState(props.value || '');
   const [images, setImages] = useState(props.images || []);
@@ -869,7 +870,7 @@ export const AcpChatMentionInput = React.forwardRef((props: IChatMentionInputPro
           slashCommands={[...slashCommands, ...acpSlashCommands]}
           onSend={handleSend}
           onStop={handleStop}
-          loading={disabled}
+          loading={loading}
           labelService={labelService}
           workspaceService={workspaceService}
           placeholder={placeholder}

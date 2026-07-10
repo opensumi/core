@@ -1,5 +1,5 @@
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { AINativeSettingSectionsId, PreferenceScope } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId, PreferenceScope, URI } from '@opensumi/ide-core-common';
 
 import {
   AIPanelLayoutService,
@@ -19,12 +19,14 @@ describe('AIPanelLayoutService', () => {
     setError,
     aiChatPrevSize,
     aiChatVisible = false,
+    editorOpenResult = { group: { name: 'group-1' }, resource: {} },
   }: {
     designLayout?: 'classic' | 'agentic';
     inspectValue?: { globalValue?: unknown; workspaceValue?: unknown; workspaceFolderValue?: unknown };
     setError?: Error;
     aiChatPrevSize?: number;
     aiChatVisible?: boolean;
+    editorOpenResult?: unknown;
   } = {}) => {
     let inspectValue = initialInspectValue;
     const contextKey = {
@@ -62,6 +64,9 @@ describe('AIPanelLayoutService', () => {
         prevSize: aiChatPrevSize,
       })),
     };
+    const workbenchEditorService = {
+      open: jest.fn(() => Promise.resolve(editorOpenResult)),
+    };
     const service = new AIPanelLayoutService();
 
     Object.defineProperty(service, 'preferenceService', {
@@ -78,12 +83,16 @@ describe('AIPanelLayoutService', () => {
     Object.defineProperty(service, 'layoutService', {
       value: layoutService,
     });
+    Object.defineProperty(service, 'workbenchEditorService', {
+      value: workbenchEditorService,
+    });
 
     return {
       contextKey,
       layoutService,
       preferenceService,
       service,
+      workbenchEditorService,
       triggerPreferenceChange: () => preferenceChangeCallback?.(),
     };
   };
@@ -217,6 +226,113 @@ describe('AIPanelLayoutService', () => {
     service.showAIChatView('agentic');
 
     expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_AGENTIC_CHAT_DEFAULT_SIZE);
+  });
+
+  it('should close classic AI chat from the guarded hide path', () => {
+    const { layoutService, service } = createService();
+
+    service.hideAIChatView('classic');
+
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, false);
+  });
+
+  it('should keep agentic AI chat open from the guarded hide path', () => {
+    const { layoutService, service } = createService();
+
+    service.hideAIChatView('agentic');
+
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_AGENTIC_CHAT_DEFAULT_SIZE);
+  });
+
+  it('should keep visible agentic AI chat open when toggled from an AI-owned entry', () => {
+    const { layoutService, service } = createService({ aiChatVisible: true });
+
+    service.toggleAIChatView('agentic');
+
+    expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_AGENTIC_CHAT_DEFAULT_SIZE);
+  });
+
+  it('should default the agentic workbench to hidden in agentic mode', () => {
+    const { service } = createService({ inspectValue: { globalValue: 'agentic' } });
+
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+  });
+
+  it('should not handle agentic workbench visibility outside agentic mode', () => {
+    const { service } = createService({ inspectValue: { globalValue: 'classic' } });
+
+    expect(service.isAgenticWorkbenchVisible()).toBeUndefined();
+    expect(service.toggleAgenticWorkbenchVisibility()).toBeUndefined();
+    expect(service.revealAgenticWorkbench()).toBeUndefined();
+  });
+
+  it('should toggle agentic workbench visibility and notify listeners', () => {
+    const { service } = createService({ inspectValue: { globalValue: 'agentic' } });
+    const listener = jest.fn();
+    const disposable = service.onDidChangeAgenticWorkbenchVisibility(listener);
+
+    expect(service.toggleAgenticWorkbenchVisibility()).toBe(true);
+    expect(service.isAgenticWorkbenchVisible()).toBe(true);
+    expect(listener).toHaveBeenCalledWith(true);
+
+    expect(service.toggleAgenticWorkbenchVisibility(false)).toBe(false);
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+    expect(listener).toHaveBeenCalledWith(false);
+
+    disposable.dispose();
+  });
+
+  it('should reveal the agentic workbench only in agentic mode', () => {
+    const { service } = createService({ inspectValue: { globalValue: 'agentic' } });
+
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+    expect(service.revealAgenticWorkbench()).toBe(true);
+    expect(service.isAgenticWorkbenchVisible()).toBe(true);
+  });
+
+  it('should reveal hidden agentic workbench when a foreground editor target opens', async () => {
+    const { service, workbenchEditorService } = createService({ inspectValue: { globalValue: 'agentic' } });
+
+    service.initialize();
+
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+
+    await workbenchEditorService.open(new URI('file:///workspace/file.ts'), { preview: true });
+
+    expect(service.isAgenticWorkbenchVisible()).toBe(true);
+  });
+
+  it('should keep hidden agentic workbench hidden when a backend editor target opens', async () => {
+    const { service, workbenchEditorService } = createService({ inspectValue: { globalValue: 'agentic' } });
+
+    service.initialize();
+    await workbenchEditorService.open(new URI('file:///workspace/file.ts'), { backend: true });
+
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+  });
+
+  it('should keep hidden agentic workbench hidden when editor target opening fails', async () => {
+    const { service, workbenchEditorService } = createService({
+      inspectValue: { globalValue: 'agentic' },
+      editorOpenResult: false,
+    });
+
+    service.initialize();
+    await workbenchEditorService.open(new URI('file:///workspace/file.ts'), { preview: false });
+
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+  });
+
+  it('should reset agentic workbench visibility when layout mode changes', async () => {
+    const { service } = createService({ inspectValue: { globalValue: 'agentic' } });
+
+    expect(service.toggleAgenticWorkbenchVisibility(true)).toBe(true);
+
+    await service.setLayoutMode('classic');
+    expect(service.isAgenticWorkbenchVisible()).toBeUndefined();
+
+    await service.setLayoutMode('agentic');
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
   });
 
   it('should toggle both layout modes', async () => {

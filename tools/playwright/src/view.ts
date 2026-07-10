@@ -39,7 +39,8 @@ export class OpenSumiView extends OpenSumiViewBase {
     if (!this.name) {
       return;
     }
-    await this.app.quickOpenPalette.type('view ');
+    await this.app.quickCommandPalette.type('Open View');
+    await this.app.quickCommandPalette.trigger('View: Open View ...');
     await this.app.quickOpenPalette.trigger(this.name.toUpperCase());
     await this.waitForVisible();
     return this;
@@ -60,8 +61,8 @@ export class OpenSumiView extends OpenSumiViewBase {
     return this.waitForVisible();
   }
 
-  async waitForVisible(): Promise<void> {
-    await this.page.waitForSelector(this.viewSelector, { state: 'visible' });
+  async waitForVisible(timeout?: number): Promise<void> {
+    await this.page.waitForSelector(this.viewSelector, { state: 'visible', timeout });
   }
 
   async isTabVisible(): Promise<boolean> {

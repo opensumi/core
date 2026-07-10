@@ -1,74 +1,191 @@
-import { AINativeSettingSectionsId } from '@opensumi/ide-core-common';
-
-import { DefaultACPConfigProvider } from '../../../src/browser/chat/default-acp-config-provider';
-import { pickWorkspaceDir } from '../../../src/browser/chat/pick-workspace-dir';
-
-jest.mock('../../../src/browser/chat/pick-workspace-dir', () => ({
-  pickWorkspaceDir: jest.fn().mockResolvedValue('/workspace'),
-}));
+import { HideReason } from '@opensumi/ide-core-browser';
+import { AINativeSettingSectionsId, URI } from '@opensumi/ide-core-common';
 
 describe('DefaultACPConfigProvider', () => {
-  function createProvider(webMcpEnabled: boolean) {
-    const provider = Object.create(DefaultACPConfigProvider.prototype) as DefaultACPConfigProvider & {
+  interface ProviderFixtureOptions {
+    webMcpEnabled?: boolean;
+    isMultiRoot?: boolean;
+    defaultAgentType?: string;
+    agentConfigs?: Record<string, { command?: string; args?: string[]; description?: string; streaming?: boolean }>;
+    quickPickResult?: string | undefined | Promise<string | undefined>;
+  }
+
+  const rootA = '/workspace/root-a';
+  const rootB = '/workspace/root-b';
+
+  async function createProvider(options: ProviderFixtureOptions = {}) {
+    let provider!: import('../../../src/browser/chat/default-acp-config-provider').DefaultACPConfigProvider & {
       preferenceService: {
         get: jest.Mock;
       };
       workspaceService: {
         whenReady: Promise<void>;
+        isMultiRootWorkspaceOpened: boolean;
+        tryGetRoots: jest.Mock;
+        workspace?: { uri: string };
       };
-      quickPick: Record<string, unknown>;
-      messageService: Record<string, unknown>;
+      quickPick: {
+        show: jest.Mock;
+        hide: jest.Mock;
+      };
+      messageService: {
+        info: jest.Mock;
+      };
       mcpConfigService: {
         getACPServers: jest.Mock;
         isBuiltinMCPEnabled: jest.Mock;
       };
     };
 
-    Object.defineProperties(provider, {
-      preferenceService: {
-        value: {
-          get: jest.fn((id: string, fallback: unknown) => {
-            if (id === AINativeSettingSectionsId.DefaultAgentType) {
-              return 'claude-agent-acp';
-            }
-            if (id === AINativeSettingSectionsId.AgentConfigs) {
-              return {};
-            }
-            if (id === 'ai-native.acp.nodePath') {
-              return '';
-            }
-            if (id === 'ai-native.acp.agents') {
-              return {};
-            }
-            if (id === AINativeSettingSectionsId.AcpThreadPoolSize) {
+    await jest.isolateModulesAsync(async () => {
+      const { DefaultACPConfigProvider } = await import('../../../src/browser/chat/default-acp-config-provider');
+      const isMultiRoot = options.isMultiRoot ?? false;
+      const roots = [rootA, rootB].map((root) => ({ uri: URI.file(root).toString() }));
+      const quickPickResult =
+        'quickPickResult' in options ? options.quickPickResult : options.isMultiRoot ? rootB : undefined;
+
+      provider = Object.create(DefaultACPConfigProvider.prototype);
+
+      Object.defineProperties(provider, {
+        preferenceService: {
+          value: {
+            get: jest.fn((id: string, fallback: unknown) => {
+              if (id === AINativeSettingSectionsId.DefaultAgentType) {
+                return options.defaultAgentType || 'claude-agent-acp';
+              }
+              if (id === AINativeSettingSectionsId.AgentConfigs) {
+                return options.agentConfigs || {};
+              }
+              if (id === 'ai-native.acp.nodePath') {
+                return '';
+              }
+              if (id === 'ai-native.acp.agents') {
+                return {};
+              }
+              if (id === AINativeSettingSectionsId.AcpThreadPoolSize) {
+                return fallback;
+              }
               return fallback;
-            }
-            return fallback;
-          }),
+            }),
+          },
         },
-      },
-      workspaceService: { value: { whenReady: Promise.resolve() } },
-      quickPick: { value: {} },
-      messageService: { value: {} },
-      mcpConfigService: {
-        value: {
-          getACPServers: jest.fn().mockResolvedValue([]),
-          isBuiltinMCPEnabled: jest.fn().mockResolvedValue(webMcpEnabled),
+        workspaceService: {
+          value: {
+            whenReady: Promise.resolve(),
+            isMultiRootWorkspaceOpened: isMultiRoot,
+            tryGetRoots: jest.fn(() => roots),
+            workspace: { uri: URI.file(rootA).toString() },
+          },
         },
-      },
+        quickPick: {
+          value: {
+            show: jest.fn(() => Promise.resolve(quickPickResult)),
+            hide: jest.fn(),
+          },
+        },
+        messageService: {
+          value: {
+            info: jest.fn(),
+          },
+        },
+        mcpConfigService: {
+          value: {
+            getACPServers: jest.fn().mockResolvedValue([]),
+            isBuiltinMCPEnabled: jest.fn().mockResolvedValue(options.webMcpEnabled ?? false),
+          },
+        },
+      });
     });
 
     return provider;
   }
 
   it('uses unified built-in MCP state for ACP WebMCP exposure', async () => {
-    const provider = createProvider(false);
+    const provider = await createProvider({ webMcpEnabled: false });
 
     const config = await provider.resolveConfig();
 
     expect((provider as any).mcpConfigService.isBuiltinMCPEnabled).toHaveBeenCalled();
     expect((provider as any).mcpConfigService.getACPServers).toHaveBeenCalled();
     expect(config.webMcp).toEqual({ enabled: false });
-    expect(pickWorkspaceDir).toHaveBeenCalled();
+    expect(config.cwd).toBe(rootA);
+  });
+
+  it('resolves a custom ACP agent config from preferences', async () => {
+    const provider = await createProvider({
+      defaultAgentType: 'codex-acp',
+      agentConfigs: {
+        'codex-acp': {
+          command: 'codex-acp',
+          args: [],
+          description: 'Codex ACP Agent',
+        },
+      },
+    });
+
+    const config = await provider.resolveConfig();
+
+    expect(config.agentId).toBe('codex-acp');
+    expect(config.command).toBe('codex-acp');
+    expect(config.args).toEqual([]);
+  });
+
+  it('falls back to the built-in Claude ACP agent when the selected custom agent is missing', async () => {
+    const provider = await createProvider({ defaultAgentType: 'missing-agent' });
+
+    const config = await provider.resolveConfig();
+
+    expect(config.agentId).toBe('claude-agent-acp');
+    expect(config.command).toBe('claude-agent-acp');
+    expect(config.args).toEqual([]);
+  });
+
+  it('uses the selected multi-root workspace directory for ACP cwd', async () => {
+    const provider = await createProvider({
+      isMultiRoot: true,
+      quickPickResult: rootB,
+    });
+
+    const config = await provider.resolveConfig();
+
+    expect(config.cwd).toBe(rootB);
+    expect((provider as any).quickPick.show).toHaveBeenCalledWith([rootA, rootB], expect.any(Object));
+    expect((provider as any).messageService.info).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the first multi-root workspace directory when QuickPick is cancelled', async () => {
+    const provider = await createProvider({
+      isMultiRoot: true,
+      quickPickResult: undefined,
+    });
+
+    const config = await provider.resolveConfig();
+    const cachedConfig = await provider.resolveConfig();
+
+    expect(config.cwd).toBe(rootA);
+    expect(cachedConfig.cwd).toBe(rootA);
+    expect((provider as any).quickPick.show).toHaveBeenCalledTimes(1);
+    expect((provider as any).messageService.info).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to the first multi-root workspace directory when QuickPick never resolves', async () => {
+    jest.useFakeTimers();
+
+    try {
+      const provider = await createProvider({
+        isMultiRoot: true,
+        quickPickResult: new Promise<string | undefined>(() => {}),
+      });
+
+      const configPromise = provider.resolveConfig();
+
+      await jest.advanceTimersByTimeAsync(3000);
+
+      await expect(configPromise).resolves.toMatchObject({ cwd: rootA });
+      expect((provider as any).quickPick.hide).toHaveBeenCalledWith(HideReason.CANCELED);
+      expect((provider as any).messageService.info).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

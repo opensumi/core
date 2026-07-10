@@ -31,9 +31,9 @@
    acp_chat_post_prepared_relay({ digestId, targetSessionId });
    ```
 5. While the relay call is pending, poll `acp_chat_get_permission_state({})` -> record `PERMISSION_PENDING`.
-6. `chrome-devtools-mcp-evaluate`: record whether the permission dialog is visible and whether it shows user-facing permission text.
+6. `chrome-devtools-mcp-evaluate`: record whether the permission dialog is visible, whether it shows user-facing permission text, and whether the browser tab title is prefixed as `(<activeDialogCount>) permission `.
 7. `chrome-devtools-mcp`: click the visible Reject or close control in the permission dialog. Do not use an ACP tool to decide.
-8. `mcp`: `acp_chat_get_permission_state({})` -> record `PERMISSION_AFTER_DISMISS`.
+8. `mcp`: `acp_chat_get_permission_state({})` -> record `PERMISSION_AFTER_DISMISS`, then record that the browser tab title no longer has a permission prefix.
 
 If relay setup is unavailable but the mock `permission` fixture is configured, trigger the permission request by sending a deterministic prompt through the Agentic input, then execute Steps 5-8 against the visible dialog and permission state.
 
@@ -45,8 +45,9 @@ If relay setup is unavailable but the mock `permission` fixture is configured, t
 - `PERMISSION_BASELINE.result.pendingCountExcludingActive` is a number.
 - Step 1 response does not include request content, file contents, or permission options.
 - If Part B runs, Step 5 observes `activeDialogCount >= 1` while the dialog is visible.
-- If Part B runs, Step 6 confirms the dialog is visible in the browser.
+- If Part B runs, Step 6 confirms the dialog is visible in the browser and the Web tab title shows the pending permission count as `(<count>) permission <base title>`.
 - If Part B runs, Step 8 eventually returns to the baseline active dialog count.
+- If Part B runs, Step 8 confirms the Web tab title no longer has a permission prefix after dismissal.
 - No step uses or expects `acp_handlePermissionDialog`.
 - No operational step invokes a legacy `_opensumi/acp_chat/*` identifier, and the runtime must not accept one as an alias.
 

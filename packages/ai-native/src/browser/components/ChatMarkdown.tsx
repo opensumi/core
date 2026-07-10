@@ -1,10 +1,14 @@
 import cls from 'classnames';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { MarkdownReactParser, MarkdownReactRenderer } from '@opensumi/ide-components/lib/markdown-react';
 import { IMarkedOptions, marked } from '@opensumi/ide-components/lib/utils';
-import { AppConfig, ConfigProvider, useInjectable } from '@opensumi/ide-core-browser';
+import { AppConfig, ConfigProvider, FILE_COMMANDS, useInjectable } from '@opensumi/ide-core-browser';
+import { CommandService, URI } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
+
+import { AIPanelLayoutService } from '../layout/panel-layout.service';
 
 import { CodeEditorWithHighlight } from './ChatEditor';
 import styles from './components.module.less';
@@ -22,11 +26,256 @@ interface MarkdownProps {
   hideInsert?: boolean;
 }
 
+interface ChatMarkdownFileLink {
+  label: string;
+  uri: URI;
+  range?: {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+  };
+}
+
+const FILE_LINK_PATTERN = /(file:\/\/\/[^\s`<>"']+|(?:\/|\.{1,2}\/|[A-Za-z]:[\\/]|[\w@.-]+\/)[^\s`<>"']+)/g;
+const TRAILING_PUNCTUATION_PATTERN = /[),.;!?，。；！？]$/;
+
+function trimTrailingPunctuation(value: string): { value: string; trailing: string } {
+  let trimmed = value;
+  let trailing = '';
+
+  while (trimmed && TRAILING_PUNCTUATION_PATTERN.test(trimmed)) {
+    trailing = trimmed.slice(-1) + trailing;
+    trimmed = trimmed.slice(0, -1);
+  }
+
+  return { value: trimmed, trailing };
+}
+
+function extractLineRange(value: string): {
+  filePath: string;
+  range?: ChatMarkdownFileLink['range'];
+} {
+  const lineColumnRangeMatch = value.match(/^(.*):L?(\d+):(\d+)(?:-L?(\d+)(?::(\d+))?)?$/i);
+  const lineRangeMatch = lineColumnRangeMatch || value.match(/^(.*):L?(\d+)(?:-L?(\d+))?$/i);
+  if (!lineRangeMatch) {
+    return { filePath: value };
+  }
+
+  const startLineNumber = Number(lineRangeMatch[2]);
+  const startColumn = lineColumnRangeMatch && lineRangeMatch[3] ? Number(lineRangeMatch[3]) : 1;
+  const endLineNumber = lineColumnRangeMatch
+    ? lineRangeMatch[4]
+      ? Number(lineRangeMatch[4])
+      : startLineNumber
+    : lineRangeMatch[3]
+    ? Number(lineRangeMatch[3])
+    : startLineNumber;
+  const endColumn =
+    lineColumnRangeMatch && lineRangeMatch[5]
+      ? Number(lineRangeMatch[5])
+      : endLineNumber === startLineNumber
+      ? startColumn
+      : 1;
+  if (
+    !Number.isFinite(startLineNumber) ||
+    startLineNumber < 1 ||
+    !Number.isFinite(startColumn) ||
+    startColumn < 1 ||
+    !Number.isFinite(endLineNumber) ||
+    endLineNumber < 1 ||
+    !Number.isFinite(endColumn) ||
+    endColumn < 1
+  ) {
+    return { filePath: value };
+  }
+
+  return {
+    filePath: lineRangeMatch[1],
+    range: {
+      startLineNumber,
+      startColumn,
+      endLineNumber,
+      endColumn,
+    },
+  };
+}
+
+function unwrapNestedAnchors(node: React.ReactNode): React.ReactNode {
+  return React.Children.map(node, (child) => {
+    if (!React.isValidElement<{ children?: React.ReactNode }>(child)) {
+      return child;
+    }
+
+    const children = child.props.children ? unwrapNestedAnchors(child.props.children) : child.props.children;
+    if (child.type === 'a') {
+      return children;
+    }
+
+    return React.cloneElement(child, undefined, children);
+  });
+}
+
+function hasUriScheme(value: string): boolean {
+  return /^[A-Za-z][A-Za-z0-9+.-]*:\/\//.test(value);
+}
+
+function looksLikeFilePath(value: string): boolean {
+  if (!value || /^https?:\/\//i.test(value)) {
+    return false;
+  }
+
+  if (/^file:\/\//i.test(value) || /^(?:\/|\.{1,2}\/|[A-Za-z]:[\\/])/.test(value)) {
+    return true;
+  }
+
+  const basename = value.split(/[\\/]/).pop() || '';
+  return value.includes('/') && /\.[^./\\]+$/.test(basename);
+}
+
+function resolveFileUri(filePath: string, workspaceDir: string): URI | undefined {
+  if (!filePath) {
+    return undefined;
+  }
+
+  if (/^file:\/\//i.test(filePath)) {
+    return URI.parse(filePath);
+  }
+
+  if (hasUriScheme(filePath)) {
+    return undefined;
+  }
+
+  if (/^(?:\/|[A-Za-z]:[\\/])/.test(filePath)) {
+    return URI.file(filePath);
+  }
+
+  const normalizedWorkspaceDir = workspaceDir.replace(/[\\/]+$/, '');
+  const normalizedRelativePath = filePath.replace(/^[\\/]+/, '').replace(/\\/g, '/');
+  return URI.file(`${normalizedWorkspaceDir}/${normalizedRelativePath}`);
+}
+
+function parseChatMarkdownFileLink(value: string, workspaceDir: string): ChatMarkdownFileLink | undefined {
+  const { value: trimmedValue } = trimTrailingPunctuation(value.trim());
+  const { filePath, range } = extractLineRange(trimmedValue);
+
+  if (!looksLikeFilePath(filePath)) {
+    return undefined;
+  }
+
+  const uri = resolveFileUri(filePath, workspaceDir);
+  if (!uri) {
+    return undefined;
+  }
+
+  return {
+    label: trimmedValue,
+    uri,
+    range,
+  };
+}
+
+function isLikelyPartOfUri(text: string, matchStart: number, matchText: string): boolean {
+  if (!matchText.startsWith('/') || matchStart === 0) {
+    return false;
+  }
+
+  return text[matchStart - 1] === ':';
+}
+
 export const ChatMarkdown = (props: MarkdownProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
+  const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
+  const commandService = useInjectable<CommandService>(CommandService);
+  const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
+  const workspaceDir = appConfig.workspaceDir;
   const [reactParser, setReactParser] = useState<MarkdownReactParser>();
   const [tokensList, setTokensList] = useState<TokensList>();
+
+  const openFileLink = useCallback(
+    async (target: ChatMarkdownFileLink) => {
+      panelLayoutService?.toggleAgenticWorkbenchVisibility(true);
+
+      try {
+        await commandService?.executeCommand(FILE_COMMANDS.REVEAL_IN_EXPLORER.id, target.uri);
+      } catch {
+        // Opening the editor is still useful if the explorer cannot reveal the path.
+      }
+
+      await editorService?.open(
+        target.uri,
+        target.range
+          ? {
+              range: target.range,
+              revealRangeInCenter: true,
+            }
+          : undefined,
+      );
+    },
+    [commandService, editorService, panelLayoutService],
+  );
+
+  const renderFileLink = useCallback(
+    (target: ChatMarkdownFileLink, key: React.Key, children?: React.ReactNode) => (
+      <a
+        key={key}
+        href={target.uri.toString()}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          void openFileLink(target);
+        }}
+      >
+        {children || target.label}
+      </a>
+    ),
+    [openFileLink],
+  );
+
+  const renderTextWithFileLinks = useCallback(
+    (text: string): React.ReactNode => {
+      const nodes: React.ReactNode[] = [];
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+
+      FILE_LINK_PATTERN.lastIndex = 0;
+      while ((match = FILE_LINK_PATTERN.exec(text))) {
+        const rawMatch = match[0];
+        const matchStart = match.index;
+        if (isLikelyPartOfUri(text, matchStart, rawMatch)) {
+          continue;
+        }
+
+        const { value: candidate, trailing } = trimTrailingPunctuation(rawMatch);
+        const target = parseChatMarkdownFileLink(candidate, workspaceDir);
+        if (!target) {
+          continue;
+        }
+
+        if (matchStart > lastIndex) {
+          nodes.push(text.slice(lastIndex, matchStart));
+        }
+
+        nodes.push(renderFileLink(target, `file-link-${matchStart}`));
+        if (trailing) {
+          nodes.push(trailing);
+        }
+        lastIndex = matchStart + rawMatch.length;
+      }
+
+      if (lastIndex === 0) {
+        return text;
+      }
+
+      if (lastIndex < text.length) {
+        nodes.push(text.slice(lastIndex));
+      }
+
+      return nodes;
+    },
+    [renderFileLink, workspaceDir],
+  );
 
   useEffect(() => {
     const element = ref.current;
@@ -59,7 +308,26 @@ export const ChatMarkdown = (props: MarkdownProps) => {
         </div>
       );
     };
-    renderer.codespan = (code) => <code className={styles.code_inline}>{code}</code>;
+    renderer.codespan = (code) => {
+      const text = String(code);
+      const target = parseChatMarkdownFileLink(text, workspaceDir);
+      if (target && target.label === text.trim()) {
+        return renderFileLink(target, `file-link-code-${text}`, <code className={styles.code_inline}>{text}</code>);
+      }
+
+      return <code className={styles.code_inline}>{code}</code>;
+    };
+    const defaultLinkRenderer = renderer.link.bind(renderer);
+    renderer.link = (href, text) => {
+      const target = parseChatMarkdownFileLink(href, workspaceDir);
+      const linkText = unwrapNestedAnchors(text);
+      if (target) {
+        return renderFileLink(target, `file-link-markdown-${href}`, linkText);
+      }
+
+      return defaultLinkRenderer(href, linkText);
+    };
+    renderer.text = (text) => renderTextWithFileLinks(String(text));
 
     const reactParser = new MarkdownReactParser({ renderer });
     const markedOptions = {
@@ -89,7 +357,18 @@ export const ChatMarkdown = (props: MarkdownProps) => {
 
     setTokensList(tokensList);
     setReactParser(reactParser);
-  }, [props.markdown]);
+  }, [
+    props.fillInIncompleteTokens,
+    props.markdown,
+    props.markedOptions,
+    props.relationId,
+    props.agentId,
+    props.command,
+    props.hideInsert,
+    renderFileLink,
+    renderTextWithFileLinks,
+    workspaceDir,
+  ]);
 
   return (
     <div className={cls(styles.markdown_container, props.className)} ref={ref} tabIndex={0}>

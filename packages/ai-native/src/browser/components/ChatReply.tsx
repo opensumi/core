@@ -243,6 +243,7 @@ export const ChatReply = (props: IChatReplyProps) => {
   const expandedThinkingIndexSetRef = useRef<Set<number>>(
     new Set(expandedThinkingIndexSetMap.get(expandedThinkingIndexSetKey)),
   );
+  const [localSafeProgressText, setLocalSafeProgressText] = useState<string>();
   const [collapseThinkingIndexSet, setCollapseThinkingIndexSet] = useState<Set<number>>(
     (!request.response.isComplete && !collapseReasoningByDefault) ||
       (keepReasoningExpandedOnComplete && !collapseReasoningByDefault)
@@ -257,6 +258,26 @@ export const ChatReply = (props: IChatReplyProps) => {
       );
     }
   }, [request.response.isComplete, keepReasoningExpandedOnComplete, collapseReasoningByDefault]);
+
+  useEffect(() => {
+    if (request.response.isComplete) {
+      setLocalSafeProgressText(undefined);
+      return;
+    }
+
+    setLocalSafeProgressText(undefined);
+    const workingTimer = window.setTimeout(() => {
+      setLocalSafeProgressText(localize('aiNative.chat.safeProgress.agentWorking'));
+    }, 2000);
+    const stillWorkingTimer = window.setTimeout(() => {
+      setLocalSafeProgressText(localize('aiNative.chat.safeProgress.stillWorking'));
+    }, 8000);
+
+    return () => {
+      window.clearTimeout(workingTimer);
+      window.clearTimeout(stillWorkingTimer);
+    };
+  }, [request.requestId, request.response.isComplete]);
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
@@ -431,7 +452,14 @@ export const ChatReply = (props: IChatReplyProps) => {
   }, [request.response.followups]);
 
   if (!request.response.isComplete) {
-    return <ChatThinking message={request.response.responseText}>{contentNode}</ChatThinking>;
+    return (
+      <ChatThinking
+        message={request.response.responseText}
+        thinkingText={request.response.safeProgress?.content || localSafeProgressText}
+      >
+        {contentNode}
+      </ChatThinking>
+    );
   }
 
   return (

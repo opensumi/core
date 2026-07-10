@@ -20,6 +20,7 @@ export interface IInteractiveInputProps extends IInputBaseProps<HTMLTextAreaElem
   onHeightChange?: (height: number) => void;
   onSend?: (value: string) => void;
   onStop?: () => void;
+  loading?: boolean;
   width?: number;
   height?: number;
   sendBtnClassName?: string;
@@ -41,6 +42,7 @@ export const InteractiveInput = React.forwardRef(
       onSend,
       onStop,
       disabled = false,
+      loading = disabled,
       className,
       height,
       width,
@@ -203,16 +205,16 @@ export const InteractiveInput = React.forwardRef(
       () => (
         <div className={styles.input_icon_container}>
           <div
-            className={cls(styles.send_chat_btn, focus && styles.active, disabled && styles.disabled, sendBtnClassName)}
+            className={cls(styles.send_chat_btn, focus && styles.active, loading && styles.disabled, sendBtnClassName)}
           >
-            {disabled ? (
+            {loading ? (
               onStop ? (
                 <Popover
                   id={`ai_chat_input_send_${uuid(4)}`}
                   content={localize('aiNative.chat.enter.send')}
                   delay={1500}
                   position={popoverPosition ?? PopoverPosition.top}
-                  disable={disabled}
+                  disable={false}
                 >
                   <EnhanceIcon
                     wrapperClassName={styles.stop_icon}
@@ -251,7 +253,7 @@ export const InteractiveInput = React.forwardRef(
           </div>
         </div>
       ),
-      [focus, disabled, sendBtnClassName, internalValue, popoverPosition],
+      [focus, disabled, loading, sendBtnClassName, internalValue, popoverPosition],
     );
 
     const wrapperWidth = useMemo(() => {

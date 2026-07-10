@@ -1,4 +1,4 @@
-import { ElementHandle } from '@playwright/test';
+import { ElementHandle, Locator } from '@playwright/test';
 
 import { OpenSumiApp } from './app';
 import { OpenSumiViewBase } from './view-base';
@@ -22,15 +22,36 @@ export abstract class OpenSumiPanel extends OpenSumiViewBase {
 
   async isVisible() {
     await this.whenReady;
-    return this.view?.isVisible();
+    this.view = await this.page.$(this.viewSelector);
+    return (await this.view?.isVisible()) || false;
   }
 
   async open() {
     if (!this.viewId) {
       return;
     }
-    await this.app.quickOpenPalette.type('view ');
+    if (await this.isVisible()) {
+      return this;
+    }
+    const viewletId = this.viewId.toLocaleLowerCase();
+    const tab = this.page
+      .locator(`#opensumi-left-tabbar li#${viewletId}, #opensumi-bottom-tabbar li#${viewletId}`)
+      .first();
+    if ((await tab.count()) > 0 && (await tab.isVisible())) {
+      await tab.click();
+      try {
+        await this.waitForVisible(10000);
+        this.view = await this.page.$(this.viewSelector);
+        return this;
+      } catch {
+        await this.expandCollapsedBottomPanel(tab);
+      }
+    }
+
+    await this.app.quickCommandPalette.type('Open View');
+    await this.app.quickCommandPalette.trigger('View: Open View ...');
     await this.app.quickOpenPalette.trigger(this.viewId);
+    await this.expandCollapsedBottomPanel(tab);
     await this.waitForVisible();
     this.view = await this.page.$(this.viewSelector);
     return this;
@@ -44,7 +65,27 @@ export abstract class OpenSumiPanel extends OpenSumiViewBase {
     await this.view?.focus();
   }
 
-  async waitForVisible() {
-    await this.page.waitForSelector(this.viewSelector, { state: 'visible' });
+  async waitForVisible(timeout?: number) {
+    await this.page.waitForSelector(this.viewSelector, { state: 'visible', timeout });
+  }
+
+  private async expandCollapsedBottomPanel(tab: Locator): Promise<void> {
+    if (!(await this.isBottomTab(tab))) {
+      return;
+    }
+    await this.app.quickCommandPalette.type('Maximize Tab Panel');
+    await this.app.quickCommandPalette.trigger('Maximize Tab Panel');
+    await this.waitForVisible(10000).catch(() => undefined);
+    await this.app.quickCommandPalette.type('Retract Tab Panel');
+    await this.app.quickCommandPalette.trigger('Retract Tab Panel');
+    await tab.click();
+    await this.waitForVisible(10000).catch(() => undefined);
+  }
+
+  private async isBottomTab(tab: Locator): Promise<boolean> {
+    return (
+      (await tab.count()) > 0 &&
+      (await tab.evaluate((node) => node.closest('#opensumi-bottom-tabbar') !== null).catch(() => false))
+    );
   }
 }

@@ -1,13 +1,15 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IContextKeyService, PreferenceService, fastdom } from '@opensumi/ide-core-browser';
+import { AI_PANEL_LAYOUT_CONTEXT } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { AINativeSettingSectionsId, Emitter, PanelLayoutMode, PreferenceScope } from '@opensumi/ide-core-common';
+import { IResourceOpenOptions, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_CHAT_VIEW_ID } from '../../common';
 
-export const AI_PANEL_LAYOUT_CONTEXT = 'aiNative.panelLayout';
+export { AI_PANEL_LAYOUT_CONTEXT };
 export const AI_PANEL_LAYOUT_MENU = 'aiNative/panelLayout';
 export const AI_AGENTIC_LAYOUT_STORAGE_KEY = 'layout.ai.agentic';
 export const AI_AGENTIC_CHAT_DEFAULT_SIZE = 840;
@@ -42,18 +44,26 @@ export class AIPanelLayoutService {
   @Autowired(IMainLayoutService)
   private readonly layoutService: IMainLayoutService;
 
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorService;
+
   private readonly onDidChangePanelLayoutEmitter = new Emitter<PanelLayoutMode>();
   readonly onDidChangePanelLayout = this.onDidChangePanelLayoutEmitter.event;
+
+  private readonly onDidChangeAgenticWorkbenchVisibilityEmitter = new Emitter<boolean>();
+  readonly onDidChangeAgenticWorkbenchVisibility = this.onDidChangeAgenticWorkbenchVisibilityEmitter.event;
 
   private panelLayoutContextKey?: ReturnType<IContextKeyService['createKey']>;
   private initialized = false;
   private isSettingLayoutMode = false;
+  private agenticWorkbenchVisible = false;
 
   initialize(): void {
     if (this.initialized) {
       return;
     }
     this.initialized = true;
+    this.registerEditorHostedWorkbenchTargetReveal();
     void this.preferenceService.ready.then(() => {
       const initialMode = this.getLayoutMode();
       this.applyLayoutMode(initialMode, false);
@@ -126,8 +136,23 @@ export class AIPanelLayoutService {
     this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, true, this.getAIChatOpenSize(normalizedMode));
   }
 
+  hideAIChatView(mode: PanelLayoutMode = this.getLayoutMode()): void {
+    const normalizedMode = normalizePanelLayoutMode(mode);
+    if (normalizedMode === 'agentic') {
+      this.showAIChatView(normalizedMode);
+      return;
+    }
+
+    this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, false);
+  }
+
   toggleAIChatView(mode: PanelLayoutMode = this.getLayoutMode()): void {
     const normalizedMode = normalizePanelLayoutMode(mode);
+    if (normalizedMode === 'agentic') {
+      this.showAIChatView(normalizedMode);
+      return;
+    }
+
     const isVisible = this.layoutService.isVisible(AI_CHAT_VIEW_ID);
     this.layoutService.toggleSlot(
       AI_CHAT_VIEW_ID,
@@ -136,7 +161,56 @@ export class AIPanelLayoutService {
     );
   }
 
+  isAgenticWorkbenchVisible(): boolean | undefined {
+    if (this.getLayoutMode() !== 'agentic') {
+      return undefined;
+    }
+
+    return this.agenticWorkbenchVisible;
+  }
+
+  toggleAgenticWorkbenchVisibility(visible?: boolean): boolean | undefined {
+    if (this.getLayoutMode() !== 'agentic') {
+      return undefined;
+    }
+
+    const nextVisible = visible ?? !this.agenticWorkbenchVisible;
+    this.setAgenticWorkbenchVisibility(nextVisible);
+    return this.agenticWorkbenchVisible;
+  }
+
+  revealAgenticWorkbench(): boolean | undefined {
+    return this.toggleAgenticWorkbenchVisibility(true);
+  }
+
+  private registerEditorHostedWorkbenchTargetReveal(): void {
+    const openEditorTarget = this.workbenchEditorService.open.bind(this.workbenchEditorService);
+
+    this.workbenchEditorService.open = async (uri, options?: IResourceOpenOptions) => {
+      const result = await openEditorTarget(uri, options);
+      if (result && !options?.backend) {
+        this.revealAgenticWorkbench();
+      }
+
+      return result;
+    };
+  }
+
+  private setAgenticWorkbenchVisibility(visible: boolean): void {
+    if (this.agenticWorkbenchVisible === visible) {
+      return;
+    }
+
+    this.agenticWorkbenchVisible = visible;
+    this.onDidChangeAgenticWorkbenchVisibilityEmitter.fire(visible);
+  }
+
+  private getDefaultAgenticWorkbenchVisibility(mode: PanelLayoutMode): boolean {
+    return normalizePanelLayoutMode(mode) !== 'agentic';
+  }
+
   private activateLayoutMode(mode: PanelLayoutMode, restoreAIChat = false): void {
+    this.setAgenticWorkbenchVisibility(this.getDefaultAgenticWorkbenchVisibility(mode));
     this.applyLayoutMode(mode);
     if (restoreAIChat) {
       this.showAIChatView(mode);

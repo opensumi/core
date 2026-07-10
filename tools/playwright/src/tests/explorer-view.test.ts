@@ -130,14 +130,12 @@ test.describe('OpenSumi Explorer Panel', () => {
     const terminal = await app.open(OpenSumiTerminalView);
     await terminal.sendText(`cd ${workspace.workspace.codeUri.fsPath}`);
     await terminal.sendText(`mkdir ${dirname}`);
-    await app.page.waitForTimeout(2000);
-    let newDir = await explorer.getFileStatTreeNodeByPath(dirname);
-    if (!newDir) {
-      const action = await fileTreeView.getTitleActionByName('Refresh');
-      await action?.click();
-      await app.page.waitForTimeout(200);
-      newDir = await explorer.getFileStatTreeNodeByPath(dirname);
-    }
+
+    await expect
+      .poll(async () => !!(await explorer.getFileStatTreeNodeByPath(dirname)), { timeout: 10000 })
+      .toBeTruthy();
+
+    const newDir = await explorer.getFileStatTreeNodeByPath(dirname);
     expect(newDir).toBeDefined();
   });
 
@@ -214,12 +212,9 @@ console.log(a);`,
     expect(node).toBeDefined();
     node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_2);
     expect(node).toBeDefined();
-    await app.page.reload();
-    await app.page.waitForTimeout(2000);
-    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_1);
-    expect(node).toBeDefined();
-    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_2);
-    expect(node).toBeDefined();
+    await app.reload();
+    await expect.poll(async () => !!(await explorer.getOpenedEditorTreeNodeByPath(testFilePath_1))).toBeTruthy();
+    await expect.poll(async () => !!(await explorer.getOpenedEditorTreeNodeByPath(testFilePath_2))).toBeTruthy();
   });
 
   test('split file on the editor should showing on two group', async () => {
@@ -310,9 +305,14 @@ console.log(a);`,
     const confirmed = await app.getDialogButton(!isLinux ? 'Move to Trash' : 'Delete');
     await confirmed?.click();
     await app.page.waitForTimeout(2000);
+    await expect
+      .poll(async () => {
+        const afterDeleteNode = await explorer.getFileStatTreeNodeByPath('test/a/d');
+        return afterDeleteNode ? await afterDeleteNode.label() : undefined;
+      })
+      .toBe('a/d');
     const afterDeleteNode = await explorer.getFileStatTreeNodeByPath('test/a/d');
     expect(afterDeleteNode).toBeDefined();
-    expect(await afterDeleteNode?.label()).toBe('a/d');
     const leftNode = await explorer.getFileStatTreeNodeByPath('test/a/d/c.js');
     expect(leftNode).toBeDefined();
   });
@@ -324,66 +324,148 @@ console.log(a);`,
     await outlineView.open();
     const menu = await outlineView.openTabContextMenu();
     await menu?.clickMenuItem(outlineView.name!);
-    await app.page.waitForTimeout(1000);
+    await app.page.waitForSelector(outlineView.tabSelector, { state: 'detached' });
+    await app.page.waitForTimeout(500);
     // Default to be visibled
     expect(await outlineView.isVisible()).toBeFalsy();
-    await app.page.reload();
-    await app.page.waitForTimeout(2000);
-    expect(await outlineView.isVisible()).toBeFalsy();
+    await app.reload();
+    await expect.poll(async () => await outlineView.isVisible()).toBeFalsy();
   });
 
-  test('when a new file is created in the folder, the rest of the expanded folders are still expanded', async () => {
-    let action = await fileTreeView.getTitleActionByName('New File');
-    await action?.click();
+  test('when a new file is created through explorer actions, the rest of the expanded folders are still expanded', async () => {
+    await app.reload();
+    explorer = await app.open(OpenSumiExplorerView);
+    explorer.initFileTreeView(workspace.workspace.displayName);
+    fileTreeView = explorer.fileTreeView;
+    await fileTreeView.open();
+
+    const waitForFileStatTreeNode = async (path: string) => {
+      await expect
+        .poll(async () => !!(await explorer.getFileStatTreeNodeByPath(path)), { timeout: 10000 })
+        .toBeTruthy();
+      return explorer.getFileStatTreeNodeByPath(path);
+    };
+
+    const createFromExplorerToolbar = async (
+      actionName: 'New File' | 'New Folder',
+      name: string,
+      visiblePath = name,
+    ) => {
+      const seedNode = await waitForFileStatTreeNode('editor.js');
+      await seedNode?.open();
+      const action = await fileTreeView.getTitleActionByName(actionName);
+      await action?.click();
+      const input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+      if (!input) {
+        throw new Error(`Cannot find explorer input after clicking ${actionName}`);
+      }
+      await input.focus();
+      await input.type(name, { delay: 100 });
+      await app.page.keyboard.press('Enter');
+      await waitForFileStatTreeNode(visiblePath);
+    };
+
+    await createFromExplorerToolbar('New Folder', 'ui_keep_folder4');
+    let node = await waitForFileStatTreeNode('ui_keep_folder4');
+    await node?.expand();
+    expect(await node?.isExpanded()).toBeTruthy();
+
+    await createFromExplorerToolbar('New File', 'ui_keep_file');
+    node = await waitForFileStatTreeNode('ui_keep_file');
+    expect(node).toBeDefined();
+
+    await expect
+      .poll(async () => {
+        const newFolder = await explorer.getFileStatTreeNodeByPath('ui_keep_folder4');
+        return newFolder ? await newFolder.isExpanded() : false;
+      })
+      .toBeTruthy();
+  });
+
+  test('when an external filesystem change creates a new file, the rest of the expanded folders are still expanded', async () => {
+    await app.reload();
+    explorer = await app.open(OpenSumiExplorerView);
+    explorer.initFileTreeView(workspace.workspace.displayName);
+    fileTreeView = explorer.fileTreeView;
+    await fileTreeView.open();
+
+    const waitForFileStatTreeNode = async (path: string) => {
+      await expect
+        .poll(async () => !!(await explorer.getFileStatTreeNodeByPath(path)), { timeout: 3000 })
+        .toBeTruthy()
+        .catch(async () => {
+          const refresh = await fileTreeView.getTitleActionByName('Refresh');
+          await refresh?.click();
+          await expect
+            .poll(async () => !!(await explorer.getFileStatTreeNodeByPath(path)), { timeout: 10000 })
+            .toBeTruthy();
+        });
+      return explorer.getFileStatTreeNodeByPath(path);
+    };
+
+    const ensureFileTreeRootExpanded = async () => {
+      await explorer.open();
+      await fileTreeView.open();
+      await fileTreeView.waitForVisible();
+      const viewElement = await fileTreeView.getViewElement();
+      const rootNode = await viewElement?.waitForSelector('[class*="file_tree_node__"]');
+      if (await rootNode?.$('[class*="mod_collapsed__"]')) {
+        await (await rootNode?.waitForSelector('[class*="expansion_toggle__"]'))?.click();
+        await expect.poll(async () => !(await rootNode?.$('[class*="mod_collapsed__"]'))).toBeTruthy();
+      }
+    };
+
+    const terminal = await app.open(OpenSumiTerminalView);
+    await terminal.sendText(`cd ${workspace.workspace.codeUri.fsPath}`);
+
+    const runNodeFsScript = async (script: string) => {
+      await ensureFileTreeRootExpanded();
+      await terminal.sendText(`node -e "${script}"`);
+    };
+
+    const createWorkspaceFile = async (relativePath: string, visiblePath = relativePath) => {
+      await runNodeFsScript(
+        `const fs=require('fs');const path=require('path');fs.mkdirSync(path.dirname('${relativePath}'),{recursive:true});fs.writeFileSync('${relativePath}','');`,
+      );
+      await waitForFileStatTreeNode(visiblePath);
+    };
+
+    const createWorkspaceDir = async (relativePath: string) => {
+      await runNodeFsScript(`require('fs').mkdirSync('${relativePath}',{recursive:true});`);
+      await waitForFileStatTreeNode(relativePath);
+    };
+
     // type `new_folder3` as the folder name
     const newFileName_1 = 'new_folder3/index.js';
-    let input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
-    if (input != null) {
-      await input.focus();
-      await input.type(newFileName_1, { delay: 200 });
-      await app.page.keyboard.press('Enter');
-    }
-    await app.page.waitForTimeout(200);
-    let node = await explorer.getFileStatTreeNodeByPath('new_folder3');
+    await createWorkspaceFile(newFileName_1, 'new_folder3');
+    let node = await waitForFileStatTreeNode('new_folder3');
     await node?.open();
 
-    action = await fileTreeView.getTitleActionByName('New Folder');
-    await action?.click();
     // type `new_folder4` as the folder name
     const newFileName_2 = 'new_folder4';
-    input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
-    if (input != null) {
-      await input.focus();
-      await input.type(newFileName_2, { delay: 200 });
-      await app.page.keyboard.press('Enter');
-    }
-    await app.page.waitForTimeout(200);
-    node = await explorer.getFileStatTreeNodeByPath(newFileName_2);
+    await createWorkspaceDir(newFileName_2);
+    node = await waitForFileStatTreeNode(newFileName_2);
     await node?.open();
     await app.page.waitForTimeout(200);
     expect(await node?.isExpanded()).toBeTruthy();
 
     // select the `new_folder3` folder and toggle it twice
-    node = await explorer.getFileStatTreeNodeByPath(newFileName_1);
+    node = await waitForFileStatTreeNode('new_folder3');
     await node?.open();
     await node?.open();
 
-    action = await fileTreeView.getTitleActionByName('New File');
-    await action?.click();
     // type `new_file` as the file name
     const newFileName_3 = 'new_file';
-    input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
-    if (input != null) {
-      await input.focus();
-      await input.type(newFileName_3, { delay: 200 });
-      await app.page.keyboard.press('Enter');
-    }
-    await app.page.waitForTimeout(200);
+    await createWorkspaceFile(newFileName_3);
 
-    node = await explorer.getFileStatTreeNodeByPath(newFileName_3);
+    node = await waitForFileStatTreeNode(newFileName_3);
     expect(node).toBeDefined();
     // The `new_folder3` folder should be expaned also
-    node = await explorer.getFileStatTreeNodeByPath(newFileName_1);
-    expect(await node?.isExpanded()).toBeTruthy();
+    await expect
+      .poll(async () => {
+        const newFolder = await explorer.getFileStatTreeNodeByPath('new_folder3');
+        return newFolder ? await newFolder.isExpanded() : false;
+      })
+      .toBeTruthy();
   });
 });

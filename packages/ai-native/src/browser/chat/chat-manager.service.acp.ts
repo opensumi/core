@@ -35,6 +35,7 @@ export interface AcpSessionStateChangeEvent {
   model: ChatModel;
   previousModeId?: string;
   currentModeId?: string;
+  availableCommands?: AvailableCommand[];
 }
 
 @Injectable()
@@ -434,6 +435,10 @@ export class AcpChatManagerService extends ChatManagerService {
       model.configOptions = state.configOptions;
       changed = true;
     }
+    if (state.availableCommands !== undefined) {
+      this.availableCommands = state.availableCommands;
+      changed = true;
+    }
 
     if (!changed) {
       return;
@@ -444,6 +449,7 @@ export class AcpChatManagerService extends ChatManagerService {
       model,
       previousModeId,
       currentModeId: model.currentModeId,
+      availableCommands: state.availableCommands,
     });
   }
 

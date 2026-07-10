@@ -1,6 +1,7 @@
 import { OpenSumiApp } from './app';
 import { OPENSUMI_VIEW_CONTAINERS } from './constans';
 import { OpenSumiTreeNode } from './tree-node';
+import { keypressWithCmdCtrl, keypressWithCmdCtrlAndShift } from './utils';
 import { OpenSumiView } from './view';
 
 export class OpenSumiEditor extends OpenSumiView {
@@ -54,22 +55,67 @@ export class OpenSumiEditor extends OpenSumiView {
   }
 
   async isDirty() {
-    const dirtyIcon = await (await this.getTab())?.$("[class*='dirty___']");
+    const tab = await this.getTab();
+    if (!tab) {
+      return false;
+    }
+    const tabClassName = await tab.getAttribute('class');
+    if (tabClassName?.includes('kt_editor_tab_dirty___')) {
+      return true;
+    }
+    const dirtyIcon = await tab.$("[class*='dirty___']");
     const className = await dirtyIcon?.getAttribute('class');
+    if (!className) {
+      return false;
+    }
     const hidden = className?.includes('hidden__');
     return !hidden;
   }
 
   async save() {
-    await this.activate();
+    await this.focus();
     if (!(await this.isDirty())) {
       return;
     }
-    const dirtyIcon = await (await this.getTab())?.$("[class*='dirty___']");
-    await this.app.menubar.trigger('File', 'Save File');
-    // waiting for saved
-    await dirtyIcon?.waitForElementState('hidden');
+    await this.page.keyboard.press(keypressWithCmdCtrl('KeyS'), { delay: 200 });
+    if (!(await this.waitForClean(3000))) {
+      await this.page.keyboard.press(keypressWithCmdCtrlAndShift('KeyS'), { delay: 200 });
+      if (!(await this.waitForClean())) {
+        throw new Error('Editor stayed dirty after save shortcuts were pressed');
+      }
+    }
     await this.waitForEditorDone();
+  }
+
+  private async waitForClean(timeout = 30000) {
+    // waiting for saved
+    try {
+      await this.page.waitForFunction(
+        ([selector, path]) => {
+          const tabs = Array.from(document.querySelectorAll<HTMLElement>(selector));
+          const tab = tabs.find((item) => item.dataset.uri?.includes(path));
+          if (!tab) {
+            return false;
+          }
+          if (Array.from(tab.classList).some((className) => className.includes('kt_editor_tab_dirty___'))) {
+            return false;
+          }
+          const dirtyIcon = tab.querySelector<HTMLElement>("[class*='dirty___']");
+          if (!dirtyIcon) {
+            return true;
+          }
+          return Array.from(dirtyIcon.classList).some((className) => className.includes('hidden__'));
+        },
+        [
+          `#${OPENSUMI_VIEW_CONTAINERS.EDITOR_TABS} [class*='kt_editor_tab___']`,
+          (await this.filestatElement?.getFsPath()) || '',
+        ],
+        { timeout },
+      );
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 
   async waitForEditorDone() {

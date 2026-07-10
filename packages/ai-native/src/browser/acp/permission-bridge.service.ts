@@ -16,7 +16,7 @@ export interface ShowPermissionDialogParams {
   locations?: Array<{ path: string; line?: number }>;
   command?: string;
   options: PermissionOption[];
-  timeout: number;
+  timeout?: number;
 }
 
 @Injectable()
@@ -32,7 +32,6 @@ export class AcpPermissionBridgeService {
     string,
     {
       resolve: (decision: PermissionDecision) => void;
-      timeout: NodeJS.Timeout | undefined;
     }
   >();
 
@@ -112,7 +111,6 @@ export class AcpPermissionBridgeService {
       locations: params.locations,
       command: params.command,
       options: params.options,
-      timeout: params.timeout,
       onSelect: this.handleUserDecision.bind(this),
       onClose: this.handleDialogClose.bind(this),
     };
@@ -136,7 +134,6 @@ export class AcpPermissionBridgeService {
     return new Promise((resolve) => {
       this.pendingDecisions.set(requestId, {
         resolve,
-        timeout: undefined,
       });
     });
   }
@@ -150,9 +147,6 @@ export class AcpPermissionBridgeService {
       return;
     }
 
-    if (pending.timeout) {
-      clearTimeout(pending.timeout);
-    }
     this.pendingDecisions.delete(requestId);
 
     const always = optionKind === 'allow_always' || optionKind === 'reject_always';
@@ -173,7 +167,7 @@ export class AcpPermissionBridgeService {
   }
 
   /**
-   * Handle dialog close/timeout
+   * Handle dialog close/cancel
    */
   handleDialogClose(requestId: string): void {
     const pending = this.pendingDecisions.get(requestId);
@@ -181,12 +175,9 @@ export class AcpPermissionBridgeService {
       return;
     }
 
-    if (pending.timeout) {
-      clearTimeout(pending.timeout);
-    }
     this.pendingDecisions.delete(requestId);
 
-    const decision: PermissionDecision = { type: 'timeout' };
+    const decision: PermissionDecision = { type: 'cancelled' };
 
     // Clean up pending index
     this.cleanupPendingIndex(requestId);
@@ -231,6 +222,17 @@ export class AcpPermissionBridgeService {
   }
 
   /**
+   * Count of pending permission requests across all sessions.
+   */
+  getPendingCount(): number {
+    let count = 0;
+    for (const requestIds of this.pendingBySessionId.values()) {
+      count += requestIds.size;
+    }
+    return count;
+  }
+
+  /**
    * Get active dialogs (for debugging)
    */
   getActiveDialogs(): PermissionDialogProps[] {
@@ -252,9 +254,6 @@ export class AcpPermissionBridgeService {
     // Clear pending decisions (resolve as cancelled)
     for (const [requestId, pending] of this.pendingDecisions.entries()) {
       if (requestId === sessionId || requestId.startsWith(prefix)) {
-        if (pending.timeout) {
-          clearTimeout(pending.timeout);
-        }
         this.pendingDecisions.delete(requestId);
         const decision: PermissionDecision = { type: 'cancelled' };
         this.onPermissionResult.fire({ requestId, decision });

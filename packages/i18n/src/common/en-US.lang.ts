@@ -1469,6 +1469,16 @@ export const localizationBundle = {
     'aiNative.chat.defaultContextFile': 'Current File',
     'aiNative.chat.defaultContextFolder': 'Current Folder',
     'aiNative.chat.thinking': 'Deep Thinking',
+    'aiNative.chat.safeProgress.agentWorking': 'Agent is working...',
+    'aiNative.chat.safeProgress.stillWorking': 'Still working...',
+    'aiNative.chat.safeProgress.authRequired': 'Authentication required',
+    'aiNative.chat.safeProgress.errored': 'Agent encountered an error',
+    'aiNative.chat.safeProgress.disconnected': 'Agent disconnected',
+    'aiNative.chat.agentSelector.label': 'Agent',
+    'aiNative.chat.agentSelector.tooltip': '{0} · Applies to new chats',
+    'aiNative.chat.agentSelector.appliesToNewChats': 'Applies to new chats',
+    'aiNative.chat.agentSelector.moreActions': 'Agent actions',
+    'aiNative.chat.agentSelector.configureAgents': 'Agent Configurations',
     'aiNative.chat.imageUpload': 'Upload Image',
     'aiNative.chat.clearContext': 'Clear Context',
     'aiNative.chat.context.description': 'Total {0} References',
@@ -1559,14 +1569,23 @@ export const localizationBundle = {
     'preference.ai.native.agent.configs.title': 'Agent Configurations',
     'preference.ai.native.agent.configs': 'Agent Configs',
     'preference.ai.native.agent.configs.description':
-      'Agent configurations for setting up different Agent commands and arguments',
+      'Agent configurations for setting up different Agent commands and arguments. This setting must be a JSON object, not a string.',
     'preference.ai.native.agent.configs.markdownDescription':
-      'Configure AI Agents with their command and arguments. Example:\n```json\n{\n  "qwen": {\n    "command": "qwen",\n    "args": ["--acp", "--channel=ACP"],\n    "streaming": true,\n    "description": "Qwen CLI Agent"\n  },\n  "claude-agent-acp": {\n    "command": "claude-agent-acp",\n    "args": [],\n    "streaming": true,\n    "description": "Claude Code ACP Agent"\n  }\n}\n```',
+      'Configure AI Agents with a JSON object whose keys are agent ids. Each agent must define a non-empty `command`; do not set this to a string like `"acp"`. Example:\n```json\n{\n  "qwen": {\n    "command": "qwen",\n    "args": ["--acp", "--channel=ACP"],\n    "streaming": true,\n    "description": "Qwen CLI Agent"\n  },\n  "claude-agent-acp": {\n    "command": "claude-agent-acp",\n    "args": [],\n    "streaming": true,\n    "description": "Claude Code ACP Agent"\n  },\n  "custom-agent": {\n    "command": "custom-agent",\n    "args": ["--acp"],\n    "streaming": true,\n    "description": "Custom Agent"\n  }\n}\n```',
+    'preference.ai.native.agent.configs.errorMessage':
+      'Agent Configs must be a JSON object keyed by agent id, not a string.',
+    'preference.ai.native.agent.configs.item.errorMessage':
+      'Each agent config must be an object with a non-empty command.',
+    'preference.ai.native.agent.configs.snippet.description': 'Insert the built-in ACP agent configuration object.',
     'preference.ai.native.agent.configs.command.description': 'Command to start the Agent',
     'preference.ai.native.agent.configs.args.description': 'Arguments passed to the Agent',
     'preference.ai.native.agent.configs.streaming.description': 'Whether streaming output is supported',
     'preference.ai.native.agent.configs.description.description': 'Agent description information',
     'preference.ai.native.agent.defaultType.description': 'Default Agent Type to use for AI chat and commands',
+    'preference.ai-native.acp.deliveryMode': 'ACP Delivery Mode',
+    'preference.ai-native.acp.deliveryMode.description': 'Controls how ACP Chat delivers agent output to the browser.',
+    'preference.ai-native.acp.deliveryMode.minimal': 'Minimal: deliver final replies and important state changes only.',
+    'preference.ai-native.acp.deliveryMode.stream': 'Stream: deliver intermediate agent output as it is produced.',
     // #endregion AI Native
 
     // #endregion merge editor
@@ -1674,6 +1693,8 @@ export const localizationBundle = {
     'ai.native.mcp.sse': 'SSE',
     'ai.native.layout.agentic': 'Agent',
     'ai.native.layout.classic': 'Classic',
+    'ai.native.layout.openAgentic': 'Open Agent layout',
+    'ai.native.layout.openClassic': 'Open IDE layout',
     'ai.native.mcp.buttonSave': 'Add',
     'ai.native.mcp.buttonUpdate': 'Update',
     'ai.native.mcp.buttonCancel': 'Cancel',

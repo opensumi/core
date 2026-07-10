@@ -1,4 +1,6 @@
+import { execFile } from 'child_process';
 import path from 'path';
+import { promisify } from 'util';
 
 import { expect } from '@playwright/test';
 
@@ -7,10 +9,11 @@ import { OpenSumiDiffEditor } from '../diff-editor';
 import { OpenSumiExplorerView } from '../explorer-view';
 import { OpenSumiFileTreeView } from '../filetree-view';
 import { OpenSumiSCMView } from '../scm-view';
-import { OpenSumiTerminalView } from '../terminal-view';
 import { OpenSumiWorkspace } from '../workspace';
 
 import test, { page } from './hooks';
+
+const execFileAsync = promisify(execFile);
 
 let app: OpenSumiApp;
 let explorer: OpenSumiExplorerView;
@@ -21,13 +24,12 @@ let workspace: OpenSumiWorkspace;
 test.describe('OpenSumi SCM Panel', () => {
   test.beforeAll(async () => {
     workspace = new OpenSumiWorkspace([path.resolve(__dirname, '../../src/tests/workspaces/git-workspace')]);
+    await workspace.initWorksapce();
+    await execFileAsync('git', ['init'], { cwd: workspace.workspace.codeUri.fsPath });
     app = await OpenSumiApp.load(page, workspace);
     explorer = await app.open(OpenSumiExplorerView);
     explorer.initFileTreeView(workspace.workspace.displayName);
     fileTreeView = explorer.fileTreeView;
-    const terminal = await app.open(OpenSumiTerminalView);
-    // There should have GIT on the PATH
-    await terminal.sendText('git init');
   });
 
   test.afterAll(() => {
@@ -38,22 +40,23 @@ test.describe('OpenSumi SCM Panel', () => {
     await explorer.fileTreeView.open();
     const action = await fileTreeView.getTitleActionByName('Refresh');
     await action?.click();
-    // Reinitialize
-    const terminal = await app.open(OpenSumiTerminalView);
-    await terminal.sendText('git init');
-    await app.page.waitForTimeout(2000);
-    const node = await explorer.getFileStatTreeNodeByPath('a.js');
-    const badge = await node?.badge();
-    expect(badge).toBe('U');
+    await expect
+      .poll(async () => {
+        const node = await explorer.getFileStatTreeNodeByPath('a.js');
+        return node?.badge();
+      })
+      .toBe('U');
   });
 
   test('The "U" charset should on the files tail on SCM view', async () => {
     scm = await app.open(OpenSumiSCMView);
     await scm.open();
-    await app.page.waitForTimeout(2000);
-    const node = await scm.getFileStatTreeNodeByPath('a.js');
-    const badge = await node?.getBadge();
-    expect(badge).toBe('U');
+    await expect
+      .poll(async () => {
+        const node = await scm.getFileStatTreeNodeByPath('a.js');
+        return node?.getBadge();
+      })
+      .toBe('U');
   });
 
   test('Open file from context menu', async () => {
