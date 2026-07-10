@@ -129,6 +129,7 @@ console.log(a);`,
     expect(await pinnedEditor.isPinned()).toBe(true);
     expect(await pinnedEditor.hasPinAction()).toBe(true);
     expect(await pinnedEditor.hasCloseAction()).toBe(false);
+    expect(await pinnedEditor.hasVisibleDirtyIndicator()).toBe(false);
     expect(await ordinaryEditor.isCurrentTab()).toBe(true);
 
     await pinnedEditor.clickPinAction();
@@ -144,6 +145,7 @@ console.log(a);`,
     await (await pinnedEditor.getTab())?.click();
     await pinnedEditor.addTextToNewLineAfterLineByLineNumber(1, '// pinned dirty');
     expect(await pinnedEditor.isDirty()).toBe(true);
+    expect(await pinnedEditor.hasVisibleDirtyIndicator()).toBe(true);
     expect(await pinnedEditor.hasPinAction()).toBe(true);
 
     const pinnedTab = await pinnedEditor.getTab();

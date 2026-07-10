@@ -45,6 +45,11 @@ export class OpenSumiEditor extends OpenSumiView {
     return !!(await (await this.getTab())?.$("[class*='close_tab___']"));
   }
 
+  async hasVisibleDirtyIndicator() {
+    const dirtyIndicator = await (await this.getTab())?.$("[class*='dirty___']");
+    return (await dirtyIndicator?.isVisible()) ?? false;
+  }
+
   async isCurrentTab() {
     return (await (await this.getTab())?.getAttribute('class'))?.includes('kt_editor_tab_current___') ?? false;
   }
