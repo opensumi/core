@@ -2167,7 +2167,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     const previewWasClosed =
       !!this.previewURI && indexed.some(({ resource }) => resource.uri.isEqual(this.previewURI!));
 
-    for (const { resource, index } of indexed) {
+    for (const { index } of indexed) {
       this.resources.splice(index, 1);
       if (index < this._pinnedTabCount) {
         this._pinnedTabCount--;
