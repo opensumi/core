@@ -187,13 +187,49 @@ export const Tabs = ({ group }: ITabsProps) => {
     fastdom.measure(() => {
       try {
         if (tabContainer.current && group.currentResource) {
-          const currentTab = tabContainer.current.querySelector(
+          const container =
+            (tabContainer.current.querySelector('.' + styles.kt_editor_tabs_scroll) as HTMLElement | null) ||
+            tabContainer.current;
+          const currentTab = container.querySelector(
             '.' + styles.kt_editor_tab + "[data-uri='" + group.currentResource.uri.toString() + "']",
-          );
+          ) as HTMLElement | null;
           if (currentTab) {
-            currentTab.scrollIntoView({
-              block: 'nearest',
-              inline: 'nearest',
+            const pinnedTabs = container.querySelector('.' + styles.pinned_tabs) as HTMLElement | null;
+            const currentIsPinned = currentTab.dataset.pinned === 'true';
+            const viewportWidth = container.clientWidth;
+            const currentTabWidth = currentTab.offsetWidth;
+            const pinnedTabsWidth = pinnedTabs?.scrollWidth || 0;
+            const combinedWidth = pinnedTabsWidth + currentTabWidth;
+            const maximumVisiblePinnedWidth =
+              pinnedTabs && !currentIsPinned && combinedWidth > viewportWidth
+                ? (viewportWidth * pinnedTabsWidth) / combinedWidth
+                : undefined;
+
+            fastdom.mutate(() => {
+              if (pinnedTabs) {
+                pinnedTabs.style.maxWidth =
+                  maximumVisiblePinnedWidth === undefined ? '' : `${maximumVisiblePinnedWidth}px`;
+              }
+              currentTab.scrollIntoView({
+                block: 'nearest',
+                inline: 'nearest',
+              });
+
+              if (!pinnedTabs || currentIsPinned) {
+                return;
+              }
+              fastdom.measure(() => {
+                const containerRect = container.getBoundingClientRect();
+                const pinnedTabsRect = pinnedTabs.getBoundingClientRect();
+                const currentTabRect = currentTab.getBoundingClientRect();
+                const visiblePinnedRight = Math.min(pinnedTabsRect.right, containerRect.right);
+                const overlap = visiblePinnedRight - currentTabRect.left;
+                if (overlap > 0) {
+                  fastdom.mutate(() => {
+                    container.scrollLeft = Math.max(0, container.scrollLeft - overlap);
+                  });
+                }
+              });
             });
           }
         }
@@ -231,6 +267,14 @@ export const Tabs = ({ group }: ITabsProps) => {
       if (tabContainer.current) {
         disposer.addDispose(new DomListener(tabContainer.current, 'mousewheel', preventNavigation));
       }
+      const scrollContainer =
+        (tabContainer.current?.querySelector('.' + styles.kt_editor_tabs_scroll) as HTMLElement | null) ||
+        tabContainer.current;
+      let resizeObserver: ResizeObserver | undefined;
+      if (scrollContainer) {
+        resizeObserver = new ResizeObserver(scrollToCurrent);
+        resizeObserver.observe(scrollContainer);
+      }
       disposer.addDispose(
         eventBus.onDirective(ResizeEvent.createDirective(slotLocation), () => {
           scrollToCurrent();
@@ -242,6 +286,7 @@ export const Tabs = ({ group }: ITabsProps) => {
         }),
       );
       return () => {
+        resizeObserver?.disconnect();
         disposer.dispose();
       };
     }
@@ -387,19 +432,21 @@ export const Tabs = ({ group }: ITabsProps) => {
               })}
             ></div>
             {isPinned ? (
-              <div
+              <button
+                type='button'
                 className={styles.pin_tab}
                 onMouseDown={(event) => {
                   event.stopPropagation();
+                }}
+                onClick={(event) => {
+                  event.stopPropagation();
                   group.unpinTab(resource.uri);
                 }}
-                tabIndex={0}
-                role='button'
                 title={formatLocalize('editor.unpinTab.title', resource.name)}
                 aria-label={formatLocalize('editor.unpinTab.title', resource.name)}
               >
                 <div className={getIcon('pinned')} />
-              </div>
+              </button>
             ) : (
               <div
                 className={styles_close_tab}

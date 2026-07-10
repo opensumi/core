@@ -795,10 +795,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
     const wasPinned = oldIndex < this._pinnedTabCount;
     const stateChanged = wasPinned !== pinned;
-    if (!stateChanged && oldIndex === targetIndex) {
-      return false;
-    }
-
     const nextPinnedTabCount = Math.max(
       0,
       Math.min(
@@ -806,12 +802,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this._pinnedTabCount + (pinned && !wasPinned ? 1 : 0) - (!pinned && wasPinned ? 1 : 0),
       ),
     );
-    const [resource] = this.resources.splice(oldIndex, 1);
-    const maximumIndex = this.resources.length;
+    const maximumIndex = Math.max(0, this.resources.length - 1);
     const minimumIndex = pinned ? 0 : nextPinnedTabCount;
     const maximumRegionIndex = pinned ? Math.max(0, nextPinnedTabCount - 1) : maximumIndex;
     const nextIndex = Math.max(minimumIndex, Math.min(targetIndex, maximumRegionIndex));
+    if (!stateChanged && oldIndex === nextIndex) {
+      return false;
+    }
 
+    const [resource] = this.resources.splice(oldIndex, 1);
     this.resources.splice(nextIndex, 0, resource);
     this._pinnedTabCount = nextPinnedTabCount;
     if (pinned && this.previewURI?.isEqual(uri)) {

@@ -563,6 +563,32 @@ describe('workbench editor service tests', () => {
     await group.close(uri, { force: true });
   });
 
+  it('should not notify when moveTab clamps to the existing index', async () => {
+    const pinned = new URI('test://pin/clamped-move-pinned');
+    const ordinary = new URI('test://pin/clamped-move-ordinary');
+    await editorService.open(pinned, { preview: false });
+    await editorService.open(ordinary, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+    const resourcesBefore = [...group.resources];
+    const tabChanged = jest.fn();
+    const tabOperation = jest.fn();
+    const changedDisposer = group.onDidEditorGroupTabChanged(tabChanged);
+    const operationDisposer = group.onDidEditorGroupTabOperation(tabOperation);
+
+    try {
+      expect(group.moveTab(pinned, -100, true)).toBe(false);
+      expect(group.resources).toEqual(resourcesBefore);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(tabChanged).not.toHaveBeenCalled();
+      expect(tabOperation).not.toHaveBeenCalled();
+    } finally {
+      changedDisposer.dispose();
+      operationDisposer.dispose();
+      await closeAllEditorGroups();
+    }
+  });
+
   it.each(['file', 'untitled', 'diff', 'mergeEditor', 'custom-editor', 'webview'])(
     'should keep pinned state independent of the %s tab input type',
     (scheme) => {
@@ -759,6 +785,47 @@ describe('workbench editor service tests', () => {
       expect(group.isPinned(pinned)).toBe(true);
       expect(group.currentResource?.uri.toString()).toBe(target.toString());
     } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should cancel close-to-right without partially mutating the group', async () => {
+    const pinned = new URI('test://close-right-cancel/pinned');
+    const activeLeft = new URI('test://close-right-cancel/active-left');
+    const target = new URI('test://close-right-cancel/target');
+    const refusing = new URI('test://close-right-cancel/refusing');
+    const right = new URI('test://close-right-cancel/right');
+    await editorService.open(pinned, { preview: false });
+    await editorService.open(activeLeft, { preview: false });
+    await editorService.open(target, { preview: false });
+    await editorService.open(refusing, { preview: false });
+    await editorService.open(right, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+    await group.open(activeLeft, { focus: true });
+    const orderBefore = group.resources.map((resource) => resource.uri.toString());
+    const activeBefore = group.currentResource;
+    const pinnedTabCountBefore = group.pinnedTabCount;
+    const tabChanged = jest.fn();
+    const tabOperation = jest.fn();
+    const changedDisposer = group.onDidEditorGroupTabChanged(tabChanged);
+    const operationDisposer = group.onDidEditorGroupTabOperation(tabOperation);
+    doNotClose.push(refusing.toString());
+
+    try {
+      expect(await group.closeToRight(target)).toBe(false);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual(orderBefore);
+      expect(group.currentResource).toBe(activeBefore);
+      expect(group.pinnedTabCount).toBe(pinnedTabCountBefore);
+      expect(tabChanged).not.toHaveBeenCalled();
+      expect(tabOperation).not.toHaveBeenCalled();
+    } finally {
+      const refusingIndex = doNotClose.indexOf(refusing.toString());
+      if (refusingIndex >= 0) {
+        doNotClose.splice(refusingIndex, 1);
+      }
+      changedDisposer.dispose();
+      operationDisposer.dispose();
       await closeAllEditorGroups();
     }
   });

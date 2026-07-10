@@ -59,6 +59,11 @@ export class OpenSumiEditor extends OpenSumiView {
     await action?.click();
   }
 
+  async focusPinAction() {
+    const action = await (await this.getTab())?.$("[class*='pin_tab___']");
+    await action?.focus();
+  }
+
   async middleClickTab() {
     await (await this.getTab())?.click({ button: 'middle' });
   }

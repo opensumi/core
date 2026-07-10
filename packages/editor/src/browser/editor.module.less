@@ -202,7 +202,14 @@
     z-index: var(--stacking-level-editor-tabbar-pinned, 12);
     display: inline-flex;
     flex-shrink: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
     background: var(--editorGroupHeader-tabsBackground);
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
 
     .kt_editor_tab:last-child {
       margin-right: 0;
@@ -229,11 +236,26 @@
     justify-content: center;
     width: 16px;
     height: 16px;
+    padding: 0;
+    border: 0;
     border-radius: 4px;
+    color: inherit;
+    font: inherit;
+    background: transparent;
+    cursor: pointer;
 
     &:hover {
       transform: scale(1.1);
       background-color: var(--kt-icon-hoverBackground);
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--focusBorder);
+      outline-offset: 1px;
     }
   }
 

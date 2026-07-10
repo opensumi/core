@@ -132,10 +132,21 @@ console.log(a);`,
     expect(await pinnedEditor.hasVisibleDirtyIndicator()).toBe(false);
     expect(await ordinaryEditor.isCurrentTab()).toBe(true);
 
-    await pinnedEditor.clickPinAction();
+    await pinnedEditor.focusPinAction();
+    await app.page.keyboard.press('Enter');
     expect(await pinnedEditor.isPinned()).toBe(false);
+    expect(await ordinaryEditor.isCurrentTab()).toBe(true);
     const repinFromContextMenu = await pinnedEditor.openTabContextMenu();
     await (await menuItemByAnyName(repinFromContextMenu, pinnedTabLabels.pin)).click();
+    expect(await pinnedEditor.isPinned()).toBe(true);
+    expect(await ordinaryEditor.isCurrentTab()).toBe(true);
+
+    await pinnedEditor.focusPinAction();
+    await app.page.keyboard.press('Space');
+    expect(await pinnedEditor.isPinned()).toBe(false);
+    expect(await ordinaryEditor.isCurrentTab()).toBe(true);
+    const repinAfterSpace = await pinnedEditor.openTabContextMenu();
+    await (await menuItemByAnyName(repinAfterSpace, pinnedTabLabels.pin)).click();
     expect(await pinnedEditor.isPinned()).toBe(true);
     expect(await ordinaryEditor.isCurrentTab()).toBe(true);
 
@@ -185,6 +196,64 @@ console.log(a);`,
     await expect(reopenedTab).toHaveAttribute('data-pinned', 'false');
     await reopenedTab.hover();
     await reopenedTab.locator("[class*='close_tab___']").click();
+  });
+
+  test('Pinned Tabs should keep an active ordinary tab reachable beside the sticky prefix', async () => {
+    const firstPinned = await app.openEditor(OpenSumiTextEditor, explorer, 'editor.js', false);
+    const secondPinned = await app.openEditor(OpenSumiTextEditor, explorer, 'editor2.js', false);
+    const ordinaryEditor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor3.js', false);
+
+    for (const pinnedEditor of [firstPinned, secondPinned]) {
+      const menu = await pinnedEditor.openTabContextMenu();
+      await (await menuItemByAnyName(menu, pinnedTabLabels.pin)).click();
+    }
+    await (await secondPinned.getTab())?.click();
+    expect(await secondPinned.isCurrentTab()).toBe(true);
+
+    const scroll = app.page.locator("[class*='kt_editor_tabs_scroll___']").first();
+    const originalState = await scroll.evaluate((element: HTMLElement) => ({
+      width: element.style.width,
+      scrollLeft: element.scrollLeft,
+    }));
+
+    try {
+      await scroll.evaluate((element: HTMLElement) => {
+        element.style.width = '240px';
+        element.scrollLeft = element.scrollWidth;
+      });
+      await ordinaryEditor.open(false);
+      await app.page.waitForTimeout(100);
+
+      const pinnedRegion = app.page.locator("[class*='pinned_tabs___']").first();
+      const ordinaryTab = await ordinaryEditor.getTab();
+      const [scrollBox, pinnedBox, ordinaryBox] = await Promise.all([
+        scroll.boundingBox(),
+        pinnedRegion.boundingBox(),
+        ordinaryTab?.boundingBox(),
+      ]);
+      if (!scrollBox || !pinnedBox || !ordinaryBox) {
+        throw new Error('Expected tab scroll, pinned region, and ordinary tab bounding boxes');
+      }
+      const visiblePinnedRight = Math.min(pinnedBox.x + pinnedBox.width, scrollBox.x + scrollBox.width);
+      expect(ordinaryBox.x + ordinaryBox.width).toBeGreaterThan(visiblePinnedRight);
+      expect(await ordinaryEditor.isCurrentTab()).toBe(true);
+    } finally {
+      await scroll.evaluate((element: HTMLElement, state) => {
+        element.style.width = state.width;
+        element.scrollLeft = state.scrollLeft;
+      }, originalState);
+      for (const pinnedEditor of [firstPinned, secondPinned]) {
+        if (await pinnedEditor.isPinned()) {
+          await pinnedEditor.clickPinAction();
+        }
+      }
+      for (const openedEditor of [firstPinned, secondPinned, ordinaryEditor]) {
+        if (await openedEditor.isEditorTabVisible()) {
+          const closeMenu = await openedEditor.openTabContextMenu();
+          await (await menuItemByAnyName(closeMenu, ['Close', '关闭'])).click();
+        }
+      }
+    }
   });
 
   test('Pinned Tabs should restore after reload', async () => {
