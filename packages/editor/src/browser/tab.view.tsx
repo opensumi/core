@@ -148,13 +148,6 @@ export const Tabs = ({ group }: ITabsProps) => {
         );
       }),
     );
-    disposer.addDispose(
-      group.onDidEditorGroupTabChanged(() => {
-        if (!wrapMode) {
-          scrollToCurrent();
-        }
-      }),
-    );
     return () => {
       disposer.dispose();
     };
@@ -200,10 +193,14 @@ export const Tabs = ({ group }: ITabsProps) => {
             const currentTabWidth = currentTab.offsetWidth;
             const pinnedTabsWidth = pinnedTabs?.scrollWidth || 0;
             const combinedWidth = pinnedTabsWidth + currentTabWidth;
-            const maximumVisiblePinnedWidth =
-              pinnedTabs && !currentIsPinned && combinedWidth > viewportWidth
-                ? (viewportWidth * pinnedTabsWidth) / combinedWidth
-                : undefined;
+            let maximumVisiblePinnedWidth: number | undefined;
+            if (pinnedTabs && viewportWidth > 0) {
+              if (currentIsPinned && pinnedTabsWidth > viewportWidth) {
+                maximumVisiblePinnedWidth = viewportWidth;
+              } else if (!currentIsPinned && combinedWidth > viewportWidth) {
+                maximumVisiblePinnedWidth = (viewportWidth * pinnedTabsWidth) / combinedWidth;
+              }
+            }
 
             fastdom.mutate(() => {
               if (pinnedTabs) {
@@ -237,7 +234,18 @@ export const Tabs = ({ group }: ITabsProps) => {
         // noop
       }
     });
-  }, [group, tabContainer.current]);
+  }, [group]);
+
+  useEffect(() => {
+    const disposer = group.onDidEditorGroupTabChanged(() => {
+      if (!wrapMode) {
+        scrollToCurrent();
+      }
+    });
+    return () => {
+      disposer.dispose();
+    };
+  }, [group, scrollToCurrent, wrapMode]);
 
   const updateTabMarginRight = useCallback(() => {
     if (editorActionUpdateTimer.current) {
@@ -259,7 +267,7 @@ export const Tabs = ({ group }: ITabsProps) => {
         scrollToCurrent();
       });
     }
-  }, [wrapMode, tabContainer.current]);
+  }, [scrollToCurrent, wrapMode]);
 
   useEffect(() => {
     if (!wrapMode) {
@@ -290,7 +298,7 @@ export const Tabs = ({ group }: ITabsProps) => {
         disposer.dispose();
       };
     }
-  }, [wrapMode]);
+  }, [eventBus, group.grid.uid, scrollToCurrent, slotLocation, wrapMode]);
 
   const layoutLastInRow = useCallback(() => {
     fastdom.measureAtNextFrame(() => {
