@@ -63,7 +63,6 @@ export class OpenedEditorContribution
     commands.registerCommand(OPEN_EDITORS_COMMANDS.CLOSE_ALL, {
       execute: async () => {
         await this.workbenchEditorService.closeAll();
-        this.openedEditorModelService.clear();
       },
     });
 
