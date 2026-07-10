@@ -2428,12 +2428,17 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   getState(): IEditorGroupState {
-    const uris = this.resources.filter(couldRevive).map((r) => r.uri.toString());
+    const revivableResources = this.resources.filter(couldRevive);
+    const uris = revivableResources.map((resource) => resource.uri.toString());
+    const pinnedUris = revivableResources
+      .filter((resource) => this.isPinned(resource.uri))
+      .map((resource) => resource.uri.toString());
     return {
       uris,
       current:
         this.currentResource && couldRevive(this.currentResource) ? this.currentResource.uri.toString() : undefined,
       previewIndex: this.previewURI ? uris.indexOf(this.previewURI.toString()) : -1,
+      pinnedUris,
     };
   }
 
@@ -2459,6 +2464,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   async restoreState(state: IEditorGroupState) {
     this._restoringState = true;
+    this._pinnedTabCount = 0;
     this.previewURI = state.uris[state.previewIndex] ? new URI(state.uris[state.previewIndex]) : null;
     for (const uri of state.uris) {
       await this.doOpen(new URI(uri), { disableNavigate: true, backend: true, preview: false, deletedPolicy: 'skip' });
@@ -2478,6 +2484,18 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           await this.open(this.resources[0].uri);
         }
       }
+    }
+    const pinnedUris = new Set(state.pinnedUris || []);
+    let restoredPinnedTabCount = 0;
+    while (
+      restoredPinnedTabCount < this.resources.length &&
+      pinnedUris.has(this.resources[restoredPinnedTabCount].uri.toString())
+    ) {
+      restoredPinnedTabCount++;
+    }
+    this._pinnedTabCount = restoredPinnedTabCount;
+    if (this.previewURI && this.isPinned(this.previewURI)) {
+      this.previewURI = null;
     }
     this._restoringState = false;
     this.notifyTabChanged();

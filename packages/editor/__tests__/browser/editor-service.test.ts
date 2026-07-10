@@ -329,20 +329,132 @@ describe('workbench editor service tests', () => {
 
     await editorService.closeAll();
 
-    await editorService.open(testComponentUri, { preview: false, forceOpenType: { type: EditorOpenType.code } });
-    expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
-    expect(editorService.editorGroups[0].currentOpenType!.type).toBe(EditorOpenType.code);
+    try {
+      await editorService.open(testComponentUri, { preview: false, forceOpenType: { type: EditorOpenType.code } });
+      expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
+      expect(editorService.editorGroups[0].currentOpenType!.type).toBe(EditorOpenType.code);
 
-    // 测试 getState 方法
-    expect(editorService.editorGroups[0].getState()).toEqual({
-      uris: ['test://component'],
-      current: 'test://component',
-      previewIndex: -1,
+      // 测试 getState 方法
+      expect(editorService.editorGroups[0].getState()).toEqual({
+        uris: ['test://component'],
+        current: 'test://component',
+        previewIndex: -1,
+        pinnedUris: [],
+      });
+    } finally {
+      await editorService.closeAll();
+      disposer.dispose();
+    }
+  });
+
+  it('should persist pinned uris and restore only the successfully revived pinned prefix', async () => {
+    const pinned = new URI('test://pin/state-pinned');
+    const missingPinned = new URI('test://pin/missing-pinned');
+    const ordinary = new URI('test://pin/state-ordinary');
+    const getResource = resourceService.getResource.bind(resourceService);
+    const getResourceSpy = jest.spyOn(resourceService, 'getResource').mockImplementation(async (uri) => {
+      if (uri.isEqual(missingPinned)) {
+        return {
+          uri,
+          name: uri.path.toString(),
+          icon: `iconTest ${uri.toString()}`,
+          supportsRevive: true,
+          deleted: true,
+        };
+      }
+      return getResource(uri);
     });
+    const group = editorService.currentEditorGroup as EditorGroup;
 
-    await editorService.closeAll();
+    try {
+      await editorService.open(pinned, { preview: false });
+      await editorService.open(ordinary, { preview: false });
+      group.pinTab(pinned);
 
-    disposer.dispose();
+      expect(group.getState()).toEqual({
+        uris: [pinned.toString(), ordinary.toString()],
+        current: ordinary.toString(),
+        previewIndex: -1,
+        pinnedUris: [pinned.toString()],
+      });
+
+      await group.closeAll({ closePinned: true, force: true });
+      await group.restoreState({
+        uris: [pinned.toString(), missingPinned.toString(), ordinary.toString()],
+        current: ordinary.toString(),
+        previewIndex: -1,
+        pinnedUris: [pinned.toString(), missingPinned.toString()],
+      });
+
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([
+        pinned.toString(),
+        ordinary.toString(),
+      ]);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.isPinned(ordinary)).toBe(false);
+    } finally {
+      getResourceSpy.mockRestore();
+      await group.closeAll({ closePinned: true, force: true });
+    }
+  });
+
+  it('should restore legacy editor group state without pinned tabs', async () => {
+    const uri = new URI('test://pin/legacy-state');
+    const group = editorService.currentEditorGroup as EditorGroup;
+
+    try {
+      await group.restoreState({ uris: [uri.toString()], current: uri.toString(), previewIndex: -1 });
+      expect(group.pinnedTabCount).toBe(0);
+      expect(group.isPinned(uri)).toBe(false);
+    } finally {
+      await group.closeAll({ closePinned: true, force: true });
+    }
+  });
+
+  it('should keep the same uri independently pinned in different editor groups', async () => {
+    const uri = new URI('test://pin/group-local');
+    await editorService.open(uri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    source.pinTab(uri);
+    const existingGroups = new Set(editorService.editorGroups);
+    let target: EditorGroup | undefined;
+
+    try {
+      await source.split(EditorGroupSplitAction.Right, uri, { focus: true });
+      target = editorService.editorGroups.find((group) => !existingGroups.has(group)) as EditorGroup;
+      expect(target).toBeDefined();
+      if (!target) {
+        throw new Error('Expected split to create an editor group');
+      }
+      target.unpinTab(uri);
+
+      expect(source.isPinned(uri)).toBe(true);
+      expect(target.isPinned(uri)).toBe(false);
+      expect(source.getState().pinnedUris).toEqual([uri.toString()]);
+      expect(target.getState().pinnedUris).toEqual([]);
+    } finally {
+      await target?.closeAll({ closePinned: true, force: true });
+      await source.closeAll({ closePinned: true, force: true });
+    }
+  });
+
+  it('should let pinned state win over malformed preview state during restoration', async () => {
+    const uri = new URI('test://pin/malformed-state');
+    const group = editorService.currentEditorGroup as EditorGroup;
+
+    try {
+      await group.restoreState({
+        uris: [uri.toString()],
+        current: uri.toString(),
+        previewIndex: 0,
+        pinnedUris: [uri.toString()],
+      });
+
+      expect(group.isPinned(uri)).toBe(true);
+      expect(group.previewURI).toBeNull();
+    } finally {
+      await group.closeAll({ closePinned: true, force: true });
+    }
   });
 
   it('should be able to split', async () => {

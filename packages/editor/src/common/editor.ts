@@ -977,6 +977,8 @@ export interface IEditorGroupState {
   current?: string;
 
   previewIndex: number;
+
+  pinnedUris?: string[];
 }
 
 export enum Direction {
