@@ -91,7 +91,7 @@ export class MainThreadEditorTabsService extends Disposable implements IMainThre
         const editorGroup = this.groupDataStore.get(g)?.editorGroup;
         if (editorGroup) {
           try {
-            return await editorGroup.closeAll();
+            return await editorGroup.closeAll({ closePinned: true });
           } catch (e) {
             return false;
           }
@@ -242,7 +242,7 @@ class EditorTabDtoData {
       label: resource.name,
       input,
       isActive: editorGroup.currentResource === resource,
-      isPinned: false, // 暂时还没这个功能,
+      isPinned: editorGroup.isPinned(resource.uri),
       isPreview: !!editorGroup.previewURI?.isEqual(resource.uri),
       isDirty: !!editorGroup.resourceService.getResourceDecoration(resource.uri)?.dirty,
     };
