@@ -182,6 +182,7 @@ describe('editor history test', () => {
 
   injector.mockService(WorkbenchEditorService, {
     currentEditorGroup: testEditorGroup,
+    open: testEditorGroup.open,
   });
 
   it('history basic tests', () => {
@@ -441,6 +442,10 @@ describe('editor history test', () => {
     historyService.popClosed();
 
     expect(currentUri).toBe(testUri3);
+    expect(testEditorGroup.open).toHaveBeenLastCalledWith(testUri3, {
+      focus: true,
+      preview: false,
+    });
   });
 });
 

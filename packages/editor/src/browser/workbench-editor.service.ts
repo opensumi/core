@@ -64,6 +64,7 @@ import {
   IDiffResource,
   IEditor,
   IEditorGroup,
+  IEditorGroupCloseOptions,
   IEditorGroupState,
   IEditorOpenType,
   IOpenResourceResult,
@@ -577,7 +578,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       if (uri) {
         await group.close(uri, { force });
       } else {
-        await group.closeAll();
+        await group.closeAll({ closePinned: !!force, force: !!force });
       }
     }
   }
@@ -2130,6 +2131,89 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
+  private async closeResources(
+    resourcesToClose: IResource[],
+    {
+      force = false,
+      closeEventOrder = 'reverse',
+      useResourceOpenHistory = false,
+    }: {
+      force?: boolean;
+      closeEventOrder?: 'resource' | 'reverse';
+      useResourceOpenHistory?: boolean;
+    } = {},
+  ): Promise<boolean> {
+    const uniqueResources = resourcesToClose.filter(
+      (resource, index, resources) => resources.findIndex((candidate) => candidate.uri.isEqual(resource.uri)) === index,
+    );
+    for (const resource of uniqueResources) {
+      if (!force && !(await this.shouldClose(resource))) {
+        return false;
+      }
+    }
+
+    const indexed = uniqueResources
+      .map((resource) => ({ resource, index: this.resources.indexOf(resource) }))
+      .filter(({ index }) => index >= 0)
+      .sort((left, right) => right.index - left.index);
+    if (indexed.length === 0) {
+      return true;
+    }
+
+    const currentWasClosed =
+      !!this.currentResource && indexed.some(({ resource }) => resource === this.currentResource);
+    const currentIndex = this.currentResource ? this.resources.indexOf(this.currentResource) : -1;
+    const fallbackIndex = currentIndex - indexed.filter(({ index }) => index < currentIndex).length;
+    const previewWasClosed =
+      !!this.previewURI && indexed.some(({ resource }) => resource.uri.isEqual(this.previewURI!));
+
+    for (const { resource, index } of indexed) {
+      this.resources.splice(index, 1);
+      if (index < this._pinnedTabCount) {
+        this._pinnedTabCount--;
+      }
+    }
+    const resourcesToEmit = closeEventOrder === 'resource' ? indexed.slice().reverse() : indexed;
+    for (const [emittedIndex, { resource, index }] of resourcesToEmit.entries()) {
+      const operationIndex = closeEventOrder === 'resource' ? index - emittedIndex : index;
+      this._onDidEditorGroupTabOperation.fire({ type: 'close', resource, index: operationIndex });
+      this.clearResourceOnClose(resource);
+      this.disposeDocumentRef(resource.uri);
+    }
+    if (previewWasClosed) {
+      this.previewURI = null;
+    }
+
+    if (currentWasClosed) {
+      let nextResource: IResource | undefined;
+      if (useResourceOpenHistory) {
+        while (this.resourceOpenHistory.length > 0) {
+          const historyURI = this.resourceOpenHistory.pop()!;
+          nextResource = this.resources.find((resource) => resource.uri === historyURI);
+          if (nextResource) {
+            break;
+          }
+        }
+      }
+      nextResource ||= this.resources[Math.min(Math.max(fallbackIndex, 0), this.resources.length - 1)];
+      if (nextResource) {
+        await this.open(nextResource.uri);
+      } else {
+        this.backToEmpty();
+      }
+    } else {
+      this.notifyTabChanged();
+    }
+    if (this.resources.length === 0) {
+      this.availableOpenTypes = [];
+      this.activeComponents.clear();
+      if (this.grid.parent) {
+        this.dispose();
+      }
+    }
+    return true;
+  }
+
   private backToEmpty() {
     const oldOpenType = this._currentOpenType;
     const oldResource = this._currentResource;
@@ -2156,49 +2240,23 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 关闭全部
    */
-  async closeAll(): Promise<boolean> {
-    for (const resource of this.resources) {
-      if (!(await this.shouldClose(resource))) {
-        return false;
-      }
-    }
-    const closed = this.resources.splice(0, this.resources.length);
-    // reverse， 发送事件需要从后往前
-    closed.reverse().forEach((resource, index) => {
-      this.clearResourceOnClose(resource);
-      this._onDidEditorGroupTabOperation.fire({
-        type: 'close',
-        resource,
-        index,
-      });
-    });
-    this.activeComponents.clear();
-    if (this.workbenchEditorService.editorGroups.length > 1) {
-      this.dispose();
-    }
-    this.previewURI = null;
-    this.backToEmpty();
-    return true;
+  async closeAll({ closePinned = false, force = false }: IEditorGroupCloseOptions = {}): Promise<boolean> {
+    const resourcesToClose = this.resources.filter((resource) => closePinned || !this.isPinned(resource.uri));
+    return this.closeResources(resourcesToClose, { force });
   }
 
   /**
    * 关闭已保存（非dirty）
    */
   async closeSaved() {
-    const saved = this.resources.filter((r) => {
-      const decoration = this.resourceService.getResourceDecoration(r.uri);
-      if (!decoration || !decoration.dirty) {
-        return true;
-      }
+    const resourcesToClose = this.resources.filter((resource) => {
+      const decoration = this.resourceService.getResourceDecoration(resource.uri);
+      return !this.isPinned(resource.uri) && (!decoration || !decoration.dirty);
     });
-    for (const resource of saved) {
-      if (!(await this.shouldClose(resource))) {
-        return;
-      }
-    }
-    for (const resource of saved) {
-      await this.close(resource.uri);
-    }
+    return this.closeResources(resourcesToClose, {
+      closeEventOrder: 'resource',
+      useResourceOpenHistory: true,
+    });
   }
 
   /**
@@ -2206,27 +2264,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
    * @param uri
    */
   async closeToRight(uri: URI) {
-    const index = this.resources.findIndex((r) => r.uri.toString() === uri.toString());
-    if (index !== -1) {
-      const resourcesToClose = this.resources.slice(index + 1);
-      for (const resource of resourcesToClose) {
-        if (!(await this.shouldClose(resource))) {
-          return;
-        }
-      }
-      this.resources.splice(index + 1);
-      resourcesToClose.reverse().forEach((resource, i) => {
-        this._onDidEditorGroupTabOperation.fire({
-          type: 'close',
-          resource,
-          index: index + 1 + (resourcesToClose.length - 1 - i),
-        });
-      });
-      for (const resource of resourcesToClose) {
-        this.clearResourceOnClose(resource);
-      }
-      this.open(uri);
+    const index = this.resources.findIndex((resource) => resource.uri.isEqual(uri));
+    if (index < 0) {
+      return false;
     }
+    return this.closeResources(this.resources.slice(index + 1).filter((resource) => !this.isPinned(resource.uri)));
   }
 
   clearResourceOnClose(resource: IResource) {
@@ -2240,28 +2282,26 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async closeOthers(uri: URI) {
-    const index = this.resources.findIndex((r) => r.uri.toString() === uri.toString());
-    if (index !== -1) {
-      const resourcesToClose = this.resources.filter((v, i) => i !== index);
-      for (const resource of resourcesToClose) {
-        if (!(await this.shouldClose(resource))) {
-          return;
-        }
-      }
-      const oldResources = this.resources;
-      this.resources = [this.resources[index]];
-      resourcesToClose.reverse().forEach((resource) => {
-        this._onDidEditorGroupTabOperation.fire({
-          type: 'close',
-          resource,
-          index: oldResources.indexOf(resource),
-        });
-      });
-      for (const resource of resourcesToClose) {
-        this.clearResourceOnClose(resource);
-      }
+    const target = this.resources.find((resource) => resource.uri.isEqual(uri));
+    if (!target) {
+      return false;
+    }
+    const closed = await this.closeResources(
+      this.resources.filter((resource) => resource !== target && !this.isPinned(resource.uri)),
+    );
+    if (closed) {
       await this.open(uri);
     }
+    return closed;
+  }
+
+  async activateFirstUnpinned(): Promise<boolean> {
+    const resource = this.resources[this._pinnedTabCount];
+    if (!resource) {
+      return false;
+    }
+    await this.open(resource.uri, { focus: true });
+    return true;
   }
 
   /**

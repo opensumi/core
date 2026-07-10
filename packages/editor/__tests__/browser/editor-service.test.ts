@@ -6,12 +6,14 @@ import {
   DragOverPosition,
   EditorComponentRegistry,
   EditorGroupChangeEvent,
+  EditorGroupCloseEvent,
   EditorOpenType,
   EmptyDocCacheImpl,
   IEditorDecorationCollectionService,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
   IEditorFeatureRegistry,
+  ResourceDecorationNeedChangeEvent,
   ResourceOpenTypeChangedEvent,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
@@ -574,6 +576,157 @@ describe('workbench editor service tests', () => {
       expect(group.pinnedTabCount).toBe(1);
       expect(group.isPinned(b)).toBe(true);
       expect(group.isPinned(ordinary)).toBe(false);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should protect pinned tabs from bulk close operations', async () => {
+    const pinned = new URI('test://pin/protected');
+    const target = new URI('test://pin/target');
+    const other = new URI('test://pin/other');
+    await editorService.open(pinned, { preview: false });
+    await editorService.open(target, { preview: false });
+    await editorService.open(other, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+
+    try {
+      await group.closeOthers(target);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned, target].map(String));
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.currentResource?.uri.toString()).toBe(target.toString());
+
+      await group.open(other, { preview: false });
+      await group.closeToRight(pinned);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.currentResource?.uri.toString()).toBe(pinned.toString());
+
+      await group.open(target, { preview: false });
+      await group.closeSaved();
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.currentResource?.uri.toString()).toBe(pinned.toString());
+
+      await group.open(target, { preview: false });
+      await group.closeAll();
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.isPinned(pinned)).toBe(true);
+      expect(group.currentResource?.uri.toString()).toBe(pinned.toString());
+
+      await group.closeAll({ closePinned: true, force: true });
+      expect(group.resources).toHaveLength(0);
+      expect(group.pinnedTabCount).toBe(0);
+      expect(group.currentResource).toBeNull();
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should preserve closeSaved fallback and close-event order', async () => {
+    const savedBefore = new URI('test://close-saved/before');
+    const activeSaved = new URI('test://close-saved/active');
+    const dirtyAfter = new URI('test://close-saved/dirty-after');
+    const dirtyLast = new URI('test://close-saved/dirty-last');
+    await editorService.open(savedBefore, { preview: false });
+    await editorService.open(activeSaved, { preview: false });
+    await editorService.open(dirtyLast, { backend: true, preview: false });
+    await editorService.open(dirtyAfter, { backend: true, preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    eventBus.fire(new ResourceDecorationNeedChangeEvent({ uri: dirtyAfter, decoration: { dirty: true } }));
+    eventBus.fire(new ResourceDecorationNeedChangeEvent({ uri: dirtyLast, decoration: { dirty: true } }));
+    const closed: string[] = [];
+    const tabOperations: Array<{ uri: string; index: number }> = [];
+    const disposer = eventBus.on(EditorGroupCloseEvent, (event) => {
+      if (event.payload.group === group) {
+        closed.push(event.payload.resource.uri.toString());
+      }
+    });
+    const tabDisposer = group.onDidEditorGroupTabOperation((operation) => {
+      if (operation.type === 'close') {
+        tabOperations.push({ uri: operation.resource.uri.toString(), index: operation.index });
+      }
+    });
+
+    try {
+      await group.closeSaved();
+
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([dirtyAfter, dirtyLast].map(String));
+      expect(group.currentResource?.uri.toString()).toBe(dirtyAfter.toString());
+      expect(closed).toEqual([savedBefore, activeSaved].map(String));
+      expect(tabOperations).toEqual([
+        { uri: savedBefore.toString(), index: 0 },
+        { uri: activeSaved.toString(), index: 0 },
+      ]);
+    } finally {
+      disposer.dispose();
+      tabDisposer.dispose();
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should not notify tab changes when a protected bulk close removes nothing', async () => {
+    const pinned = new URI('test://pin/no-op-close');
+    await editorService.open(pinned, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+    const listener = jest.fn();
+    const disposer = group.onDidEditorGroupTabChanged(listener);
+
+    try {
+      await group.closeAll();
+
+      expect(listener).not.toHaveBeenCalled();
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+    } finally {
+      disposer.dispose();
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should map forced workbench cleanup to closing pinned tabs', async () => {
+    const pinned = new URI('test://pin/workbench-force');
+    await editorService.open(pinned, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+
+    try {
+      await editorService.closeAll();
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+      expect(group.isPinned(pinned)).toBe(true);
+
+      await editorService.closeAll(undefined, true);
+      expect(group.resources).toHaveLength(0);
+      expect(group.pinnedTabCount).toBe(0);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should activate the first ordinary tab instead of closing an active pinned tab', async () => {
+    const pinned = new URI('test://pin/active');
+    const ordinary = new URI('test://pin/fallback');
+    await editorService.open(pinned, { preview: false });
+    await editorService.open(ordinary, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+    await group.open(pinned, { focus: true });
+
+    try {
+      expect(typeof group.activateFirstUnpinned).toBe('function');
+      expect(await group.activateFirstUnpinned()).toBe(true);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned, ordinary].map(String));
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.currentResource?.uri.toString()).toBe(ordinary.toString());
+
+      await group.open(pinned, { focus: true });
+      await group.close(ordinary, { force: true });
+      expect(await group.activateFirstUnpinned()).toBe(false);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.currentResource?.uri.toString()).toBe(pinned.toString());
     } finally {
       await closeAllEditorGroups();
     }
