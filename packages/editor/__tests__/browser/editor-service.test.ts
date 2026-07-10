@@ -391,6 +391,71 @@ describe('workbench editor service tests', () => {
     await editorService.closeAll();
   });
 
+  it('should keep pinned tabs as a leading prefix without changing the active resource', async () => {
+    const a = new URI('test://pin/a');
+    const b = new URI('test://pin/b');
+    const c = new URI('test://pin/c');
+    await editorService.open(a, { preview: false });
+    await editorService.open(b, { preview: false });
+    await editorService.open(c, { preview: false });
+
+    const group = editorService.currentEditorGroup as EditorGroup;
+    expect(group.pinTab(b)).toBe(true);
+    expect(group.resources.map((resource) => resource.uri.toString())).toEqual([b, a, c].map(String));
+    expect(group.pinnedTabCount).toBe(1);
+    expect(group.currentResource?.uri.toString()).toBe(c.toString());
+
+    expect(group.pinTab(c)).toBe(true);
+    expect(group.resources.map((resource) => resource.uri.toString())).toEqual([b, c, a].map(String));
+    expect(group.pinnedTabCount).toBe(2);
+
+    expect(group.unpinTab(b)).toBe(true);
+    expect(group.resources.map((resource) => resource.uri.toString())).toEqual([c, b, a].map(String));
+    expect(group.isPinned(c)).toBe(true);
+    expect(group.isPinned(b)).toBe(false);
+
+    while (group.pinnedTabCount > 0) {
+      group.unpinTab(group.resources[0].uri);
+    }
+    for (const resource of [...group.resources]) {
+      await group.close(resource.uri, { force: true });
+    }
+  });
+
+  it('should keep open a preview when it becomes pinned and never restore preview on unpin', async () => {
+    const uri = new URI('test://pin/preview');
+    await editorService.open(uri, { preview: true });
+    const group = editorService.currentEditorGroup as EditorGroup;
+
+    expect(group.previewURI?.toString()).toBe(uri.toString());
+    expect(group.pinTab(uri)).toBe(true);
+    expect(group.previewURI).toBeNull();
+    expect(group.isPinned(uri)).toBe(true);
+
+    expect(group.unpinTab(uri)).toBe(true);
+    expect(group.previewURI).toBeNull();
+    expect(group.isPinned(uri)).toBe(false);
+    expect(group.pinTab(new URI('test://pin/not-open'))).toBe(false);
+
+    await group.close(uri, { force: true });
+  });
+
+  it.each(['file', 'untitled', 'diff', 'mergeEditor', 'custom-editor', 'webview'])(
+    'should keep pinned state independent of the %s tab input type',
+    (scheme) => {
+      const group = editorService.currentEditorGroup as EditorGroup;
+      const uri = new URI(`${scheme}://pin/type`);
+      group.resources = [{ uri, name: `${scheme}-tab` } as any];
+
+      expect(group.pinTab(uri)).toBe(true);
+      expect(group.isPinned(uri)).toBe(true);
+      expect(group.unpinTab(uri)).toBe(true);
+      expect(group.isPinned(uri)).toBe(false);
+
+      group.resources = [];
+    },
+  );
+
   it('replace should work properly', async () => {
     const testCodeUri = new URI('test://a/testUri1');
     await editorService.open(testCodeUri, { preview: false });

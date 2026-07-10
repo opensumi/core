@@ -455,6 +455,16 @@ export interface IEditorGroup {
    */
   resources: IResource[];
 
+  readonly pinnedTabCount: number;
+
+  isPinned(uri: URI): boolean;
+
+  pinTab(uri: URI): boolean;
+
+  unpinTab(uri: URI): boolean;
+
+  togglePinTab(uri: URI): boolean;
+
   /**
    * 当前的 tab 对应的资源
    */

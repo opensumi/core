@@ -770,10 +770,82 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
    */
   public previewURI: URI | null = null;
 
+  private _pinnedTabCount = 0;
+
+  get pinnedTabCount(): number {
+    return this._pinnedTabCount;
+  }
+
   /**
    * 当前打开的所有resource
    */
   resources: IResource[] = [];
+
+  isPinned(uri: URI): boolean {
+    const index = this.resources.findIndex((resource) => resource.uri.isEqual(uri));
+    return index >= 0 && index < this._pinnedTabCount;
+  }
+
+  moveTab(uri: URI, targetIndex: number, pinned = this.isPinned(uri)): boolean {
+    const oldIndex = this.resources.findIndex((resource) => resource.uri.isEqual(uri));
+    if (oldIndex < 0) {
+      return false;
+    }
+
+    const wasPinned = oldIndex < this._pinnedTabCount;
+    const stateChanged = wasPinned !== pinned;
+    if (!stateChanged && oldIndex === targetIndex) {
+      return false;
+    }
+
+    const nextPinnedTabCount = Math.max(
+      0,
+      Math.min(
+        this.resources.length,
+        this._pinnedTabCount + (pinned && !wasPinned ? 1 : 0) - (!pinned && wasPinned ? 1 : 0),
+      ),
+    );
+    const [resource] = this.resources.splice(oldIndex, 1);
+    const maximumIndex = this.resources.length;
+    const minimumIndex = pinned ? 0 : nextPinnedTabCount;
+    const maximumRegionIndex = pinned ? Math.max(0, nextPinnedTabCount - 1) : maximumIndex;
+    const nextIndex = Math.max(minimumIndex, Math.min(targetIndex, maximumRegionIndex));
+
+    this.resources.splice(nextIndex, 0, resource);
+    this._pinnedTabCount = nextPinnedTabCount;
+    if (pinned && this.previewURI?.isEqual(uri)) {
+      this.previewURI = null;
+    }
+
+    if (oldIndex !== nextIndex) {
+      this._onDidEditorGroupTabOperation.fire({
+        type: 'move',
+        resource,
+        oldIndex,
+        index: nextIndex,
+      });
+    }
+    this.notifyTabChanged();
+    return stateChanged || oldIndex !== nextIndex;
+  }
+
+  pinTab(uri: URI): boolean {
+    if (this.isPinned(uri)) {
+      return false;
+    }
+    return this.moveTab(uri, this._pinnedTabCount, true);
+  }
+
+  unpinTab(uri: URI): boolean {
+    if (!this.isPinned(uri)) {
+      return false;
+    }
+    return this.moveTab(uri, this._pinnedTabCount - 1, false);
+  }
+
+  togglePinTab(uri: URI): boolean {
+    return this.isPinned(uri) ? this.unpinTab(uri) : this.pinTab(uri);
+  }
 
   resourceStatus: Map<IResource, Promise<void>> = new Map();
 
