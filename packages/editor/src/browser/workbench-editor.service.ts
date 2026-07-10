@@ -1475,7 +1475,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
 
-    return editorGroup.open(uri, { ...options, preview: false, revealRangeInCenter: false });
+    const shouldPin = this.isPinned(uri);
+    const result = await editorGroup.open(uri, { ...options, preview: false, revealRangeInCenter: false });
+    if (result && shouldPin) {
+      editorGroup.pinTab(uri);
+    }
+    return result;
   }
 
   async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
@@ -1582,34 +1587,20 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           if (options && isDefined(options.supportsRevive)) {
             resource.supportsRevive = options.supportsRevive;
           }
-          let replaceResource: IResource | null = null;
-          if (options && options.index !== undefined && options.index < this.resources.length) {
-            replaceResource = this.resources[options.index];
-            this.resources.splice(options.index, 0, resource);
-            tabOperationToFire = {
-              type: 'open',
-              resource,
-              index: options.index,
-            };
-          } else {
-            if (this.currentResource) {
-              const currentIndex = this.resources.indexOf(this.currentResource);
-              this.resources.splice(currentIndex + 1, 0, resource);
-              tabOperationToFire = {
-                type: 'open',
-                resource,
-                index: currentIndex + 1,
-              };
-              replaceResource = this.currentResource;
-            } else {
-              this.resources.push(resource);
-              tabOperationToFire = {
-                type: 'open',
-                resource,
-                index: this.resources.length - 1,
-              };
-            }
-          }
+          const currentIndex = this.currentResource
+            ? this.resources.indexOf(this.currentResource)
+            : this.resources.length - 1;
+          const hasExplicitIndex = options.index !== undefined && options.index < this.resources.length;
+          const requestedIndex = hasExplicitIndex ? options.index! : currentIndex + 1;
+          const insertionIndex = Math.max(this._pinnedTabCount, Math.min(requestedIndex, this.resources.length));
+          const replaceResource = hasExplicitIndex ? this.resources[insertionIndex] : this.currentResource;
+
+          this.resources.splice(insertionIndex, 0, resource);
+          tabOperationToFire = {
+            type: 'open',
+            resource,
+            index: insertionIndex,
+          };
           if (previewMode) {
             if (this.previewURI) {
               await this.close(this.previewURI, { treatAsNotCurrent: true, force: options.forceClose });
@@ -2044,6 +2035,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
       }
       this.resources.splice(index, 1);
+      if (index < this._pinnedTabCount) {
+        this._pinnedTabCount--;
+      }
       this._onDidEditorGroupTabOperation.fire({
         type: 'close',
         resource,
@@ -2310,60 +2304,46 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
    * 拖拽drop方法
    */
   public async dropUri(uri: URI, position: DragOverPosition, sourceGroup?: EditorGroup, targetResource?: IResource) {
+    const sourceWasPinned = sourceGroup?.isPinned(uri) ?? this.isPinned(uri);
     if (position !== DragOverPosition.CENTER) {
-      await this.split(getSplitActionFromDragDrop(position), uri, { preview: false, focus: true });
-    } else {
-      // 扔在本体或者tab上
-      if (!targetResource) {
-        await this.open(uri, { preview: false, focus: true });
-      } else {
-        const targetIndex = this.resources.indexOf(targetResource);
-        if (targetIndex === -1) {
-          await this.open(uri, { preview: false, focus: true });
-        } else {
-          const sourceIndex = this.resources.findIndex((resource) => resource.uri.toString() === uri.toString());
-          if (sourceIndex === -1) {
-            await this.open(uri, {
-              index: targetIndex,
-              preview: false,
-            });
-          } else {
-            // just move
-            const sourceResource = this.resources[sourceIndex];
-            if (sourceIndex > targetIndex) {
-              this.resources.splice(sourceIndex, 1);
-              this.resources.splice(targetIndex, 0, sourceResource);
-              this._onDidEditorGroupTabOperation.fire({
-                type: 'move',
-                resource: sourceResource,
-                oldIndex: sourceIndex,
-                index: targetIndex,
-              });
-              await this.open(uri, { preview: false });
-            } else if (sourceIndex < targetIndex) {
-              this.resources.splice(targetIndex + 1, 0, sourceResource);
-              this.resources.splice(sourceIndex, 1);
-              this._onDidEditorGroupTabOperation.fire({
-                type: 'move',
-                resource: sourceResource,
-                oldIndex: sourceIndex,
-                index: targetIndex,
-              });
-              await this.open(uri, { preview: false });
-            }
-          }
-        }
+      const result = await this.split(getSplitActionFromDragDrop(position), uri, { preview: false, focus: true });
+      if (!result) {
+        return;
       }
+      const targetGroup = result.group as EditorGroup;
+      if (sourceWasPinned && !targetGroup.isPinned(uri)) {
+        targetGroup.pinTab(uri);
+      }
+      if (sourceGroup) {
+        await sourceGroup.close(uri);
+      }
+      return;
     }
 
+    const targetIndex = targetResource ? this.resources.indexOf(targetResource) : this.resources.length;
+    const targetPinned = targetResource
+      ? targetIndex >= 0 && targetIndex < this._pinnedTabCount
+      : this.resources.length === 0
+      ? sourceWasPinned
+      : false;
+
+    if (sourceGroup === this) {
+      this.moveTab(uri, targetIndex, targetPinned);
+      await this.open(uri, { preview: false, focus: true });
+      return;
+    }
+
+    const opened = await this.open(uri, {
+      index: targetIndex,
+      preview: false,
+      focus: true,
+    });
+    if (!opened) {
+      return;
+    }
+    this.moveTab(uri, targetIndex, targetPinned);
     if (sourceGroup) {
-      if (sourceGroup !== this) {
-        // 从其他group拖动过来
-        await sourceGroup.close(uri);
-      } else if (position !== DragOverPosition.CENTER) {
-        // split行为
-        await this.close(uri);
-      }
+      await sourceGroup.close(uri);
     }
   }
 
