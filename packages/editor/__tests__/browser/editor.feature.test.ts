@@ -1,6 +1,26 @@
-import { IContextKeyService, PreferenceService, QuickPickService } from '@opensumi/ide-core-browser';
-import { AbstractContextMenuService, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Disposable, Emitter, IEventBus, ILogger, ISelection, URI } from '@opensumi/ide-core-common';
+import { EDITOR_COMMANDS, IContextKeyService, PreferenceService, QuickPickService } from '@opensumi/ide-core-browser';
+import {
+  AbstractContextMenuService,
+  AbstractMenuService,
+  ContextMenuServiceImpl,
+  ICtxMenuRenderer,
+  IMenuRegistry,
+  MenuRegistryImpl,
+  MenuServiceImpl,
+} from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  CommandRegistry,
+  CoreCommandRegistryImpl,
+  Disposable,
+  Emitter,
+  IEventBus,
+  ILogger,
+  ISelection,
+  URI,
+  getLanguageId,
+  registerLocalizationBundle,
+  setLanguageId,
+} from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 import {
   DragOverPosition,
@@ -15,12 +35,15 @@ import {
   WorkbenchEditorService,
   getSplitActionFromDragDrop,
 } from '@opensumi/ide-editor/lib/browser';
+import { EditorContribution } from '@opensumi/ide-editor/lib/browser/editor.contribution';
 import { EditorFeatureRegistryImpl } from '@opensumi/ide-editor/lib/browser/feature';
 import { FormattingSelector } from '@opensumi/ide-editor/lib/browser/format/formatter-selector';
 import { EditorHistoryService } from '@opensumi/ide-editor/lib/browser/history';
 import { EditorContextMenuController } from '@opensumi/ide-editor/lib/browser/menu/editor.context';
 import { TabTitleMenuService } from '@opensumi/ide-editor/lib/browser/menu/title-context.menu';
 import { EditorTopPaddingContribution } from '@opensumi/ide-editor/lib/browser/view/topPadding';
+import { localizationBundle as enUSLocalizationBundle } from '@opensumi/ide-i18n/lib/common/en-US.lang';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 import { EditorExtensionsRegistry } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -533,5 +556,82 @@ describe('editor menu test', () => {
     expect(createKey).toHaveBeenCalledWith('editorTabPinned', false);
     expect(pinnedKey.set).toHaveBeenCalledWith(true);
     expect(injector.get<ICtxMenuRenderer>(ICtxMenuRenderer).show).toHaveBeenCalled();
+  });
+
+  it('editor title context menu evaluates clicked-tab pin state and routes clicked args', async () => {
+    const previousLanguage = getLanguageId();
+    registerLocalizationBundle(enUSLocalizationBundle);
+    setLanguageId('en-US');
+    const menuInjector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
+        },
+        {
+          token: IMenuRegistry,
+          useClass: MenuRegistryImpl,
+        },
+        {
+          token: CommandRegistry,
+          useClass: CoreCommandRegistryImpl,
+        },
+        {
+          token: AbstractMenuService,
+          useClass: MenuServiceImpl,
+        },
+        {
+          token: AbstractContextMenuService,
+          useClass: ContextMenuServiceImpl,
+        },
+      ]),
+    );
+    const show = jest.fn();
+    menuInjector.mockService(ICtxMenuRenderer, { show });
+
+    try {
+      const menuRegistry = menuInjector.get<IMenuRegistry>(IMenuRegistry);
+      const contribution = Object.create(EditorContribution.prototype) as EditorContribution;
+      contribution.registerMenus(menuRegistry);
+      const contextKeyService = menuInjector.get<IContextKeyService>(IContextKeyService);
+      const clickedUri = new URI('file:///clicked.ts');
+      const currentResource = { uri: new URI('file:///active.ts') };
+      const group = {
+        currentResource,
+        isPinned: jest.fn(),
+        open: jest.fn(),
+        focus: jest.fn(),
+        contextKeyService,
+      };
+      const service = menuInjector.get(TabTitleMenuService);
+
+      group.isPinned.mockReturnValue(false);
+      service.show(10, 20, clickedUri, group as any);
+      const unpinnedRender = show.mock.calls[0][0];
+      const unpinnedToggleNodes = unpinnedRender.menuNodes.filter(
+        (node) => node.id === EDITOR_COMMANDS.TOGGLE_PINNED_TAB.id,
+      );
+      expect(unpinnedToggleNodes.map((node) => node.label)).toEqual(['Pin Tab']);
+      expect(unpinnedRender.args).toEqual([{ uri: clickedUri, group }]);
+
+      group.isPinned.mockReturnValue(true);
+      service.show(30, 40, clickedUri, group as any);
+      const pinnedRender = show.mock.calls[1][0];
+      const pinnedToggleNodes = pinnedRender.menuNodes.filter(
+        (node) => node.id === EDITOR_COMMANDS.TOGGLE_PINNED_TAB.id,
+      );
+      expect(pinnedToggleNodes.map((node) => node.label)).toEqual(['Unpin Tab']);
+      expect(pinnedRender.args).toEqual([{ uri: clickedUri, group }]);
+
+      expect(group.isPinned).toHaveBeenNthCalledWith(1, clickedUri);
+      expect(group.isPinned).toHaveBeenNthCalledWith(2, clickedUri);
+      expect(group.open).not.toHaveBeenCalled();
+      expect(group.focus).not.toHaveBeenCalled();
+      expect(group.currentResource).toBe(currentResource);
+    } finally {
+      setLanguageId(previousLanguage);
+      await menuInjector.disposeAll();
+    }
   });
 });

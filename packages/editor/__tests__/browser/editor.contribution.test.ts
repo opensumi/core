@@ -96,5 +96,53 @@ describe('Editor contribution should be work', () => {
         }),
       );
     });
+
+    it('should toggle the clicked inactive tab without activating it', async () => {
+      const activeUri = new URI('test://pin/active');
+      const clickedUri = new URI('test://pin/clicked');
+      const currentResource = { uri: activeUri };
+      const group = {
+        currentResource,
+        togglePinTab: jest.fn(),
+        open: jest.fn(),
+        focus: jest.fn(),
+      };
+      const workbenchOpen = jest.fn();
+      injector.mockService(WorkbenchEditorService, { currentEditorGroup: group, open: workbenchOpen });
+      const contribution = injector.get(EditorContribution);
+      const registry = injector.get<CommandRegistry>(CommandRegistry);
+      contribution.registerCommands(registry);
+
+      await injector
+        .get<CommandService>(CommandService)
+        .executeCommand(EDITOR_COMMANDS.TOGGLE_PINNED_TAB.id, { group, uri: clickedUri });
+
+      expect(group.togglePinTab).toHaveBeenCalledWith(clickedUri);
+      expect(group.open).not.toHaveBeenCalled();
+      expect(group.focus).not.toHaveBeenCalled();
+      expect(workbenchOpen).not.toHaveBeenCalled();
+      expect(group.currentResource).toBe(currentResource);
+    });
+
+    it('should keep the pinned resource open when no ordinary tab can be activated', async () => {
+      const uri = new URI('test://pin/only-pinned');
+      const currentResource = { uri };
+      const group = {
+        currentResource,
+        isPinned: jest.fn(() => true),
+        activateFirstUnpinned: jest.fn(async () => false),
+        close: jest.fn(),
+      };
+      injector.mockService(WorkbenchEditorService, { currentEditorGroup: group });
+      const contribution = injector.get(EditorContribution);
+      const registry = injector.get<CommandRegistry>(CommandRegistry);
+      contribution.registerCommands(registry);
+
+      await injector.get<CommandService>(CommandService).executeCommand(EDITOR_COMMANDS.CLOSE.id);
+
+      expect(group.activateFirstUnpinned).toHaveBeenCalledTimes(1);
+      expect(group.close).not.toHaveBeenCalled();
+      expect(group.currentResource).toBe(currentResource);
+    });
   });
 });
