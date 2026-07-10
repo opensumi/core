@@ -625,6 +625,32 @@ describe('workbench editor service tests', () => {
     }
   });
 
+  it('should activate an inactive close-to-right target after closing tabs', async () => {
+    const pinned = new URI('test://close-right/pinned');
+    const activeLeft = new URI('test://close-right/active-left');
+    const target = new URI('test://close-right/target');
+    const right = new URI('test://close-right/right');
+    await editorService.open(pinned, { preview: false });
+    await editorService.open(activeLeft, { preview: false });
+    await editorService.open(target, { preview: false });
+    await editorService.open(right, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+    await group.open(activeLeft, { focus: true });
+
+    try {
+      expect(await group.closeToRight(target)).toBe(true);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual(
+        [pinned, activeLeft, target].map(String),
+      );
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.isPinned(pinned)).toBe(true);
+      expect(group.currentResource?.uri.toString()).toBe(target.toString());
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
   it('should preserve closeSaved fallback and close-event order', async () => {
     const savedBefore = new URI('test://close-saved/before');
     const activeSaved = new URI('test://close-saved/active');

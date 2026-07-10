@@ -2268,7 +2268,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (index < 0) {
       return false;
     }
-    return this.closeResources(this.resources.slice(index + 1).filter((resource) => !this.isPinned(resource.uri)));
+    const closed = await this.closeResources(
+      this.resources.slice(index + 1).filter((resource) => !this.isPinned(resource.uri)),
+    );
+    if (closed) {
+      await this.open(uri);
+    }
+    return closed;
   }
 
   clearResourceOnClose(resource: IResource) {
