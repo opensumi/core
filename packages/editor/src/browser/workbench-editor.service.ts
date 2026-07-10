@@ -2311,8 +2311,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         return;
       }
       const targetGroup = result.group as EditorGroup;
-      if (sourceWasPinned && !targetGroup.isPinned(uri)) {
-        targetGroup.pinTab(uri);
+      if (sourceWasPinned !== targetGroup.isPinned(uri)) {
+        if (sourceWasPinned) {
+          targetGroup.pinTab(uri);
+        } else {
+          targetGroup.unpinTab(uri);
+        }
       }
       if (sourceGroup) {
         await sourceGroup.close(uri);

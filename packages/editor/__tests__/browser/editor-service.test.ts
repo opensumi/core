@@ -643,6 +643,105 @@ describe('workbench editor service tests', () => {
     }
   });
 
+  it('should keep an ordinary source ordinary when edge-dropping from a group with the same URI pinned', async () => {
+    const uri = new URI('test://pin/drop-split-duplicate');
+    await editorService.open(uri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    await source.split(EditorGroupSplitAction.Right, uri, { focus: true });
+    const receiving = editorService.editorGroups.find((group) => group !== source) as EditorGroup;
+    receiving.pinTab(uri);
+
+    try {
+      expect(source.isPinned(uri)).toBe(false);
+      expect(receiving.isPinned(uri)).toBe(true);
+
+      await receiving.dropUri(uri, DragOverPosition.RIGHT, source);
+      const splitTarget = editorService.editorGroups.find(
+        (group) =>
+          group !== source && group !== receiving && group.resources.some((resource) => resource.uri.isEqual(uri)),
+      ) as EditorGroup;
+
+      expect(splitTarget).toBeDefined();
+      expect(splitTarget.pinnedTabCount).toBe(0);
+      expect(splitTarget.isPinned(uri)).toBe(false);
+      expect(source.resources.some((resource) => resource.uri.isEqual(uri))).toBe(false);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should unpin a cross-group drop when targeting the ordinary region', async () => {
+    const sourceUri = new URI('test://pin/cross-unpin-source');
+    const targetPinnedUri = new URI('test://pin/cross-unpin-target-pinned');
+    const targetOrdinaryUri = new URI('test://pin/cross-unpin-target-ordinary');
+    await editorService.open(sourceUri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    source.pinTab(sourceUri);
+    await source.split(EditorGroupSplitAction.Right, targetPinnedUri, { focus: true });
+    const target = editorService.editorGroups.find((group) => group !== source) as EditorGroup;
+    target.pinTab(targetPinnedUri);
+    await target.open(targetOrdinaryUri, { preview: false });
+
+    try {
+      const targetOrdinary = target.resources.find((resource) => resource.uri.isEqual(targetOrdinaryUri));
+      await target.dropUri(sourceUri, DragOverPosition.CENTER, source, targetOrdinary);
+
+      expect(target.resources.map((resource) => resource.uri.toString())).toEqual(
+        [targetPinnedUri, sourceUri, targetOrdinaryUri].map(String),
+      );
+      expect(target.pinnedTabCount).toBe(1);
+      expect(target.isPinned(targetPinnedUri)).toBe(true);
+      expect(target.isPinned(sourceUri)).toBe(false);
+      expect(target.isPinned(targetOrdinaryUri)).toBe(false);
+      expect(source.resources.some((resource) => resource.uri.isEqual(sourceUri))).toBe(false);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should retain the source tab when an edge split fails', async () => {
+    const sourceUri = new URI('test://pin/drop-failed-split-source');
+    const targetUri = new URI('test://pin/drop-failed-split-target');
+    await editorService.open(sourceUri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    await source.split(EditorGroupSplitAction.Right, targetUri, { focus: true });
+    const target = editorService.editorGroups.find((group) => group !== source) as EditorGroup;
+    const splitSpy = jest.spyOn(target, 'split').mockResolvedValue(false);
+
+    try {
+      await target.dropUri(sourceUri, DragOverPosition.RIGHT, source);
+
+      expect(source.resources.some((resource) => resource.uri.isEqual(sourceUri))).toBe(true);
+      expect(target.resources.some((resource) => resource.uri.isEqual(sourceUri))).toBe(false);
+    } finally {
+      splitSpy.mockRestore();
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should keep open a preview tab dragged into the pinned region', async () => {
+    const pinnedUri = new URI('test://pin/drag-preview-pinned');
+    const previewUri = new URI('test://pin/drag-preview');
+    await editorService.open(pinnedUri, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinnedUri);
+    await group.open(previewUri, { preview: true });
+
+    try {
+      expect(group.previewURI?.toString()).toBe(previewUri.toString());
+
+      await group.dropUri(previewUri, DragOverPosition.CENTER, group, group.resources[0]);
+
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([previewUri, pinnedUri].map(String));
+      expect(group.previewURI).toBeNull();
+      expect(group.pinnedTabCount).toBe(2);
+      expect(group.isPinned(previewUri)).toBe(true);
+      expect(group.isPinned(pinnedUri)).toBe(true);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
   it('replace should work properly', async () => {
     const testCodeUri = new URI('test://a/testUri1');
     await editorService.open(testCodeUri, { preview: false });
