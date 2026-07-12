@@ -114,12 +114,14 @@ function TaskRow({
   active,
   onArchive,
   onActivate,
+  onUnarchive,
   projectAvailable,
   task,
 }: {
   active: boolean;
   onArchive: (task: AgenticTaskRecord) => void;
   onActivate: (task: AgenticTaskRecord) => void;
+  onUnarchive?: (task: AgenticTaskRecord) => void;
   projectAvailable: boolean;
   task: AgenticTaskRecord;
 }) {
@@ -157,6 +159,17 @@ function TaskRow({
           type='button'
         >
           Archive
+        </button>
+      )}
+      {task.archived && onUnarchive && (
+        <button
+          aria-label={`Unarchive ${task.title}`}
+          className={styles.archive_button}
+          data-testid={`agentic-task-unarchive-${task.sessionId}`}
+          onClick={() => onUnarchive(task)}
+          type='button'
+        >
+          Unarchive
         </button>
       )}
     </div>
@@ -213,11 +226,13 @@ function ArchivedTaskGroups({
   query,
   refreshProjectCatalog,
   registry,
+  onUnarchive,
   workspaceSwitch,
 }: {
   query: string;
   refreshProjectCatalog: () => Promise<AgenticProjectRecord[]>;
   registry: AgenticTaskRegistryService;
+  onUnarchive: (task: AgenticTaskRecord) => Promise<boolean>;
   workspaceSwitch: AgenticWorkspaceSwitchService;
 }) {
   const [expanded, setExpanded] = React.useState(false);
@@ -239,6 +254,23 @@ function ArchivedTaskGroups({
       disposed = true;
     };
   }, [expanded, query, refreshProjectCatalog, registry]);
+
+  const unarchive = React.useCallback(
+    async (task: AgenticTaskRecord) => {
+      if (!(await onUnarchive(task))) {
+        return;
+      }
+      setGroups((currentGroups) =>
+        currentGroups
+          .map((group) => ({
+            ...group,
+            tasks: group.tasks.filter((candidate) => candidate.sessionId !== task.sessionId),
+          }))
+          .filter((group) => group.tasks.length > 0),
+      );
+    },
+    [onUnarchive],
+  );
 
   return (
     <section className={styles.archived_area}>
@@ -269,6 +301,7 @@ function ArchivedTaskGroups({
                 onArchive={() => undefined}
                 projectAvailable={group.project.availability === 'available'}
                 task={task}
+                onUnarchive={(archivedTask) => void unarchive(archivedTask)}
               />
             ))}
           </section>
@@ -332,6 +365,17 @@ export function AgenticTaskList() {
     [refresh, registry],
   );
 
+  const unarchive = React.useCallback(
+    async (task: AgenticTaskRecord) => {
+      const restored = await registry.unarchive(task.sessionId);
+      if (restored) {
+        await refresh();
+      }
+      return restored;
+    },
+    [refresh, registry],
+  );
+
   const activate = React.useCallback(
     (task: AgenticTaskRecord) => {
       const group = groups.find((candidate) => candidate.project.id === task.projectId);
@@ -385,6 +429,7 @@ export function AgenticTaskList() {
         query={query}
         refreshProjectCatalog={refreshProjectCatalog}
         registry={registry}
+        onUnarchive={unarchive}
         workspaceSwitch={workspaceSwitch}
       />
     </aside>

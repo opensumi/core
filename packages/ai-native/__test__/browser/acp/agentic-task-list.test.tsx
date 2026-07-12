@@ -46,6 +46,7 @@ function createServices() {
       listActiveGroups: jest.fn(() => Promise.resolve([])),
       listArchivedGroups: jest.fn(() => Promise.resolve([])),
       listProjects: jest.fn(() => Promise.resolve([projectA, projectB])),
+      unarchive: jest.fn(() => Promise.resolve(true)),
     },
     workspaceSwitch: {
       activateTask: jest.fn(() => Promise.resolve()),
@@ -310,6 +311,46 @@ describe('AgenticTaskList', () => {
       (container.querySelector('[data-testid="agentic-task-row-acp:archived-unavailable"]') as HTMLButtonElement)
         .disabled,
     ).toBe(true);
+  });
+
+  it('renders an accessible Unarchive action for an archived Task', async () => {
+    const services = createServices();
+    services.registry.listProjects.mockResolvedValue([projectA]);
+    services.registry.listActiveGroups.mockResolvedValue([]);
+    services.registry.listArchivedGroups.mockResolvedValue([
+      {
+        project: projectA,
+        tasks: [
+          {
+            sessionId: 'acp:archived-ready',
+            projectId: projectA.id,
+            agentId: 'agent-a',
+            title: 'Archived ready Task',
+            createdAt: 1,
+            archived: true,
+            unread: false,
+            status: 'ready' as const,
+          },
+        ],
+      },
+    ]);
+    await renderTaskList(services);
+
+    await act(async () => {
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent?.includes('Archived Tasks'))
+        ?.click();
+      await flushPromises();
+    });
+
+    const unarchive = container.querySelector('[data-testid="agentic-task-unarchive-acp:archived-ready"]');
+    expect(unarchive?.getAttribute('aria-label')).toBe('Unarchive Archived ready Task');
+    await act(async () => {
+      (unarchive as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(services.registry.unarchive).toHaveBeenCalledWith('acp:archived-ready');
   });
 
   it('clamps local Task List resizing to the Agentic Chat Slot bounds', async () => {
