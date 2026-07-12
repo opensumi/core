@@ -217,6 +217,29 @@ describe('AgenticWorkspaceSwitchService', () => {
     expect(aiChatService.activateSession).not.toHaveBeenCalled();
   });
 
+  it('keeps a newer same-Task activation pending when an older workspace open rejects', async () => {
+    let pendingActivation: { sessionId: string } | undefined;
+    registry.getProject.mockResolvedValue(projectB);
+    registry.preparePendingActivation.mockImplementation((activation: { sessionId: string }) => {
+      pendingActivation = activation;
+    });
+    registry.consumePendingActivation.mockImplementation(() => {
+      const activation = pendingActivation;
+      pendingActivation = undefined;
+      return activation;
+    });
+    workspaceService.open.mockImplementationOnce(async () => {
+      await switcher.activateTask(taskFor('/work/b'));
+      throw new Error('older workspace open failed');
+    });
+
+    await expect(switcher.activateTask(taskFor('/work/b'))).rejects.toThrow('older workspace open failed');
+    await switcher.restorePendingWork();
+
+    expect(registry.preparePendingActivation).toHaveBeenCalledTimes(2);
+    expect(aiChatService.activateSession).toHaveBeenCalledWith('acp:b');
+  });
+
   it('clears a failed cross-workspace Task launch so restore cannot enter its draft later', async () => {
     let pendingLaunch: { projectId: string; agentId: string } | undefined;
     registry.getProject.mockResolvedValue(projectB);
@@ -234,6 +257,29 @@ describe('AgenticWorkspaceSwitchService', () => {
     await switcher.restorePendingWork();
 
     expect(aiChatService.enterAgenticTaskDraft).not.toHaveBeenCalled();
+  });
+
+  it('keeps a newer same-Task launch pending when an older workspace open rejects', async () => {
+    let pendingLaunch: { projectId: string; agentId: string } | undefined;
+    registry.getProject.mockResolvedValue(projectB);
+    registry.preparePendingLaunch.mockImplementation((launch: { projectId: string; agentId: string }) => {
+      pendingLaunch = launch;
+    });
+    registry.consumePendingLaunch.mockImplementation(() => {
+      const launch = pendingLaunch;
+      pendingLaunch = undefined;
+      return launch;
+    });
+    workspaceService.open.mockImplementationOnce(async () => {
+      await switcher.launchTask(projectB, 'agent-b');
+      throw new Error('older workspace open failed');
+    });
+
+    await expect(switcher.launchTask(projectB, 'agent-b')).rejects.toThrow('older workspace open failed');
+    await switcher.restorePendingWork();
+
+    expect(registry.preparePendingLaunch).toHaveBeenCalledTimes(2);
+    expect(aiChatService.enterAgenticTaskDraft).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
   });
 
   it('seeds the current Workspace and validated MRU Workspaces as canonical Projects', async () => {

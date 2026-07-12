@@ -33,6 +33,9 @@ export class AgenticWorkspaceSwitchService {
   @Autowired(IMessageService)
   private readonly messageService: IMessageService;
 
+  private pendingActivationGeneration = 0;
+  private pendingLaunchGeneration = 0;
+
   async seedProjectCatalog(): Promise<void> {
     await this.workspaceService.whenReady;
 
@@ -75,11 +78,14 @@ export class AgenticWorkspaceSwitchService {
       return;
     }
 
+    const generation = ++this.pendingActivationGeneration;
     this.registry.preparePendingActivation({ sessionId: task.sessionId });
     try {
       await this.workspaceService.open(URI.file(project.workspacePath), { preserveWindow: true });
     } catch (error) {
-      this.clearPendingActivation(task.sessionId);
+      if (generation === this.pendingActivationGeneration) {
+        this.registry.consumePendingActivation();
+      }
       throw error;
     }
   }
@@ -99,11 +105,14 @@ export class AgenticWorkspaceSwitchService {
       return;
     }
 
+    const generation = ++this.pendingLaunchGeneration;
     this.registry.preparePendingLaunch({ projectId: targetProject.id, agentId });
     try {
       await this.workspaceService.open(URI.file(targetProject.workspacePath), { preserveWindow: true });
     } catch (error) {
-      this.clearPendingLaunch(targetProject.id, agentId);
+      if (generation === this.pendingLaunchGeneration) {
+        this.registry.consumePendingLaunch();
+      }
       throw error;
     }
   }
@@ -163,20 +172,6 @@ export class AgenticWorkspaceSwitchService {
   private async hasDirtyEditors(): Promise<boolean> {
     const documents = await this.editorService.getAllOpenedDocuments();
     return documents.some((document) => document.dirty);
-  }
-
-  private clearPendingActivation(sessionId: string): void {
-    const pending = this.registry.consumePendingActivation();
-    if (pending && pending.sessionId !== sessionId) {
-      this.registry.preparePendingActivation(pending);
-    }
-  }
-
-  private clearPendingLaunch(projectId: string, agentId: string): void {
-    const pending = this.registry.consumePendingLaunch();
-    if (pending && (pending.projectId !== projectId || pending.agentId !== agentId)) {
-      this.registry.preparePendingLaunch(pending);
-    }
   }
 
   private async registerWorkspaceUri(workspaceUri: string): Promise<void> {
