@@ -1,0 +1,418 @@
+.task_list {
+  position: relative;
+  display: flex;
+  flex: 0 0 var(--agentic-task-list-width, 244px);
+  flex-direction: column;
+  width: var(--agentic-task-list-width, 244px);
+  min-width: 208px;
+  max-width: 280px;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--panel-border);
+  background: var(--sideBar-background, var(--panel-background));
+  color: var(--foreground);
+}
+
+.resize_handle {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  outline: none;
+
+  &:focus-visible::after,
+  &:hover::after {
+    position: absolute;
+    top: 0;
+    right: 2px;
+    bottom: 0;
+    width: 1px;
+    background: var(--focusBorder);
+    content: '';
+  }
+}
+
+.task_list_header {
+  display: flex;
+  align-items: center;
+  min-height: 43px;
+  padding: 0 10px 0 14px;
+  border-bottom: 1px solid var(--panel-border);
+
+  h2 {
+    margin: 0;
+    color: var(--foreground);
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+.attention_count {
+  margin-left: 7px;
+  color: var(--descriptionForeground);
+  font-size: 11px;
+}
+
+.launch_menu_group {
+  position: relative;
+  margin-left: auto;
+}
+
+.launch_button,
+.project_new_task,
+.archive_button,
+.archived_toggle,
+.launch_menu_item,
+.launch_menu_back {
+  border: 0;
+  font: inherit;
+}
+
+.launch_button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid var(--button-border, transparent);
+  border-radius: 4px;
+  background: var(--button-background);
+  color: var(--button-foreground);
+  cursor: pointer;
+  font-size: 11px;
+
+  &:hover:not(:disabled) {
+    background: var(--button-hoverBackground);
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--focusBorder);
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+}
+
+.launch_button_label {
+  white-space: nowrap;
+}
+
+.launch_menu {
+  position: absolute;
+  z-index: 2;
+  top: calc(100% + 4px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 176px;
+  max-width: 240px;
+  padding: 4px;
+  border: 1px solid var(--dropdown-border);
+  border-radius: 4px;
+  background: var(--menu-background, var(--panel-background));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
+}
+
+.launch_menu_label {
+  padding: 5px 7px;
+  color: var(--descriptionForeground);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.launch_menu_item,
+.launch_menu_back {
+  display: flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 7px;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--menu-foreground, var(--foreground));
+  cursor: pointer;
+  text-align: left;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    outline: none;
+    background: var(--list-hoverBackground);
+  }
+
+  &:disabled {
+    cursor: default;
+    color: var(--disabledForeground);
+  }
+}
+
+.launch_menu_item_label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unavailable_label {
+  margin-left: auto;
+  padding-left: 8px;
+  color: var(--disabledForeground);
+  font-size: 10px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  margin: 10px 10px 8px;
+  padding: 0 8px;
+  border: 1px solid var(--input-border, var(--panel-border));
+  border-radius: 4px;
+  background: var(--input-background, var(--editor-background));
+  color: var(--input-placeholderForeground);
+  font-size: 11px;
+
+  &:focus-within {
+    border-color: var(--focusBorder);
+  }
+
+  input {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--input-foreground, var(--foreground));
+    font: inherit;
+
+    &::placeholder {
+      color: var(--input-placeholderForeground);
+    }
+  }
+}
+
+.task_groups {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+}
+
+.project_group,
+.archived_project_group {
+  margin: 8px 5px 0;
+}
+
+.project_header {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 29px;
+  padding: 0 7px;
+  color: var(--descriptionForeground);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.project_label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--descriptionForeground);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project_count {
+  margin-left: 6px;
+  color: var(--disabledForeground);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.project_new_task {
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--descriptionForeground);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 18px;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    outline: none;
+    background: var(--list-hoverBackground);
+  }
+
+  &:disabled {
+    cursor: default;
+    color: var(--disabledForeground);
+  }
+}
+
+.task_row_wrap {
+  position: relative;
+  margin: 1px 0;
+}
+
+.task_row {
+  display: grid;
+  grid-template-columns: 15px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  min-height: 37px;
+  padding: 4px 7px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  text-align: left;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    outline: none;
+    background: var(--list-hoverBackground);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+}
+
+.task_row_selected {
+  border-color: var(--focusBorder);
+  background: var(--list-activeSelectionBackground);
+  color: var(--list-activeSelectionForeground);
+}
+
+.task_state {
+  position: relative;
+  width: 14px;
+  height: 14px;
+
+  &::after {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--descriptionForeground);
+    content: '';
+  }
+}
+
+.task_attention_permission::after,
+.task_attention_input::after {
+  top: 3px;
+  left: 3px;
+  width: 7px;
+  height: 7px;
+  background: var(--editorWarning-foreground, #cca700);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--editorWarning-foreground, #cca700) 14%, transparent);
+}
+
+.task_status_running::after {
+  background: var(--focusBorder);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focusBorder) 14%, transparent);
+}
+
+.task_status_ready::after {
+  background: var(--testing-iconPassed, #73c991);
+}
+
+.task_status_error::after {
+  background: var(--errorForeground);
+}
+
+.task_copy {
+  min-width: 0;
+}
+
+.task_title,
+.task_subtitle {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task_title {
+  color: inherit;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.task_subtitle {
+  color: var(--descriptionForeground);
+  font-size: 10px;
+  line-height: 13px;
+}
+
+.unread {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--focusBorder);
+}
+
+.archive_button {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  display: none;
+  height: 20px;
+  padding: 0 4px;
+  transform: translateY(-50%);
+  border-radius: 3px;
+  background: var(--list-hoverBackground);
+  color: var(--descriptionForeground);
+  cursor: pointer;
+  font-size: 10px;
+
+  &:focus-visible {
+    display: block;
+    outline: 1px solid var(--focusBorder);
+  }
+}
+
+.task_row_wrap:hover .archive_button {
+  display: block;
+}
+
+.archived_area {
+  flex: none;
+  margin: 10px 7px 0;
+  border-top: 1px solid var(--panel-border);
+}
+
+.archived_toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 32px;
+  padding: 0 7px;
+  background: transparent;
+  color: var(--descriptionForeground);
+  cursor: pointer;
+  font-size: 11px;
+  text-align: left;
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    color: var(--foreground);
+  }
+}
