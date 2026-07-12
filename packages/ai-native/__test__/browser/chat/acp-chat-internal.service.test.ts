@@ -166,9 +166,11 @@ describe('AcpChatInternalService', () => {
         updateStatus: jest.fn().mockResolvedValue(undefined),
       };
       const permissionRequestEmitter = new Emitter<any>();
+      const permissionResultEmitter = new Emitter<any>();
       const permissionBridgeService = {
         clearSessionDialogs: jest.fn(),
         onDidRequestPermission: permissionRequestEmitter.event,
+        onDidReceivePermissionResult: permissionResultEmitter.event,
         setActiveSession: jest.fn(),
       };
       const messageService = {
@@ -219,6 +221,7 @@ describe('AcpChatInternalService', () => {
         model,
         permissionBridgeService,
         permissionRequestEmitter,
+        permissionResultEmitter,
         registry,
         service,
       };
@@ -396,6 +399,44 @@ describe('AcpChatInternalService', () => {
       expect(registry.markUnread).toHaveBeenCalledWith('acp:background', true);
     });
 
+    it('seeds the registered Task status from the model current ACP thread status', async () => {
+      const { model, registry, service } = createService();
+      service._sessionModel = model;
+      model.setThreadStatus('working');
+      const request = model.addRequest({
+        prompt: 'Fix list',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      await service.sendRequest(request);
+
+      expect(registry.updateStatus).toHaveBeenCalledWith('acp:sess-1', 'running');
+    });
+
+    it('does not infer input attention from a generic background assistant component', async () => {
+      const { chatManagerService, model, registry, service } = createService();
+      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:background' });
+      chatManagerService.getSessions.mockReturnValue([model, backgroundModel]);
+      registry.getTask.mockImplementation((sessionId: string) =>
+        Promise.resolve(sessionId === 'acp:background' ? { sessionId } : undefined),
+      );
+      service._sessionModel = model;
+      const request = model.addRequest({
+        prompt: 'Fix list',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      await service.sendRequest(request);
+      backgroundModel.history.addAssistantMessage({ content: 'rendered component', type: 'component' });
+
+      expect(registry.markUnread).toHaveBeenCalledWith('acp:background', true);
+      expect(registry.updateAttention).not.toHaveBeenCalledWith('acp:background', 'input');
+    });
+
     it('maps ACP thread statuses and background permission attention only for registered Agentic Tasks', async () => {
       const { chatManagerService, model, permissionRequestEmitter, registry, service } = createService();
       const backgroundModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:background' });
@@ -418,6 +459,30 @@ describe('AcpChatInternalService', () => {
       expect(registry.updateStatus).toHaveBeenCalledWith('acp:background', 'running');
       expect(registry.updateAttention).toHaveBeenCalledWith('acp:background', 'permission');
       expect(registry.markUnread).toHaveBeenCalledWith('acp:background', true);
+    });
+
+    it('clears background permission attention when the ACP permission request resolves', async () => {
+      const { chatManagerService, model, permissionRequestEmitter, permissionResultEmitter, registry, service } =
+        createService();
+      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:background' });
+      chatManagerService.getSessions.mockReturnValue([model, backgroundModel]);
+      registry.getTask.mockImplementation((sessionId: string) =>
+        Promise.resolve(sessionId === 'acp:background' ? { sessionId } : undefined),
+      );
+      service._sessionModel = model;
+      const request = model.addRequest({
+        prompt: 'Fix list',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+      await service.sendRequest(request);
+
+      permissionRequestEmitter.fire({ requestId: 'permission-1', sessionId: 'background' });
+      permissionResultEmitter.fire({ requestId: 'permission-1', decision: { type: 'allow' } });
+
+      expect(registry.updateAttention).toHaveBeenNthCalledWith(1, 'acp:background', 'permission');
+      expect(registry.updateAttention).toHaveBeenLastCalledWith('acp:background', undefined);
     });
 
     it('reuses the in-flight ACP session creation request', async () => {

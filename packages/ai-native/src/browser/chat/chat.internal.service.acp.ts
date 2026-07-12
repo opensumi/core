@@ -461,7 +461,9 @@ export class AcpChatInternalService extends ChatInternalService {
     existing?.disposable.dispose();
 
     const seenMessageIds = new Set(model.history.getMessages().map((message) => message.id));
+    const pendingPermissionRequestIds = new Set<string>();
     const disposable = new DisposableCollection();
+    void this.agenticTaskRegistry.updateStatus(model.sessionId, this.toAgenticTaskStatus(model.threadStatus));
     disposable.push(
       model.onThreadStatusChange((status) => {
         if (!this.isAgenticLayout()) {
@@ -484,10 +486,7 @@ export class AcpChatInternalService extends ChatInternalService {
           if (message.role !== ChatMessageRole.Assistant) {
             return false;
           }
-          if (message.type === 'component') {
-            void this.agenticTaskRegistry.updateAttention(model.sessionId, 'input');
-          }
-          return Boolean(message.content || message.type === 'component');
+          return Boolean(message.content);
         });
         if (hasAgentActivity) {
           this.markUnreadIfBackground(model.sessionId);
@@ -502,8 +501,17 @@ export class AcpChatInternalService extends ChatInternalService {
         if (this.stripAcpPrefix(model.sessionId) !== this.stripAcpPrefix(params.sessionId)) {
           return;
         }
+        pendingPermissionRequestIds.add(params.requestId);
         void this.agenticTaskRegistry.updateAttention(model.sessionId, 'permission');
         this.markUnreadIfBackground(model.sessionId);
+      }),
+    );
+    disposable.push(
+      this.permissionBridgeService.onDidReceivePermissionResult((result) => {
+        if (!pendingPermissionRequestIds.delete(result.requestId) || pendingPermissionRequestIds.size > 0) {
+          return;
+        }
+        void this.agenticTaskRegistry.updateAttention(model.sessionId, undefined);
       }),
     );
     this.taskObservationDisposables.set(model.sessionId, { model, disposable });
