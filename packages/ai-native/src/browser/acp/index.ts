@@ -20,6 +20,7 @@ export type {
   AgenticTaskGroup,
   AgenticTaskRecord,
   AgenticTaskRegistryState,
+  AgenticTaskStatus,
   RegisterFirstPromptOptions,
 } from './agentic-task-registry.service';
 export { PermissionDialog, PermissionDialogProps } from './permission-dialog.view';

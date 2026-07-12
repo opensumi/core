@@ -1,11 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IStorage, STORAGE_NAMESPACE, StorageProvider, ThreadStatus, URI } from '@opensumi/ide-core-common';
+import { IStorage, STORAGE_NAMESPACE, StorageProvider, URI } from '@opensumi/ide-core-common';
 
 const TASK_REGISTRY_STORAGE_KEY = 'agentic.task-registry.v2';
 const PENDING_TASK_ACTIVATION_STORAGE_KEY = 'agentic.pending-task-activation.v2';
 const PENDING_TASK_LAUNCH_STORAGE_KEY = 'agentic.pending-task-launch.v2';
 
-const ARCHIVABLE_STATUSES = new Set<ThreadStatus | undefined>(['idle', 'errored', 'disconnected', undefined]);
+const ARCHIVABLE_STATUSES = new Set<AgenticTaskStatus>(['ready', 'stopped', 'error']);
 
 export interface AgenticProjectRecord {
   id: string;
@@ -24,9 +24,11 @@ export interface AgenticTaskRecord {
   createdAt: number;
   archived: boolean;
   unread: boolean;
-  status?: ThreadStatus;
+  status?: AgenticTaskStatus;
   attention?: 'permission' | 'input';
 }
+
+export type AgenticTaskStatus = 'ready' | 'running' | 'stopped' | 'error';
 
 export interface AgenticTaskGroup {
   project: AgenticProjectRecord;
@@ -133,7 +135,7 @@ export class AgenticTaskRegistryService {
     });
   }
 
-  async updateStatus(sessionId: string, status?: ThreadStatus): Promise<AgenticTaskRecord | undefined> {
+  async updateStatus(sessionId: string, status?: AgenticTaskStatus): Promise<AgenticTaskRecord | undefined> {
     return this.updateTask(sessionId, (task) => {
       if (status === undefined) {
         delete task.status;
@@ -174,7 +176,7 @@ export class AgenticTaskRegistryService {
   async archive(sessionId: string): Promise<boolean> {
     await this.ensureInitialized();
     const task = this.findTask(sessionId);
-    if (!task || task.archived || !ARCHIVABLE_STATUSES.has(task.status)) {
+    if (!task || task.archived || !task.status || !ARCHIVABLE_STATUSES.has(task.status)) {
       return false;
     }
 
@@ -368,7 +370,7 @@ export class AgenticTaskRegistryService {
       !Number.isFinite(value.createdAt) ||
       typeof value.archived !== 'boolean' ||
       typeof value.unread !== 'boolean' ||
-      (value.status !== undefined && !this.isThreadStatus(value.status)) ||
+      (value.status !== undefined && !this.isAgenticTaskStatus(value.status)) ||
       (value.attention !== undefined && value.attention !== 'permission' && value.attention !== 'input')
     ) {
       return undefined;
@@ -437,15 +439,8 @@ export class AgenticTaskRegistryService {
     return value === 'available' || value === 'unavailable';
   }
 
-  private isThreadStatus(value: unknown): value is ThreadStatus {
-    return (
-      value === 'idle' ||
-      value === 'working' ||
-      value === 'awaiting_prompt' ||
-      value === 'auth_required' ||
-      value === 'errored' ||
-      value === 'disconnected'
-    );
+  private isAgenticTaskStatus(value: unknown): value is AgenticTaskStatus {
+    return value === 'ready' || value === 'running' || value === 'stopped' || value === 'error';
   }
 
   private isRecord(value: unknown): value is Record<string, unknown> {

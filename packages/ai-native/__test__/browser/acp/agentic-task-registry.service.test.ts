@@ -141,7 +141,7 @@ describe('AgenticTaskRegistryService', () => {
     ]);
   });
 
-  it('searches immutable task titles only and separates archivable tasks from live tasks', async () => {
+  it('searches immutable task titles only and separates ready tasks from running tasks', async () => {
     await registry.registerFirstPrompt({
       sessionId: 'acp:active',
       agentId: 'agent-a',
@@ -157,7 +157,8 @@ describe('AgenticTaskRegistryService', () => {
       createdAt: 2,
     });
 
-    await registry.updateStatus('acp:active', 'working');
+    await registry.updateStatus('acp:active', 'running');
+    await registry.updateStatus('acp:archived', 'ready');
     await registry.updateAttention('acp:active', 'permission');
     await registry.markUnread('acp:active');
 
@@ -171,7 +172,7 @@ describe('AgenticTaskRegistryService', () => {
           expect.objectContaining({
             sessionId: 'acp:active',
             unread: true,
-            status: 'working',
+            status: 'running',
             attention: 'permission',
           }),
         ],
@@ -184,6 +185,44 @@ describe('AgenticTaskRegistryService', () => {
     expect(await registry.markProjectAvailability(project.id, 'unavailable')).toMatchObject({
       availability: 'unavailable',
     });
+  });
+
+  it.each(['ready', 'stopped', 'error'])('retains loaded %s tasks and permits archiving them', async (status) => {
+    storage.get.mockReturnValue({
+      version: 2,
+      projects: [project],
+      tasks: [
+        {
+          sessionId: 'acp:loaded',
+          projectId: project.id,
+          agentId: 'agent-a',
+          title: 'Loaded task',
+          createdAt: 1,
+          archived: false,
+          unread: false,
+          status,
+        },
+      ],
+    });
+
+    await expect(registry.getTask('acp:loaded')).resolves.toMatchObject({ status });
+    await expect(registry.archive('acp:loaded')).resolves.toBe(true);
+  });
+
+  it.each([undefined, 'running', 'other'])('rejects archiving tasks with %s status', async (status) => {
+    const task = {
+      sessionId: 'acp:loaded',
+      projectId: project.id,
+      agentId: 'agent-a',
+      title: 'Loaded task',
+      createdAt: 1,
+      archived: false,
+      unread: false,
+      ...(status === undefined ? {} : { status }),
+    };
+    storage.get.mockReturnValue({ version: 2, projects: [project], tasks: [task] });
+
+    await expect(registry.archive('acp:loaded')).resolves.toBe(false);
   });
 
   it('consumes prompt-free pending activation and launch state once', () => {
