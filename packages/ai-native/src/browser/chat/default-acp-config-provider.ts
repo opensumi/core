@@ -2,6 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService, QuickPickService } from '@opensumi/ide-core-browser';
 import {
   AINativeSettingSectionsId,
+  AcpTargetConfigRequest,
   AgentProcessConfig,
   DEFAULT_ACP_THREAD_POOL_SIZE,
   IACPConfigProvider,
@@ -42,17 +43,28 @@ export class DefaultACPConfigProvider implements IACPConfigProvider {
   async resolveConfig(): Promise<AgentProcessConfig> {
     await this.workspaceService.whenReady;
     const agentType = getDefaultAgentType(this.preferenceService);
-    const agentConfig = getAgentConfig(this.preferenceService, agentType);
     const workspaceDir = await pickWorkspaceDir(this.workspaceService, this.quickPick, this.messageService);
+
+    return this.buildConfig({ agentId: agentType, cwd: workspaceDir });
+  }
+
+  async resolveConfigForTarget(request: AcpTargetConfigRequest): Promise<AgentProcessConfig> {
+    await this.workspaceService.whenReady;
+
+    return this.buildConfig(request);
+  }
+
+  private async buildConfig(request: AcpTargetConfigRequest): Promise<AgentProcessConfig> {
+    const agentConfig = getAgentConfig(this.preferenceService, request.agentId);
     const mcpServers = await this.mcpConfigService.getACPServers();
     const webMcpEnabled = await this.mcpConfigService.isBuiltinMCPEnabled();
 
     return buildAcpAgentProcessConfig({
-      agentId: agentType,
+      agentId: request.agentId,
       registration: {
         command: agentConfig.command,
         args: agentConfig.args,
-        cwd: workspaceDir,
+        cwd: request.cwd,
       },
       userPreferences: {
         nodePath: this.preferenceService.get('ai-native.acp.nodePath', ''),

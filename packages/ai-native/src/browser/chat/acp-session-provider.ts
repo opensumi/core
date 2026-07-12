@@ -2,7 +2,13 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { AIBackSerivcePath, Domain, IACPConfigProvider, IAIBackService } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 
-import { ISessionModel, ISessionModelExtension, ISessionProvider, SessionProviderDomain } from './session-provider';
+import {
+  ISessionModel,
+  ISessionModelExtension,
+  ISessionProvider,
+  SessionCreationOptions,
+  SessionProviderDomain,
+} from './session-provider';
 
 /**
  * ACP Session Provider
@@ -34,13 +40,16 @@ export class ACPSessionProvider implements ISessionProvider {
     return mode.startsWith('acp');
   }
 
-  async createSession(title?: string): Promise<ISessionModel> {
+  async createSession(options?: SessionCreationOptions): Promise<ISessionModel> {
     if (!this.aiBackService?.createSession) {
       throw new Error('aiBackService.createSession is not available');
     }
 
     try {
-      const config = await this.configProvider.resolveConfig();
+      const config =
+        options?.acpTarget && this.configProvider.resolveConfigForTarget
+          ? await this.configProvider.resolveConfigForTarget(options.acpTarget)
+          : await this.configProvider.resolveConfig();
       const result = (await this.aiBackService.createSession(config)) as any;
 
       if (!result?.sessionId) {
@@ -65,7 +74,7 @@ export class ACPSessionProvider implements ISessionProvider {
           messages: [],
         },
         requests: [],
-        title: title || '',
+        title: '',
         ...(result.availableCommands?.length ? { extension: { availableCommands: result.availableCommands } } : {}),
       };
 

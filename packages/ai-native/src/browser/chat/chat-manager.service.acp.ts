@@ -16,7 +16,7 @@ import { MsgHistoryManager } from '../model/msg-history-manager';
 
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel, ChatResponseModel } from './chat-model';
-import { ISessionModel, ISessionProvider } from './session-provider';
+import { ISessionModel, ISessionProvider, SessionCreationOptions } from './session-provider';
 import { ISessionProviderRegistry } from './session-provider-registry';
 
 const MAX_SESSION_COUNT = 20;
@@ -295,9 +295,9 @@ export class AcpChatManagerService extends ChatManagerService {
     return this.availableCommands;
   }
 
-  override async startSession(): Promise<ChatModel> {
+  override async startSession(options?: SessionCreationOptions): Promise<ChatModel> {
     if (this.aiNativeConfig.capabilities.supportsAgentMode && this.mainProvider?.createSession) {
-      const sessionData = await this.mainProvider.createSession();
+      const sessionData = await this.mainProvider.createSession(options);
       if (sessionData.extension?.availableCommands) {
         this.availableCommands = sessionData.extension.availableCommands;
       }

@@ -177,6 +177,40 @@ describe('AcpChatManagerService', () => {
     }
   });
 
+  it('uses an explicit ACP target when creating an ACP session', async () => {
+    const provider = createSessionProvider();
+    const config = { agentId: 'agent-b', cwd: '/work/b' };
+    const resolveConfigForTarget = jest.fn().mockResolvedValue(config);
+    (provider as any).configProvider.resolveConfigForTarget = resolveConfigForTarget;
+    const createSession = jest.fn().mockResolvedValue({ sessionId: 's1' });
+    Object.defineProperty(provider, 'aiBackService', {
+      value: { createSession },
+    });
+
+    await provider.createSession({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' } });
+
+    expect(resolveConfigForTarget).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
+    expect(createSession).toHaveBeenCalledWith(config);
+  });
+
+  it('passes an explicit target only to ACP session creation', async () => {
+    const service = createService();
+    const createSession = jest.fn().mockResolvedValue({
+      sessionId: 'acp:s1',
+      history: { additional: {}, messages: [] },
+      requests: [],
+    });
+    Object.defineProperty(service, 'mainProvider', {
+      value: { createSession },
+    });
+
+    await service.startSession({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' } });
+
+    expect(createSession).toHaveBeenCalledWith({
+      acpTarget: { agentId: 'agent-b', cwd: '/work/b' },
+    });
+  });
+
   it('uses the first agent message timestamp as loaded ACP session creation time', () => {
     const provider = createSessionProvider();
 

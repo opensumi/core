@@ -116,6 +116,14 @@ export interface AgentProcessConfig {
 }
 
 /**
+ * Explicit ACP Agent and working-directory target for a session.
+ */
+export interface AcpTargetConfigRequest {
+  agentId: string;
+  cwd: string;
+}
+
+/**
  * DI Token for ACP config provider.
  * Allows downstream projects to customize AgentProcessConfig construction
  * (e.g., inject custom env vars, override command paths, add validation).
@@ -132,4 +140,9 @@ export interface IACPConfigProvider {
    * Should throw if prerequisites are not met (e.g., missing API key).
    */
   resolveConfig(): Promise<AgentProcessConfig>;
+
+  /**
+   * Build an AgentProcessConfig for an explicit ACP Agent and working directory.
+   */
+  resolveConfigForTarget?(request: AcpTargetConfigRequest): Promise<AgentProcessConfig>;
 }

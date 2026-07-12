@@ -1,4 +1,8 @@
-import { AvailableCommand, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import {
+  AcpTargetConfigRequest,
+  AvailableCommand,
+  IHistoryChatMessage,
+} from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { IChatFollowup, IChatRequestMessage, IChatResponseErrorDetails } from '../../common';
 
@@ -53,6 +57,10 @@ export interface AcpSessionModelOption {
 
 export type AcpSessionConfigOption = Record<string, any>;
 
+export interface SessionCreationOptions {
+  acpTarget?: AcpTargetConfigRequest;
+}
+
 /**
  * Session Provider 接口
  * 抽象不同数据源的 Session 加载逻辑
@@ -69,10 +77,10 @@ export interface ISessionProvider {
 
   /**
    * 创建新会话
-   * @param title 可选的会话标题
+   * @param options Optional ACP session creation options
    * @returns 创建的 Session 数据
    */
-  createSession?(): Promise<ISessionModel & { extension?: ISessionModelExtension }>;
+  createSession?(options?: SessionCreationOptions): Promise<ISessionModel & { extension?: ISessionModelExtension }>;
 
   /**
    * 加载所有可用会话

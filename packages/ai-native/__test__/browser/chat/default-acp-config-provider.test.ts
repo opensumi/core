@@ -130,6 +130,26 @@ describe('DefaultACPConfigProvider', () => {
     expect(config.args).toEqual([]);
   });
 
+  it('builds a config for the stored Agent and project path', async () => {
+    const provider = await createProvider({
+      agentConfigs: {
+        'agent-b': {
+          command: 'agent-b-command',
+          args: ['--acp'],
+          description: 'Agent B',
+        },
+      },
+    });
+
+    await expect(provider.resolveConfigForTarget({ agentId: 'agent-b', cwd: '/work/b' })).resolves.toMatchObject({
+      agentId: 'agent-b',
+      command: 'agent-b-command',
+      args: ['--acp'],
+      cwd: '/work/b',
+    });
+    expect((provider as any).quickPick.show).not.toHaveBeenCalled();
+  });
+
   it('falls back to the built-in Claude ACP agent when the selected custom agent is missing', async () => {
     const provider = await createProvider({ defaultAgentType: 'missing-agent' });
 
