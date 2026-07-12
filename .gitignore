@@ -106,4 +106,7 @@ tools/workspace
 .claude/
 .claudebak
 
+# Local agent worktrees
+.worktrees/
+
 .understand-anything/
