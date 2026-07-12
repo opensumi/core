@@ -274,6 +274,7 @@ test.describe('ACP Chat Agentic History', () => {
     expect(rowsAfterSelection.filter((row) => row.selected).map((row) => row.id)).toEqual([olderTask.sessionId]);
 
     await selectTask(newerTask.sessionId);
+    await expect(page.getByTestId(`agentic-task-row-${newerTask.sessionId}`)).toContainText(/·\s*ready/);
     await expect(page.getByTestId(`agentic-task-archive-${newerTask.sessionId}`)).toBeVisible({ timeout: 30_000 });
     await page.getByTestId(`agentic-task-archive-${newerTask.sessionId}`).click();
     await expect(page.getByTestId(`agentic-task-row-${newerTask.sessionId}`)).toHaveCount(0);
