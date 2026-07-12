@@ -702,14 +702,14 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(result.historyUpdates).toEqual(nativeHistory);
     });
 
-    it('should not synthesize historyUpdates from local entries', async () => {
+    it('does not expose a local prompt sentinel in metadata-only session restore results', async () => {
       const thread = createMockThread({
         initialized: true,
         getStatus: jest.fn().mockReturnValue('idle'),
         getEntries: jest.fn().mockReturnValue([
           {
             type: 'user_message',
-            data: { id: 'msg-1', content: 'local prompt', timestamp: 1 },
+            data: { id: 'msg-1', content: 'BDD_SENSITIVE_PROMPT', timestamp: 1 },
           },
         ]),
         getSessionNotifications: jest.fn().mockReturnValue([]),
@@ -721,6 +721,7 @@ describe('AcpAgentService (Thread Pool)', () => {
       const result = await service.loadSession('existing-session-id', mockAgentProcessConfig);
 
       expect(result.historyUpdates).toEqual([]);
+      expect(JSON.stringify(result)).not.toContain('BDD_SENSITIVE_PROMPT');
     });
 
     it('should apply default session options after loading a session', async () => {

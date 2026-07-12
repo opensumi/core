@@ -14,8 +14,8 @@ import {
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const SESSION_PREFIX = 'bdd-rich-history';
-const SEEDED_SESSION_IDS = [`acp:${SESSION_PREFIX}-alpha`, `acp:${SESSION_PREFIX}-beta`];
 const RICH_PROMPT = 'BDD rich history restore';
+const OTHER_TASK_PROMPT = 'BDD task list other selection';
 const METADATA_LEAK_SENTINELS = [
   'BDD_ASSISTANT_PART',
   'BDD_THOUGHT_STEP',
@@ -95,45 +95,8 @@ async function getSessionState() {
   return result.result;
 }
 
-async function waitForSeededSessions(): Promise<AcpSessionSummary[]> {
-  await expect
-    .poll(
-      async () => {
-        const sessions = await listSessions();
-        return sessions
-          .map((session) => session.sessionId)
-          .filter((id) => SEEDED_SESSION_IDS.includes(id))
-          .sort();
-      },
-      { timeout: 30_000 },
-    )
-    .toEqual([...SEEDED_SESSION_IDS].sort());
-
-  return (await listSessions()).filter((session) => SEEDED_SESSION_IDS.includes(session.sessionId));
-}
-
-async function ensureHistoryVisible() {
-  const inline = page.locator('[data-testid="acp-chat-history-inline"]');
-  if (await inline.isVisible().catch(() => false)) {
-    return;
-  }
-
-  const collapsed = page.locator('[data-testid="acp-chat-history-collapsed"]');
-  if (await collapsed.isVisible().catch(() => false)) {
-    await page.getByLabel(/Expand Chat History|展开聊天历史/).click();
-    await expect(inline).toBeVisible({ timeout: 30_000 });
-    return;
-  }
-
-  const popoverButton = page.locator('[data-testid="acp-chat-history-button"]');
-  await expect(popoverButton).toBeVisible({ timeout: 30_000 });
-  await popoverButton.click();
-  await expect(page.locator('[data-testid="acp-chat-history-popover"]')).toBeVisible({ timeout: 30_000 });
-}
-
-async function clickHistoryItem(sessionId: string) {
-  await ensureHistoryVisible();
-  const row = page.locator(`[data-testid="chat-history-item-${sessionId}"]`).first();
+async function selectTask(sessionId: string) {
+  const row = page.getByTestId(`agentic-task-row-${sessionId}`);
   await expect(row).toBeVisible({ timeout: 30_000 });
   await row.click();
   await expect
@@ -161,6 +124,24 @@ function sendButton() {
     .last();
 }
 
+async function startTaskInCurrentProject() {
+  const launcher = page.getByTestId('agentic-task-launch-button');
+  await expect(launcher).toBeVisible({ timeout: 30_000 });
+  await launcher.click();
+
+  const menu = page.getByRole('menu');
+  await expect(menu).toBeVisible();
+  await menu.locator('[role="menuitem"]:not([disabled])').first().click();
+  await menu.getByRole('menuitem').first().click();
+  await expect(chatInput()).toBeVisible({ timeout: 30_000 });
+}
+
+async function refreshTaskList() {
+  const search = page.getByPlaceholder('Search tasks');
+  await search.fill('BDD');
+  await search.fill('');
+}
+
 async function sendPromptAndWaitForRichUi(prompt: string) {
   const input = chatInput();
   await expect(input).toBeVisible();
@@ -186,6 +167,16 @@ async function sendPromptAndWaitForRichUi(prompt: string) {
     timeout: 30_000,
   });
   await expect(sendButton()).toBeVisible({ timeout: 30_000 });
+}
+
+async function createTaskWithRichUi(prompt: string): Promise<AcpSessionSummary> {
+  await startTaskInCurrentProject();
+  await sendPromptAndWaitForRichUi(prompt);
+  const session = (await getSessionState()).session;
+  expect(session).not.toBeNull();
+  await refreshTaskList();
+  await expect(page.getByTestId(`agentic-task-row-${session!.sessionId}`)).toBeVisible({ timeout: 30_000 });
+  return session!;
 }
 
 async function readRichUiProof(): Promise<RichUiProof> {
@@ -352,11 +343,15 @@ test.describe('ACP Chat Agentic Rich History Restore', () => {
       hardeningVerdict: 'CONVERT',
     });
 
-    const [richSession, otherSession] = await waitForSeededSessions();
-    await clickHistoryItem(otherSession.sessionId);
+    await expect(page.getByTestId('agentic-task-list')).toBeVisible();
+    await expect(page.locator('[data-testid="acp-chat-history-inline"]')).toHaveCount(0);
+
+    const richSession = await createTaskWithRichUi(RICH_PROMPT);
+    const otherSession = await createTaskWithRichUi(OTHER_TASK_PROMPT);
+    await selectTask(otherSession.sessionId);
     const otherBaseline = await waitForStableRichUiShell();
 
-    await clickHistoryItem(richSession.sessionId);
+    await selectTask(richSession.sessionId);
     const richBaseline = await waitForStableRichUiShell();
     await sendPromptAndWaitForRichUi(RICH_PROMPT);
 
@@ -367,10 +362,10 @@ test.describe('ACP Chat Agentic Rich History Restore', () => {
       'history fixture rich response before session switching',
     );
 
-    await clickHistoryItem(otherSession.sessionId);
+    await selectTask(otherSession.sessionId);
     await waitForRichUiUnchanged(otherBaseline);
 
-    await clickHistoryItem(richSession.sessionId);
+    await selectTask(richSession.sessionId);
     const restoredRichProof = await waitForRichUiRestored(richBaseline);
     const restoredProof = await evidence.saveJson(
       '02-rich-ui-after-switch-back',
@@ -394,8 +389,8 @@ test.describe('ACP Chat Agentic Rich History Restore', () => {
     await page.reload({ waitUntil: 'domcontentloaded' });
     await waitForWorkbenchReady(page);
     await showAcpChatView();
-    await waitForSeededSessions();
-    await clickHistoryItem(richSession.sessionId);
+    await expect(page.getByTestId('agentic-task-list')).toBeVisible();
+    await selectTask(richSession.sessionId);
 
     const postReloadState = await getSessionState();
     const postReloadSessions = await listSessions();
