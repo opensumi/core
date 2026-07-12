@@ -1,0 +1,454 @@
+import { Autowired, Injectable } from '@opensumi/di';
+import { IStorage, STORAGE_NAMESPACE, StorageProvider, ThreadStatus, URI } from '@opensumi/ide-core-common';
+
+const TASK_REGISTRY_STORAGE_KEY = 'agentic.task-registry.v2';
+const PENDING_TASK_ACTIVATION_STORAGE_KEY = 'agentic.pending-task-activation.v2';
+const PENDING_TASK_LAUNCH_STORAGE_KEY = 'agentic.pending-task-launch.v2';
+
+const ARCHIVABLE_STATUSES = new Set<ThreadStatus | undefined>(['idle', 'errored', 'disconnected', undefined]);
+
+export interface AgenticProjectRecord {
+  id: string;
+  workspaceUri: string;
+  workspacePath: string;
+  label: string;
+  joinedAt: number;
+  availability: 'available' | 'unavailable';
+}
+
+export interface AgenticTaskRecord {
+  sessionId: string;
+  projectId: string;
+  agentId: string;
+  title: string;
+  createdAt: number;
+  archived: boolean;
+  unread: boolean;
+  status?: ThreadStatus;
+  attention?: 'permission' | 'input';
+}
+
+export interface AgenticTaskGroup {
+  project: AgenticProjectRecord;
+  tasks: AgenticTaskRecord[];
+}
+
+export interface AgenticTaskRegistryState {
+  version: 2;
+  projects: AgenticProjectRecord[];
+  tasks: AgenticTaskRecord[];
+}
+
+export type AgenticProjectRegistration = Omit<AgenticProjectRecord, 'id'> & { id?: string };
+
+export interface RegisterFirstPromptOptions {
+  sessionId: string;
+  agentId: string;
+  project: AgenticProjectRegistration;
+  firstPrompt: string;
+  createdAt: number;
+}
+
+export interface AgenticPendingTaskActivation {
+  sessionId: string;
+}
+
+export interface AgenticPendingTaskLaunch {
+  projectId: string;
+  agentId: string;
+}
+
+@Injectable()
+export class AgenticTaskRegistryService {
+  @Autowired(StorageProvider)
+  private storageProvider: StorageProvider;
+
+  private storage: IStorage | undefined;
+  private state: AgenticTaskRegistryState | undefined;
+  private initialization: Promise<void> | undefined;
+
+  async registerProject(project: AgenticProjectRegistration): Promise<AgenticProjectRecord> {
+    await this.ensureInitialized();
+
+    const normalized = this.normalizeProject(project);
+    if (!normalized) {
+      throw new Error('A project must include a workspace URI, path, label, and join time.');
+    }
+
+    const existing = this.findProject(normalized.id);
+    if (existing) {
+      return { ...existing };
+    }
+
+    this.currentState.projects.push(normalized);
+    await this.persist();
+    return { ...normalized };
+  }
+
+  async registerFirstPrompt(options: RegisterFirstPromptOptions): Promise<AgenticTaskRecord> {
+    await this.ensureInitialized();
+    const project = await this.registerProject(options.project);
+    const existing = this.findTask(options.sessionId);
+    if (existing) {
+      return { ...existing };
+    }
+
+    const task: AgenticTaskRecord = {
+      sessionId: options.sessionId,
+      projectId: project.id,
+      agentId: options.agentId,
+      title: this.titleFromFirstPrompt(options.firstPrompt),
+      createdAt: options.createdAt,
+      archived: false,
+      unread: false,
+    };
+    this.currentState.tasks.push(task);
+    await this.persist();
+    return { ...task };
+  }
+
+  async getProject(projectId: string): Promise<AgenticProjectRecord | undefined> {
+    await this.ensureInitialized();
+    const project = this.findProject(projectId);
+    return project && { ...project };
+  }
+
+  async getTask(sessionId: string): Promise<AgenticTaskRecord | undefined> {
+    await this.ensureInitialized();
+    const task = this.findTask(sessionId);
+    return task && { ...task };
+  }
+
+  async listActiveGroups(query?: string): Promise<AgenticTaskGroup[]> {
+    return this.listGroups(false, query);
+  }
+
+  async listArchivedGroups(query?: string): Promise<AgenticTaskGroup[]> {
+    return this.listGroups(true, query);
+  }
+
+  async markUnread(sessionId: string, unread = true): Promise<AgenticTaskRecord | undefined> {
+    return this.updateTask(sessionId, (task) => {
+      task.unread = unread;
+    });
+  }
+
+  async updateStatus(sessionId: string, status?: ThreadStatus): Promise<AgenticTaskRecord | undefined> {
+    return this.updateTask(sessionId, (task) => {
+      if (status === undefined) {
+        delete task.status;
+      } else {
+        task.status = status;
+      }
+    });
+  }
+
+  async updateAttention(
+    sessionId: string,
+    attention?: AgenticTaskRecord['attention'],
+  ): Promise<AgenticTaskRecord | undefined> {
+    return this.updateTask(sessionId, (task) => {
+      if (attention === undefined) {
+        delete task.attention;
+      } else {
+        task.attention = attention;
+      }
+    });
+  }
+
+  async markProjectAvailability(
+    projectId: string,
+    availability: AgenticProjectRecord['availability'],
+  ): Promise<AgenticProjectRecord | undefined> {
+    await this.ensureInitialized();
+    const project = this.findProject(projectId);
+    if (!project) {
+      return undefined;
+    }
+
+    project.availability = availability;
+    await this.persist();
+    return { ...project };
+  }
+
+  async archive(sessionId: string): Promise<boolean> {
+    await this.ensureInitialized();
+    const task = this.findTask(sessionId);
+    if (!task || task.archived || !ARCHIVABLE_STATUSES.has(task.status)) {
+      return false;
+    }
+
+    task.archived = true;
+    await this.persist();
+    return true;
+  }
+
+  async unarchive(sessionId: string): Promise<boolean> {
+    await this.ensureInitialized();
+    const task = this.findTask(sessionId);
+    if (!task || !task.archived) {
+      return false;
+    }
+
+    task.archived = false;
+    await this.persist();
+    return true;
+  }
+
+  preparePendingActivation(activation: AgenticPendingTaskActivation): void {
+    if (typeof activation?.sessionId !== 'string') {
+      return;
+    }
+
+    this.writeSessionValue(PENDING_TASK_ACTIVATION_STORAGE_KEY, { sessionId: activation.sessionId });
+  }
+
+  consumePendingActivation(): AgenticPendingTaskActivation | undefined {
+    const value = this.consumeSessionValue(PENDING_TASK_ACTIVATION_STORAGE_KEY);
+    if (!this.isRecord(value) || typeof value.sessionId !== 'string') {
+      return undefined;
+    }
+
+    return { sessionId: value.sessionId };
+  }
+
+  preparePendingLaunch(launch: AgenticPendingTaskLaunch): void {
+    if (typeof launch?.projectId !== 'string' || typeof launch.agentId !== 'string') {
+      return;
+    }
+
+    this.writeSessionValue(PENDING_TASK_LAUNCH_STORAGE_KEY, {
+      projectId: launch.projectId,
+      agentId: launch.agentId,
+    });
+  }
+
+  consumePendingLaunch(): AgenticPendingTaskLaunch | undefined {
+    const value = this.consumeSessionValue(PENDING_TASK_LAUNCH_STORAGE_KEY);
+    if (!this.isRecord(value) || typeof value.projectId !== 'string' || typeof value.agentId !== 'string') {
+      return undefined;
+    }
+
+    return { projectId: value.projectId, agentId: value.agentId };
+  }
+
+  private async listGroups(archived: boolean, query?: string): Promise<AgenticTaskGroup[]> {
+    await this.ensureInitialized();
+    const normalizedQuery = query?.trim().toLocaleLowerCase();
+    const projects = [...this.currentState.projects].sort((a, b) => b.joinedAt - a.joinedAt);
+
+    return projects.reduce<AgenticTaskGroup[]>((groups, project) => {
+      const tasks = this.currentState.tasks
+        .filter(
+          (task) =>
+            task.projectId === project.id &&
+            task.archived === archived &&
+            (!normalizedQuery || task.title.toLocaleLowerCase().includes(normalizedQuery)),
+        )
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .map((task) => ({ ...task }));
+
+      if (tasks.length) {
+        groups.push({ project: { ...project }, tasks });
+      }
+      return groups;
+    }, []);
+  }
+
+  private async updateTask(
+    sessionId: string,
+    update: (task: AgenticTaskRecord) => void,
+  ): Promise<AgenticTaskRecord | undefined> {
+    await this.ensureInitialized();
+    const task = this.findTask(sessionId);
+    if (!task) {
+      return undefined;
+    }
+
+    update(task);
+    await this.persist();
+    return { ...task };
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (this.state) {
+      return;
+    }
+
+    if (!this.initialization) {
+      this.initialization = this.initialize();
+    }
+
+    await this.initialization;
+  }
+
+  private async initialize(): Promise<void> {
+    this.storage = await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA);
+    this.state = this.normalizeState(this.storage.get<unknown>(TASK_REGISTRY_STORAGE_KEY));
+  }
+
+  private get currentState(): AgenticTaskRegistryState {
+    if (!this.state) {
+      throw new Error('Agentic task registry has not initialized.');
+    }
+    return this.state;
+  }
+
+  private async persist(): Promise<void> {
+    await this.storage?.set(TASK_REGISTRY_STORAGE_KEY, JSON.stringify(this.currentState));
+  }
+
+  private normalizeState(value: unknown): AgenticTaskRegistryState {
+    const source = typeof value === 'string' ? this.parseJSON(value) : value;
+    if (
+      !this.isRecord(source) ||
+      source.version !== 2 ||
+      !Array.isArray(source.projects) ||
+      !Array.isArray(source.tasks)
+    ) {
+      return { version: 2, projects: [], tasks: [] };
+    }
+
+    const projects: AgenticProjectRecord[] = [];
+    const projectIds = new Set<string>();
+    source.projects.forEach((project) => {
+      const normalized = this.normalizeProject(project);
+      if (normalized && !projectIds.has(normalized.id)) {
+        projectIds.add(normalized.id);
+        projects.push(normalized);
+      }
+    });
+
+    const taskIds = new Set<string>();
+    const tasks: AgenticTaskRecord[] = [];
+    source.tasks.forEach((task) => {
+      const normalized = this.normalizeTask(task);
+      if (normalized && projectIds.has(normalized.projectId) && !taskIds.has(normalized.sessionId)) {
+        taskIds.add(normalized.sessionId);
+        tasks.push(normalized);
+      }
+    });
+
+    return { version: 2, projects, tasks };
+  }
+
+  private normalizeProject(value: unknown): AgenticProjectRecord | undefined {
+    if (!this.isRecord(value) || !this.isProjectAvailability(value.availability)) {
+      return undefined;
+    }
+    if (
+      typeof value.workspaceUri !== 'string' ||
+      typeof value.workspacePath !== 'string' ||
+      typeof value.label !== 'string' ||
+      typeof value.joinedAt !== 'number' ||
+      !Number.isFinite(value.joinedAt)
+    ) {
+      return undefined;
+    }
+
+    const workspaceUri = this.toCanonicalWorkspaceUri(value.workspaceUri);
+    return {
+      id: workspaceUri,
+      workspaceUri,
+      workspacePath: value.workspacePath,
+      label: value.label,
+      joinedAt: value.joinedAt,
+      availability: value.availability,
+    };
+  }
+
+  private normalizeTask(value: unknown): AgenticTaskRecord | undefined {
+    if (
+      !this.isRecord(value) ||
+      typeof value.sessionId !== 'string' ||
+      typeof value.projectId !== 'string' ||
+      typeof value.agentId !== 'string' ||
+      typeof value.title !== 'string' ||
+      typeof value.createdAt !== 'number' ||
+      !Number.isFinite(value.createdAt) ||
+      typeof value.archived !== 'boolean' ||
+      typeof value.unread !== 'boolean' ||
+      (value.status !== undefined && !this.isThreadStatus(value.status)) ||
+      (value.attention !== undefined && value.attention !== 'permission' && value.attention !== 'input')
+    ) {
+      return undefined;
+    }
+
+    return {
+      sessionId: value.sessionId,
+      projectId: value.projectId,
+      agentId: value.agentId,
+      title: value.title,
+      createdAt: value.createdAt,
+      archived: value.archived,
+      unread: value.unread,
+      ...(value.status === undefined ? {} : { status: value.status }),
+      ...(value.attention === undefined ? {} : { attention: value.attention }),
+    };
+  }
+
+  private findProject(projectId: string): AgenticProjectRecord | undefined {
+    return this.currentState.projects.find((project) => project.id === projectId);
+  }
+
+  private findTask(sessionId: string): AgenticTaskRecord | undefined {
+    return this.currentState.tasks.find((task) => task.sessionId === sessionId);
+  }
+
+  private titleFromFirstPrompt(firstPrompt: string): string {
+    return firstPrompt.split(/\r?\n/, 1)[0].trim() || 'New Task';
+  }
+
+  private toCanonicalWorkspaceUri(workspaceUri: string): string {
+    try {
+      return new URI(workspaceUri).toString();
+    } catch {
+      return workspaceUri;
+    }
+  }
+
+  private writeSessionValue(key: string, value: object): void {
+    try {
+      window.sessionStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      // Session-only pending state is best effort and must not block the caller.
+    }
+  }
+
+  private consumeSessionValue(key: string): unknown {
+    try {
+      const value = window.sessionStorage.getItem(key);
+      window.sessionStorage.removeItem(key);
+      return value ? this.parseJSON(value) : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private parseJSON(value: string): unknown {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return undefined;
+    }
+  }
+
+  private isProjectAvailability(value: unknown): value is AgenticProjectRecord['availability'] {
+    return value === 'available' || value === 'unavailable';
+  }
+
+  private isThreadStatus(value: unknown): value is ThreadStatus {
+    return (
+      value === 'idle' ||
+      value === 'working' ||
+      value === 'awaiting_prompt' ||
+      value === 'auth_required' ||
+      value === 'errored' ||
+      value === 'disconnected'
+    );
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+  }
+}
