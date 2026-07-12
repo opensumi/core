@@ -702,7 +702,7 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(result.historyUpdates).toEqual(nativeHistory);
     });
 
-    it('does not expose a local prompt sentinel in metadata-only session restore results', async () => {
+    it('does not expose local prompt, response, tool, thought, or permission sentinels in metadata-only session restore results', async () => {
       const thread = createMockThread({
         initialized: true,
         getStatus: jest.fn().mockReturnValue('idle'),
@@ -710,6 +710,22 @@ describe('AcpAgentService (Thread Pool)', () => {
           {
             type: 'user_message',
             data: { id: 'msg-1', content: 'BDD_SENSITIVE_PROMPT', timestamp: 1 },
+          },
+          {
+            type: 'agent_message',
+            data: { id: 'msg-2', content: 'BDD_ASSISTANT_PART', timestamp: 2 },
+          },
+          {
+            type: 'thought',
+            data: { id: 'msg-3', content: 'BDD_THOUGHT_STEP', timestamp: 3 },
+          },
+          {
+            type: 'tool_result',
+            data: { id: 'msg-4', content: 'BDD_TOOL_RESULT', timestamp: 4 },
+          },
+          {
+            type: 'permission',
+            data: { id: 'msg-5', content: 'BDD_PERMISSION_ALLOWED', timestamp: 5 },
           },
         ]),
         getSessionNotifications: jest.fn().mockReturnValue([]),
@@ -721,7 +737,14 @@ describe('AcpAgentService (Thread Pool)', () => {
       const result = await service.loadSession('existing-session-id', mockAgentProcessConfig);
 
       expect(result.historyUpdates).toEqual([]);
-      expect(JSON.stringify(result)).not.toContain('BDD_SENSITIVE_PROMPT');
+      const serialized = JSON.stringify(result);
+      [
+        'BDD_SENSITIVE_PROMPT',
+        'BDD_ASSISTANT_PART',
+        'BDD_THOUGHT_STEP',
+        'BDD_TOOL_RESULT',
+        'BDD_PERMISSION_ALLOWED',
+      ].forEach((sentinel) => expect(serialized).not.toContain(sentinel));
     });
 
     it('should apply default session options after loading a session', async () => {

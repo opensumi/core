@@ -1,39 +1,37 @@
-# Scenario: Agentic Task List - Persistent Project Tasks and Safe Restore
+# Scenario: Agentic Task List - Same-Project Persistence and Safe Restore
 
-**Trigger:** `packages/ai-native/src/browser/acp/components/AgenticTaskList.tsx`, `packages/ai-native/src/browser/acp/agentic-task-registry.service.ts`, `packages/ai-native/src/browser/acp/agentic-workspace-switch.service.ts`, or `packages/ai-native/src/browser/chat/chat.internal.service.acp.ts`
+**Trigger:** `packages/ai-native/src/browser/acp/components/AgenticTaskList.tsx`, `packages/ai-native/src/browser/acp/agentic-task-registry.service.ts`, or `packages/ai-native/src/browser/chat/chat.internal.service.acp.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** The deterministic ACP `history` fixture, plus the `permission` fixture for background-attention coverage. **Workspace mutation:** A temporary dirty editor is used only for Save All, Discard, and Cancel switching decisions. **Automation status:** Converted to `tools/playwright/src/tests/acp-chat-agentic-history.test.ts` and `tools/playwright/src/tests/acp-chat-agentic-rich-history-restore.test.ts`.
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixture:** Deterministic ACP `history` fixture, which supplies one workspace and no pending permission event. **Workspace mutation:** None. **Automation status:** Converted to `tools/playwright/src/tests/acp-chat-agentic-history.test.ts` and `tools/playwright/src/tests/acp-chat-agentic-rich-history-restore.test.ts`.
 
-## Given
+## Runtime coverage
 
-- Agentic Layout has loaded with the deterministic ACP fixture.
-- The Task List, Main Conversation Area, editor, and file tree are visible together.
-- The Task List has at least two persisted Task rows across its Project Groups.
-
-## When
-
-1. Read Project Group order and Task Row order, then search an immutable Task title.
-2. Select a Task in the current Project and observe `acp_chat_get_session_state({})` without reloading the workspace.
-3. Select a Task in another Project with a dirty editor and cover Save All, Discard, and Cancel outcomes.
-4. Archive a ready Task, open Archived Tasks, then unarchive the same Task.
-5. Create a pending permission in a background Task and observe its Task List attention marker without reading permission content.
-6. Launch a cross-project Task from the Project-first New Task flow.
-7. Reload the IDE and select the same Task List row again.
-8. Switch to Classic Layout and verify the Classic inline ACP history remains available.
+1. Open Agentic Layout and assert the Task List, Main Conversation Area, editor, and file tree are visible together.
+2. Create two Tasks through the Project-first menu, selecting an ACP Agent rather than the Project back row.
+3. Assert newest-first Task Row order within the current Project and search immutable Task titles.
+4. Select a current-project Task and assert `acp_chat_get_session_state({})` changes without a main-frame navigation.
+5. Archive and unarchive a ready Task.
+6. Read the actual `GLOBAL_RECENT_DATA` browser cache (`localStorage["global:recent"]`) and its `agentic.task-registry.v2` record.
+7. Reload the same workspace, select the persisted Task again, and check bounded rich-history recovery.
+8. Open Classic Layout and assert the ACP history is available through `acp-chat-history-button` and its popover.
 
 ## Then
 
-- Agentic layout has exactly the persistent Task List workbench affordance; `acp-chat-history-inline` is absent.
-- Project Groups retain joined-time order and Task Rows retain newest-first creation order; searching only filters visible immutable Task titles.
-- Current-project selection changes only the active ACP session. Cross-project selection preserves dirty-editor intent: Save All saves before switching, Discard closes changes before switching, and Cancel leaves the workspace and active Task unchanged.
-- Archive removes the row from active Tasks; Unarchive returns it to active Tasks.
-- A background pending permission renders only the permission-attention marker and no permission text or decision control on the Task List.
-- Project-first launch and reload retain the stored `{ agentId, cwd }` target for the selected Task.
-- Persisted Task-list/state evidence and metadata-only ACP tools exclude the fixture's prompt, assistant, thought, tool-result, and permission-content sentinels. Safe Task titles remain allowed metadata.
-- Classic Layout retains `acp-chat-history-inline`; its regression coverage must not be removed while replacing Agentic history assertions.
+- Agentic uses the persistent Task List and does not render `acp-chat-history-inline`.
+- Project-first launch closes the menu after an actual Agent selection; it creates a draft before a Task is sent.
+- Current-project selection changes only the active ACP session and does not navigate the main frame.
+- The `GLOBAL_RECENT_DATA` registry and metadata-only ACP tools exclude deterministic prompt, assistant, thought, tool-result, and permission-result sentinels. The history fixture does not create a permission request; node restore coverage supplies the static sentinel check for that content class.
+- Classic mode is protected by its popover/button behavior, not by the Agentic-only inline-history selector.
 
-## Pass / Fail Judgment
+## Pending runtime prerequisites
 
-- **PASS** - all four visible regions, ordering/filtering, safe current/cross-project selection, archive lifecycle, attention, Project-first launch, reload, and metadata/storage redaction assertions pass with deterministic fixtures.
-- **BLOCKED** - the required deterministic fixture, stable dirty-editor dialog selectors, or cross-project workspace fixture cannot start.
-- **FAIL** - Agentic renders inline history, Task selection reloads the workspace unnecessarily, a dirty-editor choice is ignored, task storage leaks fixture content, or Classic history regresses.
+- Joined-time Project Group ordering needs a deterministic multi-project catalog fixture. Existing registry and Task List unit coverage protect the ordering contract.
+- Cross-project selection, Save All, Discard, and Cancel need a second workspace plus a controllable dirty-editor dialog in the runtime fixture. Existing `agentic-workspace-switch.service` unit coverage protects those decisions.
+- Cross-project Project-first launch and target restoration need the same multi-workspace fixture.
+- Background permission attention needs a runtime pass that combines a second Task with the `permission` fixture; the current `history` fixture cannot exercise it.
+
+## Pass / Blocked Judgment
+
+- **PASS** - the listed runtime coverage succeeds with the deterministic `history` fixture.
+- **BLOCKED** - the IDE dev server, deterministic fixture, or stable runtime selector is unavailable.
+- **PENDING** - the explicit multi-project and background-permission prerequisites above are not claimed by this scenario until their fixture support exists.

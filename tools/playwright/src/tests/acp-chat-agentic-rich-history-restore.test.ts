@@ -11,6 +11,7 @@ import {
   waitForAcpChatReady,
   waitForWorkbenchReady,
 } from './utils/acp-bdd-fixture';
+import { launchTaskInCurrentProject } from './utils/acp-task-list';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const SESSION_PREFIX = 'bdd-rich-history';
@@ -125,15 +126,9 @@ function sendButton() {
 }
 
 async function startTaskInCurrentProject() {
-  const launcher = page.getByTestId('agentic-task-launch-button');
-  await expect(launcher).toBeVisible({ timeout: 30_000 });
-  await launcher.click();
-
-  const menu = page.getByRole('menu');
-  await expect(menu).toBeVisible();
-  await menu.locator('[role="menuitem"]:not([disabled])').first().click();
-  await menu.getByRole('menuitem').first().click();
-  await expect(chatInput()).toBeVisible({ timeout: 30_000 });
+  const agentLabel = await launchTaskInCurrentProject(page);
+  expect(agentLabel).toBeTruthy();
+  await expect.poll(async () => (await getSessionState()).active, { timeout: 30_000 }).toBe(false);
 }
 
 async function refreshTaskList() {

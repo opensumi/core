@@ -1,13 +1,18 @@
 // Source: test/bdd/acp-chat-agentic-history.scenario.md
 
-import { expect } from '@playwright/test';
+import { expect, type Frame } from '@playwright/test';
 
 import test, { page } from './hooks';
 import {
   ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS,
+  aiNativeWorkbenchUrl,
   type AcpBddFixtureRuntime,
   loadAcpBddFixtureWorkbench,
+  waitForAcpChatReady,
+  waitForWorkbenchReady,
+  writeAiNativePanelLayoutSettings,
 } from './utils/acp-bdd-fixture';
+import { launchTaskInCurrentProject } from './utils/acp-task-list';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const SESSION_PREFIX = 'bdd-history-seeded';
@@ -20,6 +25,8 @@ const METADATA_LEAK_SENTINELS = [
   'BDD_HISTORY_THOUGHT',
   'BDD_HISTORY_ASSISTANT',
   'BDD_HISTORY_TOOL_RESULT',
+  'BDD_PERMISSION_ALLOWED',
+  'BDD_PERMISSION_REJECTED',
 ];
 let runtime: AcpBddFixtureRuntime;
 
@@ -129,6 +136,24 @@ async function selectTask(sessionId: string) {
     .toBe(sessionId);
 }
 
+async function selectTaskWithoutNavigation(sessionId: string) {
+  let mainFrameNavigations = 0;
+  const onFrameNavigated = (frame: Frame) => {
+    if (frame === page.mainFrame()) {
+      mainFrameNavigations += 1;
+    }
+  };
+
+  page.on('framenavigated', onFrameNavigated);
+  try {
+    await selectTask(sessionId);
+  } finally {
+    page.off('framenavigated', onFrameNavigated);
+  }
+
+  expect(mainFrameNavigations).toBe(0);
+}
+
 function chatSlot() {
   return page.locator('.AI-Chat-slot');
 }
@@ -144,15 +169,9 @@ function sendButton() {
 }
 
 async function startTaskInCurrentProject() {
-  const launcher = page.getByTestId('agentic-task-launch-button');
-  await expect(launcher).toBeVisible({ timeout: 30_000 });
-  await launcher.click();
-
-  const menu = page.getByRole('menu');
-  await expect(menu).toBeVisible();
-  await menu.locator('[role="menuitem"]:not([disabled])').first().click();
-  await menu.getByRole('menuitem').first().click();
-  await expect(chatInput()).toBeVisible({ timeout: 30_000 });
+  const agentLabel = await launchTaskInCurrentProject(page);
+  expect(agentLabel).toBeTruthy();
+  await expect.poll(async () => (await getSessionState()).active, { timeout: 30_000 }).toBe(false);
 }
 
 async function sendTaskPrompt(title: string): Promise<AcpSessionSummary> {
@@ -172,15 +191,28 @@ async function refreshTaskList() {
   await search.fill('');
 }
 
-async function readPersistedEvidence() {
+async function readPersistedTaskRegistryEvidence() {
   return page.evaluate(() => {
-    const read = (storage: Storage) =>
-      Array.from({ length: storage.length }, (_, index) => storage.key(index))
-        .filter((key): key is string => Boolean(key?.includes('agentic')))
-        .map((key) => [key, storage.getItem(key)]);
-
-    return { local: read(window.localStorage), session: read(window.sessionStorage) };
+    const globalRecentData = window.localStorage.getItem('global:recent');
+    if (!globalRecentData) {
+      return undefined;
+    }
+    const globalRecent = JSON.parse(globalRecentData) as Record<string, unknown>;
+    return {
+      globalRecent,
+      taskRegistry: globalRecent['agentic.task-registry.v2'],
+    };
   });
+}
+
+async function showClassicAcpChatView() {
+  await page.waitForFunction(() => Boolean((navigator as any).modelContext?.executeTool), undefined, {
+    timeout: 60_000,
+  });
+  await page.evaluate(async () => {
+    await (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {});
+  });
+  await waitForAcpChatReady(page);
 }
 
 function expectMetadataOnly(value: unknown) {
@@ -237,9 +269,7 @@ test.describe('ACP Chat Agentic History', () => {
     await expect(page.getByTestId(`agentic-task-row-${olderTask.sessionId}`)).toHaveCount(0);
     await search.fill('');
 
-    const urlBeforeSameProjectSelection = page.url();
-    await selectTask(olderTask.sessionId);
-    expect(page.url()).toBe(urlBeforeSameProjectSelection);
+    await selectTaskWithoutNavigation(olderTask.sessionId);
     const rowsAfterSelection = await readTaskRows();
     expect(rowsAfterSelection.filter((row) => row.selected).map((row) => row.id)).toEqual([olderTask.sessionId]);
 
@@ -254,12 +284,23 @@ test.describe('ACP Chat Agentic History', () => {
 
     const stateAfterSelection = await getSessionState();
     const sessionsAfterSelection = await listSessions();
-    const persistedEvidence = await readPersistedEvidence();
-    expectMetadataOnly({ persistedEvidence, sessionsAfterSelection, stateAfterSelection });
+    await expect
+      .poll(async () => (await readPersistedTaskRegistryEvidence())?.taskRegistry, { timeout: 30_000 })
+      .toBeTruthy();
+    const persistedEvidence = await readPersistedTaskRegistryEvidence();
+    expect(typeof persistedEvidence?.taskRegistry).toBe('string');
+    const persistedTaskRegistry = JSON.parse(persistedEvidence!.taskRegistry as string);
+    expect(persistedTaskRegistry.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ sessionId: olderTask.sessionId }),
+        expect.objectContaining({ sessionId: newerTask.sessionId }),
+      ]),
+    );
+    expectMetadataOnly({ persistedEvidence, persistedTaskRegistry, sessionsAfterSelection, stateAfterSelection });
     const safeEvidence = await evidence.saveJson(
       '02-task-list-metadata-and-storage-safety',
-      { persistedEvidence, sessionsAfterSelection, stateAfterSelection },
-      'Task List selection and browser persisted evidence exclude fixture prompt, assistant, thought, tool-result, and permission content sentinels',
+      { persistedEvidence, persistedTaskRegistry, sessionsAfterSelection, stateAfterSelection },
+      'Task List selection and the actual GLOBAL_RECENT_DATA task registry exclude fixture prompt, assistant, thought, tool-result, and permission content sentinels',
     );
 
     evidence.recordCriticalPoint({
@@ -304,5 +345,17 @@ test.describe('ACP Chat Agentic History', () => {
         profile: runtime.profile,
       },
     });
+  });
+
+  test('Classic layout keeps ACP history behind its popover button', async () => {
+    await writeAiNativePanelLayoutSettings(runtime.workspaceDir, 'classic');
+    await page.goto(aiNativeWorkbenchUrl(runtime.workspaceDir, 'interactive', 'classic'));
+    await waitForWorkbenchReady(page);
+    await showClassicAcpChatView();
+
+    const historyButton = page.getByTestId('acp-chat-history-button');
+    await expect(historyButton).toBeVisible();
+    await historyButton.click();
+    await expect(page.getByTestId('acp-chat-history-popover')).toBeVisible();
   });
 });
