@@ -52,6 +52,7 @@ function createServices() {
       activateTask: jest.fn(() => Promise.resolve()),
       launchTask: jest.fn(() => Promise.resolve()),
       refreshProjectAvailability: jest.fn(() => Promise.resolve()),
+      seedProjectCatalog: jest.fn(() => Promise.resolve()),
     },
     preferenceService: {
       get: jest.fn(() => ({})),
@@ -99,6 +100,24 @@ describe('AgenticTaskList', () => {
     });
     return services;
   }
+
+  it('seeds the current Project before enabling the global first Task launcher', async () => {
+    const services = createServices();
+    const catalog: (typeof projectA)[] = [];
+    services.registry.listProjects.mockImplementation(() => Promise.resolve([...catalog]));
+    services.registry.listActiveGroups.mockResolvedValue([]);
+    services.workspaceSwitch.seedProjectCatalog.mockImplementation(async () => {
+      catalog.push(projectA);
+    });
+
+    await renderTaskList(services);
+
+    expect(services.workspaceSwitch.seedProjectCatalog).toHaveBeenCalledTimes(1);
+    expect(catalog).toEqual([projectA]);
+    expect((container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).disabled).toBe(
+      false,
+    );
+  });
 
   it('preserves registry Project and Task order while filtering immutable titles', async () => {
     const services = createServices();

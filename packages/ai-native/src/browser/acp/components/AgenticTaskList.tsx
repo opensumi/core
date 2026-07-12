@@ -326,6 +326,7 @@ export function AgenticTaskList() {
   }, []);
 
   const refreshProjectCatalog = React.useCallback(async () => {
+    await workspaceSwitch.seedProjectCatalog();
     const projectCatalog = await registry.listProjects();
     await Promise.all(projectCatalog.map((project) => workspaceSwitch.refreshProjectAvailability(project)));
     return registry.listProjects();
