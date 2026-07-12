@@ -372,7 +372,7 @@
   position: absolute;
   top: 50%;
   right: 7px;
-  display: none;
+  display: block;
   height: 20px;
   padding: 0 4px;
   transform: translateY(-50%);
@@ -381,21 +381,32 @@
   color: var(--descriptionForeground);
   cursor: pointer;
   font-size: 10px;
+  opacity: 0;
+  pointer-events: none;
 
   &:focus-visible {
-    display: block;
+    opacity: 1;
+    pointer-events: auto;
     outline: 1px solid var(--focusBorder);
   }
 }
 
-.task_row_wrap:hover .archive_button {
-  display: block;
+.task_row_wrap:hover .archive_button,
+.task_row_wrap:focus-within .archive_button {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .archived_area {
   flex: none;
   margin: 10px 7px 0;
   border-top: 1px solid var(--panel-border);
+}
+
+.archived_area_expanded {
+  flex: 0 1 50%;
+  min-height: 96px;
+  overflow-y: auto;
 }
 
 .archived_toggle {

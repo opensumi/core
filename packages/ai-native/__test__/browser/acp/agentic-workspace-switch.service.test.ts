@@ -149,7 +149,7 @@ describe('AgenticWorkspaceSwitchService', () => {
     await switcher.launchTask(projectA, 'agent-a');
 
     expect(aiChatService.enterAgenticTaskDraft).toHaveBeenCalledWith({ agentId: 'agent-a', cwd: '/work/a' });
-    expect(registry.preparePendingLaunch).not.toHaveBeenCalled();
+    expect(registry.preparePendingLaunch).toHaveBeenCalledWith({ projectId: projectA.id, agentId: 'agent-a' });
     expect(workspaceService.open).not.toHaveBeenCalled();
   });
 

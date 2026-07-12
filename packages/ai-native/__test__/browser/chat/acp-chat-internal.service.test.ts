@@ -10,6 +10,40 @@ import {
 const disposable = () => ({ dispose: jest.fn() });
 
 describe('AcpChatInternalService', () => {
+  it('restores the latest Classic ACP session when agent mode is not enabled', async () => {
+    const service = new AcpChatInternalService() as any;
+    const model = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:bootstrap' });
+    const loadSession = jest.fn().mockResolvedValue(undefined);
+    let onStorageInit: (() => Promise<void>) | undefined;
+
+    Object.defineProperties(service, {
+      agenticTaskRegistry: { value: { consumePendingLaunch: jest.fn() } },
+      aiNativeConfigService: { value: { capabilities: { supportsAgentMode: false } } },
+      chatManagerService: {
+        value: {
+          getAvailableCommands: jest.fn(() => []),
+          getSession: jest.fn(() => model),
+          getSessions: jest.fn(() => [model]),
+          loadSession,
+          onStorageInit: jest.fn((listener) => {
+            onStorageInit = listener;
+            return disposable();
+          }),
+        },
+      },
+      logger: { value: { error: jest.fn(), log: jest.fn(), warn: jest.fn() } },
+      messageService: { value: { error: jest.fn() } },
+      panelLayoutService: { value: { getLayoutMode: jest.fn(() => 'classic') } },
+      permissionBridgeService: { value: { setActiveSession: jest.fn() } },
+    });
+
+    service.init();
+    await onStorageInit?.();
+
+    expect(loadSession).toHaveBeenCalledWith('acp:bootstrap');
+    expect(service.sessionModel).toBe(model);
+  });
+
   it('notifies current session model and mode listeners when ACP session state changes', () => {
     const service = new AcpChatInternalService() as any;
     const stateEmitter = new Emitter<any>();
@@ -157,6 +191,7 @@ describe('AcpChatInternalService', () => {
         startSession: jest.fn(() => Promise.resolve(model)),
       };
       const registry = {
+        consumePendingLaunch: jest.fn(),
         getTask: jest.fn(),
         getProject: jest.fn(),
         markUnread: jest.fn().mockResolvedValue(undefined),
@@ -367,6 +402,37 @@ describe('AcpChatInternalService', () => {
       expect(chatManagerService.startSession).toHaveBeenCalledWith({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' } });
       expect(service.sessionModel).toBe(model);
       expect(preferenceService.set).not.toHaveBeenCalled();
+    });
+
+    it('stores the selected ACP Agent instead of the chat-agent message identity for a new Task', async () => {
+      const { model, registry, service } = createService();
+      service.enterAgenticTaskDraft({ agentId: 'claude-agent-acp', cwd: '/work/a' });
+      await service.ensureSessionModel();
+      const request = model.addRequest({
+        prompt: 'Restore this Task',
+        agentId: 'Default_Chat_Agent',
+        command: '',
+        images: [],
+      });
+
+      await service.sendRequest(request);
+
+      expect(registry.registerFirstPrompt).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: 'acp:sess-1',
+          agentId: 'claude-agent-acp',
+        }),
+      );
+    });
+
+    it('uses pending Project and Agent metadata when the active chat service creates the Task session', async () => {
+      const { chatManagerService, registry, service } = createService();
+      registry.consumePendingLaunch.mockReturnValue({ projectId: 'project-b', agentId: 'agent-b' });
+      registry.getProject.mockResolvedValue({ id: 'project-b', workspacePath: '/work/b' });
+
+      await service.ensureSessionModel();
+
+      expect(chatManagerService.startSession).toHaveBeenCalledWith({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' } });
     });
 
     it('registers the first accepted Agentic prompt and marks background Agent content unread', async () => {

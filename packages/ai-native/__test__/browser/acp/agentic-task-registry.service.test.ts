@@ -188,6 +188,20 @@ describe('AgenticTaskRegistryService', () => {
     });
   });
 
+  it('does not persist or emit a change when Project availability is unchanged', async () => {
+    const onDidChange = jest.fn();
+    const disposable = registry.onDidChange(onDidChange);
+    await registry.registerProject(project);
+    storage.set.mockClear();
+    onDidChange.mockClear();
+
+    await expect(registry.markProjectAvailability(project.id, 'available')).resolves.toEqual(project);
+
+    expect(storage.set).not.toHaveBeenCalled();
+    expect(onDidChange).not.toHaveBeenCalled();
+    disposable.dispose();
+  });
+
   it.each(['ready', 'stopped', 'error'])('retains loaded %s tasks and permits archiving them', async (status) => {
     storage.get.mockReturnValue({
       version: 2,

@@ -17,6 +17,7 @@ jest.mock('../../../src/browser/acp/agentic-workspace-switch.service', () => ({
 
 import { PreferenceService } from '@opensumi/ide-core-browser';
 
+import { IChatInternalService } from '../../../src/common';
 import { AgenticTaskLaunchMenu } from '../../../src/browser/acp/components/AgenticTaskLaunchMenu';
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
 
@@ -58,8 +59,9 @@ describe('AgenticTaskLaunchMenu', () => {
 
   it('selects Project before Agent and leaves the default Agent preference unchanged', async () => {
     const workspaceSwitch = {
-      launchTask: jest.fn(() => Promise.resolve()),
+      launchTask: jest.fn(() => Promise.resolve(true)),
     };
+    const activeChatService = { enterAgenticTaskDraft: jest.fn() };
     const preferenceService = {
       get: jest.fn(() => ({
         'agent-b': {
@@ -76,6 +78,9 @@ describe('AgenticTaskLaunchMenu', () => {
       }
       if (token === PreferenceService) {
         return preferenceService;
+      }
+      if (token === IChatInternalService) {
+        return activeChatService;
       }
       return {};
     });
@@ -106,6 +111,7 @@ describe('AgenticTaskLaunchMenu', () => {
     });
 
     expect(workspaceSwitch.launchTask).toHaveBeenCalledWith(projectB, 'agent-b');
+    expect(activeChatService.enterAgenticTaskDraft).not.toHaveBeenCalled();
     expect(preferenceService.set).not.toHaveBeenCalled();
   });
 

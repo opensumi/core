@@ -237,6 +237,75 @@ describe('AcpChatManagerService', () => {
     });
   });
 
+  it('uses the ACP session provider when agent mode becomes available after construction', async () => {
+    const capabilities = { supportsAgentMode: false };
+    const localCreateSession = jest.fn().mockResolvedValue({
+      sessionId: 'local-session',
+      history: { additional: {}, messages: [] },
+      requests: [],
+    });
+    const acpCreateSession = jest.fn().mockResolvedValue({
+      sessionId: 'acp:agent-session',
+      history: { additional: {}, messages: [] },
+      requests: [],
+    });
+    const localProvider = { canHandle: (mode: string) => mode === 'local', createSession: localCreateSession };
+    const acpProvider = { canHandle: (mode: string) => mode === 'acp', createSession: acpCreateSession };
+    const prototype = AcpChatManagerService.prototype as any;
+    const originalAiNativeConfig = Object.getOwnPropertyDescriptor(prototype, 'aiNativeConfig');
+    const originalSessionProviderRegistry = Object.getOwnPropertyDescriptor(prototype, 'sessionProviderRegistry');
+
+    Object.defineProperty(prototype, 'aiNativeConfig', {
+      configurable: true,
+      get: () => ({ capabilities }),
+    });
+    Object.defineProperty(prototype, 'sessionProviderRegistry', {
+      configurable: true,
+      get: () => ({
+        getAllProviders: () => [localProvider, acpProvider],
+      }),
+    });
+
+    let service!: AcpChatManagerService;
+    try {
+      service = new AcpChatManagerService();
+    } finally {
+      if (originalAiNativeConfig) {
+        Object.defineProperty(prototype, 'aiNativeConfig', originalAiNativeConfig);
+      } else {
+        delete prototype.aiNativeConfig;
+      }
+      if (originalSessionProviderRegistry) {
+        Object.defineProperty(prototype, 'sessionProviderRegistry', originalSessionProviderRegistry);
+      } else {
+        delete prototype.sessionProviderRegistry;
+      }
+    }
+
+    Object.defineProperty(service, 'aiNativeConfig', {
+      value: { capabilities },
+    });
+    Object.defineProperty(service, 'chatFeatureRegistry', {
+      value: new ChatFeatureRegistry(),
+    });
+    Object.defineProperty(service, 'listenSession', {
+      value: jest.fn(),
+    });
+    Object.defineProperty(service, 'sessionProviderRegistry', {
+      value: {
+        getAllProviders: () => [localProvider, acpProvider],
+      },
+    });
+
+    expect((service as any).mainProvider).toBe(localProvider);
+
+    capabilities.supportsAgentMode = true;
+    await service.startSession();
+
+    expect(acpCreateSession).toHaveBeenCalledTimes(1);
+    expect(localCreateSession).not.toHaveBeenCalled();
+  });
+
   it('uses the first agent message timestamp as loaded ACP session creation time', () => {
     const provider = createSessionProvider();
 

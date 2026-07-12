@@ -5,6 +5,7 @@ import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { IChatInternalService } from '../../common';
 import { AcpChatInternalService } from '../chat/chat.internal.service.acp';
 
 import { AgenticProjectRecord, AgenticTaskRecord, AgenticTaskRegistryService } from './agentic-task-registry.service';
@@ -18,7 +19,7 @@ export class AgenticWorkspaceSwitchService {
   @Autowired(AgenticTaskRegistryService)
   private readonly registry: AgenticTaskRegistryService;
 
-  @Autowired(AcpChatInternalService)
+  @Autowired(IChatInternalService)
   private readonly aiChatService: AcpChatInternalService;
 
   @Autowired(IWorkspaceService)
@@ -90,19 +91,20 @@ export class AgenticWorkspaceSwitchService {
     }
   }
 
-  async launchTask(project: AgenticProjectRecord, agentId: string): Promise<void> {
+  async launchTask(project: AgenticProjectRecord, agentId: string): Promise<boolean> {
     const targetProject = await this.registry.getProject(project.id);
     if (!targetProject || targetProject.availability === 'unavailable') {
-      return;
+      return false;
     }
 
     if (targetProject.workspaceUri === this.currentWorkspaceUri()) {
+      this.registry.preparePendingLaunch({ projectId: targetProject.id, agentId });
       this.aiChatService.enterAgenticTaskDraft({ agentId, cwd: targetProject.workspacePath });
-      return;
+      return true;
     }
 
     if (!(await this.confirmDirtyEditors())) {
-      return;
+      return false;
     }
 
     const generation = ++this.pendingLaunchGeneration;
@@ -115,6 +117,7 @@ export class AgenticWorkspaceSwitchService {
       }
       throw error;
     }
+    return true;
   }
 
   async restorePendingWork(): Promise<void> {

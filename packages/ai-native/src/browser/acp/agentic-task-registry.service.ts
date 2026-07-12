@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IStorage, STORAGE_NAMESPACE, StorageProvider, URI } from '@opensumi/ide-core-common';
+import { Emitter, Event, IStorage, STORAGE_NAMESPACE, StorageProvider, URI } from '@opensumi/ide-core-common';
 
 const TASK_REGISTRY_STORAGE_KEY = 'agentic.task-registry.v2';
 const PENDING_TASK_ACTIVATION_STORAGE_KEY = 'agentic.pending-task-activation.v2';
@@ -68,6 +68,8 @@ export class AgenticTaskRegistryService {
   private storage: IStorage | undefined;
   private state: AgenticTaskRegistryState | undefined;
   private initialization: Promise<void> | undefined;
+  private readonly onDidChangeEmitter = new Emitter<void>();
+  readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
 
   async registerProject(project: AgenticProjectRegistration): Promise<AgenticProjectRecord> {
     await this.ensureInitialized();
@@ -171,6 +173,10 @@ export class AgenticTaskRegistryService {
     const project = this.findProject(projectId);
     if (!project) {
       return undefined;
+    }
+
+    if (project.availability === availability) {
+      return { ...project };
     }
 
     project.availability = availability;
@@ -302,6 +308,7 @@ export class AgenticTaskRegistryService {
 
   private async persist(): Promise<void> {
     await this.storage?.set(TASK_REGISTRY_STORAGE_KEY, JSON.stringify(this.currentState));
+    this.onDidChangeEmitter.fire();
   }
 
   private normalizeState(value: unknown): AgenticTaskRegistryState {

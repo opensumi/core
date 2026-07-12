@@ -394,14 +394,25 @@ function createAgent(conn) {
     const seed = String(session.historySeed);
     const upperSeed = seed.toUpperCase();
     const toolCallId = `bdd-history-${seed}-tool`;
+    const restoredDynamicSession = seed === 'restored';
+    const userContent = restoredDynamicSession ? 'Restored Task context' : `BDD_HISTORY_USER_${upperSeed}`;
+    const thoughtContent = restoredDynamicSession
+      ? 'Restored deterministic reasoning.'
+      : `BDD_HISTORY_THOUGHT_${upperSeed}: deterministic replay.`;
+    const assistantPartOne = restoredDynamicSession
+      ? 'Restored Task response, part one.'
+      : `BDD_HISTORY_ASSISTANT_${upperSeed}_PART_1.`;
+    const assistantPartTwo = restoredDynamicSession
+      ? ' Restored Task response, part two.'
+      : ` BDD_HISTORY_ASSISTANT_${upperSeed}_PART_2.`;
 
     await emit(session.sessionId, {
       sessionUpdate: 'user_message_chunk',
-      content: text(`BDD_HISTORY_USER_${upperSeed}`),
+      content: text(userContent),
     });
     await emit(session.sessionId, {
       sessionUpdate: 'agent_thought_chunk',
-      content: text(`BDD_HISTORY_THOUGHT_${upperSeed}: deterministic replay.`),
+      content: text(thoughtContent),
     });
     await emit(session.sessionId, {
       sessionUpdate: 'plan',
@@ -412,7 +423,7 @@ function createAgent(conn) {
     });
     await emit(session.sessionId, {
       sessionUpdate: 'agent_message_chunk',
-      content: text(`BDD_HISTORY_ASSISTANT_${upperSeed}_PART_1.`),
+      content: text(assistantPartOne),
     });
     await emit(session.sessionId, {
       sessionUpdate: 'tool_call',
@@ -438,7 +449,7 @@ function createAgent(conn) {
     });
     await emit(session.sessionId, {
       sessionUpdate: 'agent_message_chunk',
-      content: text(` BDD_HISTORY_ASSISTANT_${upperSeed}_PART_2.`),
+      content: text(assistantPartTwo),
     });
     await emit(session.sessionId, {
       sessionUpdate: 'usage_update',
@@ -583,7 +594,10 @@ test/test.js
         throw RequestError.internalError({ fixture: options.fixture }, 'BDD create-session failure');
       }
 
-      const sessionId = `${options.sessionPrefix}-${nextSessionNumber++}`;
+      // The test harness may create several ACP threads for one workspace.
+      // Each thread starts a fresh mock process, so the local counter alone
+      // would otherwise return the same id from every process.
+      const sessionId = `${options.sessionPrefix}-${process.pid}-${nextSessionNumber++}`;
       const session = createSessionRecord(sessionId, params.cwd);
       sessions.set(sessionId, session);
       await emitInitialSessionUpdates(session);
@@ -597,6 +611,14 @@ test/test.js
       }
 
       const session = getOrCreateSession(params.sessionId, params.cwd);
+      // A real ACP Agent reloads persisted history after the browser reconnects.
+      // Dynamic fixture sessions live only in a mock process, so give an unknown
+      // history session a bounded replay payload when it is reloaded on a new
+      // process.
+      if (options.fixture === 'history' && !session.historySeed) {
+        session.historySeed = 'restored';
+        session.promptCount = 1;
+      }
       session.updatedAt = nowIso();
       await emitInitialSessionUpdates(session);
       await emitHistoryReplay(session);

@@ -11,7 +11,7 @@
 3. Assert newest-first Task Row order within the current Project and search immutable Task titles.
 4. Select a current-project Task and assert `acp_chat_get_session_state({})` changes without a main-frame navigation.
 5. Archive and unarchive a ready Task.
-6. Read the actual `GLOBAL_RECENT_DATA` browser cache (`localStorage["global:recent"]`) and its `agentic.task-registry.v2` record.
+6. Read the actual `GLOBAL_RECENT_DATA` browser cache (`localStorage["global:/recent"]`) and its `agentic.task-registry.v2` record.
 7. Reload the same workspace, select the persisted Task again, and check bounded rich-history recovery.
 8. Open Classic Layout and assert the ACP history is available through `acp-chat-history-button` and its popover.
 

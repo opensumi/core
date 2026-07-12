@@ -273,7 +273,11 @@ function ArchivedTaskGroups({
   );
 
   return (
-    <section className={styles.archived_area}>
+    <section
+      className={`${styles.archived_area} ${expanded ? styles.archived_area_expanded : ''}`}
+      data-expanded={expanded}
+      data-testid='agentic-archived-task-area'
+    >
       <button
         aria-expanded={expanded}
         className={styles.archived_toggle}
@@ -350,6 +354,13 @@ export function AgenticTaskList() {
       disposed = true;
     };
   }, [refresh]);
+
+  React.useEffect(() => {
+    const disposable = registry.onDidChange(() => {
+      void refresh();
+    });
+    return () => disposable.dispose();
+  }, [refresh, registry]);
 
   const attentionCount = groups.reduce(
     (count, group) => count + group.tasks.filter((task) => task.attention !== undefined).length,

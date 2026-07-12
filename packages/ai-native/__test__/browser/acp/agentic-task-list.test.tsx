@@ -15,6 +15,7 @@ jest.mock('../../../src/browser/acp/agentic-workspace-switch.service', () => ({
   AgenticWorkspaceSwitchService: class AgenticWorkspaceSwitchService {},
 }));
 
+import { IChatInternalService } from '../../../src/common';
 import { AgenticTaskList } from '../../../src/browser/acp/components/AgenticTaskList';
 import { AgenticTaskRegistryService } from '../../../src/browser/acp/agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
@@ -46,6 +47,7 @@ function createServices() {
       listActiveGroups: jest.fn(() => Promise.resolve([])),
       listArchivedGroups: jest.fn(() => Promise.resolve([])),
       listProjects: jest.fn(() => Promise.resolve([projectA, projectB])),
+      onDidChange: jest.fn(() => ({ dispose: jest.fn() })),
       unarchive: jest.fn(() => Promise.resolve(true)),
     },
     workspaceSwitch: {
@@ -53,6 +55,9 @@ function createServices() {
       launchTask: jest.fn(() => Promise.resolve()),
       refreshProjectAvailability: jest.fn(() => Promise.resolve()),
       seedProjectCatalog: jest.fn(() => Promise.resolve()),
+    },
+    aiChatService: {
+      enterAgenticTaskDraft: jest.fn(),
     },
     preferenceService: {
       get: jest.fn(() => ({})),
@@ -91,6 +96,9 @@ describe('AgenticTaskList', () => {
       if (token === AgenticWorkspaceSwitchService) {
         return services.workspaceSwitch;
       }
+      if (token === IChatInternalService) {
+        return services.aiChatService;
+      }
       return services.preferenceService;
     });
 
@@ -117,6 +125,49 @@ describe('AgenticTaskList', () => {
     expect((container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).disabled).toBe(
       false,
     );
+  });
+
+  it('refreshes when the Task Registry records a newly created Task', async () => {
+    const services = createServices();
+    let taskAdded = false;
+    let onRegistryChange: (() => void) | undefined;
+    (services.registry as any).onDidChange = (listener: () => void) => {
+      onRegistryChange = listener;
+      return { dispose: jest.fn() };
+    };
+    services.registry.listActiveGroups.mockImplementation(() =>
+      Promise.resolve(
+        taskAdded
+          ? [
+              {
+                project: projectA,
+                tasks: [
+                  {
+                    sessionId: 'acp:new-task',
+                    projectId: projectA.id,
+                    agentId: 'agent-a',
+                    title: 'New task',
+                    createdAt: 1,
+                    archived: false,
+                    unread: false,
+                  },
+                ],
+              },
+            ]
+          : [],
+      ),
+    );
+
+    await renderTaskList(services);
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:new-task"]')).toBeNull();
+
+    taskAdded = true;
+    await act(async () => {
+      onRegistryChange?.();
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:new-task"]')).not.toBeNull();
   });
 
   it('preserves registry Project and Task order while filtering immutable titles', async () => {
@@ -355,12 +406,17 @@ describe('AgenticTaskList', () => {
     ]);
     await renderTaskList(services);
 
+    const archivedArea = container.querySelector('[data-testid="agentic-archived-task-area"]');
+    expect(archivedArea?.getAttribute('data-expanded')).toBe('false');
+
     await act(async () => {
       Array.from(container.querySelectorAll('button'))
         .find((button) => button.textContent?.includes('Archived Tasks'))
         ?.click();
       await flushPromises();
     });
+
+    expect(archivedArea?.getAttribute('data-expanded')).toBe('true');
 
     const unarchive = container.querySelector('[data-testid="agentic-task-unarchive-acp:archived-ready"]');
     expect(unarchive?.getAttribute('aria-label')).toBe('Unarchive Archived ready Task');

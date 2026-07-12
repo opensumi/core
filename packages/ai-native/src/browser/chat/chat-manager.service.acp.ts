@@ -71,6 +71,19 @@ export class AcpChatManagerService extends ChatManagerService {
     this.mainProvider = p;
   }
 
+  private useAcpProviderWhenAvailable(): void {
+    const canHandle = this.mainProvider?.canHandle;
+    if (
+      !this.aiNativeConfig.capabilities.supportsAgentMode ||
+      typeof canHandle !== 'function' ||
+      canHandle.call(this.mainProvider, 'acp')
+    ) {
+      return;
+    }
+
+    this.mainProvider = this.sessionProviderRegistry.getAllProviders().find((provider) => provider.canHandle('acp')) || null;
+  }
+
   override async init() {
     await this.initDisplayTitleOverrides();
     await this.loadSessionList();
@@ -260,6 +273,7 @@ export class AcpChatManagerService extends ChatManagerService {
   }
 
   async loadSessionList() {
+    this.useAcpProviderWhenAvailable();
     if (!this.mainProvider) {
       await this.storageInitEmitter.fireAndAwait();
       return;
@@ -296,6 +310,7 @@ export class AcpChatManagerService extends ChatManagerService {
   }
 
   override async startSession(options?: SessionCreationOptions): Promise<ChatModel> {
+    this.useAcpProviderWhenAvailable();
     if (this.aiNativeConfig.capabilities.supportsAgentMode && this.mainProvider?.createSession) {
       const sessionData = await this.mainProvider.createSession(options);
       if (sessionData.extension?.availableCommands) {
@@ -317,6 +332,7 @@ export class AcpChatManagerService extends ChatManagerService {
   }
 
   async loadSession(sessionId: string) {
+    this.useAcpProviderWhenAvailable();
     if (this.aiNativeConfig.capabilities.supportsAgentMode) {
       const existingSession = this.peekSession(sessionId);
       if (existingSession?.history?.getMessages()?.length) {

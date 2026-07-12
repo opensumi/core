@@ -171,7 +171,7 @@ function sendButton() {
 }
 
 async function startTaskInCurrentProject() {
-  const agentLabel = await launchTaskInCurrentProject(page);
+  const agentLabel = await launchTaskInCurrentProject(page, runtime.workspaceDir);
   expect(agentLabel).toBeTruthy();
   await expect.poll(async () => (await getSessionState()).active, { timeout: 30_000 }).toBe(false);
 }
@@ -195,14 +195,15 @@ async function refreshTaskList() {
 
 async function readPersistedTaskRegistryEvidence() {
   return page.evaluate(() => {
-    const globalRecentData = window.localStorage.getItem('global:recent');
+    const globalRecentData = window.localStorage.getItem('global:/recent');
     if (!globalRecentData) {
       return undefined;
     }
     const globalRecent = JSON.parse(globalRecentData) as Record<string, unknown>;
+    const cachedTaskRegistry = globalRecent['agentic.task-registry.v2'];
     return {
       globalRecent,
-      taskRegistry: globalRecent['agentic.task-registry.v2'],
+      taskRegistry: typeof cachedTaskRegistry === 'string' ? JSON.parse(cachedTaskRegistry) : cachedTaskRegistry,
     };
   });
 }
@@ -255,6 +256,7 @@ test.describe('ACP Chat Agentic History', () => {
     const newerTask = await sendTaskPrompt('Task List newer immutable title');
     await refreshTaskList();
 
+    expect(newerTask.sessionId).not.toBe(olderTask.sessionId);
     const orderedRows = await readTaskRows();
     const taskRows = orderedRows.filter((row) => [olderTask.sessionId, newerTask.sessionId].includes(row.id));
     expect(taskRows.map((row) => row.id)).toEqual([newerTask.sessionId, olderTask.sessionId]);
@@ -281,8 +283,14 @@ test.describe('ACP Chat Agentic History', () => {
     await page.getByTestId(`agentic-task-archive-${newerTask.sessionId}`).click();
     await expect(page.getByTestId(`agentic-task-row-${newerTask.sessionId}`)).toHaveCount(0);
     await page.getByRole('button', { name: 'Archived Tasks' }).click();
-    await expect(page.getByTestId(`agentic-task-unarchive-${newerTask.sessionId}`)).toBeVisible();
-    await page.getByTestId(`agentic-task-unarchive-${newerTask.sessionId}`).click();
+    const archivedRow = page.getByTestId(`agentic-task-row-${newerTask.sessionId}`);
+    await archivedRow.scrollIntoViewIfNeeded();
+    await archivedRow.focus();
+    await page.keyboard.press('Tab');
+    const unarchive = page.getByTestId(`agentic-task-unarchive-${newerTask.sessionId}`);
+    await expect(unarchive).toBeVisible();
+    await expect(unarchive).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(page.getByTestId(`agentic-task-row-${newerTask.sessionId}`)).toBeVisible();
 
     const stateAfterSelection = await getSessionState();

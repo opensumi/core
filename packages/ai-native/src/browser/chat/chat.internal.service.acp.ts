@@ -166,6 +166,8 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private pendingAgenticTarget: AcpTargetConfigRequest | undefined;
 
+  private readonly agenticTaskTargets = new Map<string, AcpTargetConfigRequest>();
+
   private readonly taskObservationDisposables = new Map<
     string,
     { model: ChatModel; disposable: DisposableCollection }
@@ -317,9 +319,20 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private async doStartSessionModel(): Promise<ChatModel> {
     const draftSessionState = this.draftSessionState;
-    const target = this.pendingAgenticTarget;
+    const launch = this.agenticTaskRegistry.consumePendingLaunch?.();
+    let target = this.pendingAgenticTarget;
+    if (!target && launch) {
+      const project = await this.agenticTaskRegistry.getProject(launch.projectId);
+      target = project ? { agentId: launch.agentId, cwd: project.workspacePath } : undefined;
+    }
+    if (target) {
+      this.pendingAgenticTarget = target;
+    }
     const acpManager = this.chatManagerService as AcpChatManagerService;
     this._sessionModel = await acpManager.startSession(target ? { acpTarget: target } : undefined);
+    if (target) {
+      this.agenticTaskTargets.set(this._sessionModel.sessionId, target);
+    }
     this.pendingAgenticTarget = undefined;
     await this.applyDraftSessionState(this._sessionModel, draftSessionState);
     this.setAvailableCommands(acpManager.getAvailableCommands());
@@ -405,6 +418,7 @@ export class AcpChatInternalService extends ChatInternalService {
     const existingTask = await this.agenticTaskRegistry.getTask(sessionId);
     const model = this.chatManagerService.getSession(sessionId);
     if (existingTask) {
+      this.agenticTaskTargets.delete(sessionId);
       if (model) {
         this.observeTaskSession(model);
       }
@@ -428,11 +442,12 @@ export class AcpChatInternalService extends ChatInternalService {
     await this.agenticTaskRegistry.registerProject(project);
     await this.agenticTaskRegistry.registerFirstPrompt({
       sessionId,
-      agentId: request.message.agentId,
+      agentId: this.agenticTaskTargets.get(sessionId)?.agentId || request.message.agentId,
       project,
       firstPrompt: request.message.prompt,
       createdAt: model.createdAt,
     });
+    this.agenticTaskTargets.delete(sessionId);
     this.observeTaskSession(model);
     await this.observeRegisteredTaskSessions();
   }
@@ -713,6 +728,7 @@ export class AcpChatInternalService extends ChatInternalService {
       this.enterDraftSession({ force: true });
       return;
     }
+    this.agenticTaskTargets.delete(sessionId);
     this._onWillClearSession.fire(sessionId);
     const clearedSessionId =
       this._sessionModel && sessionId === this._sessionModel.sessionId ? this.stripAcpPrefix(sessionId) : undefined;
