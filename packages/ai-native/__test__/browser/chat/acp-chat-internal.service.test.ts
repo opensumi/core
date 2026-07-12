@@ -153,10 +153,22 @@ describe('AcpChatInternalService', () => {
         loadSession: jest.fn(() => Promise.resolve()),
         onDidApplySessionState: stateEmitter.event,
         onStorageInit: jest.fn(() => disposable()),
+        sendRequest: jest.fn(() => Promise.resolve()),
         startSession: jest.fn(() => Promise.resolve(model)),
       };
+      const registry = {
+        getTask: jest.fn(),
+        getProject: jest.fn(),
+        markUnread: jest.fn().mockResolvedValue(undefined),
+        registerFirstPrompt: jest.fn().mockResolvedValue(undefined),
+        registerProject: jest.fn().mockResolvedValue(undefined),
+        updateAttention: jest.fn().mockResolvedValue(undefined),
+        updateStatus: jest.fn().mockResolvedValue(undefined),
+      };
+      const permissionRequestEmitter = new Emitter<any>();
       const permissionBridgeService = {
         clearSessionDialogs: jest.fn(),
+        onDidRequestPermission: permissionRequestEmitter.event,
         setActiveSession: jest.fn(),
       };
       const messageService = {
@@ -184,6 +196,18 @@ describe('AcpChatInternalService', () => {
       Object.defineProperty(service, 'aiNativeConfigService', {
         value: { capabilities: { supportsAgentMode: true } },
       });
+      Object.defineProperty(service, 'agenticTaskRegistry', {
+        value: registry,
+      });
+      Object.defineProperty(service, 'panelLayoutService', {
+        value: { getLayoutMode: jest.fn(() => 'agentic') },
+      });
+      Object.defineProperty(service, 'workspaceService', {
+        value: {
+          getWorkspaceName: jest.fn(() => 'Workspace A'),
+          workspace: { uri: 'file:///work/a' },
+        },
+      });
       Object.defineProperty(service, 'logger', {
         value: { error: jest.fn(), log: jest.fn(), warn: jest.fn() },
       });
@@ -194,6 +218,8 @@ describe('AcpChatInternalService', () => {
         messageService,
         model,
         permissionBridgeService,
+        permissionRequestEmitter,
+        registry,
         service,
       };
     }
@@ -325,6 +351,73 @@ describe('AcpChatInternalService', () => {
       expect(availableCommandsChanges).toEqual([[{ name: 'help', description: 'Help' }]]);
       expect(sessionChanges).toEqual(['acp:sess-1']);
       expect(loadingChanges).toEqual([true, false]);
+    });
+
+    it('starts a one-off Agentic draft with its target without writing user preferences', async () => {
+      const { chatManagerService, model, service } = createService();
+      const preferenceService = { set: jest.fn() };
+      Object.defineProperty(service, 'preferenceService', { value: preferenceService });
+
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
+      await service.ensureSessionModel();
+
+      expect(chatManagerService.startSession).toHaveBeenCalledWith({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' } });
+      expect(service.sessionModel).toBe(model);
+      expect(preferenceService.set).not.toHaveBeenCalled();
+    });
+
+    it('registers the first accepted Agentic prompt and marks background Agent content unread', async () => {
+      const { chatManagerService, model, registry, service } = createService();
+      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:background' });
+      chatManagerService.getSessions.mockReturnValue([model, backgroundModel]);
+      registry.getTask.mockImplementation((sessionId: string) =>
+        Promise.resolve(sessionId === 'acp:background' ? { sessionId } : undefined),
+      );
+      service._sessionModel = model;
+      const request = model.addRequest({
+        prompt: 'Fix list\nprivate text',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      await service.sendRequest(request);
+
+      expect(registry.registerFirstPrompt).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: 'acp:sess-1',
+          agentId: 'agent-b',
+          firstPrompt: 'Fix list\nprivate text',
+        }),
+      );
+
+      backgroundModel.history.addAssistantMessage({ content: 'background reply' });
+
+      expect(registry.markUnread).toHaveBeenCalledWith('acp:background', true);
+    });
+
+    it('maps ACP thread statuses and background permission attention only for registered Agentic Tasks', async () => {
+      const { chatManagerService, model, permissionRequestEmitter, registry, service } = createService();
+      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:background' });
+      chatManagerService.getSessions.mockReturnValue([model, backgroundModel]);
+      registry.getTask.mockImplementation((sessionId: string) =>
+        Promise.resolve(sessionId === 'acp:background' ? { sessionId } : undefined),
+      );
+      service._sessionModel = model;
+      const request = model.addRequest({
+        prompt: 'Fix list',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+      await service.sendRequest(request);
+
+      backgroundModel.setThreadStatus('working');
+      permissionRequestEmitter.fire({ sessionId: 'background' });
+
+      expect(registry.updateStatus).toHaveBeenCalledWith('acp:background', 'running');
+      expect(registry.updateAttention).toHaveBeenCalledWith('acp:background', 'permission');
+      expect(registry.markUnread).toHaveBeenCalledWith('acp:background', true);
     });
 
     it('reuses the in-flight ACP session creation request', async () => {

@@ -1,13 +1,27 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AINativeConfigService, ILogger } from '@opensumi/ide-core-browser';
-import { AvailableCommand, Emitter, Event, IDisposable } from '@opensumi/ide-core-common';
+import {
+  AcpTargetConfigRequest,
+  AvailableCommand,
+  ChatMessageRole,
+  DisposableCollection,
+  Emitter,
+  Event,
+  IDisposable,
+  ThreadStatus,
+  URI,
+} from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { AgenticTaskRegistryService, AgenticTaskStatus } from '../acp/agentic-task-registry.service';
 import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
+import { AIPanelLayoutService } from '../layout/panel-layout.service';
 
 import { AcpChatManagerService } from './chat-manager.service.acp';
 import { ChatModel, ChatRequestModel } from './chat-model';
 import { ChatInternalService } from './chat.internal.service';
+import { getCachedWorkspaceDir } from './pick-workspace-dir';
 import { AcpSessionConfigOption, AcpSessionModeOption, AcpSessionModelOption } from './session-provider';
 
 const ACP_LOAD_SESSION_FALLBACK_MESSAGE =
@@ -112,6 +126,15 @@ export class AcpChatInternalService extends ChatInternalService {
   @Autowired(AcpPermissionBridgeService)
   private permissionBridgeService: AcpPermissionBridgeService;
 
+  @Autowired(AgenticTaskRegistryService)
+  private agenticTaskRegistry: AgenticTaskRegistryService;
+
+  @Autowired(AIPanelLayoutService)
+  private panelLayoutService: AIPanelLayoutService;
+
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
+
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
@@ -140,6 +163,13 @@ export class AcpChatInternalService extends ChatInternalService {
   private bootstrapSessionId: string | undefined;
 
   private bootstrapSessionAttempted = false;
+
+  private pendingAgenticTarget: AcpTargetConfigRequest | undefined;
+
+  private readonly taskObservationDisposables = new Map<
+    string,
+    { model: ChatModel; disposable: DisposableCollection }
+  >();
 
   private stripAcpPrefix(sessionId: string): string {
     return sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
@@ -219,8 +249,9 @@ export class AcpChatInternalService extends ChatInternalService {
     );
 
     const result = super.sendRequest(request, regenerate);
-    Promise.resolve(result).then(
-      () => {
+    return Promise.resolve(result).then(
+      async () => {
+        await this.registerFirstAgenticPrompt(request, sessionId);
         this.logger.log(
           `[ACP Chat][Frontend] sendRequest done — sessionId=${sessionId ?? '(empty)'}, requestId=${request.requestId}`,
         );
@@ -234,7 +265,6 @@ export class AcpChatInternalService extends ChatInternalService {
         );
       },
     );
-    return result;
   }
 
   override init() {
@@ -246,6 +276,7 @@ export class AcpChatInternalService extends ChatInternalService {
 
     this.storageInitDisposable = this.chatManagerService.onStorageInit(async () => {
       if (this.aiNativeConfigService.capabilities.supportsAgentMode) {
+        await this.observeRegisteredTaskSessions();
         return;
       }
       const sessions = this.chatManagerService.getSessions();
@@ -286,9 +317,11 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private async doStartSessionModel(): Promise<ChatModel> {
     const draftSessionState = this.draftSessionState;
-    this._sessionModel = await this.chatManagerService.startSession();
-    await this.applyDraftSessionState(this._sessionModel, draftSessionState);
+    const target = this.pendingAgenticTarget;
     const acpManager = this.chatManagerService as AcpChatManagerService;
+    this._sessionModel = await acpManager.startSession(target ? { acpTarget: target } : undefined);
+    this.pendingAgenticTarget = undefined;
+    await this.applyDraftSessionState(this._sessionModel, draftSessionState);
     this.setAvailableCommands(acpManager.getAvailableCommands());
     this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || {};
     this._onSessionModelChange.fire(this._sessionModel);
@@ -353,6 +386,149 @@ export class AcpChatInternalService extends ChatInternalService {
     this._onSessionModelChange.fire(undefined);
     this._onModeChange.fire('');
     this._onChangeSession.fire('');
+  }
+
+  enterAgenticTaskDraft(target: AcpTargetConfigRequest): void {
+    this.pendingAgenticTarget = target;
+    this.enterDraftSession({ force: true });
+  }
+
+  private isAgenticLayout(): boolean {
+    return this.panelLayoutService?.getLayoutMode() === 'agentic';
+  }
+
+  private async registerFirstAgenticPrompt(request: ChatRequestModel, sessionId: string | undefined): Promise<void> {
+    if (!sessionId || !this.isAgenticLayout()) {
+      return;
+    }
+
+    const existingTask = await this.agenticTaskRegistry.getTask(sessionId);
+    const model = this.chatManagerService.getSession(sessionId);
+    if (existingTask) {
+      if (model) {
+        this.observeTaskSession(model);
+      }
+      return;
+    }
+
+    const workspaceUri = this.workspaceService?.workspace?.uri;
+    if (!workspaceUri || !model) {
+      return;
+    }
+
+    const uri = URI.parse(workspaceUri);
+    const project = {
+      workspaceUri: uri.toString(),
+      workspacePath: getCachedWorkspaceDir(),
+      label: this.workspaceService.getWorkspaceName(uri),
+      joinedAt: Date.now(),
+      availability: 'available' as const,
+    };
+
+    await this.agenticTaskRegistry.registerProject(project);
+    await this.agenticTaskRegistry.registerFirstPrompt({
+      sessionId,
+      agentId: request.message.agentId,
+      project,
+      firstPrompt: request.message.prompt,
+      createdAt: model.createdAt,
+    });
+    this.observeTaskSession(model);
+    await this.observeRegisteredTaskSessions();
+  }
+
+  private async observeRegisteredTaskSessions(): Promise<void> {
+    if (!this.isAgenticLayout()) {
+      return;
+    }
+
+    for (const model of this.chatManagerService.getSessions()) {
+      if (await this.agenticTaskRegistry.getTask(model.sessionId)) {
+        this.observeTaskSession(model);
+      }
+    }
+  }
+
+  private observeTaskSession(model: ChatModel): void {
+    if (!this.isAgenticLayout()) {
+      return;
+    }
+
+    const existing = this.taskObservationDisposables.get(model.sessionId);
+    if (existing?.model === model) {
+      return;
+    }
+    existing?.disposable.dispose();
+
+    const seenMessageIds = new Set(model.history.getMessages().map((message) => message.id));
+    const disposable = new DisposableCollection();
+    disposable.push(
+      model.onThreadStatusChange((status) => {
+        if (!this.isAgenticLayout()) {
+          return;
+        }
+        void this.agenticTaskRegistry.updateStatus(model.sessionId, this.toAgenticTaskStatus(status));
+      }),
+    );
+    disposable.push(
+      model.history.onMessageChange((messages) => {
+        if (!this.isAgenticLayout()) {
+          messages.forEach((message) => seenMessageIds.add(message.id));
+          return;
+        }
+        const hasAgentActivity = messages.some((message) => {
+          if (seenMessageIds.has(message.id)) {
+            return false;
+          }
+          seenMessageIds.add(message.id);
+          if (message.role !== ChatMessageRole.Assistant) {
+            return false;
+          }
+          if (message.type === 'component') {
+            void this.agenticTaskRegistry.updateAttention(model.sessionId, 'input');
+          }
+          return Boolean(message.content || message.type === 'component');
+        });
+        if (hasAgentActivity) {
+          this.markUnreadIfBackground(model.sessionId);
+        }
+      }),
+    );
+    disposable.push(
+      this.permissionBridgeService.onDidRequestPermission((params) => {
+        if (!this.isAgenticLayout()) {
+          return;
+        }
+        if (this.stripAcpPrefix(model.sessionId) !== this.stripAcpPrefix(params.sessionId)) {
+          return;
+        }
+        void this.agenticTaskRegistry.updateAttention(model.sessionId, 'permission');
+        this.markUnreadIfBackground(model.sessionId);
+      }),
+    );
+    this.taskObservationDisposables.set(model.sessionId, { model, disposable });
+  }
+
+  private toAgenticTaskStatus(status: ThreadStatus): AgenticTaskStatus {
+    switch (status) {
+      case 'working':
+        return 'running';
+      case 'disconnected':
+        return 'stopped';
+      case 'errored':
+        return 'error';
+      case 'idle':
+      case 'awaiting_prompt':
+      case 'auth_required':
+      default:
+        return 'ready';
+    }
+  }
+
+  private markUnreadIfBackground(sessionId: string): void {
+    if (this._sessionModel?.sessionId !== sessionId) {
+      void this.agenticTaskRegistry.markUnread(sessionId, true);
+    }
   }
 
   private createDraftStateFromModel(model: ChatModel | undefined): AcpDraftSessionState | undefined {
@@ -577,6 +753,9 @@ export class AcpChatInternalService extends ChatInternalService {
         return;
       }
       this._sessionModel = updatedSession;
+      if (this.isAgenticLayout() && (await this.agenticTaskRegistry.getTask(updatedSession.sessionId))) {
+        this.observeTaskSession(updatedSession);
+      }
       // Notify permission bridge of session change
       const rawSessionId = this.stripAcpPrefix(sessionId);
       this.permissionBridgeService.setActiveSession(rawSessionId);
@@ -593,6 +772,8 @@ export class AcpChatInternalService extends ChatInternalService {
 
   override dispose(): void {
     this.permissionBridgeService.setActiveSession(undefined);
+    this.taskObservationDisposables.forEach(({ disposable }) => disposable.dispose());
+    this.taskObservationDisposables.clear();
     this._onModeChange.dispose();
     this._onSessionLoadingChange.dispose();
     this._onSessionModelChange.dispose();

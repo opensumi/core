@@ -135,6 +135,7 @@ describe('AcpChatManagerService', () => {
     const provider = Object.create(ACPSessionProvider.prototype) as ACPSessionProvider & {
       aiBackService: any;
       configProvider: any;
+      agenticTaskRegistry: any;
       loadedSessionMap: Map<string, any>;
       messageService: any;
       convertAgentSessionToModel(sessionId: string, agentSession: any): any;
@@ -191,6 +192,31 @@ describe('AcpChatManagerService', () => {
 
     expect(resolveConfigForTarget).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
     expect(createSession).toHaveBeenCalledWith(config);
+  });
+
+  it('reloads a registered Task through its stored Agent and Project target', async () => {
+    const provider = createSessionProvider();
+    const config = { agentId: 'agent-b', cwd: '/work/b' };
+    const resolveConfigForTarget = jest.fn().mockResolvedValue(config);
+    const loadAgentSession = jest.fn().mockResolvedValue({
+      sessionId: 'b',
+      messages: [],
+    });
+    Object.defineProperty(provider, 'agenticTaskRegistry', {
+      value: {
+        getTask: jest.fn().mockResolvedValue({ sessionId: 'acp:b', projectId: 'project-b', agentId: 'agent-b' }),
+        getProject: jest.fn().mockResolvedValue({ id: 'project-b', workspacePath: '/work/b' }),
+      },
+    });
+    (provider as any).configProvider.resolveConfigForTarget = resolveConfigForTarget;
+    Object.defineProperty(provider, 'aiBackService', {
+      value: { loadAgentSession },
+    });
+
+    await provider.loadSession('acp:b');
+
+    expect(resolveConfigForTarget).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
+    expect(loadAgentSession).toHaveBeenCalledWith(config, 'b');
   });
 
   it('passes an explicit target only to ACP session creation', async () => {

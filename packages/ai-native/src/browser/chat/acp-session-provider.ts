@@ -1,6 +1,8 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AIBackSerivcePath, Domain, IACPConfigProvider, IAIBackService } from '@opensumi/ide-core-common';
+import { AIBackSerivcePath, AgentProcessConfig, Domain, IACPConfigProvider, IAIBackService } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
+
+import { AgenticTaskRegistryService } from '../acp/agentic-task-registry.service';
 
 import {
   ISessionModel,
@@ -27,6 +29,9 @@ export class ACPSessionProvider implements ISessionProvider {
 
   @Autowired(IMessageService)
   protected messageService: IMessageService;
+
+  @Autowired(AgenticTaskRegistryService)
+  private agenticTaskRegistry: AgenticTaskRegistryService;
 
   private loadedSessionMap: Map<string, ISessionModel> = new Map();
 
@@ -165,7 +170,7 @@ export class ACPSessionProvider implements ISessionProvider {
     const agentSessionId = sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
 
     try {
-      const config = await this.configProvider.resolveConfig();
+      const config = await this.resolveSessionConfig(sessionId);
       const agentSession = (await this.aiBackService.loadAgentSession(config, agentSessionId)) as any;
 
       if (!agentSession) {
@@ -183,6 +188,20 @@ export class ACPSessionProvider implements ISessionProvider {
       // 不在 provider 层弹错误提示，将异常抛给调用方统一处理（如 activateSession 会自动创建新会话）
       throw error;
     }
+  }
+
+  private async resolveSessionConfig(sessionId: string): Promise<AgentProcessConfig> {
+    const task = await this.agenticTaskRegistry?.getTask(sessionId);
+    if (!task) {
+      return this.configProvider.resolveConfig();
+    }
+
+    const project = await this.agenticTaskRegistry.getProject(task.projectId);
+    if (!project || !this.configProvider.resolveConfigForTarget) {
+      throw new Error('Agent Task cannot resolve its stored ACP target');
+    }
+
+    return this.configProvider.resolveConfigForTarget({ agentId: task.agentId, cwd: project.workspacePath });
   }
 
   private convertAgentSessionToModel(
