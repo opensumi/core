@@ -95,7 +95,9 @@ async function getSessionState() {
 async function expectAgenticFourRegions() {
   await expect(page.getByTestId('agentic-task-list')).toBeVisible();
   await expect(page.getByTestId('agentic-chat-panel-header')).toBeVisible();
-  await expect(page.locator('#main-horizontal-agentic')).toBeVisible();
+  const visibleWorkbench = page.locator('#main-horizontal-ai-agentic > #main-horizontal-agentic:visible');
+  await expect(visibleWorkbench).toHaveCount(1);
+  await expect(visibleWorkbench).toBeVisible();
   await expect(page.locator('#workbench-editor')).toBeVisible();
   await expect(page.locator('[data-viewlet-id="explorer"]')).toBeVisible();
 }
