@@ -12,6 +12,7 @@ export { AcpPermissionTitleIndicatorService } from './permission-title-indicator
 export { AcpPermissionRpcService } from './acp-permission-rpc.service';
 export { AcpThreadStatusRpcService } from './acp-thread-status-rpc.service';
 export { AgenticTaskRegistryService } from './agentic-task-registry.service';
+export { AgenticWorkspaceSwitchService } from './agentic-workspace-switch.service';
 export type {
   AgenticPendingTaskActivation,
   AgenticPendingTaskLaunch,

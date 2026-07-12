@@ -57,6 +57,7 @@ import {
   AcpThreadStatusRpcService,
   AcpWebMcpRpcService,
   AgenticTaskRegistryService,
+  AgenticWorkspaceSwitchService,
   WebMcpGroupRegistry,
 } from './acp';
 import { AcpFooterContribution } from './acp/components/AcpFooterContribution';
@@ -154,6 +155,7 @@ export class AINativeModule extends BrowserModule {
     AcpChatRelayStore,
     AcpChatRelaySummaryProvider,
     AgenticTaskRegistryService,
+    AgenticWorkspaceSwitchService,
     AIPanelLayoutService,
     {
       token: ISessionProviderRegistry,
