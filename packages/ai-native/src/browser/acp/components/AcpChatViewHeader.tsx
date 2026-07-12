@@ -1,12 +1,11 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { AINativeConfigService, QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   ChatMessageRole,
-  CommandService,
   DisposableCollection,
   IDisposable,
   formatLocalize,
@@ -22,10 +21,11 @@ import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
 import { getCachedWorkspaceDir, switchWorkspaceDir } from '../../chat/pick-workspace-dir';
 import { AIPanelLayoutService } from '../../layout/panel-layout.service';
-import { MCPConfigCommands } from '../../mcp/config/mcp-config.constants';
+import { AgenticWorkspaceSwitchService } from '../agentic-workspace-switch.service';
 import { AcpPermissionBridgeService } from '../permission-bridge.service';
 
 import AcpChatHistory, { IChatHistoryItem } from './AcpChatHistory';
+import { AgenticTaskList } from './AgenticTaskList';
 
 const MAX_TITLE_LENGTH = 100;
 
@@ -53,8 +53,7 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
   const quickPick = useInjectable<QuickPickService>(QuickPickService);
   const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
-  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
-  const commandService = useInjectable<CommandService>(CommandService);
+  const workspaceSwitch = useInjectable<AgenticWorkspaceSwitchService>(AgenticWorkspaceSwitchService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
@@ -62,12 +61,12 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
   const [sessionSwitching, setSessionSwitching] = React.useState(false);
   const [pendingPermissionBadge, setPendingPermissionBadge] = React.useState(0);
   const [panelLayout, setPanelLayout] = React.useState(() => panelLayoutService.getLayoutMode());
-  const [historyCollapsed, setHistoryCollapsed] = React.useState(false);
   const isMultiRoot = workspaceService.isMultiRootWorkspaceOpened;
 
   const subscribedSessionIdsRef = React.useRef<Set<string>>(new Set());
   const toDisposeRef = React.useRef<DisposableCollection>(new DisposableCollection());
   const sessionSwitchingRef = React.useRef(false);
+  const pendingWorkRestoredRef = React.useRef(false);
 
   const [currentWorkspaceDir, setCurrentWorkspaceDir] = React.useState<string>(getCachedWorkspaceDir());
 
@@ -258,18 +257,12 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
   const isAgenticLayout = panelLayout === 'agentic';
 
   React.useEffect(() => {
-    if (!isAgenticLayout) {
-      setHistoryCollapsed(false);
+    if (!isAgenticLayout || pendingWorkRestoredRef.current) {
+      return;
     }
-  }, [isAgenticLayout]);
-
-  const handleToggleHistoryCollapsed = React.useCallback(() => {
-    setHistoryCollapsed((collapsed) => !collapsed);
-  }, []);
-
-  const handleOpenMCPConfig = React.useCallback(() => {
-    commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
-  }, [commandService]);
+    pendingWorkRestoredRef.current = true;
+    void workspaceSwitch.restorePendingWork();
+  }, [isAgenticLayout, workspaceSwitch]);
 
   const switchWorkspaceDirAction = isMultiRoot ? (
     <Popover
@@ -295,34 +288,29 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
 
   return (
     <div className={cls(styles.header, isAgenticLayout && styles.header_agentic)}>
-      <AcpChatHistory
-        className={cls(
-          styles.chat_history,
-          isAgenticLayout && styles.chat_history_agentic,
-          isAgenticLayout && historyCollapsed && styles.chat_history_agentic_collapsed,
-        )}
-        currentId={aiChatService.sessionModel?.sessionId}
-        title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
-        historyList={historyList}
-        variant={isAgenticLayout ? 'inline' : 'popover'}
-        historyLoading={historyLoading}
-        historyCollapsed={isAgenticLayout && historyCollapsed}
-        disabled={sessionSwitching}
-        pendingPermissionBadge={pendingPermissionBadge}
-        onNewChat={handleNewChat}
-        onOpenMCPConfig={
-          isAgenticLayout && aiNativeConfigService.capabilities.supportsMCP ? handleOpenMCPConfig : undefined
-        }
-        onToggleHistoryCollapsed={isAgenticLayout ? handleToggleHistoryCollapsed : undefined}
-        onHistoryItemSelect={handleHistoryItemSelect}
-        onHistoryItemDelete={() => {}}
-        onHistoryItemChange={handleHistoryItemChange}
-        onHistoryPopoverVisibleChange={handleHistoryPopoverVisibleChange}
-      />
-      {isAgenticLayout && switchWorkspaceDirAction ? (
-        <div className={styles.agentic_header_actions}>{switchWorkspaceDirAction}</div>
+      {isAgenticLayout ? (
+        <div className={styles.agentic_task_list}>
+          <AgenticTaskList />
+        </div>
       ) : (
-        switchWorkspaceDirAction
+        <>
+          <AcpChatHistory
+            className={styles.chat_history}
+            currentId={aiChatService.sessionModel?.sessionId}
+            title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
+            historyList={historyList}
+            variant='popover'
+            historyLoading={historyLoading}
+            disabled={sessionSwitching}
+            pendingPermissionBadge={pendingPermissionBadge}
+            onNewChat={handleNewChat}
+            onHistoryItemSelect={handleHistoryItemSelect}
+            onHistoryItemDelete={() => {}}
+            onHistoryItemChange={handleHistoryItemChange}
+            onHistoryPopoverVisibleChange={handleHistoryPopoverVisibleChange}
+          />
+          {switchWorkspaceDirAction}
+        </>
       )}
       {!isAgenticLayout && (
         <Popover

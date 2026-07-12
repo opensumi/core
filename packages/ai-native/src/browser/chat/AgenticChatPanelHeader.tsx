@@ -105,7 +105,6 @@ export function AgenticChatPanelHeader({
         {title}
       </div>
       <div className={styles.agentic_chat_panel_actions}>
-        <AgenticChatHeaderNewSessionMenu />
         <AgenticChatHeaderMaximizeAction id='agentic-chat-panel-header-maximize' />
       </div>
     </div>

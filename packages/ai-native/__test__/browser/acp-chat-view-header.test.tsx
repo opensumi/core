@@ -60,24 +60,17 @@ jest.mock('@opensumi/ide-workspace', () => ({
 
 jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
   __esModule: true,
-  default: ({
-    title,
-    variant,
-    disabled,
-    historyCollapsed,
-    historyList = [],
-    onNewChat,
-    onHistoryItemSelect,
-    onToggleHistoryCollapsed,
-  }: any) =>
+  default: ({ title, variant, disabled, historyList = [], onNewChat, onHistoryItemSelect }: any) =>
     require('react').createElement(
       'div',
       {
         'data-testid': 'acp-chat-history',
-        'data-collapsed': String(!!historyCollapsed),
         'data-title': title,
         'data-variant': variant,
       },
+      require('react').createElement('div', {
+        'data-testid': variant === 'inline' ? 'acp-chat-history-inline' : 'acp-chat-history-button',
+      }),
       title,
       historyList.map((item: any) =>
         require('react').createElement(
@@ -103,17 +96,11 @@ jest.mock('../../src/browser/acp/components/AcpChatHistory', () => ({
           },
           'new',
         ),
-      onToggleHistoryCollapsed &&
-        require('react').createElement(
-          'button',
-          {
-            'data-testid': 'acp-chat-history-collapse',
-            onClick: onToggleHistoryCollapsed,
-            type: 'button',
-          },
-          'collapse',
-        ),
     ),
+}));
+
+jest.mock('../../src/browser/acp/components/AgenticTaskList', () => ({
+  AgenticTaskList: () => require('react').createElement('aside', { 'data-testid': 'agentic-task-list' }),
 }));
 
 jest.mock('../../src/browser/components/ChatHistory', () => ({
@@ -154,6 +141,10 @@ jest.mock('../../src/browser/acp/components/AcpChatViewWrapper', () => ({
 
 jest.mock('../../src/browser/acp/permission-bridge.service', () => ({
   AcpPermissionBridgeService: class AcpPermissionBridgeService {},
+}));
+
+jest.mock('../../src/browser/acp/agentic-workspace-switch.service', () => ({
+  AgenticWorkspaceSwitchService: class AgenticWorkspaceSwitchService {},
 }));
 
 jest.mock('../../src/browser/layout/panel-layout.service', () => ({
@@ -247,7 +238,7 @@ jest.mock('../../src/browser/chat/chat.render.registry', () => ({
   ChatRenderRegistry: class ChatRenderRegistry {},
 }));
 
-import { ChatMessageRole, PreferenceScope } from '@opensumi/ide-core-common';
+import { ChatMessageRole } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 
 import { AcpChatViewHeader } from '../../src/browser/acp/components/AcpChatViewHeader';
@@ -575,6 +566,9 @@ function createMockServices({
       asRelativePath: jest.fn(async () => undefined),
       isMultiRootWorkspaceOpened: isMultiRoot,
     },
+    workspaceSwitch: {
+      restorePendingWork: jest.fn(() => Promise.resolve()),
+    },
   };
 }
 
@@ -669,6 +663,10 @@ function installInjectableMocks(services: ReturnType<typeof createMockServices>)
 
     if (name === 'AIPanelLayoutService') {
       return services.panelLayoutService;
+    }
+
+    if (name === 'AgenticWorkspaceSwitchService') {
+      return services.workspaceSwitch;
     }
 
     return {};
@@ -805,6 +803,7 @@ describe('ACP chat view headers', () => {
     );
 
     expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('popover');
+    expect(container.querySelector('[data-testid="acp-chat-history-button"]')).not.toBeNull();
   });
 
   it('passes session creation time to the ACP-specific history list', async () => {
@@ -849,8 +848,9 @@ describe('ACP chat view headers', () => {
     ).toBe('67890');
   });
 
-  it('uses inline history in the ACP-specific header when panel layout is agentic', async () => {
-    installInjectableMocks(createMockServices({ panelLayout: 'agentic' }));
+  it('renders the persistent Task List instead of inline ACP history in the Agentic Layout', async () => {
+    const services = createMockServices({ panelLayout: 'agentic' });
+    installInjectableMocks(services);
 
     await renderHeader(
       React.createElement(AcpChatViewHeader, {
@@ -859,7 +859,10 @@ describe('ACP chat view headers', () => {
       }),
     );
 
-    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('inline');
+    expect(container.querySelector('[data-testid="agentic-task-list"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history-inline"]')).toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history"]')).toBeNull();
+    expect(services.workspaceSwitch.restorePendingWork).toHaveBeenCalledTimes(1);
     expect(container.querySelector('#ai-chat-header-close')).toBeNull();
   });
 
@@ -884,10 +887,10 @@ describe('ACP chat view headers', () => {
     expect(container.querySelector('[data-testid="agentic-chat-panel-header-title"]')?.textContent).toBe(
       'ACP-specific server title',
     );
-    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-title')).toBe(
-      'ACP-specific server title',
-    );
+    expect(container.querySelector('[data-testid="agentic-task-list"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history-inline"]')).toBeNull();
     expect(container.querySelector('#ai-chat-header-maximize')).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-chat-new-session-button"]')).toBeNull();
 
     const getAction = () =>
       container.querySelector('#agentic-chat-panel-header-maximize button') as HTMLButtonElement | null;
@@ -908,166 +911,6 @@ describe('ACP chat view headers', () => {
 
     expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(true);
     expect(getAction()?.className).toBe('icon-fullescreen');
-  });
-
-  it('updates the default ACP agent type and enters draft from the agentic chat panel header menu', async () => {
-    const createSessionModel = jest.fn(async () => undefined);
-    const enterDraftSession = jest.fn();
-    const services = createMockServices({
-      defaultAgentType: 'claude-agent-acp',
-      panelLayout: 'agentic',
-      createSessionModel,
-      enterDraftSession,
-      chatViewHeaderRender: AcpChatViewHeader,
-    });
-    installInjectableMocks(services);
-
-    await renderHeader(React.createElement(AIChatViewACPContent));
-
-    const menuButton = container.querySelector(
-      '[data-testid="agentic-chat-new-session-button"]',
-    ) as HTMLButtonElement | null;
-
-    await act(async () => {
-      menuButton!.click();
-      await Promise.resolve();
-    });
-
-    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain('Claude');
-    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain('Qwen');
-
-    await act(async () => {
-      (container.querySelector('[data-testid="agentic-chat-new-session-agent-qwen"]') as HTMLButtonElement).click();
-      await Promise.resolve();
-    });
-
-    expect(services.preferenceService.set).toHaveBeenCalledWith(
-      AINativeSettingSectionsId.DefaultAgentType,
-      'qwen',
-      PreferenceScope.User,
-    );
-    expect(enterDraftSession).toHaveBeenCalledTimes(1);
-    expect(createSessionModel).not.toHaveBeenCalled();
-  });
-
-  it('keeps the agentic new session menu open when clicking after mouse hover opens it', async () => {
-    const services = createMockServices({
-      defaultAgentType: 'claude-agent-acp',
-      panelLayout: 'agentic',
-      chatViewHeaderRender: AcpChatViewHeader,
-    });
-    installInjectableMocks(services);
-
-    await renderHeader(React.createElement(AIChatViewACPContent));
-
-    const menuButton = container.querySelector(
-      '[data-testid="agentic-chat-new-session-button"]',
-    ) as HTMLButtonElement | null;
-
-    await act(async () => {
-      menuButton!.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, relatedTarget: document.body }));
-      await Promise.resolve();
-    });
-    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')).not.toBeNull();
-
-    await act(async () => {
-      menuButton!.click();
-      await Promise.resolve();
-    });
-
-    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain('Claude');
-  });
-
-  it('lists custom ACP agent configurations in the agentic chat panel header menu', async () => {
-    const services = createMockServices({
-      agentConfigs: {
-        'custom-agent': {
-          command: 'custom-agent',
-          args: ['--acp'],
-          description: 'Custom Agent',
-        },
-      },
-      defaultAgentType: 'custom-agent',
-      panelLayout: 'agentic',
-      chatViewHeaderRender: AcpChatViewHeader,
-    });
-    installInjectableMocks(services);
-
-    await renderHeader(React.createElement(AIChatViewACPContent));
-
-    const menuButton = container.querySelector(
-      '[data-testid="agentic-chat-new-session-button"]',
-    ) as HTMLButtonElement | null;
-
-    await act(async () => {
-      menuButton!.click();
-      await Promise.resolve();
-    });
-
-    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')?.textContent).toContain(
-      'Custom Agent',
-    );
-
-    await act(async () => {
-      (container.querySelector('[data-testid="agentic-chat-new-session-agent-qwen"]') as HTMLButtonElement).click();
-      await Promise.resolve();
-    });
-
-    expect(services.preferenceService.set).toHaveBeenCalledWith(
-      AINativeSettingSectionsId.DefaultAgentType,
-      'qwen',
-      PreferenceScope.User,
-    );
-  });
-
-  it('writes default agent configs before opening settings from the agentic chat panel header menu', async () => {
-    const services = createMockServices({
-      panelLayout: 'agentic',
-      agentConfigs: 'acp' as any,
-      chatViewHeaderRender: AcpChatViewHeader,
-    });
-    installInjectableMocks(services);
-
-    await renderHeader(React.createElement(AIChatViewACPContent));
-
-    const menuButton = container.querySelector(
-      '[data-testid="agentic-chat-new-session-button"]',
-    ) as HTMLButtonElement | null;
-
-    await act(async () => {
-      menuButton!.click();
-      await Promise.resolve();
-    });
-
-    expect(container.querySelector('[data-testid="agentic-chat-new-session-menu"]')).not.toBeNull();
-
-    await act(async () => {
-      (container.querySelector('[data-testid="agentic-chat-agent-config-menu-item"]') as HTMLButtonElement).click();
-      await Promise.resolve();
-    });
-
-    expect(services.preferenceService.set).toHaveBeenCalledWith(
-      AINativeSettingSectionsId.AgentConfigs,
-      {
-        qwen: {
-          command: 'qwen',
-          args: ['--acp', '--channel=ACP', '--input-format=stream-json', '--output-format=stream-json'],
-          streaming: true,
-          description: 'Qwen CLI Agent',
-        },
-        'claude-agent-acp': {
-          command: 'claude-agent-acp',
-          args: [],
-          streaming: true,
-          description: 'Claude Code ACP Agent',
-        },
-      },
-      PreferenceScope.User,
-    );
-    expect(services.commandService.executeCommand).toHaveBeenCalledWith(
-      'core.openpreference',
-      AINativeSettingSectionsId.AgentConfigs,
-    );
   });
 
   it('maximizes the default chat header in agentic layout', async () => {
@@ -1092,27 +935,7 @@ describe('ACP chat view headers', () => {
     expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(false);
   });
 
-  it('collapses ACP history in agentic layout when the collapse action is clicked', async () => {
-    installInjectableMocks(createMockServices({ panelLayout: 'agentic' }));
-
-    await renderHeader(
-      React.createElement(AcpChatViewHeader, {
-        handleClear: jest.fn(),
-        handleCloseChatView: jest.fn(),
-      }),
-    );
-
-    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-collapsed')).toBe('false');
-
-    await act(async () => {
-      (container.querySelector('[data-testid="acp-chat-history-collapse"]') as HTMLButtonElement).click();
-      await Promise.resolve();
-    });
-
-    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-collapsed')).toBe('true');
-  });
-
-  it('updates the ACP-specific history variant when panel layout changes at runtime', async () => {
+  it('switches the ACP Chat Slot between Classic history and the Agentic Task List at runtime', async () => {
     const services = createMockServices({ panelLayout: 'classic' });
     installInjectableMocks(services);
 
@@ -1130,25 +953,9 @@ describe('ACP chat view headers', () => {
       await Promise.resolve();
     });
 
-    expect(container.querySelector('[data-testid="acp-chat-history"]')?.getAttribute('data-variant')).toBe('inline');
-  });
-
-  it('does not expose a new-chat action from the inline ACP history in agentic layout', async () => {
-    const createSessionModel = jest.fn();
-    const enterDraftSession = jest.fn();
-    const services = createMockServices({ panelLayout: 'agentic', createSessionModel, enterDraftSession });
-    installInjectableMocks(services);
-
-    await renderHeader(
-      React.createElement(AcpChatViewHeader, {
-        handleClear: jest.fn(),
-        handleCloseChatView: jest.fn(),
-      }),
-    );
-
-    expect(container.querySelector('[data-testid="acp-chat-history-new"]')).toBeNull();
-    expect(enterDraftSession).not.toHaveBeenCalled();
-    expect(createSessionModel).not.toHaveBeenCalled();
+    expect(container.querySelector('[data-testid="agentic-task-list"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-chat-history"]')).toBeNull();
+    expect(services.workspaceSwitch.restorePendingWork).toHaveBeenCalledTimes(1);
   });
 
   it('enters draft when switching ACP workspace cwd without creating a session', async () => {
