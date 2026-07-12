@@ -45,6 +45,7 @@ function createServices() {
       archive: jest.fn(() => Promise.resolve(true)),
       listActiveGroups: jest.fn(() => Promise.resolve([])),
       listArchivedGroups: jest.fn(() => Promise.resolve([])),
+      listProjects: jest.fn(() => Promise.resolve([projectA, projectB])),
     },
     workspaceSwitch: {
       activateTask: jest.fn(() => Promise.resolve()),
@@ -98,7 +99,7 @@ describe('AgenticTaskList', () => {
     return services;
   }
 
-  it('sorts Project Groups and Task Rows and filters immutable titles', async () => {
+  it('preserves registry Project and Task order while filtering immutable titles', async () => {
     const services = createServices();
     const groups = [
       {
@@ -143,7 +144,17 @@ describe('AgenticTaskList', () => {
       },
     ];
     services.registry.listActiveGroups.mockResolvedValue(groups);
+    services.registry.listProjects.mockResolvedValue([projectB, projectA]);
     await renderTaskList(services);
+
+    const renderedGroups = container.querySelectorAll('[data-testid="agentic-task-project-group"]');
+    expect(renderedGroups[0]?.textContent).toContain('Project B');
+    expect(renderedGroups[1]?.textContent).toContain('Project A');
+    expect(
+      Array.from(container.querySelectorAll('[data-testid^="agentic-task-row-"]')).map((row) =>
+        row.getAttribute('data-testid'),
+      ),
+    ).toEqual(['agentic-task-row-acp:old', 'agentic-task-row-acp:older-layout', 'agentic-task-row-acp:layout']);
 
     const input = container.querySelector('input[placeholder="Search tasks"]') as HTMLInputElement;
     await act(async () => {
@@ -206,6 +217,7 @@ describe('AgenticTaskList', () => {
         ],
       },
     ]);
+    services.registry.listProjects.mockResolvedValue([projectA, { ...projectB, availability: 'unavailable' as const }]);
     await renderTaskList(services);
 
     expect(container.querySelector('[data-testid="agentic-task-attention-acp:permission"]')).not.toBeNull();
@@ -216,7 +228,7 @@ describe('AgenticTaskList', () => {
       (container.querySelector('[data-testid="agentic-task-archive-acp:ready"]') as HTMLButtonElement).click();
       await flushPromises();
     });
-    expect(services.registry.archive).toHaveBeenCalledWith('acp:ready', 'ready');
+    expect(services.registry.archive).toHaveBeenCalledWith('acp:ready');
 
     const unavailable = container.querySelector(
       '[data-testid="agentic-task-row-acp:unavailable"]',
@@ -228,6 +240,76 @@ describe('AgenticTaskList', () => {
     });
     expect(services.workspaceSwitch.activateTask).not.toHaveBeenCalled();
     expect(container.querySelector('[data-testid="agentic-task-archive-acp:unavailable"]')).not.toBeNull();
+  });
+
+  it('launches a first Task from a catalog Project with no active Tasks', async () => {
+    const services = createServices();
+    services.registry.listProjects.mockResolvedValue([projectB]);
+    services.registry.listActiveGroups.mockResolvedValue([]);
+    services.preferenceService.get.mockReturnValue({
+      'agent-b': {
+        command: 'agent-b',
+        description: 'Agent B',
+      },
+    });
+    await renderTaskList(services);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent === 'Project B')
+        ?.click();
+    });
+    await act(async () => {
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent === 'Agent B')
+        ?.click();
+      await flushPromises();
+    });
+
+    expect(services.workspaceSwitch.launchTask).toHaveBeenCalledWith(projectB, 'agent-b');
+  });
+
+  it('refreshes archived-only Projects and disables their archived Task rows', async () => {
+    const unavailableProject = { ...projectB, availability: 'unavailable' as const };
+    const services = createServices();
+    services.registry.listProjects.mockResolvedValue([unavailableProject]);
+    services.registry.listActiveGroups.mockResolvedValue([]);
+    services.registry.listArchivedGroups.mockResolvedValue([
+      {
+        project: unavailableProject,
+        tasks: [
+          {
+            sessionId: 'acp:archived-unavailable',
+            projectId: unavailableProject.id,
+            agentId: 'agent-b',
+            title: 'Archived unavailable Task',
+            createdAt: 1,
+            archived: true,
+            unread: false,
+            status: 'stopped' as const,
+          },
+        ],
+      },
+    ]);
+    await renderTaskList(services);
+
+    expect(services.workspaceSwitch.refreshProjectAvailability).toHaveBeenCalledWith(unavailableProject);
+    services.workspaceSwitch.refreshProjectAvailability.mockClear();
+    await act(async () => {
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent?.includes('Archived Tasks'))
+        ?.click();
+      await flushPromises();
+    });
+
+    expect(services.workspaceSwitch.refreshProjectAvailability).toHaveBeenCalledWith(unavailableProject);
+    expect(
+      (container.querySelector('[data-testid="agentic-task-row-acp:archived-unavailable"]') as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
   });
 
   it('clamps local Task List resizing to the Agentic Chat Slot bounds', async () => {

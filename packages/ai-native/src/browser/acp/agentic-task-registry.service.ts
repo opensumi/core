@@ -115,6 +115,11 @@ export class AgenticTaskRegistryService {
     return project && { ...project };
   }
 
+  async listProjects(): Promise<AgenticProjectRecord[]> {
+    await this.ensureInitialized();
+    return [...this.currentState.projects].sort((a, b) => b.joinedAt - a.joinedAt).map((project) => ({ ...project }));
+  }
+
   async getTask(sessionId: string): Promise<AgenticTaskRecord | undefined> {
     await this.ensureInitialized();
     const task = this.findTask(sessionId);
@@ -235,9 +240,8 @@ export class AgenticTaskRegistryService {
   }
 
   private async listGroups(archived: boolean, query?: string): Promise<AgenticTaskGroup[]> {
-    await this.ensureInitialized();
     const normalizedQuery = query?.trim().toLocaleLowerCase();
-    const projects = [...this.currentState.projects].sort((a, b) => b.joinedAt - a.joinedAt);
+    const projects = await this.listProjects();
 
     return projects.reduce<AgenticTaskGroup[]>((groups, project) => {
       const tasks = this.currentState.tasks

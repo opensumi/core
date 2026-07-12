@@ -40,10 +40,6 @@ export function AgenticTaskLaunchMenu({ projects = [], open, onOpenChange }: Age
 
   const isOpen = open ?? uncontrolledOpen;
   const agentOptions = React.useMemo(() => getAgentOptions(preferenceService), [preferenceService]);
-  const availableProjects = React.useMemo(
-    () => [...projects].sort((left, right) => right.joinedAt - left.joinedAt),
-    [projects],
-  );
 
   const setMenuOpen = React.useCallback(
     (nextOpen: boolean) => {
@@ -83,7 +79,7 @@ export function AgenticTaskLaunchMenu({ projects = [], open, onOpenChange }: Age
         aria-haspopup='menu'
         className={styles.launch_button}
         data-testid='agentic-task-launch-button'
-        disabled={availableProjects.length === 0}
+        disabled={projects.length === 0}
         onClick={() => setMenuOpen(!isOpen)}
         title='New Task'
         type='button'
@@ -96,7 +92,7 @@ export function AgenticTaskLaunchMenu({ projects = [], open, onOpenChange }: Age
           {!selectedProject ? (
             <>
               <div className={styles.launch_menu_label}>Choose Project</div>
-              {availableProjects.map((project) => (
+              {projects.map((project) => (
                 <button
                   className={styles.launch_menu_item}
                   disabled={project.availability === 'unavailable'}

@@ -23,18 +23,15 @@ function clampTaskListWidth(width: number): number {
   return Math.max(MIN_TASK_LIST_WIDTH, Math.min(MAX_TASK_LIST_WIDTH, width));
 }
 
-function normalizeGroups(groups: AgenticTaskGroup[], query: string): AgenticTaskGroup[] {
+function filterGroups(groups: AgenticTaskGroup[], query: string): AgenticTaskGroup[] {
   const normalizedQuery = query.trim().toLocaleLowerCase();
 
   return groups
     .map((group) => ({
       project: group.project,
-      tasks: [...group.tasks]
-        .filter((task) => !normalizedQuery || task.title.toLocaleLowerCase().includes(normalizedQuery))
-        .sort((left, right) => right.createdAt - left.createdAt),
+      tasks: group.tasks.filter((task) => !normalizedQuery || task.title.toLocaleLowerCase().includes(normalizedQuery)),
     }))
-    .filter((group) => group.tasks.length > 0)
-    .sort((left, right) => right.project.joinedAt - left.project.joinedAt);
+    .filter((group) => group.tasks.length > 0);
 }
 
 function getConfiguredTaskListWidth(): number {
@@ -214,10 +211,12 @@ function ProjectGroup({
 
 function ArchivedTaskGroups({
   query,
+  refreshProjectCatalog,
   registry,
   workspaceSwitch,
 }: {
   query: string;
+  refreshProjectCatalog: () => Promise<AgenticProjectRecord[]>;
   registry: AgenticTaskRegistryService;
   workspaceSwitch: AgenticWorkspaceSwitchService;
 }) {
@@ -229,15 +228,17 @@ function ArchivedTaskGroups({
       return;
     }
     let disposed = false;
-    void registry.listArchivedGroups(query).then((archivedGroups) => {
+    void (async () => {
+      await refreshProjectCatalog();
+      const archivedGroups = await registry.listArchivedGroups(query);
       if (!disposed) {
-        setGroups(normalizeGroups(archivedGroups, query));
+        setGroups(filterGroups(archivedGroups, query));
       }
-    });
+    })();
     return () => {
       disposed = true;
     };
-  }, [expanded, query, registry]);
+  }, [expanded, query, refreshProjectCatalog, registry]);
 
   return (
     <section className={styles.archived_area}>
@@ -281,6 +282,7 @@ export function AgenticTaskList() {
   const workspaceSwitch = useInjectable<AgenticWorkspaceSwitchService>(AgenticWorkspaceSwitchService);
   const [query, setQuery] = React.useState('');
   const [groups, setGroups] = React.useState<AgenticTaskGroup[]>([]);
+  const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
   const [activeSessionId, setActiveSessionId] = React.useState<string>();
   const [launchProject, setLaunchProject] = React.useState<AgenticProjectRecord>();
 
@@ -290,11 +292,18 @@ export function AgenticTaskList() {
       ?.style.setProperty('--agentic-task-list-width', `${clampTaskListWidth(width)}px`);
   }, []);
 
+  const refreshProjectCatalog = React.useCallback(async () => {
+    const projectCatalog = await registry.listProjects();
+    await Promise.all(projectCatalog.map((project) => workspaceSwitch.refreshProjectAvailability(project)));
+    return registry.listProjects();
+  }, [registry, workspaceSwitch]);
+
   const refresh = React.useCallback(async () => {
+    const projectCatalog = await refreshProjectCatalog();
     const activeGroups = await registry.listActiveGroups(query);
-    await Promise.all(activeGroups.map((group) => workspaceSwitch.refreshProjectAvailability(group.project)));
-    setGroups(normalizeGroups(await registry.listActiveGroups(query), query));
-  }, [query, registry, workspaceSwitch]);
+    setProjects(projectCatalog);
+    setGroups(filterGroups(activeGroups, query));
+  }, [query, refreshProjectCatalog, registry]);
 
   React.useEffect(() => {
     let disposed = false;
@@ -312,17 +321,12 @@ export function AgenticTaskList() {
     (count, group) => count + group.tasks.filter((task) => task.attention !== undefined).length,
     0,
   );
-  const projects = React.useMemo(() => groups.map((group) => group.project), [groups]);
-
   const archive = React.useCallback(
     async (task: AgenticTaskRecord) => {
       if (!task.status || !ARCHIVABLE_STATUSES.has(task.status)) {
         return;
       }
-      await (registry.archive as unknown as (sessionId: string, status: AgenticTaskStatus) => Promise<boolean>)(
-        task.sessionId,
-        task.status,
-      );
+      await registry.archive(task.sessionId);
       await refresh();
     },
     [refresh, registry],
@@ -377,7 +381,12 @@ export function AgenticTaskList() {
           />
         ))}
       </div>
-      <ArchivedTaskGroups query={query} registry={registry} workspaceSwitch={workspaceSwitch} />
+      <ArchivedTaskGroups
+        query={query}
+        refreshProjectCatalog={refreshProjectCatalog}
+        registry={registry}
+        workspaceSwitch={workspaceSwitch}
+      />
     </aside>
   );
 }

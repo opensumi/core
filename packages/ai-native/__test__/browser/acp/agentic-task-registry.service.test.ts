@@ -94,7 +94,7 @@ describe('AgenticTaskRegistryService', () => {
     });
   });
 
-  it('preserves the first project join time and orders active projects then tasks', async () => {
+  it('preserves the first project join time and exposes the ordered Project catalog', async () => {
     const projectB: AgenticProjectRecord = {
       ...project,
       id: 'file:///workspace/project-b',
@@ -129,6 +129,7 @@ describe('AgenticTaskRegistryService', () => {
     });
 
     expect(await registry.getProject(project.id)).toMatchObject({ joinedAt: 1, label: 'Project A' });
+    expect(await registry.listProjects()).toEqual([projectB, project]);
     expect(await registry.listActiveGroups()).toEqual([
       { project: projectB, tasks: [expect.objectContaining({ sessionId: 'acp:b' })] },
       {

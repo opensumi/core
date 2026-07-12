@@ -29,6 +29,15 @@ const projectB = {
   availability: 'available' as const,
 };
 
+const projectA = {
+  id: 'project-a',
+  workspaceUri: 'file:///work/a',
+  workspacePath: '/work/a',
+  label: 'Project A',
+  joinedAt: 20,
+  availability: 'available' as const,
+};
+
 describe('AgenticTaskLaunchMenu', () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -98,5 +107,37 @@ describe('AgenticTaskLaunchMenu', () => {
 
     expect(workspaceSwitch.launchTask).toHaveBeenCalledWith(projectB, 'agent-b');
     expect(preferenceService.set).not.toHaveBeenCalled();
+  });
+
+  it('keeps registry catalog Project order in the picker', async () => {
+    const workspaceSwitch = {
+      launchTask: jest.fn(() => Promise.resolve()),
+    };
+    const preferenceService = {
+      get: jest.fn(() => ({})),
+      set: jest.fn(),
+    };
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockImplementation((token: unknown) => {
+      if (token === AgenticWorkspaceSwitchService) {
+        return workspaceSwitch;
+      }
+      if (token === PreferenceService) {
+        return preferenceService;
+      }
+      return {};
+    });
+
+    await act(async () => {
+      root.render(<AgenticTaskLaunchMenu projects={[projectB, projectA]} />);
+      await Promise.resolve();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
+    });
+
+    expect(Array.from(container.querySelectorAll('[role="menuitem"]')).map((item) => item.textContent)).toEqual([
+      'Project B',
+      'Project A',
+    ]);
   });
 });
