@@ -308,7 +308,7 @@
         background-color: var(--panel-background);
         border-radius: 0 0 0 12px;
 
-        .queued_messages {
+        .queued_turns {
           display: flex;
           flex-direction: column;
           margin-bottom: 8px;
@@ -328,9 +328,19 @@
             &:hover {
               color: var(--design-text-hoverForeground);
             }
+
+            &:focus-visible {
+              outline: 1px solid var(--focusBorder);
+              outline-offset: 1px;
+            }
+
+            &:disabled {
+              cursor: default;
+              opacity: 0.72;
+            }
           }
 
-          .queued_messages_header {
+          .queued_turns_header {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -338,7 +348,7 @@
             padding: 6px 8px;
           }
 
-          .queued_messages_summary {
+          .queued_turns_summary {
             display: flex;
             min-width: 0;
             align-items: center;
@@ -348,18 +358,47 @@
             text-align: left;
           }
 
-          .queued_messages_disclosure {
+          .queued_turns_disclosure {
             width: 10px;
             color: var(--descriptionForeground);
             font-size: 11px;
           }
 
-          .queued_messages_clear {
+          .queued_turns_header_actions {
+            display: flex;
             flex: 0 0 auto;
-            padding: 0;
+            align-items: center;
+            gap: 8px;
           }
 
-          .queued_messages_list {
+          .queued_turns_status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-left: 7px;
+            border-left: 2px solid var(--debugConsole-warningForeground);
+            color: var(--debugConsole-warningForeground);
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 18px;
+          }
+
+          .queued_turns_pause_reason {
+            color: var(--descriptionForeground);
+            font-weight: normal;
+          }
+
+          .queued_turns_resume,
+          .queued_turns_clear {
+            flex: 0 0 auto;
+            padding: 0 2px;
+          }
+
+          .queued_turns_resume {
+            color: var(--design-text-foreground);
+          }
+
+          .queued_turns_list {
             display: flex;
             flex-direction: column;
             max-height: 160px;
@@ -367,19 +406,29 @@
             border-top: 1px solid var(--panel-border);
           }
 
-          .queued_message_item {
+          .queued_turn {
             display: grid;
             grid-template-columns: 18px minmax(0, 1fr) auto;
             align-items: center;
             gap: 8px;
             padding: 7px 8px;
 
-            & + .queued_message_item {
+            & + .queued_turn,
+            & + .queued_turn_editing {
               border-top: 1px solid var(--panel-border);
             }
           }
 
-          .queued_message_index {
+          .queued_turn_editing {
+            padding: 6px;
+
+            & + .queued_turn,
+            & + .queued_turn_editing {
+              border-top: 1px solid var(--panel-border);
+            }
+          }
+
+          .queued_turn_index {
             width: 18px;
             height: 18px;
             border-radius: 50%;
@@ -390,7 +439,7 @@
             text-align: center;
           }
 
-          .queued_message_preview {
+          .queued_turn_preview {
             min-width: 0;
             overflow: hidden;
             color: var(--design-text-foreground);
@@ -400,7 +449,7 @@
             white-space: nowrap;
           }
 
-          .queued_message_actions {
+          .queued_turn_actions {
             display: flex;
             flex: 0 0 auto;
             align-items: center;
@@ -408,6 +457,26 @@
 
             button {
               padding: 0 2px;
+            }
+          }
+
+          .queued_turn_editor {
+            overflow: hidden;
+            border: 1px solid var(--focusBorder);
+            border-radius: 5px;
+
+            :global(.acp-queued-turn-editor-input) {
+              border: 0;
+              border-radius: 0;
+            }
+
+            :global(.acp-queued-editor-actions) {
+              display: flex;
+              align-items: center;
+              justify-content: flex-end;
+              gap: 8px;
+              padding: 4px 8px 6px;
+              border-top: 1px solid var(--panel-border);
             }
           }
         }

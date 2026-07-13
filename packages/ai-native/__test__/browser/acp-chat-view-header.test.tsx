@@ -25,6 +25,8 @@ jest.mock('@opensumi/ide-core-browser', () => ({
 }));
 
 jest.mock('@opensumi/ide-core-browser/lib/components', () => ({
+  Icon: ({ className, iconClass }: { className?: string; iconClass?: string }) =>
+    require('react').createElement('span', { className: [className, iconClass].filter(Boolean).join(' ') }),
   Popover: ({ children, id, title }: { children: React.ReactNode; id?: string; title?: string }) =>
     require('react').createElement('div', { id, title }, children),
   PopoverPosition: {
@@ -350,6 +352,8 @@ function createMockServices({
   session,
   sessions,
   chatViewHeaderRender,
+  activeInputCapabilities = ['rich-queued-edit'],
+  withQueuedEditor = true,
 }: {
   isMultiRoot?: boolean;
   panelLayout?: 'classic' | 'agentic';
@@ -363,6 +367,8 @@ function createMockServices({
   session?: ReturnType<typeof createMockSession> | null;
   sessions?: ReturnType<typeof createMockSession>[];
   chatViewHeaderRender?: any;
+  activeInputCapabilities?: string[];
+  withQueuedEditor?: boolean;
 } = {}) {
   const currentSession = session === undefined ? createMockSession() : session;
   const sessionList = sessions || (currentSession ? [currentSession] : []);
@@ -376,6 +382,9 @@ function createMockServices({
   let currentAgentConfigs = agentConfigs;
   let agenticWorkbenchVisible = true;
   let latestChatInputProps: any;
+  let latestQueuedEditorProps: any;
+  const mainInputFocus = jest.fn();
+  const queuedEditorFocus = jest.fn();
   const aiChatService = {
     sessionModel: currentSession,
     activateSession: jest.fn(),
@@ -426,7 +435,7 @@ function createMockServices({
     const props = _props;
     latestChatInputProps = props;
     React.useEffect(() => {
-      const handle = { focus: jest.fn() };
+      const handle = { focus: mainInputFocus };
       props.onInputHandleReady?.(handle);
       return () => props.onInputHandleReady?.(null);
     }, [props.onInputHandleReady]);
@@ -498,6 +507,44 @@ function createMockServices({
       ),
     );
   });
+  const QueuedEditorForTest = (props: any) => {
+    latestQueuedEditorProps = props;
+    React.useEffect(() => {
+      props.onReady?.({ focus: queuedEditorFocus });
+      return () => props.onReady?.(null);
+    }, [props.onReady]);
+    return React.createElement(
+      'div',
+      { 'data-testid': 'test-queued-editor' },
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'test-queued-editor-save',
+          onClick: () => props.onSave({ ...props.turn, message: 'edited queued turn' }),
+          type: 'button',
+        },
+        'save',
+      ),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'test-queued-editor-cancel',
+          onClick: props.onCancel,
+          type: 'button',
+        },
+        'cancel',
+      ),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'test-queued-editor-immediate',
+          onClick: () => props.onImmediateSend({ ...props.turn, message: 'edited immediate turn' }),
+          type: 'button',
+        },
+        'immediate',
+      ),
+    );
+  };
 
   return {
     aiChatService,
@@ -539,7 +586,10 @@ function createMockServices({
       getActiveChatInput: jest.fn(() => ({
         id: 'test-input',
         component: ChatInputForTest,
+        capabilities: activeInputCapabilities,
+        queuedTurnEditor: withQueuedEditor ? QueuedEditorForTest : undefined,
       })),
+      getActiveInputHandle: jest.fn(() => ({ focus: mainInputFocus })),
       setActiveInputHandle: jest.fn(),
     },
     chatRenderRegistry: {
@@ -645,6 +695,9 @@ function createMockServices({
       restorePendingWork: jest.fn(() => Promise.resolve()),
     },
     getLatestChatInputProps: () => latestChatInputProps,
+    getLatestQueuedEditorProps: () => latestQueuedEditorProps,
+    mainInputFocus,
+    queuedEditorFocus,
   };
 }
 
@@ -1240,6 +1293,235 @@ describe('ACP chat view headers', () => {
     expect(services.chatInputRegistry.setActiveInputHandle).toHaveBeenLastCalledWith(null, 'test-input');
   });
 
+  it('uses capabilities and queued editor from the same active input contribution', async () => {
+    const session = createMockSession({ messages: [] });
+    session.threadStatus = 'working';
+    const services = createMockServices({
+      activeInputCapabilities: ['focus'],
+      session,
+      withQueuedEditor: false,
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="acp-queued-turns-summary"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-queued-turn-edit"]')).toBeNull();
+  });
+
+  it('focuses the current queued editor when another Queued Turn edit is rejected', async () => {
+    const session = createMockSession({ messages: [] });
+    session.threadStatus = 'working';
+    const services = createMockServices({ session });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="acp-chat-send-later-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelectorAll('[data-testid="acp-queued-turn-edit"]')[0] as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="test-queued-editor"]')).not.toBeNull();
+    expect((container.querySelector('[data-testid="acp-queued-turns-summary"]') as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-edit"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(services.queuedEditorFocus).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[data-testid="test-queued-editor"]')).not.toBeNull();
+  });
+
+  it('restores main input focus after edit save, cancel, delete, and take-back only', async () => {
+    const session = createMockSession({ messages: [] });
+    const services = createMockServices({ session });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    expect(services.mainInputFocus).not.toHaveBeenCalled();
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turns-summary"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="acp-queued-turns-summary"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+    expect(services.mainInputFocus).not.toHaveBeenCalled();
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-edit"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="test-queued-editor-save"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    expect(services.mainInputFocus).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-edit"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="test-queued-editor-cancel"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    expect(services.mainInputFocus).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-delete"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    expect(services.mainInputFocus).toHaveBeenCalledTimes(3);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    expect(services.mainInputFocus).toHaveBeenCalledTimes(3);
+
+    act(() => {
+      services.getLatestChatInputProps().turnActions.takeBackLastQueuedTurn();
+    });
+    expect(services.mainInputFocus).toHaveBeenCalledTimes(4);
+  });
+
+  it('focuses main input only after Immediate Send settles and not after automatic advancement', async () => {
+    const session = createMockSession({ messages: [] });
+    const responses: ReturnType<typeof createRequestResponse>[] = [];
+    const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => {
+      const response = createRequestResponse();
+      responses.push(response);
+      return {
+        message: { agentId, command, images, prompt: message },
+        requestId: `request-${responses.length}`,
+        response,
+      };
+    });
+    const services = createMockServices({ createRequest, session });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-immediate"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+    expect(services.mainInputFocus).not.toHaveBeenCalled();
+
+    await act(async () => {
+      responses[0].finish('manual-stop');
+      await flushPromises();
+    });
+    expect(services.mainInputFocus).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-later-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+      responses[1].finish('completed');
+      await flushPromises();
+    });
+    expect(services.mainInputFocus).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not focus the new Active Session when an old Immediate Send settles', async () => {
+    const firstSession = createMockSession({ messages: [], sessionId: 'acp:first' });
+    const secondSession = createMockSession({ messages: [], sessionId: 'acp:second' });
+    const responses: ReturnType<typeof createRequestResponse>[] = [];
+    const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => {
+      const response = createRequestResponse();
+      responses.push(response);
+      return {
+        message: { agentId, command, images, prompt: message },
+        requestId: `request-${responses.length}`,
+        response,
+      };
+    });
+    const services = createMockServices({
+      createRequest,
+      session: firstSession,
+      sessions: [firstSession, secondSession],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-immediate"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    services.aiChatService.sessionModel = secondSession;
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      responses[0].finish('manual-stop');
+      await flushPromises();
+    });
+
+    expect(services.mainInputFocus).not.toHaveBeenCalled();
+  });
+
+  it('keeps a manual collapse sticky within one Active Session and resets it on activation', async () => {
+    const firstSession = createMockSession({ messages: [], sessionId: 'acp:first' });
+    firstSession.threadStatus = 'working';
+    const secondSession = createMockSession({ messages: [], sessionId: 'acp:second' });
+    secondSession.threadStatus = 'working';
+    const services = createMockServices({ session: firstSession, sessions: [firstSession, secondSession] });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turns-summary"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-later-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="acp-queued-turn-preview"]')).toBeNull();
+
+    services.aiChatService.sessionModel = secondSession;
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="acp-queued-turn-preview"]')?.textContent).toContain('follow up');
+  });
+
   it('queues follow-up ACP messages while a reply is loading and sends them after the reply completes', async () => {
     const session = createMockSession({ messages: [] });
     const responses: ReturnType<typeof createRequestResponse>[] = [];
@@ -1284,10 +1566,8 @@ describe('ACP chat view headers', () => {
     });
 
     expect(sendRequest).toHaveBeenCalledTimes(1);
-    expect(container.querySelector('[data-testid="acp-queued-messages-summary"]')?.textContent).toContain(
-      '1 Queued Message',
-    );
-    expect(container.querySelector('[data-testid="acp-queued-message-preview"]')?.textContent).toContain('follow up');
+    expect(container.querySelector('[data-testid="acp-queued-turns-summary"]')?.textContent).toContain('1 Queued Turn');
+    expect(container.querySelector('[data-testid="acp-queued-turn-preview"]')?.textContent).toContain('follow up');
 
     await act(async () => {
       responses[0].finish('completed');
@@ -1296,7 +1576,7 @@ describe('ACP chat view headers', () => {
 
     expect(createRequest).toHaveBeenNthCalledWith(2, 'follow up', 'default-agent', undefined, undefined);
     expect(sendRequest).toHaveBeenCalledTimes(2);
-    expect(container.querySelector('[data-testid="acp-queued-messages-summary"]')).toBeNull();
+    expect(container.querySelector('[data-testid="acp-queued-turns-summary"]')).toBeNull();
   });
 
   it('completes the response as agent-error when sendRequest throws synchronously', async () => {
@@ -1322,7 +1602,7 @@ describe('ACP chat view headers', () => {
     expect(response.errorDetails).toEqual({ message: 'sync kickoff failed' });
     expect(response.isComplete).toBe(true);
     expect(response.listenerCount).toBe(0);
-    expect(container.querySelector('[data-testid="acp-queue-status"]')?.textContent).toContain('Paused');
+    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Paused');
   });
 
   it('completes the response as agent-error when sendRequest returns a rejected promise', async () => {
@@ -1348,7 +1628,7 @@ describe('ACP chat view headers', () => {
     expect(response.errorDetails).toEqual({ message: 'async kickoff failed' });
     expect(response.isComplete).toBe(true);
     expect(response.listenerCount).toBe(0);
-    expect(container.querySelector('[data-testid="acp-queue-status"]')?.textContent).toContain('Paused');
+    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Paused');
   });
 
   it('keeps queued turn snapshots and FIFO advancement active after StrictMode effect replay', async () => {
@@ -1381,9 +1661,7 @@ describe('ACP chat view headers', () => {
       await flushPromises();
     });
 
-    expect(container.querySelector('[data-testid="acp-queued-messages-summary"]')?.textContent).toContain(
-      '1 Queued Message',
-    );
+    expect(container.querySelector('[data-testid="acp-queued-turns-summary"]')?.textContent).toContain('1 Queued Turn');
 
     await act(async () => {
       responses[0].finish('completed');
@@ -1391,7 +1669,7 @@ describe('ACP chat view headers', () => {
     });
 
     expect(sendRequest).toHaveBeenCalledTimes(2);
-    expect(container.querySelector('[data-testid="acp-queued-messages-summary"]')).toBeNull();
+    expect(container.querySelector('[data-testid="acp-queued-turns-summary"]')).toBeNull();
   });
 
   it('detaches active response listeners on unmount and ignores later completion', async () => {
@@ -1552,19 +1830,19 @@ describe('ACP chat view headers', () => {
       await Promise.resolve();
     });
 
-    expect(container.querySelector('[data-testid="acp-queue-status"]')?.textContent).toContain('Paused');
+    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Paused');
     expect(sendRequest).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       responses[0].finish('manual-stop');
       await flushPromises();
-      (container.querySelector('[data-testid="acp-resume-queue"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="acp-queued-turn-resume"]') as HTMLButtonElement).click();
       await flushPromises();
     });
 
     expect(createRequest).toHaveBeenNthCalledWith(2, 'follow up', 'default-agent', undefined, undefined);
     expect(sendRequest).toHaveBeenCalledTimes(2);
-    expect(container.querySelectorAll('[data-testid="acp-queued-message-preview"]')[0]?.textContent).toContain(
+    expect(container.querySelectorAll('[data-testid="acp-queued-turn-preview"]')[0]?.textContent).toContain(
       'later follow up',
     );
   });
@@ -1599,9 +1877,7 @@ describe('ACP chat view headers', () => {
       await flushPromises();
     });
 
-    const sendNow = Array.from(container.querySelectorAll('button')).find(
-      (button) => button.textContent === 'Send Now',
-    );
+    const sendNow = container.querySelector('[data-testid="acp-queued-turn-immediate"]');
     await act(async () => {
       (sendNow as HTMLButtonElement).click();
       await flushPromises();
@@ -1655,9 +1931,7 @@ describe('ACP chat view headers', () => {
       await flushPromises();
     });
 
-    const sendNow = Array.from(container.querySelectorAll('button')).find(
-      (button) => button.textContent === 'Send Now',
-    );
+    const sendNow = container.querySelector('[data-testid="acp-queued-turn-immediate"]');
     await act(async () => {
       (sendNow as HTMLButtonElement).click();
       await flushPromises();
@@ -1666,7 +1940,7 @@ describe('ACP chat view headers', () => {
     expect(services.aiChatService.cancelRequest).not.toHaveBeenCalled();
     expect(createRequest).toHaveBeenCalledTimes(1);
     expect(sendRequest).toHaveBeenCalledTimes(1);
-    expect(container.querySelector('[data-testid="acp-queue-status"]')?.textContent).toContain('Paused');
+    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Paused');
   });
 
   it('does not shallow-succeed Immediate Send when a remounted external generating session has no active response', async () => {
@@ -1683,9 +1957,7 @@ describe('ACP chat view headers', () => {
       await flushPromises();
     });
 
-    const sendNow = Array.from(container.querySelectorAll('button')).find(
-      (button) => button.textContent === 'Send Now',
-    );
+    const sendNow = container.querySelector('[data-testid="acp-queued-turn-immediate"]');
     await act(async () => {
       (sendNow as HTMLButtonElement).click();
       await flushPromises();
@@ -1694,7 +1966,7 @@ describe('ACP chat view headers', () => {
     expect(services.aiChatService.cancelRequest).not.toHaveBeenCalled();
     expect(createRequest).not.toHaveBeenCalled();
     expect(sendRequest).not.toHaveBeenCalled();
-    expect(container.querySelector('[data-testid="acp-queue-status"]')?.textContent).toContain('Paused');
+    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Paused');
   });
 
   it('does not advance an old session queue when its stale response completes after an Active Session switch', async () => {
@@ -1737,7 +2009,7 @@ describe('ACP chat view headers', () => {
 
     expect(createRequest).toHaveBeenCalledTimes(1);
     expect(sendRequest).toHaveBeenCalledTimes(1);
-    expect(container.querySelector('[data-testid="acp-queued-messages-summary"]')).toBeNull();
+    expect(container.querySelector('[data-testid="acp-queued-turns-summary"]')).toBeNull();
   });
 
   it('rejects an old queued turn before request side effects when the service session changes without rerendering', async () => {

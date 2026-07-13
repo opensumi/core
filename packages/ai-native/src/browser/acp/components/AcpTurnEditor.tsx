@@ -117,6 +117,7 @@ export interface AcpTurnEditorProps extends IChatMentionInputProps {
  */
 export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditorProps>((props, ref) => {
   const { onSend, disabled = false, loading = disabled, contextService, agentCwd } = props;
+  const isQueued = props.variant === 'queued';
 
   const [value, setValue] = useState(props.initialDraft?.message || props.value || '');
   const [images, setImages] = useState<Array<DataContent | URL>>(
@@ -726,8 +727,41 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
     return () => disposable.dispose();
   }, [aiChatService]);
 
-  const defaultMentionInputFooterOptions: FooterConfig = useMemo(
-    () => ({
+  const defaultMentionInputFooterOptions: FooterConfig = useMemo(() => {
+    const uploadImageButton = {
+      id: 'upload-image',
+      icon: 'image',
+      title: localize('aiNative.chat.imageUpload'),
+      onClick: () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+          const files = (e.target as HTMLInputElement).files;
+          if (files?.length) {
+            handleImageUpload(Array.from(files));
+          }
+        };
+        input.click();
+      },
+      position: FooterButtonPosition.LEFT,
+    };
+
+    if (isQueued) {
+      return {
+        modeOptions: [],
+        defaultMode: 'default',
+        currentMode: 'default',
+        showModeSelector: false,
+        modelOptions: [],
+        buttons: [uploadImageButton],
+        showModelSelector: false,
+        disableModelSelector: true,
+        configOptions: [],
+      };
+    }
+
+    return {
       modeOptions,
       defaultMode: modeOptions[0]?.id || 'default',
       currentMode,
@@ -791,44 +825,27 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
               onClick: handleShowRules,
               position: FooterButtonPosition.LEFT,
             },
-            {
-              id: 'upload-image',
-              icon: 'image',
-              title: localize('aiNative.chat.imageUpload'),
-              onClick: () => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.onchange = (e) => {
-                  const files = (e.target as HTMLInputElement).files;
-                  if (files?.length) {
-                    handleImageUpload(Array.from(files));
-                  }
-                };
-                input.click();
-              },
-              position: FooterButtonPosition.LEFT,
-            },
+            uploadImageButton,
           ],
       showModelSelector: aiNativeConfigService.capabilities.supportsAgentMode ? modelOptions.length > 0 : true,
       disableModelSelector: props.disableModelSelector,
       configOptions: props.configOptions,
-    }),
-    [
-      iconService,
-      handleShowMCPConfig,
-      handleShowRules,
-      props.disableModelSelector,
-      props.sessionModelId,
-      props.currentModelId,
-      props.configOptions,
-      currentMode,
-      modeOptions,
-      modelOptions,
-      aiNativeConfigService.capabilities.supportsAgentMode,
-      preferenceService,
-    ],
-  );
+    };
+  }, [
+    iconService,
+    handleShowMCPConfig,
+    handleShowRules,
+    props.disableModelSelector,
+    props.sessionModelId,
+    props.currentModelId,
+    props.configOptions,
+    currentMode,
+    modeOptions,
+    modelOptions,
+    aiNativeConfigService.capabilities.supportsAgentMode,
+    isQueued,
+    preferenceService,
+  ]);
 
   const handleStop = useCallback(() => {
     if (props.turnActions) {
@@ -857,10 +874,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           agentId: currentAgentId,
           command: currentCommand,
         };
-        const sendResult =
-          props.variant === 'queued' && props.onImmediateSend
-            ? props.onImmediateSend(draft)
-            : onSend(newValue, imagePayload, currentAgentId, currentCommand, option);
+        const sendResult = onSend(newValue, imagePayload, currentAgentId, currentCommand, option);
         // 发送后重置 slash command 状态
         props.setTheme(null);
         props.setAgentId('');
@@ -888,11 +902,9 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
       props.agentId,
       props.command,
       props.images,
-      props.onImmediateSend,
       props.setAgentId,
       props.setCommand,
       props.setTheme,
-      props.variant,
       chatFeatureRegistry,
       monacoCommandRegistry,
     ],
@@ -980,17 +992,33 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
     inputHandle.toggleExpanded?.();
   }, [inputHandle]);
 
+  const handleImmediateSend = useCallback(() => {
+    const draft = inputHandle.getDraft();
+    if (!props.onImmediateSend || !hasAcpChatSendPayload(draft)) {
+      return;
+    }
+    return props.onImmediateSend(draft);
+  }, [inputHandle, props.onImmediateSend]);
+
   return (
-    <div className={cls(styles.chat_input_container, isExpanded && styles.chat_input_container_expanded)}>
-      <div className={styles.expand_icon} onClick={handleExpandClick}>
-        <Popover
-          id={'ai_chat_input_expand'}
-          title={localize(isExpanded ? 'aiNative.chat.expand.unfullscreen' : 'aiNative.chat.expand.fullescreen')}
-          position={PopoverPosition.top}
-        >
-          <Icon className={cls(isExpanded ? getIcon('unfullscreen') : getIcon('fullescreen'))} />
-        </Popover>
-      </div>
+    <div
+      className={cls(
+        styles.chat_input_container,
+        isExpanded && styles.chat_input_container_expanded,
+        isQueued && 'acp-queued-turn-editor-input',
+      )}
+    >
+      {!isQueued && (
+        <div className={styles.expand_icon} onClick={handleExpandClick}>
+          <Popover
+            id={'ai_chat_input_expand'}
+            title={localize(isExpanded ? 'aiNative.chat.expand.unfullscreen' : 'aiNative.chat.expand.fullescreen')}
+            position={PopoverPosition.top}
+          >
+            <Icon className={cls(isExpanded ? getIcon('unfullscreen') : getIcon('fullescreen'))} />
+          </Popover>
+        </div>
+      )}
       {images.length > 0 && <ImagePreviewer images={images} onDelete={handleDeleteImage} />}
       <div className={styles.chat_input_body}>
         <MentionInput
@@ -1009,9 +1037,9 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           placeholder={placeholder}
           footerConfig={defaultMentionInputFooterOptions}
           onImageUpload={handleImageUpload}
-          modeOptions={modeOptions}
+          modeOptions={isQueued ? [] : modeOptions}
           currentMode={currentMode}
-          configOptions={props.configOptions}
+          configOptions={isQueued ? undefined : props.configOptions}
           onSelectionChange={handleModelChange}
           contextService={contextService}
           onModeChange={handleModeChange}
@@ -1022,6 +1050,16 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           expanded={isExpanded}
         />
       </div>
+      {isQueued && (
+        <div className='acp-queued-editor-actions' data-testid='acp-queued-editor-actions'>
+          <button onClick={props.onCancelEdit} type='button'>
+            {localize('aiNative.chat.queue.cancelEdit', 'Cancel')}
+          </button>
+          <button onClick={handleImmediateSend} type='button'>
+            {localize('aiNative.chat.queue.immediate', 'Immediate Send')}
+          </button>
+        </div>
+      )}
     </div>
   );
 });

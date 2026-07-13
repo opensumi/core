@@ -68,12 +68,26 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => {
         defaultInput,
         expanded,
         footerConfig,
+        mentionItems,
+        modeOptions,
+        configOptions,
+        onImageUpload,
         onSend,
       }: {
         currentMode?: string;
         defaultInput?: string;
         expanded?: boolean;
-        footerConfig?: { defaultModel?: string; configOptions?: unknown[] };
+        footerConfig?: {
+          buttons?: Array<{ id: string }>;
+          defaultModel?: string;
+          configOptions?: unknown[];
+          showModeSelector?: boolean;
+          showModelSelector?: boolean;
+        };
+        mentionItems?: unknown[];
+        modeOptions?: unknown[];
+        configOptions?: unknown[];
+        onImageUpload?: (files: File[]) => Promise<void>;
         onSend?: (content: string, option?: { model: string }) => unknown;
       },
       ref: React.ForwardedRef<unknown>,
@@ -112,6 +126,13 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => {
           'data-current-mode': currentMode,
           'data-default-model': footerConfig?.defaultModel,
           'data-config-option-count': String(footerConfig?.configOptions?.length ?? 0),
+          'data-direct-config-option-count': String(configOptions?.length ?? 0),
+          'data-footer-buttons': (footerConfig?.buttons || []).map(({ id }) => id).join(','),
+          'data-mention-item-count': String(mentionItems?.length ?? 0),
+          'data-mode-option-count': String(modeOptions?.length ?? 0),
+          'data-on-image-upload': onImageUpload ? 'true' : 'false',
+          'data-show-mode-selector': footerConfig?.showModeSelector ? 'true' : 'false',
+          'data-show-model-selector': footerConfig?.showModelSelector ? 'true' : 'false',
           readOnly: true,
           value,
         }),
@@ -552,6 +573,74 @@ describe('AcpChatMentionInput ref contract', () => {
     expect(expandButton.querySelector('span')!.className).toContain('icon-fullescreen');
     expect(onExpand).toHaveBeenLastCalledWith(false);
     expect(onExpand).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps Mention and image input but hides main-only controls in the queued variant', () => {
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          variant: 'queued',
+          initialDraft: {
+            message: '{{@file:/workspace/editor.ts}} review',
+            images: ['data:image/png;base64,queued'],
+          },
+          onSend: jest.fn(),
+          onCancelEdit: jest.fn(),
+          onImmediateSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+          agentModes: [
+            { id: 'mode-1', name: 'Mode 1' },
+            { id: 'mode-2', name: 'Mode 2' },
+          ],
+          agentModels: [{ modelId: 'model-1', name: 'Model 1' }],
+          configOptions: [{ id: 'temperature', value: 'high' }],
+        } as any),
+        container,
+      );
+    });
+
+    const input = container.querySelector('[data-testid="acp-mention-input"]') as HTMLTextAreaElement;
+    expect(container.querySelector('.expand_icon')).toBeNull();
+    expect(input.dataset.showModeSelector).toBe('false');
+    expect(input.dataset.showModelSelector).toBe('false');
+    expect(input.dataset.configOptionCount).toBe('0');
+    expect(input.dataset.directConfigOptionCount).toBe('0');
+    expect(input.dataset.footerButtons).toBe('upload-image');
+    expect(Number(input.dataset.mentionItemCount)).toBeGreaterThan(0);
+    expect(input.dataset.modeOptionCount).toBe('0');
+    expect(input.dataset.onImageUpload).toBe('true');
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('data:image/png;base64,queued');
+    expect(container.querySelector('[data-testid="acp-queued-editor-actions"]')).not.toBeNull();
+  });
+
+  it('hides queued Mode controls when there are no config options', () => {
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          variant: 'queued',
+          onSend: jest.fn(),
+          onCancelEdit: jest.fn(),
+          onImmediateSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+          agentModes: [
+            { id: 'mode-1', name: 'Mode 1' },
+            { id: 'mode-2', name: 'Mode 2' },
+          ],
+        }),
+        container,
+      );
+    });
+
+    const input = container.querySelector('[data-testid="acp-mention-input"]') as HTMLTextAreaElement;
+    expect(input.dataset.modeOptionCount).toBe('0');
   });
 
   it('syncs currentMode when currentModeId prop changes', () => {

@@ -117,6 +117,7 @@ import { MCP_SERVER_TYPE } from '../common/types';
 
 import { AcpChatInput } from './acp/components/AcpChatInput';
 import { AcpChatMentionInput } from './acp/components/AcpChatMentionInput';
+import { AcpQueuedTurnEditor } from './acp/components/AcpQueuedTurnEditor';
 import { WebMcpGroupRegistry } from './acp/webmcp-group-registry';
 import { createAcpChatGroup } from './acp/webmcp-groups/acp-chat.webmcp-group';
 import { createDiagnosticsGroup } from './acp/webmcp-groups/diagnostics.webmcp-group';
@@ -678,6 +679,7 @@ export class AINativeBrowserContribution
       id: 'acp-mention-input',
       component: AcpChatMentionInput,
       capabilities: ['restore-draft', 'focus', 'expand', 'images', 'mentions', 'paste', 'rich-queued-edit'],
+      queuedTurnEditor: AcpQueuedTurnEditor,
       priority: 200,
       when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
     });
