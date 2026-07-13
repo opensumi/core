@@ -60,11 +60,14 @@ interface ActiveDelivery {
 
 export class AcpQueuedTurnModule implements IDisposable {
   private activeSessionId: string | undefined;
-  private phase: AcpQueuedTurnSnapshot['phase'] = 'idle';
+  private processing: 'auto' | 'paused' | 'absorbing-cancel' = 'auto';
   private entries: QueuedTurn[] = [];
   private editingTurnId: string | undefined;
   private pauseReason: QueuePauseReason | undefined;
   private reservedTurn: QueuedTurn | undefined;
+  private immediateReservation: QueuedTurn | undefined;
+  private immediateReservationIndex: number | undefined;
+  private canFastTrack = false;
   private nextTurnId = 1;
   private sessionEpoch = 0;
   private activeDelivery: ActiveDelivery | undefined;
@@ -80,14 +83,19 @@ export class AcpQueuedTurnModule implements IDisposable {
   constructor(private readonly port: AcpQueuedTurnPort) {}
 
   get snapshot(): AcpQueuedTurnSnapshot {
+    const phase = this.getPhase();
     return {
       activeSessionId: this.activeSessionId,
-      phase: this.phase,
+      phase,
       entries: [...this.entries],
       editingTurnId: this.editingTurnId,
       pauseReason: this.pauseReason,
-      canResume: this.phase === 'paused' && this.entries.length > 0,
-      canFastTrack: this.phase === 'generating' && this.entries.length > 0,
+      canResume: phase === 'paused' && this.entries.length > 0,
+      canFastTrack:
+        this.canFastTrack &&
+        phase === 'generating' &&
+        this.entries.length > 0 &&
+        this.entries[0].id !== this.editingTurnId,
     };
   }
 
@@ -107,29 +115,238 @@ export class AcpQueuedTurnModule implements IDisposable {
   }
 
   submit(draft: AcpTurnDraft): Promise<TurnActionResult> {
+    if (!hasAcpChatSendPayload(draft)) {
+      return Promise.resolve({ accepted: false, reason: 'empty-content' });
+    }
+
+    const submittedDraft = this.copyDraft(draft);
+    if (this.processing === 'paused' && this.activeDelivery) {
+      const correctiveTurn = this.createQueuedTurn(submittedDraft);
+      this.entries.unshift(correctiveTurn);
+      return this.sendImmediately(correctiveTurn.id);
+    }
+
     return this.serialize(async () => {
-      if (!hasAcpChatSendPayload(draft)) {
-        return { accepted: false, reason: 'empty-content' };
+      if (this.processing === 'paused' && !this.activeDelivery) {
+        return this.startReservedTurn(this.createQueuedTurn(submittedDraft), true);
       }
 
-      const submittedDraft = this.copyDraft(draft);
       if (
-        this.phase === 'paused' ||
         this.entries.length > 0 ||
         this.port.getStatus(this.activeSessionId) === 'generating' ||
         this.activeDelivery
       ) {
         this.entries.push(this.createQueuedTurn(submittedDraft));
-        if (this.phase !== 'paused') {
-          this.phase = 'generating';
+        this.canFastTrack = this.processing === 'auto';
+        if (this.processing !== 'paused') {
           this.pauseReason = undefined;
         }
         this.fireDidChange();
         return { accepted: true, outcome: 'queued' };
       }
 
-      return this.startDraft(submittedDraft, this.sessionEpoch);
+      return this.startReservedTurn(this.createQueuedTurn(submittedDraft), true);
     });
+  }
+
+  resume(): Promise<TurnActionResult> {
+    return this.serialize(async () => {
+      if (this.processing !== 'paused' || (!this.activeDelivery && this.entries.length === 0)) {
+        return { accepted: false, reason: 'turn-not-found' };
+      }
+
+      this.processing = 'auto';
+      this.pauseReason = undefined;
+      this.fireDidChange();
+      if (this.activeDelivery) {
+        return { accepted: true, outcome: 'resumed' };
+      }
+
+      const result = await this.startNextQueuedTurnIfReady();
+      return result.accepted ? { accepted: true, outcome: 'resumed' } : result;
+    });
+  }
+
+  stop(): Promise<TurnActionResult> {
+    this.processing = 'paused';
+    this.pauseReason = 'manual-stop';
+    this.canFastTrack = false;
+    this.fireDidChange();
+
+    const epoch = this.sessionEpoch;
+    return this.serialize(async () => {
+      try {
+        await this.port.cancelCurrent(this.activeSessionId);
+      } catch {
+        if (epoch !== this.sessionEpoch) {
+          return { accepted: false, reason: 'stale-session' };
+        }
+        this.pauseReason = 'cancel-failed';
+        this.fireDidChange();
+        return { accepted: false, reason: 'cancel-failed' };
+      }
+
+      if (epoch !== this.sessionEpoch) {
+        return { accepted: false, reason: 'stale-session' };
+      }
+      this.activeDelivery = undefined;
+      this.fireDidChange();
+      return { accepted: true, outcome: 'stopped' };
+    });
+  }
+
+  sendImmediately(turnId: string): Promise<TurnActionResult> {
+    if (this.processing === 'absorbing-cancel' || this.immediateReservation) {
+      return Promise.resolve({ accepted: false, reason: 'turn-not-found' });
+    }
+
+    const index = this.entries.findIndex(({ id }) => id === turnId);
+    if (index === -1) {
+      return Promise.resolve({ accepted: false, reason: 'turn-not-found' });
+    }
+
+    const [turn] = this.entries.splice(index, 1);
+    this.immediateReservation = turn;
+    this.immediateReservationIndex = index;
+    this.processing = 'absorbing-cancel';
+    this.pauseReason = undefined;
+    this.canFastTrack = false;
+    this.fireDidChange();
+
+    const epoch = this.sessionEpoch;
+    return this.serialize(() => this.cancelForImmediateAndStart(turn, index, epoch));
+  }
+
+  beginEdit(turnId: string): TurnActionResult {
+    if (!this.entries.some(({ id }) => id === turnId)) {
+      return { accepted: false, reason: 'turn-not-found' };
+    }
+    if (this.editingTurnId && this.editingTurnId !== turnId) {
+      return { accepted: false, reason: 'another-turn-is-editing' };
+    }
+
+    this.editingTurnId = turnId;
+    this.fireDidChange();
+    return { accepted: true, outcome: 'updated' };
+  }
+
+  commitEdit(turnId: string, draft: AcpTurnDraft, immediate = false): Promise<TurnActionResult> {
+    if (immediate) {
+      if (!hasAcpChatSendPayload(draft)) {
+        return Promise.resolve({ accepted: false, reason: 'empty-content' });
+      }
+      const index = this.entries.findIndex(({ id }) => id === turnId);
+      if (index === -1 || this.editingTurnId !== turnId) {
+        return Promise.resolve({ accepted: false, reason: 'turn-not-found' });
+      }
+      this.entries[index] = { ...this.copyDraft(draft), id: turnId };
+      this.editingTurnId = undefined;
+      this.fireDidChange();
+      return this.sendImmediately(turnId);
+    }
+
+    return this.serialize(async () => {
+      if (!hasAcpChatSendPayload(draft)) {
+        return { accepted: false, reason: 'empty-content' };
+      }
+
+      const index = this.entries.findIndex(({ id }) => id === turnId);
+      if (index === -1 || this.editingTurnId !== turnId) {
+        return { accepted: false, reason: 'turn-not-found' };
+      }
+
+      this.entries[index] = { ...this.copyDraft(draft), id: turnId };
+      this.editingTurnId = undefined;
+      if (this.processing === 'paused') {
+        this.processing = 'auto';
+        this.pauseReason = undefined;
+      }
+      this.fireDidChange();
+
+      await this.startNextQueuedTurnIfReady();
+      return { accepted: true, outcome: 'updated' };
+    });
+  }
+
+  cancelEdit(turnId: string): Promise<TurnActionResult> {
+    return this.serialize(async () => {
+      if (this.editingTurnId !== turnId || !this.entries.some(({ id }) => id === turnId)) {
+        return { accepted: false, reason: 'turn-not-found' };
+      }
+
+      this.editingTurnId = undefined;
+      if (this.processing === 'paused') {
+        this.processing = 'auto';
+        this.pauseReason = undefined;
+      }
+      this.fireDidChange();
+      await this.startNextQueuedTurnIfReady();
+      return { accepted: true, outcome: 'updated' };
+    });
+  }
+
+  remove(turnId: string): Promise<TurnActionResult> {
+    return this.serialize(async () => {
+      const index = this.entries.findIndex(({ id }) => id === turnId);
+      if (index === -1) {
+        return { accepted: false, reason: 'turn-not-found' };
+      }
+
+      this.entries.splice(index, 1);
+      if (this.editingTurnId === turnId) {
+        this.editingTurnId = undefined;
+      }
+      if (this.processing === 'paused') {
+        this.processing = 'auto';
+        this.pauseReason = undefined;
+      }
+      this.fireDidChange();
+
+      await this.startNextQueuedTurnIfReady();
+      return { accepted: true, outcome: 'removed' };
+    });
+  }
+
+  takeBackLast(): QueuedTurn | undefined {
+    const turn = this.entries.pop();
+    if (!turn) {
+      return undefined;
+    }
+    if (this.editingTurnId === turn.id) {
+      this.editingTurnId = undefined;
+    }
+    this.canFastTrack = false;
+    this.fireDidChange();
+    return turn;
+  }
+
+  fastTrack(): Promise<TurnActionResult> {
+    const head = this.entries[0];
+    if (!this.canFastTrack || !head || head.id === this.editingTurnId) {
+      return Promise.resolve({ accepted: false, reason: 'turn-not-found' });
+    }
+    this.canFastTrack = false;
+    return this.sendImmediately(head.id);
+  }
+
+  invalidateFastTrack(): void {
+    if (!this.canFastTrack) {
+      return;
+    }
+    this.canFastTrack = false;
+    this.fireDidChange();
+  }
+
+  clear(): void {
+    this.entries = [];
+    this.editingTurnId = undefined;
+    this.reservedTurn = undefined;
+    this.immediateReservation = undefined;
+    this.immediateReservationIndex = undefined;
+    this.processing = 'auto';
+    this.pauseReason = undefined;
+    this.canFastTrack = false;
+    this.fireDidChange();
   }
 
   private serialize<T>(operation: () => Promise<T> | T): Promise<T> {
@@ -152,22 +369,28 @@ export class AcpQueuedTurnModule implements IDisposable {
   private applyActivation(sessionId: string | undefined): void {
     this.sessionEpoch += 1;
     this.activeSessionId = sessionId;
+    this.processing = 'auto';
     this.entries = [];
     this.editingTurnId = undefined;
     this.reservedTurn = undefined;
+    this.immediateReservation = undefined;
+    this.immediateReservationIndex = undefined;
     this.activeDelivery = undefined;
     this.pauseReason = undefined;
-    this.phase = this.port.getStatus(sessionId);
+    this.canFastTrack = false;
     this.hasPendingActivation = false;
     this.pendingActivationId = undefined;
     this.fireDidChange();
   }
 
-  private async startDraft(draft: AcpTurnDraft, epoch: number, queuedTurn?: QueuedTurn): Promise<TurnActionResult> {
+  private async startReservedTurn(turn: QueuedTurn, returnToHeadOnFailure: boolean): Promise<TurnActionResult> {
+    const epoch = this.sessionEpoch;
     const sessionId = this.activeSessionId;
-    this.reservedTurn = queuedTurn || this.createQueuedTurn(draft);
-    this.phase = 'generating';
+    const { id: _id, ...draft } = turn;
+    this.reservedTurn = turn;
+    this.processing = 'auto';
     this.pauseReason = undefined;
+    this.canFastTrack = false;
     this.pendingInitialStart = sessionId === undefined;
     this.fireDidChange();
 
@@ -187,11 +410,11 @@ export class AcpQueuedTurnModule implements IDisposable {
         return { accepted: false, reason: 'stale-session' };
       }
 
-      if (this.reservedTurn) {
-        this.entries.unshift(this.reservedTurn);
+      if (this.reservedTurn === turn && returnToHeadOnFailure) {
+        this.entries.unshift(turn);
       }
       this.reservedTurn = undefined;
-      this.phase = 'paused';
+      this.processing = 'paused';
       this.pauseReason = 'start-failed';
       this.fireDidChange();
       return { accepted: false, reason: 'start-failed' };
@@ -219,9 +442,49 @@ export class AcpQueuedTurnModule implements IDisposable {
 
     this.reservedTurn = undefined;
     this.activeDelivery = { epoch, id: handle.id };
-    this.phase = 'generating';
+    this.processing = 'auto';
     this.fireDidChange();
     return { accepted: true, outcome: 'started' };
+  }
+
+  private async cancelForImmediateAndStart(
+    turn: QueuedTurn,
+    originalIndex: number,
+    epoch: number,
+  ): Promise<TurnActionResult> {
+    try {
+      await this.port.cancelCurrent(this.activeSessionId);
+    } catch {
+      if (epoch !== this.sessionEpoch) {
+        return { accepted: false, reason: 'stale-session' };
+      }
+      if (this.immediateReservation !== turn) {
+        return { accepted: false, reason: 'turn-not-found' };
+      }
+      const reservationIndex = this.immediateReservationIndex ?? originalIndex;
+      this.entries.splice(Math.min(reservationIndex, this.entries.length), 0, turn);
+      this.immediateReservation = undefined;
+      this.immediateReservationIndex = undefined;
+      this.processing = 'paused';
+      this.pauseReason = 'cancel-failed';
+      this.fireDidChange();
+      return { accepted: false, reason: 'cancel-failed' };
+    }
+
+    if (epoch !== this.sessionEpoch) {
+      return { accepted: false, reason: 'stale-session' };
+    }
+
+    this.activeDelivery = undefined;
+    if (this.immediateReservation !== turn) {
+      this.fireDidChange();
+      return { accepted: false, reason: 'turn-not-found' };
+    }
+    this.immediateReservation = undefined;
+    this.immediateReservationIndex = undefined;
+    this.processing = 'auto';
+    this.pauseReason = undefined;
+    return this.startReservedTurn(turn, true);
   }
 
   private watchOutcome(epoch: number, handle: AcpTurnHandle): void {
@@ -241,23 +504,58 @@ export class AcpQueuedTurnModule implements IDisposable {
     }
 
     this.activeDelivery = undefined;
-    if (outcome !== 'completed') {
-      this.phase = 'paused';
-      this.pauseReason = outcome;
+    if (this.processing === 'paused') {
       this.fireDidChange();
       return;
     }
 
-    this.phase = 'idle';
+    if (outcome !== 'completed') {
+      this.processing = 'paused';
+      this.pauseReason = outcome;
+      this.canFastTrack = false;
+      this.fireDidChange();
+      return;
+    }
+
     this.pauseReason = undefined;
+    if (this.entries[0]?.id === this.editingTurnId) {
+      this.fireDidChange();
+      return;
+    }
+
+    await this.startNextQueuedTurnIfReady();
+  }
+
+  private async startNextQueuedTurnIfReady(): Promise<TurnActionResult> {
+    if (
+      this.activeDelivery ||
+      this.reservedTurn ||
+      this.processing !== 'auto' ||
+      this.entries[0]?.id === this.editingTurnId
+    ) {
+      return { accepted: true, outcome: 'updated' };
+    }
+
     const nextTurn = this.entries.shift();
     if (!nextTurn) {
       this.fireDidChange();
-      return;
+      return { accepted: true, outcome: 'updated' };
     }
 
-    const { id: _id, ...draft } = nextTurn;
-    await this.startDraft(draft, epoch, nextTurn);
+    return this.startReservedTurn(nextTurn, true);
+  }
+
+  private getPhase(): AcpQueuedTurnSnapshot['phase'] {
+    if (this.processing === 'absorbing-cancel') {
+      return 'cancelling-for-immediate';
+    }
+    if (this.processing === 'paused') {
+      return 'paused';
+    }
+    if (this.activeDelivery || this.reservedTurn || this.port.getStatus(this.activeSessionId) === 'generating') {
+      return 'generating';
+    }
+    return 'idle';
   }
 
   private createQueuedTurn(draft: AcpTurnDraft): QueuedTurn {

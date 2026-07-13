@@ -59,6 +59,20 @@ class RejectingStartTurnPort extends ControlledTurnPort {
   }
 }
 
+class RejectingNextStartTurnPort extends ControlledTurnPort {
+  readonly failedStarts: AcpTurnDraft[] = [];
+  failNextStart = false;
+
+  override async start(sessionId: string | undefined, draft: AcpTurnDraft): Promise<AcpTurnHandle> {
+    if (this.failNextStart) {
+      this.failNextStart = false;
+      this.failedStarts.push(draft);
+      throw new Error('start failed');
+    }
+    return super.start(sessionId, draft);
+  }
+}
+
 describe('AcpQueuedTurnModule', () => {
   it('rejects an Active Session turn without a sendable ACP payload', async () => {
     const port = new ControlledTurnPort();
@@ -159,7 +173,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.entries).toEqual([]);
   });
 
-  it('preserves start-failed pause state and appends submissions behind the failed Queued Turn', async () => {
+  it('uses a new draft to recover from start-failed and returns it to the head if its start also fails', async () => {
     const port = new RejectingStartTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
@@ -174,47 +188,470 @@ describe('AcpQueuedTurnModule', () => {
       canResume: true,
     });
 
-    await expect(turns.submit({ message: 'queued later' })).resolves.toEqual({ accepted: true, outcome: 'queued' });
+    await expect(turns.submit({ message: 'corrective draft' })).resolves.toEqual({
+      accepted: false,
+      reason: 'start-failed',
+    });
 
-    expect(port.attempts.map(({ draft }) => draft.message)).toEqual(['failed first']);
-    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['failed first', 'queued later']);
+    expect(port.attempts.map(({ draft }) => draft.message)).toEqual(['failed first', 'corrective draft']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['corrective draft', 'failed first']);
     expect(turns.snapshot.phase).toBe('paused');
     expect(turns.snapshot.pauseReason).toBe('start-failed');
   });
 
-  it('keeps manual-stop paused and appends new Queued Turns in FIFO order', async () => {
+  it.each(['manual-stop', 'agent-error'] as const)('pauses remaining FIFO after %s', async (outcome) => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
-    await turns.submit({ message: 'already queued' });
+    await turns.submit({ message: 'keep queued' });
+
+    port.complete(0, outcome);
+    await turns.whenSettled();
+
+    expect(turns.snapshot.phase).toBe('paused');
+    expect(turns.snapshot.pauseReason).toBe(outcome);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['keep queued']);
+  });
+
+  it('resumes the paused Queued Turn FIFO from its head', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'first queued' });
+    await turns.submit({ message: 'last queued' });
 
     port.complete(0, 'manual-stop');
     await turns.whenSettled();
-    await expect(turns.submit({ message: 'queued while paused' })).resolves.toEqual({
-      accepted: true,
-      outcome: 'queued',
-    });
+    await expect(turns.resume()).resolves.toEqual({ accepted: true, outcome: 'resumed' });
 
-    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
-    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['already queued', 'queued while paused']);
-    expect(turns.snapshot.phase).toBe('paused');
-    expect(turns.snapshot.pauseReason).toBe('manual-stop');
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'first queued']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['last queued']);
+    expect(turns.snapshot).toMatchObject({ phase: 'generating', pauseReason: undefined, canResume: false });
   });
 
-  it('pauses Queued Turns after an agent-error outcome', async () => {
+  it('sends a corrective new draft while paused before restoring the older FIFO', async () => {
     const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'first queued' });
+    await turns.submit({ message: 'last queued' });
+
+    port.complete(0, 'agent-error');
+    await turns.whenSettled();
+
+    await expect(turns.submit({ message: 'corrective draft' })).resolves.toEqual({
+      accepted: true,
+      outcome: 'started',
+    });
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'corrective draft']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['first queued', 'last queued']);
+
+    port.complete(1);
+    await turns.whenSettled();
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'corrective draft', 'first queued']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['last queued']);
+  });
+
+  it('ignores a duplicate completion for the same delivery', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'first queued' });
+    await turns.submit({ message: 'last queued' });
+
+    port.complete(0);
+    port.complete(0);
+    await turns.whenSettled();
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'first queued']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['last queued']);
+  });
+
+  it('blocks an edited head until save', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'head' });
+
+    const headId = turns.snapshot.entries[0].id;
+    turns.beginEdit(headId);
+    port.complete(0);
+    await turns.whenSettled();
+    expect(port.starts).toHaveLength(1);
+    expect(turns.snapshot.canFastTrack).toBe(false);
+
+    await turns.commitEdit(headId, { message: 'edited head' });
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'edited head']);
+  });
+
+  it('rejects a second edit while another Queued Turn is being edited', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'first queued' });
+    await turns.submit({ message: 'last queued' });
+
+    expect(turns.beginEdit(turns.snapshot.entries[0].id)).toEqual({ accepted: true, outcome: 'updated' });
+    expect(turns.beginEdit(turns.snapshot.entries[1].id)).toEqual({
+      accepted: false,
+      reason: 'another-turn-is-editing',
+    });
+  });
+
+  it('edits a non-head Queued Turn without blocking earlier FIFO work', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'first queued' });
+    await turns.submit({ message: 'edited later' });
+
+    turns.beginEdit(turns.snapshot.entries[1].id);
+    port.complete(0);
+    await turns.whenSettled();
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'first queued']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['edited later']);
+  });
+
+  it('preserves a non-head Queued Turn ID and FIFO position after edit commit', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'first queued' });
+    await turns.submit({ message: 'selected' });
+    await turns.submit({ message: 'last queued' });
+    const originalIds = turns.snapshot.entries.map(({ id }) => id);
+    const selectedId = originalIds[1];
+
+    turns.beginEdit(selectedId);
+    await turns.commitEdit(selectedId, { message: 'edited selected' });
+
+    expect(turns.snapshot.entries.map(({ id }) => id)).toEqual(originalIds);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual([
+      'first queued',
+      'edited selected',
+      'last queued',
+    ]);
+  });
+
+  it('cancels an edited head and dispatches its original draft', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'original head' });
+
+    const headId = turns.snapshot.entries[0].id;
+    turns.beginEdit(headId);
+    port.complete(0);
+    await turns.whenSettled();
+
+    await expect(turns.cancelEdit(headId)).resolves.toEqual({ accepted: true, outcome: 'updated' });
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'original head']);
+    expect(turns.snapshot.editingTurnId).toBeUndefined();
+  });
+
+  it('deletes an edited head and dispatches the next Queued Turn', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'edited head' });
+    await turns.submit({ message: 'next queued' });
+
+    const headId = turns.snapshot.entries[0].id;
+    turns.beginEdit(headId);
+    port.complete(0);
+    await turns.whenSettled();
+
+    await expect(turns.remove(headId)).resolves.toEqual({ accepted: true, outcome: 'removed' });
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'next queued']);
+    expect(turns.snapshot.editingTurnId).toBeUndefined();
+  });
+
+  it('waits for cancellation before Immediate Send and preserves the remaining order', async () => {
+    const cancel = new Deferred<void>();
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest.fn(() => cancel.promise);
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'first queued' });
+    await turns.submit({ message: 'selected' });
+    await turns.submit({ message: 'last queued' });
+
+    const immediate = turns.sendImmediately(turns.snapshot.entries[1].id);
+    expect(turns.snapshot.phase).toBe('cancelling-for-immediate');
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+
+    cancel.resolve();
+    await expect(immediate).resolves.toEqual({ accepted: true, outcome: 'started' });
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'selected']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['first queued', 'last queued']);
+
+    port.complete(0);
+    await turns.whenSettled();
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'selected']);
+
+    port.complete(1);
+    await turns.whenSettled();
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'selected', 'first queued']);
+  });
+
+  it('restores an Immediate Send reservation to its original FIFO position when cancellation fails', async () => {
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest.fn(() => Promise.reject(new Error('cancel failed')));
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'first queued' });
+    await turns.submit({ message: 'selected' });
+    await turns.submit({ message: 'last queued' });
+    const originalIds = turns.snapshot.entries.map(({ id }) => id);
+
+    await expect(turns.sendImmediately(originalIds[1])).resolves.toEqual({ accepted: false, reason: 'cancel-failed' });
+
+    expect(turns.snapshot.entries.map(({ id }) => id)).toEqual(originalIds);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['first queued', 'selected', 'last queued']);
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'cancel-failed' });
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+  });
+
+  it('rejects a repeated Immediate Send for the same reserved Queued Turn without double cancellation or start', async () => {
+    const cancel = new Deferred<void>();
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest.fn(() => cancel.promise);
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'selected' });
+    const selectedId = turns.snapshot.entries[0].id;
+
+    const first = turns.sendImmediately(selectedId);
+    const repeated = turns.sendImmediately(selectedId);
+    cancel.resolve();
+
+    await expect(first).resolves.toEqual({ accepted: true, outcome: 'started' });
+    await expect(repeated).resolves.toEqual({ accepted: false, reason: 'turn-not-found' });
+    expect(port.cancelCurrent).toHaveBeenCalledTimes(1);
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'selected']);
+  });
+
+  it('commits an inline edit and Immediately Sends the same Queued Turn', async () => {
+    const cancel = new Deferred<void>();
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest.fn(() => cancel.promise);
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'selected' });
+    await turns.submit({ message: 'last queued' });
+    const selectedId = turns.snapshot.entries[0].id;
+    turns.beginEdit(selectedId);
+
+    const commit = turns.commitEdit(selectedId, { message: 'edited selected' }, true);
+    expect(turns.snapshot.phase).toBe('cancelling-for-immediate');
+    cancel.resolve();
+
+    await expect(commit).resolves.toEqual({ accepted: true, outcome: 'started' });
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'edited selected']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['last queued']);
+    expect(turns.snapshot.editingTurnId).toBeUndefined();
+  });
+
+  it('returns an Immediate Send target to the queue head when its start fails after cancellation', async () => {
+    const port = new RejectingNextStartTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'first queued' });
+    await turns.submit({ message: 'selected' });
+    await turns.submit({ message: 'last queued' });
+    port.failNextStart = true;
+
+    await expect(turns.sendImmediately(turns.snapshot.entries[1].id)).resolves.toEqual({
+      accepted: false,
+      reason: 'start-failed',
+    });
+
+    expect(port.failedStarts.map(({ message }) => message)).toEqual(['selected']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['selected', 'first queued', 'last queued']);
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'start-failed' });
+  });
+
+  it('enters paused before stop cancellation completes and absorbs the stopped delivery completion', async () => {
+    const cancel = new Deferred<void>();
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest.fn(() => cancel.promise);
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
     await turns.submit({ message: 'queued' });
 
+    const stop = turns.stop();
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'manual-stop' });
+    cancel.resolve();
+    await expect(stop).resolves.toEqual({ accepted: true, outcome: 'stopped' });
+
+    port.complete(0);
+    await turns.whenSettled();
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['queued']);
+  });
+
+  it('stays paused without retrying when stop cancellation fails', async () => {
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest.fn(() => Promise.reject(new Error('cancel failed')));
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'queued' });
+
+    await expect(turns.stop()).resolves.toEqual({ accepted: false, reason: 'cancel-failed' });
+
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'cancel-failed' });
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['queued']);
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+  });
+
+  it('retries cancellation to Immediately Send a corrective draft after cancel-failed', async () => {
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest
+      .fn<Promise<void>, []>()
+      .mockRejectedValueOnce(new Error('cancel failed'))
+      .mockResolvedValueOnce();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'old queued' });
+    await turns.stop();
+
+    await expect(turns.submit({ message: 'corrective draft' })).resolves.toEqual({
+      accepted: true,
+      outcome: 'started',
+    });
+
+    expect(port.cancelCurrent).toHaveBeenCalledTimes(2);
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'corrective draft']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['old queued']);
+  });
+
+  it('resumes the remaining FIFO after removing a Queued Turn while paused', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'head' });
+    await turns.submit({ message: 'removed tail' });
+    const tailId = turns.snapshot.entries[1].id;
     port.complete(0, 'agent-error');
     await turns.whenSettled();
 
-    expect(port.starts).toHaveLength(1);
-    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['queued']);
-    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'agent-error', canResume: true });
+    await turns.remove(tailId);
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'head']);
+    expect(turns.snapshot.entries).toEqual([]);
+  });
+
+  it('takes back only the tail Queued Turn and releases its edit lease', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'first queued' });
+    await turns.submit({ message: 'tail', images: ['tail.png'] });
+    const tail = turns.snapshot.entries[1];
+    turns.beginEdit(tail.id);
+
+    expect(turns.takeBackLast()).toEqual(tail);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['first queued']);
+    expect(turns.snapshot.editingTurnId).toBeUndefined();
+  });
+
+  it('uses fast-track once to Immediately Send the FIFO head', async () => {
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest.fn(() => Promise.resolve());
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'head' });
+    await turns.submit({ message: 'last queued' });
+
+    expect(turns.snapshot.canFastTrack).toBe(true);
+    await expect(turns.fastTrack()).resolves.toEqual({ accepted: true, outcome: 'started' });
+    await expect(turns.fastTrack()).resolves.toEqual({ accepted: false, reason: 'turn-not-found' });
+
+    expect(port.cancelCurrent).toHaveBeenCalledTimes(1);
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'head']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['last queued']);
+    expect(turns.snapshot.canFastTrack).toBe(false);
+  });
+
+  it('invalidates one-shot fast-track after a user draft change', async () => {
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest.fn(() => Promise.resolve());
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'head' });
+    expect(turns.snapshot.canFastTrack).toBe(true);
+
+    turns.invalidateFastTrack();
+    await expect(turns.fastTrack()).resolves.toEqual({ accepted: false, reason: 'turn-not-found' });
+
+    expect(port.cancelCurrent).not.toHaveBeenCalled();
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['head']);
+  });
+
+  it('clears Queued Turns, editing, pause, and fast-track state', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'queued' });
+    turns.beginEdit(turns.snapshot.entries[0].id);
+    port.complete(0, 'manual-stop');
+    await turns.whenSettled();
+
+    turns.clear();
+
+    expect(turns.snapshot).toMatchObject({
+      phase: 'idle',
+      entries: [],
+      editingTurnId: undefined,
+      pauseReason: undefined,
+      canResume: false,
+      canFastTrack: false,
+    });
+  });
+
+  it('clears an Immediate Send reservation before cancellation can start it', async () => {
+    const cancel = new Deferred<void>();
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest.fn(() => cancel.promise);
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'selected' });
+
+    const immediate = turns.sendImmediately(turns.snapshot.entries[0].id);
+    turns.clear();
+    cancel.resolve();
+
+    await expect(immediate).resolves.toEqual({ accepted: false, reason: 'turn-not-found' });
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+    expect(turns.snapshot.entries).toEqual([]);
   });
 
   it('treats a rejected outcome promise as an agent error and keeps Queued Turns paused', async () => {
