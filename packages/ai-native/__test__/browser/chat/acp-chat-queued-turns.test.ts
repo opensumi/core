@@ -10,6 +10,7 @@ import {
 
 class ControlledTurnPort implements AcpQueuedTurnPort {
   readonly starts: Array<{ sessionId?: string; draft: AcpTurnDraft; completion: Deferred<AcpTurnOutcome> }> = [];
+  readonly cancellations: Array<string | undefined> = [];
   status: 'idle' | 'generating' = 'idle';
 
   getStatus() {
@@ -24,7 +25,8 @@ class ControlledTurnPort implements AcpQueuedTurnPort {
     return { id, sessionId: sessionId || 'acp:created-session', outcome: completion.promise };
   }
 
-  async cancelCurrent(): Promise<void> {
+  async cancelCurrent(sessionId: string | undefined): Promise<void> {
+    this.cancellations.push(sessionId);
     this.status = 'idle';
   }
 
@@ -68,6 +70,37 @@ class RejectingNextStartTurnPort extends ControlledTurnPort {
       this.failNextStart = false;
       this.failedStarts.push(draft);
       throw new Error('start failed');
+    }
+    return super.start(sessionId, draft);
+  }
+}
+
+class DeferredFirstCancelTurnPort extends ControlledTurnPort {
+  readonly cancelRequested = new Deferred<void>();
+  readonly releaseCancel = new Deferred<void>();
+  private shouldDeferCancel = true;
+
+  override async cancelCurrent(sessionId: string | undefined): Promise<void> {
+    this.cancellations.push(sessionId);
+    if (this.shouldDeferCancel) {
+      this.shouldDeferCancel = false;
+      this.cancelRequested.resolve();
+      await this.releaseCancel.promise;
+    }
+    this.status = 'idle';
+  }
+}
+
+class DeferredNextStartTurnPort extends ControlledTurnPort {
+  readonly startRequested = new Deferred<void>();
+  readonly releaseStart = new Deferred<void>();
+  deferNextStart = false;
+
+  override async start(sessionId: string | undefined, draft: AcpTurnDraft): Promise<AcpTurnHandle> {
+    if (this.deferNextStart) {
+      this.deferNextStart = false;
+      this.startRequested.resolve();
+      await this.releaseStart.promise;
     }
     return super.start(sessionId, draft);
   }
@@ -171,6 +204,25 @@ describe('AcpQueuedTurnModule', () => {
     await expect(submitResult).resolves.toEqual({ accepted: false, reason: 'stale-session' });
     expect(turns.snapshot.activeSessionId).toBeUndefined();
     expect(turns.snapshot.entries).toEqual([]);
+  });
+
+  it('rejects a serialized submit that migrated to a different Active Session before execution', async () => {
+    const port = new ControlledStartTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+
+    const first = turns.submit({ message: 'starting in session 1' });
+    await port.startRequested.promise;
+    const serialized = turns.submit({ message: 'must stay in session 1' });
+    turns.activate('acp:session-2');
+    port.releaseStart.resolve();
+
+    await expect(first).resolves.toEqual({ accepted: false, reason: 'stale-session' });
+    await expect(serialized).resolves.toEqual({ accepted: false, reason: 'stale-session' });
+    expect(port.starts.map(({ sessionId, draft }) => ({ sessionId, message: draft.message }))).toEqual([
+      { sessionId: 'acp:session-1', message: 'starting in session 1' },
+    ]);
+    expect(turns.snapshot).toMatchObject({ activeSessionId: 'acp:session-2', entries: [] });
   });
 
   it('uses a new draft to recover from start-failed and returns it to the head if its start also fails', async () => {
@@ -469,6 +521,32 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.editingTurnId).toBeUndefined();
   });
 
+  it('rejects direct Immediate Send for an editing turn and preserves the lease for commit', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'selected' });
+    const selectedId = turns.snapshot.entries[0].id;
+    turns.beginEdit(selectedId);
+
+    await expect(turns.sendImmediately(selectedId)).resolves.toEqual({
+      accepted: false,
+      reason: 'another-turn-is-editing',
+    });
+    expect(turns.snapshot.editingTurnId).toBe(selectedId);
+    expect(turns.snapshot.entries.map(({ id, message }) => ({ id, message }))).toEqual([
+      { id: selectedId, message: 'selected' },
+    ]);
+
+    await expect(turns.commitEdit(selectedId, { message: 'edited selected' }, true)).resolves.toEqual({
+      accepted: true,
+      outcome: 'started',
+    });
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'edited selected']);
+    expect(turns.snapshot.editingTurnId).toBeUndefined();
+  });
+
   it('returns an Immediate Send target to the queue head when its start fails after cancellation', async () => {
     const port = new RejectingNextStartTurnPort();
     const turns = new AcpQueuedTurnModule(port);
@@ -507,6 +585,75 @@ describe('AcpQueuedTurnModule', () => {
     await turns.whenSettled();
     expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
     expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['queued']);
+  });
+
+  it('does not cancel a newly activated session when stop was serialized behind an older start', async () => {
+    const port = new ControlledStartTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+
+    const submit = turns.submit({ message: 'starting in session 1' });
+    await port.startRequested.promise;
+    const stop = turns.stop();
+    turns.activate('acp:session-2');
+    port.releaseStart.resolve();
+
+    await expect(submit).resolves.toEqual({ accepted: false, reason: 'stale-session' });
+    await expect(stop).resolves.toEqual({ accepted: false, reason: 'stale-session' });
+    expect(port.cancellations).toEqual([]);
+    expect(turns.snapshot.activeSessionId).toBe('acp:session-2');
+  });
+
+  it('does not cancel a newly activated session when Immediate Send was serialized behind an older cancel', async () => {
+    const port = new DeferredFirstCancelTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'selected' });
+
+    const stop = turns.stop();
+    await port.cancelRequested.promise;
+    const immediate = turns.sendImmediately(turns.snapshot.entries[0].id);
+    turns.activate('acp:session-2');
+    port.releaseCancel.resolve();
+
+    await expect(stop).resolves.toEqual({ accepted: false, reason: 'stale-session' });
+    await expect(immediate).resolves.toEqual({ accepted: false, reason: 'stale-session' });
+    expect(port.cancellations).toEqual(['acp:session-1']);
+    expect(turns.snapshot.activeSessionId).toBe('acp:session-2');
+  });
+
+  it('keeps a later stop intent after a deferred normal start acknowledges', async () => {
+    const port = new ControlledStartTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+
+    const submit = turns.submit({ message: 'deferred start' });
+    await port.startRequested.promise;
+    const stop = turns.stop();
+    port.releaseStart.resolve();
+
+    await expect(submit).resolves.toEqual({ accepted: true, outcome: 'started' });
+    await expect(stop).resolves.toEqual({ accepted: true, outcome: 'stopped' });
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'manual-stop' });
+  });
+
+  it('keeps a later stop intent after a deferred Immediate Send start acknowledges', async () => {
+    const port = new DeferredNextStartTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'selected' });
+    port.deferNextStart = true;
+
+    const immediate = turns.sendImmediately(turns.snapshot.entries[0].id);
+    await port.startRequested.promise;
+    const stop = turns.stop();
+    port.releaseStart.resolve();
+
+    await expect(immediate).resolves.toEqual({ accepted: true, outcome: 'started' });
+    await expect(stop).resolves.toEqual({ accepted: true, outcome: 'stopped' });
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'manual-stop' });
   });
 
   it('stays paused without retrying when stop cancellation fails', async () => {
@@ -634,6 +781,27 @@ describe('AcpQueuedTurnModule', () => {
       canResume: false,
       canFastTrack: false,
     });
+  });
+
+  it('keeps the confirmed Active Delivery across Clear All and advances newly queued work after completion', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'cleared queued' });
+
+    turns.clear();
+    expect(turns.snapshot).toMatchObject({ phase: 'generating', entries: [] });
+
+    await expect(turns.submit({ message: 'queued after clear' })).resolves.toEqual({
+      accepted: true,
+      outcome: 'queued',
+    });
+    port.complete(0);
+    await turns.whenSettled();
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'queued after clear']);
+    expect(turns.snapshot.entries).toEqual([]);
   });
 
   it('clears an Immediate Send reservation before cancellation can start it', async () => {
