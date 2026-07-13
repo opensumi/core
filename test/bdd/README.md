@@ -255,6 +255,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-side-entry-filter.scenario.md` | `runtime-ui` | `default` | Agentic side entry filter showing only Explorer and Git while Classic remains unchanged. |
 | `acp-chat-agentic-fallback.scenario.md` | `runtime-ui` | `default` | Usable Agentic chat surface when ACP backend readiness fails. |
 | `acp-layout-switch.scenario.md` | `runtime-ui` | `default` | Agentic/Classic switching, Explorer interop, resize bounds, and read-only state checks. |
+| `editor-pinned-tabs.scenario.md` | `runtime-ui` | `default` | Editor Pinned Tabs core behavior, sticky and wrap reachability, keyboard access, close protection, and persistence. |
 | `acp-chat-agentic-input-send.scenario.md` | `runtime-ui` | `interactive` | Draft input, first send, commands, mentions, attachments, scroll, and recovery. |
 | `acp-chat-agentic-stream-rendering.scenario.md` | `runtime-ui` | `interactive` | Deterministic ACP Agent stream rendering for content, reasoning, plan, tool calls, session state, completion, and recovery. |
 | `acp-chat-agentic-deep-thinking-collapse.scenario.md` | `runtime-ui` | `interactive` | Deep Thinking default collapse, streaming expansion, explicit toggle state, and metadata-only state checks. |
