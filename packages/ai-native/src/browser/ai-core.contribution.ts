@@ -677,6 +677,7 @@ export class AINativeBrowserContribution
     this.chatInputRegistry.registerChatInput({
       id: 'acp-mention-input',
       component: AcpChatMentionInput,
+      capabilities: ['restore-draft', 'focus', 'expand', 'images', 'mentions', 'paste', 'rich-queued-edit'],
       priority: 200,
       when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
     });
@@ -684,6 +685,7 @@ export class AINativeBrowserContribution
     this.chatInputRegistry.registerChatInput({
       id: 'acp-chat-input',
       component: AcpChatInput,
+      capabilities: ['restore-draft', 'focus', 'expand'],
       priority: 150,
       when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
     });

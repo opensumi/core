@@ -6,14 +6,48 @@ import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 import { LLMContextService } from '../../common/llm-context';
 
+import type { AcpTurnDraft, QueuedTurn, TurnActionResult } from './acp-chat-queued-turns';
 import type { AcpSessionConfigOption, AcpSessionModelOption } from './session-provider';
+
+export type ChatInputCapability =
+  | 'restore-draft'
+  | 'focus'
+  | 'expand'
+  | 'images'
+  | 'mentions'
+  | 'paste'
+  | 'rich-queued-edit';
+
+export interface ChatInputHandle {
+  restoreDraft?(draft: AcpTurnDraft): void;
+  focus?(): void;
+  setExpanded?(expanded: boolean): void;
+  toggleExpanded?(): void;
+  closeTransientUi?(): boolean;
+}
+
+export interface ChatInputTurnActions {
+  submit(draft: AcpTurnDraft, intent: 'normal' | 'immediate'): Promise<TurnActionResult>;
+  stop(): Promise<TurnActionResult>;
+  fastTrack(): Promise<TurnActionResult>;
+  invalidateFastTrack(): void;
+  takeBackLastQueuedTurn(): QueuedTurn | undefined;
+}
+
+export interface QueuedTurnEditorProps {
+  turn: QueuedTurn;
+  onSave(draft: AcpTurnDraft): Promise<void> | void;
+  onCancel(): void;
+  onImmediateSend(draft: AcpTurnDraft): Promise<void> | void;
+  onReady?(handle: ChatInputHandle | null): void;
+}
 
 /**
  * Props interface for chat input components.
  * Based on AcpChatMentionInput's prop surface — all registered inputs must satisfy this contract.
  */
 export interface IChatInputProps {
-  onSend: (
+  onSend?: (
     value: string,
     images?: string[],
     agentId?: string,
@@ -47,6 +81,8 @@ export interface IChatInputProps {
   currentModelId?: string;
   configOptions?: AcpSessionConfigOption[];
   agentCwd?: string;
+  turnActions?: ChatInputTurnActions;
+  onInputHandleReady?: (handle: ChatInputHandle | null) => void;
 }
 
 export interface ChatInputContribution {
@@ -56,6 +92,8 @@ export interface ChatInputContribution {
   priority?: number;
   /** Optional condition. Input is selected only when this returns true. */
   when?: () => boolean;
+  capabilities?: ChatInputCapability[];
+  queuedTurnEditor?: React.ComponentType<QueuedTurnEditorProps>;
 }
 
 export interface IChatInputRegistry {
@@ -63,16 +101,20 @@ export interface IChatInputRegistry {
   getChatInputContributions(): ChatInputContribution[];
   /** Get the highest-priority input whose `when()` condition passes, or null. */
   getActiveChatInput(): ChatInputContribution | null;
+  setActiveInputHandle(handle: ChatInputHandle | null): void;
+  getActiveInputHandle(): ChatInputHandle | null;
 }
 
 @Injectable()
 export class ChatInputRegistry extends Disposable implements IChatInputRegistry {
   private contributions: ChatInputContribution[] = [];
+  private activeInputHandle: ChatInputHandle | null = null;
 
   registerChatInput(contribution: ChatInputContribution): IDisposable {
     const entry: ChatInputContribution = {
       ...contribution,
       priority: contribution.priority ?? 0,
+      capabilities: [...(contribution.capabilities || [])],
     };
     this.contributions.push(entry);
     this.contributions.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
@@ -98,5 +140,13 @@ export class ChatInputRegistry extends Disposable implements IChatInputRegistry 
       }
     }
     return null;
+  }
+
+  setActiveInputHandle(handle: ChatInputHandle | null): void {
+    this.activeInputHandle = handle;
+  }
+
+  getActiveInputHandle(): ChatInputHandle | null {
+    return this.activeInputHandle;
   }
 }
