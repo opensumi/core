@@ -780,6 +780,106 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'manual-stop' });
   });
 
+  it('does not let an earlier queued Resume override a later Stop intent', async () => {
+    const port = new DeferredFirstCancelTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'queued' });
+
+    const firstStop = turns.stop();
+    await port.cancelRequested.promise;
+    const recovery = turns.resume();
+    const latestStop = turns.stop();
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'manual-stop' });
+    port.releaseCancel.resolve();
+
+    await Promise.all([firstStop, recovery, latestStop]);
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['queued']);
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'manual-stop' });
+  });
+
+  it('saves an earlier queued edit commit without overriding a later Stop intent', async () => {
+    const port = new DeferredFirstCancelTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'original queued' });
+    const queuedId = turns.snapshot.entries[0].id;
+    turns.beginEdit(queuedId);
+
+    const firstStop = turns.stop();
+    await port.cancelRequested.promise;
+    const recovery = turns.commitEdit(queuedId, { message: 'edited queued' });
+    const latestStop = turns.stop();
+    port.releaseCancel.resolve();
+
+    await Promise.all([firstStop, recovery, latestStop]);
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+    expect(turns.snapshot.entries.map(({ id, message }) => ({ id, message }))).toEqual([
+      { id: queuedId, message: 'edited queued' },
+    ]);
+    expect(turns.snapshot).toMatchObject({
+      phase: 'paused',
+      pauseReason: 'manual-stop',
+      editingTurnId: undefined,
+    });
+  });
+
+  it('releases an earlier queued edit cancellation without overriding a later Stop intent', async () => {
+    const port = new DeferredFirstCancelTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'original queued' });
+    const queuedId = turns.snapshot.entries[0].id;
+    turns.beginEdit(queuedId);
+
+    const firstStop = turns.stop();
+    await port.cancelRequested.promise;
+    const recovery = turns.cancelEdit(queuedId);
+    const latestStop = turns.stop();
+    port.releaseCancel.resolve();
+
+    await Promise.all([firstStop, recovery, latestStop]);
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+    expect(turns.snapshot.entries.map(({ id, message }) => ({ id, message }))).toEqual([
+      { id: queuedId, message: 'original queued' },
+    ]);
+    expect(turns.snapshot).toMatchObject({
+      phase: 'paused',
+      pauseReason: 'manual-stop',
+      editingTurnId: undefined,
+    });
+  });
+
+  it('applies an earlier queued removal without overriding a later Stop intent', async () => {
+    const port = new DeferredFirstCancelTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'remove me' });
+    await turns.submit({ message: 'keep queued' });
+    const removedId = turns.snapshot.entries[0].id;
+    turns.beginEdit(removedId);
+
+    const firstStop = turns.stop();
+    await port.cancelRequested.promise;
+    const recovery = turns.remove(removedId);
+    const latestStop = turns.stop();
+    port.releaseCancel.resolve();
+
+    await Promise.all([firstStop, recovery, latestStop]);
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['keep queued']);
+    expect(turns.snapshot).toMatchObject({
+      phase: 'paused',
+      pauseReason: 'manual-stop',
+      editingTurnId: undefined,
+    });
+  });
+
   it('stays paused without retrying when stop cancellation fails', async () => {
     const port = new ControlledTurnPort();
     port.cancelCurrent = jest.fn(() => Promise.reject(new Error('cancel failed')));

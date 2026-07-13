@@ -156,8 +156,12 @@ export class AcpQueuedTurnModule implements IDisposable {
   }
 
   resume(): Promise<TurnActionResult> {
+    const intentVersion = this.intentVersion;
     return this.serialize(async () => {
       if (this.processing !== 'paused' || (!this.activeDelivery && this.entries.length === 0)) {
+        return { accepted: false, reason: 'turn-not-found' };
+      }
+      if (intentVersion !== this.intentVersion) {
         return { accepted: false, reason: 'turn-not-found' };
       }
 
@@ -165,6 +169,9 @@ export class AcpQueuedTurnModule implements IDisposable {
       this.pauseReason = undefined;
       this.fireDidChange();
       if (this.activeDelivery) {
+        return { accepted: true, outcome: 'resumed' };
+      }
+      if (intentVersion !== this.intentVersion) {
         return { accepted: true, outcome: 'resumed' };
       }
 
@@ -270,6 +277,7 @@ export class AcpQueuedTurnModule implements IDisposable {
       return this.sendImmediately(turnId);
     }
 
+    const intentVersion = this.intentVersion;
     return this.serialize(async () => {
       if (!hasAcpChatSendPayload(draft)) {
         return { accepted: false, reason: 'empty-content' };
@@ -282,35 +290,41 @@ export class AcpQueuedTurnModule implements IDisposable {
 
       this.entries[index] = { ...this.copyDraft(draft), id: turnId };
       this.editingTurnId = undefined;
-      if (this.processing === 'paused') {
+      if (intentVersion === this.intentVersion && this.processing === 'paused') {
         this.processing = 'auto';
         this.pauseReason = undefined;
       }
       this.fireDidChange();
 
-      await this.startNextQueuedTurnIfReady();
+      if (intentVersion === this.intentVersion) {
+        await this.startNextQueuedTurnIfReady();
+      }
       return { accepted: true, outcome: 'updated' };
     });
   }
 
   cancelEdit(turnId: string): Promise<TurnActionResult> {
+    const intentVersion = this.intentVersion;
     return this.serialize(async () => {
       if (this.editingTurnId !== turnId || !this.entries.some(({ id }) => id === turnId)) {
         return { accepted: false, reason: 'turn-not-found' };
       }
 
       this.editingTurnId = undefined;
-      if (this.processing === 'paused') {
+      if (intentVersion === this.intentVersion && this.processing === 'paused') {
         this.processing = 'auto';
         this.pauseReason = undefined;
       }
       this.fireDidChange();
-      await this.startNextQueuedTurnIfReady();
+      if (intentVersion === this.intentVersion) {
+        await this.startNextQueuedTurnIfReady();
+      }
       return { accepted: true, outcome: 'updated' };
     });
   }
 
   remove(turnId: string): Promise<TurnActionResult> {
+    const intentVersion = this.intentVersion;
     return this.serialize(async () => {
       const index = this.entries.findIndex(({ id }) => id === turnId);
       if (index === -1) {
@@ -321,13 +335,15 @@ export class AcpQueuedTurnModule implements IDisposable {
       if (this.editingTurnId === turnId) {
         this.editingTurnId = undefined;
       }
-      if (this.processing === 'paused') {
+      if (intentVersion === this.intentVersion && this.processing === 'paused') {
         this.processing = 'auto';
         this.pauseReason = undefined;
       }
       this.fireDidChange();
 
-      await this.startNextQueuedTurnIfReady();
+      if (intentVersion === this.intentVersion) {
+        await this.startNextQueuedTurnIfReady();
+      }
       return { accepted: true, outcome: 'removed' };
     });
   }
