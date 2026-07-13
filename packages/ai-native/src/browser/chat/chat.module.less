@@ -524,8 +524,8 @@
     flex-direction: row;
 
     .header_container {
-      flex: 0 0 clamp(208px, var(--agentic-task-list-width, 244px), 280px);
-      width: clamp(208px, var(--agentic-task-list-width, 244px), 280px);
+      flex: 0 0 clamp(208px, var(--agentic-task-list-width, 244px), var(--agentic-task-list-max-width, 480px));
+      width: clamp(208px, var(--agentic-task-list-width, 244px), var(--agentic-task-list-max-width, 480px));
       height: 100%;
       max-height: none;
       min-width: 0;

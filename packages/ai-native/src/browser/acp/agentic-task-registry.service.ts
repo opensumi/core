@@ -11,7 +11,7 @@ export interface AgenticProjectRecord {
   id: string;
   workspaceUri: string;
   workspacePath: string;
-  label: string;
+  label?: string;
   joinedAt: number;
   availability: 'available' | 'unavailable';
 }
@@ -36,7 +36,7 @@ export interface AgenticTaskGroup {
 }
 
 export interface AgenticTaskRegistryState {
-  version: 2;
+  version: 3;
   projects: AgenticProjectRecord[];
   tasks: AgenticTaskRecord[];
 }
@@ -184,6 +184,23 @@ export class AgenticTaskRegistryService {
     return { ...project };
   }
 
+  async renameProject(projectId: string, label: string): Promise<AgenticProjectRecord | undefined> {
+    await this.ensureInitialized();
+    const project = this.findProject(projectId);
+    if (!project) {
+      return undefined;
+    }
+
+    const normalizedLabel = label.trim();
+    if (normalizedLabel) {
+      project.label = normalizedLabel;
+    } else {
+      delete project.label;
+    }
+    await this.persist();
+    return { ...project };
+  }
+
   async archive(sessionId: string): Promise<boolean> {
     await this.ensureInitialized();
     const task = this.findTask(sessionId);
@@ -315,17 +332,17 @@ export class AgenticTaskRegistryService {
     const source = typeof value === 'string' ? this.parseJSON(value) : value;
     if (
       !this.isRecord(source) ||
-      source.version !== 2 ||
+      (source.version !== 2 && source.version !== 3) ||
       !Array.isArray(source.projects) ||
       !Array.isArray(source.tasks)
     ) {
-      return { version: 2, projects: [], tasks: [] };
+      return { version: 3, projects: [], tasks: [] };
     }
 
     const projects: AgenticProjectRecord[] = [];
     const projectIds = new Set<string>();
     source.projects.forEach((project) => {
-      const normalized = this.normalizeProject(project);
+      const normalized = this.normalizeProject(project, source.version === 3);
       if (normalized && !projectIds.has(normalized.id)) {
         projectIds.add(normalized.id);
         projects.push(normalized);
@@ -342,17 +359,16 @@ export class AgenticTaskRegistryService {
       }
     });
 
-    return { version: 2, projects, tasks };
+    return { version: 3, projects, tasks };
   }
 
-  private normalizeProject(value: unknown): AgenticProjectRecord | undefined {
+  private normalizeProject(value: unknown, preserveLabel = true): AgenticProjectRecord | undefined {
     if (!this.isRecord(value) || !this.isProjectAvailability(value.availability)) {
       return undefined;
     }
     if (
       typeof value.workspaceUri !== 'string' ||
       typeof value.workspacePath !== 'string' ||
-      typeof value.label !== 'string' ||
       typeof value.joinedAt !== 'number' ||
       !Number.isFinite(value.joinedAt)
     ) {
@@ -360,13 +376,14 @@ export class AgenticTaskRegistryService {
     }
 
     const workspaceUri = this.toCanonicalWorkspaceUri(value.workspaceUri);
+    const label = preserveLabel && typeof value.label === 'string' ? value.label.trim() : '';
     return {
       id: workspaceUri,
       workspaceUri,
       workspacePath: value.workspacePath,
-      label: value.label,
       joinedAt: value.joinedAt,
       availability: value.availability,
+      ...(label ? { label } : {}),
     };
   }
 

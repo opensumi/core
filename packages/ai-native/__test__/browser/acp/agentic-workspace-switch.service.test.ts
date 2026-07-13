@@ -1,9 +1,6 @@
 import { URI } from '@opensumi/ide-core-common';
 
-import {
-  AgenticProjectRecord,
-  AgenticTaskRecord,
-} from '../../../src/browser/acp/agentic-task-registry.service';
+import { AgenticProjectRecord, AgenticTaskRecord } from '../../../src/browser/acp/agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
 
 jest.mock('@opensumi/di', () => {
@@ -135,10 +132,11 @@ describe('AgenticWorkspaceSwitchService', () => {
 
     await switcher.launchTask(projectB, 'agent-b');
 
-    expect(messageService.warning).toHaveBeenCalledWith(
-      expect.any(String),
-      ['Save All and Switch', 'Discard Changes and Switch', 'Cancel'],
-    );
+    expect(messageService.warning).toHaveBeenCalledWith(expect.any(String), [
+      'Save All and Switch',
+      'Discard Changes and Switch',
+      'Cancel',
+    ]);
     expect(registry.preparePendingLaunch).not.toHaveBeenCalled();
     expect(workspaceService.open).not.toHaveBeenCalled();
   });
@@ -284,32 +282,34 @@ describe('AgenticWorkspaceSwitchService', () => {
 
   it('seeds the current Workspace and validated MRU Workspaces as canonical Projects', async () => {
     const projectCUri = URI.file('/work/c');
-    workspaceService.getMostRecentlyUsedWorkspaces.mockResolvedValue([
-      projectCUri.toString(),
-      '/not-an-mru-uri',
-    ]);
+    workspaceService.getMostRecentlyUsedWorkspaces.mockResolvedValue([projectCUri.toString(), '/not-an-mru-uri']);
     fileService.getFileStat.mockResolvedValue({ uri: projectCUri.toString() });
 
     await switcher.seedProjectCatalog();
 
-    expect(registry.registerProject).toHaveBeenCalledWith(
+    const registeredProjects = registry.registerProject.mock.calls.map(([registeredProject]) => registeredProject);
+    expect(registeredProjects).toContainEqual(
       expect.objectContaining({
         workspaceUri: projectA.workspaceUri,
         workspacePath: '/work/a',
-        label: 'a',
         availability: 'available',
       }),
     );
+    expect(
+      registeredProjects.find((registeredProject) => registeredProject.workspaceUri === projectA.workspaceUri),
+    ).not.toHaveProperty('label');
     expect(fileService.getFileStat).toHaveBeenCalledWith(projectCUri.toString(), false);
     expect(fileService.getFileStat).not.toHaveBeenCalledWith('/not-an-mru-uri', false);
-    expect(registry.registerProject).toHaveBeenCalledWith(
+    expect(registeredProjects).toContainEqual(
       expect.objectContaining({
         workspaceUri: projectCUri.toString(),
         workspacePath: '/work/c',
-        label: 'c',
         availability: 'available',
       }),
     );
+    expect(
+      registeredProjects.find((registeredProject) => registeredProject.workspaceUri === projectCUri.toString()),
+    ).not.toHaveProperty('label');
   });
 
   it('marks Projects unavailable when their Workspace cannot be accessed', async () => {

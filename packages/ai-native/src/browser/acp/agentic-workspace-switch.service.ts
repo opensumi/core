@@ -155,10 +155,11 @@ export class AgenticWorkspaceSwitchService {
       return true;
     }
 
-    const choice = await this.messageService.warning(
-      'You have unsaved editor changes. Choose how to continue.',
-      [SAVE_AND_SWITCH, DISCARD_AND_SWITCH, CANCEL_SWITCH],
-    );
+    const choice = await this.messageService.warning('You have unsaved editor changes. Choose how to continue.', [
+      SAVE_AND_SWITCH,
+      DISCARD_AND_SWITCH,
+      CANCEL_SWITCH,
+    ]);
     if (choice === SAVE_AND_SWITCH) {
       await this.editorService.saveAll(true);
       return !(await this.hasDirtyEditors());
@@ -186,7 +187,6 @@ export class AgenticWorkspaceSwitchService {
     await this.registry.registerProject({
       workspaceUri: uri.toString(),
       workspacePath: uri.codeUri.fsPath,
-      label: this.workspaceService.getWorkspaceName(uri),
       joinedAt: Date.now(),
       availability: 'available',
     });

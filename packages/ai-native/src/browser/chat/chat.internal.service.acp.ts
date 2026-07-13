@@ -434,7 +434,6 @@ export class AcpChatInternalService extends ChatInternalService {
     const project = {
       workspaceUri: uri.toString(),
       workspacePath: getCachedWorkspaceDir(),
-      label: this.workspaceService.getWorkspaceName(uri),
       joinedAt: Date.now(),
       availability: 'available' as const,
     };

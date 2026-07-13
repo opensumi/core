@@ -5,7 +5,7 @@
   flex-direction: column;
   width: var(--agentic-task-list-width, 244px);
   min-width: 208px;
-  max-width: 280px;
+  max-width: var(--agentic-task-list-max-width, 480px);
   min-height: 0;
   overflow: hidden;
   border-right: 1px solid var(--panel-border);
@@ -236,10 +236,10 @@
   font-weight: 400;
 }
 
+.project_rename,
 .project_new_task {
   width: 20px;
   height: 20px;
-  margin-left: auto;
   border-radius: 3px;
   background: transparent;
   color: var(--descriptionForeground);
@@ -257,6 +257,43 @@
     cursor: default;
     color: var(--disabledForeground);
   }
+}
+
+.project_rename {
+  margin-left: auto;
+  font-size: 13px;
+}
+
+.project_new_task {
+  margin-left: 4px;
+}
+
+.project_rename_form {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: var(--foreground);
+  font-size: 12px;
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    border: 1px solid var(--input-border, var(--panel-border));
+    border-radius: 3px;
+    outline: none;
+    background: var(--input-background, var(--editor-background));
+    color: var(--input-foreground, var(--foreground));
+
+    &:focus {
+      border-color: var(--focusBorder);
+    }
+  }
+}
+
+.project_rename_hint {
+  color: var(--descriptionForeground);
+  font-size: 11px;
 }
 
 .task_row_wrap {

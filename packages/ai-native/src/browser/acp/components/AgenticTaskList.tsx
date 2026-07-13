@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { Modal } from '@opensumi/ide-components/lib/modal';
 import { useInjectable } from '@opensumi/ide-core-browser';
 
 import {
@@ -11,16 +12,25 @@ import {
 } from '../agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../agentic-workspace-switch.service';
 
-import { AgenticTaskLaunchMenu } from './AgenticTaskLaunchMenu';
+import { getAgenticProjectDisplayLabel } from './agentic-project-label';
 import styles from './agentic-task-list.module.less';
+import { AgenticTaskLaunchMenu } from './AgenticTaskLaunchMenu';
 
 const DEFAULT_TASK_LIST_WIDTH = 244;
 const MIN_TASK_LIST_WIDTH = 208;
-const MAX_TASK_LIST_WIDTH = 280;
+const MAX_TASK_LIST_WIDTH = 480;
+const MIN_CONVERSATION_WIDTH = 360;
 const ARCHIVABLE_STATUSES = new Set<AgenticTaskStatus>(['ready', 'stopped', 'error']);
 
-function clampTaskListWidth(width: number): number {
-  return Math.max(MIN_TASK_LIST_WIDTH, Math.min(MAX_TASK_LIST_WIDTH, width));
+function clampTaskListWidth(width: number, maximumWidth = MAX_TASK_LIST_WIDTH): number {
+  return Math.max(MIN_TASK_LIST_WIDTH, Math.min(maximumWidth, width));
+}
+
+function getTaskListMaximumWidth(chatSlotWidth: number): number {
+  if (!Number.isFinite(chatSlotWidth) || chatSlotWidth <= 0) {
+    return MAX_TASK_LIST_WIDTH;
+  }
+  return Math.max(MIN_TASK_LIST_WIDTH, Math.min(MAX_TASK_LIST_WIDTH, chatSlotWidth - MIN_CONVERSATION_WIDTH));
 }
 
 function filterGroups(groups: AgenticTaskGroup[], query: string): AgenticTaskGroup[] {
@@ -34,30 +44,36 @@ function filterGroups(groups: AgenticTaskGroup[], query: string): AgenticTaskGro
     .filter((group) => group.tasks.length > 0);
 }
 
-function getConfiguredTaskListWidth(): number {
+function getConfiguredTaskListWidth(maximumWidth: number): number {
   const chatView = document.querySelector<HTMLElement>('#ai_chat_view');
   const configuredWidth = Number.parseFloat(chatView?.style.getPropertyValue('--agentic-task-list-width') || '');
-  return Number.isFinite(configuredWidth) ? clampTaskListWidth(configuredWidth) : DEFAULT_TASK_LIST_WIDTH;
+  return Number.isFinite(configuredWidth)
+    ? clampTaskListWidth(configuredWidth, maximumWidth)
+    : clampTaskListWidth(DEFAULT_TASK_LIST_WIDTH, maximumWidth);
 }
 
-function TaskListResizeHandle({ onResize }: { onResize: (width: number) => void }) {
+function TaskListResizeHandle({ maximumWidth, onResize }: { maximumWidth: number; onResize: (width: number) => void }) {
   const [width, setWidth] = React.useState(DEFAULT_TASK_LIST_WIDTH);
-  const resizeStart = React.useRef<{ clientX: number; width: number }>();
+  const resizeStart = React.useRef<{ clientX: number; maximumWidth: number; width: number }>();
 
   const resize = React.useCallback(
-    (nextWidth: number) => {
-      const clampedWidth = clampTaskListWidth(nextWidth);
+    (nextWidth: number, limit = maximumWidth) => {
+      const clampedWidth = clampTaskListWidth(nextWidth, limit);
       setWidth(clampedWidth);
       onResize(clampedWidth);
     },
-    [onResize],
+    [maximumWidth, onResize],
   );
+
+  React.useEffect(() => {
+    setWidth((currentWidth) => clampTaskListWidth(currentWidth, maximumWidth));
+  }, [maximumWidth]);
 
   return (
     <div
       aria-label='Resize Task List'
       aria-orientation='vertical'
-      aria-valuemax={MAX_TASK_LIST_WIDTH}
+      aria-valuemax={maximumWidth}
       aria-valuemin={MIN_TASK_LIST_WIDTH}
       aria-valuenow={width}
       className={styles.resize_handle}
@@ -72,14 +88,17 @@ function TaskListResizeHandle({ onResize }: { onResize: (width: number) => void 
         }
       }}
       onPointerDown={(event) => {
-        resizeStart.current = { clientX: event.clientX, width: getConfiguredTaskListWidth() };
+        resizeStart.current = { clientX: event.clientX, maximumWidth, width: getConfiguredTaskListWidth(maximumWidth) };
         event.currentTarget.setPointerCapture?.(event.pointerId);
       }}
       onPointerMove={(event) => {
         if (!resizeStart.current) {
           return;
         }
-        resize(resizeStart.current.width + event.clientX - resizeStart.current.clientX);
+        resize(
+          resizeStart.current.width + event.clientX - resizeStart.current.clientX,
+          resizeStart.current.maximumWidth,
+        );
       }}
       onPointerUp={() => {
         resizeStart.current = undefined;
@@ -107,6 +126,56 @@ function TaskState({ task }: { task: AgenticTaskRecord }) {
       className={`${styles.task_state} ${task.status ? styles[`task_status_${task.status}`] : ''}`}
       data-testid={`agentic-task-status-${task.sessionId}`}
     />
+  );
+}
+
+function ProjectRenameModal({
+  onClose,
+  onRename,
+  project,
+}: {
+  onClose: () => void;
+  onRename: (project: AgenticProjectRecord, label: string) => Promise<void>;
+  project: AgenticProjectRecord | undefined;
+}) {
+  const [label, setLabel] = React.useState('');
+
+  React.useEffect(() => {
+    setLabel(project?.label || '');
+  }, [project]);
+
+  const save = React.useCallback(async () => {
+    if (!project) {
+      return;
+    }
+    await onRename(project, label);
+    onClose();
+  }, [label, onClose, onRename, project]);
+
+  return (
+    <Modal
+      cancelText='Cancel'
+      centered
+      okText='Save'
+      onCancel={onClose}
+      onOk={() => void save()}
+      title={`Rename ${project ? getAgenticProjectDisplayLabel(project) : 'Project'}`}
+      visible={!!project}
+      width={360}
+    >
+      <label className={styles.project_rename_form}>
+        <span>Project name</span>
+        <input
+          aria-label='Project name'
+          autoFocus
+          onChange={(event) => setLabel(event.target.value)}
+          placeholder={project?.workspacePath}
+          type='text'
+          value={label}
+        />
+        <span className={styles.project_rename_hint}>Clear the name to use the workspace path.</span>
+      </label>
+    </Modal>
   );
 }
 
@@ -181,25 +250,37 @@ function ProjectGroup({
   group,
   onArchive,
   onLaunch,
+  onRename,
   onTaskActivate,
 }: {
   activeSessionId: string | undefined;
   group: AgenticTaskGroup;
   onArchive: (task: AgenticTaskRecord) => void;
   onLaunch: (project: AgenticProjectRecord) => void;
+  onRename: (project: AgenticProjectRecord) => void;
   onTaskActivate: (task: AgenticTaskRecord) => void;
 }) {
   const projectAvailable = group.project.availability === 'available';
+  const projectLabel = getAgenticProjectDisplayLabel(group.project);
 
   return (
     <section className={styles.project_group} data-testid='agentic-task-project-group'>
       <header className={styles.project_header}>
         <span className={styles.project_label} title={group.project.workspacePath}>
-          ▾ {group.project.label}
+          ▾ {projectLabel}
         </span>
         <span className={styles.project_count}>{group.tasks.length}</span>
         <button
-          aria-label={`New Task in ${group.project.label}`}
+          aria-label={`Rename ${projectLabel}`}
+          className={styles.project_rename}
+          onClick={() => onRename(group.project)}
+          title={`Rename ${projectLabel}`}
+          type='button'
+        >
+          ✎
+        </button>
+        <button
+          aria-label={`New Task in ${projectLabel}`}
           className={styles.project_new_task}
           disabled={!projectAvailable}
           onClick={() => onLaunch(group.project)}
@@ -223,12 +304,14 @@ function ProjectGroup({
 }
 
 function ArchivedTaskGroups({
+  projectRevision,
   query,
   refreshProjectCatalog,
   registry,
   onUnarchive,
   workspaceSwitch,
 }: {
+  projectRevision: number;
   query: string;
   refreshProjectCatalog: () => Promise<AgenticProjectRecord[]>;
   registry: AgenticTaskRegistryService;
@@ -253,7 +336,7 @@ function ArchivedTaskGroups({
     return () => {
       disposed = true;
     };
-  }, [expanded, query, refreshProjectCatalog, registry]);
+  }, [expanded, projectRevision, query, refreshProjectCatalog, registry]);
 
   const unarchive = React.useCallback(
     async (task: AgenticTaskRecord) => {
@@ -290,7 +373,7 @@ function ArchivedTaskGroups({
         groups.map((group) => (
           <section className={styles.archived_project_group} key={group.project.id}>
             <div className={styles.project_header}>
-              <span className={styles.project_label}>{group.project.label}</span>
+              <span className={styles.project_label}>{getAgenticProjectDisplayLabel(group.project)}</span>
               <span className={styles.project_count}>{group.tasks.length}</span>
             </div>
             {group.tasks.map((task) => (
@@ -322,11 +405,41 @@ export function AgenticTaskList() {
   const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
   const [activeSessionId, setActiveSessionId] = React.useState<string>();
   const [launchProject, setLaunchProject] = React.useState<AgenticProjectRecord>();
+  const [renameProject, setRenameProject] = React.useState<AgenticProjectRecord>();
+  const [projectRevision, setProjectRevision] = React.useState(0);
+  const [maximumTaskListWidth, setMaximumTaskListWidth] = React.useState(MAX_TASK_LIST_WIDTH);
 
-  const resize = React.useCallback((width: number) => {
-    document
-      .querySelector<HTMLElement>('#ai_chat_view')
-      ?.style.setProperty('--agentic-task-list-width', `${clampTaskListWidth(width)}px`);
+  const resize = React.useCallback(
+    (width: number) => {
+      document
+        .querySelector<HTMLElement>('#ai_chat_view')
+        ?.style.setProperty('--agentic-task-list-width', `${clampTaskListWidth(width, maximumTaskListWidth)}px`);
+    },
+    [maximumTaskListWidth],
+  );
+
+  React.useEffect(() => {
+    const chatView = document.querySelector<HTMLElement>('#ai_chat_view');
+    if (!chatView) {
+      return;
+    }
+
+    const updateWidthBound = () => {
+      const maximumWidth = getTaskListMaximumWidth(chatView.getBoundingClientRect().width);
+      setMaximumTaskListWidth(maximumWidth);
+      chatView.style.setProperty('--agentic-task-list-max-width', `${maximumWidth}px`);
+      const currentWidth = getConfiguredTaskListWidth(maximumWidth);
+      chatView.style.setProperty('--agentic-task-list-width', `${currentWidth}px`);
+    };
+
+    updateWidthBound();
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new ResizeObserver(updateWidthBound);
+    observer.observe(chatView);
+    return () => observer.disconnect();
   }, []);
 
   const refreshProjectCatalog = React.useCallback(async () => {
@@ -357,6 +470,7 @@ export function AgenticTaskList() {
 
   React.useEffect(() => {
     const disposable = registry.onDidChange(() => {
+      setProjectRevision((revision) => revision + 1);
       void refresh();
     });
     return () => disposable.dispose();
@@ -400,9 +514,16 @@ export function AgenticTaskList() {
     [groups, workspaceSwitch],
   );
 
+  const rename = React.useCallback(
+    async (project: AgenticProjectRecord, label: string) => {
+      await registry.renameProject(project.id, label);
+    },
+    [registry],
+  );
+
   return (
     <aside aria-label='Task List' className={styles.task_list} data-testid='agentic-task-list'>
-      <TaskListResizeHandle onResize={resize} />
+      <TaskListResizeHandle maximumWidth={maximumTaskListWidth} onResize={resize} />
       <header className={styles.task_list_header}>
         <h2>Task List</h2>
         {attentionCount > 0 && <span className={styles.attention_count}>{attentionCount}</span>}
@@ -433,6 +554,7 @@ export function AgenticTaskList() {
             key={group.project.id}
             onArchive={(task) => void archive(task)}
             onLaunch={setLaunchProject}
+            onRename={setRenameProject}
             onTaskActivate={activate}
           />
         ))}
@@ -442,8 +564,10 @@ export function AgenticTaskList() {
         refreshProjectCatalog={refreshProjectCatalog}
         registry={registry}
         onUnarchive={unarchive}
+        projectRevision={projectRevision}
         workspaceSwitch={workspaceSwitch}
       />
+      <ProjectRenameModal onClose={() => setRenameProject(undefined)} onRename={rename} project={renameProject} />
     </aside>
   );
 }

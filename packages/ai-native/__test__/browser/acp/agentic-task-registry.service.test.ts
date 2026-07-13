@@ -78,7 +78,7 @@ describe('AgenticTaskRegistryService', () => {
     expect(serialized).not.toContain('permission request content');
     expect(serialized).not.toContain('message history content');
     expect(JSON.parse(serialized)).toEqual({
-      version: 2,
+      version: 3,
       projects: [project],
       tasks: [
         {
@@ -140,6 +140,29 @@ describe('AgenticTaskRegistryService', () => {
         ],
       },
     ]);
+  });
+
+  it('migrates legacy automatic labels and persists a custom Project name without changing its identity', async () => {
+    storage.get.mockReturnValue({ version: 2, projects: [project], tasks: [] });
+
+    expect((await registry.getProject(project.id))?.label).toBeUndefined();
+
+    const registryWithRename = registry as unknown as {
+      renameProject: (projectId: string, label: string) => Promise<AgenticProjectRecord | undefined>;
+    };
+
+    await expect(registryWithRename.renameProject(project.id, '  Payments  ')).resolves.toMatchObject({
+      id: project.id,
+      label: 'Payments',
+    });
+    expect(await registry.getProject(project.id)).toMatchObject({ id: project.id, label: 'Payments' });
+
+    await expect(registryWithRename.renameProject(project.id, '   ')).resolves.toMatchObject({ id: project.id });
+    expect((await registry.getProject(project.id))?.label).toBeUndefined();
+    expect(JSON.parse(storage.set.mock.calls.at(-1)?.[1])).toMatchObject({
+      version: 3,
+      projects: [expect.any(Object)],
+    });
   });
 
   it('searches immutable task titles only and separates ready tasks from running tasks', async () => {

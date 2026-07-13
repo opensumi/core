@@ -2,10 +2,11 @@ import React from 'react';
 
 import { PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
 
+import { getAvailableAgentConfigs } from '../../chat/get-default-agent-type';
 import { AgenticProjectRecord } from '../agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../agentic-workspace-switch.service';
-import { getAvailableAgentConfigs } from '../../chat/get-default-agent-type';
 
+import { getAgenticProjectDisplayLabel } from './agentic-project-label';
 import styles from './agentic-task-list.module.less';
 
 export interface AgenticTaskLaunchMenuProps {
@@ -102,7 +103,7 @@ export function AgenticTaskLaunchMenu({ projects = [], open, onOpenChange }: Age
                   title={project.workspacePath}
                   type='button'
                 >
-                  <span className={styles.launch_menu_item_label}>{project.label}</span>
+                  <span className={styles.launch_menu_item_label}>{getAgenticProjectDisplayLabel(project)}</span>
                   {project.availability === 'unavailable' && (
                     <span className={styles.unavailable_label}>Unavailable</span>
                   )}
@@ -117,7 +118,7 @@ export function AgenticTaskLaunchMenu({ projects = [], open, onOpenChange }: Age
                 role='menuitem'
                 type='button'
               >
-                ← {selectedProject.label}
+                ← {getAgenticProjectDisplayLabel(selectedProject)}
               </button>
               <div className={styles.launch_menu_label}>Choose ACP Agent</div>
               {agentOptions.map((agent) => (

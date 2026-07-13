@@ -15,10 +15,26 @@ jest.mock('../../../src/browser/acp/agentic-workspace-switch.service', () => ({
   AgenticWorkspaceSwitchService: class AgenticWorkspaceSwitchService {},
 }));
 
-import { IChatInternalService } from '../../../src/common';
-import { AgenticTaskList } from '../../../src/browser/acp/components/AgenticTaskList';
+jest.mock('@opensumi/ide-components/lib/modal', () => ({
+  Modal: ({ cancelText, children, onCancel, onOk, okText, title, visible }: any) => {
+    if (!visible) {
+      return null;
+    }
+    const React = require('react');
+    return React.createElement(
+      'div',
+      { 'aria-label': title, role: 'dialog' },
+      children,
+      React.createElement('button', { onClick: onCancel, type: 'button' }, cancelText),
+      React.createElement('button', { onClick: onOk, type: 'button' }, okText),
+    );
+  },
+}));
+
 import { AgenticTaskRegistryService } from '../../../src/browser/acp/agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
+import { AgenticTaskList } from '../../../src/browser/acp/components/AgenticTaskList';
+import { IChatInternalService } from '../../../src/common';
 
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -48,6 +64,7 @@ function createServices() {
       listArchivedGroups: jest.fn(() => Promise.resolve([])),
       listProjects: jest.fn(() => Promise.resolve([projectA, projectB])),
       onDidChange: jest.fn(() => ({ dispose: jest.fn() })),
+      renameProject: jest.fn(() => Promise.resolve(projectA)),
       unarchive: jest.fn(() => Promise.resolve(true)),
     },
     workspaceSwitch: {
@@ -88,7 +105,13 @@ describe('AgenticTaskList', () => {
     jest.clearAllMocks();
   });
 
-  async function renderTaskList(services = createServices()) {
+  async function renderTaskList(services = createServices(), chatSlotWidth?: number) {
+    if (chatSlotWidth !== undefined) {
+      Object.defineProperty(chatView, 'getBoundingClientRect', {
+        configurable: true,
+        value: () => ({ width: chatSlotWidth }),
+      });
+    }
     jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockImplementation((token: unknown) => {
       if (token === AgenticTaskRegistryService) {
         return services.registry;
@@ -430,15 +453,80 @@ describe('AgenticTaskList', () => {
 
   it('clamps local Task List resizing to the Agentic Chat Slot bounds', async () => {
     await renderTaskList();
+    Object.defineProperty(chatView, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({ width: 1000 }),
+    });
     const handle = container.querySelector('[data-testid="agentic-task-list-resize-handle"]') as HTMLDivElement;
     Object.defineProperty(handle, 'setPointerCapture', { configurable: true, value: jest.fn() });
 
     await act(async () => {
       handle.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 0 }));
-      handle.dispatchEvent(new MouseEvent('pointermove', { bubbles: true, clientX: 120 }));
-      handle.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, clientX: 120 }));
+      handle.dispatchEvent(new MouseEvent('pointermove', { bubbles: true, clientX: 240 }));
+      handle.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, clientX: 240 }));
     });
 
+    expect(chatView.style.getPropertyValue('--agentic-task-list-width')).toBe('480px');
+  });
+
+  it('keeps 360px for the Main Conversation Area in a narrow Chat Slot', async () => {
+    await renderTaskList(createServices(), 640);
+    const handle = container.querySelector('[data-testid="agentic-task-list-resize-handle"]') as HTMLDivElement;
+    Object.defineProperty(handle, 'setPointerCapture', { configurable: true, value: jest.fn() });
+
+    await act(async () => {
+      handle.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 0 }));
+      handle.dispatchEvent(new MouseEvent('pointermove', { bubbles: true, clientX: 240 }));
+      handle.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, clientX: 240 }));
+    });
+
+    expect(handle.getAttribute('aria-valuemax')).toBe('280');
     expect(chatView.style.getPropertyValue('--agentic-task-list-width')).toBe('280px');
+  });
+
+  it('uses the workspace path when a Project has no custom name', async () => {
+    const services = createServices();
+    const unnamedProject = { ...projectA, label: undefined };
+    services.registry.listProjects.mockResolvedValue([unnamedProject]);
+    services.registry.listActiveGroups.mockResolvedValue([
+      {
+        project: unnamedProject,
+        tasks: [
+          {
+            sessionId: 'acp:unnamed-project',
+            projectId: unnamedProject.id,
+            agentId: 'agent-a',
+            title: 'Task for unnamed Project',
+            createdAt: 1,
+            archived: false,
+            unread: false,
+          },
+        ],
+      },
+    ]);
+
+    await renderTaskList(services);
+
+    expect(container.querySelector('[data-testid="agentic-task-project-group"]')?.textContent).toContain('/work/a');
+    const rename = container.querySelector('[aria-label="Rename /work/a"]') as HTMLButtonElement;
+    expect(rename).not.toBeNull();
+
+    await act(async () => {
+      rename.click();
+    });
+    const input = document.querySelector('[aria-label="Project name"]') as HTMLInputElement;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, 'Payments');
+    await act(async () => {
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      await flushPromises();
+    });
+    await act(async () => {
+      Array.from(document.querySelectorAll('button'))
+        .find((button) => button.textContent === 'Save')
+        ?.click();
+      await flushPromises();
+    });
+
+    expect(services.registry.renameProject).toHaveBeenCalledWith(unnamedProject.id, 'Payments');
   });
 });
