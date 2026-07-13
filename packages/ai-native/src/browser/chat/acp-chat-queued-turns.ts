@@ -92,7 +92,8 @@ export class AcpQueuedTurnModule implements IDisposable {
   }
 
   activate(sessionId: string | undefined): void {
-    if (sessionId === this.activeSessionId) {
+    const effectiveActiveSessionId = this.hasPendingActivation ? this.pendingActivationId : this.activeSessionId;
+    if (sessionId === effectiveActiveSessionId) {
       return;
     }
 
@@ -112,10 +113,17 @@ export class AcpQueuedTurnModule implements IDisposable {
       }
 
       const submittedDraft = this.copyDraft(draft);
-      if (this.port.getStatus(this.activeSessionId) === 'generating' || this.activeDelivery) {
+      if (
+        this.phase === 'paused' ||
+        this.entries.length > 0 ||
+        this.port.getStatus(this.activeSessionId) === 'generating' ||
+        this.activeDelivery
+      ) {
         this.entries.push(this.createQueuedTurn(submittedDraft));
-        this.phase = 'generating';
-        this.pauseReason = undefined;
+        if (this.phase !== 'paused') {
+          this.phase = 'generating';
+          this.pauseReason = undefined;
+        }
         this.fireDidChange();
         return { accepted: true, outcome: 'queued' };
       }

@@ -32,6 +32,11 @@ class ControlledTurnPort implements AcpQueuedTurnPort {
     this.status = 'idle';
     this.starts[index].completion.resolve(outcome);
   }
+
+  reject(index: number, error: Error = new Error('turn failed')) {
+    this.status = 'idle';
+    this.starts[index].completion.reject(error);
+  }
 }
 
 class ControlledStartTurnPort extends ControlledTurnPort {
@@ -42,6 +47,15 @@ class ControlledStartTurnPort extends ControlledTurnPort {
     this.startRequested.resolve();
     await this.releaseStart.promise;
     return super.start(sessionId, draft);
+  }
+}
+
+class RejectingStartTurnPort extends ControlledTurnPort {
+  readonly attempts: Array<{ sessionId?: string; draft: AcpTurnDraft }> = [];
+
+  override async start(sessionId: string | undefined, draft: AcpTurnDraft): Promise<AcpTurnHandle> {
+    this.attempts.push({ sessionId, draft });
+    throw new Error('start failed');
   }
 }
 
@@ -127,5 +141,94 @@ describe('AcpQueuedTurnModule', () => {
     await expect(submitResult).resolves.toEqual({ accepted: false, reason: 'stale-session' });
     expect(turns.snapshot.activeSessionId).toBe('acp:other-session');
     expect(turns.snapshot.entries).toEqual([]);
+  });
+
+  it('rejects the first start when a pending session promotion is cleared before start returns', async () => {
+    const port = new ControlledStartTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate(undefined);
+
+    const submitResult = turns.submit({ message: 'create the session' });
+    await port.startRequested.promise;
+    turns.activate('acp:created-session');
+    turns.activate(undefined);
+    port.releaseStart.resolve();
+
+    await expect(submitResult).resolves.toEqual({ accepted: false, reason: 'stale-session' });
+    expect(turns.snapshot.activeSessionId).toBeUndefined();
+    expect(turns.snapshot.entries).toEqual([]);
+  });
+
+  it('preserves start-failed pause state and appends submissions behind the failed turn', async () => {
+    const port = new RejectingStartTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+
+    await expect(turns.submit({ message: 'failed first' })).resolves.toEqual({
+      accepted: false,
+      reason: 'start-failed',
+    });
+    expect(turns.snapshot).toMatchObject({
+      phase: 'paused',
+      pauseReason: 'start-failed',
+      canResume: true,
+    });
+
+    await expect(turns.submit({ message: 'queued later' })).resolves.toEqual({ accepted: true, outcome: 'queued' });
+
+    expect(port.attempts.map(({ draft }) => draft.message)).toEqual(['failed first']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['failed first', 'queued later']);
+    expect(turns.snapshot.phase).toBe('paused');
+    expect(turns.snapshot.pauseReason).toBe('start-failed');
+  });
+
+  it('keeps manual-stop paused and appends new submissions in FIFO order', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'already queued' });
+
+    port.complete(0, 'manual-stop');
+    await turns.whenSettled();
+    await expect(turns.submit({ message: 'queued while paused' })).resolves.toEqual({
+      accepted: true,
+      outcome: 'queued',
+    });
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['already queued', 'queued while paused']);
+    expect(turns.snapshot.phase).toBe('paused');
+    expect(turns.snapshot.pauseReason).toBe('manual-stop');
+  });
+
+  it('pauses queued work after an agent-error outcome', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'queued' });
+
+    port.complete(0, 'agent-error');
+    await turns.whenSettled();
+
+    expect(port.starts).toHaveLength(1);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['queued']);
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'agent-error', canResume: true });
+  });
+
+  it('treats a rejected outcome promise as an agent error and keeps queued work paused', async () => {
+    const port = new ControlledTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'queued' });
+
+    port.reject(0);
+    await turns.whenSettled();
+
+    expect(port.starts).toHaveLength(1);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['queued']);
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'agent-error', canResume: true });
   });
 });
