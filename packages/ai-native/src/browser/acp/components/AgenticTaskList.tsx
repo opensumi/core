@@ -3,6 +3,7 @@ import React from 'react';
 import { Modal } from '@opensumi/ide-components/lib/modal';
 import { useInjectable } from '@opensumi/ide-core-browser';
 
+import chatStyles from '../../chat/chat.module.less';
 import {
   AgenticProjectRecord,
   AgenticTaskGroup,
@@ -14,7 +15,6 @@ import { AgenticWorkspaceSwitchService } from '../agentic-workspace-switch.servi
 
 import { getAgenticProjectDisplayLabel } from './agentic-project-label';
 import styles from './agentic-task-list.module.less';
-import { AgenticTaskLaunchMenu } from './AgenticTaskLaunchMenu';
 
 const DEFAULT_TASK_LIST_WIDTH = 244;
 const MIN_TASK_LIST_WIDTH = 208;
@@ -37,6 +37,7 @@ function filterGroups(groups: AgenticTaskGroup[], query: string): AgenticTaskGro
   const normalizedQuery = query.trim().toLocaleLowerCase();
 
   return groups
+    .filter((group) => group.project.availability === 'available')
     .map((group) => ({
       project: group.project,
       tasks: group.tasks.filter((task) => !normalizedQuery || task.title.toLocaleLowerCase().includes(normalizedQuery)),
@@ -44,15 +45,28 @@ function filterGroups(groups: AgenticTaskGroup[], query: string): AgenticTaskGro
     .filter((group) => group.tasks.length > 0);
 }
 
-function getConfiguredTaskListWidth(maximumWidth: number): number {
-  const chatView = document.querySelector<HTMLElement>('#ai_chat_view');
+function getAgenticChatView(taskList: HTMLElement | null): HTMLElement | undefined {
+  return taskList?.closest<HTMLElement>(`[id^="${chatStyles.ai_chat_view}"]`) || undefined;
+}
+
+function getConfiguredTaskListWidth(chatView: HTMLElement | undefined, maximumWidth: number): number {
   const configuredWidth = Number.parseFloat(chatView?.style.getPropertyValue('--agentic-task-list-width') || '');
   return Number.isFinite(configuredWidth)
     ? clampTaskListWidth(configuredWidth, maximumWidth)
     : clampTaskListWidth(DEFAULT_TASK_LIST_WIDTH, maximumWidth);
 }
 
-function TaskListResizeHandle({ maximumWidth, onResize }: { maximumWidth: number; onResize: (width: number) => void }) {
+function TaskListResizeHandle({
+  getConfiguredWidth,
+  maximumWidth,
+  onResize,
+  refreshMaximumWidth,
+}: {
+  getConfiguredWidth: (maximumWidth: number) => number;
+  maximumWidth: number;
+  onResize: (width: number) => void;
+  refreshMaximumWidth: () => number;
+}) {
   const [width, setWidth] = React.useState(DEFAULT_TASK_LIST_WIDTH);
   const resizeStart = React.useRef<{ clientX: number; maximumWidth: number; width: number }>();
 
@@ -69,6 +83,50 @@ function TaskListResizeHandle({ maximumWidth, onResize }: { maximumWidth: number
     setWidth((currentWidth) => clampTaskListWidth(currentWidth, maximumWidth));
   }, [maximumWidth]);
 
+  React.useEffect(() => {
+    const onPointerMove = (event: PointerEvent) => {
+      if (!resizeStart.current) {
+        return;
+      }
+      resize(resizeStart.current.width + event.clientX - resizeStart.current.clientX, resizeStart.current.maximumWidth);
+    };
+    const onMouseMove = (event: MouseEvent) => {
+      if (!resizeStart.current) {
+        return;
+      }
+      resize(resizeStart.current.width + event.clientX - resizeStart.current.clientX, resizeStart.current.maximumWidth);
+    };
+    const finishResize = () => {
+      resizeStart.current = undefined;
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', finishResize);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', finishResize);
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', finishResize);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', finishResize);
+    };
+  }, [resize]);
+
+  const beginResize = React.useCallback(
+    (clientX: number) => {
+      if (resizeStart.current) {
+        return;
+      }
+      const currentMaximumWidth = refreshMaximumWidth();
+      resizeStart.current = {
+        clientX,
+        maximumWidth: currentMaximumWidth,
+        width: getConfiguredWidth(currentMaximumWidth),
+      };
+    },
+    [getConfiguredWidth, refreshMaximumWidth],
+  );
+
   return (
     <div
       aria-label='Resize Task List'
@@ -81,27 +139,19 @@ function TaskListResizeHandle({ maximumWidth, onResize }: { maximumWidth: number
       onKeyDown={(event) => {
         if (event.key === 'ArrowLeft') {
           event.preventDefault();
-          resize(width - 8);
+          resize(width - 8, refreshMaximumWidth());
         } else if (event.key === 'ArrowRight') {
           event.preventDefault();
-          resize(width + 8);
+          resize(width + 8, refreshMaximumWidth());
         }
       }}
       onPointerDown={(event) => {
-        resizeStart.current = { clientX: event.clientX, maximumWidth, width: getConfiguredTaskListWidth(maximumWidth) };
-        event.currentTarget.setPointerCapture?.(event.pointerId);
+        event.preventDefault();
+        beginResize(event.clientX);
       }}
-      onPointerMove={(event) => {
-        if (!resizeStart.current) {
-          return;
-        }
-        resize(
-          resizeStart.current.width + event.clientX - resizeStart.current.clientX,
-          resizeStart.current.maximumWidth,
-        );
-      }}
-      onPointerUp={() => {
-        resizeStart.current = undefined;
+      onMouseDown={(event) => {
+        event.preventDefault();
+        beginResize(event.clientX);
       }}
       role='separator'
       tabIndex={0}
@@ -249,14 +299,12 @@ function ProjectGroup({
   activeSessionId,
   group,
   onArchive,
-  onLaunch,
   onRename,
   onTaskActivate,
 }: {
   activeSessionId: string | undefined;
   group: AgenticTaskGroup;
   onArchive: (task: AgenticTaskRecord) => void;
-  onLaunch: (project: AgenticProjectRecord) => void;
   onRename: (project: AgenticProjectRecord) => void;
   onTaskActivate: (task: AgenticTaskRecord) => void;
 }) {
@@ -278,15 +326,6 @@ function ProjectGroup({
           type='button'
         >
           ✎
-        </button>
-        <button
-          aria-label={`New Task in ${projectLabel}`}
-          className={styles.project_new_task}
-          disabled={!projectAvailable}
-          onClick={() => onLaunch(group.project)}
-          type='button'
-        >
-          +
         </button>
       </header>
       {group.tasks.map((task) => (
@@ -373,7 +412,9 @@ function ArchivedTaskGroups({
         groups.map((group) => (
           <section className={styles.archived_project_group} key={group.project.id}>
             <div className={styles.project_header}>
-              <span className={styles.project_label}>{getAgenticProjectDisplayLabel(group.project)}</span>
+              <span className={styles.project_label} title={group.project.workspacePath}>
+                {getAgenticProjectDisplayLabel(group.project)}
+              </span>
               <span className={styles.project_count}>{group.tasks.length}</span>
             </div>
             {group.tasks.map((task) => (
@@ -400,47 +441,58 @@ function ArchivedTaskGroups({
 export function AgenticTaskList() {
   const registry = useInjectable<AgenticTaskRegistryService>(AgenticTaskRegistryService);
   const workspaceSwitch = useInjectable<AgenticWorkspaceSwitchService>(AgenticWorkspaceSwitchService);
+  const taskListRef = React.useRef<HTMLElement>(null);
   const [query, setQuery] = React.useState('');
   const [groups, setGroups] = React.useState<AgenticTaskGroup[]>([]);
-  const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
   const [activeSessionId, setActiveSessionId] = React.useState<string>();
-  const [launchProject, setLaunchProject] = React.useState<AgenticProjectRecord>();
   const [renameProject, setRenameProject] = React.useState<AgenticProjectRecord>();
   const [projectRevision, setProjectRevision] = React.useState(0);
   const [maximumTaskListWidth, setMaximumTaskListWidth] = React.useState(MAX_TASK_LIST_WIDTH);
 
+  const getConfiguredWidth = React.useCallback(
+    (maximumWidth: number) => getConfiguredTaskListWidth(getAgenticChatView(taskListRef.current), maximumWidth),
+    [],
+  );
+
+  const refreshMaximumTaskListWidth = React.useCallback(() => {
+    const chatView = getAgenticChatView(taskListRef.current);
+    if (!chatView) {
+      return MAX_TASK_LIST_WIDTH;
+    }
+
+    const maximumWidth = getTaskListMaximumWidth(chatView.getBoundingClientRect().width);
+    setMaximumTaskListWidth(maximumWidth);
+    chatView.style.setProperty('--agentic-task-list-max-width', `${maximumWidth}px`);
+    chatView.style.setProperty('--agentic-task-list-width', `${getConfiguredWidth(maximumWidth)}px`);
+    return maximumWidth;
+  }, [getConfiguredWidth]);
+
   const resize = React.useCallback(
     (width: number) => {
-      document
-        .querySelector<HTMLElement>('#ai_chat_view')
-        ?.style.setProperty('--agentic-task-list-width', `${clampTaskListWidth(width, maximumTaskListWidth)}px`);
+      const maximumWidth = refreshMaximumTaskListWidth();
+      getAgenticChatView(taskListRef.current)?.style.setProperty(
+        '--agentic-task-list-width',
+        `${clampTaskListWidth(width, maximumWidth)}px`,
+      );
     },
-    [maximumTaskListWidth],
+    [refreshMaximumTaskListWidth],
   );
 
   React.useEffect(() => {
-    const chatView = document.querySelector<HTMLElement>('#ai_chat_view');
+    const chatView = getAgenticChatView(taskListRef.current);
     if (!chatView) {
       return;
     }
 
-    const updateWidthBound = () => {
-      const maximumWidth = getTaskListMaximumWidth(chatView.getBoundingClientRect().width);
-      setMaximumTaskListWidth(maximumWidth);
-      chatView.style.setProperty('--agentic-task-list-max-width', `${maximumWidth}px`);
-      const currentWidth = getConfiguredTaskListWidth(maximumWidth);
-      chatView.style.setProperty('--agentic-task-list-width', `${currentWidth}px`);
-    };
-
-    updateWidthBound();
+    refreshMaximumTaskListWidth();
     if (typeof ResizeObserver === 'undefined') {
       return;
     }
 
-    const observer = new ResizeObserver(updateWidthBound);
+    const observer = new ResizeObserver(refreshMaximumTaskListWidth);
     observer.observe(chatView);
     return () => observer.disconnect();
-  }, []);
+  }, [refreshMaximumTaskListWidth]);
 
   const refreshProjectCatalog = React.useCallback(async () => {
     await workspaceSwitch.seedProjectCatalog();
@@ -450,9 +502,8 @@ export function AgenticTaskList() {
   }, [registry, workspaceSwitch]);
 
   const refresh = React.useCallback(async () => {
-    const projectCatalog = await refreshProjectCatalog();
+    await refreshProjectCatalog();
     const activeGroups = await registry.listActiveGroups(query);
-    setProjects(projectCatalog);
     setGroups(filterGroups(activeGroups, query));
   }, [query, refreshProjectCatalog, registry]);
 
@@ -522,20 +573,16 @@ export function AgenticTaskList() {
   );
 
   return (
-    <aside aria-label='Task List' className={styles.task_list} data-testid='agentic-task-list'>
-      <TaskListResizeHandle maximumWidth={maximumTaskListWidth} onResize={resize} />
+    <aside aria-label='Task List' className={styles.task_list} data-testid='agentic-task-list' ref={taskListRef}>
+      <TaskListResizeHandle
+        getConfiguredWidth={getConfiguredWidth}
+        maximumWidth={maximumTaskListWidth}
+        onResize={resize}
+        refreshMaximumWidth={refreshMaximumTaskListWidth}
+      />
       <header className={styles.task_list_header}>
         <h2>Task List</h2>
         {attentionCount > 0 && <span className={styles.attention_count}>{attentionCount}</span>}
-        <AgenticTaskLaunchMenu
-          onOpenChange={(open) => {
-            if (!open) {
-              setLaunchProject(undefined);
-            }
-          }}
-          open={launchProject ? true : undefined}
-          projects={launchProject ? [launchProject] : projects}
-        />
       </header>
       <label className={styles.search}>
         <span aria-hidden='true'>⌕</span>
@@ -553,7 +600,6 @@ export function AgenticTaskList() {
             group={group}
             key={group.project.id}
             onArchive={(task) => void archive(task)}
-            onLaunch={setLaunchProject}
             onRename={setRenameProject}
             onTaskActivate={activate}
           />

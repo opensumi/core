@@ -34,6 +34,7 @@ jest.mock('@opensumi/ide-components/lib/modal', () => ({
 import { AgenticTaskRegistryService } from '../../../src/browser/acp/agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
 import { AgenticTaskList } from '../../../src/browser/acp/components/AgenticTaskList';
+import chatStyles from '../../../src/browser/chat/chat.module.less';
 import { IChatInternalService } from '../../../src/common';
 
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -90,7 +91,7 @@ describe('AgenticTaskList', () => {
 
   beforeEach(() => {
     chatView = document.createElement('div');
-    chatView.id = 'ai_chat_view';
+    chatView.id = `${chatStyles.ai_chat_view}___runtime`;
     container = document.createElement('div');
     chatView.appendChild(container);
     document.body.appendChild(chatView);
@@ -132,7 +133,7 @@ describe('AgenticTaskList', () => {
     return services;
   }
 
-  it('seeds the current Project before enabling the global first Task launcher', async () => {
+  it('seeds the current Project without rendering a global Task launcher in the Task List', async () => {
     const services = createServices();
     const catalog: (typeof projectA)[] = [];
     services.registry.listProjects.mockImplementation(() => Promise.resolve([...catalog]));
@@ -145,9 +146,7 @@ describe('AgenticTaskList', () => {
 
     expect(services.workspaceSwitch.seedProjectCatalog).toHaveBeenCalledTimes(1);
     expect(catalog).toEqual([projectA]);
-    expect((container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).disabled).toBe(
-      false,
-    );
+    expect(container.querySelector('[data-testid="agentic-task-launch-button"]')).toBeNull();
   });
 
   it('refreshes when the Task Registry records a newly created Task', async () => {
@@ -266,7 +265,7 @@ describe('AgenticTaskList', () => {
     expect(container.querySelectorAll('[data-testid="agentic-task-row-acp:layout"]')).toHaveLength(1);
   });
 
-  it('renders attention before status, archives eligible Tasks, and disables unavailable Projects', async () => {
+  it('renders attention before status, archives eligible Tasks, and filters unavailable Projects', async () => {
     const services = createServices();
     services.registry.listActiveGroups.mockResolvedValue([
       {
@@ -319,54 +318,25 @@ describe('AgenticTaskList', () => {
     expect(container.querySelector('[data-testid="agentic-task-unread-acp:permission"]')).not.toBeNull();
 
     await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-row-acp:ready"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    expect(services.workspaceSwitch.activateTask).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionId: 'acp:ready' }),
+    );
+
+    await act(async () => {
       (container.querySelector('[data-testid="agentic-task-archive-acp:ready"]') as HTMLButtonElement).click();
       await flushPromises();
     });
     expect(services.registry.archive).toHaveBeenCalledWith('acp:ready');
 
-    const unavailable = container.querySelector(
-      '[data-testid="agentic-task-row-acp:unavailable"]',
-    ) as HTMLButtonElement;
-    expect(unavailable.disabled).toBe(true);
-    await act(async () => {
-      unavailable.click();
-      await flushPromises();
-    });
-    expect(services.workspaceSwitch.activateTask).not.toHaveBeenCalled();
-    expect(container.querySelector('[data-testid="agentic-task-archive-acp:unavailable"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:unavailable"]')).toBeNull();
+    expect(container.textContent).not.toContain('Unavailable task');
+    expect(container.textContent).not.toContain('Unavailable');
   });
 
-  it('launches a first Task from a catalog Project with no active Tasks', async () => {
-    const services = createServices();
-    services.registry.listProjects.mockResolvedValue([projectB]);
-    services.registry.listActiveGroups.mockResolvedValue([]);
-    services.preferenceService.get.mockReturnValue({
-      'agent-b': {
-        command: 'agent-b',
-        description: 'Agent B',
-      },
-    });
-    await renderTaskList(services);
-
-    await act(async () => {
-      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
-    });
-    await act(async () => {
-      Array.from(container.querySelectorAll('button'))
-        .find((button) => button.textContent === 'Project B')
-        ?.click();
-    });
-    await act(async () => {
-      Array.from(container.querySelectorAll('button'))
-        .find((button) => button.textContent === 'Agent B')
-        ?.click();
-      await flushPromises();
-    });
-
-    expect(services.workspaceSwitch.launchTask).toHaveBeenCalledWith(projectB, 'agent-b');
-  });
-
-  it('refreshes archived-only Projects and disables their archived Task rows', async () => {
+  it('refreshes archived-only Projects and filters unavailable archived Task rows', async () => {
     const unavailableProject = { ...projectB, availability: 'unavailable' as const };
     const services = createServices();
     services.registry.listProjects.mockResolvedValue([unavailableProject]);
@@ -400,10 +370,8 @@ describe('AgenticTaskList', () => {
     });
 
     expect(services.workspaceSwitch.refreshProjectAvailability).toHaveBeenCalledWith(unavailableProject);
-    expect(
-      (container.querySelector('[data-testid="agentic-task-row-acp:archived-unavailable"]') as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:archived-unavailable"]')).toBeNull();
+    expect(container.textContent).not.toContain('Archived unavailable Task');
   });
 
   it('renders an accessible Unarchive action for an archived Task', async () => {
@@ -440,6 +408,7 @@ describe('AgenticTaskList', () => {
     });
 
     expect(archivedArea?.getAttribute('data-expanded')).toBe('true');
+    expect(archivedArea?.querySelector(`[title="${projectA.workspacePath}"]`)?.textContent).toContain('Project A');
 
     const unarchive = container.querySelector('[data-testid="agentic-task-unarchive-acp:archived-ready"]');
     expect(unarchive?.getAttribute('aria-label')).toBe('Unarchive Archived ready Task');
@@ -458,12 +427,11 @@ describe('AgenticTaskList', () => {
       value: () => ({ width: 1000 }),
     });
     const handle = container.querySelector('[data-testid="agentic-task-list-resize-handle"]') as HTMLDivElement;
-    Object.defineProperty(handle, 'setPointerCapture', { configurable: true, value: jest.fn() });
 
     await act(async () => {
-      handle.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 0 }));
-      handle.dispatchEvent(new MouseEvent('pointermove', { bubbles: true, clientX: 240 }));
-      handle.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, clientX: 240 }));
+      handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 0 }));
+      window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 240 }));
+      window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 240 }));
     });
 
     expect(chatView.style.getPropertyValue('--agentic-task-list-width')).toBe('480px');
@@ -472,16 +440,46 @@ describe('AgenticTaskList', () => {
   it('keeps 360px for the Main Conversation Area in a narrow Chat Slot', async () => {
     await renderTaskList(createServices(), 640);
     const handle = container.querySelector('[data-testid="agentic-task-list-resize-handle"]') as HTMLDivElement;
-    Object.defineProperty(handle, 'setPointerCapture', { configurable: true, value: jest.fn() });
 
     await act(async () => {
-      handle.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 0 }));
-      handle.dispatchEvent(new MouseEvent('pointermove', { bubbles: true, clientX: 240 }));
-      handle.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, clientX: 240 }));
+      handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 0 }));
+      window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 240 }));
+      window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 240 }));
     });
 
     expect(handle.getAttribute('aria-valuemax')).toBe('280');
     expect(chatView.style.getPropertyValue('--agentic-task-list-width')).toBe('280px');
+  });
+
+  it('recalculates the resize bound when the Chat Slot changes before a drag begins', async () => {
+    await renderTaskList(createServices(), 1000);
+    Object.defineProperty(chatView, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({ width: 640 }),
+    });
+    const handle = container.querySelector('[data-testid="agentic-task-list-resize-handle"]') as HTMLDivElement;
+
+    await act(async () => {
+      handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 0 }));
+      window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 240 }));
+      window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 240 }));
+    });
+
+    expect(handle.getAttribute('aria-valuemax')).toBe('280');
+    expect(chatView.style.getPropertyValue('--agentic-task-list-width')).toBe('280px');
+  });
+
+  it('resizes from desktop mouse movement after the pointer leaves the narrow handle', async () => {
+    await renderTaskList(createServices(), 1000);
+    const handle = container.querySelector('[data-testid="agentic-task-list-resize-handle"]') as HTMLDivElement;
+
+    await act(async () => {
+      handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 0 }));
+      window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 240 }));
+      window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 240 }));
+    });
+
+    expect(chatView.style.getPropertyValue('--agentic-task-list-width')).toBe('480px');
   });
 
   it('uses the workspace path when a Project has no custom name', async () => {

@@ -65,7 +65,7 @@ export class AgenticWorkspaceSwitchService {
 
   async activateTask(task: AgenticTaskRecord): Promise<void> {
     const project = await this.registry.getProject(task.projectId);
-    if (!project || project.availability === 'unavailable') {
+    if (!project || !(await this.ensureProjectAvailable(project))) {
       return;
     }
 
@@ -93,7 +93,7 @@ export class AgenticWorkspaceSwitchService {
 
   async launchTask(project: AgenticProjectRecord, agentId: string): Promise<boolean> {
     const targetProject = await this.registry.getProject(project.id);
-    if (!targetProject || targetProject.availability === 'unavailable') {
+    if (!targetProject || !(await this.ensureProjectAvailable(targetProject))) {
       return false;
     }
 
@@ -142,11 +142,28 @@ export class AgenticWorkspaceSwitchService {
   }
 
   async refreshProjectAvailability(project: AgenticProjectRecord): Promise<void> {
+    const availability = await this.readProjectAvailability(project);
+    await this.registry.markProjectAvailability(project.id, availability);
+  }
+
+  private async ensureProjectAvailable(project: AgenticProjectRecord): Promise<boolean> {
+    if (project.availability === 'unavailable') {
+      return false;
+    }
+
+    const availability = await this.readProjectAvailability(project);
+    if (availability !== project.availability) {
+      await this.registry.markProjectAvailability(project.id, availability);
+    }
+    return availability === 'available';
+  }
+
+  private async readProjectAvailability(project: AgenticProjectRecord): Promise<'available' | 'unavailable'> {
     try {
       const stat = await this.fileService.getFileStat(project.workspaceUri, false);
-      await this.registry.markProjectAvailability(project.id, stat ? 'available' : 'unavailable');
+      return stat ? 'available' : 'unavailable';
     } catch {
-      await this.registry.markProjectAvailability(project.id, 'unavailable');
+      return 'unavailable';
     }
   }
 

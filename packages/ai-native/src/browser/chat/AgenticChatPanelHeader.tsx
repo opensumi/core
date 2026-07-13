@@ -4,9 +4,12 @@ import React from 'react';
 import { COMMON_COMMANDS, PreferenceService, getIcon, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { ACPAgentType, AgentConfig, ChatMessageRole, CommandService, PreferenceScope } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
 import { cleanAttachedTextWrapper } from '../../common/utils';
+import { AgenticProjectRecord, AgenticTaskRegistryService } from '../acp/agentic-task-registry.service';
+import { AgenticTaskLaunchMenu } from '../acp/components/AgenticTaskLaunchMenu';
 import { AIPanelLayoutService } from '../layout/panel-layout.service';
 
 import { AgenticChatHeaderMaximizeAction } from './AgenticChatHeaderMaximizeAction';
@@ -64,6 +67,68 @@ export function getAgenticChatPanelTitle(sessionModel: ChatModel | undefined, pr
   return messageTitle || localize('aiNative.chat.ai.assistant.name');
 }
 
+function AgenticChatHeaderTaskLauncher({ sessionModel }: { sessionModel: ChatModel | undefined }) {
+  const acpChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
+  const registry = useInjectable<AgenticTaskRegistryService>(AgenticTaskRegistryService);
+  const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
+  const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
+  const [preferredProjectId, setPreferredProjectId] = React.useState<string>();
+  const [preferredAgentId, setPreferredAgentId] = React.useState<string>();
+  const refreshVersionRef = React.useRef(0);
+
+  const refreshProjects = React.useCallback(async () => {
+    const refreshVersion = ++refreshVersionRef.current;
+    const currentWorkspaceUri = workspaceService.workspace?.uri;
+    const latestRequest = sessionModel?.requests?.at(-1);
+    try {
+      const [catalog, activeTask] = await Promise.all([
+        registry.listProjects(),
+        sessionModel ? registry.getTask(sessionModel.sessionId) : Promise.resolve(undefined),
+      ]);
+      if (refreshVersion !== refreshVersionRef.current) {
+        return;
+      }
+      setProjects(catalog);
+      setPreferredProjectId(catalog.find((project) => project.workspaceUri === currentWorkspaceUri)?.id);
+      setPreferredAgentId(
+        activeTask?.agentId ||
+          latestRequest?.message.agentId ||
+          acpChatService.getActiveAgenticTaskAgentId(sessionModel?.sessionId),
+      );
+    } catch {
+      if (refreshVersion === refreshVersionRef.current) {
+        setProjects([]);
+        setPreferredProjectId(undefined);
+        setPreferredAgentId(undefined);
+      }
+    }
+  }, [acpChatService, registry, sessionModel, workspaceService]);
+
+  React.useEffect(() => {
+    void refreshProjects();
+    const disposable = registry.onDidChange(() => void refreshProjects());
+    const workspaceChangedDisposable = workspaceService.onWorkspaceChanged(() => void refreshProjects());
+    const workspaceLocationChangedDisposable = workspaceService.onWorkspaceLocationChanged(
+      () => void refreshProjects(),
+    );
+    return () => {
+      refreshVersionRef.current += 1;
+      disposable.dispose();
+      workspaceChangedDisposable.dispose();
+      workspaceLocationChangedDisposable.dispose();
+    };
+  }, [refreshProjects, registry, workspaceService]);
+
+  return (
+    <AgenticTaskLaunchMenu
+      preferredAgentId={preferredAgentId}
+      preferredProjectId={preferredProjectId}
+      projects={projects}
+      variant='chat-header'
+    />
+  );
+}
+
 export function AgenticChatPanelHeader({
   preferSessionTitle = false,
   sessionModel,
@@ -105,6 +170,7 @@ export function AgenticChatPanelHeader({
         {title}
       </div>
       <div className={styles.agentic_chat_panel_actions}>
+        <AgenticChatHeaderTaskLauncher sessionModel={sessionModel} />
         <AgenticChatHeaderMaximizeAction id='agentic-chat-panel-header-maximize' />
       </div>
     </div>

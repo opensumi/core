@@ -15,13 +15,14 @@
 
 .resize_handle {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: 0;
-  right: -3px;
+  right: 0;
   bottom: 0;
-  width: 6px;
+  width: 8px;
   cursor: col-resize;
   outline: none;
+  touch-action: none;
 
   &:focus-visible::after,
   &:hover::after {
@@ -62,6 +63,7 @@
 }
 
 .launch_button,
+.project_rename,
 .project_new_task,
 .archive_button,
 .archived_toggle,
@@ -99,6 +101,11 @@
     cursor: default;
     opacity: 0.55;
   }
+}
+
+.launch_menu_item_selected {
+  color: var(--list-activeSelectionForeground);
+  background: var(--list-activeSelectionBackground);
 }
 
 .launch_button_label {
@@ -238,8 +245,10 @@
 
 .project_rename,
 .project_new_task {
+  flex: 0 0 20px;
   width: 20px;
   height: 20px;
+  padding: 0;
   border-radius: 3px;
   background: transparent;
   color: var(--descriptionForeground);

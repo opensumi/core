@@ -60,7 +60,7 @@ describe('AgenticWorkspaceSwitchService', () => {
       saveAll: jest.fn().mockResolvedValue(undefined),
     };
     fileService = {
-      getFileStat: jest.fn().mockResolvedValue(undefined),
+      getFileStat: jest.fn().mockResolvedValue({ uri: projectB.workspaceUri }),
     };
     messageService = {
       warning: jest.fn().mockResolvedValue('Cancel'),
@@ -174,6 +174,17 @@ describe('AgenticWorkspaceSwitchService', () => {
 
     expect(messageService.warning).not.toHaveBeenCalled();
     expect(registry.preparePendingActivation).not.toHaveBeenCalled();
+    expect(workspaceService.open).not.toHaveBeenCalled();
+  });
+
+  it('marks a stale Project unavailable before it can open a missing workspace', async () => {
+    registry.getProject.mockResolvedValue(projectB);
+    fileService.getFileStat.mockResolvedValue(undefined);
+
+    await expect(switcher.launchTask(projectB, 'agent-b')).resolves.toBe(false);
+
+    expect(registry.markProjectAvailability).toHaveBeenCalledWith(projectB.id, 'unavailable');
+    expect(registry.preparePendingLaunch).not.toHaveBeenCalled();
     expect(workspaceService.open).not.toHaveBeenCalled();
   });
 

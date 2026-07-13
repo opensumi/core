@@ -17,9 +17,9 @@ jest.mock('../../../src/browser/acp/agentic-workspace-switch.service', () => ({
 
 import { PreferenceService } from '@opensumi/ide-core-browser';
 
-import { IChatInternalService } from '../../../src/common';
-import { AgenticTaskLaunchMenu } from '../../../src/browser/acp/components/AgenticTaskLaunchMenu';
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
+import { AgenticTaskLaunchMenu } from '../../../src/browser/acp/components/AgenticTaskLaunchMenu';
+import { IChatInternalService } from '../../../src/common';
 
 const projectB = {
   id: 'project-b',
@@ -145,5 +145,109 @@ describe('AgenticTaskLaunchMenu', () => {
       'Project B',
       'Project A',
     ]);
+  });
+
+  it('disables New Task when every Project is unavailable', async () => {
+    const workspaceSwitch = { launchTask: jest.fn(() => Promise.resolve()) };
+    const preferenceService = { get: jest.fn(() => ({})), set: jest.fn() };
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockImplementation((token: unknown) => {
+      if (token === AgenticWorkspaceSwitchService) {
+        return workspaceSwitch;
+      }
+      if (token === PreferenceService) {
+        return preferenceService;
+      }
+      return {};
+    });
+
+    await act(async () => {
+      root.render(<AgenticTaskLaunchMenu projects={[{ ...projectA, availability: 'unavailable' }]} />);
+      await Promise.resolve();
+    });
+
+    expect((container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+  });
+
+  it('preselects the active Project and Agent while requiring both confirmations', async () => {
+    const workspaceSwitch = { launchTask: jest.fn(() => Promise.resolve()) };
+    const preferenceService = {
+      get: jest.fn(() => ({
+        'agent-a': { command: 'agent-a', description: 'Agent A' },
+        'agent-b': { command: 'agent-b', description: 'Agent B' },
+      })),
+      set: jest.fn(),
+    };
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockImplementation((token: unknown) => {
+      if (token === AgenticWorkspaceSwitchService) {
+        return workspaceSwitch;
+      }
+      if (token === PreferenceService) {
+        return preferenceService;
+      }
+      return {};
+    });
+
+    await act(async () => {
+      root.render(
+        <AgenticTaskLaunchMenu
+          {...({
+            preferredAgentId: 'agent-b',
+            preferredProjectId: projectA.id,
+            projects: [projectB, projectA],
+          } as any)}
+        />,
+      );
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
+    });
+
+    const projectAButton = Array.from(container.querySelectorAll('[role="menuitem"]')).find(
+      (button) => button.textContent === 'Project A',
+    ) as HTMLButtonElement;
+    expect(projectAButton.getAttribute('aria-current')).toBe('true');
+    expect(document.activeElement).toBe(projectAButton);
+    expect(workspaceSwitch.launchTask).not.toHaveBeenCalled();
+
+    await act(async () => {
+      projectAButton.click();
+    });
+
+    const agentBButton = Array.from(container.querySelectorAll('[role="menuitem"]')).find(
+      (button) => button.textContent === 'Agent B',
+    ) as HTMLButtonElement;
+    expect(agentBButton.getAttribute('aria-current')).toBe('true');
+    expect(document.activeElement).toBe(agentBButton);
+    expect(workspaceSwitch.launchTask).not.toHaveBeenCalled();
+  });
+
+  it('filters unavailable Projects from a non-empty Project picker', async () => {
+    const workspaceSwitch = { launchTask: jest.fn(() => Promise.resolve()) };
+    const preferenceService = { get: jest.fn(() => ({})), set: jest.fn() };
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockImplementation((token: unknown) => {
+      if (token === AgenticWorkspaceSwitchService) {
+        return workspaceSwitch;
+      }
+      if (token === PreferenceService) {
+        return preferenceService;
+      }
+      return {};
+    });
+
+    await act(async () => {
+      root.render(<AgenticTaskLaunchMenu projects={[projectA, { ...projectB, availability: 'unavailable' }]} />);
+      await Promise.resolve();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
+    });
+
+    expect(container.textContent).toContain('Project A');
+    expect(container.textContent).not.toContain('Project B');
+    expect(container.textContent).not.toContain('Unavailable');
   });
 });

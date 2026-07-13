@@ -326,6 +326,8 @@ function createMockServices({
   let currentDefaultAgentType = defaultAgentType;
   let currentAgentConfigs = agentConfigs;
   let agenticWorkbenchVisible = true;
+  const workspaceChangedListeners = new Set<() => void>();
+  const workspaceLocationChangedListeners = new Set<() => void>();
   const aiChatService = {
     sessionModel: currentSession,
     activateSession: jest.fn(),
@@ -348,6 +350,7 @@ function createMockServices({
     createSessionModel: createSessionModel || jest.fn(),
     enterDraftSession: enterDraftSession || jest.fn(),
     getDraftSessionState: jest.fn(() => ({ isDraft: false })),
+    getActiveAgenticTaskAgentId: jest.fn(() => undefined),
     ensureSessionModel:
       ensureSessionModel ||
       jest.fn(async () => {
@@ -435,6 +438,11 @@ function createMockServices({
     },
     aiReporter: {
       start: jest.fn(() => 'relation-1'),
+    },
+    agenticTaskRegistry: {
+      getTask: jest.fn(() => Promise.resolve(undefined)),
+      listProjects: jest.fn(() => Promise.resolve([])),
+      onDidChange: jest.fn(() => disposable()),
     },
     appConfig: {
       workspaceDir: '/workspace/root',
@@ -565,9 +573,25 @@ function createMockServices({
     workspaceService: {
       asRelativePath: jest.fn(async () => undefined),
       isMultiRootWorkspaceOpened: isMultiRoot,
+      onWorkspaceChanged: jest.fn((listener: () => void) => {
+        workspaceChangedListeners.add(listener);
+        return { dispose: jest.fn(() => workspaceChangedListeners.delete(listener)) };
+      }),
+      onWorkspaceLocationChanged: jest.fn((listener: () => void) => {
+        workspaceLocationChangedListeners.add(listener);
+        return { dispose: jest.fn(() => workspaceLocationChangedListeners.delete(listener)) };
+      }),
+      workspace: undefined as { uri: string } | undefined,
+      setWorkspaceForTest(this: { workspace: { uri: string } | undefined }, workspace: { uri: string } | undefined) {
+        this.workspace = workspace;
+        workspaceChangedListeners.forEach((listener) => listener());
+        workspaceLocationChangedListeners.forEach((listener) => listener());
+      },
     },
     workspaceSwitch: {
+      refreshProjectAvailability: jest.fn(() => Promise.resolve()),
       restorePendingWork: jest.fn(() => Promise.resolve()),
+      seedProjectCatalog: jest.fn(() => Promise.resolve()),
     },
   };
 }
@@ -667,6 +691,10 @@ function installInjectableMocks(services: ReturnType<typeof createMockServices>)
 
     if (name === 'AgenticWorkspaceSwitchService') {
       return services.workspaceSwitch;
+    }
+
+    if (name === 'AgenticTaskRegistryService') {
+      return services.agenticTaskRegistry;
     }
 
     return {};
@@ -892,6 +920,14 @@ describe('ACP chat view headers', () => {
     expect(container.querySelector('#ai-chat-header-maximize')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-chat-new-session-button"]')).toBeNull();
 
+    const actions = container.querySelector(
+      '[data-testid="agentic-chat-panel-header"] > div:last-child',
+    ) as HTMLDivElement;
+    const taskLaunchButton = actions.querySelector('[data-testid="agentic-task-launch-button"]');
+    expect(taskLaunchButton).not.toBeNull();
+    expect(actions.children[0]?.contains(taskLaunchButton)).toBe(true);
+    expect(actions.children[1]?.querySelector('#agentic-chat-panel-header-maximize')).not.toBeNull();
+
     const getAction = () =>
       container.querySelector('#agentic-chat-panel-header-maximize button') as HTMLButtonElement | null;
     expect(getAction()?.className).toBe('icon-fullescreen');
@@ -911,6 +947,154 @@ describe('ACP chat view headers', () => {
 
     expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(true);
     expect(getAction()?.className).toBe('icon-fullescreen');
+  });
+
+  it('preselects the active Project and Agent in the header New Task flow', async () => {
+    const services = createMockServices({
+      agentConfigs: {
+        'agent-a': { command: 'agent-a', description: 'Agent A' },
+        'agent-b': { command: 'agent-b', description: 'Agent B' },
+      },
+      panelLayout: 'agentic',
+      session: createMockSession(),
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    const currentProject = {
+      availability: 'available' as const,
+      id: 'project-current',
+      joinedAt: 2,
+      label: 'Project Current',
+      workspacePath: '/work/current',
+      workspaceUri: 'file:///work/current',
+    };
+    const otherProject = {
+      availability: 'available' as const,
+      id: 'project-other',
+      joinedAt: 1,
+      label: 'Project Other',
+      workspacePath: '/work/other',
+      workspaceUri: 'file:///work/other',
+    };
+    services.workspaceService.workspace = { uri: currentProject.workspaceUri };
+    services.agenticTaskRegistry.listProjects.mockResolvedValue([otherProject, currentProject]);
+    services.agenticTaskRegistry.getTask.mockResolvedValue({ agentId: 'agent-b' });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      await flushPromises();
+      await flushPromises();
+    });
+
+    const launch = container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement;
+    await act(async () => {
+      launch.click();
+    });
+
+    const currentProjectButton = Array.from(container.querySelectorAll('[role="menuitem"]')).find(
+      (button) => button.textContent === 'Project Current',
+    ) as HTMLButtonElement;
+    expect(currentProjectButton.getAttribute('aria-current')).toBe('true');
+
+    await act(async () => {
+      currentProjectButton.click();
+    });
+
+    const agentBButton = Array.from(container.querySelectorAll('[role="menuitem"]')).find(
+      (button) => button.textContent === 'Agent B',
+    ) as HTMLButtonElement;
+    expect(agentBButton.getAttribute('aria-current')).toBe('true');
+  });
+
+  it('refreshes the preferred Project when the active workspace changes', async () => {
+    const services = createMockServices({
+      agentConfigs: {
+        'agent-a': { command: 'agent-a', description: 'Agent A' },
+      },
+      panelLayout: 'agentic',
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    const currentProject = {
+      availability: 'available' as const,
+      id: 'project-current',
+      joinedAt: 2,
+      label: 'Project Current',
+      workspacePath: '/work/current',
+      workspaceUri: 'file:///work/current',
+    };
+    const otherProject = {
+      availability: 'available' as const,
+      id: 'project-other',
+      joinedAt: 1,
+      label: 'Project Other',
+      workspacePath: '/work/other',
+      workspaceUri: 'file:///work/other',
+    };
+    services.workspaceService.workspace = { uri: currentProject.workspaceUri };
+    services.agenticTaskRegistry.listProjects.mockResolvedValue([currentProject, otherProject]);
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      await flushPromises();
+      services.workspaceService.setWorkspaceForTest({ uri: otherProject.workspaceUri });
+      await flushPromises();
+    });
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
+    });
+    const otherProjectButton = Array.from(container.querySelectorAll('[role="menuitem"]')).find(
+      (button) => button.textContent === 'Project Other',
+    ) as HTMLButtonElement;
+    expect(otherProjectButton.getAttribute('aria-current')).toBe('true');
+  });
+
+  it('uses the current Agentic draft target before the first prompt is registered', async () => {
+    const services = createMockServices({
+      agentConfigs: {
+        'agent-a': { command: 'agent-a', description: 'Agent A' },
+        'agent-b': { command: 'agent-b', description: 'Agent B' },
+      },
+      defaultAgentType: 'agent-a',
+      panelLayout: 'agentic',
+      session: null,
+      sessions: [],
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    const currentProject = {
+      availability: 'available' as const,
+      id: 'project-current',
+      joinedAt: 2,
+      label: 'Project Current',
+      workspacePath: '/work/current',
+      workspaceUri: 'file:///work/current',
+    };
+    services.workspaceService.workspace = { uri: currentProject.workspaceUri };
+    services.agenticTaskRegistry.listProjects.mockResolvedValue([currentProject]);
+    services.aiChatService.getActiveAgenticTaskAgentId.mockReturnValue('agent-b');
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      await flushPromises();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (
+        Array.from(container.querySelectorAll('[role="menuitem"]')).find(
+          (button) => button.textContent === 'Project Current',
+        ) as HTMLButtonElement
+      ).click();
+    });
+
+    const agentBButton = Array.from(container.querySelectorAll('[role="menuitem"]')).find(
+      (button) => button.textContent === 'Agent B',
+    ) as HTMLButtonElement;
+    expect(agentBButton.getAttribute('aria-current')).toBe('true');
   });
 
   it('maximizes the default chat header in agentic layout', async () => {

@@ -406,6 +406,15 @@ export class AcpChatInternalService extends ChatInternalService {
     this.enterDraftSession({ force: true });
   }
 
+  /**
+   * Returns the Agent selected for an Agentic draft or an unregistered ACP
+   * session. The Task registry becomes the source of truth after the first
+   * prompt is registered.
+   */
+  getActiveAgenticTaskAgentId(sessionId?: string): string | undefined {
+    return (sessionId ? this.agenticTaskTargets.get(sessionId) : this.pendingAgenticTarget)?.agentId;
+  }
+
   private isAgenticLayout(): boolean {
     return this.panelLayoutService?.getLayoutMode() === 'agentic';
   }
