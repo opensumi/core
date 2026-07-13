@@ -17,7 +17,14 @@ import {
 } from '../../chat/chat-input-footer.registry';
 import { MentionPanel } from '../mention-input/mention-panel';
 import { ExtendedModelOption, MentionSelect } from '../mention-input/mention-select';
-import { MENTION_KEYWORD, MentionInputProps, MentionItem, MentionState, MentionType } from '../mention-input/types';
+import {
+  MENTION_KEYWORD,
+  MentionInputHandle,
+  MentionInputProps,
+  MentionItem,
+  MentionState,
+  MentionType,
+} from '../mention-input/types';
 import { PermissionDialogWidget } from '../permission-dialog-widget';
 
 import styles from './mention-input.module.less';
@@ -126,45 +133,97 @@ function normalizeConfigOptions(configOptions?: AcpSessionConfigOption[]): Norma
     .filter(Boolean) as NormalizedConfigOption[];
 }
 
-export const MentionInput: React.FC<
-  MentionInputProps & {
-    defaultInput?: string;
-    onDefaultInputConsumed?: () => void;
-    onModeChange?: (modeId: string) => void;
-    onConfigOptionChange?: (configId: string, value: boolean | string) => void;
-    onAgentChange?: (agentId: string) => void;
-    modeOptions?: ModeOption[];
-    currentMode?: string;
-    configOptions?: AcpSessionConfigOption[];
-    slashCommands?: Array<{ nameWithSlash: string; icon?: string; name?: string; description?: string }>;
+type AcpMentionInputProps = MentionInputProps & {
+  defaultInput?: string;
+  onDefaultInputConsumed?: () => void;
+  onModeChange?: (modeId: string) => void;
+  onConfigOptionChange?: (configId: string, value: boolean | string) => void;
+  onAgentChange?: (agentId: string) => void;
+  modeOptions?: ModeOption[];
+  currentMode?: string;
+  configOptions?: AcpSessionConfigOption[];
+  slashCommands?: Array<{ nameWithSlash: string; icon?: string; name?: string; description?: string }>;
+};
+
+function serializeEditorContent(editor: HTMLDivElement): string {
+  const container = editor.cloneNode(true) as HTMLDivElement;
+  const mentionTags = container.querySelectorAll(`.${styles.mention_tag}`);
+  mentionTags.forEach((tag) => {
+    const contextId = tag.getAttribute('data-context-id');
+    const type = tag.getAttribute('data-type');
+    if (contextId && type) {
+      tag.replaceWith(document.createTextNode(`{{@${type}:${contextId}}}`));
+    }
+  });
+
+  const slashTags = container.querySelectorAll('span[data-command]');
+  slashTags.forEach((tag) => {
+    tag.replaceWith(document.createTextNode(tag.getAttribute('data-command') || tag.textContent || ''));
+  });
+
+  return container.innerHTML.trim().replaceAll(WHITE_SPACE_TEXT, ' ');
+}
+
+function restoreEditorContent(editor: HTMLDivElement, content: string): void {
+  const fragment = document.createDocumentFragment();
+  const mentionPattern = /{{@(file|folder|code|rule):([\s\S]*?)}}/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = mentionPattern.exec(content))) {
+    if (match.index > lastIndex) {
+      fragment.appendChild(document.createTextNode(content.slice(lastIndex, match.index)));
+    }
+
+    const [, type, contextId] = match;
+    const mentionTag = document.createElement('span');
+    mentionTag.className = styles.mention_tag;
+    mentionTag.dataset.id = contextId;
+    mentionTag.dataset.type = type;
+    mentionTag.dataset.contextId = contextId;
+    mentionTag.contentEditable = 'false';
+    mentionTag.textContent = contextId;
+    fragment.appendChild(mentionTag);
+    lastIndex = mentionPattern.lastIndex;
   }
-> = ({
-  mentionItems = [],
-  onSend,
-  onStop,
-  loading = false,
-  mentionKeyword = MENTION_KEYWORD,
-  onSelectionChange,
-  onImageUpload,
-  onSlashSelect,
-  labelService,
-  workspaceService,
-  placeholder = 'Ask anything, @ to mention',
-  footerConfig = {
-    buttons: [],
-    showModelSelector: false,
-  },
-  contextService,
-  expanded = false,
-  defaultInput,
-  onDefaultInputConsumed,
-  onModeChange,
-  onConfigOptionChange,
-  modeOptions,
-  currentMode,
-  configOptions,
-  slashCommands = [],
-}) => {
+
+  if (lastIndex < content.length) {
+    fragment.appendChild(document.createTextNode(content.slice(lastIndex)));
+  }
+
+  editor.replaceChildren(fragment);
+}
+
+const MentionInputImpl = (
+  {
+    mentionItems = [],
+    onSend,
+    onStop,
+    loading = false,
+    mentionKeyword = MENTION_KEYWORD,
+    onSelectionChange,
+    onImageUpload,
+    onSlashSelect,
+    labelService,
+    workspaceService,
+    placeholder = 'Ask anything, @ to mention',
+    footerConfig = {
+      buttons: [],
+      showModelSelector: false,
+    },
+    contextService,
+    expanded = false,
+    defaultInput,
+    onDefaultInputConsumed,
+    onModeChange,
+    onConfigOptionChange,
+    modeOptions,
+    currentMode,
+    configOptions,
+    slashCommands = [],
+  }: AcpMentionInputProps,
+  ref: React.ForwardedRef<MentionInputHandle>,
+) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
   const mentionPanelContainerRef = React.useRef<HTMLDivElement>(null);
   const [mentionState, setMentionState] = React.useState<MentionState>({
@@ -181,6 +240,8 @@ export const MentionInput: React.FC<
     loading: false, // 添加加载状态
     trigger: '@',
   });
+  const mentionStateRef = React.useRef(mentionState);
+  mentionStateRef.current = mentionState;
 
   // 添加模型选择状态
   const [selectedModel, setSelectedModel] = React.useState<string>(footerConfig.defaultModel || '');
@@ -222,6 +283,42 @@ export const MentionInput: React.FC<
       contextId: string;
     }>
   >([]);
+
+  const restoreSerializedContent = React.useCallback((content: string) => {
+    if (!editorRef.current) {
+      return;
+    }
+
+    restoreEditorContent(editorRef.current, content);
+    prevMentionTagsRef.current = Array.from(editorRef.current.querySelectorAll(`.${styles.mention_tag}`)).map(
+      (tag) => ({
+        id: tag.getAttribute('data-id') || '',
+        type: tag.getAttribute('data-type') || '',
+        contextId: tag.getAttribute('data-context-id') || '',
+      }),
+    );
+  }, []);
+
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      getSerializedContent: () => (editorRef.current ? serializeEditorContent(editorRef.current) : ''),
+      restoreSerializedContent,
+      focus: () => editorRef.current?.focus(),
+      closeTransientUi: () => {
+        const wasOpen = mentionStateRef.current.active || mentionStateRef.current.inlineSearchActive;
+        if (wasOpen) {
+          setMentionState((state) => ({
+            ...state,
+            active: false,
+            inlineSearchActive: false,
+          }));
+        }
+        return wasOpen;
+      },
+    }),
+    [restoreSerializedContent],
+  );
 
   const getCurrentItems = (): MentionItem[] => {
     if (mentionState.level === 0) {
@@ -1433,34 +1530,7 @@ export const MentionInput: React.FC<
       return;
     }
 
-    // 创建一个临时元素来处理内容
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = rawContent;
-
-    // 查找所有提及标签并替换为对应的contextId
-    const mentionTags = tempDiv.querySelectorAll(`.${styles.mention_tag}`);
-    mentionTags.forEach((tag) => {
-      const contextId = tag.getAttribute('data-context-id');
-      if (contextId) {
-        // 替换为contextId
-        const replacement = document.createTextNode(
-          `{{${mentionKeyword}${tag.getAttribute('data-type')}:${contextId}}}`,
-        );
-        // 替换内容
-        tag.parentNode?.replaceChild(replacement, tag);
-      }
-    });
-
-    // 查找所有 slash 命令标签并替换为纯文本
-    const slashTags = tempDiv.querySelectorAll('span[data-command]');
-    slashTags.forEach((tag) => {
-      const replacement = document.createTextNode(tag.getAttribute('data-command') || tag.textContent || '');
-      tag.parentNode?.replaceChild(replacement, tag);
-    });
-
-    // 获取处理后的内容
-    let processedContent = tempDiv.innerHTML;
-    processedContent = processedContent.trim().replaceAll(WHITE_SPACE_TEXT, ' ');
+    const processedContent = serializeEditorContent(editorRef.current);
     // 添加到历史记录
     if (rawContent) {
       setHistory((prev) => [...prev, rawContent]);
@@ -1849,3 +1919,5 @@ export const MentionInput: React.FC<
     </div>
   );
 };
+
+export const MentionInput = React.forwardRef<MentionInputHandle, AcpMentionInputProps>(MentionInputImpl);

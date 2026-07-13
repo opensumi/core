@@ -124,4 +124,11 @@ export interface MentionInputProps {
   expanded?: boolean;
 }
 
+export interface MentionInputHandle {
+  getSerializedContent(): string;
+  restoreSerializedContent(content: string): void;
+  focus(): void;
+  closeTransientUi(): boolean;
+}
+
 export const MENTION_KEYWORD = '@';
