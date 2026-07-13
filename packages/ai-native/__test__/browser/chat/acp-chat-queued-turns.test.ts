@@ -60,7 +60,7 @@ class RejectingStartTurnPort extends ControlledTurnPort {
 }
 
 describe('AcpQueuedTurnModule', () => {
-  it('rejects a draft without a sendable ACP payload', async () => {
+  it('rejects an Active Session turn without a sendable ACP payload', async () => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);
 
@@ -71,7 +71,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(port.starts).toEqual([]);
   });
 
-  it('starts an idle draft and queues later drafts in FIFO order', async () => {
+  it('starts an idle Active Session turn and queues later Queued Turns in FIFO order', async () => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
@@ -90,7 +90,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['third']);
   });
 
-  it('clears queued work and ignores an old completion after Active Session changes', async () => {
+  it('clears Queued Turns and ignores an old completion after Active Session changes', async () => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
@@ -106,7 +106,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(port.starts).toHaveLength(1);
   });
 
-  it('adopts the session id returned by the first draft send without treating it as a switch', async () => {
+  it('adopts the Active Session ID returned by the first turn without treating it as a switch', async () => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate(undefined);
@@ -114,7 +114,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.activeSessionId).toBe('acp:created-session');
   });
 
-  it('treats a matching activation during the first start as draft session promotion', async () => {
+  it('treats a matching activation during the first start as Active Session promotion', async () => {
     const port = new ControlledStartTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate(undefined);
@@ -128,7 +128,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.activeSessionId).toBe('acp:created-session');
   });
 
-  it('rejects the first start when a different session activates before it returns', async () => {
+  it('rejects the first start when a different Active Session activates before it returns', async () => {
     const port = new ControlledStartTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate(undefined);
@@ -143,7 +143,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.entries).toEqual([]);
   });
 
-  it('rejects the first start when a pending session promotion is cleared before start returns', async () => {
+  it('rejects the first start when a pending Active Session promotion is cleared before start returns', async () => {
     const port = new ControlledStartTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate(undefined);
@@ -159,7 +159,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.entries).toEqual([]);
   });
 
-  it('preserves start-failed pause state and appends submissions behind the failed turn', async () => {
+  it('preserves start-failed pause state and appends submissions behind the failed Queued Turn', async () => {
     const port = new RejectingStartTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
@@ -182,7 +182,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.pauseReason).toBe('start-failed');
   });
 
-  it('keeps manual-stop paused and appends new submissions in FIFO order', async () => {
+  it('keeps manual-stop paused and appends new Queued Turns in FIFO order', async () => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
@@ -202,7 +202,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.pauseReason).toBe('manual-stop');
   });
 
-  it('pauses queued work after an agent-error outcome', async () => {
+  it('pauses Queued Turns after an agent-error outcome', async () => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
@@ -217,7 +217,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'agent-error', canResume: true });
   });
 
-  it('treats a rejected outcome promise as an agent error and keeps queued work paused', async () => {
+  it('treats a rejected outcome promise as an agent error and keeps Queued Turns paused', async () => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
