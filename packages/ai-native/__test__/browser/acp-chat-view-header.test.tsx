@@ -248,6 +248,14 @@ import { AIChatViewACPContent, DefaultChatViewHeaderACP } from '../../src/browse
 const disposable = () => ({ dispose: jest.fn() });
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+  return { promise, resolve };
+}
+
 function createRequestResponse() {
   const listeners = new Set<() => void>();
   const response = {
@@ -1127,6 +1135,53 @@ describe('ACP chat view headers', () => {
     });
   });
 
+  it('does not promote a different service session when the initial ensure returns an older session', async () => {
+    const ensuredSession = createMockSession({ messages: [], sessionId: 'acp:ensured' });
+    const replacementSession = createMockSession({ messages: [], sessionId: 'acp:replacement' });
+    const deferredEnsure = createDeferred<typeof ensuredSession>();
+    const ensureSessionModel = jest.fn(() => deferredEnsure.promise);
+    const createRequest = jest.fn();
+    const sendRequest = jest.fn();
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel,
+      sendRequest,
+      session: null,
+      sessions: [],
+    });
+    services.aiChatService.ensureSessionModel.mockImplementation(async () => {
+      const sessionModel = await ensureSessionModel();
+      services.aiChatService.sessionModel = replacementSession;
+      return sessionModel;
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    let sendResult!: Promise<boolean>;
+    await act(async () => {
+      sendResult = services.getLatestChatInputProps().onSend('hello');
+      await Promise.resolve();
+    });
+    expect(ensureSessionModel).toHaveBeenCalledTimes(1);
+
+    let accepted!: boolean;
+    await act(async () => {
+      deferredEnsure.resolve(ensuredSession);
+      accepted = await sendResult;
+      await flushPromises();
+    });
+
+    expect(accepted).toBe(false);
+    expect(createRequest).not.toHaveBeenCalled();
+    expect(sendRequest).not.toHaveBeenCalled();
+    expect(ensuredSession.history.addUserMessage).not.toHaveBeenCalled();
+    expect(ensuredSession.history.addAssistantMessage).not.toHaveBeenCalled();
+    expect(replacementSession.history.addUserMessage).not.toHaveBeenCalled();
+    expect(replacementSession.history.addAssistantMessage).not.toHaveBeenCalled();
+    expect(services.aiChatService.sessionModel).toBe(replacementSession);
+  });
+
   it('renders ACP replies with Deep Thinking collapsed by default', async () => {
     const session = createMockSession({ messages: [] });
     const createRequest = jest.fn(() => ({
@@ -1380,6 +1435,83 @@ describe('ACP chat view headers', () => {
 
     expect(createRequest).toHaveBeenCalledTimes(1);
     expect(sendRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not continue an initial send after unmount while ensuring its session', async () => {
+    const ensuredSession = createMockSession({ messages: [], sessionId: 'acp:ensured' });
+    const deferredEnsure = createDeferred<typeof ensuredSession>();
+    const ensureSessionModel = jest.fn(() => deferredEnsure.promise);
+    const createRequest = jest.fn();
+    const sendRequest = jest.fn();
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel,
+      sendRequest,
+      session: null,
+      sessions: [],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    let sendResult!: Promise<boolean>;
+    await act(async () => {
+      sendResult = services.getLatestChatInputProps().onSend('hello');
+      await Promise.resolve();
+    });
+    expect(ensureSessionModel).toHaveBeenCalledTimes(1);
+
+    await renderHeader(React.createElement('div'));
+    const handleCallbackCountAfterUnmount = services.chatInputRegistry.setActiveInputHandle.mock.calls.length;
+
+    let accepted!: boolean;
+    await act(async () => {
+      deferredEnsure.resolve(ensuredSession);
+      accepted = await sendResult;
+      await flushPromises();
+    });
+
+    expect(accepted).toBe(false);
+    expect(createRequest).not.toHaveBeenCalled();
+    expect(sendRequest).not.toHaveBeenCalled();
+    expect(ensuredSession.history.addUserMessage).not.toHaveBeenCalled();
+    expect(ensuredSession.history.addAssistantMessage).not.toHaveBeenCalled();
+    expect(services.chatInputRegistry.setActiveInputHandle).toHaveBeenCalledTimes(handleCallbackCountAfterUnmount);
+  });
+
+  it('does not continue a Mention send after unmount while resolving its context', async () => {
+    const session = createMockSession({ messages: [] });
+    const deferredRelativePath = createDeferred<undefined>();
+    const createRequest = jest.fn();
+    const sendRequest = jest.fn();
+    const services = createMockServices({ createRequest, sendRequest, session });
+    services.workspaceService.asRelativePath.mockImplementationOnce(() => deferredRelativePath.promise);
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    let sendResult!: Promise<boolean>;
+    await act(async () => {
+      sendResult = services.getLatestChatInputProps().onSend('{{@file:/workspace/file.ts}} hello');
+      await Promise.resolve();
+    });
+    expect(services.workspaceService.asRelativePath).toHaveBeenCalledTimes(1);
+
+    await renderHeader(React.createElement('div'));
+    const handleCallbackCountAfterUnmount = services.chatInputRegistry.setActiveInputHandle.mock.calls.length;
+
+    let accepted!: boolean;
+    await act(async () => {
+      deferredRelativePath.resolve(undefined);
+      accepted = await sendResult;
+      await flushPromises();
+    });
+
+    expect(accepted).toBe(false);
+    expect(services.aiChatService.ensureSessionModel).not.toHaveBeenCalled();
+    expect(createRequest).not.toHaveBeenCalled();
+    expect(sendRequest).not.toHaveBeenCalled();
+    expect(session.history.addUserMessage).not.toHaveBeenCalled();
+    expect(session.history.addAssistantMessage).not.toHaveBeenCalled();
+    expect(services.chatInputRegistry.setActiveInputHandle).toHaveBeenCalledTimes(handleCallbackCountAfterUnmount);
   });
 
   it('pauses queued turns after manual stop and resumes only the original FIFO head', async () => {

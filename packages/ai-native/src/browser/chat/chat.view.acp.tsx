@@ -101,12 +101,12 @@ interface StartedAcpTurn {
 
 interface AcpQueuedTurnPortCallbacks {
   getStatus(sessionId: string | undefined): 'idle' | 'generating';
-  start(sessionId: string | undefined, draft: AcpTurnDraft): Promise<StartedAcpTurn>;
+  start(sessionId: string | undefined, draft: AcpTurnDraft, assertRuntimeActive: () => void): Promise<StartedAcpTurn>;
   cancelCurrent(sessionId: string | undefined): Promise<void>;
   didFinish(started: StartedAcpTurn): void;
 }
 
-type AcpQueuedTurnSessionGuard = (allowInitialPromotion?: boolean) => void;
+type AcpQueuedTurnSessionGuard = (ensuredSessionId?: string) => void;
 
 function observeTurnOutcome(response: ChatRequestModel['response']): {
   outcome: Promise<AcpTurnOutcome>;
@@ -272,25 +272,28 @@ export const AIChatViewACPContent = () => {
       }
     >();
     let active = false;
+    let generation = 0;
     let queuedTurns: AcpQueuedTurnModule;
-    const requireActive = () => {
-      if (!active) {
+    const assertRuntimeActive = (token: number) => {
+      if (!active || token !== generation) {
         throw new Error('ACP queued turn runtime is inactive.');
       }
     };
     const port: AcpQueuedTurnPort = {
       getStatus: (sessionId) => (active ? queuedTurnPortCallbacksRef.current.getStatus(sessionId) : 'idle'),
       start: async (sessionId, draft) => {
-        requireActive();
-        const started = await queuedTurnPortCallbacksRef.current.start(sessionId, draft);
-        requireActive();
+        const token = generation;
+        const assertStartActive = () => assertRuntimeActive(token);
+        assertStartActive();
+        const started = await queuedTurnPortCallbacksRef.current.start(sessionId, draft, assertStartActive);
+        assertStartActive();
         const observer = observeTurnOutcome(started.response);
         activeTurns.set(started.sessionId, { started, observer });
         void observer.outcome.then(() => {
           if (activeTurns.get(started.sessionId)?.started.requestId === started.requestId) {
             activeTurns.delete(started.sessionId);
           }
-          if (active) {
+          if (active && token === generation) {
             queuedTurnPortCallbacksRef.current.didFinish(started);
           }
         });
@@ -301,13 +304,17 @@ export const AIChatViewACPContent = () => {
         };
       },
       cancelCurrent: async (sessionId) => {
-        requireActive();
+        if (!active) {
+          throw new Error('ACP queued turn runtime is inactive.');
+        }
         const activeTurn = sessionId ? activeTurns.get(sessionId) : undefined;
         if (!activeTurn) {
           throw new Error('No active ACP response matches the queued turn session.');
         }
         await queuedTurnPortCallbacksRef.current.cancelCurrent(sessionId);
-        requireActive();
+        if (!active) {
+          throw new Error('ACP queued turn runtime is inactive.');
+        }
         await activeTurn.observer.outcome;
       },
     };
@@ -315,10 +322,12 @@ export const AIChatViewACPContent = () => {
     return {
       queuedTurns,
       setup: () => {
+        generation += 1;
         active = true;
       },
       teardown: () => {
         active = false;
+        generation += 1;
         queuedTurns.deactivate();
         activeTurns.forEach(({ observer }) => observer.dispose());
         activeTurns.clear();
@@ -852,7 +861,7 @@ export const AIChatViewACPContent = () => {
         messageService.error(`Failed to create session. (${getErrorMessage(error)})`);
         return undefined;
       }
-      sessionGuard?.(true);
+      sessionGuard?.(sessionModel.sessionId);
 
       const activeHistory = sessionModel.history;
       sessionGuard?.();
@@ -866,6 +875,7 @@ export const AIChatViewACPContent = () => {
         return undefined;
       }
 
+      sessionGuard?.();
       setChatLoading(true);
       aiChatService.setLatestRequestId(request.requestId);
 
@@ -884,6 +894,7 @@ export const AIChatViewACPContent = () => {
         // 由于涉及 tool 调用，超时时间设置长一点
         600 * 1000,
       );
+      sessionGuard?.();
       activeHistory.addUserMessage({
         content: message,
         images: images || [],
@@ -909,6 +920,7 @@ export const AIChatViewACPContent = () => {
         completeResponseWithError(request.response, error);
       }
 
+      sessionGuard?.();
       const msgId = activeHistory.addAssistantMessage({
         content: '',
         relationId,
@@ -932,6 +944,7 @@ export const AIChatViewACPContent = () => {
         msgId,
         history: activeHistory,
       });
+      sessionGuard?.();
       return {
         sessionId: sessionModel.sessionId,
         requestId: request.requestId,
@@ -1036,6 +1049,7 @@ export const AIChatViewACPContent = () => {
         },
         sessionGuard,
       );
+      sessionGuard?.();
       if (started) {
         setHasUserSentMessage(true);
       }
@@ -1056,20 +1070,24 @@ export const AIChatViewACPContent = () => {
         ? 'generating'
         : 'idle';
     },
-    start: async (sessionId, draft) => {
+    start: async (sessionId, draft, assertRuntimeActive) => {
       let activeSessionId = sessionId;
       let canPromoteInitialSession = sessionId === undefined;
-      const sessionGuard: AcpQueuedTurnSessionGuard = (allowInitialPromotion = false) => {
+      const sessionGuard: AcpQueuedTurnSessionGuard = (ensuredSessionId) => {
+        assertRuntimeActive();
         const currentSessionId = aiChatService.sessionModel?.sessionId;
-        if (currentSessionId === activeSessionId) {
-          return;
-        }
-        if (allowInitialPromotion && canPromoteInitialSession && activeSessionId === undefined && currentSessionId) {
-          activeSessionId = currentSessionId;
+        if (ensuredSessionId !== undefined && canPromoteInitialSession && activeSessionId === undefined) {
+          if (currentSessionId !== ensuredSessionId) {
+            throw new Error('ACP queued turn session is no longer active.');
+          }
+          activeSessionId = ensuredSessionId;
           canPromoteInitialSession = false;
-          return;
+        } else if (ensuredSessionId !== undefined && ensuredSessionId !== activeSessionId) {
+          throw new Error('ACP queued turn session is no longer active.');
         }
-        throw new Error('ACP queued turn session is no longer active.');
+        if (currentSessionId !== activeSessionId) {
+          throw new Error('ACP queued turn session is no longer active.');
+        }
       };
       sessionGuard();
       const started = await sendMessageNow(
