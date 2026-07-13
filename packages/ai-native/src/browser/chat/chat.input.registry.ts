@@ -85,9 +85,15 @@ export interface IChatInputProps {
   onInputHandleReady?: (handle: ChatInputHandle | null) => void;
 }
 
+export interface LegacyChatInputProps extends Omit<IChatInputProps, 'onSend'> {
+  onSend: NonNullable<IChatInputProps['onSend']>;
+}
+
+export type ChatInputComponent = React.ComponentType<IChatInputProps> | React.ComponentType<LegacyChatInputProps>;
+
 export interface ChatInputContribution {
   id: string;
-  component: React.ComponentType<IChatInputProps>;
+  component: ChatInputComponent;
   /** Higher value = higher priority. Default 0. */
   priority?: number;
   /** Optional condition. Input is selected only when this returns true. */
@@ -101,7 +107,7 @@ export interface IChatInputRegistry {
   getChatInputContributions(): ChatInputContribution[];
   /** Get the highest-priority input whose `when()` condition passes, or null. */
   getActiveChatInput(): ChatInputContribution | null;
-  setActiveInputHandle(handle: ChatInputHandle | null): void;
+  setActiveInputHandle(handle: ChatInputHandle | null, ownerId?: string): void;
   getActiveInputHandle(): ChatInputHandle | null;
 }
 
@@ -109,6 +115,8 @@ export interface IChatInputRegistry {
 export class ChatInputRegistry extends Disposable implements IChatInputRegistry {
   private contributions: ChatInputContribution[] = [];
   private activeInputHandle: ChatInputHandle | null = null;
+  private activeInputHandleOwnerId: string | undefined;
+  private activeContribution: ChatInputContribution | null = null;
 
   registerChatInput(contribution: ChatInputContribution): IDisposable {
     const entry: ChatInputContribution = {
@@ -118,11 +126,13 @@ export class ChatInputRegistry extends Disposable implements IChatInputRegistry 
     };
     this.contributions.push(entry);
     this.contributions.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+    this.updateActiveContribution();
 
     const disposable = Disposable.create(() => {
       const idx = this.contributions.indexOf(entry);
       if (idx !== -1) {
         this.contributions.splice(idx, 1);
+        this.updateActiveContribution();
       }
     });
     this.addDispose(disposable);
@@ -130,23 +140,55 @@ export class ChatInputRegistry extends Disposable implements IChatInputRegistry 
   }
 
   getChatInputContributions(): ChatInputContribution[] {
-    return [...this.contributions];
+    return this.contributions.map((contribution) => ({
+      ...contribution,
+      capabilities: [...(contribution.capabilities || [])],
+    }));
   }
 
   getActiveChatInput(): ChatInputContribution | null {
-    for (const c of this.contributions) {
-      if (!c.when || c.when()) {
-        return c;
-      }
+    const contribution = this.updateActiveContribution();
+    if (contribution) {
+      return {
+        ...contribution,
+        capabilities: [...(contribution.capabilities || [])],
+      };
     }
     return null;
   }
 
-  setActiveInputHandle(handle: ChatInputHandle | null): void {
+  setActiveInputHandle(handle: ChatInputHandle | null, ownerId?: string): void {
+    const activeContribution = this.updateActiveContribution();
+    if (ownerId !== undefined) {
+      if (handle && activeContribution?.id !== ownerId) {
+        return;
+      }
+      if (!handle && this.activeInputHandleOwnerId !== ownerId) {
+        return;
+      }
+    }
     this.activeInputHandle = handle;
+    this.activeInputHandleOwnerId = handle ? ownerId : undefined;
   }
 
   getActiveInputHandle(): ChatInputHandle | null {
+    this.updateActiveContribution();
     return this.activeInputHandle;
+  }
+
+  private updateActiveContribution(): ChatInputContribution | null {
+    let activeContribution: ChatInputContribution | null = null;
+    for (const contribution of this.contributions) {
+      if (!contribution.when || contribution.when()) {
+        activeContribution = contribution;
+        break;
+      }
+    }
+    if (activeContribution !== this.activeContribution) {
+      this.activeContribution = activeContribution;
+      this.activeInputHandle = null;
+      this.activeInputHandleOwnerId = undefined;
+    }
+    return activeContribution;
   }
 }
