@@ -13,6 +13,17 @@ export type {
 
 export type AcpChatMentionInputHandle = AcpTurnEditorHandle;
 
-export const AcpChatMentionInput = React.forwardRef<AcpTurnEditorHandle, IChatMentionInputProps>((props, ref) => (
+export interface AcpChatMentionInputLegacyHandle {
+  setInputValue(value: string): void;
+}
+
+export interface AcpChatMentionInputComponent
+  extends React.ForwardRefExoticComponent<IChatMentionInputProps & React.RefAttributes<AcpTurnEditorHandle>> {
+  (props: IChatMentionInputProps & React.RefAttributes<AcpChatMentionInputLegacyHandle>): React.ReactElement | null;
+}
+
+const AcpChatMentionInputImpl = React.forwardRef<AcpTurnEditorHandle, IChatMentionInputProps>((props, ref) => (
   <AcpTurnEditor {...props} ref={ref} variant='main' />
 ));
+
+export const AcpChatMentionInput = AcpChatMentionInputImpl as AcpChatMentionInputComponent;

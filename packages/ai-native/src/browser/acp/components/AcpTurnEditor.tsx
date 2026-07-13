@@ -147,9 +147,22 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
   const propsRef = useRef(props);
   const valueRef = useRef(value);
   const imagesRef = useRef(images);
+  const agentIdRef = useRef(props.initialDraft?.agentId ?? props.agentId);
+  const commandRef = useRef(props.initialDraft?.command ?? props.command);
+  const previousAgentIdPropRef = useRef(props.agentId);
+  const previousCommandPropRef = useRef(props.command);
+  const initialDraftRestoredRef = useRef(false);
   propsRef.current = props;
   valueRef.current = value;
   imagesRef.current = images;
+  if (previousAgentIdPropRef.current !== props.agentId) {
+    previousAgentIdPropRef.current = props.agentId;
+    agentIdRef.current = props.agentId;
+  }
+  if (previousCommandPropRef.current !== props.command) {
+    previousCommandPropRef.current = props.command;
+    commandRef.current = props.command;
+  }
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const rulesService = useInjectable<RulesService>(RulesServiceToken);
 
@@ -211,27 +224,34 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
   const inputHandle = useMemo<AcpTurnEditorHandle>(
     () => ({
       getDraft: () => ({
-        message: mentionInputRef.current?.getSerializedContent() || valueRef.current,
+        message: mentionInputRef.current ? mentionInputRef.current.getSerializedContent() : valueRef.current,
         images: imagesRef.current.map((image) => image.toString()),
-        agentId: propsRef.current.agentId,
-        command: propsRef.current.command,
+        agentId: agentIdRef.current,
+        command: commandRef.current,
       }),
       restoreDraft: (draft) => {
+        valueRef.current = draft.message;
         setValue(draft.message);
         if (mentionInputRef.current) {
           mentionInputRef.current.restoreSerializedContent(draft.message);
         } else {
           setDefaultInput(draft.message);
         }
-        setImages([...(draft.images || [])]);
-        propsRef.current.setAgentId(draft.agentId || '');
-        propsRef.current.setCommand(draft.command || '');
+        const restoredImages = [...(draft.images || [])];
+        imagesRef.current = restoredImages;
+        setImages(restoredImages);
+        agentIdRef.current = draft.agentId || '';
+        commandRef.current = draft.command || '';
+        propsRef.current.setAgentId(agentIdRef.current);
+        propsRef.current.setCommand(commandRef.current);
         propsRef.current.onValueChange?.(draft.message);
       },
       setInputValue: (inputValue) => {
+        valueRef.current = inputValue;
         setValue(inputValue);
         if (mentionInputRef.current) {
           mentionInputRef.current.restoreSerializedContent(inputValue);
+          mentionInputRef.current.focus();
         } else {
           setDefaultInput(inputValue);
         }
@@ -266,6 +286,10 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
   }, [inputHandle, props.onInputHandleReady]);
 
   useEffect(() => {
+    if (initialDraftRestoredRef.current) {
+      return;
+    }
+    initialDraftRestoredRef.current = true;
     if (props.initialDraft) {
       inputHandle.restoreDraft?.(props.initialDraft);
     }

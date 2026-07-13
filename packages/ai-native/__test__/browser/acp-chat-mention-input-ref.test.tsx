@@ -4,6 +4,7 @@ import { Root, createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
 let mockMentionInputOnSend: ((content: string, option?: { model: string }) => unknown) | undefined;
+let mockUseActualMentionInput = false;
 const mockMentionInputRestore = jest.fn();
 const mockMentionInputFocus = jest.fn();
 const mockMentionInputCloseTransientUi = jest.fn(() => true);
@@ -57,8 +58,10 @@ jest.mock('../../src/browser/components/mention-input/mention-select', () => ({
   MentionSelect: () => require('react').createElement('select'),
 }));
 
-jest.mock('../../src/browser/components/acp/MentionInput', () => ({
-  MentionInput: require('react').forwardRef(
+jest.mock('../../src/browser/components/acp/MentionInput', () => {
+  const ReactModule = require('react') as typeof import('react');
+  const ActualMentionInput = jest.requireActual('../../src/browser/components/acp/MentionInput').MentionInput;
+  const MockMentionInput = ReactModule.forwardRef(
     (
       {
         currentMode,
@@ -85,7 +88,7 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => ({
       }, [defaultInput]);
 
       React.useImperativeHandle(ref, () => ({
-        getSerializedContent: () => editorRef.current?.textContent || value,
+        getSerializedContent: () => (editorRef.current ? editorRef.current.textContent || '' : value),
         restoreSerializedContent: (content: string) => {
           mockMentionInputRestore(content);
           setValue(content);
@@ -138,8 +141,14 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => ({
         ),
       );
     },
-  ),
-}));
+  );
+
+  return {
+    MentionInput: ReactModule.forwardRef((props: Record<string, unknown>, ref: React.ForwardedRef<unknown>) =>
+      ReactModule.createElement(mockUseActualMentionInput ? ActualMentionInput : MockMentionInput, { ...props, ref }),
+    ),
+  };
+});
 
 jest.mock('../../src/browser/components/components.module.less', () => ({
   chat_input_container: 'chat_input_container',
@@ -152,6 +161,7 @@ jest.mock('../../src/browser/components/components.module.less', () => ({
 }));
 
 import { AcpChatMentionInput } from '../../src/browser/acp/components/AcpChatMentionInput';
+import { AcpTurnEditor } from '../../src/browser/acp/components/AcpTurnEditor';
 
 import type { AcpTurnDraft } from '../../src/browser/chat/acp-chat-queued-turns';
 import type { ChatInputHandle } from '../../src/browser/chat/chat.input.registry';
@@ -209,6 +219,7 @@ describe('AcpChatMentionInput ref contract', () => {
   let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
+    mockUseActualMentionInput = false;
     container = document.createElement('div');
     document.body.appendChild(container);
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -216,10 +227,13 @@ describe('AcpChatMentionInput ref contract', () => {
   });
 
   afterEach(() => {
-    unmountComponentAtNode(container);
+    act(() => {
+      unmountComponentAtNode(container);
+    });
     container.remove();
     consoleErrorSpy.mockRestore();
     mockMentionInputOnSend = undefined;
+    mockUseActualMentionInput = false;
     jest.clearAllMocks();
   });
 
@@ -252,21 +266,19 @@ describe('AcpChatMentionInput ref contract', () => {
       command: '/review',
     };
 
+    let draftReadImmediatelyAfterRestore: AcpTurnDraft | undefined;
     let didCloseTransientUi: boolean | undefined;
     act(() => {
       ref.current!.restoreDraft?.(draft);
+      draftReadImmediatelyAfterRestore = ref.current!.getDraft();
       ref.current!.focus?.();
       ref.current!.setExpanded?.(true);
       didCloseTransientUi = ref.current!.closeTransientUi?.();
     });
 
     expect(ref.current?.getDraft).toEqual(expect.any(Function));
-    expect(ref.current!.getDraft()).toEqual({
-      message: draft.message,
-      images: draft.images,
-      agentId: '',
-      command: '',
-    });
+    expect(draftReadImmediatelyAfterRestore).toEqual(draft);
+    expect(ref.current!.getDraft()).toEqual(draft);
     expect(mockMentionInputRestore).toHaveBeenCalledWith(draft.message);
     expect(mockMentionInputFocus).toHaveBeenCalledTimes(1);
     expect(mockMentionInputCloseTransientUi).toHaveBeenCalledTimes(1);
@@ -317,6 +329,87 @@ describe('AcpChatMentionInput ref contract', () => {
     expect(editorAfter).toBe(editorBefore);
     expect(document.activeElement).toBe(editorBefore);
     expect(window.getSelection()!.getRangeAt(0).startOffset).toBe(8);
+  });
+
+  it('returns an empty message when the mounted editor is cleared after restoring a draft', () => {
+    const ref = React.createRef<AcpTurnEditorHandle>();
+
+    act(() => {
+      render(
+        React.createElement(AcpChatMentionInput, {
+          ref,
+          onSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+        } as any),
+        container,
+      );
+    });
+
+    act(() => {
+      ref.current!.restoreDraft?.({
+        message: 'restored draft',
+        images: [],
+        agentId: '',
+        command: '',
+      });
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    act(() => {
+      editor.replaceChildren();
+    });
+
+    expect(ref.current!.getDraft().message).toBe('');
+  });
+
+  it('restores initialDraft callbacks only once under StrictMode', () => {
+    const strictContainer = document.createElement('div');
+    document.body.appendChild(strictContainer);
+    const strictRoot = createRoot(strictContainer);
+    const setAgentId = jest.fn();
+    const setCommand = jest.fn();
+    const onValueChange = jest.fn();
+    const initialDraft = {
+      message: 'strict draft',
+      images: ['data:image/png;base64,strict'],
+      agentId: 'strict-agent',
+      command: '/strict',
+    };
+
+    act(() => {
+      strictRoot.render(
+        React.createElement(
+          React.StrictMode,
+          null,
+          React.createElement(AcpTurnEditor, {
+            initialDraft,
+            onSend: jest.fn(),
+            onValueChange,
+            setTheme: jest.fn(),
+            agentId: '',
+            setAgentId,
+            command: '',
+            setCommand,
+          }),
+        ),
+      );
+    });
+
+    expect(setAgentId).toHaveBeenCalledTimes(1);
+    expect(setAgentId).toHaveBeenCalledWith(initialDraft.agentId);
+    expect(setCommand).toHaveBeenCalledTimes(1);
+    expect(setCommand).toHaveBeenCalledWith(initialDraft.command);
+    expect(onValueChange).toHaveBeenCalledTimes(1);
+    expect(onValueChange).toHaveBeenCalledWith(initialDraft.message);
+
+    act(() => {
+      strictRoot.unmount();
+    });
+    strictContainer.remove();
   });
 
   it('unregisters the input handle on unmount', () => {
@@ -376,6 +469,44 @@ describe('AcpChatMentionInput ref contract', () => {
     expect((container.querySelector('[data-testid="acp-mention-input"]') as HTMLTextAreaElement).value).toBe(
       'hello from ref',
     );
+  });
+
+  it('legacy setInputValue focuses the real editor and places the caret at the end', () => {
+    mockUseActualMentionInput = true;
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(createMockService());
+    const ref = React.createRef<{ setInputValue: (value: string) => void }>();
+    const inputValue = 'hello from legacy ref';
+
+    act(() => {
+      render(
+        React.createElement(AcpChatMentionInput, {
+          ref,
+          onSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+        } as any),
+        container,
+      );
+    });
+
+    act(() => {
+      ref.current!.setInputValue(inputValue);
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    const selection = window.getSelection()!;
+    expect(editor.textContent).toBe(inputValue);
+    expect(document.activeElement).toBe(editor);
+    expect(selection.rangeCount).toBe(1);
+    const caretRange = selection.getRangeAt(0);
+    const contentBeforeCaret = caretRange.cloneRange();
+    contentBeforeCaret.selectNodeContents(editor);
+    contentBeforeCaret.setEnd(caretRange.endContainer, caretRange.endOffset);
+    expect(caretRange.collapsed).toBe(true);
+    expect(contentBeforeCaret.toString()).toBe(inputValue);
   });
 
   it('toggles expanded state and notifies onExpand', () => {
@@ -683,5 +814,111 @@ describe('MentionInput serialized content handle', () => {
     expect(editor.querySelector('[data-context-id]')).toBeNull();
     expect(editor.querySelector('img')).toBeNull();
     expect(editor.textContent).toBe(serialized);
+  });
+
+  it('serializes raw text without HTML escaping and preserves mixed text-token order', () => {
+    const ref = React.createRef<MentionInputHandle>();
+    const serialized = 'before <img onerror=x> & {{@file:/workspace/editor.js}} after';
+
+    act(() => {
+      root.render(
+        React.createElement(ActualMentionInput, {
+          ref,
+          footerConfig: { buttons: [], showModelSelector: false },
+        } as any),
+      );
+    });
+
+    act(() => {
+      ref.current!.restoreSerializedContent(serialized);
+    });
+
+    expect(ref.current!.getSerializedContent()).toBe(serialized);
+  });
+
+  it('serializes unsupported or incomplete mention tags as visible plain text', () => {
+    const ref = React.createRef<MentionInputHandle>();
+
+    act(() => {
+      root.render(
+        React.createElement(ActualMentionInput, {
+          ref,
+          footerConfig: { buttons: [], showModelSelector: false },
+        } as any),
+      );
+    });
+
+    act(() => {
+      ref.current!.restoreSerializedContent('{{@file:/workspace/template}}');
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    const mentionClassName = (editor.firstElementChild as HTMLSpanElement).className;
+    const unknownMention = document.createElement('span');
+    unknownMention.className = mentionClassName;
+    unknownMention.dataset.type = 'unknown';
+    unknownMention.dataset.contextId = '/workspace/hidden';
+    unknownMention.textContent = 'visible unknown';
+    const missingContextMention = document.createElement('span');
+    missingContextMention.className = mentionClassName;
+    missingContextMention.dataset.type = 'file';
+    missingContextMention.textContent = 'visible file';
+    editor.replaceChildren(
+      document.createTextNode('before '),
+      unknownMention,
+      document.createTextNode(' between '),
+      missingContextMention,
+      document.createTextNode(' after'),
+    );
+
+    expect(ref.current!.getSerializedContent()).toBe('before visible unknown between visible file after');
+  });
+
+  it('keeps a malformed mention prefix as text while restoring a later valid token', () => {
+    const ref = React.createRef<MentionInputHandle>();
+    const serialized = '{{@file:broken {{@folder:/ok}}';
+
+    act(() => {
+      root.render(
+        React.createElement(ActualMentionInput, {
+          ref,
+          footerConfig: { buttons: [], showModelSelector: false },
+        } as any),
+      );
+    });
+
+    act(() => {
+      ref.current!.restoreSerializedContent(serialized);
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    const mentionTags = Array.from(editor.querySelectorAll('[data-context-id]')) as HTMLSpanElement[];
+    expect(mentionTags.map((tag) => [tag.dataset.type, tag.dataset.contextId])).toEqual([['folder', '/ok']]);
+    expect(ref.current!.getSerializedContent()).toBe(serialized);
+  });
+
+  it('rejects empty or brace-nested context ids while preserving colons in valid ids', () => {
+    const ref = React.createRef<MentionInputHandle>();
+    const serialized = '{{@file:}} {{@code:/bad{nested}}} {{@rule:/workspace/config:section.mdc}}';
+
+    act(() => {
+      root.render(
+        React.createElement(ActualMentionInput, {
+          ref,
+          footerConfig: { buttons: [], showModelSelector: false },
+        } as any),
+      );
+    });
+
+    act(() => {
+      ref.current!.restoreSerializedContent(serialized);
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    const mentionTags = Array.from(editor.querySelectorAll('[data-context-id]')) as HTMLSpanElement[];
+    expect(mentionTags.map((tag) => [tag.dataset.type, tag.dataset.contextId])).toEqual([
+      ['rule', '/workspace/config:section.mdc'],
+    ]);
+    expect(ref.current!.getSerializedContent()).toBe(serialized);
   });
 });

@@ -1,0 +1,12 @@
+{
+  "extends": "../../../../configs/ts/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "noImplicitAny": true,
+    "sourceMap": false,
+    "strictFunctionTypes": true
+  },
+  "include": ["./acp-chat-mention-input-ref.typecheck.tsx"]
+}

@@ -133,6 +133,45 @@ function normalizeConfigOptions(configOptions?: AcpSessionConfigOption[]): Norma
     .filter(Boolean) as NormalizedConfigOption[];
 }
 
+const SERIALIZABLE_MENTION_TYPES = new Set<string>([
+  MentionType.FILE,
+  MentionType.FOLDER,
+  MentionType.CODE,
+  MentionType.RULE,
+]);
+
+const BLOCK_ELEMENT_NAMES = new Set([
+  'ADDRESS',
+  'ARTICLE',
+  'ASIDE',
+  'BLOCKQUOTE',
+  'DIV',
+  'DL',
+  'FIELDSET',
+  'FIGCAPTION',
+  'FIGURE',
+  'FOOTER',
+  'FORM',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+  'HEADER',
+  'HR',
+  'LI',
+  'MAIN',
+  'NAV',
+  'OL',
+  'P',
+  'PRE',
+  'SECTION',
+  'TABLE',
+  'TR',
+  'UL',
+]);
+
 type AcpMentionInputProps = MentionInputProps & {
   defaultInput?: string;
   onDefaultInputConsumed?: () => void;
@@ -145,28 +184,57 @@ type AcpMentionInputProps = MentionInputProps & {
   slashCommands?: Array<{ nameWithSlash: string; icon?: string; name?: string; description?: string }>;
 };
 
-function serializeEditorContent(editor: HTMLDivElement): string {
-  const container = editor.cloneNode(true) as HTMLDivElement;
-  const mentionTags = container.querySelectorAll(`.${styles.mention_tag}`);
-  mentionTags.forEach((tag) => {
-    const contextId = tag.getAttribute('data-context-id');
-    const type = tag.getAttribute('data-type');
-    if (contextId && type) {
-      tag.replaceWith(document.createTextNode(`{{@${type}:${contextId}}}`));
+function serializeEditorChildren(element: Element): string {
+  let serialized = '';
+  const children = Array.from(element.childNodes);
+
+  children.forEach((child, index) => {
+    const isBlockElement = child instanceof HTMLElement && BLOCK_ELEMENT_NAMES.has(child.tagName);
+    if (isBlockElement && serialized && !serialized.endsWith('\n')) {
+      serialized += '\n';
+    }
+
+    serialized += serializeEditorNode(child);
+
+    if (isBlockElement && index < children.length - 1 && !serialized.endsWith('\n')) {
+      serialized += '\n';
     }
   });
 
-  const slashTags = container.querySelectorAll('span[data-command]');
-  slashTags.forEach((tag) => {
-    tag.replaceWith(document.createTextNode(tag.getAttribute('data-command') || tag.textContent || ''));
-  });
+  return serialized;
+}
 
-  return container.innerHTML.trim().replaceAll(WHITE_SPACE_TEXT, ' ');
+function serializeEditorNode(node: Node): string {
+  if (node instanceof Text) {
+    return node.data.replace(/\u00a0/g, ' ');
+  }
+
+  if (!(node instanceof HTMLElement)) {
+    return '';
+  }
+
+  if (node.matches(`.${styles.mention_tag}`)) {
+    const contextId = node.dataset.contextId;
+    const type = node.dataset.type;
+    if (contextId && type && SERIALIZABLE_MENTION_TYPES.has(type)) {
+      return `{{@${type}:${contextId}}}`;
+    }
+  }
+
+  if (node.tagName === 'BR') {
+    return '\n';
+  }
+
+  return serializeEditorChildren(node);
+}
+
+function serializeEditorContent(editor: HTMLDivElement): string {
+  return serializeEditorChildren(editor).trim();
 }
 
 function restoreEditorContent(editor: HTMLDivElement, content: string): void {
   const fragment = document.createDocumentFragment();
-  const mentionPattern = /{{@(file|folder|code|rule):([\s\S]*?)}}/g;
+  const mentionPattern = /{{@(file|folder|code|rule):([^{}]+)}}/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
@@ -192,6 +260,24 @@ function restoreEditorContent(editor: HTMLDivElement, content: string): void {
   }
 
   editor.replaceChildren(fragment);
+}
+
+function focusEditorAtEnd(editor: HTMLDivElement | null): void {
+  if (!editor) {
+    return;
+  }
+
+  editor.focus();
+  const selection = window.getSelection();
+  if (!selection) {
+    return;
+  }
+
+  const range = document.createRange();
+  range.selectNodeContents(editor);
+  range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
 
 const MentionInputImpl = (
@@ -304,7 +390,7 @@ const MentionInputImpl = (
     () => ({
       getSerializedContent: () => (editorRef.current ? serializeEditorContent(editorRef.current) : ''),
       restoreSerializedContent,
-      focus: () => editorRef.current?.focus(),
+      focus: () => focusEditorAtEnd(editorRef.current),
       closeTransientUi: () => {
         const wasOpen = mentionStateRef.current.active || mentionStateRef.current.inlineSearchActive;
         if (wasOpen) {
