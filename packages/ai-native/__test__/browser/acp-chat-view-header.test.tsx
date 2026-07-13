@@ -248,10 +248,34 @@ import { AIChatViewACPContent, DefaultChatViewHeaderACP } from '../../src/browse
 const disposable = () => ({ dispose: jest.fn() });
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+function createRequestResponse() {
+  const listeners = new Set<() => void>();
+  const response = {
+    isComplete: false,
+    isCanceled: false,
+    errorDetails: undefined as { message: string } | undefined,
+    onDidChange(listener: () => void) {
+      listeners.add(listener);
+      return { dispose: () => listeners.delete(listener) };
+    },
+    finish(outcome: 'completed' | 'manual-stop' | 'agent-error') {
+      response.isComplete = true;
+      response.isCanceled = outcome === 'manual-stop';
+      response.errorDetails = outcome === 'agent-error' ? { message: 'agent failed' } : undefined;
+      listeners.forEach((listener) => listener());
+    },
+  };
+  return response;
+}
+
 function createMockSession({
   createdAt,
   messages,
+  sessionId = 'acp:current',
   title = 'Current ACP session',
+  modelId = 'model-1',
+  currentModeId = 'mode-1',
+  configOptions = [{ id: 'temperature', value: 'low' }],
 }: {
   createdAt?: number;
   messages?: Array<{
@@ -260,7 +284,11 @@ function createMockSession({
     replyStartTime?: number;
     timestamp?: number;
   }>;
+  sessionId?: string;
   title?: string;
+  modelId?: string;
+  currentModeId?: string;
+  configOptions?: Array<{ id: string; value: string }>;
 } = {}) {
   const history = {
     addAssistantMessage: jest.fn(() => 'assistant-message'),
@@ -279,9 +307,12 @@ function createMockSession({
   };
 
   return {
-    sessionId: 'acp:current',
+    sessionId,
     createdAt,
     title,
+    modelId,
+    currentModeId,
+    configOptions,
     history,
     threadStatus: 'idle',
     onThreadStatusChange: jest.fn(() => disposable()),
@@ -326,6 +357,7 @@ function createMockServices({
   let currentDefaultAgentType = defaultAgentType;
   let currentAgentConfigs = agentConfigs;
   let agenticWorkbenchVisible = true;
+  let latestChatInputProps: any;
   const aiChatService = {
     sessionModel: currentSession,
     activateSession: jest.fn(),
@@ -341,9 +373,7 @@ function createMockServices({
           prompt: 'hello',
         },
         requestId: 'request-1',
-        response: {
-          isComplete: false,
-        },
+        response: createRequestResponse(),
       })),
     createSessionModel: createSessionModel || jest.fn(),
     enterDraftSession: enterDraftSession || jest.fn(),
@@ -375,6 +405,12 @@ function createMockServices({
   };
   const ChatInputForTest = React.forwardRef((_props: any, _ref) => {
     const props = _props;
+    latestChatInputProps = props;
+    React.useEffect(() => {
+      const handle = { focus: jest.fn() };
+      props.onInputHandleReady?.(handle);
+      return () => props.onInputHandleReady?.(null);
+    }, [props.onInputHandleReady]);
     return React.createElement(
       'div',
       null,
@@ -395,6 +431,24 @@ function createMockServices({
           type: 'button',
         },
         'send followup',
+      ),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'acp-chat-send-later-followup',
+          onClick: () => props.onSend('later follow up'),
+          type: 'button',
+        },
+        'send later followup',
+      ),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'acp-chat-stop',
+          onClick: () => props.turnActions.stop(),
+          type: 'button',
+        },
+        'stop',
       ),
       React.createElement(
         'button',
@@ -464,8 +518,10 @@ function createMockServices({
     },
     chatInputRegistry: {
       getActiveChatInput: jest.fn(() => ({
+        id: 'test-input',
         component: ChatInputForTest,
       })),
+      setActiveInputHandle: jest.fn(),
     },
     chatRenderRegistry: {
       chatViewHeaderRender,
@@ -569,6 +625,7 @@ function createMockServices({
     workspaceSwitch: {
       restorePendingWork: jest.fn(() => Promise.resolve()),
     },
+    getLatestChatInputProps: () => latestChatInputProps,
   };
 }
 
@@ -1015,9 +1072,7 @@ describe('ACP chat view headers', () => {
         prompt: 'hello',
       },
       requestId: 'request-1',
-      response: {
-        isComplete: false,
-      },
+      response: createRequestResponse(),
     }));
     const ensureSessionModel = jest.fn(async () => session);
     const sendRequest = jest.fn();
@@ -1069,9 +1124,7 @@ describe('ACP chat view headers', () => {
         prompt: 'hello',
       },
       requestId: 'request-1',
-      response: {
-        isComplete: false,
-      },
+      response: createRequestResponse(),
     }));
     const services = createMockServices({
       createRequest,
@@ -1096,22 +1149,50 @@ describe('ACP chat view headers', () => {
     expect(chatReplyElement.props.keepReasoningExpandedOnComplete).toBeUndefined();
   });
 
+  it('passes queued turn actions to the active input and registers its handle with the contribution owner', async () => {
+    const services = createMockServices();
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    expect(services.getLatestChatInputProps().turnActions).toEqual(
+      expect.objectContaining({
+        submit: expect.any(Function),
+        stop: expect.any(Function),
+        fastTrack: expect.any(Function),
+        invalidateFastTrack: expect.any(Function),
+        takeBackLastQueuedTurn: expect.any(Function),
+      }),
+    );
+    expect(services.chatInputRegistry.setActiveInputHandle).toHaveBeenCalledWith(expect.any(Object), 'test-input');
+
+    await act(async () => {
+      root.render(React.createElement('div'));
+      await Promise.resolve();
+    });
+
+    expect(services.chatInputRegistry.setActiveInputHandle).toHaveBeenLastCalledWith(null, 'test-input');
+  });
+
   it('queues follow-up ACP messages while a reply is loading and sends them after the reply completes', async () => {
     const session = createMockSession({ messages: [] });
+    const responses: ReturnType<typeof createRequestResponse>[] = [];
     const createRequest = jest
       .fn()
-      .mockImplementation((message: string, agentId: string, images?: string[], command?: string) => ({
-        message: {
-          agentId,
-          command,
-          images,
-          prompt: message,
-        },
-        requestId: `request-${createRequest.mock.calls.length + 1}`,
-        response: {
-          isComplete: false,
-        },
-      }));
+      .mockImplementation((message: string, agentId: string, images?: string[], command?: string) => {
+        const response = createRequestResponse();
+        responses.push(response);
+        return {
+          message: {
+            agentId,
+            command,
+            images,
+            prompt: message,
+          },
+          requestId: `request-${responses.length}`,
+          response,
+        };
+      });
     const sendRequest = jest.fn();
     const services = createMockServices({
       createRequest,
@@ -1142,19 +1223,222 @@ describe('ACP chat view headers', () => {
     );
     expect(container.querySelector('[data-testid="acp-queued-message-preview"]')?.textContent).toContain('follow up');
 
-    const createMessageByAI = jest.requireMock('../../src/browser/components/utils').createMessageByAI as jest.Mock;
-    const chatReplyElement = createMessageByAI.mock.calls
-      .map(([message]) => message.text)
-      .find((text) => text?.props?.request);
-
     await act(async () => {
-      chatReplyElement.props.onDone();
+      responses[0].finish('completed');
       await flushPromises();
     });
 
     expect(createRequest).toHaveBeenNthCalledWith(2, 'follow up', 'default-agent', undefined, undefined);
     expect(sendRequest).toHaveBeenCalledTimes(2);
     expect(container.querySelector('[data-testid="acp-queued-messages-summary"]')).toBeNull();
+  });
+
+  it('pauses queued turns after manual stop and resumes only the original FIFO head', async () => {
+    const session = createMockSession({ messages: [] });
+    const responses: ReturnType<typeof createRequestResponse>[] = [];
+    const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => {
+      const response = createRequestResponse();
+      responses.push(response);
+      return {
+        message: { agentId, command, images, prompt: message },
+        requestId: `request-${responses.length}`,
+        response,
+      };
+    });
+    const sendRequest = jest.fn();
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel: jest.fn(async () => session),
+      sendRequest,
+      session: null,
+      sessions: [],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="acp-chat-send-later-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(sendRequest).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-stop"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="acp-queue-status"]')?.textContent).toContain('Paused');
+    expect(sendRequest).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      responses[0].finish('manual-stop');
+      await flushPromises();
+      (container.querySelector('[data-testid="acp-resume-queue"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(createRequest).toHaveBeenNthCalledWith(2, 'follow up', 'default-agent', undefined, undefined);
+    expect(sendRequest).toHaveBeenCalledTimes(2);
+    expect(container.querySelectorAll('[data-testid="acp-queued-message-preview"]')[0]?.textContent).toContain(
+      'later follow up',
+    );
+  });
+
+  it('waits for the matching response cancellation before Immediate Send starts another request', async () => {
+    const session = createMockSession({ messages: [] });
+    const responses: ReturnType<typeof createRequestResponse>[] = [];
+    const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => {
+      const response = createRequestResponse();
+      responses.push(response);
+      return {
+        message: { agentId, command, images, prompt: message },
+        requestId: `request-${responses.length}`,
+        response,
+      };
+    });
+    const sendRequest = jest.fn();
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel: jest.fn(async () => session),
+      sendRequest,
+      session: null,
+      sessions: [],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    const sendNow = Array.from(container.querySelectorAll('button')).find(
+      (button) => button.textContent === 'Send Now',
+    );
+    await act(async () => {
+      (sendNow as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(services.aiChatService.cancelRequest).toHaveBeenCalledTimes(1);
+    expect(sendRequest).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      responses[0].finish('manual-stop');
+      await flushPromises();
+    });
+
+    expect(createRequest).toHaveBeenNthCalledWith(2, 'follow up', 'default-agent', undefined, undefined);
+    expect(sendRequest).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not advance an old session queue when its stale response completes after an Active Session switch', async () => {
+    const firstSession = createMockSession({ messages: [], sessionId: 'acp:first' });
+    const secondSession = createMockSession({ messages: [], sessionId: 'acp:second' });
+    const responses: ReturnType<typeof createRequestResponse>[] = [];
+    const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => {
+      const response = createRequestResponse();
+      responses.push(response);
+      return {
+        message: { agentId, command, images, prompt: message },
+        requestId: `request-${responses.length}`,
+        response,
+      };
+    });
+    const sendRequest = jest.fn();
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel: jest.fn(async () => firstSession),
+      sendRequest,
+      session: firstSession,
+      sessions: [firstSession, secondSession],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    services.aiChatService.sessionModel = secondSession;
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      responses[0].finish('completed');
+      await flushPromises();
+    });
+
+    expect(createRequest).toHaveBeenCalledTimes(1);
+    expect(sendRequest).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[data-testid="acp-queued-messages-summary"]')).toBeNull();
+  });
+
+  it('reads the current Active Session Model and config when a queued draft is actually delivered', async () => {
+    const session = createMockSession({ messages: [] });
+    const responses: ReturnType<typeof createRequestResponse>[] = [];
+    const deliverySnapshots: Array<{ modelId?: string; currentModeId?: string; configOptions: unknown }> = [];
+    const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => {
+      deliverySnapshots.push({
+        modelId: session.modelId,
+        currentModeId: session.currentModeId,
+        configOptions: session.configOptions.map((option) => ({ ...option })),
+      });
+      const response = createRequestResponse();
+      responses.push(response);
+      return {
+        message: { agentId, command, images, prompt: message },
+        requestId: `request-${responses.length}`,
+        response,
+      };
+    });
+    const services = createMockServices({
+      createRequest,
+      ensureSessionModel: jest.fn(async () => session),
+      session: null,
+      sessions: [],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+      await services
+        .getLatestChatInputProps()
+        .onSend('follow up', undefined, undefined, undefined, { model: 'legacy-stored-model' });
+      await flushPromises();
+    });
+
+    session.modelId = 'model-2';
+    session.currentModeId = 'mode-2';
+    session.configOptions = [{ id: 'temperature', value: 'high' }];
+
+    await act(async () => {
+      responses[0].finish('completed');
+      await flushPromises();
+    });
+
+    expect(deliverySnapshots).toEqual([
+      {
+        modelId: 'model-1',
+        currentModeId: 'mode-1',
+        configOptions: [{ id: 'temperature', value: 'low' }],
+      },
+      {
+        modelId: 'model-2',
+        currentModeId: 'mode-2',
+        configOptions: [{ id: 'temperature', value: 'high' }],
+      },
+    ]);
+    expect(createRequest).toHaveBeenNthCalledWith(2, 'follow up', 'default-agent', undefined, undefined);
   });
 
   it('ignores whitespace-only draft sends before creating an ACP session', async () => {
@@ -1216,9 +1500,7 @@ describe('ACP chat view headers', () => {
         prompt: '   ',
       },
       requestId: 'request-1',
-      response: {
-        isComplete: false,
-      },
+      response: createRequestResponse(),
     }));
     const ensureSessionModel = jest.fn(async () => session);
     const sendRequest = jest.fn();

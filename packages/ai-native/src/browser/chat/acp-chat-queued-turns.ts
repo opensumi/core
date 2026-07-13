@@ -115,7 +115,7 @@ export class AcpQueuedTurnModule implements IDisposable {
     this.applyActivation(sessionId);
   }
 
-  submit(draft: AcpTurnDraft): Promise<TurnActionResult> {
+  submit(draft: AcpTurnDraft, intent: 'normal' | 'immediate' = 'normal'): Promise<TurnActionResult> {
     if (!hasAcpChatSendPayload(draft)) {
       return Promise.resolve({ accepted: false, reason: 'empty-content' });
     }
@@ -123,6 +123,12 @@ export class AcpQueuedTurnModule implements IDisposable {
     const epoch = this.sessionEpoch;
     const sessionId = this.activeSessionId;
     const submittedDraft = this.copyDraft(draft);
+    if (intent === 'immediate') {
+      const immediateTurn = this.createQueuedTurn(submittedDraft);
+      this.entries.push(immediateTurn);
+      this.fireDidChange();
+      return this.sendImmediately(immediateTurn.id);
+    }
     if (this.processing === 'paused' && this.activeDelivery) {
       const correctiveTurn = this.createQueuedTurn(submittedDraft);
       this.entries.unshift(correctiveTurn);

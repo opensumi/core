@@ -65,16 +65,7 @@ import { AIPanelLayoutService } from '../layout/panel-layout.service';
 import { BaseApplyService } from '../mcp/base-apply.service';
 import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
-import {
-  clearAcpQueuedMessages,
-  completeAcpQueuedTurn,
-  createAcpQueuedMessagesState,
-  enqueueAcpQueuedMessage,
-  pauseAcpQueuedMessages,
-  removeAcpQueuedMessage,
-  requestAcpQueuedMessageSendNow,
-  resumeAcpQueuedMessages,
-} from './acp-chat-queued-messages';
+import { AcpQueuedTurnModule } from './acp-chat-queued-turns';
 import { AcpQueuedMessages } from './AcpQueuedMessages';
 import { AgenticChatHeaderMaximizeAction } from './AgenticChatHeaderMaximizeAction';
 import { AgenticChatPanelHeader } from './AgenticChatPanelHeader';
@@ -89,7 +80,8 @@ import { AcpChatInternalService } from './chat.internal.service.acp';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
 
-import type { AcpQueuedMessage, AcpQueuedMessagesState } from './acp-chat-queued-messages';
+import type { AcpQueuedTurnPort, AcpTurnDraft, AcpTurnOutcome } from './acp-chat-queued-turns';
+import type { ChatInputTurnActions } from './chat.input.registry';
 import type { MsgHistoryManager } from '../model/msg-history-manager';
 
 const SCROLL_CLASSNAME = 'chat_scroll';
@@ -100,6 +92,34 @@ interface TDispatchAction {
 }
 
 const MAX_TITLE_LENGTH = 100;
+
+interface StartedAcpTurn {
+  sessionId: string;
+  requestId: string;
+  response: ChatRequestModel['response'];
+}
+
+interface AcpQueuedTurnPortCallbacks {
+  getStatus(sessionId: string | undefined): 'idle' | 'generating';
+  start(sessionId: string | undefined, draft: AcpTurnDraft): Promise<StartedAcpTurn>;
+  cancelCurrent(sessionId: string | undefined): Promise<void>;
+  didFinish(started: StartedAcpTurn): void;
+}
+
+function toTurnOutcome(response: ChatRequestModel['response']): Promise<AcpTurnOutcome> {
+  return new Promise((resolve) => {
+    let disposable: { dispose(): void } | undefined;
+    const finish = () => {
+      if (!response.isComplete) {
+        return;
+      }
+      disposable?.dispose();
+      resolve(response.isCanceled ? 'manual-stop' : response.errorDetails ? 'agent-error' : 'completed');
+    };
+    disposable = response.onDidChange(finish);
+    finish();
+  });
+}
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -205,12 +225,46 @@ export const AIChatViewACPContent = () => {
   }, []);
 
   const [loading, setLoading] = React.useState(false);
-  const loadingRef = React.useRef(false);
-  const [queuedMessagesState, setQueuedMessagesState] = React.useState(createAcpQueuedMessagesState);
-  const queuedMessagesStateRef = React.useRef(queuedMessagesState);
   const [queuedMessagesExpanded, setQueuedMessagesExpanded] = React.useState(true);
-  const sendQueuedMessageRef = React.useRef<(entry: AcpQueuedMessage) => Promise<unknown>>(async () => undefined);
-  const suppressNextCancelQueuePauseRef = React.useRef(false);
+  const queuedTurnPortCallbacksRef = React.useRef<AcpQueuedTurnPortCallbacks>({
+    getStatus: () => 'idle',
+    start: async () => {
+      throw new Error('ACP queued turn port is not ready.');
+    },
+    cancelCurrent: async () => undefined,
+    didFinish: () => undefined,
+  });
+  const queuedTurns = React.useMemo(() => {
+    const activeTurns = new Map<string, { started: StartedAcpTurn; outcome: Promise<AcpTurnOutcome> }>();
+    const port: AcpQueuedTurnPort = {
+      getStatus: (sessionId) => queuedTurnPortCallbacksRef.current.getStatus(sessionId),
+      start: async (sessionId, draft) => {
+        const started = await queuedTurnPortCallbacksRef.current.start(sessionId, draft);
+        const outcome = toTurnOutcome(started.response);
+        activeTurns.set(started.sessionId, { started, outcome });
+        void outcome.then(() => {
+          if (activeTurns.get(started.sessionId)?.started.requestId === started.requestId) {
+            activeTurns.delete(started.sessionId);
+          }
+          queuedTurnPortCallbacksRef.current.didFinish(started);
+        });
+        return {
+          id: started.requestId,
+          sessionId: started.sessionId,
+          outcome,
+        };
+      },
+      cancelCurrent: async (sessionId) => {
+        const activeTurn =
+          (sessionId ? activeTurns.get(sessionId) : undefined) ||
+          (activeTurns.size === 1 ? activeTurns.values().next().value : undefined);
+        await queuedTurnPortCallbacksRef.current.cancelCurrent(sessionId);
+        await activeTurn?.outcome;
+      },
+    };
+    return new AcpQueuedTurnModule(port);
+  }, []);
+  const [queuedTurnSnapshot, setQueuedTurnSnapshot] = React.useState(() => queuedTurns.snapshot);
   const [sessionLoading, setSessionLoading] = React.useState(false);
   const [agentId, setAgentId] = React.useState('');
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
@@ -218,36 +272,16 @@ export const AIChatViewACPContent = () => {
   const [theme, setTheme] = React.useState<string | null>(null);
 
   const setChatLoading = React.useCallback((isLoading: boolean) => {
-    loadingRef.current = isLoading;
     setLoading(isLoading);
   }, []);
 
-  const updateQueuedMessagesState = React.useCallback(
-    (updater: (state: AcpQueuedMessagesState) => AcpQueuedMessagesState) => {
-      const nextState = updater(queuedMessagesStateRef.current);
-      queuedMessagesStateRef.current = nextState;
-      setQueuedMessagesState(nextState);
-      return nextState;
-    },
-    [],
-  );
+  React.useEffect(() => {
+    setQueuedTurnSnapshot(queuedTurns.snapshot);
+    const disposable = queuedTurns.onDidChange(setQueuedTurnSnapshot);
+    return () => disposable.dispose();
+  }, [queuedTurns]);
 
-  const resetQueuedMessages = React.useCallback(() => {
-    const nextState = createAcpQueuedMessagesState();
-    queuedMessagesStateRef.current = nextState;
-    setQueuedMessagesState(nextState);
-    setQueuedMessagesExpanded(true);
-  }, []);
-
-  const finishCurrentTurn = React.useCallback(() => {
-    setChatLoading(false);
-    const result = completeAcpQueuedTurn(queuedMessagesStateRef.current);
-    queuedMessagesStateRef.current = result.state;
-    setQueuedMessagesState(result.state);
-    if (result.entry) {
-      void sendQueuedMessageRef.current(result.entry);
-    }
-  }, [setChatLoading]);
+  React.useEffect(() => () => queuedTurns.dispose(), [queuedTurns]);
   // 切换session或Agent输出状态变化时
   React.useEffect(() => {
     setSessionModelId(aiChatService.sessionModel?.modelId);
@@ -259,17 +293,6 @@ export const AIChatViewACPContent = () => {
     });
     return () => dispose.dispose();
   }, [aiChatService]);
-
-  React.useEffect(() => {
-    const dispose = aiChatService.onCancelRequest(() => {
-      if (suppressNextCancelQueuePauseRef.current) {
-        suppressNextCancelQueuePauseRef.current = false;
-        return;
-      }
-      updateQueuedMessagesState(pauseAcpQueuedMessages);
-    });
-    return () => dispose.dispose();
-  }, [aiChatService, updateQueuedMessagesState]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
@@ -322,11 +345,12 @@ export const AIChatViewACPContent = () => {
   const footerCurrentModelId = aiChatService.sessionModel?.modelId || draftSessionState.modelId;
   const footerConfigOptions = aiChatService.sessionModel?.configOptions || draftSessionState.configOptions;
 
+  // 1. 优先使用 ChatInputRegistry 注册的输入组件（按优先级 + when 条件匹配）
+  const activeChatInput = React.useMemo(() => chatInputRegistry.getActiveChatInput(), [chatInputRegistry]);
+
   const ChatInputWrapperRender = React.useMemo(() => {
-    // 1. 优先使用 ChatInputRegistry 注册的输入组件（按优先级 + when 条件匹配）
-    const activeInput = chatInputRegistry.getActiveChatInput();
-    if (activeInput) {
-      return activeInput.component;
+    if (activeChatInput) {
+      return activeChatInput.component;
     }
     // 2. 向后兼容：使用 registerInputRender 注册的
     if (chatRenderRegistry.chatInputRender) {
@@ -334,7 +358,16 @@ export const AIChatViewACPContent = () => {
     }
     // 3. 最降级
     return ChatInput;
-  }, [chatInputRegistry, chatRenderRegistry.chatInputRender]);
+  }, [activeChatInput, chatRenderRegistry.chatInputRender]);
+
+  const handleActiveInputReady = React.useCallback(
+    (handle: Parameters<ChatInputRegistry['setActiveInputHandle']>[0]) => {
+      if (activeChatInput) {
+        chatInputRegistry.setActiveInputHandle(handle, activeChatInput.id);
+      }
+    },
+    [activeChatInput, chatInputRegistry],
+  );
 
   const firstMsg = React.useMemo(
     () =>
@@ -655,7 +688,6 @@ export const AIChatViewACPContent = () => {
       if (agentId === ChatProxyService.AGENT_ID && command) {
         const commandHandler = chatFeatureRegistry.getSlashCommandHandler(command);
         if (commandHandler && commandHandler.providerRender) {
-          finishCurrentTurn();
           return handleSlashCustomRender({
             userMessage: message,
             render: commandHandler.providerRender,
@@ -684,9 +716,6 @@ export const AIChatViewACPContent = () => {
               scrollToBottom();
             }}
             history={history}
-            onDone={() => {
-              finishCurrentTurn();
-            }}
             onRegenerate={() => {
               if (request) {
                 aiChatService.sendRequest(request, true);
@@ -747,7 +776,7 @@ export const AIChatViewACPContent = () => {
       const { actionType, actionSource } = reportExtra || {};
 
       if (!hasAcpChatSendPayload({ message, images, command })) {
-        return false;
+        return undefined;
       }
 
       let sessionModel: ChatModel;
@@ -755,7 +784,7 @@ export const AIChatViewACPContent = () => {
         sessionModel = await aiChatService.ensureSessionModel();
       } catch (error) {
         messageService.error(`Failed to create session. (${getErrorMessage(error)})`);
-        return false;
+        return undefined;
       }
 
       const activeHistory = sessionModel.history;
@@ -766,7 +795,7 @@ export const AIChatViewACPContent = () => {
         command,
       );
       if (!request) {
-        return false;
+        return undefined;
       }
 
       setChatLoading(true);
@@ -828,14 +857,17 @@ export const AIChatViewACPContent = () => {
         msgId,
         history: activeHistory,
       });
-      return true;
+      return {
+        sessionId: sessionModel.sessionId,
+        requestId: request.requestId,
+        response: request.response,
+      } satisfies StartedAcpTurn;
     },
     [
       aiChatService,
       aiReporter,
       chatRenderRegistry,
       chatRenderRegistry.chatUserRoleRender,
-      loading,
       mcpServerRegistry,
       messageService,
       renderReply,
@@ -847,7 +879,7 @@ export const AIChatViewACPContent = () => {
   const sendMessageNow = React.useCallback(
     async (message: string, images?: string[], agentId?: string, command?: string) => {
       if (!hasAcpChatSendPayload({ message, images, command })) {
-        return false;
+        return undefined;
       }
 
       const reportExtra = {
@@ -909,26 +941,66 @@ export const AIChatViewACPContent = () => {
           );
         }
       }
-      return handleAgentReply({
+      const started = await handleAgentReply({
         message: processedContent,
         images,
         agentId: resolvedAgentId,
         command,
         reportExtra,
-      }).then((sent) => {
-        if (sent) {
-          setHasUserSentMessage(true);
-        }
-        return sent;
       });
+      if (started) {
+        setHasUserSentMessage(true);
+      }
+      return started;
     },
     [handleAgentReply, setHasUserSentMessage, workspaceService],
   );
 
-  React.useEffect(() => {
-    sendQueuedMessageRef.current = (entry: AcpQueuedMessage) =>
-      sendMessageNow(entry.message, entry.images, entry.agentId, entry.command);
-  }, [sendMessageNow]);
+  queuedTurnPortCallbacksRef.current = {
+    getStatus: (sessionId) => {
+      const sessionModel = aiChatService.sessionModel;
+      if (!sessionModel || (sessionId !== undefined && sessionModel.sessionId !== sessionId)) {
+        return 'idle';
+      }
+      return sessionModel.threadStatus === 'working' ||
+        sessionModel.threadStatus === 'awaiting_prompt' ||
+        sessionModel.threadStatus === 'auth_required'
+        ? 'generating'
+        : 'idle';
+    },
+    start: async (_sessionId, draft) => {
+      const started = await sendMessageNow(
+        draft.message,
+        draft.images ? [...draft.images] : undefined,
+        draft.agentId,
+        draft.command,
+      );
+      if (!started) {
+        throw new Error('Failed to start ACP queued turn.');
+      }
+      return started;
+    },
+    cancelCurrent: async () => {
+      await aiChatService.cancelRequest();
+    },
+    didFinish: (started) => {
+      const activeSessionId = aiChatService.sessionModel?.sessionId;
+      if (activeSessionId === undefined || activeSessionId === started.sessionId) {
+        setChatLoading(false);
+      }
+    },
+  };
+
+  const turnActions = React.useMemo<ChatInputTurnActions>(
+    () => ({
+      submit: (draft, intent) => queuedTurns.submit(draft, intent),
+      stop: () => queuedTurns.stop(),
+      fastTrack: () => queuedTurns.fastTrack(),
+      invalidateFastTrack: () => queuedTurns.invalidateFastTrack(),
+      takeBackLastQueuedTurn: () => queuedTurns.takeBackLast(),
+    }),
+    [queuedTurns],
+  );
 
   const handleSend = React.useCallback(
     async (
@@ -936,43 +1008,35 @@ export const AIChatViewACPContent = () => {
       images?: string[],
       agentId?: string,
       command?: string,
-      option?: { model: string; [key: string]: unknown },
+      _option?: { model: string; [key: string]: unknown },
     ) => {
-      if (!hasAcpChatSendPayload({ message, images, command })) {
-        return false;
-      }
-
       const resolvedAgentId = agentId || ChatProxyService.AGENT_ID;
-
-      if (loadingRef.current) {
-        updateQueuedMessagesState(
-          (state) =>
-            enqueueAcpQueuedMessage(state, {
-              message,
-              images,
-              agentId: resolvedAgentId,
-              command,
-              option,
-            }).state,
-        );
+      const result = await queuedTurns.submit(
+        {
+          message,
+          images,
+          agentId: resolvedAgentId,
+          command,
+        },
+        'normal',
+      );
+      if (result.accepted) {
         setQueuedMessagesExpanded(true);
         setHasUserSentMessage(true);
-        return true;
       }
-
-      updateQueuedMessagesState(resumeAcpQueuedMessages);
-      return sendMessageNow(message, images, resolvedAgentId, command);
+      return result.accepted;
     },
-    [sendMessageNow, updateQueuedMessagesState],
+    [queuedTurns],
   );
 
   const handleClear = React.useCallback(() => {
     aiChatService.clearSessionModel();
     chatApiService.clearHistoryMessages();
     clearChatContent();
-    resetQueuedMessages();
+    queuedTurns.clear();
+    setQueuedMessagesExpanded(true);
     setHasUserSentMessage(false);
-  }, [messageListData, resetQueuedMessages]);
+  }, [messageListData, queuedTurns]);
 
   const clearChatContent = React.useCallback(() => {
     containerRef?.current?.classList.remove(SCROLL_CLASSNAME);
@@ -988,60 +1052,41 @@ export const AIChatViewACPContent = () => {
     setCommand(commandModel.command!);
   };
 
-  const handleQueuedMessageDelete = React.useCallback(
-    (id: string) => {
-      updateQueuedMessagesState((state) => removeAcpQueuedMessage(state, id).state);
-    },
-    [updateQueuedMessagesState],
-  );
+  const handleQueuedMessageDelete = React.useCallback((id: string) => void queuedTurns.remove(id), [queuedTurns]);
 
   const handleQueuedMessageClear = React.useCallback(() => {
-    updateQueuedMessagesState(clearAcpQueuedMessages);
-  }, [updateQueuedMessagesState]);
+    queuedTurns.clear();
+  }, [queuedTurns]);
 
   const handleQueuedMessageEdit = React.useCallback(
     (id: string) => {
-      let removedEntry: AcpQueuedMessage | undefined;
-      updateQueuedMessagesState((state) => {
-        const result = removeAcpQueuedMessage(state, id);
-        removedEntry = result.entry;
-        return result.state;
-      });
-
-      if (!removedEntry) {
+      const entry = queuedTurns.snapshot.entries.find((turn) => turn.id === id);
+      if (!entry) {
         return;
       }
-
-      chatInputRef.current?.setInputValue(removedEntry.message);
-      setAgentId(removedEntry.agentId || '');
-      setCommand(removedEntry.command || '');
-      setTheme(null);
+      void queuedTurns.remove(id).then((result) => {
+        if (!result.accepted) {
+          return;
+        }
+        const activeInputHandle = chatInputRegistry.getActiveInputHandle();
+        if (activeInputHandle?.restoreDraft) {
+          activeInputHandle.restoreDraft(entry);
+        } else {
+          chatInputRef.current?.setInputValue(entry.message);
+        }
+        setAgentId(entry.agentId || '');
+        setCommand(entry.command || '');
+        setTheme(null);
+      });
     },
-    [updateQueuedMessagesState],
+    [chatInputRegistry, queuedTurns],
   );
 
   const handleQueuedMessageSendNow = React.useCallback(
     (id: string) => {
-      let entryToSend: AcpQueuedMessage | undefined;
-      let shouldCancelCurrentTurn = false;
-      updateQueuedMessagesState((state) => {
-        const result = requestAcpQueuedMessageSendNow(state, id, loadingRef.current);
-        entryToSend = result.entry;
-        shouldCancelCurrentTurn = result.shouldCancelCurrentTurn;
-        return result.state;
-      });
-
-      if (shouldCancelCurrentTurn) {
-        suppressNextCancelQueuePauseRef.current = true;
-        aiChatService.cancelRequest();
-        return;
-      }
-
-      if (entryToSend) {
-        void sendQueuedMessageRef.current(entryToSend);
-      }
+      void queuedTurns.sendImmediately(id);
     },
-    [aiChatService, updateQueuedMessagesState],
+    [queuedTurns],
   );
 
   const handleCloseChatView = React.useCallback(() => {
@@ -1110,12 +1155,13 @@ export const AIChatViewACPContent = () => {
     setHasUserSentMessage(false);
     const cancellationTokenSource = new CancellationTokenSource();
     setChatLoading(false);
-    resetQueuedMessages();
+    queuedTurns.activate(aiChatService.sessionModel?.sessionId);
+    setQueuedMessagesExpanded(true);
     recover(cancellationTokenSource.token);
     return () => {
       cancellationTokenSource.cancel();
     };
-  }, [aiChatService.sessionModel]);
+  }, [aiChatService.sessionModel, queuedTurns]);
 
   return (
     <div id={styles.ai_chat_view}>
@@ -1160,7 +1206,7 @@ export const AIChatViewACPContent = () => {
           ) : null}
           <div className={styles.chat_input_wrap}>
             <AcpQueuedMessages
-              entries={queuedMessagesState.entries}
+              entries={queuedTurnSnapshot.entries}
               expanded={queuedMessagesExpanded}
               onToggleExpanded={() => setQueuedMessagesExpanded((expanded) => !expanded)}
               onClear={handleQueuedMessageClear}
@@ -1168,6 +1214,16 @@ export const AIChatViewACPContent = () => {
               onEdit={handleQueuedMessageEdit}
               onSendNow={handleQueuedMessageSendNow}
             />
+            {queuedTurnSnapshot.phase === 'paused' && (
+              <div data-testid='acp-queue-status'>
+                {localize('aiNative.chat.queue.paused', 'Paused')}
+                {queuedTurnSnapshot.canResume && (
+                  <button data-testid='acp-resume-queue' onClick={() => void queuedTurns.resume()} type='button'>
+                    {localize('aiNative.chat.queue.resume', 'Resume Queue')}
+                  </button>
+                )}
+              </div>
+            )}
             <div className={styles.header_operate}>
               {/* 定制需求。不需要透出shortcut*/}
               {/* <div className={styles.header_operate_left}>
@@ -1223,6 +1279,8 @@ export const AIChatViewACPContent = () => {
               currentModelId={footerCurrentModelId}
               configOptions={footerConfigOptions}
               agentCwd={appConfig.workspaceDir}
+              turnActions={turnActions}
+              onInputHandleReady={activeChatInput ? handleActiveInputReady : undefined}
               placeholder={localize('aiNative.chat.input.placeholder.acp')}
             />
           </div>

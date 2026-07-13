@@ -6,10 +6,10 @@ import { cleanAttachedTextWrapper } from '../../common/utils';
 
 import styles from './chat.module.less';
 
-import type { AcpQueuedMessage } from './acp-chat-queued-messages';
+import type { QueuedTurn } from './acp-chat-queued-turns';
 
 export interface AcpQueuedMessagesProps {
-  entries: AcpQueuedMessage[];
+  entries: readonly QueuedTurn[];
   expanded: boolean;
   onToggleExpanded: () => void;
   onClear: () => void;

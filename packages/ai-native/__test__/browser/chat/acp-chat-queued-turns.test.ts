@@ -584,6 +584,23 @@ describe('AcpQueuedTurnModule', () => {
     expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'selected', 'first queued']);
   });
 
+  it('routes an immediate submit through confirmed cancellation before starting the draft', async () => {
+    const port = new DeferredFirstCancelTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+
+    const immediate = turns.submit({ message: 'immediate draft' }, 'immediate');
+    await port.cancelRequested.promise;
+
+    expect(turns.snapshot.phase).toBe('cancelling-for-immediate');
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
+
+    port.releaseCancel.resolve();
+    await expect(immediate).resolves.toEqual({ accepted: true, outcome: 'started' });
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'immediate draft']);
+  });
+
   it('restores an Immediate Send reservation to its original FIFO position when cancellation fails', async () => {
     const port = new ControlledTurnPort();
     port.cancelCurrent = jest.fn(() => Promise.reject(new Error('cancel failed')));
