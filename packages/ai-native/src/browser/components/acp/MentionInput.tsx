@@ -229,7 +229,18 @@ function serializeEditorNode(node: Node): string {
 }
 
 function serializeEditorContent(editor: HTMLDivElement): string {
-  return serializeEditorChildren(editor).trim();
+  return serializeEditorChildren(editor);
+}
+
+function appendPlainText(fragment: DocumentFragment, text: string): void {
+  text.split('\n').forEach((line, index) => {
+    if (index > 0) {
+      fragment.appendChild(document.createElement('br'));
+    }
+    if (line) {
+      fragment.appendChild(document.createTextNode(line));
+    }
+  });
 }
 
 function restoreEditorContent(editor: HTMLDivElement, content: string): void {
@@ -240,7 +251,7 @@ function restoreEditorContent(editor: HTMLDivElement, content: string): void {
 
   while ((match = mentionPattern.exec(content))) {
     if (match.index > lastIndex) {
-      fragment.appendChild(document.createTextNode(content.slice(lastIndex, match.index)));
+      appendPlainText(fragment, content.slice(lastIndex, match.index));
     }
 
     const [, type, contextId] = match;
@@ -256,7 +267,7 @@ function restoreEditorContent(editor: HTMLDivElement, content: string): void {
   }
 
   if (lastIndex < content.length) {
-    fragment.appendChild(document.createTextNode(content.slice(lastIndex)));
+    appendPlainText(fragment, content.slice(lastIndex));
   }
 
   editor.replaceChildren(fragment);

@@ -836,6 +836,63 @@ describe('MentionInput serialized content handle', () => {
     expect(ref.current!.getSerializedContent()).toBe(serialized);
   });
 
+  it('restores multiline plain text with a visible BR and round-trips exactly', () => {
+    const ref = React.createRef<MentionInputHandle>();
+    const serialized = 'first\nsecond';
+
+    act(() => {
+      root.render(
+        React.createElement(ActualMentionInput, {
+          ref,
+          footerConfig: { buttons: [], showModelSelector: false },
+        } as any),
+      );
+    });
+
+    act(() => {
+      ref.current!.restoreSerializedContent(serialized);
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    expect(editor.childNodes).toHaveLength(3);
+    expect(editor.childNodes[0]).toBeInstanceOf(Text);
+    expect(editor.childNodes[0].textContent).toBe('first');
+    expect(editor.childNodes[1]).toBeInstanceOf(HTMLBRElement);
+    expect((editor.childNodes[1] as HTMLBRElement).tagName).toBe('BR');
+    expect(editor.childNodes[2]).toBeInstanceOf(Text);
+    expect(editor.childNodes[2].textContent).toBe('second');
+    expect(ref.current!.getSerializedContent()).toBe(serialized);
+  });
+
+  it('preserves raw leading and trailing whitespace through serialize and restore', () => {
+    const ref = React.createRef<MentionInputHandle>();
+    const serialized = '  first\nsecond  ';
+
+    act(() => {
+      root.render(
+        React.createElement(ActualMentionInput, {
+          ref,
+          footerConfig: { buttons: [], showModelSelector: false },
+        } as any),
+      );
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    editor.replaceChildren(
+      document.createTextNode('  first'),
+      document.createElement('br'),
+      document.createTextNode('second  '),
+    );
+
+    expect(ref.current!.getSerializedContent()).toBe(serialized);
+
+    act(() => {
+      ref.current!.restoreSerializedContent(serialized);
+    });
+
+    expect(ref.current!.getSerializedContent()).toBe(serialized);
+  });
+
   it('serializes unsupported or incomplete mention tags as visible plain text', () => {
     const ref = React.createRef<MentionInputHandle>();
 
