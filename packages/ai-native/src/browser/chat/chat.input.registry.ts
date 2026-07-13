@@ -119,6 +119,9 @@ export class ChatInputRegistry extends Disposable implements IChatInputRegistry 
   private activeContribution: ChatInputContribution | null = null;
 
   registerChatInput(contribution: ChatInputContribution): IDisposable {
+    if (this.contributions.some(({ id }) => id === contribution.id)) {
+      throw new Error(`Chat input contribution id "${contribution.id}" is already registered.`);
+    }
     const entry: ChatInputContribution = {
       ...contribution,
       priority: contribution.priority ?? 0,

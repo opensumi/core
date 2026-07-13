@@ -76,6 +76,45 @@ describe('ChatInputRegistry ACP turn capabilities', () => {
     expect(registry.getActiveChatInput()).toMatchObject({ id: 'legacy', capabilities: [] });
   });
 
+  it('rejects duplicate contribution ids with a deterministic error', () => {
+    const registry = new ChatInputRegistry();
+    const FirstInput = () => React.createElement('div');
+    const DuplicateInput = () => React.createElement('div');
+    registry.registerChatInput({ id: 'same', component: FirstInput });
+
+    expect(() => registry.registerChatInput({ id: 'same', component: DuplicateInput })).toThrow(
+      new Error('Chat input contribution id "same" is already registered.'),
+    );
+  });
+
+  it('does not let a duplicate id replace the active contribution or its owned handle', () => {
+    const registry = new ChatInputRegistry();
+    const FirstInput = () => React.createElement('div');
+    const DuplicateInput = () => React.createElement('div');
+    const firstHandle = { focus: jest.fn() };
+    registry.registerChatInput({ id: 'same', component: FirstInput, priority: 10 });
+    registry.setActiveInputHandle(firstHandle, 'same');
+
+    try {
+      registry.registerChatInput({ id: 'same', component: DuplicateInput, priority: 20 });
+    } catch {}
+
+    expect(registry.getActiveChatInput()?.component).toBe(FirstInput);
+    expect(registry.getActiveInputHandle()).toBe(firstHandle);
+  });
+
+  it('allows an id to be registered again after its contribution is disposed', () => {
+    const registry = new ChatInputRegistry();
+    const FirstInput = () => React.createElement('div');
+    const ReplacementInput = () => React.createElement('div');
+    const first = registry.registerChatInput({ id: 'same', component: FirstInput });
+
+    first.dispose();
+    registry.registerChatInput({ id: 'same', component: ReplacementInput });
+
+    expect(registry.getActiveChatInput()?.component).toBe(ReplacementInput);
+  });
+
   it('returns declared capabilities and a queued editor', () => {
     const registry = new ChatInputRegistry();
     const Input = () => React.createElement('div');
