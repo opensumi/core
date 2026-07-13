@@ -106,6 +106,51 @@ class DeferredNextStartTurnPort extends ControlledTurnPort {
   }
 }
 
+class RepeatableOutcome {
+  private readonly fulfilments: Array<(outcome: AcpTurnOutcome) => unknown> = [];
+
+  readonly promise = {
+    then: (onFulfilled?: ((outcome: AcpTurnOutcome) => unknown) | null) => {
+      if (onFulfilled) {
+        this.fulfilments.push(onFulfilled);
+      }
+      return Promise.resolve();
+    },
+  } as unknown as Promise<AcpTurnOutcome>;
+
+  complete(outcome: AcpTurnOutcome): void {
+    for (const onFulfilled of this.fulfilments) {
+      onFulfilled(outcome);
+    }
+  }
+}
+
+class RepeatableOutcomeTurnPort implements AcpQueuedTurnPort {
+  readonly starts: Array<{ sessionId?: string; draft: AcpTurnDraft; completion: RepeatableOutcome }> = [];
+  status: 'idle' | 'generating' = 'idle';
+
+  getStatus() {
+    return this.status;
+  }
+
+  async start(sessionId: string | undefined, draft: AcpTurnDraft): Promise<AcpTurnHandle> {
+    const completion = new RepeatableOutcome();
+    this.status = 'generating';
+    const id = `delivery-${this.starts.length + 1}`;
+    this.starts.push({ sessionId, draft, completion });
+    return { id, sessionId: sessionId || 'acp:created-session', outcome: completion.promise };
+  }
+
+  async cancelCurrent(): Promise<void> {
+    this.status = 'idle';
+  }
+
+  complete(index: number, outcome: AcpTurnOutcome = 'completed'): void {
+    this.status = 'idle';
+    this.starts[index].completion.complete(outcome);
+  }
+}
+
 describe('AcpQueuedTurnModule', () => {
   it('rejects an Active Session turn without a sendable ACP payload', async () => {
     const port = new ControlledTurnPort();
@@ -173,6 +218,80 @@ describe('AcpQueuedTurnModule', () => {
 
     await expect(submitResult).resolves.toEqual({ accepted: true, outcome: 'started' });
     expect(turns.snapshot.activeSessionId).toBe('acp:created-session');
+  });
+
+  it('queues a serialized submit into the Active Session promoted by the first start', async () => {
+    const port = new ControlledStartTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate(undefined);
+
+    const first = turns.submit({ message: 'create the session' });
+    await port.startRequested.promise;
+    const second = turns.submit({ message: 'queue after promotion' });
+    port.releaseStart.resolve();
+
+    await expect(first).resolves.toEqual({ accepted: true, outcome: 'started' });
+    await expect(second).resolves.toEqual({ accepted: true, outcome: 'queued' });
+    expect(turns.snapshot).toMatchObject({
+      activeSessionId: 'acp:created-session',
+      phase: 'generating',
+    });
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['queue after promotion']);
+    expect(port.starts.map(({ sessionId, draft }) => ({ sessionId, message: draft.message }))).toEqual([
+      { sessionId: undefined, message: 'create the session' },
+    ]);
+  });
+
+  it('stops the Active Session promoted while stop waits behind the first start', async () => {
+    const port = new ControlledStartTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate(undefined);
+
+    const first = turns.submit({ message: 'create the session' });
+    await port.startRequested.promise;
+    const stop = turns.stop();
+    port.releaseStart.resolve();
+
+    await expect(first).resolves.toEqual({ accepted: true, outcome: 'started' });
+    await expect(stop).resolves.toEqual({ accepted: true, outcome: 'stopped' });
+    expect(port.cancellations).toEqual(['acp:created-session']);
+    expect(turns.snapshot).toMatchObject({
+      activeSessionId: 'acp:created-session',
+      phase: 'paused',
+      pauseReason: 'manual-stop',
+    });
+  });
+
+  it('Immediately Sends in the Active Session promoted before its serialized cancellation starts', async () => {
+    const port = new ControlledStartTurnPort();
+    port.status = 'generating';
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate(undefined);
+    await turns.submit({ message: 'head' });
+    await turns.submit({ message: 'selected' });
+
+    port.status = 'idle';
+    const [head, selected] = turns.snapshot.entries;
+    turns.beginEdit(head.id);
+    const releaseHead = turns.cancelEdit(head.id);
+    await port.startRequested.promise;
+
+    const immediate = turns.sendImmediately(selected.id);
+    expect(turns.snapshot.phase).toBe('cancelling-for-immediate');
+    port.releaseStart.resolve();
+
+    await expect(releaseHead).resolves.toEqual({ accepted: true, outcome: 'updated' });
+    await expect(immediate).resolves.toEqual({ accepted: true, outcome: 'started' });
+    expect(port.cancellations).toEqual(['acp:created-session']);
+    expect(port.starts.map(({ sessionId, draft }) => ({ sessionId, message: draft.message }))).toEqual([
+      { sessionId: undefined, message: 'head' },
+      { sessionId: 'acp:created-session', message: 'selected' },
+    ]);
+    expect(turns.snapshot).toMatchObject({
+      activeSessionId: 'acp:created-session',
+      phase: 'generating',
+      entries: [],
+    });
   });
 
   it('rejects the first start when a different Active Session activates before it returns', async () => {
@@ -308,8 +427,8 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['last queued']);
   });
 
-  it('ignores a duplicate completion for the same delivery', async () => {
-    const port = new ControlledTurnPort();
+  it('ignores a second completion callback for an old delivery', async () => {
+    const port = new RepeatableOutcomeTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -317,6 +436,11 @@ describe('AcpQueuedTurnModule', () => {
     await turns.submit({ message: 'last queued' });
 
     port.complete(0);
+    await turns.whenSettled();
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'first queued']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['last queued']);
+
     port.complete(0);
     await turns.whenSettled();
 

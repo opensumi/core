@@ -130,7 +130,7 @@ export class AcpQueuedTurnModule implements IDisposable {
     }
 
     return this.serialize(async () => {
-      if (epoch !== this.sessionEpoch || sessionId !== this.activeSessionId) {
+      if (!this.isCapturedSessionActive(epoch, sessionId)) {
         return { accepted: false, reason: 'stale-session' };
       }
       if (this.processing === 'paused' && !this.activeDelivery) {
@@ -183,13 +183,14 @@ export class AcpQueuedTurnModule implements IDisposable {
     this.fireDidChange();
 
     return this.serialize(async () => {
-      if (epoch !== this.sessionEpoch || sessionId !== this.activeSessionId) {
+      if (!this.isCapturedSessionActive(epoch, sessionId)) {
         return { accepted: false, reason: 'stale-session' };
       }
+      const cancellationSessionId = sessionId ?? this.activeSessionId;
       try {
-        await this.port.cancelCurrent(sessionId);
+        await this.port.cancelCurrent(cancellationSessionId);
       } catch {
-        if (epoch !== this.sessionEpoch || sessionId !== this.activeSessionId) {
+        if (!this.isResolvedSessionActive(epoch, cancellationSessionId)) {
           return { accepted: false, reason: 'stale-session' };
         }
         if (intentVersion === this.intentVersion) {
@@ -200,7 +201,7 @@ export class AcpQueuedTurnModule implements IDisposable {
         return { accepted: false, reason: 'cancel-failed' };
       }
 
-      if (epoch !== this.sessionEpoch || sessionId !== this.activeSessionId) {
+      if (!this.isResolvedSessionActive(epoch, cancellationSessionId)) {
         return { accepted: false, reason: 'stale-session' };
       }
       this.activeDelivery = undefined;
@@ -485,9 +486,10 @@ export class AcpQueuedTurnModule implements IDisposable {
     sessionId: string | undefined,
     intentVersion: number,
   ): Promise<TurnActionResult> {
-    if (epoch !== this.sessionEpoch || sessionId !== this.activeSessionId) {
+    if (!this.isCapturedSessionActive(epoch, sessionId)) {
       return { accepted: false, reason: 'stale-session' };
     }
+    const cancellationSessionId = sessionId ?? this.activeSessionId;
     if (intentVersion !== this.intentVersion) {
       if (this.immediateReservation === turn) {
         this.entries.splice(Math.min(originalIndex, this.entries.length), 0, turn);
@@ -498,9 +500,9 @@ export class AcpQueuedTurnModule implements IDisposable {
       return { accepted: false, reason: 'turn-not-found' };
     }
     try {
-      await this.port.cancelCurrent(sessionId);
+      await this.port.cancelCurrent(cancellationSessionId);
     } catch {
-      if (epoch !== this.sessionEpoch || sessionId !== this.activeSessionId) {
+      if (!this.isResolvedSessionActive(epoch, cancellationSessionId)) {
         return { accepted: false, reason: 'stale-session' };
       }
       if (this.immediateReservation !== turn) {
@@ -516,7 +518,7 @@ export class AcpQueuedTurnModule implements IDisposable {
       return { accepted: false, reason: 'cancel-failed' };
     }
 
-    if (epoch !== this.sessionEpoch || sessionId !== this.activeSessionId) {
+    if (!this.isResolvedSessionActive(epoch, cancellationSessionId)) {
       return { accepted: false, reason: 'stale-session' };
     }
 
@@ -632,6 +634,16 @@ export class AcpQueuedTurnModule implements IDisposable {
     this.hasPendingActivation = false;
     this.pendingActivationId = undefined;
     return { pending, sessionId };
+  }
+
+  private isCapturedSessionActive(epoch: number, capturedSessionId: string | undefined): boolean {
+    return (
+      epoch === this.sessionEpoch && (capturedSessionId === undefined || capturedSessionId === this.activeSessionId)
+    );
+  }
+
+  private isResolvedSessionActive(epoch: number, resolvedSessionId: string | undefined): boolean {
+    return epoch === this.sessionEpoch && resolvedSessionId === this.activeSessionId;
   }
 
   private fireDidChange(): void {
