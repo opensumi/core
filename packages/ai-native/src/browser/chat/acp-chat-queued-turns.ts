@@ -115,6 +115,24 @@ export class AcpQueuedTurnModule implements IDisposable {
     this.applyActivation(sessionId);
   }
 
+  deactivate(): void {
+    this.sessionEpoch += 1;
+    this.intentVersion += 1;
+    this.activeSessionId = undefined;
+    this.processing = 'auto';
+    this.entries = [];
+    this.editingTurnId = undefined;
+    this.reservedTurn = undefined;
+    this.immediateReservation = undefined;
+    this.immediateReservationIndex = undefined;
+    this.activeDelivery = undefined;
+    this.pauseReason = undefined;
+    this.canFastTrack = false;
+    this.pendingInitialStart = false;
+    this.hasPendingActivation = false;
+    this.pendingActivationId = undefined;
+  }
+
   submit(draft: AcpTurnDraft, intent: 'normal' | 'immediate' = 'normal'): Promise<TurnActionResult> {
     if (!hasAcpChatSendPayload(draft)) {
       return Promise.resolve({ accepted: false, reason: 'empty-content' });

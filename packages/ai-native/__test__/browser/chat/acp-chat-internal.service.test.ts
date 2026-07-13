@@ -399,7 +399,9 @@ describe('AcpChatInternalService', () => {
       service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
       await service.ensureSessionModel();
 
-      expect(chatManagerService.startSession).toHaveBeenCalledWith({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' } });
+      expect(chatManagerService.startSession).toHaveBeenCalledWith({
+        acpTarget: { agentId: 'agent-b', cwd: '/work/b' },
+      });
       expect(service.sessionModel).toBe(model);
       expect(preferenceService.set).not.toHaveBeenCalled();
     });
@@ -432,7 +434,9 @@ describe('AcpChatInternalService', () => {
 
       await service.ensureSessionModel();
 
-      expect(chatManagerService.startSession).toHaveBeenCalledWith({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' } });
+      expect(chatManagerService.startSession).toHaveBeenCalledWith({
+        acpTarget: { agentId: 'agent-b', cwd: '/work/b' },
+      });
     });
 
     it('registers the first accepted Agentic prompt and marks background Agent content unread', async () => {
@@ -463,6 +467,43 @@ describe('AcpChatInternalService', () => {
       backgroundModel.history.addAssistantMessage({ content: 'background reply' });
 
       expect(registry.markUnread).toHaveBeenCalledWith('acp:background', true);
+    });
+
+    it('completes an unfinished response when sendRequest rejects before ACP request handling starts', async () => {
+      const { chatManagerService, model, service } = createService();
+      service._sessionModel = model;
+      const error = new Error('request kickoff rejected');
+      chatManagerService.sendRequest.mockRejectedValueOnce(error);
+      const request = model.addRequest({
+        prompt: 'Fix list',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      await expect(service.sendRequest(request)).resolves.toBeUndefined();
+
+      expect(request.response.errorDetails).toEqual({ message: error.message });
+      expect(request.response.isComplete).toBe(true);
+    });
+
+    it('completes an unfinished response before rethrowing a synchronous sendRequest failure', () => {
+      const { chatManagerService, model, service } = createService();
+      service._sessionModel = model;
+      const error = new Error('request kickoff threw');
+      chatManagerService.sendRequest.mockImplementationOnce(() => {
+        throw error;
+      });
+      const request = model.addRequest({
+        prompt: 'Fix list',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      expect(() => service.sendRequest(request)).toThrow(error);
+      expect(request.response.errorDetails).toEqual({ message: error.message });
+      expect(request.response.isComplete).toBe(true);
     });
 
     it('seeds the registered Task status from the model current ACP thread status', async () => {

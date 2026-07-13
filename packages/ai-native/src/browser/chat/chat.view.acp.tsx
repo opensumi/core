@@ -106,23 +106,52 @@ interface AcpQueuedTurnPortCallbacks {
   didFinish(started: StartedAcpTurn): void;
 }
 
-function toTurnOutcome(response: ChatRequestModel['response']): Promise<AcpTurnOutcome> {
-  return new Promise((resolve) => {
-    let disposable: { dispose(): void } | undefined;
-    const finish = () => {
-      if (!response.isComplete) {
+type AcpQueuedTurnSessionGuard = (allowInitialPromotion?: boolean) => void;
+
+function observeTurnOutcome(response: ChatRequestModel['response']): {
+  outcome: Promise<AcpTurnOutcome>;
+  dispose(): void;
+} {
+  let settle: (outcome: AcpTurnOutcome) => void;
+  let settled = false;
+  const outcome = new Promise<AcpTurnOutcome>((resolve) => {
+    settle = (value) => {
+      if (settled) {
         return;
       }
-      disposable?.dispose();
-      resolve(response.isCanceled ? 'manual-stop' : response.errorDetails ? 'agent-error' : 'completed');
+      settled = true;
+      resolve(value);
     };
-    disposable = response.onDidChange(finish);
-    finish();
   });
+  let disposable: { dispose(): void } | undefined;
+  const finish = () => {
+    if (!response.isComplete) {
+      return;
+    }
+    disposable?.dispose();
+    settle(response.isCanceled ? 'manual-stop' : response.errorDetails ? 'agent-error' : 'completed');
+  };
+  disposable = response.onDidChange(finish);
+  finish();
+  return {
+    outcome,
+    dispose: () => {
+      disposable?.dispose();
+      settle('agent-error');
+    },
+  };
 }
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function completeResponseWithError(response: ChatRequestModel['response'], error: unknown): void {
+  if (response.isComplete) {
+    return;
+  }
+  response.setErrorDetails({ message: getErrorMessage(error) });
+  response.complete();
 }
 
 function getSessionCreatedAt(session: ChatModel): number {
@@ -234,36 +263,69 @@ export const AIChatViewACPContent = () => {
     cancelCurrent: async () => undefined,
     didFinish: () => undefined,
   });
-  const queuedTurns = React.useMemo(() => {
-    const activeTurns = new Map<string, { started: StartedAcpTurn; outcome: Promise<AcpTurnOutcome> }>();
+  const queuedTurnRuntime = React.useMemo(() => {
+    const activeTurns = new Map<
+      string,
+      {
+        started: StartedAcpTurn;
+        observer: ReturnType<typeof observeTurnOutcome>;
+      }
+    >();
+    let active = false;
+    let queuedTurns: AcpQueuedTurnModule;
+    const requireActive = () => {
+      if (!active) {
+        throw new Error('ACP queued turn runtime is inactive.');
+      }
+    };
     const port: AcpQueuedTurnPort = {
-      getStatus: (sessionId) => queuedTurnPortCallbacksRef.current.getStatus(sessionId),
+      getStatus: (sessionId) => (active ? queuedTurnPortCallbacksRef.current.getStatus(sessionId) : 'idle'),
       start: async (sessionId, draft) => {
+        requireActive();
         const started = await queuedTurnPortCallbacksRef.current.start(sessionId, draft);
-        const outcome = toTurnOutcome(started.response);
-        activeTurns.set(started.sessionId, { started, outcome });
-        void outcome.then(() => {
+        requireActive();
+        const observer = observeTurnOutcome(started.response);
+        activeTurns.set(started.sessionId, { started, observer });
+        void observer.outcome.then(() => {
           if (activeTurns.get(started.sessionId)?.started.requestId === started.requestId) {
             activeTurns.delete(started.sessionId);
           }
-          queuedTurnPortCallbacksRef.current.didFinish(started);
+          if (active) {
+            queuedTurnPortCallbacksRef.current.didFinish(started);
+          }
         });
         return {
           id: started.requestId,
           sessionId: started.sessionId,
-          outcome,
+          outcome: observer.outcome,
         };
       },
       cancelCurrent: async (sessionId) => {
-        const activeTurn =
-          (sessionId ? activeTurns.get(sessionId) : undefined) ||
-          (activeTurns.size === 1 ? activeTurns.values().next().value : undefined);
+        requireActive();
+        const activeTurn = sessionId ? activeTurns.get(sessionId) : undefined;
+        if (!activeTurn) {
+          throw new Error('No active ACP response matches the queued turn session.');
+        }
         await queuedTurnPortCallbacksRef.current.cancelCurrent(sessionId);
-        await activeTurn?.outcome;
+        requireActive();
+        await activeTurn.observer.outcome;
       },
     };
-    return new AcpQueuedTurnModule(port);
+    queuedTurns = new AcpQueuedTurnModule(port);
+    return {
+      queuedTurns,
+      setup: () => {
+        active = true;
+      },
+      teardown: () => {
+        active = false;
+        queuedTurns.deactivate();
+        activeTurns.forEach(({ observer }) => observer.dispose());
+        activeTurns.clear();
+      },
+    };
   }, []);
+  const queuedTurns = queuedTurnRuntime.queuedTurns;
   const [queuedTurnSnapshot, setQueuedTurnSnapshot] = React.useState(() => queuedTurns.snapshot);
   const [sessionLoading, setSessionLoading] = React.useState(false);
   const [agentId, setAgentId] = React.useState('');
@@ -281,7 +343,10 @@ export const AIChatViewACPContent = () => {
     return () => disposable.dispose();
   }, [queuedTurns]);
 
-  React.useEffect(() => () => queuedTurns.dispose(), [queuedTurns]);
+  React.useEffect(() => {
+    queuedTurnRuntime.setup();
+    return () => queuedTurnRuntime.teardown();
+  }, [queuedTurnRuntime]);
   // 切换session或Agent输出状态变化时
   React.useEffect(() => {
     setSessionModelId(aiChatService.sessionModel?.modelId);
@@ -771,7 +836,7 @@ export const AIChatViewACPContent = () => {
   );
 
   const handleAgentReply = React.useCallback(
-    async (value: IChatMessageStructure) => {
+    async (value: IChatMessageStructure, sessionGuard?: AcpQueuedTurnSessionGuard) => {
       const { message, images, agentId, command, reportExtra } = value;
       const { actionType, actionSource } = reportExtra || {};
 
@@ -779,6 +844,7 @@ export const AIChatViewACPContent = () => {
         return undefined;
       }
 
+      sessionGuard?.();
       let sessionModel: ChatModel;
       try {
         sessionModel = await aiChatService.ensureSessionModel();
@@ -786,8 +852,10 @@ export const AIChatViewACPContent = () => {
         messageService.error(`Failed to create session. (${getErrorMessage(error)})`);
         return undefined;
       }
+      sessionGuard?.(true);
 
       const activeHistory = sessionModel.history;
+      sessionGuard?.();
       const request = aiChatService.createRequest(
         message.replaceAll(LLM_CONTEXT_KEY_REGEX, ''),
         agentId!,
@@ -832,7 +900,14 @@ export const AIChatViewACPContent = () => {
         agentId,
       });
 
-      aiChatService.sendRequest(request);
+      sessionGuard?.();
+      try {
+        void Promise.resolve(aiChatService.sendRequest(request)).catch((error) => {
+          completeResponseWithError(request.response, error);
+        });
+      } catch (error) {
+        completeResponseWithError(request.response, error);
+      }
 
       const msgId = activeHistory.addAssistantMessage({
         content: '',
@@ -877,11 +952,18 @@ export const AIChatViewACPContent = () => {
   );
 
   const sendMessageNow = React.useCallback(
-    async (message: string, images?: string[], agentId?: string, command?: string) => {
+    async (
+      message: string,
+      images?: string[],
+      agentId?: string,
+      command?: string,
+      sessionGuard?: AcpQueuedTurnSessionGuard,
+    ) => {
       if (!hasAcpChatSendPayload({ message, images, command })) {
         return undefined;
       }
 
+      sessionGuard?.();
       const reportExtra = {
         actionSource: ActionSourceEnum.Chat,
         actionType: ActionTypeEnum.Send,
@@ -896,6 +978,7 @@ export const AIChatViewACPContent = () => {
           const filePath = match.replace(/\{\{@file:(.*?)\}\}/, '$1');
           const fileUri = new URI(filePath);
           const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
+          sessionGuard?.();
           processedContent = processedContent.replace(match, `\`${LLM_CONTEXT_KEY.AttachedFile}${relativePath}\``);
         }
       }
@@ -907,6 +990,7 @@ export const AIChatViewACPContent = () => {
           const folderPath = match.replace(/\{\{@folder:(.*?)\}\}/, '$1');
           const folderUri = new URI(folderPath);
           const relativePath = (await workspaceService.asRelativePath(folderUri))?.path || folderUri.displayName;
+          sessionGuard?.();
           processedContent = processedContent.replace(match, `\`${LLM_CONTEXT_KEY.AttachedFolder}${relativePath}\``);
         }
       }
@@ -923,6 +1007,7 @@ export const AIChatViewACPContent = () => {
           }
           const fileUri = new URI(filePath);
           const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
+          sessionGuard?.();
           processedContent = processedContent.replace(
             match,
             `\`${LLM_CONTEXT_KEY.AttachedFile}${relativePath}:L${range[0]}-${range[1]}\``,
@@ -941,13 +1026,16 @@ export const AIChatViewACPContent = () => {
           );
         }
       }
-      const started = await handleAgentReply({
-        message: processedContent,
-        images,
-        agentId: resolvedAgentId,
-        command,
-        reportExtra,
-      });
+      const started = await handleAgentReply(
+        {
+          message: processedContent,
+          images,
+          agentId: resolvedAgentId,
+          command,
+          reportExtra,
+        },
+        sessionGuard,
+      );
       if (started) {
         setHasUserSentMessage(true);
       }
@@ -968,19 +1056,38 @@ export const AIChatViewACPContent = () => {
         ? 'generating'
         : 'idle';
     },
-    start: async (_sessionId, draft) => {
+    start: async (sessionId, draft) => {
+      let activeSessionId = sessionId;
+      let canPromoteInitialSession = sessionId === undefined;
+      const sessionGuard: AcpQueuedTurnSessionGuard = (allowInitialPromotion = false) => {
+        const currentSessionId = aiChatService.sessionModel?.sessionId;
+        if (currentSessionId === activeSessionId) {
+          return;
+        }
+        if (allowInitialPromotion && canPromoteInitialSession && activeSessionId === undefined && currentSessionId) {
+          activeSessionId = currentSessionId;
+          canPromoteInitialSession = false;
+          return;
+        }
+        throw new Error('ACP queued turn session is no longer active.');
+      };
+      sessionGuard();
       const started = await sendMessageNow(
         draft.message,
         draft.images ? [...draft.images] : undefined,
         draft.agentId,
         draft.command,
+        sessionGuard,
       );
       if (!started) {
         throw new Error('Failed to start ACP queued turn.');
       }
       return started;
     },
-    cancelCurrent: async () => {
+    cancelCurrent: async (sessionId) => {
+      if (aiChatService.sessionModel?.sessionId !== sessionId) {
+        throw new Error('ACP queued turn session is no longer active.');
+      }
       await aiChatService.cancelRequest();
     },
     didFinish: (started) => {
