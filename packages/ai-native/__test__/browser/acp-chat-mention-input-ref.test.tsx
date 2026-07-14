@@ -208,6 +208,7 @@ jest.mock('../../src/browser/components/components.module.less', () => ({
 }));
 
 import { AcpChatMentionInput } from '../../src/browser/acp/components/AcpChatMentionInput';
+import { AcpQueuedTurnEditor } from '../../src/browser/acp/components/AcpQueuedTurnEditor';
 import { AcpTurnEditor } from '../../src/browser/acp/components/AcpTurnEditor';
 
 import type { AcpTurnDraft } from '../../src/browser/chat/acp-chat-queued-turns';
@@ -1235,6 +1236,110 @@ describe('AcpChatMentionInput ref contract', () => {
 
     expect(submit).toHaveBeenCalledWith(draft, 'normal');
     expect(ref.current!.getDraft()).toEqual(draft);
+  });
+
+  it('preserves the queued draft and edit lease when Save is rejected', async () => {
+    mockUseActualMentionInput = true;
+    jest
+      .requireMock('@opensumi/ide-core-browser')
+      .useInjectable.mockReturnValue({ ...createMockService(), workspaceDir: '/workspace' });
+    const onSave = jest.fn(async () => ({ accepted: false, reason: 'stale-session' as const }));
+    const draft = {
+      id: 'queued-save',
+      message: 'queued save draft',
+      images: ['data:image/png;base64,queued-save'],
+      agentId: 'queued-save-agent',
+      command: '/queued-save',
+    };
+    let editorHandle: AcpTurnEditorHandle | null = null;
+
+    act(() => {
+      render(
+        React.createElement(AcpQueuedTurnEditor, {
+          turn: draft,
+          onSave,
+          onCancel: jest.fn(),
+          onImmediateSend: jest.fn(),
+          onReady: (handle) => {
+            editorHandle = handle as AcpTurnEditorHandle | null;
+          },
+        }),
+        container,
+      );
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    await act(async () => {
+      dispatchEditorKey(editor, { key: 'Enter' });
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(onSave).toHaveBeenCalledWith({
+      message: draft.message,
+      images: draft.images,
+      agentId: draft.agentId,
+      command: draft.command,
+    });
+    expect(editorHandle!.getDraft()).toEqual({
+      message: draft.message,
+      images: draft.images,
+      agentId: draft.agentId,
+      command: draft.command,
+    });
+    expect(container.querySelector('[data-testid="acp-queued-editor-actions"]')).not.toBeNull();
+  });
+
+  it('preserves the queued draft and edit lease when Immediate Send is rejected', async () => {
+    mockUseActualMentionInput = true;
+    jest
+      .requireMock('@opensumi/ide-core-browser')
+      .useInjectable.mockReturnValue({ ...createMockService(), workspaceDir: '/workspace' });
+    const onImmediateSend = jest.fn(async () => ({ accepted: false, reason: 'start-failed' as const }));
+    const draft = {
+      id: 'queued-immediate',
+      message: 'queued immediate draft',
+      images: ['data:image/png;base64,queued-immediate'],
+      agentId: 'queued-immediate-agent',
+      command: '/queued-immediate',
+    };
+    let editorHandle: AcpTurnEditorHandle | null = null;
+
+    act(() => {
+      render(
+        React.createElement(AcpQueuedTurnEditor, {
+          turn: draft,
+          onSave: jest.fn(),
+          onCancel: jest.fn(),
+          onImmediateSend,
+          onReady: (handle) => {
+            editorHandle = handle as AcpTurnEditorHandle | null;
+          },
+        }),
+        container,
+      );
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    await act(async () => {
+      dispatchEditorKey(editor, { key: 'Enter', metaKey: true, shiftKey: true });
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(onImmediateSend).toHaveBeenCalledWith({
+      message: draft.message,
+      images: draft.images,
+      agentId: draft.agentId,
+      command: draft.command,
+    });
+    expect(editorHandle!.getDraft()).toEqual({
+      message: draft.message,
+      images: draft.images,
+      agentId: draft.agentId,
+      command: draft.command,
+    });
+    expect(container.querySelector('[data-testid="acp-queued-editor-actions"]')).not.toBeNull();
   });
 
   it.each(['main', 'queued'] as const)(

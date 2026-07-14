@@ -36,9 +36,9 @@ export interface ChatInputTurnActions {
 
 export interface QueuedTurnEditorProps {
   turn: QueuedTurn;
-  onSave(draft: AcpTurnDraft): Promise<void> | void;
+  onSave(draft: AcpTurnDraft): Promise<TurnActionResult | void> | TurnActionResult | void;
   onCancel(): void;
-  onImmediateSend(draft: AcpTurnDraft): Promise<void> | void;
+  onImmediateSend(draft: AcpTurnDraft): Promise<TurnActionResult | void> | TurnActionResult | void;
   onReady?(handle: ChatInputHandle | null): void;
   immediateSendDisabled?: boolean;
 }

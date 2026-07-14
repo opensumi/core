@@ -53,7 +53,7 @@ import { MCPConfigCommands } from '../../mcp/config/mcp-config.constants';
 import { RulesCommands } from '../../rules/rules.contribution';
 import { RulesService } from '../../rules/rules.service';
 
-import type { AcpTurnDraft } from '../../chat/acp-chat-queued-turns';
+import type { AcpTurnDraft, TurnActionResult } from '../../chat/acp-chat-queued-turns';
 import type { ChatInputHandle, ChatInputTurnActions } from '../../chat/chat.input.registry';
 import type { AcpSessionConfigOption, AcpSessionModelOption } from '../../chat/session-provider';
 
@@ -64,7 +64,7 @@ export interface IChatMentionInputProps {
     agentId?: string,
     command?: string,
     option?: { model: string; [key: string]: any },
-  ) => void;
+  ) => TurnActionResult | void | Promise<TurnActionResult | void>;
   onValueChange?: (value: string) => void;
   onExpand?: (value: boolean) => void;
   placeholder?: string;
@@ -108,8 +108,12 @@ export interface AcpTurnEditorProps extends IChatMentionInputProps {
   variant?: AcpTurnEditorVariant;
   initialDraft?: AcpTurnDraft;
   onCancelEdit?: () => void;
-  onImmediateSend?: (draft: AcpTurnDraft) => void | Promise<void>;
+  onImmediateSend?: (draft: AcpTurnDraft) => TurnActionResult | void | Promise<TurnActionResult | void>;
   immediateSendDisabled?: boolean;
+}
+
+function isAcceptedTurnActionResult(result: TurnActionResult | void): boolean {
+  return result === undefined || result.accepted;
 }
 
 /**
@@ -883,7 +887,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
       const currentCommand = props.command;
       const currentAgentId = props.agentId;
 
-      const doSend = (newValue: string = content) => {
+      const doSend = async (newValue: string = content) => {
         const imagePayload = images.map((image) => image.toString());
         if (!hasAcpChatSendPayload({ message: newValue, images: imagePayload, command: currentCommand })) {
           return;
@@ -894,7 +898,10 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           agentId: currentAgentId,
           command: currentCommand,
         };
-        const sendResult = onSend(newValue, imagePayload, currentAgentId, currentCommand, option);
+        const sendResult = await onSend(newValue, imagePayload, currentAgentId, currentCommand, option);
+        if (!isAcceptedTurnActionResult(sendResult)) {
+          return sendResult;
+        }
         // 发送后重置 slash command 状态
         props.setTheme(null);
         props.setAgentId('');
@@ -955,13 +962,19 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           if (props.immediateSendDisabled) {
             return false;
           }
-          await props.onImmediateSend?.(draft);
+          const result = await props.onImmediateSend?.(draft);
+          if (!isAcceptedTurnActionResult(result)) {
+            return result;
+          }
           draftGenerationRef.current += 1;
-          return true;
+          return result;
         }
-        await handleSend(content, option);
+        const result = await handleSend(content, option);
+        if (!isAcceptedTurnActionResult(result)) {
+          return result;
+        }
         draftGenerationRef.current += 1;
-        return true;
+        return result;
       }
 
       if (props.turnActions) {

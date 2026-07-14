@@ -7,7 +7,7 @@ import { cleanAttachedTextWrapper } from '../../common/utils';
 
 import styles from './chat.module.less';
 
-import type { AcpQueuedTurnSnapshot, AcpTurnDraft } from './acp-chat-queued-turns';
+import type { AcpQueuedTurnSnapshot, AcpTurnDraft, TurnActionResult } from './acp-chat-queued-turns';
 import type { ChatInputCapability, ChatInputHandle, QueuedTurnEditorProps } from './chat.input.registry';
 
 export interface AcpQueuedTurnsProps {
@@ -19,7 +19,11 @@ export interface AcpQueuedTurnsProps {
   onResume(): void;
   onClear(): void;
   onBeginEdit(id: string): void;
-  onCommitEdit(id: string, draft: AcpTurnDraft, immediate: boolean): void;
+  onCommitEdit(
+    id: string,
+    draft: AcpTurnDraft,
+    immediate: boolean,
+  ): Promise<TurnActionResult | void> | TurnActionResult | void;
   onCancelEdit(id: string): void;
   onDelete(id: string): void;
   onImmediateSend(id: string): void;

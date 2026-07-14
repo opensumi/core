@@ -1299,6 +1299,7 @@ export const AIChatViewACPContent = () => {
       if (result.accepted) {
         focusMainInputAfterAction(focus);
       }
+      return result;
     },
     [captureMainInputFocus, focusMainInputAfterAction, queuedTurns],
   );
