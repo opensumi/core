@@ -4,7 +4,13 @@ import { Root, createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
 let mockMentionInputOnSend: ((content: string, option?: { model: string }) => unknown) | undefined;
+let mockMentionInputOnSendImmediately: ((content: string, option?: { model: string }) => unknown) | undefined;
 let mockMentionInputOnImageUpload: ((files: File[]) => Promise<void>) | undefined;
+let mockMentionInputOnEscape: (() => void) | undefined;
+let mockMentionInputOnEmptyArrowUp: (() => boolean) | undefined;
+let mockMentionInputOnEmptySubmit: (() => void) | undefined;
+let mockMentionInputOnToggleExpanded: (() => void) | undefined;
+let mockMentionInputOnUserInput: (() => void) | undefined;
 let mockUseActualMentionInput = false;
 const mockMentionInputRestore = jest.fn();
 const mockMentionInputFocus = jest.fn();
@@ -73,7 +79,13 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => {
         modeOptions,
         configOptions,
         onImageUpload,
+        onEmptyArrowUp,
+        onEmptySubmit,
+        onEscape,
         onSend,
+        onSendImmediately,
+        onToggleExpanded,
+        onUserInput,
       }: {
         currentMode?: string;
         defaultInput?: string;
@@ -89,7 +101,13 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => {
         modeOptions?: unknown[];
         configOptions?: unknown[];
         onImageUpload?: (files: File[]) => Promise<void>;
+        onEmptyArrowUp?: () => boolean;
+        onEmptySubmit?: () => void;
+        onEscape?: () => void;
         onSend?: (content: string, option?: { model: string }) => unknown;
+        onSendImmediately?: (content: string, option?: { model: string }) => unknown;
+        onToggleExpanded?: () => void;
+        onUserInput?: () => void;
       },
       ref: React.ForwardedRef<unknown>,
     ) => {
@@ -97,7 +115,13 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => {
       const editorRef = React.useRef<HTMLDivElement>(null);
       const [value, setValue] = React.useState(defaultInput || '');
       mockMentionInputOnSend = onSend;
+      mockMentionInputOnSendImmediately = onSendImmediately;
       mockMentionInputOnImageUpload = onImageUpload;
+      mockMentionInputOnEscape = onEscape;
+      mockMentionInputOnEmptyArrowUp = onEmptyArrowUp;
+      mockMentionInputOnEmptySubmit = onEmptySubmit;
+      mockMentionInputOnToggleExpanded = onToggleExpanded;
+      mockMentionInputOnUserInput = onUserInput;
 
       React.useEffect(() => {
         setValue(defaultInput || '');
@@ -256,7 +280,13 @@ describe('AcpChatMentionInput ref contract', () => {
     container.remove();
     consoleErrorSpy.mockRestore();
     mockMentionInputOnSend = undefined;
+    mockMentionInputOnSendImmediately = undefined;
     mockMentionInputOnImageUpload = undefined;
+    mockMentionInputOnEscape = undefined;
+    mockMentionInputOnEmptyArrowUp = undefined;
+    mockMentionInputOnEmptySubmit = undefined;
+    mockMentionInputOnToggleExpanded = undefined;
+    mockMentionInputOnUserInput = undefined;
     mockUseActualMentionInput = false;
     jest.clearAllMocks();
   });
@@ -314,6 +344,114 @@ describe('AcpChatMentionInput ref contract', () => {
       'true',
     );
     expect(onInputHandleReady).toHaveBeenCalledWith(ref.current);
+  });
+
+  it('maps main editor intents to turn actions and restores a taken-back Queued Turn', async () => {
+    const submit = jest.fn(async () => ({ accepted: true, outcome: 'queued' as const }));
+    const stop = jest.fn(async () => ({ accepted: true, outcome: 'stopped' as const }));
+    const fastTrack = jest.fn(async () => ({ accepted: true, outcome: 'started' as const }));
+    const invalidateFastTrack = jest.fn();
+    const takeBackLastQueuedTurn = jest.fn(() => ({
+      id: 'queued-1',
+      message: 'taken back draft',
+      images: ['data:image/png;base64,taken-back'],
+      agentId: 'restored-agent',
+      command: '/restore',
+    }));
+    const legacyOnSend = jest.fn();
+    const setAgentId = jest.fn();
+    const setCommand = jest.fn();
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          variant: 'main',
+          loading: true,
+          onSend: legacyOnSend,
+          setTheme: jest.fn(),
+          agentId: 'agent',
+          setAgentId,
+          command: '/review',
+          setCommand,
+          turnActions: { submit, stop, fastTrack, invalidateFastTrack, takeBackLastQueuedTurn },
+        }),
+        container,
+      );
+    });
+
+    await act(async () => {
+      await mockMentionInputOnSend?.('normal draft', { model: 'model-1' });
+      await mockMentionInputOnSendImmediately?.('immediate draft', { model: 'model-1' });
+      mockMentionInputOnEscape?.();
+      mockMentionInputOnEmptySubmit?.();
+      mockMentionInputOnUserInput?.();
+    });
+
+    expect(submit).toHaveBeenNthCalledWith(
+      1,
+      { message: 'normal draft', images: [], agentId: 'agent', command: '/review' },
+      'normal',
+    );
+    expect(submit).toHaveBeenNthCalledWith(
+      2,
+      { message: 'immediate draft', images: [], agentId: 'agent', command: '/review' },
+      'immediate',
+    );
+    expect(legacyOnSend).not.toHaveBeenCalled();
+    expect(stop).toHaveBeenCalledTimes(1);
+    expect(fastTrack).toHaveBeenCalledTimes(1);
+    expect(invalidateFastTrack).toHaveBeenCalledTimes(1);
+
+    let tookBack = false;
+    act(() => {
+      tookBack = mockMentionInputOnEmptyArrowUp?.() || false;
+    });
+    expect(tookBack).toBe(true);
+    expect(takeBackLastQueuedTurn).toHaveBeenCalledTimes(1);
+    expect(mockMentionInputRestore).toHaveBeenCalledWith('taken back draft');
+    expect(setAgentId).toHaveBeenCalledWith('restored-agent');
+    expect(setCommand).toHaveBeenCalledWith('/restore');
+  });
+
+  it('maps queued editor Enter, Immediate Send, and Escape without expansion', async () => {
+    const onSave = jest.fn();
+    const onImmediateSend = jest.fn();
+    const onCancelEdit = jest.fn();
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          variant: 'queued',
+          onSend: onSave,
+          onCancelEdit,
+          onImmediateSend,
+          setTheme: jest.fn(),
+          agentId: 'queued-agent',
+          setAgentId: jest.fn(),
+          command: '/queued-review',
+          setCommand: jest.fn(),
+        }),
+        container,
+      );
+    });
+
+    await act(async () => {
+      await mockMentionInputOnSend?.('saved draft', { model: 'ignored-model' });
+      await mockMentionInputOnSendImmediately?.('immediate draft', { model: 'ignored-model' });
+      mockMentionInputOnEscape?.();
+    });
+
+    expect(onSave).toHaveBeenCalledWith('saved draft', [], 'queued-agent', '/queued-review', {
+      model: 'ignored-model',
+    });
+    expect(onImmediateSend).toHaveBeenCalledWith({
+      message: 'immediate draft',
+      images: [],
+      agentId: 'queued-agent',
+      command: '/queued-review',
+    });
+    expect(onCancelEdit).toHaveBeenCalledTimes(1);
+    expect(mockMentionInputOnToggleExpanded).toBeUndefined();
   });
 
   it('keeps the contenteditable node, focus, and selection when expanded state changes', () => {
@@ -535,10 +673,19 @@ describe('AcpChatMentionInput ref contract', () => {
 
   it('toggles expanded state and notifies onExpand', () => {
     const onExpand = jest.fn();
+    const service = createMockService();
+    const ref = React.createRef<AcpTurnEditorHandle>();
+    service.executeCommand.mockImplementation((commandId: string) => {
+      if (commandId === 'ai.chat.input.toggleExpanded') {
+        ref.current?.toggleExpanded?.();
+      }
+    });
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(service);
 
     act(() => {
       render(
         React.createElement(AcpChatMentionInput, {
+          ref,
           onSend: jest.fn(),
           onExpand,
           setTheme: jest.fn(),
@@ -566,9 +713,10 @@ describe('AcpChatMentionInput ref contract', () => {
     expect(root.className).toContain('chat_input_container_expanded');
     expect(expandButton.querySelector('span')!.className).toContain('icon-unfullscreen');
     expect(onExpand).toHaveBeenLastCalledWith(true);
+    expect(service.executeCommand).toHaveBeenLastCalledWith('ai.chat.input.toggleExpanded');
 
     act(() => {
-      expandButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      mockMentionInputOnToggleExpanded?.();
     });
 
     expect(input().getAttribute('data-expanded')).toBe('false');
@@ -576,6 +724,7 @@ describe('AcpChatMentionInput ref contract', () => {
     expect(expandButton.querySelector('span')!.className).toContain('icon-fullescreen');
     expect(onExpand).toHaveBeenLastCalledWith(false);
     expect(onExpand).toHaveBeenCalledTimes(2);
+    expect(service.executeCommand).toHaveBeenNthCalledWith(2, 'ai.chat.input.toggleExpanded');
   });
 
   it('keeps Mention and image input but hides main-only controls in the queued variant', () => {
@@ -653,6 +802,47 @@ describe('AcpChatMentionInput ref contract', () => {
     });
 
     expect(ref.current!.getDraft().images).toEqual(['data:image/png;base64,A.png', 'data:image/png;base64,B.png']);
+  });
+
+  it('keeps successful images and reports the failure count after a partial upload', async () => {
+    const service = createMockService();
+    service.getImageUploadProvider.mockReturnValue({
+      imageUpload: jest
+        .fn()
+        .mockResolvedValueOnce('data:image/png;base64,ok')
+        .mockRejectedValueOnce(new Error('bad image')),
+    });
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(service);
+    const ref = React.createRef<AcpTurnEditorHandle>();
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          ref,
+          variant: 'queued',
+          onSend: jest.fn(),
+          onCancelEdit: jest.fn(),
+          onImmediateSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+        }),
+        container,
+      );
+    });
+
+    await act(async () => {
+      await mockMentionInputOnImageUpload?.([
+        new File(['ok'], 'ok.png', { type: 'image/png' }),
+        new File(['bad'], 'bad.png', { type: 'image/png' }),
+      ]);
+    });
+
+    expect(ref.current!.getDraft().images).toEqual(['data:image/png;base64,ok']);
+    expect(container.querySelectorAll('img')).toHaveLength(1);
+    expect(service.error).toHaveBeenCalledWith(expect.stringContaining('1'));
   });
 
   it('saves an image-only queued draft from the normal Send button', async () => {

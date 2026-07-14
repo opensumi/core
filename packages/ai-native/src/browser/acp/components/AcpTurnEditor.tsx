@@ -34,6 +34,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../../common';
 import { LLMContextService } from '../../../common/llm-context';
+import { AI_CHAT_INPUT_TOGGLE_EXPANDED } from '../../chat/acp-chat-input.commands';
 import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import { ChatRenderRegistry } from '../../chat/chat.render.registry';
@@ -911,6 +912,62 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
     ],
   );
 
+  const submitDraft = useCallback(
+    (content: string, option: { model: string; [key: string]: any } | undefined, intent: 'normal' | 'immediate') => {
+      if (disabled) {
+        return;
+      }
+
+      const draft: AcpTurnDraft = {
+        message: content,
+        images: imagesRef.current.map((image) => image.toString()),
+        agentId: props.agentId,
+        command: props.command,
+      };
+      if (!hasAcpChatSendPayload(draft)) {
+        return;
+      }
+
+      if (isQueued) {
+        if (intent === 'immediate') {
+          if (props.immediateSendDisabled) {
+            return;
+          }
+          return props.onImmediateSend?.(draft);
+        }
+        return handleSend(content, option);
+      }
+
+      if (props.turnActions) {
+        const result = props.turnActions.submit(draft, intent);
+        props.setTheme(null);
+        props.setAgentId('');
+        props.setCommand('');
+        imagesRef.current = props.images ? [...props.images] : [];
+        setImages(imagesRef.current);
+        return result;
+      }
+
+      if (intent === 'normal') {
+        return handleSend(content, option);
+      }
+    },
+    [
+      disabled,
+      handleSend,
+      isQueued,
+      props.agentId,
+      props.command,
+      props.images,
+      props.immediateSendDisabled,
+      props.onImmediateSend,
+      props.setAgentId,
+      props.setCommand,
+      props.setTheme,
+      props.turnActions,
+    ],
+  );
+
   const handleImageUpload = useCallback(
     async (files: File[]) => {
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
@@ -927,13 +984,21 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         return;
       }
 
-      const uploadedData = await Promise.all(files.map((file) => imageUploadProvider.imageUpload(file)));
+      const settled = await Promise.allSettled(files.map((file) => imageUploadProvider.imageUpload(file)));
+      const uploadedData = settled.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : []));
+      const failedCount = settled.length - uploadedData.length;
 
       setImages((currentImages) => {
         const nextImages = [...currentImages, ...uploadedData];
         imagesRef.current = nextImages;
         return nextImages;
       });
+
+      if (failedCount > 0) {
+        messageService.error(
+          localize('aiNative.chat.imageUpload.partialFailure', `${failedCount} image(s) failed`, String(failedCount)),
+        );
+      }
     },
     [chatFeatureRegistry, messageService],
   );
@@ -992,9 +1057,10 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
     [chatFeatureRegistry],
   );
 
-  const handleExpandClick = useCallback(() => {
-    inputHandle.toggleExpanded?.();
-  }, [inputHandle]);
+  const toggleExpanded = useCallback(
+    () => commandService.executeCommand(AI_CHAT_INPUT_TOGGLE_EXPANDED.id),
+    [commandService],
+  );
 
   const handleImmediateSend = useCallback(() => {
     const draft = inputHandle.getDraft();
@@ -1003,6 +1069,27 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
     }
     return props.onImmediateSend(draft);
   }, [inputHandle, props.immediateSendDisabled, props.onImmediateSend]);
+
+  const handleEscape = useCallback(() => {
+    if (isQueued) {
+      return props.onCancelEdit?.();
+    }
+    if (loading) {
+      return handleStop();
+    }
+  }, [handleStop, isQueued, loading, props.onCancelEdit]);
+
+  const handleEmptyArrowUp = useCallback(() => {
+    if (isQueued) {
+      return false;
+    }
+    const turn = props.turnActions?.takeBackLastQueuedTurn();
+    if (!turn) {
+      return false;
+    }
+    inputHandle.restoreDraft?.(turn);
+    return true;
+  }, [inputHandle, isQueued, props.turnActions]);
 
   return (
     <div
@@ -1013,7 +1100,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
       )}
     >
       {!isQueued && (
-        <div className={styles.expand_icon} onClick={handleExpandClick}>
+        <div className={styles.expand_icon} onClick={toggleExpanded}>
           <Popover
             id={'ai_chat_input_expand'}
             title={localize(isExpanded ? 'aiNative.chat.expand.unfullscreen' : 'aiNative.chat.expand.fullescreen')}
@@ -1033,8 +1120,14 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
               : defaultMenuItems
           }
           slashCommands={[...slashCommands, ...acpSlashCommands]}
-          onSend={handleSend}
+          onSend={(message, option) => submitDraft(message, option, 'normal')}
+          onSendImmediately={(message, option) => submitDraft(message, option, 'immediate')}
           onStop={handleStop}
+          onEscape={handleEscape}
+          onEmptyArrowUp={isQueued ? undefined : handleEmptyArrowUp}
+          onEmptySubmit={isQueued ? undefined : () => void props.turnActions?.fastTrack()}
+          onToggleExpanded={isQueued ? undefined : toggleExpanded}
+          onUserInput={isQueued ? undefined : () => props.turnActions?.invalidateFastTrack()}
           loading={loading}
           labelService={labelService}
           workspaceService={workspaceService}

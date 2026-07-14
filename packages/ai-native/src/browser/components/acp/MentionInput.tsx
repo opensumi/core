@@ -295,7 +295,13 @@ const MentionInputImpl = (
   {
     mentionItems = [],
     onSend,
+    onSendImmediately,
     onStop,
+    onEscape,
+    onEmptyArrowUp,
+    onEmptySubmit,
+    onToggleExpanded,
+    onUserInput,
     loading = false,
     mentionKeyword = MENTION_KEYWORD,
     onSelectionChange,
@@ -340,6 +346,18 @@ const MentionInputImpl = (
   });
   const mentionStateRef = React.useRef(mentionState);
   mentionStateRef.current = mentionState;
+
+  const closeTransientUi = React.useCallback(() => {
+    const wasOpen = mentionStateRef.current.active || mentionStateRef.current.inlineSearchActive;
+    if (wasOpen) {
+      setMentionState((state) => ({
+        ...state,
+        active: false,
+        inlineSearchActive: false,
+      }));
+    }
+    return wasOpen;
+  }, []);
 
   // 添加模型选择状态
   const [selectedModel, setSelectedModel] = React.useState<string>(footerConfig.defaultModel || '');
@@ -403,19 +421,9 @@ const MentionInputImpl = (
       getSerializedContent: () => (editorRef.current ? serializeEditorContent(editorRef.current) : ''),
       restoreSerializedContent,
       focus: () => focusEditorAtEnd(editorRef.current),
-      closeTransientUi: () => {
-        const wasOpen = mentionStateRef.current.active || mentionStateRef.current.inlineSearchActive;
-        if (wasOpen) {
-          setMentionState((state) => ({
-            ...state,
-            active: false,
-            inlineSearchActive: false,
-          }));
-        }
-        return wasOpen;
-      },
+      closeTransientUi,
     }),
-    [restoreSerializedContent],
+    [closeTransientUi, restoreSerializedContent],
   );
 
   const getCurrentItems = (): MentionItem[] => {
@@ -743,6 +751,7 @@ const MentionInputImpl = (
 
     const selection = window.getSelection();
     if (!selection || !selection.rangeCount || !editorRef.current) {
+      onUserInput?.();
       return;
     }
 
@@ -811,6 +820,7 @@ const MentionInputImpl = (
       // 获取父级类型
       const parentItem = mentionItems.find((i) => i.id === mentionState.parentType);
       if (!parentItem) {
+        onUserInput?.();
         return;
       }
 
@@ -860,39 +870,27 @@ const MentionInputImpl = (
         editorRef.current.innerHTML = '';
       }
     }
+
+    onUserInput?.();
   };
 
   // 处理键盘事件
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    // 如果按下ESC键且提及面板处于活动状态或内联搜索处于活动状态
-    if (e.key === 'Escape' && (mentionState.active || mentionState.inlineSearchActive)) {
-      // 如果是 slash command 面板，直接关闭
-      if (mentionState.trigger === '/') {
-        setMentionState((prev) => ({
-          ...prev,
-          active: false,
-        }));
-        e.preventDefault();
-        return;
-      }
-      // 如果在二级菜单，返回一级菜单
-      if (mentionState.level > 0) {
-        setMentionState((prev) => ({
-          ...prev,
-          level: 0,
-          activeIndex: 0,
-          secondLevelFilter: '',
-          inlineSearchActive: false,
-        }));
-      } else {
-        // 如果在一级菜单，完全关闭面板
-        setMentionState((prev) => ({
-          ...prev,
-          active: false,
-          inlineSearchActive: false,
-        }));
-      }
+    if (e.key === 'Enter' && e.nativeEvent.isComposing) {
+      return;
+    }
+
+    if (e.key === 'Escape' && e.shiftKey && e.altKey) {
       e.preventDefault();
+      onToggleExpanded?.();
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (!closeTransientUi()) {
+        onEscape?.();
+      }
       return;
     }
 
@@ -957,6 +955,26 @@ const MentionInputImpl = (
         loading: false,
         trigger: '/',
       });
+    }
+
+    const editorIsEmpty =
+      !editorRef.current?.innerHTML ||
+      editorRef.current.innerHTML === '<br>' ||
+      editorRef.current.innerHTML === '<br/>';
+
+    if (
+      e.key === 'ArrowUp' &&
+      !e.shiftKey &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.altKey &&
+      !mentionState.active &&
+      !mentionState.inlineSearchActive &&
+      editorIsEmpty &&
+      onEmptyArrowUp?.()
+    ) {
+      e.preventDefault();
+      return;
     }
 
     // 处理上下方向键导航历史记录
@@ -1024,14 +1042,19 @@ const MentionInputImpl = (
 
     // 添加对 Enter 键的处理，只有在按下 Shift+Enter 时才允许换行
     if (e.key === 'Enter') {
-      // 检查是否是输入法的回车键
-      if (e.nativeEvent.isComposing) {
-        return; // 如果是输入法组合输入过程中的回车，不做任何处理
+      if (e.shiftKey && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleSendImmediately();
+        return;
       }
 
       if (!e.shiftKey) {
         e.preventDefault();
         if (!mentionState.active) {
+          if (editorIsEmpty && onEmptySubmit) {
+            onEmptySubmit();
+            return;
+          }
           handleSend();
           return;
         }
@@ -1110,7 +1133,6 @@ const MentionInputImpl = (
     // 处理所有收集到的图片
     if (imageFiles.length > 0 && onImageUpload) {
       await onImageUpload(imageFiles);
-      return;
     }
 
     const text = e.clipboardData.getData('text/plain');
@@ -1616,8 +1638,7 @@ const MentionInputImpl = (
     [onConfigOptionChange],
   );
 
-  // 修改 handleSend 函数
-  const handleSend = () => {
+  const handleSendWith = (send?: (content: string, config?: { model: string; [key: string]: any }) => void) => {
     if (!editorRef.current) {
       return;
     }
@@ -1637,9 +1658,9 @@ const MentionInputImpl = (
       setIsNavigatingHistory(false);
     }
     let sendResult: unknown;
-    if (onSend) {
+    if (send) {
       // 传递当前选择的模型和其他配置信息
-      sendResult = onSend(processedContent, {
+      sendResult = send(processedContent, {
         model: selectedModel,
         ...footerConfig,
       });
@@ -1658,6 +1679,9 @@ const MentionInputImpl = (
       editorRef.current.style.height = 'auto';
     }
   };
+
+  const handleSend = () => handleSendWith(onSend);
+  const handleSendImmediately = () => handleSendWith(onSendImmediately);
 
   const handleClearContext = React.useCallback(() => {
     contextService?.cleanFileContext();

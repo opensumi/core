@@ -383,9 +383,11 @@ function createMockServices({
   let agenticWorkbenchVisible = true;
   let latestChatInputProps: any;
   let latestQueuedEditorProps: any;
-  let activeInputHandle: { focus: jest.Mock } | null = null;
+  let activeInputHandle: { focus: jest.Mock; restoreDraft: jest.Mock; setExpanded: jest.Mock } | null = null;
   let activeInputHandleOwnerId: string | undefined;
   const mainInputFocus = jest.fn();
+  const mainInputRestoreDraft = jest.fn();
+  const mainInputSetExpanded = jest.fn();
   const queuedEditorFocus = jest.fn();
   const aiChatService = {
     sessionModel: currentSession,
@@ -437,7 +439,11 @@ function createMockServices({
     const props = _props;
     latestChatInputProps = props;
     React.useEffect(() => {
-      const handle = { focus: mainInputFocus };
+      const handle = {
+        focus: mainInputFocus,
+        restoreDraft: mainInputRestoreDraft,
+        setExpanded: mainInputSetExpanded,
+      };
       props.onInputHandleReady?.(handle);
       return () => props.onInputHandleReady?.(null);
     }, [props.onInputHandleReady]);
@@ -593,16 +599,18 @@ function createMockServices({
     chatInputRegistry: {
       getActiveChatInput: jest.fn(() => activeChatInput),
       getActiveInputHandle: jest.fn(() => activeInputHandle),
-      setActiveInputHandle: jest.fn((handle: { focus: jest.Mock } | null, ownerId?: string) => {
-        if (handle && ownerId !== activeChatInput.id) {
-          return;
-        }
-        if (!handle && ownerId !== activeInputHandleOwnerId) {
-          return;
-        }
-        activeInputHandle = handle;
-        activeInputHandleOwnerId = handle ? ownerId : undefined;
-      }),
+      setActiveInputHandle: jest.fn(
+        (handle: { focus: jest.Mock; restoreDraft: jest.Mock; setExpanded: jest.Mock } | null, ownerId?: string) => {
+          if (handle && ownerId !== activeChatInput.id) {
+            return;
+          }
+          if (!handle && ownerId !== activeInputHandleOwnerId) {
+            return;
+          }
+          activeInputHandle = handle;
+          activeInputHandleOwnerId = handle ? ownerId : undefined;
+        },
+      ),
     },
     chatRenderRegistry: {
       chatViewHeaderRender,
@@ -716,6 +724,8 @@ function createMockServices({
     ChatInputForTest,
     QueuedEditorForTest,
     mainInputFocus,
+    mainInputRestoreDraft,
+    mainInputSetExpanded,
     queuedEditorFocus,
   };
 }
@@ -1737,6 +1747,25 @@ describe('ACP chat view headers', () => {
     });
 
     expect(container.querySelector('[data-testid="acp-queued-turn-preview"]')?.textContent).toContain('follow up');
+  });
+
+  it('collapses the main input on Active Session change without clearing its draft or moving focus', async () => {
+    const firstSession = createMockSession({ messages: [], sessionId: 'acp:first' });
+    const secondSession = createMockSession({ messages: [], sessionId: 'acp:second' });
+    const services = createMockServices({ session: firstSession, sessions: [firstSession, secondSession] });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    services.mainInputSetExpanded.mockClear();
+    services.mainInputRestoreDraft.mockClear();
+    services.mainInputFocus.mockClear();
+
+    services.aiChatService.sessionModel = secondSession;
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    expect(services.mainInputSetExpanded).toHaveBeenCalledWith(false);
+    expect(services.mainInputRestoreDraft).not.toHaveBeenCalled();
+    expect(services.mainInputFocus).not.toHaveBeenCalled();
   });
 
   it('queues follow-up ACP messages while a reply is loading and sends them after the reply completes', async () => {

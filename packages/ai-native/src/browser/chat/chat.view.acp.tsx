@@ -1403,6 +1403,7 @@ export const AIChatViewACPContent = () => {
 
   React.useEffect(() => {
     queuedTurns.activate(activeServiceSessionId);
+    mainInputHandleRef.current?.setExpanded?.(false);
     queuedTurnSessionRef.current = activeServiceSessionId;
     manuallyCollapsedQueueRef.current = false;
     previousQueuedTurnCountRef.current = 0;

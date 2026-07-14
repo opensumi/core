@@ -110,7 +110,13 @@ export interface FooterConfig {
 export interface MentionInputProps {
   mentionItems?: MentionItem[]; // 简化为单一菜单项配置
   onSend?: (content: string, config?: { model: string; [key: string]: any }) => void;
+  onSendImmediately?: (content: string, config?: { model: string; [key: string]: any }) => void;
   onStop?: () => void;
+  onEscape?: () => void;
+  onEmptyArrowUp?: () => boolean;
+  onEmptySubmit?: () => void;
+  onToggleExpanded?: () => void;
+  onUserInput?: () => void;
   placeholder?: string;
   loading?: boolean;
   onSelectionChange?: (value: string) => void;

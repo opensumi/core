@@ -3,6 +3,12 @@ import path from 'path';
 import * as React from 'react';
 import ts from 'typescript';
 
+jest.mock('tiktoken', () => ({
+  Tiktoken: jest.fn(),
+  get_encoding: jest.fn(),
+}));
+
+import { AINativeBrowserContribution } from '../../../src/browser/ai-core.contribution';
 import { ChatInputRegistry } from '../../../src/browser/chat/chat.input.registry';
 
 function getStrictFunctionTypeDiagnostics(sourceText: string): string[] {
@@ -178,6 +184,42 @@ describe('ChatInputRegistry ACP turn capabilities', () => {
     expect(registry.getActiveInputHandle()).toBe(currentHandle);
     registry.setActiveInputHandle(null);
     expect(registry.getActiveInputHandle()).toBeNull();
+  });
+
+  it('registers the expansion command against the current owner handle', () => {
+    const registry = new ChatInputRegistry();
+    const Input = () => React.createElement('div');
+    const staleHandle = { toggleExpanded: jest.fn() };
+    const currentHandle = { toggleExpanded: jest.fn() };
+    registry.registerChatInput({ id: 'active', component: Input, priority: 10 });
+    registry.setActiveInputHandle(staleHandle, 'active');
+    registry.setActiveInputHandle(currentHandle, 'active');
+
+    const contribution = Object.create(AINativeBrowserContribution.prototype) as AINativeBrowserContribution;
+    Object.defineProperty(contribution, 'chatInputRegistry', { configurable: true, value: registry });
+    Object.defineProperty(contribution, 'panelLayoutService', {
+      configurable: true,
+      value: { isAgenticWorkbenchVisible: jest.fn(() => true) },
+    });
+    Object.defineProperty(contribution, 'mainLayoutService', { configurable: true, value: {} });
+
+    let expansionHandler: { execute(): void } | undefined;
+    const commands = {
+      afterExecuteCommand: jest.fn(),
+      beforeExecuteCommand: jest.fn(),
+      registerCommand: jest.fn((command: { id: string }, handler: { execute(): void }) => {
+        if (command.id === 'ai.chat.input.toggleExpanded') {
+          expansionHandler = handler;
+        }
+      }),
+    };
+
+    contribution.registerCommands(commands as any);
+    expansionHandler?.execute();
+
+    expect(expansionHandler).toBeDefined();
+    expect(staleHandle.toggleExpanded).not.toHaveBeenCalled();
+    expect(currentHandle.toggleExpanded).toHaveBeenCalledTimes(1);
   });
 
   it('rejects an owned handle from an inactive contribution', () => {

@@ -128,6 +128,7 @@ import { createSearchGroup } from './acp/webmcp-groups/search.webmcp-group';
 import { createTerminalGroup } from './acp/webmcp-groups/terminal.webmcp-group';
 import { createWorkspaceGroup } from './acp/webmcp-groups/workspace.webmcp-group';
 import { registerWebMcpModelContextTools } from './acp/webmcp-model-context-adapter';
+import { AI_CHAT_INPUT_TOGGLE_EXPANDED } from './chat/acp-chat-input.commands';
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
@@ -939,6 +940,10 @@ export class AINativeBrowserContribution
 
   registerCommands(commands: CommandRegistry): void {
     registerAgenticWorkbenchRevealCommandInterceptors(commands, this.panelLayoutService, this.mainLayoutService);
+
+    commands.registerCommand(AI_CHAT_INPUT_TOGGLE_EXPANDED, {
+      execute: () => this.chatInputRegistry.getActiveInputHandle()?.toggleExpanded?.(),
+    });
 
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
