@@ -30,8 +30,8 @@
 15. Run the mock ACP agent once with `--fixture=create-failure` and once with `--fixture=send-failure`, record visible recovery state for each pass, then retry with `--fixture=stream-rich`.
 16. In the main input, place the caret between two deterministic text fragments and paste clipboard data containing both text and one image. Record the text and caret immediately, move focus/selection to another editable surface before image upload settles, then record both editors after upload completion.
 17. Add a deterministic Mention and image to a main draft, start the `long-stream` pass, and submit later drafts until at least two Queued Turns are visible. Begin editing the second Queued Turn and record queued-editor focus, serialized Mention display, and image preview.
-18. Modify the second queued draft, save it, reopen it, and confirm its Mention and image remain attached without changing its queue index. Also confirm the independent main draft is not overwritten by queued-editor changes.
-19. Exercise accepted Save, Cancel, Delete, and Immediate Send actions from the queued surface and record the active element after each action settles. Exercise one rejected empty Save and record that the queued editor, draft, and focus remain in place.
+18. Modify the second queued draft, confirm the edit with the queued editor's normal `Send` control or Enter, reopen it, and confirm its Mention and image remain attached without changing its queue index. Also confirm the independent main draft is not overwritten by queued-editor changes.
+19. Exercise an accepted queued-editor `Send`/Enter, Cancel, Delete, and Immediate Send from the queued surface and record the active element after each action settles. Exercise one rejected empty `Send`/Enter and record that the queued editor, draft, and focus remain in place.
 20. In the main input, create a draft with text, a Mention, and an image; place the caret in the middle; toggle expansion with `Shift+Alt+Escape` and the visible expand/collapse action; record the contenteditable node identity, focus, selection, draft, Mention, image, and expanded state after each toggle.
 
 ## Then
@@ -45,8 +45,8 @@
 - Send/cancel/stop controls reflect loading state and do not expose old direct ACP tools.
 - Commands, mentions, and attachments update visible chips/control state without leaking raw payloads through state, list, or permission tools outside allowed title metadata.
 - Mixed text/image paste inserts text synchronously at the originating caret, starts one image upload, and does not later apply text or selection changes to another editor after focus moves.
-- Main and queued editors keep independent draft state. The queued editor preserves Mention tokens and images across edit/save/reopen without moving the item or overwriting the main draft.
-- Beginning a queued edit focuses its editor. Accepted Save, Cancel, Delete, and settled Immediate Send return focus to the main input; a rejected Save preserves the queued editor, draft, edit lease, and focus.
+- Main and queued editors keep independent draft state. The queued editor preserves Mention tokens and images across edit/Send/reopen without moving the item or overwriting the main draft.
+- Beginning a queued edit focuses its editor. Accepted queued-editor `Send`/Enter, Cancel, Delete, and settled Immediate Send return focus to the main input; a rejected empty `Send`/Enter keeps the queued editor, draft, and focus in place.
 - Expanding or collapsing the main input keeps the same contenteditable node, focus, caret/selection, text, Mention, and image state. Expansion-state changes do not submit, clear, or replace the draft.
 - User-visible errors re-enable input, clear stale loading/error state after retry, and do not persist half-created empty sessions.
 

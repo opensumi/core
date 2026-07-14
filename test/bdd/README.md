@@ -115,7 +115,7 @@ Queued-turn start-failure recovery uses a separate loopback-only, one-shot runti
 http://localhost:8080/?workspaceDir=<absolute>&aiNative=true&acpBddQueuedTurnStartFailure=reject-once
 ```
 
-The fixture is ignored unless the page is on a loopback host, `aiNative=true` is present, and the query value is exactly `reject-once`. It rejects the first queued-turn production-port start before a handle is returned, then remains consumed so `Resume Queue` can retry the same queue head through the real ACP path.
+The fixture is ignored unless the page is on a loopback host, `aiNative=true` is present, and the query value is exactly `reject-once`. The code-level fixture integration guarantees that the first queued-turn production-port start rejects before a handle is returned. Runtime BDD asserts only the visible contract: no user row or active loading/Stop state appears, the same queue head is restored, and `Resume Queue` retries it through the real ACP path.
 
 Configure the ACP agent command with `test/bdd/fixtures/acp-agent/mock-acp-agent.mjs`:
 
@@ -149,6 +149,8 @@ The fixture can be selected either with `--fixture=<name>` or `OPENSUMI_ACP_BDD_
 | `history` | Multi-session history/list/switching, seeded session metadata, and bounded rich replay updates on `session/load`. |
 
 If a scenario needs more than one fixture class, run the subcases as separate deterministic fixture passes and record the fixture used for each pass in evidence. Do not mix these deterministic fixture assertions with live-agent assertions in a single PASS unless every fixture-only assertion actually ran.
+
+For an Active Session switch that must keep a newly submitted history-fixture turn active long enough to enqueue and edit later drafts, run `--fixture=history --delay-ms=2000`. Observe active loading and an enabled Stop control before enqueueing, and confirm both remain visible immediately before switching; otherwise restart the pass instead of counting it as PASS.
 
 ## Tool Names
 

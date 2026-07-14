@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/chat/acp-chat-queued-turns.ts`, `packages/ai-native/src/browser/chat/AcpQueuedTurns.tsx`, `packages/ai-native/src/browser/chat/chat.view.acp.tsx`, `packages/ai-native/src/browser/acp/components/AcpQueuedTurnEditor.tsx`, or `packages/ai-native/src/browser/acp/acp-bdd-runtime-fixtures.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** separate deterministic `long-stream`, `stream-rich`, `history`, and loopback `acpBddQueuedTurnStartFailure=reject-once` passes. **Workspace mutation:** None. **Automation status:** Runtime BDD first; convert stable deterministic subcases only after a `CONVERT` verdict.
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** separate deterministic `long-stream`, `stream-rich`, bounded slow `history` (`--fixture=history --delay-ms=2000`), and loopback `acpBddQueuedTurnStartFailure=reject-once` passes. **Workspace mutation:** None. **Automation status:** Runtime BDD first; convert stable deterministic subcases only after a `CONVERT` verdict.
 
 ## Given
 
@@ -21,10 +21,10 @@
 
 ## Then - FIFO and Editing
 
-- Queue rows remain `fifo-1`, `fifo-2-edited`, `fifo-3`; editing the second item preserves its ID, index, and FIFO position.
+- Queue rows remain `fifo-1`, `fifo-2-edited`, `fifo-3`; editing the second item preserves its visible index and FIFO position.
 - Automatic advancement starts only the queue head and removes exactly that head from the visible queue.
 - Each deterministic user draft is delivered once in FIFO order, with no duplicate user row or duplicate queue row.
-- Saving the queued edit returns focus to the main input after the action is accepted; automatic advancement does not steal focus.
+- Confirming the queued edit with `Send` or Enter returns focus to the main input after the action is accepted; automatic advancement does not steal focus.
 
 ## When - Manual Stop and Resume Queue
 
@@ -55,23 +55,24 @@
 ## When - One-Shot Start Failure
 
 1. Open the loopback runtime with `aiNative=true&acpBddQueuedTurnStartFailure=reject-once` and a deterministic `stream-rich` agent.
-2. Submit `start-failure-head` from a fresh draft and record the queue before any request handle or user row is created.
+2. Submit `start-failure-head` from a fresh draft and record the visible queue rows, user-row count, loading state, and Stop availability after the injected start failure settles.
 3. Record the paused status, pause reason, queue index, preview, and `Resume Queue` action.
 4. Activate `Resume Queue` and wait for the same queued draft to start on the second attempt.
 
 ## Then - One-Shot Start Failure
 
-- The first production-port start rejects before returning a handle or creating a user row.
+- The first attempted start creates no user row or active loading/Stop state, and the visible queue restores `start-failure-head` at the head.
 - `start-failure-head` returns to queue index 1 with status `Paused` and reason `Could not start`.
 - The query fixture is consumed once: Resume retries the same head successfully without a reload, duplicate row, or reordered queue entry.
 
 ## When - Active Session Switch and Focus
 
-1. Run the `history` fixture with two deterministic sessions, select Session A, establish an active turn, and enqueue two labeled drafts.
-2. Begin editing one queued draft and confirm focus is inside the queued editor.
-3. Switch the Active Session to Session B through the visible Task/History surface.
-4. Record the queue region, main draft, expanded state, active element, and metadata-only active session id.
-5. Switch back to Session A and record the queue region again.
+1. Run `--fixture=history --delay-ms=2000` with two deterministic sessions, select Session A, and submit one turn.
+2. Wait until Session A visibly owns an active loading state and its Stop control is enabled. Only then enqueue two labeled drafts.
+3. Begin editing one queued draft, confirm focus is inside the queued editor, and immediately before switching confirm the loading state and enabled Stop control are still visible. If either disappeared, restart this pass rather than counting it toward PASS.
+4. Switch the Active Session to Session B through the visible Task/History surface.
+5. Record the queue region, main draft, expanded state, active element, and metadata-only active session id.
+6. Switch back to Session A and record the queue region again.
 
 ## Then - Active Session Switch and Focus
 

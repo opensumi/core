@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/acp/components/AcpChatInput.tsx`, `packages/ai-native/src/browser/acp/components/AcpChatHistory.tsx`, `packages/ai-native/src/browser/chat/chat.view.acp.tsx`, or `packages/ai-native/src/browser/acp/permission-dialog-container.tsx`
 
-**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** Agentic startup has passed, the mock ACP agent uses separate `--fixture=stream-rich` passes for normal keyboard send/tool-card assertions, `--fixture=long-stream` for queued-turn Immediate Send, Escape-stop, and ArrowUp take-back assertions, `--fixture=history` for at least two sessions during history checks, `--fixture=permission` for dialog keyboard dismissal when the full-profile permission subcase runs, and stable keyboard-focus selectors are available. A real LLM-backed ACP agent may be used only for live keyboard send smoke coverage. **Workspace mutation:** None. **Automation status:** Automated through Chrome DevTools MCP keyboard events; live-agent runs may cover keyboard focus/send and dismissal behavior, but mock-agent fixtures remain required for stable queue, history, permission, and tool-card keyboard assertions.
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** Agentic startup has passed, the mock ACP agent uses separate `--fixture=stream-rich` passes for normal keyboard send/tool-card assertions, `--fixture=long-stream` for queued-turn Immediate Send, Escape-stop, and ArrowUp take-back assertions, `--fixture=history` for at least two sessions during history checks, `--fixture=permission` for dialog keyboard dismissal when the full-profile permission subcase runs, and stable keyboard-focus selectors are available. A real LLM-backed ACP agent may be used only for live keyboard send smoke coverage. **Workspace mutation:** None. **Automation status:** Automated through Chrome DevTools MCP keyboard events; live-agent runs may cover keyboard focus/send and dismissal behavior, but mock-agent fixtures remain required for stable queue, history, permission, and tool-card keyboard assertions. IME composition no-submit behavior remains covered at unit level and is not a runtime PASS assertion because this lane has no stable composition-event driver.
 
 ## Given
 
@@ -13,7 +13,7 @@
 
 1. Use keyboard navigation to focus the Agentic input.
 2. Type `line-one`, press `Shift+Enter`, type `line-two`, and confirm a native newline is inserted without submitting.
-3. Press plain `Enter` and confirm one normal submit occurs. During IME composition, confirm Enter and the Immediate Send chord do not submit.
+3. Press plain `Enter` and confirm one normal submit occurs.
 4. In a separate `long-stream` pass, enqueue a deterministic draft, focus the main input, and press `Shift+Cmd+Enter` on macOS or `Shift+Ctrl+Enter` on other platforms to request Immediate Send.
 5. Open the mention or slash surface, then press `Shift+Alt+Escape`; confirm input expansion toggles while the transient surface stays open and focus/selection stay in the same contenteditable.
 6. Press plain `Escape`; confirm it closes the transient surface first. While the long stream is still active, press plain `Escape` again and confirm it delegates to Stop only after no transient input surface remains.
