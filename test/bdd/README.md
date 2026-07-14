@@ -109,6 +109,14 @@ http://localhost:8080/?workspaceDir=<absolute workspace path>&aiNative=true&aiPa
 
 The fixture is ignored unless the page is on a loopback host and `aiNative=true` is present. It forces the ACP readiness checkpoint to reject before ACP chat initialization so Agentic fallback rendering can be validated without a real ACP session.
 
+Queued-turn start-failure recovery uses a separate loopback-only, one-shot runtime fixture:
+
+```text
+http://localhost:8080/?workspaceDir=<absolute>&aiNative=true&acpBddQueuedTurnStartFailure=reject-once
+```
+
+The fixture is ignored unless the page is on a loopback host, `aiNative=true` is present, and the query value is exactly `reject-once`. It rejects the first queued-turn production-port start before a handle is returned, then remains consumed so `Resume Queue` can retry the same queue head through the real ACP path.
+
 Configure the ACP agent command with `test/bdd/fixtures/acp-agent/mock-acp-agent.mjs`:
 
 ```json
@@ -256,6 +264,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-fallback.scenario.md` | `runtime-ui` | `default` | Usable Agentic chat surface when ACP backend readiness fails. |
 | `acp-layout-switch.scenario.md` | `runtime-ui` | `default` | Agentic/Classic switching, Explorer interop, resize bounds, and read-only state checks. |
 | `acp-chat-agentic-input-send.scenario.md` | `runtime-ui` | `interactive` | Draft input, first send, commands, mentions, attachments, scroll, and recovery. |
+| `acp-chat-agentic-queued-turns.scenario.md` | `runtime-ui` | `interactive` | Queued-turn FIFO, editing, Stop/Resume, Immediate Send, one-shot start failure, Active Session clearing, and focus. |
 | `acp-chat-agentic-stream-rendering.scenario.md` | `runtime-ui` | `interactive` | Deterministic ACP Agent stream rendering for content, reasoning, plan, tool calls, session state, completion, and recovery. |
 | `acp-chat-agentic-deep-thinking-collapse.scenario.md` | `runtime-ui` | `interactive` | Deep Thinking default collapse, streaming expansion, explicit toggle state, and metadata-only state checks. |
 | `acp-chat-agentic-cancel-stop.scenario.md` | `runtime-ui` | `interactive` | Long-stream stop/cancel behavior, input recovery, and follow-up send. |

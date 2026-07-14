@@ -49,6 +49,7 @@ import {
 } from '../../common/llm-context';
 import { CodeBlockData } from '../../common/types';
 import { cleanAttachedTextWrapper } from '../../common/utils';
+import { createAcpQueuedTurnStartFailureFixture } from '../acp/acp-bdd-runtime-fixtures';
 import ChatHistory, { IChatHistoryItem } from '../acp/components/AcpChatHistory';
 import { AcpChatViewWrapper } from '../acp/components/AcpChatViewWrapper';
 import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
@@ -263,6 +264,7 @@ export const AIChatViewACPContent = () => {
   const queuedTurnSessionRef = React.useRef<string | undefined>(undefined);
   const liveSessionIdRef = React.useRef(aiChatService.sessionModel?.sessionId);
   const viewLifecycleRef = React.useRef({ generation: 0, mounted: false });
+  const shouldFailQueuedTurnStart = React.useMemo(() => createAcpQueuedTurnStartFailureFixture(), []);
   liveSessionIdRef.current = aiChatService.sessionModel?.sessionId;
   const queuedTurnPortCallbacksRef = React.useRef<AcpQueuedTurnPortCallbacks>({
     getStatus: () => 'idle',
@@ -1171,6 +1173,9 @@ export const AIChatViewACPContent = () => {
         }
       };
       sessionGuard();
+      if (shouldFailQueuedTurnStart()) {
+        throw new Error('ACP BDD queued-turn start failure fixture rejected the turn.');
+      }
       const started = await sendMessageNow(
         draft.message,
         draft.images ? [...draft.images] : undefined,
