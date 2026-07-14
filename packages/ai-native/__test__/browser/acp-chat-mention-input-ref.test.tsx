@@ -210,8 +210,16 @@ jest.mock('../../src/browser/components/components.module.less', () => ({
 import { AcpChatMentionInput } from '../../src/browser/acp/components/AcpChatMentionInput';
 import { AcpQueuedTurnEditor } from '../../src/browser/acp/components/AcpQueuedTurnEditor';
 import { AcpTurnEditor } from '../../src/browser/acp/components/AcpTurnEditor';
+import { AcpQueuedTurnModule } from '../../src/browser/chat/acp-chat-queued-turns';
+import { AcpQueuedTurns } from '../../src/browser/chat/AcpQueuedTurns';
 
-import type { AcpTurnDraft } from '../../src/browser/chat/acp-chat-queued-turns';
+import type {
+  AcpQueuedTurnPort,
+  AcpTurnDraft,
+  AcpTurnHandle,
+  AcpTurnOutcome,
+  TurnActionResult,
+} from '../../src/browser/chat/acp-chat-queued-turns';
 import type { ChatInputHandle } from '../../src/browser/chat/chat.input.registry';
 
 interface AcpTurnEditorHandle extends ChatInputHandle {
@@ -1238,6 +1246,236 @@ describe('AcpChatMentionInput ref contract', () => {
     expect(ref.current!.getDraft()).toEqual(draft);
   });
 
+  it('single-flights double Enter while the first contenteditable submission is pending', async () => {
+    mockUseActualMentionInput = true;
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(createMockService());
+    const submission = deferred<TurnActionResult>();
+    const submit = jest.fn(() => submission.promise);
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          variant: 'main',
+          initialDraft: { message: 'pending draft' },
+          onSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+          turnActions: {
+            submit,
+            stop: jest.fn(),
+            fastTrack: jest.fn(),
+            invalidateFastTrack: jest.fn(),
+            takeBackLastQueuedTurn: jest.fn(),
+          },
+        }),
+        container,
+      );
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    act(() => {
+      dispatchEditorKey(editor, { key: 'Enter' });
+      dispatchEditorKey(editor, { key: 'Enter' });
+    });
+
+    expect(submit).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      submission.resolve({ accepted: true, outcome: 'queued' });
+      await submission.promise;
+      await Promise.resolve();
+    });
+  });
+
+  it('preserves text, pasted attachment, agent, and command changes made while submission is pending', async () => {
+    mockUseActualMentionInput = true;
+    const upload = jest.fn(async () => 'data:image/png;base64,new');
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue({
+      ...createMockService(),
+      getImageUploadProvider: jest.fn(() => ({ imageUpload: upload })),
+    });
+    const ref = React.createRef<AcpTurnEditorHandle>();
+    const submission = deferred<TurnActionResult>();
+    const submit = jest.fn(() => submission.promise);
+    let setHarnessAgentId!: React.Dispatch<React.SetStateAction<string>>;
+    let setHarnessCommand!: React.Dispatch<React.SetStateAction<string>>;
+
+    const Harness = () => {
+      const [agentId, setAgentId] = React.useState('original-agent');
+      const [command, setCommand] = React.useState('/original-command');
+      setHarnessAgentId = setAgentId;
+      setHarnessCommand = setCommand;
+      return React.createElement(AcpTurnEditor, {
+        ref,
+        variant: 'main',
+        initialDraft: {
+          message: 'original draft',
+          images: ['data:image/png;base64,original'],
+          agentId: 'original-agent',
+          command: '/original-command',
+        },
+        onSend: jest.fn(),
+        setTheme: jest.fn(),
+        agentId,
+        setAgentId,
+        command,
+        setCommand,
+        turnActions: {
+          submit,
+          stop: jest.fn(),
+          fastTrack: jest.fn(),
+          invalidateFastTrack: jest.fn(),
+          takeBackLastQueuedTurn: jest.fn(),
+        },
+      });
+    };
+
+    act(() => {
+      render(React.createElement(Harness), container);
+    });
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    act(() => {
+      dispatchEditorKey(editor, { key: 'Enter' });
+    });
+
+    await act(async () => {
+      editor.textContent = 'new draft';
+      editor.dispatchEvent(new Event('input', { bubbles: true }));
+      const image = new File(['png'], 'new.png', { type: 'image/png' });
+      const pasteEvent = new Event('paste', { bubbles: true, cancelable: true });
+      Object.defineProperty(pasteEvent, 'clipboardData', {
+        value: {
+          items: [{ kind: 'file', type: image.type, getAsFile: () => image }],
+          getData: () => '',
+        },
+      });
+      editor.dispatchEvent(pasteEvent);
+      setHarnessAgentId('new-agent');
+      setHarnessCommand('/new-command');
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      submission.resolve({ accepted: true, outcome: 'queued' });
+      await submission.promise;
+      await Promise.resolve();
+    });
+
+    expect(upload).toHaveBeenCalledTimes(1);
+    expect(ref.current!.getDraft()).toEqual({
+      message: 'new draft',
+      images: ['data:image/png;base64,original', 'data:image/png;base64,new'],
+      agentId: 'new-agent',
+      command: '/new-command',
+    });
+  });
+
+  it('preserves a replacement draft restored while contenteditable submission is pending', async () => {
+    mockUseActualMentionInput = true;
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(createMockService());
+    const ref = React.createRef<AcpTurnEditorHandle>();
+    const submission = deferred<TurnActionResult>();
+    const replacement: AcpTurnDraft = {
+      message: 'replacement draft',
+      images: ['data:image/png;base64,replacement'],
+      agentId: 'replacement-agent',
+      command: '/replacement-command',
+    };
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          ref,
+          variant: 'main',
+          initialDraft: { message: 'original draft' },
+          onSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+          turnActions: {
+            submit: jest.fn(() => submission.promise),
+            stop: jest.fn(),
+            fastTrack: jest.fn(),
+            invalidateFastTrack: jest.fn(),
+            takeBackLastQueuedTurn: jest.fn(),
+          },
+        }),
+        container,
+      );
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    act(() => {
+      dispatchEditorKey(editor, { key: 'Enter' });
+      ref.current!.restoreDraft!(replacement);
+    });
+
+    await act(async () => {
+      submission.resolve({ accepted: true, outcome: 'queued' });
+      await submission.promise;
+      await Promise.resolve();
+    });
+
+    expect(ref.current!.getDraft()).toEqual(replacement);
+  });
+
+  it('does not run accepted cleanup after the pending contenteditable editor unmounts', async () => {
+    mockUseActualMentionInput = true;
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(createMockService());
+    const submission = deferred<TurnActionResult>();
+    const setTheme = jest.fn();
+    const setAgentId = jest.fn();
+    const setCommand = jest.fn();
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          variant: 'main',
+          initialDraft: { message: 'pending draft', agentId: 'agent', command: '/command' },
+          onSend: jest.fn(),
+          setTheme,
+          agentId: 'agent',
+          setAgentId,
+          command: '/command',
+          setCommand,
+          turnActions: {
+            submit: jest.fn(() => submission.promise),
+            stop: jest.fn(),
+            fastTrack: jest.fn(),
+            invalidateFastTrack: jest.fn(),
+            takeBackLastQueuedTurn: jest.fn(),
+          },
+        }),
+        container,
+      );
+    });
+    setTheme.mockClear();
+    setAgentId.mockClear();
+    setCommand.mockClear();
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    act(() => {
+      dispatchEditorKey(editor, { key: 'Enter' });
+      unmountComponentAtNode(container);
+    });
+
+    await act(async () => {
+      submission.resolve({ accepted: true, outcome: 'queued' });
+      await submission.promise;
+      await Promise.resolve();
+    });
+
+    expect(setTheme).not.toHaveBeenCalled();
+    expect(setAgentId).not.toHaveBeenCalled();
+    expect(setCommand).not.toHaveBeenCalled();
+  });
+
   it('preserves the queued draft and edit lease when Save is rejected', async () => {
     mockUseActualMentionInput = true;
     jest
@@ -1277,6 +1515,64 @@ describe('AcpChatMentionInput ref contract', () => {
 
     expect(onSave).toHaveBeenCalledWith({
       message: draft.message,
+      images: draft.images,
+      agentId: draft.agentId,
+      command: draft.command,
+    });
+    expect(editorHandle!.getDraft()).toEqual({
+      message: draft.message,
+      images: draft.images,
+      agentId: draft.agentId,
+      command: draft.command,
+    });
+    expect(container.querySelector('[data-testid="acp-queued-editor-actions"]')).not.toBeNull();
+  });
+
+  it('preserves the queued draft and edit lease when a registered slash-command Save is rejected', async () => {
+    mockUseActualMentionInput = true;
+    const execute = jest.fn(
+      async (_value: string, send: (value: string) => void) => void send('slash transformed draft'),
+    );
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue({
+      ...createMockService(),
+      workspaceDir: '/workspace',
+      getSlashCommandHandler: jest.fn(() => ({ execute })),
+    });
+    const onSave = jest.fn(async () => ({ accepted: false, reason: 'stale-session' as const }));
+    const draft = {
+      id: 'queued-slash-save',
+      message: 'queued slash draft',
+      images: ['data:image/png;base64,queued-slash-save'],
+      agentId: 'queued-slash-agent',
+      command: '/queued-slash-save',
+    };
+    let editorHandle: AcpTurnEditorHandle | null = null;
+
+    act(() => {
+      render(
+        React.createElement(AcpQueuedTurnEditor, {
+          turn: draft,
+          onSave,
+          onCancel: jest.fn(),
+          onImmediateSend: jest.fn(),
+          onReady: (handle) => {
+            editorHandle = handle as AcpTurnEditorHandle | null;
+          },
+        }),
+        container,
+      );
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    await act(async () => {
+      dispatchEditorKey(editor, { key: 'Enter' });
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(onSave).toHaveBeenCalledWith({
+      message: 'slash transformed draft',
       images: draft.images,
       agentId: draft.agentId,
       command: draft.command,
@@ -1341,6 +1637,107 @@ describe('AcpChatMentionInput ref contract', () => {
     });
     expect(container.querySelector('[data-testid="acp-queued-editor-actions"]')).not.toBeNull();
   });
+
+  it.each(['cancel-failed', 'start-failed'] as const)(
+    'restores the real queued contenteditable and edit lease after %s Immediate Send',
+    async (failure) => {
+      mockUseActualMentionInput = true;
+      jest
+        .requireMock('@opensumi/ide-core-browser')
+        .useInjectable.mockReturnValue({ ...createMockService(), workspaceDir: '/workspace' });
+      let status: 'idle' | 'generating' = 'idle';
+      let startCount = 0;
+      const outcome = deferred<AcpTurnOutcome>();
+      const port: AcpQueuedTurnPort = {
+        getStatus: () => status,
+        start: jest.fn(async (sessionId: string | undefined, draft: AcpTurnDraft): Promise<AcpTurnHandle> => {
+          startCount += 1;
+          if (failure === 'start-failed' && startCount === 2) {
+            throw new Error('start failed');
+          }
+          status = 'generating';
+          return {
+            id: `delivery-${startCount}`,
+            sessionId: sessionId || 'acp:session-1',
+            outcome: outcome.promise,
+          };
+        }),
+        cancelCurrent: jest.fn(async () => {
+          status = 'idle';
+          if (failure === 'cancel-failed') {
+            throw new Error('cancel failed');
+          }
+        }),
+      };
+      const turns = new AcpQueuedTurnModule(port);
+      turns.activate('acp:session-1');
+      await turns.submit({ message: 'running' });
+      await turns.submit({
+        message: 'selected',
+        images: ['data:image/png;base64,selected'],
+        agentId: 'selected-agent',
+        command: '/selected-command',
+      });
+      await turns.submit({ message: 'last queued' });
+      const originalIds = turns.snapshot.entries.map(({ id }) => id);
+      const selectedId = originalIds[0];
+      turns.beginEdit(selectedId);
+
+      const Harness = () => {
+        const [snapshot, setSnapshot] = React.useState(turns.snapshot);
+        React.useEffect(() => {
+          const disposable = turns.onDidChange(setSnapshot);
+          return () => disposable.dispose();
+        }, []);
+        return React.createElement(AcpQueuedTurns, {
+          snapshot,
+          expanded: true,
+          capabilities: ['rich-queued-edit'],
+          QueuedEditor: AcpQueuedTurnEditor,
+          onToggleExpanded: jest.fn(),
+          onResume: jest.fn(),
+          onClear: jest.fn(),
+          onBeginEdit: (id: string) => void turns.beginEdit(id),
+          onCommitEdit: (id: string, draft: AcpTurnDraft, immediate: boolean) => turns.commitEdit(id, draft, immediate),
+          onCancelEdit: (id: string) => void turns.cancelEdit(id),
+          onDelete: (id: string) => void turns.remove(id),
+          onImmediateSend: (id: string) => void turns.sendImmediately(id),
+          onEditorReady: jest.fn(),
+        });
+      };
+
+      act(() => {
+        render(React.createElement(Harness), container);
+      });
+      const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+      act(() => {
+        editor.textContent = 'edited selected';
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+
+      await act(async () => {
+        (
+          container.querySelector(
+            '[data-testid="acp-queued-editor-actions"] button:nth-of-type(2)',
+          ) as HTMLButtonElement
+        ).click();
+        await turns.whenSettled();
+      });
+
+      const restoredEditor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+      expect(restoredEditor).not.toBeNull();
+      expect(restoredEditor.textContent).toBe('edited selected');
+      expect(turns.snapshot.editingTurnId).toBe(selectedId);
+      expect(turns.snapshot.entries.map(({ id }) => id)).toEqual(originalIds);
+      expect(turns.snapshot.entries[0]).toEqual({
+        id: selectedId,
+        message: 'edited selected',
+        images: ['data:image/png;base64,selected'],
+        agentId: 'selected-agent',
+        command: '/selected-command',
+      });
+    },
+  );
 
   it.each(['main', 'queued'] as const)(
     'uses canonical empty markup and full draft payload semantics for Enter in the %s editor',

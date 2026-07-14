@@ -662,6 +662,78 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.editingTurnId).toBeUndefined();
   });
 
+  it('restores the edited draft, ID, FIFO position, and edit lease when Immediate Send cancellation fails', async () => {
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest.fn(() => Promise.reject(new Error('cancel failed')));
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'selected' });
+    await turns.submit({ message: 'last queued' });
+    const originalIds = turns.snapshot.entries.map(({ id }) => id);
+    const selectedId = originalIds[0];
+    turns.beginEdit(selectedId);
+
+    await expect(
+      turns.commitEdit(
+        selectedId,
+        {
+          message: 'edited selected',
+          images: ['data:image/png;base64,edited'],
+          agentId: 'edited-agent',
+          command: '/edited-command',
+        },
+        true,
+      ),
+    ).resolves.toEqual({ accepted: false, reason: 'cancel-failed' });
+
+    expect(turns.snapshot.entries.map(({ id }) => id)).toEqual(originalIds);
+    expect(turns.snapshot.entries[0]).toEqual({
+      id: selectedId,
+      message: 'edited selected',
+      images: ['data:image/png;base64,edited'],
+      agentId: 'edited-agent',
+      command: '/edited-command',
+    });
+    expect(turns.snapshot.editingTurnId).toBe(selectedId);
+  });
+
+  it('restores the edited draft, ID, FIFO position, and edit lease when Immediate Send start fails', async () => {
+    const port = new RejectingNextStartTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'selected' });
+    await turns.submit({ message: 'last queued' });
+    const originalIds = turns.snapshot.entries.map(({ id }) => id);
+    const selectedId = originalIds[0];
+    turns.beginEdit(selectedId);
+    port.failNextStart = true;
+
+    await expect(
+      turns.commitEdit(
+        selectedId,
+        {
+          message: 'edited selected',
+          images: ['data:image/png;base64,edited'],
+          agentId: 'edited-agent',
+          command: '/edited-command',
+        },
+        true,
+      ),
+    ).resolves.toEqual({ accepted: false, reason: 'start-failed' });
+
+    expect(turns.snapshot.entries.map(({ id }) => id)).toEqual(originalIds);
+    expect(turns.snapshot.entries[0]).toEqual({
+      id: selectedId,
+      message: 'edited selected',
+      images: ['data:image/png;base64,edited'],
+      agentId: 'edited-agent',
+      command: '/edited-command',
+    });
+    expect(turns.snapshot.editingTurnId).toBe(selectedId);
+  });
+
   it('preserves an inline edit lease and original draft while another Immediate Send is cancelling', async () => {
     const cancel = new Deferred<void>();
     const port = new ControlledTurnPort();

@@ -334,6 +334,9 @@ const MentionInputImpl = (
 ) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
   const mentionPanelContainerRef = React.useRef<HTMLDivElement>(null);
+  const mountedRef = React.useRef(false);
+  const editorGenerationRef = React.useRef(0);
+  const submitInFlightRef = React.useRef(false);
   const [mentionState, setMentionState] = React.useState<MentionState>({
     active: false,
     startPos: null,
@@ -350,6 +353,14 @@ const MentionInputImpl = (
   });
   const mentionStateRef = React.useRef(mentionState);
   mentionStateRef.current = mentionState;
+
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      editorGenerationRef.current += 1;
+    };
+  }, []);
 
   const closeTransientUi = React.useCallback(() => {
     const wasOpen = mentionStateRef.current.active || mentionStateRef.current.inlineSearchActive;
@@ -410,6 +421,7 @@ const MentionInputImpl = (
     }
 
     restoreEditorContent(editorRef.current, content);
+    editorGenerationRef.current += 1;
     prevMentionTagsRef.current = Array.from(editorRef.current.querySelectorAll(`.${styles.mention_tag}`)).map(
       (tag) => ({
         id: tag.getAttribute('data-id') || '',
@@ -500,6 +512,7 @@ const MentionInputImpl = (
   React.useEffect(() => {
     if (defaultInput && editorRef.current) {
       editorRef.current.textContent = defaultInput;
+      editorGenerationRef.current += 1;
       // 将光标放到末尾
       const range = document.createRange();
       const selection = window.getSelection();
@@ -708,6 +721,7 @@ const MentionInputImpl = (
   };
 
   const handleInput = () => {
+    editorGenerationRef.current += 1;
     // 如果用户开始输入，退出历史导航模式
     if (isNavigatingHistory) {
       setIsNavigatingHistory(false);
@@ -1660,13 +1674,27 @@ const MentionInputImpl = (
     if (!send) {
       return;
     }
+    if (submitInFlightRef.current) {
+      return false;
+    }
+
+    const submittedEditor = editorRef.current;
+    const submissionGeneration = editorGenerationRef.current;
+    submitInFlightRef.current = true;
 
     const finishAcceptedSend = (sendResult: MentionInputSubmitResult) => {
       const accepted =
         sendResult !== false &&
         !(typeof sendResult === 'object' && sendResult !== null && sendResult.accepted === false);
-      if (!accepted || !editorRef.current) {
+      if (!accepted) {
         return sendResult;
+      }
+      if (
+        !mountedRef.current ||
+        editorRef.current !== submittedEditor ||
+        editorGenerationRef.current !== submissionGeneration
+      ) {
+        return false;
       }
 
       if (rawContent) {
@@ -1681,17 +1709,34 @@ const MentionInputImpl = (
 
       editorRef.current.style.overflowY = 'hidden';
       editorRef.current.style.height = 'auto';
+      editorGenerationRef.current += 1;
       return sendResult;
     };
 
-    const sendResult = send(processedContent, {
-      model: selectedModel,
-      ...footerConfig,
-    });
+    let sendResult: ReturnType<MentionInputSubmitHandler>;
+    try {
+      sendResult = send(processedContent, {
+        model: selectedModel,
+        ...footerConfig,
+      });
+    } catch (error) {
+      submitInFlightRef.current = false;
+      throw error;
+    }
     if (sendResult && typeof (sendResult as PromiseLike<MentionInputSubmitResult>).then === 'function') {
-      return Promise.resolve(sendResult).then(finishAcceptedSend, () => false);
+      return Promise.resolve(sendResult).then(
+        (result) => {
+          submitInFlightRef.current = false;
+          return finishAcceptedSend(result);
+        },
+        () => {
+          submitInFlightRef.current = false;
+          return false;
+        },
+      );
     }
 
+    submitInFlightRef.current = false;
     return finishAcceptedSend(sendResult as MentionInputSubmitResult);
   };
 

@@ -247,9 +247,13 @@ export class AcpQueuedTurnModule implements IDisposable {
   }
 
   sendImmediately(turnId: string): Promise<TurnActionResult> {
+    return this.sendImmediatelyInternal(turnId, false);
+  }
+
+  private sendImmediatelyInternal(turnId: string, preserveEditLeaseUntilAccepted: boolean): Promise<TurnActionResult> {
     const epoch = this.sessionEpoch;
     const sessionId = this.activeSessionId;
-    if (this.editingTurnId === turnId) {
+    if (this.editingTurnId === turnId && !preserveEditLeaseUntilAccepted) {
       return Promise.resolve({ accepted: false, reason: 'another-turn-is-editing' });
     }
     if (this.processing === 'absorbing-cancel' || this.immediateReservation) {
@@ -270,7 +274,14 @@ export class AcpQueuedTurnModule implements IDisposable {
     this.canFastTrack = false;
     this.fireDidChange();
 
-    return this.serialize(() => this.cancelForImmediateAndStart(turn, index, epoch, sessionId, intentVersion));
+    return this.serialize(async () => {
+      const result = await this.cancelForImmediateAndStart(turn, index, epoch, sessionId, intentVersion);
+      if (result.accepted && preserveEditLeaseUntilAccepted && this.editingTurnId === turnId) {
+        this.editingTurnId = undefined;
+        this.fireDidChange();
+      }
+      return result;
+    });
   }
 
   beginEdit(turnId: string): TurnActionResult {
@@ -299,9 +310,8 @@ export class AcpQueuedTurnModule implements IDisposable {
         return Promise.resolve({ accepted: false, reason: 'turn-not-found' });
       }
       this.entries[index] = { ...this.copyDraft(draft), id: turnId };
-      this.editingTurnId = undefined;
       this.fireDidChange();
-      return this.sendImmediately(turnId);
+      return this.sendImmediatelyInternal(turnId, true);
     }
 
     const intentVersion = this.intentVersion;
