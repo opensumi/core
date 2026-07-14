@@ -74,6 +74,7 @@ export interface IChatInputProps {
   command: string;
   setCommand: (command: string) => void;
   disableModelSelector?: boolean;
+  activeSessionId?: string;
   sessionModelId?: string;
   contextService?: LLMContextService;
   agentModes?: Array<{ id: string; name: string; description?: string }>;

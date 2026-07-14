@@ -75,7 +75,7 @@ function input(editor: HTMLElement) {
   act(() => editor.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' })));
 }
 
-async function paste(
+function dispatchPaste(
   editor: HTMLElement,
   data: {
     items: Array<{ kind: string; type: string; getAsFile(): File | null }>;
@@ -90,7 +90,25 @@ async function paste(
       getData: (type: string) => (type === 'text/plain' ? data.text : ''),
     },
   });
-  await act(async () => editor.dispatchEvent(event));
+  act(() => editor.dispatchEvent(event));
+}
+
+async function paste(
+  editor: HTMLElement,
+  data: {
+    items: Array<{ kind: string; type: string; getAsFile(): File | null }>;
+    text: string;
+  },
+) {
+  await act(async () => dispatchPaste(editor, data));
+}
+
+function deferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+  return { promise, resolve };
 }
 
 function setCaret(editor: HTMLElement, offset: number) {
@@ -256,4 +274,76 @@ it('uploads pasted images and inserts text at the current caret', async () => {
   expect(editor.textContent).toBe('before pastedafter');
   expect(window.getSelection()?.isCollapsed).toBe(true);
   expect(caretOffset(editor)).toBe('before pasted'.length);
+});
+
+it('inserts mixed-paste text synchronously at the originating range before a deferred upload settles', async () => {
+  const upload = deferred<void>();
+  const onImageUpload = jest.fn(() => upload.promise);
+  const editor = renderMentionInput({ onImageUpload });
+  const image = new File(['png'], 'queued.png', { type: 'image/png' });
+  editor.textContent = 'before after';
+  editor.focus();
+  setCaret(editor, 7);
+
+  dispatchPaste(editor, {
+    items: [{ kind: 'file', type: 'image/png', getAsFile: () => image }],
+    text: 'pasted',
+  });
+
+  expect(onImageUpload).toHaveBeenCalledWith([image]);
+  expect(editor.textContent).toBe('before pastedafter');
+  expect(caretOffset(editor)).toBe('before pasted'.length);
+
+  const otherEditor = document.createElement('div');
+  otherEditor.contentEditable = 'true';
+  otherEditor.textContent = 'other editor';
+  document.body.appendChild(otherEditor);
+  otherEditor.focus();
+  setCaret(otherEditor, 5);
+
+  await act(async () => {
+    upload.resolve();
+    await upload.promise;
+    await Promise.resolve();
+  });
+
+  expect(editor.textContent).toBe('before pastedafter');
+  expect(otherEditor.textContent).toBe('other editor');
+  otherEditor.remove();
+});
+
+it('does not apply deferred mixed-paste text to a live selection after the originating editor unmounts', async () => {
+  const upload = deferred<void>();
+  const onImageUpload = jest.fn(() => upload.promise);
+  const editor = renderMentionInput({ onImageUpload });
+  const image = new File(['png'], 'queued.png', { type: 'image/png' });
+  editor.textContent = 'origin';
+  editor.focus();
+  setCaret(editor, 'origin'.length);
+
+  dispatchPaste(editor, {
+    items: [{ kind: 'file', type: 'image/png', getAsFile: () => image }],
+    text: ' pasted',
+  });
+  expect(editor.textContent).toBe('origin\u00a0pasted');
+
+  act(() => {
+    root.render(<div data-testid='replacement' />);
+  });
+  const liveEditor = document.createElement('div');
+  liveEditor.contentEditable = 'true';
+  liveEditor.textContent = 'live editor';
+  document.body.appendChild(liveEditor);
+  liveEditor.focus();
+  setCaret(liveEditor, 4);
+
+  await act(async () => {
+    upload.resolve();
+    await upload.promise;
+    await Promise.resolve();
+  });
+
+  expect(editor.textContent).toBe('origin\u00a0pasted');
+  expect(liveEditor.textContent).toBe('live editor');
+  liveEditor.remove();
 });

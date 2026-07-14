@@ -21,12 +21,15 @@ import {
   MENTION_KEYWORD,
   MentionInputHandle,
   MentionInputProps,
+  MentionInputSubmitHandler,
+  MentionInputSubmitResult,
   MentionItem,
   MentionState,
   MentionType,
 } from '../mention-input/types';
 import { PermissionDialogWidget } from '../permission-dialog-widget';
 
+import { hasChatInputTextPayload } from './chat-input-validation';
 import styles from './mention-input.module.less';
 import { ModeOption } from './types';
 
@@ -300,6 +303,7 @@ const MentionInputImpl = (
     onEscape,
     onEmptyArrowUp,
     onEmptySubmit,
+    hasSendPayload,
     onToggleExpanded,
     onUserInput,
     loading = false,
@@ -957,10 +961,8 @@ const MentionInputImpl = (
       });
     }
 
-    const editorIsEmpty =
-      !editorRef.current?.innerHTML ||
-      editorRef.current.innerHTML === '<br>' ||
-      editorRef.current.innerHTML === '<br/>';
+    const editorHasTextPayload = hasChatInputTextPayload(editorRef.current?.innerHTML);
+    const editorIsEmpty = !editorHasTextPayload && !hasSendPayload?.();
 
     if (
       e.key === 'ArrowUp' &&
@@ -986,8 +988,7 @@ const MentionInputImpl = (
         // 检查是否应该触发历史导航
         const shouldTriggerHistory =
           // 当前内容为空
-          !currentContent ||
-          currentContent === '<br>' ||
+          (!hasChatInputTextPayload(currentContent) && !hasSendPayload?.()) ||
           // 或者当前内容与历史记录中的某一项匹配（正在浏览历史）
           (isNavigatingHistory && historyIndex >= 0 && history[history.length - 1 - historyIndex] === currentContent);
 
@@ -1115,6 +1116,17 @@ const MentionInputImpl = (
 
   const handlePaste = async (e: React.ClipboardEvent<HTMLDivElement>) => {
     const items = e.clipboardData.items;
+    const text = e.clipboardData.getData('text/plain');
+    const editor = editorRef.current;
+    const selection = window.getSelection();
+    const selectedRange = selection?.rangeCount ? selection.getRangeAt(0) : undefined;
+    const pasteRange =
+      editor &&
+      selectedRange &&
+      editor.contains(selectedRange.startContainer) &&
+      editor.contains(selectedRange.endContainer)
+        ? selectedRange.cloneRange()
+        : undefined;
 
     // 先收集所有图片文件
     const imageFiles: File[] = [];
@@ -1130,68 +1142,63 @@ const MentionInputImpl = (
 
     e.preventDefault();
 
-    // 处理所有收集到的图片
-    if (imageFiles.length > 0 && onImageUpload) {
-      await onImageUpload(imageFiles);
-    }
-
-    const text = e.clipboardData.getData('text/plain');
-
     // 处理文本，保留换行和缩进
     const processedText = text
       .replace(/\t/g, '    ')
       .replace(/\n\s*\n/g, '\n\n')
       .replace(/[ \t]+$/gm, '');
 
-    const selection = window.getSelection();
-    if (!selection || !selection.rangeCount) {
-      return;
-    }
+    if (pasteRange && selection) {
+      pasteRange.deleteContents();
 
-    const range = selection.getRangeAt(0);
-    range.deleteContents();
+      // 将处理后的文本按行分割
+      const lines = processedText.split('\n');
+      const fragment = document.createDocumentFragment();
 
-    // 将处理后的文本按行分割
-    const lines = processedText.split('\n');
-    const fragment = document.createDocumentFragment();
+      lines.forEach((line, index) => {
+        // 处理行首空格，将每个空格转换为 &nbsp;
+        const processedLine = line.replace(/^[ ]+/g, (match) => {
+          const span = document.createElement('span');
+          span.innerHTML = ' '.repeat(match.length);
+          return span.innerHTML;
+        });
 
-    lines.forEach((line, index) => {
-      // 处理行首空格，将每个空格转换为 &nbsp;
-      const processedLine = line.replace(/^[ ]+/g, (match) => {
-        const span = document.createElement('span');
-        span.innerHTML = ' '.repeat(match.length);
-        return span.innerHTML;
+        // 创建一个临时容器来保持 HTML 内容
+        const container = document.createElement('span');
+        container.innerHTML = processedLine;
+
+        // 将容器的内容添加到文档片段
+        while (container.firstChild) {
+          fragment.appendChild(container.firstChild);
+        }
+
+        // 如果不是最后一行，添加换行符
+        if (index < lines.length - 1) {
+          fragment.appendChild(document.createElement('br'));
+        }
       });
 
-      // 创建一个临时容器来保持 HTML 内容
-      const container = document.createElement('span');
-      container.innerHTML = processedLine;
+      // 插入处理后的内容
+      const lastNode = fragment.lastChild;
+      pasteRange.insertNode(fragment);
 
-      // 将容器的内容添加到文档片段
-      while (container.firstChild) {
-        fragment.appendChild(container.firstChild);
+      // 将光标移动到插入内容的末尾
+      if (lastNode && lastNode.parentNode) {
+        const newRange = document.createRange();
+        newRange.setStartAfter(lastNode);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
       }
 
-      // 如果不是最后一行，添加换行符
-      if (index < lines.length - 1) {
-        fragment.appendChild(document.createElement('br'));
-      }
-    });
-
-    // 插入处理后的内容
-    const lastNode = fragment.lastChild;
-    range.insertNode(fragment);
-
-    // 将光标移动到插入内容的末尾
-    if (lastNode && lastNode.parentNode) {
-      const newRange = document.createRange();
-      newRange.setStartAfter(lastNode);
-      selection.removeAllRanges();
-      selection.addRange(newRange);
+      // 触发 input 事件以更新状态
+      handleInput();
     }
 
-    // 触发 input 事件以更新状态
-    handleInput();
+    // 图片上传独立于同步文本插入，避免异步完成后使用已经漂移的 selection。
+    if (imageFiles.length > 0 && onImageUpload) {
+      await onImageUpload(imageFiles);
+    }
   };
 
   // 初始化编辑器
@@ -1638,46 +1645,54 @@ const MentionInputImpl = (
     [onConfigOptionChange],
   );
 
-  const handleSendWith = (send?: (content: string, config?: { model: string; [key: string]: any }) => void) => {
+  const handleSendWith = (send?: MentionInputSubmitHandler) => {
     if (!editorRef.current) {
       return;
     }
 
     // 获取原始HTML内容
     const rawContent = editorRef.current.innerHTML;
-    if (!rawContent && !allowEmptySubmit) {
+    if (!rawContent && !allowEmptySubmit && !hasSendPayload?.()) {
       return;
     }
 
     const processedContent = serializeEditorContent(editorRef.current);
-    // 添加到历史记录
-    if (rawContent) {
-      setHistory((prev) => [...prev, rawContent]);
-      // 重置历史导航状态
-      setHistoryIndex(-1);
-      setIsNavigatingHistory(false);
-    }
-    let sendResult: unknown;
-    if (send) {
-      // 传递当前选择的模型和其他配置信息
-      sendResult = send(processedContent, {
-        model: selectedModel,
-        ...footerConfig,
-      });
+    if (!send) {
+      return;
     }
 
-    editorRef.current.innerHTML = '';
-    prevMentionTagsRef.current = [];
-    void Promise.resolve(sendResult).then(
-      () => contextService?.cleanFileContext(),
-      () => contextService?.cleanFileContext(),
-    );
+    const finishAcceptedSend = (sendResult: MentionInputSubmitResult) => {
+      const accepted =
+        sendResult !== false &&
+        !(typeof sendResult === 'object' && sendResult !== null && sendResult.accepted === false);
+      if (!accepted || !editorRef.current) {
+        return sendResult;
+      }
 
-    // 重置编辑器高度和滚动条
-    if (editorRef.current) {
+      if (rawContent) {
+        setHistory((prev) => [...prev, rawContent]);
+        setHistoryIndex(-1);
+        setIsNavigatingHistory(false);
+      }
+
+      editorRef.current.innerHTML = '';
+      prevMentionTagsRef.current = [];
+      contextService?.cleanFileContext();
+
       editorRef.current.style.overflowY = 'hidden';
       editorRef.current.style.height = 'auto';
+      return sendResult;
+    };
+
+    const sendResult = send(processedContent, {
+      model: selectedModel,
+      ...footerConfig,
+    });
+    if (sendResult && typeof (sendResult as PromiseLike<MentionInputSubmitResult>).then === 'function') {
+      return Promise.resolve(sendResult).then(finishAcceptedSend, () => false);
     }
+
+    return finishAcceptedSend(sendResult as MentionInputSubmitResult);
   };
 
   const handleSend = () => handleSendWith(onSend);

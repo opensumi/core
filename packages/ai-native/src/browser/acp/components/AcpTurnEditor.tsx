@@ -84,6 +84,7 @@ export interface IChatMentionInputProps {
   command: string;
   setCommand: (command: string) => void;
   disableModelSelector?: boolean;
+  activeSessionId?: string;
   sessionModelId?: string;
   currentModeId?: string;
   agentModels?: AcpSessionModelOption[];
@@ -155,6 +156,9 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
   const previousAgentIdPropRef = useRef(props.agentId);
   const previousCommandPropRef = useRef(props.command);
   const initialDraftRestoredRef = useRef(false);
+  const mountedRef = useRef(false);
+  const draftGenerationRef = useRef(0);
+  const previousActiveSessionIdRef = useRef(props.activeSessionId);
   propsRef.current = props;
   valueRef.current = value;
   imagesRef.current = images;
@@ -166,8 +170,20 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
     previousCommandPropRef.current = props.command;
     commandRef.current = props.command;
   }
+  if (previousActiveSessionIdRef.current !== props.activeSessionId) {
+    previousActiveSessionIdRef.current = props.activeSessionId;
+    draftGenerationRef.current += 1;
+  }
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const rulesService = useInjectable<RulesService>(RulesServiceToken);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      draftGenerationRef.current += 1;
+    };
+  }, []);
 
   const handleShowMCPConfig = React.useCallback(() => {
     commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
@@ -233,6 +249,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         command: commandRef.current,
       }),
       restoreDraft: (draft) => {
+        draftGenerationRef.current += 1;
         valueRef.current = draft.message;
         setValue(draft.message);
         if (mentionInputRef.current) {
@@ -250,6 +267,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         propsRef.current.onValueChange?.(draft.message);
       },
       setInputValue: (inputValue) => {
+        draftGenerationRef.current += 1;
         valueRef.current = inputValue;
         setValue(inputValue);
         if (mentionInputRef.current) {
@@ -913,9 +931,13 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
   );
 
   const submitDraft = useCallback(
-    (content: string, option: { model: string; [key: string]: any } | undefined, intent: 'normal' | 'immediate') => {
+    async (
+      content: string,
+      option: { model: string; [key: string]: any } | undefined,
+      intent: 'normal' | 'immediate',
+    ) => {
       if (disabled) {
-        return;
+        return false;
       }
 
       const draft: AcpTurnDraft = {
@@ -925,32 +947,43 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         command: props.command,
       };
       if (!hasAcpChatSendPayload(draft)) {
-        return;
+        return false;
       }
 
       if (isQueued) {
         if (intent === 'immediate') {
           if (props.immediateSendDisabled) {
-            return;
+            return false;
           }
-          return props.onImmediateSend?.(draft);
+          await props.onImmediateSend?.(draft);
+          draftGenerationRef.current += 1;
+          return true;
         }
-        return handleSend(content, option);
+        await handleSend(content, option);
+        draftGenerationRef.current += 1;
+        return true;
       }
 
       if (props.turnActions) {
-        const result = props.turnActions.submit(draft, intent);
-        props.setTheme(null);
-        props.setAgentId('');
-        props.setCommand('');
-        imagesRef.current = props.images ? [...props.images] : [];
-        setImages(imagesRef.current);
+        const result = await props.turnActions.submit(draft, intent);
+        if (result.accepted) {
+          draftGenerationRef.current += 1;
+          props.setTheme(null);
+          props.setAgentId('');
+          props.setCommand('');
+          imagesRef.current = props.images ? [...props.images] : [];
+          setImages(imagesRef.current);
+        }
         return result;
       }
 
       if (intent === 'normal') {
-        return handleSend(content, option);
+        await handleSend(content, option);
+        draftGenerationRef.current += 1;
+        return true;
       }
+
+      return false;
     },
     [
       disabled,
@@ -970,6 +1003,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
 
   const handleImageUpload = useCallback(
     async (files: File[]) => {
+      const uploadGeneration = draftGenerationRef.current;
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
       const invalidFiles = files.filter((file) => !allowedTypes.includes(file.type));
@@ -988,7 +1022,14 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
       const uploadedData = settled.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : []));
       const failedCount = settled.length - uploadedData.length;
 
+      if (!mountedRef.current || uploadGeneration !== draftGenerationRef.current) {
+        return;
+      }
+
       setImages((currentImages) => {
+        if (!mountedRef.current || uploadGeneration !== draftGenerationRef.current) {
+          return currentImages;
+        }
         const nextImages = [...currentImages, ...uploadedData];
         imagesRef.current = nextImages;
         return nextImages;
@@ -996,7 +1037,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
 
       if (failedCount > 0) {
         messageService.error(
-          localize('aiNative.chat.imageUpload.partialFailure', `${failedCount} image(s) failed`, String(failedCount)),
+          localize('aiNative.chat.imageUpload.partialFailure', '{0} image(s) failed', String(failedCount)),
         );
       }
     },
@@ -1080,7 +1121,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
   }, [handleStop, isQueued, loading, props.onCancelEdit]);
 
   const handleEmptyArrowUp = useCallback(() => {
-    if (isQueued) {
+    if (isQueued || hasAcpChatSendPayload(inputHandle.getDraft())) {
       return false;
     }
     const turn = props.turnActions?.takeBackLastQueuedTurn();
@@ -1090,6 +1131,13 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
     inputHandle.restoreDraft?.(turn);
     return true;
   }, [inputHandle, isQueued, props.turnActions]);
+
+  const handleEmptySubmit = useCallback(() => {
+    if (hasAcpChatSendPayload(inputHandle.getDraft())) {
+      return;
+    }
+    void props.turnActions?.fastTrack();
+  }, [inputHandle, props.turnActions]);
 
   return (
     <div
@@ -1125,7 +1173,8 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           onStop={handleStop}
           onEscape={handleEscape}
           onEmptyArrowUp={isQueued ? undefined : handleEmptyArrowUp}
-          onEmptySubmit={isQueued ? undefined : () => void props.turnActions?.fastTrack()}
+          onEmptySubmit={isQueued ? undefined : handleEmptySubmit}
+          hasSendPayload={() => hasAcpChatSendPayload(inputHandle.getDraft())}
           onToggleExpanded={isQueued ? undefined : toggleExpanded}
           onUserInput={isQueued ? undefined : () => props.turnActions?.invalidateFastTrack()}
           loading={loading}

@@ -1527,6 +1527,7 @@ export const AIChatViewACPContent = () => {
               disableModelSelector={
                 aiNativeConfigService.capabilities.supportsAgentMode ? loading : sessionModelId !== undefined || loading
               }
+              activeSessionId={activeServiceSessionId}
               sessionModelId={sessionModelId}
               agentModes={footerAgentModes}
               currentModeId={footerCurrentModeId}
