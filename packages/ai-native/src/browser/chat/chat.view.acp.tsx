@@ -1402,21 +1402,24 @@ export const AIChatViewACPContent = () => {
   const activeServiceSessionId = aiChatService.sessionModel?.sessionId;
 
   React.useEffect(() => {
-    // 尝试重新渲染历史记录
-    clearChatContent();
-    setHasUserSentMessage(false);
-    const cancellationTokenSource = new CancellationTokenSource();
-    setChatLoading(false);
     queuedTurns.activate(activeServiceSessionId);
     queuedTurnSessionRef.current = activeServiceSessionId;
     manuallyCollapsedQueueRef.current = false;
     previousQueuedTurnCountRef.current = 0;
     setQueuedTurnsExpanded(true);
-    recover(cancellationTokenSource.token);
+  }, [activeServiceSessionId, queuedTurns]);
+
+  React.useEffect(() => {
+    // 尝试重新渲染历史记录
+    clearChatContent();
+    setHasUserSentMessage(false);
+    const cancellationTokenSource = new CancellationTokenSource();
+    setChatLoading(false);
+    void recover(cancellationTokenSource.token);
     return () => {
       cancellationTokenSource.cancel();
     };
-  }, [activeServiceSessionId, queuedTurns]);
+  }, [aiChatService.sessionModel, msgHistoryManager, recover]);
 
   return (
     <div id={styles.ai_chat_view}>

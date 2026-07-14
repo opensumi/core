@@ -662,6 +662,35 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.editingTurnId).toBeUndefined();
   });
 
+  it('preserves an inline edit lease and original draft while another Immediate Send is cancelling', async () => {
+    const cancel = new Deferred<void>();
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest.fn(() => cancel.promise);
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'original edited turn' });
+    await turns.submit({ message: 'cancelling turn' });
+    const editedId = turns.snapshot.entries[0].id;
+    const cancellingId = turns.snapshot.entries[1].id;
+    turns.beginEdit(editedId);
+
+    const cancelling = turns.sendImmediately(cancellingId);
+    expect(turns.snapshot.phase).toBe('cancelling-for-immediate');
+
+    await expect(turns.commitEdit(editedId, { message: 'replacement draft' }, true)).resolves.toEqual({
+      accepted: false,
+      reason: 'turn-not-found',
+    });
+    expect(turns.snapshot.editingTurnId).toBe(editedId);
+    expect(turns.snapshot.entries.map(({ id, message }) => ({ id, message }))).toEqual([
+      { id: editedId, message: 'original edited turn' },
+    ]);
+
+    cancel.resolve();
+    await expect(cancelling).resolves.toEqual({ accepted: true, outcome: 'started' });
+  });
+
   it('rejects direct Immediate Send for an editing turn and preserves the lease for commit', async () => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);

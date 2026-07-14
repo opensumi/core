@@ -288,6 +288,9 @@ export class AcpQueuedTurnModule implements IDisposable {
 
   commitEdit(turnId: string, draft: AcpTurnDraft, immediate = false): Promise<TurnActionResult> {
     if (immediate) {
+      if (this.processing === 'absorbing-cancel' || this.immediateReservation) {
+        return Promise.resolve({ accepted: false, reason: 'turn-not-found' });
+      }
       if (!hasAcpChatSendPayload(draft)) {
         return Promise.resolve({ accepted: false, reason: 'empty-content' });
       }

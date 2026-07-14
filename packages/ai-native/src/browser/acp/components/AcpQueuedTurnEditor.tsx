@@ -6,7 +6,14 @@ import { AcpTurnEditor } from './AcpTurnEditor';
 
 import type { QueuedTurnEditorProps } from '../../chat/chat.input.registry';
 
-export const AcpQueuedTurnEditor = ({ turn, onSave, onCancel, onImmediateSend, onReady }: QueuedTurnEditorProps) => {
+export const AcpQueuedTurnEditor = ({
+  turn,
+  onSave,
+  onCancel,
+  onImmediateSend,
+  onReady,
+  immediateSendDisabled,
+}: QueuedTurnEditorProps) => {
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const [agentId, setAgentId] = React.useState(turn.agentId || '');
   const [command, setCommand] = React.useState(turn.command || '');
@@ -29,6 +36,7 @@ export const AcpQueuedTurnEditor = ({ turn, onSave, onCancel, onImmediateSend, o
       onCancelEdit={onCancel}
       onImmediateSend={onImmediateSend}
       onInputHandleReady={onReady}
+      immediateSendDisabled={immediateSendDisabled}
     />
   );
 };

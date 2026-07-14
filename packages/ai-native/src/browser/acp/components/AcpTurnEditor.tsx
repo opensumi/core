@@ -107,6 +107,7 @@ export interface AcpTurnEditorProps extends IChatMentionInputProps {
   initialDraft?: AcpTurnDraft;
   onCancelEdit?: () => void;
   onImmediateSend?: (draft: AcpTurnDraft) => void | Promise<void>;
+  immediateSendDisabled?: boolean;
 }
 
 /**
@@ -997,11 +998,11 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
 
   const handleImmediateSend = useCallback(() => {
     const draft = inputHandle.getDraft();
-    if (!props.onImmediateSend || !hasAcpChatSendPayload(draft)) {
+    if (props.immediateSendDisabled || !props.onImmediateSend || !hasAcpChatSendPayload(draft)) {
       return;
     }
     return props.onImmediateSend(draft);
-  }, [inputHandle, props.onImmediateSend]);
+  }, [inputHandle, props.immediateSendDisabled, props.onImmediateSend]);
 
   return (
     <div
@@ -1051,6 +1052,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           onDefaultInputConsumed={() => setDefaultInput('')}
           onSlashSelect={handleSlashSelect}
           expanded={isExpanded}
+          allowEmptySubmit={isQueued}
         />
       </div>
       {isQueued && (
@@ -1058,7 +1060,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           <button onClick={props.onCancelEdit} type='button'>
             {localize('aiNative.chat.queue.cancelEdit', 'Cancel')}
           </button>
-          <button onClick={handleImmediateSend} type='button'>
+          <button disabled={props.immediateSendDisabled} onClick={handleImmediateSend} type='button'>
             {localize('aiNative.chat.queue.immediate', 'Immediate Send')}
           </button>
         </div>

@@ -101,6 +101,7 @@ describe('AcpQueuedTurnEditor', () => {
           onCancel={onCancel}
           onImmediateSend={onImmediateSend}
           onReady={onReady}
+          immediateSendDisabled
         />,
       );
     });
@@ -114,6 +115,7 @@ describe('AcpQueuedTurnEditor', () => {
         command: '/queued',
         theme: null,
         agentCwd: '/workspace/root',
+        immediateSendDisabled: true,
       }),
     );
     expect(editorProps.contextService).toBeUndefined();

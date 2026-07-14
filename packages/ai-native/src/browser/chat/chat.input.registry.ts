@@ -40,6 +40,7 @@ export interface QueuedTurnEditorProps {
   onCancel(): void;
   onImmediateSend(draft: AcpTurnDraft): Promise<void> | void;
   onReady?(handle: ChatInputHandle | null): void;
+  immediateSendDisabled?: boolean;
 }
 
 /**

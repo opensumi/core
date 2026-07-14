@@ -154,6 +154,7 @@ export const AcpQueuedTurns = ({
                       onCancel={() => onCancelEdit(turn.id)}
                       onImmediateSend={(draft) => onCommitEdit(turn.id, draft, true)}
                       onReady={onEditorReady}
+                      immediateSendDisabled={snapshot.phase === 'cancelling-for-immediate'}
                     />
                   </div>
                 ) : (

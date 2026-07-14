@@ -203,3 +203,27 @@ it('disables retained Immediate Send actions while an Immediate Send cancellatio
   click('[data-testid="acp-queued-turn-immediate"]');
   expect(onImmediateSend).not.toHaveBeenCalled();
 });
+
+it('disables the inline editor Immediate Send action while another cancellation is settling', () => {
+  const onCommitEdit = jest.fn();
+  const CancellingEditor = (props: QueuedTurnEditorProps) => (
+    <button
+      data-testid='queued-editor-immediate-disabled'
+      disabled={props.immediateSendDisabled}
+      onClick={() => props.onImmediateSend({ ...props.turn, message: 'replacement draft' })}
+    >
+      immediate
+    </button>
+  );
+  renderQueue({
+    phase: 'cancelling-for-immediate',
+    editingTurnId: 'turn-1',
+    QueuedEditor: CancellingEditor,
+    onCommitEdit,
+  });
+
+  const immediate = query('[data-testid="queued-editor-immediate-disabled"]') as HTMLButtonElement;
+  expect(immediate.disabled).toBe(true);
+  click('[data-testid="queued-editor-immediate-disabled"]');
+  expect(onCommitEdit).not.toHaveBeenCalled();
+});

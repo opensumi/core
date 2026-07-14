@@ -310,6 +310,7 @@ const MentionInputImpl = (
     },
     contextService,
     expanded = false,
+    allowEmptySubmit = false,
     defaultInput,
     onDefaultInputConsumed,
     onModeChange,
@@ -1623,7 +1624,7 @@ const MentionInputImpl = (
 
     // 获取原始HTML内容
     const rawContent = editorRef.current.innerHTML;
-    if (!rawContent) {
+    if (!rawContent && !allowEmptySubmit) {
       return;
     }
 

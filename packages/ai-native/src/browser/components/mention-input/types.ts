@@ -122,6 +122,7 @@ export interface MentionInputProps {
   workspaceService?: IWorkspaceService;
   contextService?: LLMContextService;
   expanded?: boolean;
+  allowEmptySubmit?: boolean;
 }
 
 export interface MentionInputHandle {

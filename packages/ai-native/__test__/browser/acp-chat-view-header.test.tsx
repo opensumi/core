@@ -1711,10 +1711,22 @@ describe('ACP chat view headers', () => {
       await flushPromises();
     });
 
-    services.aiChatService.sessionModel = createMockSession({ messages: [], sessionId: 'acp:first' });
+    services.aiChatService.sessionModel = createMockSession({
+      messages: [
+        {
+          role: ChatMessageRole.User,
+          content: 'replacement history',
+        },
+      ],
+      sessionId: 'acp:first',
+    });
     services.aiChatService.sessionModel.threadStatus = 'working';
     await renderHeader(React.createElement(AIChatViewACPContent));
 
+    const createMessageByUser = jest.requireMock('../../src/browser/components/utils').createMessageByUser as jest.Mock;
+    expect(createMessageByUser.mock.calls.map(([message]) => message.text?.props?.text)).toContain(
+      'replacement history',
+    );
     expect(container.querySelector('[data-testid="acp-queued-turn-preview"]')).toBeNull();
 
     services.aiChatService.sessionModel = secondSession;

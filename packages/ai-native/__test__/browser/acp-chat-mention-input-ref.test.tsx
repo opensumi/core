@@ -329,7 +329,7 @@ describe('AcpChatMentionInput ref contract', () => {
           setAgentId: jest.fn(),
           command: '',
           setCommand: jest.fn(),
-        } as any),
+        }),
         container,
       );
     });
@@ -653,6 +653,122 @@ describe('AcpChatMentionInput ref contract', () => {
     });
 
     expect(ref.current!.getDraft().images).toEqual(['data:image/png;base64,A.png', 'data:image/png;base64,B.png']);
+  });
+
+  it('saves an image-only queued draft from the normal Send button', async () => {
+    mockUseActualMentionInput = true;
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(createMockService());
+    const onSend = jest.fn();
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          variant: 'queued',
+          initialDraft: {
+            message: '',
+            images: ['data:image/png;base64,queued'],
+          },
+          onSend,
+          onCancelEdit: jest.fn(),
+          onImmediateSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+        }),
+        container,
+      );
+    });
+
+    await act(async () => {
+      (container.querySelector('[aria-label="Send"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(onSend).toHaveBeenCalledWith('', ['data:image/png;base64,queued'], '', '', expect.any(Object));
+  });
+
+  it('saves a command-only queued draft from the normal Send button', async () => {
+    mockUseActualMentionInput = true;
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(createMockService());
+    const onSend = jest.fn();
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          variant: 'queued',
+          onSend,
+          onCancelEdit: jest.fn(),
+          onImmediateSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: 'default-agent',
+          setAgentId: jest.fn(),
+          command: 'generate',
+          setCommand: jest.fn(),
+        }),
+        container,
+      );
+    });
+
+    await act(async () => {
+      (container.querySelector('[aria-label="Send"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(onSend).toHaveBeenCalledWith('', [], 'default-agent', 'generate', expect.any(Object));
+  });
+
+  it('keeps an empty main editor inert when the normal Send button is clicked', async () => {
+    mockUseActualMentionInput = true;
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(createMockService());
+    const onSend = jest.fn();
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          onSend,
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+        }),
+        container,
+      );
+    });
+
+    await act(async () => {
+      (container.querySelector('[aria-label="Send"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(onSend).not.toHaveBeenCalled();
+  });
+
+  it('disables queued editor Immediate Send while another cancellation is settling', () => {
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          variant: 'queued',
+          onSend: jest.fn(),
+          onCancelEdit: jest.fn(),
+          onImmediateSend: jest.fn(),
+          immediateSendDisabled: true,
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+        } as any),
+        container,
+      );
+    });
+
+    const immediate = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('[data-testid="acp-queued-editor-actions"] button'),
+    ).find((button) => button.textContent === 'Immediate Send');
+    expect(immediate?.disabled).toBe(true);
   });
 
   it('hides queued Mode controls when there are no config options', () => {
