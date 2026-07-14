@@ -184,6 +184,7 @@ export const AcpQueuedTurns = ({
                       <button
                         aria-label={localize('aiNative.chat.queue.immediateAriaLabel', 'Send queued turn immediately')}
                         data-testid='acp-queued-turn-immediate'
+                        disabled={snapshot.phase === 'cancelling-for-immediate'}
                         onClick={() => onImmediateSend(turn.id)}
                         type='button'
                       >

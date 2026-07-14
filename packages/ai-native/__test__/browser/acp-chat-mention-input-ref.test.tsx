@@ -4,6 +4,7 @@ import { Root, createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
 let mockMentionInputOnSend: ((content: string, option?: { model: string }) => unknown) | undefined;
+let mockMentionInputOnImageUpload: ((files: File[]) => Promise<void>) | undefined;
 let mockUseActualMentionInput = false;
 const mockMentionInputRestore = jest.fn();
 const mockMentionInputFocus = jest.fn();
@@ -96,6 +97,7 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => {
       const editorRef = React.useRef<HTMLDivElement>(null);
       const [value, setValue] = React.useState(defaultInput || '');
       mockMentionInputOnSend = onSend;
+      mockMentionInputOnImageUpload = onImageUpload;
 
       React.useEffect(() => {
         setValue(defaultInput || '');
@@ -254,6 +256,7 @@ describe('AcpChatMentionInput ref contract', () => {
     container.remove();
     consoleErrorSpy.mockRestore();
     mockMentionInputOnSend = undefined;
+    mockMentionInputOnImageUpload = undefined;
     mockUseActualMentionInput = false;
     jest.clearAllMocks();
   });
@@ -615,6 +618,41 @@ describe('AcpChatMentionInput ref contract', () => {
     expect(input.dataset.onImageUpload).toBe('true');
     expect(container.querySelector('img')?.getAttribute('src')).toBe('data:image/png;base64,queued');
     expect(container.querySelector('[data-testid="acp-queued-editor-actions"]')).not.toBeNull();
+  });
+
+  it('accumulates consecutive queued image uploads through one mounted upload callback', async () => {
+    const service = createMockService();
+    service.getImageUploadProvider.mockReturnValue({
+      imageUpload: jest.fn(async (file: File) => `data:image/png;base64,${file.name}`),
+    });
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(service);
+    const ref = React.createRef<AcpTurnEditorHandle>();
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          ref,
+          variant: 'queued',
+          onSend: jest.fn(),
+          onCancelEdit: jest.fn(),
+          onImmediateSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+        }),
+        container,
+      );
+    });
+
+    const upload = mockMentionInputOnImageUpload!;
+    await act(async () => {
+      await upload([new File(['a'], 'A.png', { type: 'image/png' })]);
+      await upload([new File(['b'], 'B.png', { type: 'image/png' })]);
+    });
+
+    expect(ref.current!.getDraft().images).toEqual(['data:image/png;base64,A.png', 'data:image/png;base64,B.png']);
   });
 
   it('hides queued Mode controls when there are no config options', () => {

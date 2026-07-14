@@ -383,6 +383,8 @@ function createMockServices({
   let agenticWorkbenchVisible = true;
   let latestChatInputProps: any;
   let latestQueuedEditorProps: any;
+  let activeInputHandle: { focus: jest.Mock } | null = null;
+  let activeInputHandleOwnerId: string | undefined;
   const mainInputFocus = jest.fn();
   const queuedEditorFocus = jest.fn();
   const aiChatService = {
@@ -545,6 +547,12 @@ function createMockServices({
       ),
     );
   };
+  let activeChatInput = {
+    id: 'test-input',
+    component: ChatInputForTest,
+    capabilities: activeInputCapabilities,
+    queuedTurnEditor: withQueuedEditor ? QueuedEditorForTest : undefined,
+  };
 
   return {
     aiChatService,
@@ -583,14 +591,18 @@ function createMockServices({
       getMessageSummaryProvider: jest.fn(() => undefined),
     },
     chatInputRegistry: {
-      getActiveChatInput: jest.fn(() => ({
-        id: 'test-input',
-        component: ChatInputForTest,
-        capabilities: activeInputCapabilities,
-        queuedTurnEditor: withQueuedEditor ? QueuedEditorForTest : undefined,
-      })),
-      getActiveInputHandle: jest.fn(() => ({ focus: mainInputFocus })),
-      setActiveInputHandle: jest.fn(),
+      getActiveChatInput: jest.fn(() => activeChatInput),
+      getActiveInputHandle: jest.fn(() => activeInputHandle),
+      setActiveInputHandle: jest.fn((handle: { focus: jest.Mock } | null, ownerId?: string) => {
+        if (handle && ownerId !== activeChatInput.id) {
+          return;
+        }
+        if (!handle && ownerId !== activeInputHandleOwnerId) {
+          return;
+        }
+        activeInputHandle = handle;
+        activeInputHandleOwnerId = handle ? ownerId : undefined;
+      }),
     },
     chatRenderRegistry: {
       chatViewHeaderRender,
@@ -696,6 +708,13 @@ function createMockServices({
     },
     getLatestChatInputProps: () => latestChatInputProps,
     getLatestQueuedEditorProps: () => latestQueuedEditorProps,
+    setActiveChatInputForTest: (next: typeof activeChatInput) => {
+      activeChatInput = next;
+      activeInputHandle = null;
+      activeInputHandleOwnerId = undefined;
+    },
+    ChatInputForTest,
+    QueuedEditorForTest,
     mainInputFocus,
     queuedEditorFocus,
   };
@@ -1293,6 +1312,34 @@ describe('ACP chat view headers', () => {
     expect(services.chatInputRegistry.setActiveInputHandle).toHaveBeenLastCalledWith(null, 'test-input');
   });
 
+  it('keeps the replacement contribution handle when the old contribution reports delayed cleanup', async () => {
+    const session = createMockSession({ messages: [] });
+    session.threadStatus = 'working';
+    const services = createMockServices({ session });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    const oldReady = services.getLatestChatInputProps().onInputHandleReady;
+
+    services.setActiveChatInputForTest({
+      id: 'replacement-input',
+      component: services.ChatInputForTest,
+      capabilities: ['rich-queued-edit'],
+      queuedTurnEditor: services.QueuedEditorForTest,
+    });
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    act(() => oldReady(null));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    act(() => services.getLatestChatInputProps().turnActions.takeBackLastQueuedTurn());
+
+    expect(services.chatInputRegistry.getActiveInputHandle()).not.toBeNull();
+    expect(services.mainInputFocus).toHaveBeenCalledTimes(1);
+  });
+
   it('uses capabilities and queued editor from the same active input contribution', async () => {
     const session = createMockSession({ messages: [] });
     session.threadStatus = 'working';
@@ -1335,6 +1382,44 @@ describe('ACP chat view headers', () => {
       true,
     );
 
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-edit"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    expect(services.queuedEditorFocus).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[data-testid="test-queued-editor"]')).not.toBeNull();
+  });
+
+  it('keeps the replacement queued editor handle when the old editor reports delayed cleanup', async () => {
+    const session = createMockSession({ messages: [] });
+    session.threadStatus = 'working';
+    const services = createMockServices({ session });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="acp-chat-send-later-followup"]') as HTMLButtonElement).click();
+      services.getLatestChatInputProps().onSend('third follow up');
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelectorAll('[data-testid="acp-queued-turn-edit"]')[0] as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+    const oldReady = services.getLatestQueuedEditorProps().onReady;
+
+    await act(async () => {
+      (container.querySelector('[data-testid="test-queued-editor-cancel"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelectorAll('[data-testid="acp-queued-turn-edit"]')[1] as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+    services.queuedEditorFocus.mockClear();
+    act(() => oldReady(null));
     await act(async () => {
       (container.querySelector('[data-testid="acp-queued-turn-edit"]') as HTMLButtonElement).click();
       await Promise.resolve();
@@ -1401,6 +1486,41 @@ describe('ACP chat view headers', () => {
       services.getLatestChatInputProps().turnActions.takeBackLastQueuedTurn();
     });
     expect(services.mainInputFocus).toHaveBeenCalledTimes(4);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[aria-label="Clear queued turns"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+    expect(services.mainInputFocus).toHaveBeenCalledTimes(5);
+  });
+
+  it('keeps the queued editor open and does not focus main input when an invalid save is rejected', async () => {
+    const session = createMockSession({ messages: [] });
+    session.threadStatus = 'working';
+    const services = createMockServices({ session });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-edit"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await services.getLatestQueuedEditorProps().onSave({ message: '   ', images: [] });
+      await flushPromises();
+    });
+
+    expect(services.mainInputFocus).not.toHaveBeenCalled();
+    expect(container.querySelector('[data-testid="test-queued-editor"]')).not.toBeNull();
   });
 
   it('focuses main input only after Immediate Send settles and not after automatic advancement', async () => {
@@ -1488,6 +1608,87 @@ describe('ACP chat view headers', () => {
     expect(services.mainInputFocus).not.toHaveBeenCalled();
   });
 
+  it('does not focus after the service switches Active Session before queued effects flush', async () => {
+    const firstSession = createMockSession({ messages: [], sessionId: 'acp:first' });
+    const secondSession = createMockSession({ messages: [], sessionId: 'acp:second' });
+    const responses: ReturnType<typeof createRequestResponse>[] = [];
+    const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => {
+      const response = createRequestResponse();
+      responses.push(response);
+      return {
+        message: { agentId, command, images, prompt: message },
+        requestId: `request-${responses.length}`,
+        response,
+      };
+    });
+    const services = createMockServices({
+      createRequest,
+      session: firstSession,
+      sessions: [firstSession, secondSession],
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-immediate"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    services.aiChatService.sessionModel = secondSession;
+    await act(async () => {
+      responses[0].finish('manual-stop');
+      await flushPromises();
+    });
+
+    expect(services.mainInputFocus).not.toHaveBeenCalled();
+  });
+
+  it('does not focus after the view unmounts before an Immediate Send settles', async () => {
+    const session = createMockSession({ messages: [] });
+    const responses: ReturnType<typeof createRequestResponse>[] = [];
+    const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => {
+      const response = createRequestResponse();
+      responses.push(response);
+      return {
+        message: { agentId, command, images, prompt: message },
+        requestId: `request-${responses.length}`,
+        response,
+      };
+    });
+    const services = createMockServices({ createRequest, session });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-immediate"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+
+    act(() => root.render(React.createElement('div')));
+    await act(async () => {
+      responses[0].finish('manual-stop');
+      await flushPromises();
+    });
+
+    expect(services.mainInputFocus).not.toHaveBeenCalled();
+  });
+
   it('keeps a manual collapse sticky within one Active Session and resets it on activation', async () => {
     const firstSession = createMockSession({ messages: [], sessionId: 'acp:first' });
     firstSession.threadStatus = 'working';
@@ -1509,6 +1710,10 @@ describe('ACP chat view headers', () => {
       (container.querySelector('[data-testid="acp-chat-send-later-followup"]') as HTMLButtonElement).click();
       await flushPromises();
     });
+
+    services.aiChatService.sessionModel = createMockSession({ messages: [], sessionId: 'acp:first' });
+    services.aiChatService.sessionModel.threadStatus = 'working';
+    await renderHeader(React.createElement(AIChatViewACPContent));
 
     expect(container.querySelector('[data-testid="acp-queued-turn-preview"]')).toBeNull();
 

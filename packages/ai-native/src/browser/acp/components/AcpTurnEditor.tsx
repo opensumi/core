@@ -928,10 +928,13 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
 
       const uploadedData = await Promise.all(files.map((file) => imageUploadProvider.imageUpload(file)));
 
-      const newImages = [...images, ...uploadedData];
-      setImages(newImages);
+      setImages((currentImages) => {
+        const nextImages = [...currentImages, ...uploadedData];
+        imagesRef.current = nextImages;
+        return nextImages;
+      });
     },
-    [images],
+    [chatFeatureRegistry, messageService],
   );
 
   const handleModeChange = useCallback(

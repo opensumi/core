@@ -189,3 +189,17 @@ it('exposes stable turn actions and routes edit, delete, Immediate Send, and Cle
   expect(handlers.onImmediateSend).toHaveBeenCalledWith('turn-1');
   expect(handlers.onClear).toHaveBeenCalledTimes(1);
 });
+
+it('disables retained Immediate Send actions while an Immediate Send cancellation is settling', () => {
+  const onImmediateSend = jest.fn();
+  renderQueue({
+    phase: 'cancelling-for-immediate',
+    entries: [{ id: 'turn-2', message: 'retained' }],
+    onImmediateSend,
+  });
+
+  const immediate = query('[data-testid="acp-queued-turn-immediate"]') as HTMLButtonElement;
+  expect(immediate.disabled).toBe(true);
+  click('[data-testid="acp-queued-turn-immediate"]');
+  expect(onImmediateSend).not.toHaveBeenCalled();
+});

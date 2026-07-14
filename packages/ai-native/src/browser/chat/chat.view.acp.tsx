@@ -257,10 +257,13 @@ export const AIChatViewACPContent = () => {
   const [queuedTurnsExpanded, setQueuedTurnsExpanded] = React.useState(true);
   const mainInputHandleRef = React.useRef<ChatInputHandle | null>(null);
   const queuedEditorHandleRef = React.useRef<ChatInputHandle | null>(null);
+  const queuedEditorHandleOwnerRef = React.useRef<object | null>(null);
   const manuallyCollapsedQueueRef = React.useRef(false);
   const previousQueuedTurnCountRef = React.useRef(0);
   const queuedTurnSessionRef = React.useRef<string | undefined>(undefined);
-  const viewMountedRef = React.useRef(false);
+  const liveSessionIdRef = React.useRef(aiChatService.sessionModel?.sessionId);
+  const viewLifecycleRef = React.useRef({ generation: 0, mounted: false });
+  liveSessionIdRef.current = aiChatService.sessionModel?.sessionId;
   const queuedTurnPortCallbacksRef = React.useRef<AcpQueuedTurnPortCallbacks>({
     getStatus: () => 'idle',
     start: async () => {
@@ -363,12 +366,16 @@ export const AIChatViewACPContent = () => {
     return () => queuedTurnRuntime.teardown();
   }, [queuedTurnRuntime]);
 
-  React.useEffect(() => {
-    viewMountedRef.current = true;
+  React.useLayoutEffect(() => {
+    const generation = viewLifecycleRef.current.generation + 1;
+    viewLifecycleRef.current = { generation, mounted: true };
     return () => {
-      viewMountedRef.current = false;
+      if (viewLifecycleRef.current.generation === generation) {
+        viewLifecycleRef.current = { generation: generation + 1, mounted: false };
+      }
       mainInputHandleRef.current = null;
       queuedEditorHandleRef.current = null;
+      queuedEditorHandleOwnerRef.current = null;
     };
   }, []);
 
@@ -453,11 +460,13 @@ export const AIChatViewACPContent = () => {
   const footerConfigOptions = aiChatService.sessionModel?.configOptions || draftSessionState.configOptions;
 
   // 1. 优先使用 ChatInputRegistry 注册的输入组件（按优先级 + when 条件匹配）
-  const activeChatInput = React.useMemo(() => chatInputRegistry.getActiveChatInput(), [chatInputRegistry]);
+  const activeChatInput = chatInputRegistry.getActiveChatInput();
+  const activeChatInputId = activeChatInput?.id;
+  const ActiveChatInputComponent = activeChatInput?.component;
 
   const ChatInputWrapperRender = React.useMemo(() => {
-    if (activeChatInput) {
-      return activeChatInput.component;
+    if (ActiveChatInputComponent) {
+      return ActiveChatInputComponent;
     }
     // 2. 向后兼容：使用 registerInputRender 注册的
     if (chatRenderRegistry.chatInputRender) {
@@ -465,30 +474,54 @@ export const AIChatViewACPContent = () => {
     }
     // 3. 最降级
     return ChatInput;
-  }, [activeChatInput, chatRenderRegistry.chatInputRender]);
+  }, [ActiveChatInputComponent, chatRenderRegistry.chatInputRender]);
 
   const handleActiveInputReady = React.useCallback(
     (handle: Parameters<ChatInputRegistry['setActiveInputHandle']>[0]) => {
-      if (activeChatInput) {
-        mainInputHandleRef.current = handle;
-        chatInputRegistry.setActiveInputHandle(handle, activeChatInput.id);
+      if (activeChatInputId) {
+        chatInputRegistry.setActiveInputHandle(handle, activeChatInputId);
+        mainInputHandleRef.current = chatInputRegistry.getActiveInputHandle();
       }
     },
-    [activeChatInput, chatInputRegistry],
+    [activeChatInputId, chatInputRegistry],
   );
 
-  const handleQueuedEditorReady = React.useCallback((handle: ChatInputHandle | null) => {
-    queuedEditorHandleRef.current = handle;
-  }, []);
+  const handleQueuedEditorReady = React.useMemo(() => {
+    const owner = {};
+    return (handle: ChatInputHandle | null) => {
+      if (handle) {
+        queuedEditorHandleOwnerRef.current = owner;
+        queuedEditorHandleRef.current = handle;
+      } else if (queuedEditorHandleOwnerRef.current === owner) {
+        queuedEditorHandleOwnerRef.current = null;
+        queuedEditorHandleRef.current = null;
+      }
+    };
+  }, [activeChatInputId, activeChatInput?.queuedTurnEditor, queuedTurnSnapshot.editingTurnId]);
+
+  const captureMainInputFocus = React.useCallback(
+    () => ({
+      generation: viewLifecycleRef.current.generation,
+      sessionId: queuedTurns.snapshot.activeSessionId,
+    }),
+    [queuedTurns],
+  );
 
   const focusMainInputAfterAction = React.useCallback(
-    (capturedSessionId: string | undefined) => {
-      if (!viewMountedRef.current || queuedTurns.snapshot.activeSessionId !== capturedSessionId) {
+    (captured: { generation: number; sessionId: string | undefined }) => {
+      const lifecycle = viewLifecycleRef.current;
+      if (
+        !lifecycle.mounted ||
+        lifecycle.generation !== captured.generation ||
+        queuedTurns.snapshot.activeSessionId !== captured.sessionId ||
+        liveSessionIdRef.current !== captured.sessionId ||
+        aiChatService.sessionModel?.sessionId !== captured.sessionId
+      ) {
         return;
       }
       mainInputHandleRef.current?.focus?.();
     },
-    [queuedTurns],
+    [aiChatService, queuedTurns],
   );
 
   const firstMsg = React.useMemo(
@@ -1171,14 +1204,15 @@ export const AIChatViewACPContent = () => {
       fastTrack: () => queuedTurns.fastTrack(),
       invalidateFastTrack: () => queuedTurns.invalidateFastTrack(),
       takeBackLastQueuedTurn: () => {
+        const focus = captureMainInputFocus();
         const turn = queuedTurns.takeBackLast();
         if (turn) {
-          mainInputHandleRef.current?.focus?.();
+          focusMainInputAfterAction(focus);
         }
         return turn;
       },
     }),
-    [queuedTurns],
+    [captureMainInputFocus, focusMainInputAfterAction, queuedTurns],
   );
 
   const handleSend = React.useCallback(
@@ -1233,16 +1267,20 @@ export const AIChatViewACPContent = () => {
 
   const handleQueuedTurnDelete = React.useCallback(
     async (id: string) => {
-      const sessionId = queuedTurns.snapshot.activeSessionId;
-      await queuedTurns.remove(id);
-      focusMainInputAfterAction(sessionId);
+      const focus = captureMainInputFocus();
+      const result = await queuedTurns.remove(id);
+      if (result.accepted) {
+        focusMainInputAfterAction(focus);
+      }
     },
-    [focusMainInputAfterAction, queuedTurns],
+    [captureMainInputFocus, focusMainInputAfterAction, queuedTurns],
   );
 
   const handleQueuedTurnClear = React.useCallback(() => {
+    const focus = captureMainInputFocus();
     queuedTurns.clear();
-  }, [queuedTurns]);
+    focusMainInputAfterAction(focus);
+  }, [captureMainInputFocus, focusMainInputAfterAction, queuedTurns]);
 
   const handleQueuedTurnEdit = React.useCallback(
     (id: string) => {
@@ -1256,29 +1294,35 @@ export const AIChatViewACPContent = () => {
 
   const handleQueuedTurnCommit = React.useCallback(
     async (id: string, draft: AcpTurnDraft, immediate: boolean) => {
-      const sessionId = queuedTurns.snapshot.activeSessionId;
-      await queuedTurns.commitEdit(id, draft, immediate);
-      focusMainInputAfterAction(sessionId);
+      const focus = captureMainInputFocus();
+      const result = await queuedTurns.commitEdit(id, draft, immediate);
+      if (result.accepted) {
+        focusMainInputAfterAction(focus);
+      }
     },
-    [focusMainInputAfterAction, queuedTurns],
+    [captureMainInputFocus, focusMainInputAfterAction, queuedTurns],
   );
 
   const handleQueuedTurnCancel = React.useCallback(
     async (id: string) => {
-      const sessionId = queuedTurns.snapshot.activeSessionId;
-      await queuedTurns.cancelEdit(id);
-      focusMainInputAfterAction(sessionId);
+      const focus = captureMainInputFocus();
+      const result = await queuedTurns.cancelEdit(id);
+      if (result.accepted) {
+        focusMainInputAfterAction(focus);
+      }
     },
-    [focusMainInputAfterAction, queuedTurns],
+    [captureMainInputFocus, focusMainInputAfterAction, queuedTurns],
   );
 
   const handleQueuedTurnImmediate = React.useCallback(
     async (id: string) => {
-      const sessionId = queuedTurns.snapshot.activeSessionId;
-      await queuedTurns.sendImmediately(id);
-      focusMainInputAfterAction(sessionId);
+      const focus = captureMainInputFocus();
+      const result = await queuedTurns.sendImmediately(id);
+      if (result.accepted) {
+        focusMainInputAfterAction(focus);
+      }
     },
-    [focusMainInputAfterAction, queuedTurns],
+    [captureMainInputFocus, focusMainInputAfterAction, queuedTurns],
   );
 
   const handleQueuedTurnsToggle = React.useCallback(() => {
@@ -1355,14 +1399,16 @@ export const AIChatViewACPContent = () => {
     [msgHistoryManager, renderCustomComponent, renderReply, renderSimpleMarkdownReply, renderUserMessage],
   );
 
+  const activeServiceSessionId = aiChatService.sessionModel?.sessionId;
+
   React.useEffect(() => {
     // 尝试重新渲染历史记录
     clearChatContent();
     setHasUserSentMessage(false);
     const cancellationTokenSource = new CancellationTokenSource();
     setChatLoading(false);
-    queuedTurns.activate(aiChatService.sessionModel?.sessionId);
-    queuedTurnSessionRef.current = aiChatService.sessionModel?.sessionId;
+    queuedTurns.activate(activeServiceSessionId);
+    queuedTurnSessionRef.current = activeServiceSessionId;
     manuallyCollapsedQueueRef.current = false;
     previousQueuedTurnCountRef.current = 0;
     setQueuedTurnsExpanded(true);
@@ -1370,7 +1416,7 @@ export const AIChatViewACPContent = () => {
     return () => {
       cancellationTokenSource.cancel();
     };
-  }, [aiChatService.sessionModel, queuedTurns]);
+  }, [activeServiceSessionId, queuedTurns]);
 
   return (
     <div id={styles.ai_chat_view}>
