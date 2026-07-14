@@ -15,7 +15,7 @@
 
 1. In a deterministic pass with an active request, submit three labeled drafts in order: `fifo-1`, `fifo-2`, and `fifo-3`.
 2. Record the queue summary count, the ordered `acp-queued-turn` rows, their one-based indexes, and `acp-queued-turn-preview` values.
-3. Edit the second queued row, confirm the queued editor receives focus, replace only its label with `fifo-2-edited`, and save.
+3. Edit the second queued row, confirm the queued editor receives focus, replace only its label with `fifo-2-edited`, and confirm with the queued editor's `Send` control or Enter.
 4. Record the ordered queue rows again and confirm the first and third rows did not move.
 5. Let the deterministic active turn and subsequent queued turns reach terminal completion one at a time, recording the next user-row label and remaining queue order after each advancement.
 
@@ -76,7 +76,7 @@
 
 ## Then - Active Session Switch and Focus
 
-- Changing Active Session clears queued rows, edit state, pause state, and pending Immediate Send state from the old session.
+- Session B does not display Session A's queued rows, edit state, or active loading state after the Active Session switch.
 - Stale completion from Session A does not start an old queued turn and does not move focus into Session B.
 - The main draft is not cleared by the session switch; the main input collapses without an unexpected focus move.
 - Switching back does not resurrect the cleared queue.
