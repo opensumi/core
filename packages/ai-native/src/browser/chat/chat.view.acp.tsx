@@ -295,9 +295,7 @@ export const AIChatViewACPContent = () => {
         if (!active) {
           return 'idle';
         }
-        return sessionId !== undefined && activeTurns.has(sessionId)
-          ? 'generating'
-          : queuedTurnPortCallbacksRef.current.getStatus(sessionId);
+        return queuedTurnPortCallbacksRef.current.getStatus(sessionId);
       },
       start: async (sessionId, draft) => {
         const token = generation;

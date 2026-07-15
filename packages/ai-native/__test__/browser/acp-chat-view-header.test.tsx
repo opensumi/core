@@ -1606,6 +1606,7 @@ describe('ACP chat view headers', () => {
     await act(async () => {
       (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
       await flushPromises();
+      session.threadStatus = 'working';
       (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
       await flushPromises();
     });
@@ -1654,6 +1655,7 @@ describe('ACP chat view headers', () => {
     await act(async () => {
       (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
       await flushPromises();
+      firstSession.threadStatus = 'working';
       (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
       await flushPromises();
     });
@@ -1696,6 +1698,7 @@ describe('ACP chat view headers', () => {
     await act(async () => {
       (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
       await flushPromises();
+      firstSession.threadStatus = 'working';
     });
     await act(async () => {
       (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
@@ -1734,6 +1737,7 @@ describe('ACP chat view headers', () => {
     await act(async () => {
       (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
       await flushPromises();
+      session.threadStatus = 'working';
     });
     await act(async () => {
       (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
@@ -2317,6 +2321,7 @@ describe('ACP chat view headers', () => {
       await flushPromises();
     });
     expect(sendRequest).toHaveBeenCalledTimes(1);
+    session.threadStatus = 'working';
 
     await act(async () => {
       await contenteditableProps.turnActions.stop();
@@ -2381,6 +2386,7 @@ describe('ACP chat view headers', () => {
     await act(async () => {
       (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
       await flushPromises();
+      session.threadStatus = 'working';
       (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
       await flushPromises();
     });
@@ -2425,7 +2431,7 @@ describe('ACP chat view headers', () => {
     expect(sendRequest).toHaveBeenCalledTimes(1);
   });
 
-  it('Immediately Sends a retained production queue after Stop retires the active response', async () => {
+  it('Immediately Sends a retained production queue when Stop leaves only stale response bookkeeping', async () => {
     const session = createMockSession({ messages: [] });
     const responses: ReturnType<typeof createRequestResponse>[] = [];
     const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => {
@@ -2439,10 +2445,56 @@ describe('ACP chat view headers', () => {
     });
     const sendRequest = jest.fn();
     const services = createMockServices({ createRequest, sendRequest, session });
-    services.aiChatService.cancelRequest.mockImplementationOnce(() => {
-      session.threadStatus = 'idle';
-      responses[0].finish('manual-stop');
-      throw new Error('The stopped response was already retired.');
+    let rejectStoppedCancellation!: (error: Error) => void;
+    services.aiChatService.cancelRequest.mockImplementationOnce(
+      () =>
+        new Promise<void>((_resolve, reject) => {
+          rejectStoppedCancellation = reject;
+        }),
+    );
+    let productionInputProps: any;
+    const ProductionLikeInput = React.forwardRef((props: any, _ref) => {
+      productionInputProps = props;
+      React.useEffect(() => {
+        props.onInputHandleReady?.({ focus: jest.fn(), restoreDraft: jest.fn(), setExpanded: jest.fn() });
+        return () => props.onInputHandleReady?.(null);
+      }, [props.onInputHandleReady]);
+      return React.createElement(
+        'div',
+        null,
+        React.createElement(
+          'button',
+          { 'data-testid': 'acp-chat-send', onClick: () => props.onSend('running'), type: 'button' },
+          'send',
+        ),
+        React.createElement(
+          'button',
+          { 'data-testid': 'acp-chat-send-followup', onClick: () => props.onSend('selected'), type: 'button' },
+          'send selected',
+        ),
+        React.createElement(
+          'button',
+          {
+            'data-testid': 'acp-chat-send-later-followup',
+            onClick: () => props.onSend('tail'),
+            type: 'button',
+          },
+          'send tail',
+        ),
+        props.loading
+          ? React.createElement(
+              'button',
+              { 'data-testid': 'acp-chat-stop', onClick: () => props.turnActions.stop(), type: 'button' },
+              'stop',
+            )
+          : null,
+      );
+    });
+    services.setActiveChatInputForTest({
+      id: 'production-like-stopped-input',
+      component: ProductionLikeInput,
+      capabilities: ['focus', 'restore-draft'],
+      queuedTurnEditor: undefined,
     });
     installInjectableMocks(services);
 
@@ -2454,26 +2506,65 @@ describe('ACP chat view headers', () => {
       (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
       (container.querySelector('[data-testid="acp-chat-send-later-followup"]') as HTMLButtonElement).click();
       await flushPromises();
-      (container.querySelector('[data-testid="acp-chat-stop"]') as HTMLButtonElement).click();
+      void productionInputProps.turnActions.stop();
       await flushPromises();
     });
 
+    const idleReplacement = createMockSession({ messages: [], sessionId: session.sessionId });
+    services.aiChatService.sessionModel = idleReplacement;
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    expect(idleReplacement.threadStatus).toBe('idle');
+    expect(responses[0].listenerCount).toBe(1);
+    expect(container.querySelector('[data-testid="acp-chat-stop"]')).toBeNull();
     expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Paused');
+    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Stopped');
+    expect(container.querySelectorAll('[data-testid="acp-queued-turn-preview"]')).toHaveLength(2);
+
     await act(async () => {
       (container.querySelector('[data-testid="acp-queued-turn-immediate"]') as HTMLButtonElement).click();
+      rejectStoppedCancellation(new Error('The stopped response was already retired.'));
       await flushPromises();
     });
 
     expect(services.aiChatService.cancelRequest).toHaveBeenCalledTimes(1);
     expect(createRequest).toHaveBeenCalledTimes(2);
-    expect(createRequest).toHaveBeenNthCalledWith(2, 'follow up', 'default-agent', undefined, undefined);
+    expect(createRequest).toHaveBeenNthCalledWith(2, 'selected', 'default-agent', undefined, undefined);
     expect(sendRequest).toHaveBeenCalledTimes(2);
     expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent || '').not.toContain(
       'Could not stop',
     );
-    expect(container.querySelectorAll('[data-testid="acp-queued-turn-preview"]')[0]?.textContent).toContain(
-      'later follow up',
-    );
+    expect(container.querySelectorAll('[data-testid="acp-queued-turn-preview"]')[0]?.textContent).toContain('tail');
+
+    await act(async () => {
+      responses[0].finish('manual-stop');
+      await flushPromises();
+    });
+
+    expect(createRequest).toHaveBeenCalledTimes(2);
+    expect(container.querySelectorAll('[data-testid="acp-queued-turn-preview"]')[0]?.textContent).toContain('tail');
+
+    services.aiChatService.cancelRequest.mockImplementationOnce(() => {
+      responses[1].finish('manual-stop');
+    });
+    let selectedStopResult: any;
+    await act(async () => {
+      selectedStopResult = await productionInputProps.turnActions.stop();
+      await flushPromises();
+    });
+    expect(selectedStopResult).toEqual({
+      accepted: true,
+      outcome: 'stopped',
+    });
+    expect(services.aiChatService.cancelRequest).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-resume"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(createRequest).toHaveBeenCalledTimes(3);
+    expect(createRequest).toHaveBeenNthCalledWith(3, 'tail', 'default-agent', undefined, undefined);
   });
 
   it.each(['manual-stop', 'agent-error'] as const)(
