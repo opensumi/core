@@ -1679,7 +1679,7 @@ describe('AcpChatMentionInput ref contract', () => {
           outcome: outcome.promise,
         };
       }),
-      cancelCurrent: jest.fn(async () => {
+      ensureCurrentCancelled: jest.fn(async () => {
         status = 'idle';
       }),
     };
@@ -1760,7 +1760,7 @@ describe('AcpChatMentionInput ref contract', () => {
             outcome: outcome.promise,
           };
         }),
-        cancelCurrent: jest.fn(async () => {
+        ensureCurrentCancelled: jest.fn(async () => {
           status = 'idle';
           if (failure === 'cancel-failed') {
             throw new Error('cancel failed');

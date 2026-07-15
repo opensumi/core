@@ -109,7 +109,7 @@ class ControlledTurnPort implements AcpQueuedTurnPort {
     return { id, sessionId: sessionId || 'acp:created-session', outcome: completion.promise };
   }
 
-  async cancelCurrent(): Promise<void> {
+  async ensureCurrentCancelled(): Promise<void> {
     this.status = 'idle';
   }
 
@@ -202,7 +202,7 @@ export interface AcpTurnHandle {
 export interface AcpQueuedTurnPort {
   getStatus(sessionId: string | undefined): 'idle' | 'generating';
   start(sessionId: string | undefined, draft: AcpTurnDraft): Promise<AcpTurnHandle>;
-  cancelCurrent(sessionId: string | undefined): Promise<void>;
+  ensureCurrentCancelled(sessionId: string | undefined): Promise<void>;
 }
 
 export type QueuePauseReason = 'manual-stop' | 'agent-error' | 'start-failed' | 'cancel-failed';
@@ -302,7 +302,7 @@ it.each(['manual-stop', 'agent-error'] as const)('pauses remaining FIFO after %s
 it('waits for cancellation before Immediate Send and preserves the remaining order', async () => {
   const cancel = new Deferred<void>();
   const port = new ControlledTurnPort();
-  port.cancelCurrent = jest.fn(() => cancel.promise);
+  port.ensureCurrentCancelled = jest.fn(() => cancel.promise);
   const turns = new AcpQueuedTurnModule(port);
   turns.activate('acp:session-1');
   await turns.submit({ message: 'running' });
@@ -672,7 +672,7 @@ The production `start()` expands current Mention tokens, starts the existing req
 }
 ```
 
-`cancelCurrent()` calls `aiChatService.cancelRequest()` and waits for the matching response to become complete/cancelled.
+`ensureCurrentCancelled()` normalizes an already-idle/already-stopped host response to success; otherwise it calls `aiChatService.cancelRequest()` and waits for the matching response to become complete/cancelled.
 
 - [ ] **Step 4: Subscribe to snapshots and expose input actions**
 

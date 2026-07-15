@@ -103,7 +103,7 @@ interface StartedAcpTurn {
 interface AcpQueuedTurnPortCallbacks {
   getStatus(sessionId: string | undefined): 'idle' | 'generating';
   start(sessionId: string | undefined, draft: AcpTurnDraft, assertRuntimeActive: () => void): Promise<StartedAcpTurn>;
-  cancelCurrent(sessionId: string | undefined): Promise<void>;
+  requestCancellation(sessionId: string | undefined): Promise<void>;
   didFinish(started: StartedAcpTurn): void;
 }
 
@@ -271,7 +271,7 @@ export const AIChatViewACPContent = () => {
     start: async () => {
       throw new Error('ACP queued turn port is not ready.');
     },
-    cancelCurrent: async () => undefined,
+    requestCancellation: async () => undefined,
     didFinish: () => undefined,
   });
   const queuedTurnRuntime = React.useMemo(() => {
@@ -306,10 +306,11 @@ export const AIChatViewACPContent = () => {
         const observer = observeTurnOutcome(started.response);
         activeTurns.set(started.sessionId, { started, observer });
         void observer.outcome.then(() => {
-          if (activeTurns.get(started.sessionId)?.started.requestId === started.requestId) {
+          const isCurrentRequest = activeTurns.get(started.sessionId)?.started.requestId === started.requestId;
+          if (isCurrentRequest) {
             activeTurns.delete(started.sessionId);
           }
-          if (active && token === generation) {
+          if (isCurrentRequest && active && token === generation) {
             queuedTurnPortCallbacksRef.current.didFinish(started);
           }
         });
@@ -319,15 +320,28 @@ export const AIChatViewACPContent = () => {
           outcome: observer.outcome,
         };
       },
-      cancelCurrent: async (sessionId) => {
+      ensureCurrentCancelled: async (sessionId) => {
         if (!active) {
           throw new Error('ACP queued turn runtime is inactive.');
+        }
+        if (queuedTurnPortCallbacksRef.current.getStatus(sessionId) === 'idle') {
+          return;
         }
         const activeTurn = sessionId ? activeTurns.get(sessionId) : undefined;
         if (!activeTurn) {
           throw new Error('No active ACP response matches the queued turn session.');
         }
-        await queuedTurnPortCallbacksRef.current.cancelCurrent(sessionId);
+        try {
+          await queuedTurnPortCallbacksRef.current.requestCancellation(sessionId);
+        } catch (error) {
+          if (!active) {
+            throw new Error('ACP queued turn runtime is inactive.');
+          }
+          if (queuedTurnPortCallbacksRef.current.getStatus(sessionId) === 'idle') {
+            return;
+          }
+          throw error;
+        }
         if (!active) {
           throw new Error('ACP queued turn runtime is inactive.');
         }
@@ -1218,7 +1232,7 @@ export const AIChatViewACPContent = () => {
       }
       return started;
     },
-    cancelCurrent: async (sessionId) => {
+    requestCancellation: async (sessionId) => {
       if (aiChatService.sessionModel?.sessionId !== sessionId) {
         throw new Error('ACP queued turn session is no longer active.');
       }

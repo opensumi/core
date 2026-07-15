@@ -25,7 +25,7 @@ class ControlledTurnPort implements AcpQueuedTurnPort {
     return { id, sessionId: sessionId || 'acp:created-session', outcome: completion.promise };
   }
 
-  async cancelCurrent(sessionId: string | undefined): Promise<void> {
+  async ensureCurrentCancelled(sessionId: string | undefined): Promise<void> {
     this.cancellations.push(sessionId);
     this.status = 'idle';
   }
@@ -80,7 +80,7 @@ class DeferredFirstCancelTurnPort extends ControlledTurnPort {
   readonly releaseCancel = new Deferred<void>();
   private shouldDeferCancel = true;
 
-  override async cancelCurrent(sessionId: string | undefined): Promise<void> {
+  override async ensureCurrentCancelled(sessionId: string | undefined): Promise<void> {
     this.cancellations.push(sessionId);
     if (this.shouldDeferCancel) {
       this.shouldDeferCancel = false;
@@ -141,7 +141,7 @@ class RepeatableOutcomeTurnPort implements AcpQueuedTurnPort {
     return { id, sessionId: sessionId || 'acp:created-session', outcome: completion.promise };
   }
 
-  async cancelCurrent(): Promise<void> {
+  async ensureCurrentCancelled(): Promise<void> {
     this.status = 'idle';
   }
 
@@ -581,7 +581,7 @@ describe('AcpQueuedTurnModule', () => {
   it('waits for cancellation before Immediate Send and preserves the remaining order', async () => {
     const cancel = new Deferred<void>();
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest.fn(() => cancel.promise);
+    port.ensureCurrentCancelled = jest.fn(() => cancel.promise);
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -625,7 +625,7 @@ describe('AcpQueuedTurnModule', () => {
     expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'immediate draft']);
   });
 
-  it('starts an idle Immediate Send without requesting cancellation', async () => {
+  it('starts an idle Immediate Send through the idempotent cancellation seam', async () => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
@@ -635,12 +635,12 @@ describe('AcpQueuedTurnModule', () => {
       outcome: 'started',
     });
 
-    expect(port.cancellations).toEqual([]);
+    expect(port.cancellations).toEqual(['acp:session-1']);
     expect(port.starts.map(({ draft }) => draft.message)).toEqual(['idle immediate']);
   });
 
   it.each(['manual-stop', 'agent-error'] as const)(
-    'Immediately Sends a retained queue after %s without requesting another cancellation',
+    'Immediately Sends a retained queue after %s through the idempotent cancellation seam',
     async (outcome) => {
       const port = new ControlledTurnPort();
       const turns = new AcpQueuedTurnModule(port);
@@ -655,20 +655,17 @@ describe('AcpQueuedTurnModule', () => {
         outcome: 'started',
       });
 
-      expect(port.cancellations).toEqual([]);
+      expect(port.cancellations).toEqual(['acp:session-1']);
       expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'retained queued']);
     },
   );
 
-  it('Immediately Sends after Stop retires the generation even while its delivery completion is still pending', async () => {
+  it('uses the idempotent cancellation seam after the host becomes idle while delivery completion is pending', async () => {
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest
+    port.ensureCurrentCancelled = jest
       .fn<Promise<void>, [string | undefined]>()
-      .mockImplementationOnce(async () => {
-        port.status = 'idle';
-        throw new Error('The stopped response was already retired.');
-      })
-      .mockRejectedValueOnce(new Error('No active response remains to cancel.'));
+      .mockRejectedValueOnce(new Error('The active response could not be stopped.'))
+      .mockResolvedValueOnce();
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -678,13 +675,14 @@ describe('AcpQueuedTurnModule', () => {
 
     await expect(turns.stop()).resolves.toEqual({ accepted: false, reason: 'cancel-failed' });
     expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'cancel-failed' });
+    port.status = 'idle';
 
     await expect(turns.sendImmediately(turns.snapshot.entries[1].id)).resolves.toEqual({
       accepted: true,
       outcome: 'started',
     });
 
-    expect(port.cancelCurrent).toHaveBeenCalledTimes(1);
+    expect(port.ensureCurrentCancelled).toHaveBeenCalledTimes(2);
     expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'selected']);
     expect(turns.snapshot).toMatchObject({ phase: 'generating', pauseReason: undefined });
     expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['first queued', 'last queued']);
@@ -705,7 +703,7 @@ describe('AcpQueuedTurnModule', () => {
 
   it('restores a non-head Immediate Send reservation to the queue head when cancellation fails', async () => {
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest.fn(() => Promise.reject(new Error('cancel failed')));
+    port.ensureCurrentCancelled = jest.fn(() => Promise.reject(new Error('cancel failed')));
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -730,7 +728,7 @@ describe('AcpQueuedTurnModule', () => {
   it('rejects a repeated Immediate Send for the same reserved Queued Turn without double cancellation or start', async () => {
     const cancel = new Deferred<void>();
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest.fn(() => cancel.promise);
+    port.ensureCurrentCancelled = jest.fn(() => cancel.promise);
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -743,14 +741,14 @@ describe('AcpQueuedTurnModule', () => {
 
     await expect(first).resolves.toEqual({ accepted: true, outcome: 'started' });
     await expect(repeated).resolves.toEqual({ accepted: false, reason: 'turn-not-found' });
-    expect(port.cancelCurrent).toHaveBeenCalledTimes(1);
+    expect(port.ensureCurrentCancelled).toHaveBeenCalledTimes(1);
     expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'selected']);
   });
 
   it('commits an inline edit and Immediately Sends the same Queued Turn', async () => {
     const cancel = new Deferred<void>();
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest.fn(() => cancel.promise);
+    port.ensureCurrentCancelled = jest.fn(() => cancel.promise);
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -771,7 +769,7 @@ describe('AcpQueuedTurnModule', () => {
 
   it('restores the edited draft, ID, FIFO position, and edit lease when Immediate Send cancellation fails', async () => {
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest.fn(() => Promise.reject(new Error('cancel failed')));
+    port.ensureCurrentCancelled = jest.fn(() => Promise.reject(new Error('cancel failed')));
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -845,7 +843,7 @@ describe('AcpQueuedTurnModule', () => {
   it('preserves an inline edit lease and original draft while another Immediate Send is cancelling', async () => {
     const cancel = new Deferred<void>();
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest.fn(() => cancel.promise);
+    port.ensureCurrentCancelled = jest.fn(() => cancel.promise);
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -920,7 +918,7 @@ describe('AcpQueuedTurnModule', () => {
   it('enters paused before stop cancellation completes and absorbs the stopped delivery completion', async () => {
     const cancel = new Deferred<void>();
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest.fn(() => cancel.promise);
+    port.ensureCurrentCancelled = jest.fn(() => cancel.promise);
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -1108,7 +1106,7 @@ describe('AcpQueuedTurnModule', () => {
 
   it('stays paused without retrying when stop cancellation fails', async () => {
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest.fn(() => Promise.reject(new Error('cancel failed')));
+    port.ensureCurrentCancelled = jest.fn(() => Promise.reject(new Error('cancel failed')));
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -1123,7 +1121,7 @@ describe('AcpQueuedTurnModule', () => {
 
   it('retries cancellation to Immediately Send a corrective draft after cancel-failed', async () => {
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest
+    port.ensureCurrentCancelled = jest
       .fn<Promise<void>, []>()
       .mockRejectedValueOnce(new Error('cancel failed'))
       .mockResolvedValueOnce();
@@ -1138,14 +1136,14 @@ describe('AcpQueuedTurnModule', () => {
       outcome: 'started',
     });
 
-    expect(port.cancelCurrent).toHaveBeenCalledTimes(2);
+    expect(port.ensureCurrentCancelled).toHaveBeenCalledTimes(2);
     expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'corrective draft']);
     expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['old queued']);
   });
 
   it('reports queue ownership when corrective cancellation fails after stop cancellation fails', async () => {
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest
+    port.ensureCurrentCancelled = jest
       .fn<Promise<void>, []>()
       .mockRejectedValueOnce(new Error('stop cancel failed'))
       .mockRejectedValueOnce(new Error('corrective cancel failed'));
@@ -1161,7 +1159,7 @@ describe('AcpQueuedTurnModule', () => {
       draftDisposition: 'queued',
     });
 
-    expect(port.cancelCurrent).toHaveBeenCalledTimes(2);
+    expect(port.ensureCurrentCancelled).toHaveBeenCalledTimes(2);
     expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'cancel-failed' });
     expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['corrective draft', 'old queued']);
 
@@ -1175,7 +1173,7 @@ describe('AcpQueuedTurnModule', () => {
 
   it('reports queue ownership when corrective cancellation succeeds but replacement start fails', async () => {
     const port = new RejectingNextStartTurnPort();
-    port.cancelCurrent = jest
+    port.ensureCurrentCancelled = jest
       .fn<Promise<void>, []>()
       .mockRejectedValueOnce(new Error('stop cancel failed'))
       .mockImplementationOnce(async () => {
@@ -1194,7 +1192,7 @@ describe('AcpQueuedTurnModule', () => {
       draftDisposition: 'queued',
     });
 
-    expect(port.cancelCurrent).toHaveBeenCalledTimes(2);
+    expect(port.ensureCurrentCancelled).toHaveBeenCalledTimes(2);
     expect(port.failedStarts.map(({ message }) => message)).toEqual(['corrective draft']);
     expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'start-failed' });
     expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['corrective draft', 'old queued']);
@@ -1239,7 +1237,7 @@ describe('AcpQueuedTurnModule', () => {
 
   it('uses fast-track once to Immediately Send the FIFO head', async () => {
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest.fn(() => Promise.resolve());
+    port.ensureCurrentCancelled = jest.fn(() => Promise.resolve());
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -1250,7 +1248,7 @@ describe('AcpQueuedTurnModule', () => {
     await expect(turns.fastTrack()).resolves.toEqual({ accepted: true, outcome: 'started' });
     await expect(turns.fastTrack()).resolves.toEqual({ accepted: false, reason: 'turn-not-found' });
 
-    expect(port.cancelCurrent).toHaveBeenCalledTimes(1);
+    expect(port.ensureCurrentCancelled).toHaveBeenCalledTimes(1);
     expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'head']);
     expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['last queued']);
     expect(turns.snapshot.canFastTrack).toBe(false);
@@ -1258,7 +1256,7 @@ describe('AcpQueuedTurnModule', () => {
 
   it('invalidates one-shot fast-track after a user draft change', async () => {
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest.fn(() => Promise.resolve());
+    port.ensureCurrentCancelled = jest.fn(() => Promise.resolve());
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });
@@ -1268,7 +1266,7 @@ describe('AcpQueuedTurnModule', () => {
     turns.invalidateFastTrack();
     await expect(turns.fastTrack()).resolves.toEqual({ accepted: false, reason: 'turn-not-found' });
 
-    expect(port.cancelCurrent).not.toHaveBeenCalled();
+    expect(port.ensureCurrentCancelled).not.toHaveBeenCalled();
     expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running']);
     expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['head']);
   });
@@ -1319,7 +1317,7 @@ describe('AcpQueuedTurnModule', () => {
   it('clears an Immediate Send reservation before cancellation can start it', async () => {
     const cancel = new Deferred<void>();
     const port = new ControlledTurnPort();
-    port.cancelCurrent = jest.fn(() => cancel.promise);
+    port.ensureCurrentCancelled = jest.fn(() => cancel.promise);
     const turns = new AcpQueuedTurnModule(port);
     turns.activate('acp:session-1');
     await turns.submit({ message: 'running' });

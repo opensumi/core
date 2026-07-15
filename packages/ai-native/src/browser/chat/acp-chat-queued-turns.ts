@@ -24,7 +24,11 @@ export interface AcpTurnHandle {
 export interface AcpQueuedTurnPort {
   getStatus(sessionId: string | undefined): 'idle' | 'generating';
   start(sessionId: string | undefined, draft: AcpTurnDraft): Promise<AcpTurnHandle>;
-  cancelCurrent(sessionId: string | undefined): Promise<void>;
+  /**
+   * Idempotently ensures the matching ACP response is settled before resolving.
+   * Rejects only when the session is stale or a still-active response could not be cancelled.
+   */
+  ensureCurrentCancelled(sessionId: string | undefined): Promise<void>;
 }
 
 export type QueuePauseReason = 'manual-stop' | 'agent-error' | 'start-failed' | 'cancel-failed';
@@ -226,7 +230,7 @@ export class AcpQueuedTurnModule implements IDisposable {
       }
       const cancellationSessionId = sessionId ?? this.activeSessionId;
       try {
-        await this.port.cancelCurrent(cancellationSessionId);
+        await this.port.ensureCurrentCancelled(cancellationSessionId);
       } catch {
         if (!this.isResolvedSessionActive(epoch, cancellationSessionId)) {
           return { accepted: false, reason: 'stale-session' };
@@ -559,19 +563,8 @@ export class AcpQueuedTurnModule implements IDisposable {
       }
       return { accepted: false, reason: 'turn-not-found' };
     }
-    if (this.port.getStatus(cancellationSessionId) === 'idle') {
-      if (this.immediateReservation !== turn) {
-        return { accepted: false, reason: 'turn-not-found' };
-      }
-      this.activeDelivery = undefined;
-      this.immediateReservation = undefined;
-      this.immediateReservationIndex = undefined;
-      this.processing = 'auto';
-      this.pauseReason = undefined;
-      return this.startReservedTurn(turn, true);
-    }
     try {
-      await this.port.cancelCurrent(cancellationSessionId);
+      await this.port.ensureCurrentCancelled(cancellationSessionId);
     } catch {
       if (!this.isResolvedSessionActive(epoch, cancellationSessionId)) {
         return { accepted: false, reason: 'stale-session' };

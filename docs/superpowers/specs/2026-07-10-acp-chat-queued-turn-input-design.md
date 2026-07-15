@@ -158,7 +158,7 @@ The external ACP Agent is a true external dependency. It sits behind a small por
 interface AcpTurnPort {
   getStatus(sessionId: ActiveSessionId): 'idle' | 'generating';
   start(sessionId: ActiveSessionId, draft: AcpTurnDraft): Promise<AcpTurnHandle>;
-  cancelCurrent(sessionId: ActiveSessionId): Promise<void>;
+  ensureCurrentCancelled(sessionId: ActiveSessionId): Promise<void>;
 }
 
 interface AcpTurnHandle {
@@ -167,7 +167,7 @@ interface AcpTurnHandle {
 }
 ```
 
-`start()` returning a handle is the acknowledgement that delivery started. `cancelCurrent()` resolves only when the external Agent has confirmed that the current generation stopped. These semantics are required to decide whether a turn is safe to put back into the queue.
+`start()` returning a handle is the acknowledgement that delivery started. `ensureCurrentCancelled()` is idempotent: it resolves when the external Agent has confirmed that the current generation stopped or when no matching generation remains active, and rejects only when a matching active generation could not be cancelled. These semantics are required to decide whether a turn is safe to put back into the queue.
 
 The production adapter wraps the current ACP session creation, request start, cancellation, and completion paths. The test adapter uses controllable promises so tests can reproduce races without reaching through the module interface.
 
