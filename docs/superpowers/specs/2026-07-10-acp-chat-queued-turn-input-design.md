@@ -167,7 +167,7 @@ interface AcpTurnHandle {
 }
 ```
 
-`start()` returning a handle is the acknowledgement that delivery started. `ensureCurrentCancelled()` is idempotent: it resolves when the external Agent has confirmed that the current generation stopped or when no matching generation remains active, and rejects only when a matching active generation could not be cancelled. These semantics are required to decide whether a turn is safe to put back into the queue.
+`start()` returning a handle is the acknowledgement that delivery started. `ensureCurrentCancelled()` is idempotent: it resolves when the external Agent has confirmed that the current generation stopped, when the host cancellation callback has applied cancellation but no matching response observer is available, or when no matching generation remains active. Response observers are optional identity and outcome bookkeeping, not permission to request cancellation. The operation rejects only when a matching active generation could not be cancelled. These semantics are required to decide whether a turn is safe to put back into the queue.
 
 The production adapter wraps the current ACP session creation, request start, cancellation, and completion paths. The test adapter uses controllable promises so tests can reproduce races without reaching through the module interface.
 

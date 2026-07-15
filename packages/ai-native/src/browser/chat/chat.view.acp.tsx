@@ -328,9 +328,6 @@ export const AIChatViewACPContent = () => {
           return;
         }
         const activeTurn = sessionId ? activeTurns.get(sessionId) : undefined;
-        if (!activeTurn) {
-          throw new Error('No active ACP response matches the queued turn session.');
-        }
         try {
           await queuedTurnPortCallbacksRef.current.requestCancellation(sessionId);
         } catch (error) {
@@ -345,7 +342,9 @@ export const AIChatViewACPContent = () => {
         if (!active) {
           throw new Error('ACP queued turn runtime is inactive.');
         }
-        await activeTurn.observer.outcome;
+        if (activeTurn) {
+          await activeTurn.observer.outcome;
+        }
       },
     };
     queuedTurns = new AcpQueuedTurnModule(port);

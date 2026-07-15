@@ -672,7 +672,7 @@ The production `start()` expands current Mention tokens, starts the existing req
 }
 ```
 
-`ensureCurrentCancelled()` normalizes an already-idle/already-stopped host response to success; otherwise it calls `aiChatService.cancelRequest()` and waits for the matching response to become complete/cancelled.
+`ensureCurrentCancelled()` normalizes an already-idle/already-stopped host response to success; otherwise it calls `aiChatService.cancelRequest()` and waits for the matching response to become complete/cancelled when a response observer is available. The host cancellation callback remains authoritative when observer bookkeeping is absent.
 
 - [ ] **Step 4: Subscribe to snapshots and expose input actions**
 

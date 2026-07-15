@@ -2656,7 +2656,7 @@ describe('ACP chat view headers', () => {
     },
   );
 
-  it('does not cancel an old session response for an Immediate Send in the current external generating session', async () => {
+  it('cancels the current external session without letting an old observer affect its replacement', async () => {
     const firstSession = createMockSession({ messages: [], sessionId: 'acp:first' });
     const secondSession = createMockSession({ messages: [], sessionId: 'acp:second' });
     secondSession.threadStatus = 'working';
@@ -2676,6 +2676,9 @@ describe('ACP chat view headers', () => {
       sendRequest,
       session: firstSession,
       sessions: [firstSession, secondSession],
+    });
+    services.aiChatService.cancelRequest.mockImplementation(() => {
+      secondSession.threadStatus = 'idle';
     });
     installInjectableMocks(services);
 
@@ -2698,36 +2701,54 @@ describe('ACP chat view headers', () => {
       await flushPromises();
     });
 
-    expect(services.aiChatService.cancelRequest).not.toHaveBeenCalled();
-    expect(createRequest).toHaveBeenCalledTimes(1);
-    expect(sendRequest).toHaveBeenCalledTimes(1);
-    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Paused');
+    expect(services.aiChatService.cancelRequest).toHaveBeenCalledTimes(1);
+    expect(createRequest).toHaveBeenCalledTimes(2);
+    expect(createRequest).toHaveBeenNthCalledWith(2, 'follow up', 'default-agent', undefined, undefined);
+    expect(sendRequest).toHaveBeenCalledTimes(2);
+    expect(responses[0].listenerCount).toBe(1);
+    expect(responses[1].listenerCount).toBe(1);
+
+    await act(async () => {
+      responses[0].finish('completed');
+      await flushPromises();
+    });
+
+    expect(createRequest).toHaveBeenCalledTimes(2);
+    expect(sendRequest).toHaveBeenCalledTimes(2);
+    expect(responses[1].listenerCount).toBe(1);
+    expect(services.getLatestChatInputProps().loading).toBe(true);
   });
 
-  it('does not shallow-succeed Immediate Send when a remounted external generating session has no active response', async () => {
+  it('stops a remounted external generating session without requiring a tracked response observer', async () => {
     const session = createMockSession({ messages: [] });
     session.threadStatus = 'working';
+    const hostResponse = createRequestResponse();
     const createRequest = jest.fn();
     const sendRequest = jest.fn();
     const services = createMockServices({ createRequest, sendRequest, session });
+    services.aiChatService.cancelRequest.mockImplementation(() => {
+      hostResponse.finish('manual-stop');
+      session.threadStatus = 'idle';
+    });
     installInjectableMocks(services);
 
     await renderHeader(React.createElement(AIChatViewACPContent));
+    let stopResult: any;
     await act(async () => {
-      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      stopResult = await services.getLatestChatInputProps().turnActions.stop();
       await flushPromises();
     });
 
-    const sendNow = container.querySelector('[data-testid="acp-queued-turn-immediate"]');
-    await act(async () => {
-      (sendNow as HTMLButtonElement).click();
-      await flushPromises();
-    });
-
-    expect(services.aiChatService.cancelRequest).not.toHaveBeenCalled();
+    expect(stopResult).toEqual({ accepted: true, outcome: 'stopped' });
+    expect(services.aiChatService.cancelRequest).toHaveBeenCalledTimes(1);
+    expect(hostResponse.isComplete).toBe(true);
+    expect(hostResponse.isCanceled).toBe(true);
     expect(createRequest).not.toHaveBeenCalled();
     expect(sendRequest).not.toHaveBeenCalled();
     expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Paused');
+    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent || '').not.toContain(
+      'Could not stop',
+    );
   });
 
   it('does not advance an old session queue when its stale response completes after an Active Session switch', async () => {

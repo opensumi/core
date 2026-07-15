@@ -25,8 +25,8 @@ export interface AcpQueuedTurnPort {
   getStatus(sessionId: string | undefined): 'idle' | 'generating';
   start(sessionId: string | undefined, draft: AcpTurnDraft): Promise<AcpTurnHandle>;
   /**
-   * Idempotently ensures the matching ACP response is settled before resolving.
-   * Rejects only when the session is stale or a still-active response could not be cancelled.
+   * Idempotently ensures host cancellation has been applied before resolving, awaiting a matching response observer
+   * when one is available. Rejects only when the session is stale or a still-active response could not be cancelled.
    */
   ensureCurrentCancelled(sessionId: string | undefined): Promise<void>;
 }
