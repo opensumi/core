@@ -660,6 +660,49 @@ describe('AcpQueuedTurnModule', () => {
     },
   );
 
+  it('Immediately Sends after Stop retires the generation even while its delivery completion is still pending', async () => {
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest
+      .fn<Promise<void>, [string | undefined]>()
+      .mockImplementationOnce(async () => {
+        port.status = 'idle';
+        throw new Error('The stopped response was already retired.');
+      })
+      .mockRejectedValueOnce(new Error('No active response remains to cancel.'));
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'first queued' });
+    await turns.submit({ message: 'selected' });
+    await turns.submit({ message: 'last queued' });
+
+    await expect(turns.stop()).resolves.toEqual({ accepted: false, reason: 'cancel-failed' });
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'cancel-failed' });
+
+    await expect(turns.sendImmediately(turns.snapshot.entries[1].id)).resolves.toEqual({
+      accepted: true,
+      outcome: 'started',
+    });
+
+    expect(port.cancelCurrent).toHaveBeenCalledTimes(1);
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'selected']);
+    expect(turns.snapshot).toMatchObject({ phase: 'generating', pauseReason: undefined });
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['first queued', 'last queued']);
+
+    port.complete(0, 'manual-stop');
+    await turns.whenSettled();
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'selected']);
+    expect(turns.snapshot).toMatchObject({ phase: 'generating', pauseReason: undefined });
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['first queued', 'last queued']);
+
+    port.complete(1);
+    await turns.whenSettled();
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'selected', 'first queued']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['last queued']);
+  });
+
   it('restores a non-head Immediate Send reservation to the queue head when cancellation fails', async () => {
     const port = new ControlledTurnPort();
     port.cancelCurrent = jest.fn(() => Promise.reject(new Error('cancel failed')));

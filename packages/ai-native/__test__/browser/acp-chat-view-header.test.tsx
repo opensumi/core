@@ -2425,6 +2425,57 @@ describe('ACP chat view headers', () => {
     expect(sendRequest).toHaveBeenCalledTimes(1);
   });
 
+  it('Immediately Sends a retained production queue after Stop retires the active response', async () => {
+    const session = createMockSession({ messages: [] });
+    const responses: ReturnType<typeof createRequestResponse>[] = [];
+    const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => {
+      const response = createRequestResponse();
+      responses.push(response);
+      return {
+        message: { agentId, command, images, prompt: message },
+        requestId: `request-${responses.length}`,
+        response,
+      };
+    });
+    const sendRequest = jest.fn();
+    const services = createMockServices({ createRequest, sendRequest, session });
+    services.aiChatService.cancelRequest.mockImplementationOnce(() => {
+      session.threadStatus = 'idle';
+      responses[0].finish('manual-stop');
+      throw new Error('The stopped response was already retired.');
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-send"]') as HTMLButtonElement).click();
+      await flushPromises();
+      session.threadStatus = 'working';
+      (container.querySelector('[data-testid="acp-chat-send-followup"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="acp-chat-send-later-followup"]') as HTMLButtonElement).click();
+      await flushPromises();
+      (container.querySelector('[data-testid="acp-chat-stop"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Paused');
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-immediate"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(services.aiChatService.cancelRequest).toHaveBeenCalledTimes(1);
+    expect(createRequest).toHaveBeenCalledTimes(2);
+    expect(createRequest).toHaveBeenNthCalledWith(2, 'follow up', 'default-agent', undefined, undefined);
+    expect(sendRequest).toHaveBeenCalledTimes(2);
+    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent || '').not.toContain(
+      'Could not stop',
+    );
+    expect(container.querySelectorAll('[data-testid="acp-queued-turn-preview"]')[0]?.textContent).toContain(
+      'later follow up',
+    );
+  });
+
   it.each(['manual-stop', 'agent-error'] as const)(
     'Immediately Sends a retained production queue after %s without another cancellation',
     async (outcome) => {

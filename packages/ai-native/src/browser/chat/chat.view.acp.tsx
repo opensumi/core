@@ -291,7 +291,14 @@ export const AIChatViewACPContent = () => {
       }
     };
     const port: AcpQueuedTurnPort = {
-      getStatus: (sessionId) => (active ? queuedTurnPortCallbacksRef.current.getStatus(sessionId) : 'idle'),
+      getStatus: (sessionId) => {
+        if (!active) {
+          return 'idle';
+        }
+        return sessionId !== undefined && activeTurns.has(sessionId)
+          ? 'generating'
+          : queuedTurnPortCallbacksRef.current.getStatus(sessionId);
+      },
       start: async (sessionId, draft) => {
         const token = generation;
         const assertStartActive = () => assertRuntimeActive(token);

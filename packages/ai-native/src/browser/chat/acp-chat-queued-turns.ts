@@ -559,10 +559,11 @@ export class AcpQueuedTurnModule implements IDisposable {
       }
       return { accepted: false, reason: 'turn-not-found' };
     }
-    if (!this.activeDelivery && this.port.getStatus(cancellationSessionId) === 'idle') {
+    if (this.port.getStatus(cancellationSessionId) === 'idle') {
       if (this.immediateReservation !== turn) {
         return { accepted: false, reason: 'turn-not-found' };
       }
+      this.activeDelivery = undefined;
       this.immediateReservation = undefined;
       this.immediateReservationIndex = undefined;
       this.processing = 'auto';
