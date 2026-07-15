@@ -145,7 +145,11 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
           </div>
         )}
       </div>
-      <div className={cls(styles.tool_content, { [styles.expanded]: isExpanded })}>
+      <div
+        aria-hidden={!isExpanded}
+        className={cls(styles.tool_content, { [styles.expanded]: isExpanded })}
+        {...(!isExpanded ? { inert: '' } : {})}
+      >
         {value?.function?.arguments && (
           <div className={styles.tool_arguments}>
             <div className={styles.section_label}>{localize('ai.native.mcp.tool.arguments')}:</div>

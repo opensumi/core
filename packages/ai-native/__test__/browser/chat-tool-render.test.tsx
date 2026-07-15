@@ -31,7 +31,13 @@ jest.mock('../../src/browser/types', () => ({
 }));
 
 jest.mock('../../src/browser/components/ChatEditor', () => ({
-  CodeEditorWithHighlight: ({ input }: { input: string }) => require('react').createElement('pre', null, input),
+  CodeEditorWithHighlight: ({ input }: { input: string }) =>
+    require('react').createElement(
+      'div',
+      null,
+      require('react').createElement('button', { 'data-testid': 'editor-action', tabIndex: 0, type: 'button' }, 'Copy'),
+      require('react').createElement('pre', null, input),
+    ),
 }));
 
 jest.mock('../../src/browser/components/ChatToolResult', () => ({
@@ -161,6 +167,28 @@ describe('ChatToolRender', () => {
     act(() => header.click());
     expect(header.getAttribute('aria-expanded')).toBe('false');
     expect(content.classList.contains('expanded')).toBe(false);
+  });
+
+  it('isolates collapsed content from focus and accessibility while keeping descendants mounted', () => {
+    renderToolCall('terminal');
+
+    const header = getToolHeader();
+    const content = getToolContent();
+    const editorAction = content.querySelector('[data-testid="editor-action"]') as HTMLButtonElement;
+
+    expect(editorAction.tabIndex).toBe(0);
+    expect(content.getAttribute('inert')).toBe('');
+    expect(content.getAttribute('aria-hidden')).toBe('true');
+
+    act(() => header.click());
+    expect(content.contains(editorAction)).toBe(true);
+    expect(content.hasAttribute('inert')).toBe(false);
+    expect(content.getAttribute('aria-hidden')).toBe('false');
+
+    act(() => header.click());
+    expect(content.contains(editorAction)).toBe(true);
+    expect(content.getAttribute('inert')).toBe('');
+    expect(content.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('toggles from Enter without losing focus or reacting to key repeat', () => {
