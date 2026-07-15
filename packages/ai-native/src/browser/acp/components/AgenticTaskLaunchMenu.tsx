@@ -1,21 +1,27 @@
 import React from 'react';
 
-import { PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  COMMON_COMMANDS,
+  CommandService,
+  PreferenceService,
+  getIcon,
+  localize,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
+import { PreferenceScope } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 
 import chatStyles from '../../chat/chat.module.less';
 import { getAvailableAgentConfigs, getDefaultAgentType } from '../../chat/get-default-agent-type';
 import { AgenticProjectRecord } from '../agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../agentic-workspace-switch.service';
 
-import { getAgenticProjectDisplayLabel } from './agentic-project-label';
 import styles from './agentic-task-list.module.less';
 
 export interface AgenticTaskLaunchMenuProps {
-  projects?: AgenticProjectRecord[];
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  project?: AgenticProjectRecord;
+  projectLabel?: string;
   preferredAgentId?: string;
-  preferredProjectId?: string;
   variant?: 'task-list' | 'chat-header';
 }
 
@@ -33,140 +39,138 @@ function getAgentOptions(preferenceService: PreferenceService): AgentOption[] {
   }));
 }
 
-/**
- * A task is intentionally launched from an explicit Project selection. This
- * menu never changes the user's default ACP Agent preference.
- */
 export function AgenticTaskLaunchMenu({
-  projects = [],
-  open,
-  onOpenChange,
+  project,
+  projectLabel,
   preferredAgentId,
-  preferredProjectId,
   variant = 'task-list',
 }: AgenticTaskLaunchMenuProps) {
   const workspaceSwitch = useInjectable<AgenticWorkspaceSwitchService>(AgenticWorkspaceSwitchService);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
-  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
-  const [selectedProject, setSelectedProject] = React.useState<AgenticProjectRecord | undefined>();
-
-  const isOpen = open ?? uncontrolledOpen;
+  const commandService = useInjectable<CommandService>(CommandService);
+  const [agentMenuOpen, setAgentMenuOpen] = React.useState(false);
   const isChatHeader = variant === 'chat-header';
-  const availableProjects = React.useMemo(
-    () => projects.filter((project) => project.availability === 'available'),
-    [projects],
-  );
-  const agentOptions = React.useMemo(() => getAgentOptions(preferenceService), [preferenceService]);
-  const preferredAvailableProjectId = availableProjects.some((project) => project.id === preferredProjectId)
-    ? preferredProjectId
-    : availableProjects[0]?.id;
+  const [agentOptions, setAgentOptions] = React.useState(() => getAgentOptions(preferenceService));
+  const refreshAgentOptions = React.useCallback(() => {
+    setAgentOptions(getAgentOptions(preferenceService));
+  }, [preferenceService]);
+
+  React.useEffect(() => {
+    refreshAgentOptions();
+    const agentConfigsDisposable = preferenceService.onSpecificPreferenceChange?.(
+      AINativeSettingSectionsId.AgentConfigs,
+      refreshAgentOptions,
+    );
+    const defaultAgentDisposable = preferenceService.onSpecificPreferenceChange?.(
+      AINativeSettingSectionsId.DefaultAgentType,
+      refreshAgentOptions,
+    );
+    return () => {
+      agentConfigsDisposable?.dispose();
+      defaultAgentDisposable?.dispose();
+    };
+  }, [preferenceService, refreshAgentOptions]);
+
+  const projectAvailable = !!project && project.availability === 'available';
+  const available = projectAvailable && agentOptions.length > 0;
   const preferredAvailableAgentId =
-    [preferredAgentId, getDefaultAgentType(preferenceService)].find(
+    [project?.lastAgentId, preferredAgentId, getDefaultAgentType(preferenceService)].find(
       (agentId): agentId is string => !!agentId && agentOptions.some((agent) => agent.id === agentId),
     ) ?? agentOptions[0]?.id;
 
-  const setMenuOpen = React.useCallback(
-    (nextOpen: boolean) => {
-      if (open === undefined) {
-        setUncontrolledOpen(nextOpen);
-      }
-      if (!nextOpen) {
-        setSelectedProject(undefined);
-      }
-      onOpenChange?.(nextOpen);
-    },
-    [onOpenChange, open],
-  );
-
-  const selectProject = React.useCallback((project: AgenticProjectRecord) => {
-    if (project.availability === 'unavailable') {
-      return;
-    }
-    setSelectedProject(project);
-  }, []);
-
   const launch = React.useCallback(
-    async (agentId: string) => {
-      if (!selectedProject || selectedProject.availability === 'unavailable') {
+    async (agentId = preferredAvailableAgentId) => {
+      if (!project || !agentId || project.availability === 'unavailable') {
         return;
       }
-      await workspaceSwitch.launchTask(selectedProject, agentId);
-      setMenuOpen(false);
+      const launched = await workspaceSwitch.launchTask(project, agentId);
+      if (launched) {
+        setAgentMenuOpen(false);
+      }
     },
-    [selectedProject, setMenuOpen, workspaceSwitch],
+    [preferredAvailableAgentId, project, workspaceSwitch],
   );
 
+  const openAgentConfigurations = React.useCallback(async () => {
+    setAgentMenuOpen(false);
+    try {
+      await preferenceService.set(
+        AINativeSettingSectionsId.AgentConfigs,
+        getAvailableAgentConfigs(preferenceService),
+        PreferenceScope.User,
+      );
+    } finally {
+      commandService.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id, AINativeSettingSectionsId.AgentConfigs);
+    }
+  }, [commandService, preferenceService]);
+
+  if (!isChatHeader) {
+    const targetLabel = projectLabel || project?.label || project?.workspacePath || 'Project';
+    return (
+      <div className={styles.launch_menu_group}>
+        <button
+          aria-label={`New Task for ${targetLabel}`}
+          className={styles.project_new_task}
+          data-testid='agentic-task-launch-button'
+          disabled={!available}
+          onClick={() => void launch()}
+          title={available ? `New Task for ${targetLabel}` : 'No ACP Agent available'}
+          type='button'
+        >
+          <span aria-hidden='true' className='codicon codicon-add' />
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className={isChatHeader ? chatStyles.agentic_task_launch_menu_group : styles.launch_menu_group}>
+    <div className={chatStyles.agentic_task_launch_menu_group}>
       <button
-        aria-expanded={isOpen}
-        aria-haspopup='menu'
         aria-label='New Task'
-        className={isChatHeader ? chatStyles.agentic_task_launch_button : styles.launch_button}
+        aria-expanded={agentMenuOpen}
+        aria-haspopup='menu'
+        className={chatStyles.agentic_task_launch_button}
         data-testid='agentic-task-launch-button'
-        disabled={availableProjects.length === 0}
-        onClick={() => setMenuOpen(!isOpen)}
+        disabled={!projectAvailable}
+        onClick={() => setAgentMenuOpen((open) => !open)}
         title='New Task'
         type='button'
       >
-        <span aria-hidden='true' className={isChatHeader ? 'codicon codicon-add' : undefined}>
-          {isChatHeader ? undefined : '+'}
-        </span>
-        {!isChatHeader && <span className={styles.launch_button_label}>New Task</span>}
+        <span aria-hidden='true' className='codicon codicon-add' />
       </button>
-      {isOpen && (
-        <div className={styles.launch_menu} role='menu'>
-          {!selectedProject ? (
-            <>
-              <div className={styles.launch_menu_label}>Choose Project</div>
-              {availableProjects.map((project) => {
-                const selected = project.id === preferredAvailableProjectId;
-                return (
-                  <button
-                    aria-current={selected ? 'true' : undefined}
-                    autoFocus={selected}
-                    className={`${styles.launch_menu_item} ${selected ? styles.launch_menu_item_selected : ''}`}
-                    key={project.id}
-                    onClick={() => selectProject(project)}
-                    role='menuitem'
-                    title={project.workspacePath}
-                    type='button'
-                  >
-                    <span className={styles.launch_menu_item_label}>{getAgenticProjectDisplayLabel(project)}</span>
-                  </button>
-                );
-              })}
-            </>
-          ) : (
-            <>
-              <button
-                className={styles.launch_menu_back}
-                onClick={() => setSelectedProject(undefined)}
-                role='menuitem'
-                type='button'
-              >
-                ← {getAgenticProjectDisplayLabel(selectedProject)}
-              </button>
-              <div className={styles.launch_menu_label}>Choose ACP Agent</div>
-              {agentOptions.map((agent) => {
-                const selected = agent.id === preferredAvailableAgentId;
-                return (
-                  <button
-                    aria-current={selected ? 'true' : undefined}
-                    autoFocus={selected}
-                    className={`${styles.launch_menu_item} ${selected ? styles.launch_menu_item_selected : ''}`}
-                    key={agent.id}
-                    onClick={() => void launch(agent.id)}
-                    role='menuitem'
-                    title={agent.title}
-                    type='button'
-                  >
-                    <span className={styles.launch_menu_item_label}>{agent.label}</span>
-                  </button>
-                );
-              })}
-            </>
-          )}
+      {agentMenuOpen && (
+        <div className={chatStyles.agentic_task_launch_menu} data-testid='agentic-task-agent-menu' role='menu'>
+          {agentOptions.map((agent) => (
+            <button
+              className={`${chatStyles.agentic_task_launch_menu_item} ${
+                agent.id === preferredAvailableAgentId ? chatStyles.agentic_task_launch_menu_item_selected : ''
+              }`}
+              aria-current={agent.id === preferredAvailableAgentId ? 'true' : undefined}
+              data-testid={`agentic-task-agent-option-${agent.id}`}
+              key={agent.id}
+              onClick={() => void launch(agent.id)}
+              role='menuitem'
+              title={agent.title}
+              type='button'
+            >
+              <span className={chatStyles.agentic_task_launch_menu_item_label}>{agent.label}</span>
+              {agent.id === preferredAvailableAgentId && (
+                <span className={chatStyles.agentic_task_launch_menu_item_check}>
+                  <span className={getIcon('check')} />
+                </span>
+              )}
+            </button>
+          ))}
+          <div className={chatStyles.agentic_task_launch_menu_separator} />
+          <button
+            className={chatStyles.agentic_task_launch_menu_item}
+            data-testid='agentic-task-agent-config-menu-item'
+            onClick={() => void openAgentConfigurations()}
+            role='menuitem'
+            type='button'
+          >
+            {localize('aiNative.chat.agentSelector.configureAgents', 'Agent 配置')}
+          </button>
         </div>
       )}
     </div>

@@ -15,6 +15,11 @@ jest.mock('../../../src/browser/acp/agentic-workspace-switch.service', () => ({
   AgenticWorkspaceSwitchService: class AgenticWorkspaceSwitchService {},
 }));
 
+jest.mock('../../../src/browser/chat/get-default-agent-type', () => ({
+  getAvailableAgentConfigs: jest.fn(),
+  getDefaultAgentType: jest.fn(),
+}));
+
 jest.mock('@opensumi/ide-components/lib/modal', () => ({
   Modal: ({ cancelText, children, onCancel, onOk, okText, title, visible }: any) => {
     if (!visible) {
@@ -31,10 +36,14 @@ jest.mock('@opensumi/ide-components/lib/modal', () => ({
   },
 }));
 
+import { URI } from '@opensumi/ide-core-common';
+import { IWindowDialogService } from '@opensumi/ide-overlay';
+
 import { AgenticTaskRegistryService } from '../../../src/browser/acp/agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
 import { AgenticTaskList } from '../../../src/browser/acp/components/AgenticTaskList';
 import chatStyles from '../../../src/browser/chat/chat.module.less';
+import { getAvailableAgentConfigs, getDefaultAgentType } from '../../../src/browser/chat/get-default-agent-type';
 import { IChatInternalService } from '../../../src/common';
 
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -64,12 +73,15 @@ function createServices() {
       listActiveGroups: jest.fn(() => Promise.resolve([])),
       listArchivedGroups: jest.fn(() => Promise.resolve([])),
       listProjects: jest.fn(() => Promise.resolve([projectA, projectB])),
+      getTask: jest.fn(() => Promise.resolve(undefined)),
       onDidChange: jest.fn(() => ({ dispose: jest.fn() })),
       renameProject: jest.fn(() => Promise.resolve(projectA)),
+      removeManagedProject: jest.fn(() => Promise.resolve(true)),
       unarchive: jest.fn(() => Promise.resolve(true)),
     },
     workspaceSwitch: {
       activateTask: jest.fn(() => Promise.resolve()),
+      addProject: jest.fn(() => Promise.resolve(projectA)),
       launchTask: jest.fn(() => Promise.resolve()),
       refreshProjectAvailability: jest.fn(() => Promise.resolve()),
       seedProjectCatalog: jest.fn(() => Promise.resolve()),
@@ -81,6 +93,9 @@ function createServices() {
       get: jest.fn(() => ({})),
       set: jest.fn(),
     },
+    windowDialogService: {
+      showOpenDialog: jest.fn(() => Promise.resolve([URI.file('/work/added-project')])),
+    },
   };
 }
 
@@ -90,6 +105,11 @@ describe('AgenticTaskList', () => {
   let root: Root;
 
   beforeEach(() => {
+    (getAvailableAgentConfigs as jest.Mock).mockReturnValue({
+      'agent-a': { command: 'agent-a', description: 'Agent A' },
+      'agent-b': { command: 'agent-b', description: 'Agent B' },
+    });
+    (getDefaultAgentType as jest.Mock).mockReturnValue('agent-a');
     chatView = document.createElement('div');
     chatView.id = `${chatStyles.ai_chat_view}___runtime`;
     container = document.createElement('div');
@@ -123,6 +143,9 @@ describe('AgenticTaskList', () => {
       if (token === IChatInternalService) {
         return services.aiChatService;
       }
+      if (token === IWindowDialogService) {
+        return services.windowDialogService;
+      }
       return services.preferenceService;
     });
 
@@ -147,6 +170,90 @@ describe('AgenticTaskList', () => {
     expect(services.workspaceSwitch.seedProjectCatalog).toHaveBeenCalledTimes(1);
     expect(catalog).toEqual([projectA]);
     expect(container.querySelector('[data-testid="agentic-task-launch-button"]')).toBeNull();
+  });
+
+  it('adds a selected directory from the Task List without showing a global New Task picker', async () => {
+    const services = await renderTaskList();
+    const addProject = container.querySelector('[data-testid="agentic-project-add-button"]') as HTMLButtonElement;
+
+    expect(addProject).not.toBeNull();
+    await act(async () => {
+      addProject.click();
+      await flushPromises();
+    });
+
+    expect(services.windowDialogService.showOpenDialog).toHaveBeenCalledWith({
+      canSelectFiles: false,
+      canSelectFolders: true,
+      canSelectMany: false,
+      title: 'Add Project',
+    });
+    expect(services.workspaceSwitch.addProject).toHaveBeenCalledWith(URI.file('/work/added-project'));
+    expect(container.querySelector('[data-testid="agentic-task-launch-button"]')).toBeNull();
+  });
+
+  it('renders an empty manually managed Project Group with a contextual New Task action', async () => {
+    const services = createServices();
+    const unnamedManagedProject = { ...projectA, label: undefined, managed: true as const };
+    services.registry.listProjects.mockResolvedValue([unnamedManagedProject]);
+    services.registry.listActiveGroups.mockResolvedValue([{ project: unnamedManagedProject, tasks: [] }]);
+
+    await renderTaskList(services);
+
+    const projectGroup = container.querySelector('[data-testid="agentic-task-project-group"]');
+    expect(projectGroup?.textContent).toContain('a');
+    const launchButton = projectGroup?.querySelector('[data-testid="agentic-task-launch-button"]');
+    expect(launchButton?.textContent).toBe('');
+    expect(launchButton?.querySelector('.codicon.codicon-add')).not.toBeNull();
+    expect(launchButton?.getAttribute('aria-label')).toBe('New Task for a');
+    expect(projectGroup?.querySelector('[data-testid="agentic-task-agent-menu-button"]')).toBeNull();
+  });
+
+  it('uses the active Task Agent before the user default for an empty Project Group', async () => {
+    const services = createServices();
+    const emptyManagedProject = { ...projectA, label: undefined, managed: true as const };
+    services.registry.listProjects.mockResolvedValue([emptyManagedProject]);
+    services.registry.listActiveGroups.mockResolvedValue([{ project: emptyManagedProject, tasks: [] }]);
+    services.registry.getTask.mockResolvedValue({ agentId: 'agent-b' });
+    services.aiChatService.sessionModel = { requests: [], sessionId: 'acp:active' };
+    services.aiChatService.onChangeSession = jest.fn(() => ({ dispose: jest.fn() }));
+    (getAvailableAgentConfigs as jest.Mock).mockReturnValue({
+      'agent-a': { command: 'agent-a', description: 'Agent A' },
+      'agent-b': { command: 'agent-b', description: 'Agent B' },
+    });
+    (getDefaultAgentType as jest.Mock).mockReturnValue('agent-a');
+
+    await renderTaskList(services);
+    await act(async () => {
+      await flushPromises();
+      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(services.workspaceSwitch.launchTask).toHaveBeenCalledWith(emptyManagedProject, 'agent-b');
+  });
+
+  it('keeps Project management actions in an overflow menu and removes only an empty managed Project', async () => {
+    const services = createServices();
+    const unnamedManagedProject = { ...projectA, label: undefined, managed: true as const };
+    services.registry.listProjects.mockResolvedValue([unnamedManagedProject]);
+    services.registry.listActiveGroups.mockResolvedValue([{ project: unnamedManagedProject, tasks: [] }]);
+    await renderTaskList(services);
+
+    const menu = container.querySelector('[aria-label="Manage a"]') as HTMLButtonElement;
+    expect(menu).not.toBeNull();
+    await act(async () => {
+      menu.click();
+    });
+
+    expect(container.querySelector('[aria-label="Rename a"]')).not.toBeNull();
+    const remove = container.querySelector('[aria-label="Remove a"]') as HTMLButtonElement;
+    expect(remove).not.toBeNull();
+    await act(async () => {
+      remove.click();
+      await flushPromises();
+    });
+    expect(services.registry.removeManagedProject).toHaveBeenCalledWith(unnamedManagedProject.id);
   });
 
   it('refreshes when the Task Registry records a newly created Task', async () => {
@@ -317,6 +424,17 @@ describe('AgenticTaskList', () => {
     expect(container.querySelector('[data-testid="agentic-task-status-acp:permission"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-unread-acp:permission"]')).not.toBeNull();
 
+    const readyRow = container.querySelector('[data-testid="agentic-task-row-acp:ready"]');
+    expect(readyRow?.textContent).toContain('Ready task');
+    expect(readyRow?.textContent).toContain('ready');
+    expect(readyRow?.textContent).not.toContain('agent-a');
+
+    const archive = container.querySelector('[data-testid="agentic-task-archive-acp:ready"]');
+    expect(archive?.textContent).toBe('');
+    expect(archive?.getAttribute('aria-label')).toBe('Archive Ready task');
+    expect(archive?.getAttribute('title')).toBe('Archive Ready task');
+    expect(archive?.querySelector('.codicon.codicon-archive')).not.toBeNull();
+
     await act(async () => {
       (container.querySelector('[data-testid="agentic-task-row-acp:ready"]') as HTMLButtonElement).click();
       await flushPromises();
@@ -334,6 +452,118 @@ describe('AgenticTaskList', () => {
     expect(container.querySelector('[data-testid="agentic-task-row-acp:unavailable"]')).toBeNull();
     expect(container.textContent).not.toContain('Unavailable task');
     expect(container.textContent).not.toContain('Unavailable');
+  });
+
+  it('keeps the active Task Row when the requested Task session fails to activate', async () => {
+    const services = createServices();
+    services.workspaceSwitch.activateTask.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+    services.registry.listActiveGroups.mockResolvedValue([
+      {
+        project: projectA,
+        tasks: [
+          {
+            sessionId: 'acp:active',
+            projectId: projectA.id,
+            agentId: 'agent-a',
+            title: 'Active task',
+            createdAt: 2,
+            archived: false,
+            unread: false,
+          },
+          {
+            sessionId: 'acp:failed',
+            projectId: projectA.id,
+            agentId: 'agent-a',
+            title: 'Failed task',
+            createdAt: 1,
+            archived: false,
+            unread: false,
+          },
+        ],
+      },
+    ]);
+    await renderTaskList(services);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-row-acp:active"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-row-acp:failed"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:active"]')?.getAttribute('aria-current')).toBe(
+      'true',
+    );
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:failed"]')?.getAttribute('aria-current'),
+    ).toBeNull();
+  });
+
+  it('selects only the most recent Task Row after rapid successful activation requests', async () => {
+    const services = createServices();
+    let resolveFirstActivation: (activated: boolean) => void;
+    let resolveSecondActivation: (activated: boolean) => void;
+    const firstActivation = new Promise<boolean>((resolve) => {
+      resolveFirstActivation = resolve;
+    });
+    const secondActivation = new Promise<boolean>((resolve) => {
+      resolveSecondActivation = resolve;
+    });
+    services.workspaceSwitch.activateTask.mockReturnValueOnce(firstActivation).mockReturnValueOnce(secondActivation);
+    services.registry.listActiveGroups.mockResolvedValue([
+      {
+        project: projectA,
+        tasks: [
+          {
+            sessionId: 'acp:first',
+            projectId: projectA.id,
+            agentId: 'agent-a',
+            title: 'First task',
+            createdAt: 2,
+            archived: false,
+            unread: false,
+          },
+          {
+            sessionId: 'acp:second',
+            projectId: projectA.id,
+            agentId: 'agent-a',
+            title: 'Second task',
+            createdAt: 1,
+            archived: false,
+            unread: false,
+          },
+        ],
+      },
+    ]);
+    await renderTaskList(services);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-row-acp:first"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="agentic-task-row-acp:second"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      resolveFirstActivation!(true);
+      await flushPromises();
+    });
+
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:first"]')?.getAttribute('aria-current'),
+    ).toBeNull();
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:second"]')?.getAttribute('aria-current'),
+    ).toBeNull();
+
+    await act(async () => {
+      resolveSecondActivation!(true);
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:second"]')?.getAttribute('aria-current')).toBe(
+      'true',
+    );
   });
 
   it('refreshes archived-only Projects and filters unavailable archived Task rows', async () => {
@@ -411,7 +641,10 @@ describe('AgenticTaskList', () => {
     expect(archivedArea?.querySelector(`[title="${projectA.workspacePath}"]`)?.textContent).toContain('Project A');
 
     const unarchive = container.querySelector('[data-testid="agentic-task-unarchive-acp:archived-ready"]');
+    expect(unarchive?.textContent).toBe('');
     expect(unarchive?.getAttribute('aria-label')).toBe('Unarchive Archived ready Task');
+    expect(unarchive?.getAttribute('title')).toBe('Unarchive Archived ready Task');
+    expect(unarchive?.querySelector('.codicon.codicon-archive')).not.toBeNull();
     await act(async () => {
       (unarchive as HTMLButtonElement).click();
       await flushPromises();
@@ -482,9 +715,9 @@ describe('AgenticTaskList', () => {
     expect(chatView.style.getPropertyValue('--agentic-task-list-width')).toBe('480px');
   });
 
-  it('uses the workspace path when a Project has no custom name', async () => {
+  it('uses the cwd leaf when a Project has no custom name while retaining the full cwd', async () => {
     const services = createServices();
-    const unnamedProject = { ...projectA, label: undefined };
+    const unnamedProject = { ...projectA, label: undefined, workspacePath: '/ossfs/w/' };
     services.registry.listProjects.mockResolvedValue([unnamedProject]);
     services.registry.listActiveGroups.mockResolvedValue([
       {
@@ -505,14 +738,22 @@ describe('AgenticTaskList', () => {
 
     await renderTaskList(services);
 
-    expect(container.querySelector('[data-testid="agentic-task-project-group"]')?.textContent).toContain('/work/a');
-    const rename = container.querySelector('[aria-label="Rename /work/a"]') as HTMLButtonElement;
+    expect(container.querySelector('[data-testid="agentic-task-project-group"]')?.textContent).toContain('w');
+    expect(container.querySelector('[title="/ossfs/w/"]')).not.toBeNull();
+    const manage = container.querySelector('[aria-label="Manage w"]') as HTMLButtonElement;
+    await act(async () => {
+      manage.click();
+    });
+    const rename = container.querySelector('[aria-label="Rename w"]') as HTMLButtonElement;
     expect(rename).not.toBeNull();
 
     await act(async () => {
       rename.click();
     });
     const input = document.querySelector('[aria-label="Project name"]') as HTMLInputElement;
+    expect(input.value).toBe('');
+    expect(input.placeholder).toBe('w');
+    expect(document.body.textContent).toContain('/ossfs/w/');
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, 'Payments');
     await act(async () => {
       input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -526,5 +767,56 @@ describe('AgenticTaskList', () => {
     });
 
     expect(services.registry.renameProject).toHaveBeenCalledWith(unnamedProject.id, 'Payments');
+  });
+
+  it('keeps collision-aware default Project labels stable while filtering Task titles', async () => {
+    const services = createServices();
+    const firstProject = { ...projectA, id: 'project-first', label: undefined, workspacePath: '/ossfs/a/w' };
+    const secondProject = { ...projectB, id: 'project-second', label: undefined, workspacePath: '/work/b/w' };
+    services.registry.listProjects.mockResolvedValue([firstProject, secondProject]);
+    services.registry.listActiveGroups.mockResolvedValue([
+      {
+        project: firstProject,
+        tasks: [
+          {
+            sessionId: 'acp:first-project',
+            projectId: firstProject.id,
+            agentId: 'agent-a',
+            title: 'First Project Task',
+            createdAt: 2,
+            archived: false,
+            unread: false,
+          },
+        ],
+      },
+      {
+        project: secondProject,
+        tasks: [
+          {
+            sessionId: 'acp:second-project',
+            projectId: secondProject.id,
+            agentId: 'agent-b',
+            title: 'Second Project Task',
+            createdAt: 1,
+            archived: false,
+            unread: false,
+          },
+        ],
+      },
+    ]);
+
+    await renderTaskList(services);
+
+    expect(container.textContent).toContain('a/w');
+    expect(container.textContent).toContain('b/w');
+
+    const search = container.querySelector('input[type="search"]') as HTMLInputElement;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(search, 'First');
+    await act(async () => {
+      search.dispatchEvent(new Event('input', { bubbles: true }));
+      await flushPromises();
+    });
+
+    expect(container.textContent).toContain('a/w');
   });
 });

@@ -2,7 +2,10 @@ import React from 'react';
 
 import { Modal } from '@opensumi/ide-components/lib/modal';
 import { useInjectable } from '@opensumi/ide-core-browser';
+import { IWindowDialogService } from '@opensumi/ide-overlay';
 
+import { IChatInternalService } from '../../../common';
+import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import chatStyles from '../../chat/chat.module.less';
 import {
   AgenticProjectRecord,
@@ -13,8 +16,9 @@ import {
 } from '../agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../agentic-workspace-switch.service';
 
-import { getAgenticProjectDisplayLabel } from './agentic-project-label';
+import { getAgenticProjectDisplayLabel, getAgenticProjectDisplayLabels } from './agentic-project-label';
 import styles from './agentic-task-list.module.less';
+import { AgenticTaskLaunchMenu } from './AgenticTaskLaunchMenu';
 
 const DEFAULT_TASK_LIST_WIDTH = 244;
 const MIN_TASK_LIST_WIDTH = 208;
@@ -42,7 +46,7 @@ function filterGroups(groups: AgenticTaskGroup[], query: string): AgenticTaskGro
       project: group.project,
       tasks: group.tasks.filter((task) => !normalizedQuery || task.title.toLocaleLowerCase().includes(normalizedQuery)),
     }))
-    .filter((group) => group.tasks.length > 0);
+    .filter((group) => group.tasks.length > 0 || (!normalizedQuery && group.project.managed));
 }
 
 function getAgenticChatView(taskList: HTMLElement | null): HTMLElement | undefined {
@@ -179,14 +183,26 @@ function TaskState({ task }: { task: AgenticTaskRecord }) {
   );
 }
 
+function getTaskRowMeta(task: AgenticTaskRecord): string {
+  if (task.attention === 'permission') {
+    return 'permission';
+  }
+  if (task.attention === 'input') {
+    return 'input';
+  }
+  return task.status || '';
+}
+
 function ProjectRenameModal({
   onClose,
   onRename,
   project,
+  projectLabel,
 }: {
   onClose: () => void;
   onRename: (project: AgenticProjectRecord, label: string) => Promise<void>;
   project: AgenticProjectRecord | undefined;
+  projectLabel: string | undefined;
 }) {
   const [label, setLabel] = React.useState('');
 
@@ -209,7 +225,7 @@ function ProjectRenameModal({
       okText='Save'
       onCancel={onClose}
       onOk={() => void save()}
-      title={`Rename ${project ? getAgenticProjectDisplayLabel(project) : 'Project'}`}
+      title={`Rename ${projectLabel || 'Project'}`}
       visible={!!project}
       width={360}
     >
@@ -219,11 +235,12 @@ function ProjectRenameModal({
           aria-label='Project name'
           autoFocus
           onChange={(event) => setLabel(event.target.value)}
-          placeholder={project?.workspacePath}
+          placeholder={projectLabel}
           type='text'
           value={label}
         />
-        <span className={styles.project_rename_hint}>Clear the name to use the workspace path.</span>
+        {project && <span className={styles.project_rename_path}>Workspace: {project.workspacePath}</span>}
+        <span className={styles.project_rename_hint}>Clear the name to use the default project name.</span>
       </label>
     </Modal>
   );
@@ -245,6 +262,7 @@ function TaskRow({
   task: AgenticTaskRecord;
 }) {
   const archiveEligible = !!task.status && ARCHIVABLE_STATUSES.has(task.status) && !task.archived;
+  const rowMeta = getTaskRowMeta(task);
 
   return (
     <div className={styles.task_row_wrap}>
@@ -258,13 +276,8 @@ function TaskRow({
         type='button'
       >
         <TaskState task={task} />
-        <span className={styles.task_copy}>
-          <span className={styles.task_title}>{task.title}</span>
-          <span className={styles.task_subtitle}>
-            {task.agentId}
-            {task.status ? ` · ${task.status}` : ''}
-          </span>
-        </span>
+        <span className={styles.task_title}>{task.title}</span>
+        {rowMeta && <span className={styles.task_meta}>{rowMeta}</span>}
         {task.unread && (
           <span aria-label='Unread' className={styles.unread} data-testid={`agentic-task-unread-${task.sessionId}`} />
         )}
@@ -275,9 +288,10 @@ function TaskRow({
           className={styles.archive_button}
           data-testid={`agentic-task-archive-${task.sessionId}`}
           onClick={() => onArchive(task)}
+          title={`Archive ${task.title}`}
           type='button'
         >
-          Archive
+          <span aria-hidden='true' className='codicon codicon-archive' />
         </button>
       )}
       {task.archived && onUnarchive && (
@@ -286,9 +300,10 @@ function TaskRow({
           className={styles.archive_button}
           data-testid={`agentic-task-unarchive-${task.sessionId}`}
           onClick={() => onUnarchive(task)}
+          title={`Unarchive ${task.title}`}
           type='button'
         >
-          Unarchive
+          <span aria-hidden='true' className='codicon codicon-archive' />
         </button>
       )}
     </div>
@@ -299,34 +314,75 @@ function ProjectGroup({
   activeSessionId,
   group,
   onArchive,
+  onRemove,
   onRename,
   onTaskActivate,
+  preferredAgentId,
+  projectLabel,
 }: {
   activeSessionId: string | undefined;
   group: AgenticTaskGroup;
   onArchive: (task: AgenticTaskRecord) => void;
+  onRemove: (project: AgenticProjectRecord) => void;
   onRename: (project: AgenticProjectRecord) => void;
   onTaskActivate: (task: AgenticTaskRecord) => void;
+  preferredAgentId?: string;
+  projectLabel: string;
 }) {
   const projectAvailable = group.project.availability === 'available';
-  const projectLabel = getAgenticProjectDisplayLabel(group.project);
+  const [managementMenuOpen, setManagementMenuOpen] = React.useState(false);
 
   return (
     <section className={styles.project_group} data-testid='agentic-task-project-group'>
       <header className={styles.project_header}>
+        <span aria-hidden='true' className={`${styles.project_chevron} codicon codicon-chevron-down`} />
         <span className={styles.project_label} title={group.project.workspacePath}>
-          ▾ {projectLabel}
+          {projectLabel}
         </span>
         <span className={styles.project_count}>{group.tasks.length}</span>
+        <AgenticTaskLaunchMenu
+          preferredAgentId={preferredAgentId}
+          project={group.project}
+          projectLabel={projectLabel}
+        />
         <button
-          aria-label={`Rename ${projectLabel}`}
-          className={styles.project_rename}
-          onClick={() => onRename(group.project)}
-          title={`Rename ${projectLabel}`}
+          aria-expanded={managementMenuOpen}
+          aria-label={`Manage ${projectLabel}`}
+          className={styles.project_manage}
+          onClick={() => setManagementMenuOpen((open) => !open)}
+          title={`Manage ${projectLabel}`}
           type='button'
         >
-          ✎
+          <span aria-hidden='true' className='codicon codicon-ellipsis' />
         </button>
+        {managementMenuOpen && (
+          <div className={styles.project_management_menu}>
+            <button
+              aria-label={`Rename ${projectLabel}`}
+              className={styles.project_management_menu_item}
+              onClick={() => {
+                setManagementMenuOpen(false);
+                onRename(group.project);
+              }}
+              type='button'
+            >
+              Rename
+            </button>
+            {group.project.managed && group.tasks.length === 0 && (
+              <button
+                aria-label={`Remove ${projectLabel}`}
+                className={styles.project_management_menu_item}
+                onClick={() => {
+                  setManagementMenuOpen(false);
+                  onRemove(group.project);
+                }}
+                type='button'
+              >
+                Remove Project
+              </button>
+            )}
+          </div>
+        )}
       </header>
       {group.tasks.map((task) => (
         <TaskRow
@@ -344,6 +400,7 @@ function ProjectGroup({
 
 function ArchivedTaskGroups({
   projectRevision,
+  projectLabels,
   query,
   refreshProjectCatalog,
   registry,
@@ -351,6 +408,7 @@ function ArchivedTaskGroups({
   workspaceSwitch,
 }: {
   projectRevision: number;
+  projectLabels: ReadonlyMap<string, string>;
   query: string;
   refreshProjectCatalog: () => Promise<AgenticProjectRecord[]>;
   registry: AgenticTaskRegistryService;
@@ -406,14 +464,15 @@ function ArchivedTaskGroups({
         onClick={() => setExpanded(!expanded)}
         type='button'
       >
-        <span aria-hidden='true'>{expanded ? '▾' : '▸'}</span> Archived Tasks
+        <span aria-hidden='true' className={`codicon ${expanded ? 'codicon-chevron-down' : 'codicon-chevron-right'}`} />
+        <span>Archived Tasks</span>
       </button>
       {expanded &&
         groups.map((group) => (
           <section className={styles.archived_project_group} key={group.project.id}>
             <div className={styles.project_header}>
               <span className={styles.project_label} title={group.project.workspacePath}>
-                {getAgenticProjectDisplayLabel(group.project)}
+                {projectLabels.get(group.project.id) || getAgenticProjectDisplayLabel(group.project)}
               </span>
               <span className={styles.project_count}>{group.tasks.length}</span>
             </div>
@@ -441,13 +500,19 @@ function ArchivedTaskGroups({
 export function AgenticTaskList() {
   const registry = useInjectable<AgenticTaskRegistryService>(AgenticTaskRegistryService);
   const workspaceSwitch = useInjectable<AgenticWorkspaceSwitchService>(AgenticWorkspaceSwitchService);
+  const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
+  const windowDialogService = useInjectable<IWindowDialogService>(IWindowDialogService);
   const taskListRef = React.useRef<HTMLElement>(null);
   const [query, setQuery] = React.useState('');
   const [groups, setGroups] = React.useState<AgenticTaskGroup[]>([]);
+  const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
   const [activeSessionId, setActiveSessionId] = React.useState<string>();
+  const [activeAgentId, setActiveAgentId] = React.useState<string>();
   const [renameProject, setRenameProject] = React.useState<AgenticProjectRecord>();
   const [projectRevision, setProjectRevision] = React.useState(0);
   const [maximumTaskListWidth, setMaximumTaskListWidth] = React.useState(MAX_TASK_LIST_WIDTH);
+  const taskActivationVersionRef = React.useRef(0);
+  const projectLabels = React.useMemo(() => getAgenticProjectDisplayLabels(projects), [projects]);
 
   const getConfiguredWidth = React.useCallback(
     (maximumWidth: number) => getConfiguredTaskListWidth(getAgenticChatView(taskListRef.current), maximumWidth),
@@ -498,7 +563,9 @@ export function AgenticTaskList() {
     await workspaceSwitch.seedProjectCatalog();
     const projectCatalog = await registry.listProjects();
     await Promise.all(projectCatalog.map((project) => workspaceSwitch.refreshProjectAvailability(project)));
-    return registry.listProjects();
+    const refreshedProjectCatalog = await registry.listProjects();
+    setProjects(refreshedProjectCatalog);
+    return refreshedProjectCatalog;
   }, [registry, workspaceSwitch]);
 
   const refresh = React.useCallback(async () => {
@@ -518,6 +585,22 @@ export function AgenticTaskList() {
       disposed = true;
     };
   }, [refresh]);
+
+  const refreshActiveAgent = React.useCallback(async () => {
+    const sessionModel = aiChatService.sessionModel;
+    const activeTask = sessionModel ? await registry.getTask(sessionModel.sessionId) : undefined;
+    setActiveAgentId(
+      activeTask?.agentId ||
+        sessionModel?.requests?.at(-1)?.message.agentId ||
+        aiChatService.getActiveAgenticTaskAgentId?.(sessionModel?.sessionId),
+    );
+  }, [aiChatService, registry]);
+
+  React.useEffect(() => {
+    void refreshActiveAgent();
+    const disposable = aiChatService.onChangeSession?.(() => void refreshActiveAgent());
+    return () => disposable?.dispose();
+  }, [aiChatService, refreshActiveAgent]);
 
   React.useEffect(() => {
     const disposable = registry.onDidChange(() => {
@@ -554,13 +637,15 @@ export function AgenticTaskList() {
   );
 
   const activate = React.useCallback(
-    (task: AgenticTaskRecord) => {
+    async (task: AgenticTaskRecord) => {
       const group = groups.find((candidate) => candidate.project.id === task.projectId);
       if (!group || group.project.availability === 'unavailable') {
         return;
       }
-      setActiveSessionId(task.sessionId);
-      void workspaceSwitch.activateTask(task);
+      const activationVersion = ++taskActivationVersionRef.current;
+      if ((await workspaceSwitch.activateTask(task)) && activationVersion === taskActivationVersionRef.current) {
+        setActiveSessionId(task.sessionId);
+      }
     },
     [groups, workspaceSwitch],
   );
@@ -571,6 +656,27 @@ export function AgenticTaskList() {
     },
     [registry],
   );
+
+  const remove = React.useCallback(
+    async (project: AgenticProjectRecord) => {
+      if (await registry.removeManagedProject(project.id)) {
+        await refresh();
+      }
+    },
+    [refresh, registry],
+  );
+
+  const addProject = React.useCallback(async () => {
+    const directories = await windowDialogService.showOpenDialog({
+      canSelectFiles: false,
+      canSelectFolders: true,
+      canSelectMany: false,
+      title: 'Add Project',
+    });
+    if (directories?.[0]) {
+      await workspaceSwitch.addProject(directories[0]);
+    }
+  }, [windowDialogService, workspaceSwitch]);
 
   return (
     <aside aria-label='Task List' className={styles.task_list} data-testid='agentic-task-list' ref={taskListRef}>
@@ -583,9 +689,19 @@ export function AgenticTaskList() {
       <header className={styles.task_list_header}>
         <h2>Task List</h2>
         {attentionCount > 0 && <span className={styles.attention_count}>{attentionCount}</span>}
+        <button
+          aria-label='Add Project'
+          className={styles.project_add}
+          data-testid='agentic-project-add-button'
+          onClick={() => void addProject()}
+          title='Add Project'
+          type='button'
+        >
+          <span aria-hidden='true' className='codicon codicon-add' />
+        </button>
       </header>
       <label className={styles.search}>
-        <span aria-hidden='true'>⌕</span>
+        <span aria-hidden='true' className='codicon codicon-search' />
         <input
           onChange={(event) => setQuery(event.target.value)}
           placeholder='Search tasks'
@@ -600,8 +716,11 @@ export function AgenticTaskList() {
             group={group}
             key={group.project.id}
             onArchive={(task) => void archive(task)}
+            onRemove={(project) => void remove(project)}
             onRename={setRenameProject}
             onTaskActivate={activate}
+            preferredAgentId={activeAgentId}
+            projectLabel={projectLabels.get(group.project.id) || getAgenticProjectDisplayLabel(group.project)}
           />
         ))}
       </div>
@@ -611,9 +730,17 @@ export function AgenticTaskList() {
         registry={registry}
         onUnarchive={unarchive}
         projectRevision={projectRevision}
+        projectLabels={projectLabels}
         workspaceSwitch={workspaceSwitch}
       />
-      <ProjectRenameModal onClose={() => setRenameProject(undefined)} onRename={rename} project={renameProject} />
+      <ProjectRenameModal
+        onClose={() => setRenameProject(undefined)}
+        onRename={rename}
+        project={renameProject}
+        projectLabel={
+          renameProject && (projectLabels.get(renameProject.id) || getAgenticProjectDisplayLabel(renameProject))
+        }
+      />
     </aside>
   );
 }

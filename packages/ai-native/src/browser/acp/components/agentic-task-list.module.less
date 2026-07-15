@@ -9,7 +9,7 @@
   min-height: 0;
   overflow: hidden;
   border-right: 1px solid var(--panel-border);
-  background: var(--sideBar-background, var(--panel-background));
+  background: var(--panel-background);
   color: var(--foreground);
 }
 
@@ -39,21 +39,22 @@
 .task_list_header {
   display: flex;
   align-items: center;
-  min-height: 43px;
-  padding: 0 10px 0 14px;
+  min-height: 36px;
+  padding: 0 8px 0 12px;
   border-bottom: 1px solid var(--panel-border);
+  background: var(--editorGroupHeader-tabsBackground);
 
   h2 {
     margin: 0;
     color: var(--foreground);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
   }
 }
 
 .attention_count {
-  margin-left: 7px;
-  color: var(--descriptionForeground);
+  margin-left: 6px;
+  color: var(--editorWarning-foreground, #cca700);
   font-size: 11px;
 }
 
@@ -101,6 +102,37 @@
     cursor: default;
     opacity: 0.55;
   }
+}
+
+.agent_menu_button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--descriptionForeground);
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    outline: none;
+    background: var(--list-hoverBackground);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+}
+
+.agent_picker_list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .launch_menu_item_selected {
@@ -178,14 +210,14 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  height: 30px;
-  margin: 10px 10px 8px;
+  height: 28px;
+  margin: 7px 7px 5px;
   padding: 0 8px;
   border: 1px solid var(--input-border, var(--panel-border));
   border-radius: 4px;
   background: var(--input-background, var(--editor-background));
   color: var(--input-placeholderForeground);
-  font-size: 11px;
+  font-size: 12px;
 
   &:focus-within {
     border-color: var(--focusBorder);
@@ -214,18 +246,26 @@
 
 .project_group,
 .archived_project_group {
-  margin: 8px 5px 0;
+  margin: 4px 5px 0;
 }
 
 .project_header {
+  position: relative;
   display: flex;
   align-items: center;
   min-width: 0;
-  height: 29px;
-  padding: 0 7px;
+  height: 24px;
+  padding: 0 6px;
   color: var(--descriptionForeground);
   font-size: 11px;
   font-weight: 600;
+}
+
+.project_chevron {
+  flex: 0 0 14px;
+  width: 14px;
+  color: var(--descriptionForeground);
+  font-size: 13px;
 }
 
 .project_label {
@@ -243,23 +283,30 @@
   font-weight: 400;
 }
 
+.project_add,
 .project_rename,
+.project_manage,
 .project_new_task {
-  flex: 0 0 20px;
-  width: 20px;
-  height: 20px;
+  display: flex;
+  flex: 0 0 22px;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
   padding: 0;
-  border-radius: 3px;
+  border: 0;
+  border-radius: 4px;
   background: transparent;
-  color: var(--descriptionForeground);
+  color: var(--icon-foreground);
   cursor: pointer;
-  font-size: 15px;
-  line-height: 18px;
+  font-size: 14px;
+  line-height: 1;
 
   &:hover:not(:disabled),
   &:focus-visible {
     outline: none;
-    background: var(--list-hoverBackground);
+    background: var(--toolbar-hoverBackground, var(--list-hoverBackground));
+    color: var(--foreground);
   }
 
   &:disabled {
@@ -270,11 +317,60 @@
 
 .project_rename {
   margin-left: auto;
-  font-size: 13px;
+}
+
+.project_add {
+  margin-left: auto;
 }
 
 .project_new_task {
-  margin-left: 4px;
+  margin-left: auto;
+  opacity: 0.72;
+}
+
+.project_manage {
+  margin-left: 2px;
+  opacity: 0.72;
+}
+
+.project_header:hover .project_new_task,
+.project_header:focus-within .project_new_task,
+.project_header:hover .project_manage,
+.project_header:focus-within .project_manage {
+  opacity: 1;
+}
+
+.project_management_menu {
+  position: absolute;
+  z-index: 3;
+  top: calc(100% - 2px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 128px;
+  padding: 4px;
+  border: 1px solid var(--dropdown-border);
+  border-radius: 4px;
+  background: var(--menu-background, var(--panel-background));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
+}
+
+.project_management_menu_item {
+  min-height: 26px;
+  padding: 4px 7px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--menu-foreground, var(--foreground));
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    background: var(--list-hoverBackground);
+  }
 }
 
 .project_rename_form {
@@ -305,30 +401,52 @@
   font-size: 11px;
 }
 
+.project_rename_path {
+  color: var(--descriptionForeground);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
 .task_row_wrap {
   position: relative;
-  margin: 1px 0;
+  margin: 0 5px;
 }
 
 .task_row {
+  position: relative;
   display: grid;
-  grid-template-columns: 15px minmax(0, 1fr) auto;
+  grid-template-columns: 14px minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   width: 100%;
-  min-height: 37px;
-  padding: 4px 7px;
-  border: 1px solid transparent;
+  height: 25px;
+  min-height: 25px;
+  padding: 0 6px;
+  border: 0;
   border-radius: 4px;
   background: transparent;
   color: var(--foreground);
   cursor: pointer;
+  font-size: 12px;
   text-align: left;
+
+  &::before {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 0;
+    display: none;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--focusBorder);
+    content: '';
+  }
 
   &:hover:not(:disabled),
   &:focus-visible {
     outline: none;
-    background: var(--list-hoverBackground);
+    background: var(--kt-tree-hoverBackground, var(--list-hoverBackground));
+    color: var(--kt-tree-hoverForeground, var(--foreground));
   }
 
   &:disabled {
@@ -338,20 +456,25 @@
 }
 
 .task_row_selected {
-  border-color: var(--focusBorder);
-  background: var(--list-activeSelectionBackground);
-  color: var(--list-activeSelectionForeground);
+  outline: 1px solid var(--list-focusOutline, var(--focusBorder));
+  outline-offset: -1px;
+  background: var(--kt-tree-inactiveSelectionBackground, var(--list-activeSelectionBackground));
+  color: var(--kt-tree-inactiveSelectionForeground, var(--list-activeSelectionForeground));
+
+  &::before {
+    display: block;
+  }
 }
 
 .task_state {
   position: relative;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
 
   &::after {
     position: absolute;
-    top: 4px;
-    left: 4px;
+    top: 3px;
+    left: 3px;
     width: 6px;
     height: 6px;
     border-radius: 50%;
@@ -362,8 +485,8 @@
 
 .task_attention_permission::after,
 .task_attention_input::after {
-  top: 3px;
-  left: 3px;
+  top: 2px;
+  left: 2px;
   width: 7px;
   height: 7px;
   background: var(--editorWarning-foreground, #cca700);
@@ -383,13 +506,9 @@
   background: var(--errorForeground);
 }
 
-.task_copy {
-  min-width: 0;
-}
-
 .task_title,
-.task_subtitle {
-  display: block;
+.task_meta {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -397,43 +516,51 @@
 
 .task_title {
   color: inherit;
-  font-size: 11px;
-  line-height: 14px;
+  font-size: 12px;
+  line-height: 25px;
 }
 
-.task_subtitle {
+.task_meta {
+  max-width: 72px;
   color: var(--descriptionForeground);
-  font-size: 10px;
-  line-height: 13px;
+  font-size: 11px;
+  line-height: 25px;
 }
 
 .unread {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--focusBorder);
 }
 
 .archive_button {
   position: absolute;
+  z-index: 1;
   top: 50%;
-  right: 7px;
-  display: block;
-  height: 20px;
-  padding: 0 4px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
   transform: translateY(-50%);
-  border-radius: 3px;
-  background: var(--list-hoverBackground);
-  color: var(--descriptionForeground);
+  border-radius: 4px;
+  background: var(--panel-background);
+  color: var(--icon-foreground);
   cursor: pointer;
-  font-size: 10px;
+  font-size: 14px;
   opacity: 0;
   pointer-events: none;
 
+  &:hover,
   &:focus-visible {
     opacity: 1;
     pointer-events: auto;
-    outline: 1px solid var(--focusBorder);
+    outline: none;
+    background: var(--toolbar-hoverBackground, var(--list-hoverBackground));
+    color: var(--foreground);
   }
 }
 
@@ -445,7 +572,7 @@
 
 .archived_area {
   flex: none;
-  margin: 10px 7px 0;
+  margin: 8px 0 0;
   border-top: 1px solid var(--panel-border);
 }
 
@@ -458,9 +585,10 @@
 .archived_toggle {
   display: flex;
   align-items: center;
+  gap: 4px;
   width: 100%;
-  height: 32px;
-  padding: 0 7px;
+  height: 30px;
+  padding: 0 10px;
   background: transparent;
   color: var(--descriptionForeground);
   cursor: pointer;
@@ -471,5 +599,6 @@
   &:focus-visible {
     outline: none;
     color: var(--foreground);
+    background: var(--kt-tree-hoverBackground, var(--list-hoverBackground));
   }
 }

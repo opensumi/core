@@ -1,12 +1,12 @@
 // Source: test/bdd/acp-chat-agentic-history.scenario.md
 
-import { expect, type Frame } from '@playwright/test';
+import { type Frame, expect } from '@playwright/test';
 
 import test, { page } from './hooks';
 import {
   ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS,
-  aiNativeWorkbenchUrl,
   type AcpBddFixtureRuntime,
+  aiNativeWorkbenchUrl,
   loadAcpBddFixtureWorkbench,
   waitForAcpChatReady,
   waitForWorkbenchReady,
@@ -171,7 +171,7 @@ function sendButton() {
 }
 
 async function startTaskInCurrentProject() {
-  const agentLabel = await launchTaskInCurrentProject(page, runtime.workspaceDir);
+  const agentLabel = await launchTaskInCurrentProject(page);
   expect(agentLabel).toBeTruthy();
   await expect.poll(async () => (await getSessionState()).active, { timeout: 30_000 }).toBe(false);
 }
@@ -278,9 +278,12 @@ test.describe('ACP Chat Agentic History', () => {
     expect(rowsAfterSelection.filter((row) => row.selected).map((row) => row.id)).toEqual([olderTask.sessionId]);
 
     await selectTask(newerTask.sessionId);
-    await expect(page.getByTestId(`agentic-task-row-${newerTask.sessionId}`)).toContainText(/·\s*ready/);
-    await expect(page.getByTestId(`agentic-task-archive-${newerTask.sessionId}`)).toBeVisible({ timeout: 30_000 });
-    await page.getByTestId(`agentic-task-archive-${newerTask.sessionId}`).click();
+    await expect(page.getByTestId(`agentic-task-row-${newerTask.sessionId}`)).toContainText(/ready/);
+    const archiveNewerTask = page.getByTestId(`agentic-task-archive-${newerTask.sessionId}`);
+    await page.getByTestId(`agentic-task-row-${newerTask.sessionId}`).hover();
+    await expect(archiveNewerTask).toHaveCSS('pointer-events', 'auto', { timeout: 30_000 });
+    await expect(archiveNewerTask).toHaveAttribute('aria-label', `Archive ${newerTask.title}`);
+    await archiveNewerTask.click();
     await expect(page.getByTestId(`agentic-task-row-${newerTask.sessionId}`)).toHaveCount(0);
     await page.getByRole('button', { name: 'Archived Tasks' }).click();
     const archivedRow = page.getByTestId(`agentic-task-row-${newerTask.sessionId}`);
