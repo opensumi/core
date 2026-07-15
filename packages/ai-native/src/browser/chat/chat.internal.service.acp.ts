@@ -252,7 +252,26 @@ export class AcpChatInternalService extends ChatInternalService {
       }, messageChars=${request.message.prompt.length}, images=${request.message.images?.length ?? 0}`,
     );
 
-    const result = super.sendRequest(request, regenerate);
+    const handleError = (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!request.response.isComplete) {
+        request.response.setErrorDetails({ message });
+        request.response.complete();
+      }
+      this.logger.error(
+        `[ACP Chat][Frontend] sendRequest error — sessionId=${sessionId ?? '(empty)'}, requestId=${
+          request.requestId
+        }, error=${message}`,
+      );
+    };
+
+    let result: ReturnType<ChatInternalService['sendRequest']>;
+    try {
+      result = super.sendRequest(request, regenerate);
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
     return Promise.resolve(result).then(
       async () => {
         await this.registerFirstAgenticPrompt(request, sessionId);
@@ -261,12 +280,7 @@ export class AcpChatInternalService extends ChatInternalService {
         );
       },
       (error) => {
-        const message = error instanceof Error ? error.message : String(error);
-        this.logger.error(
-          `[ACP Chat][Frontend] sendRequest error — sessionId=${sessionId ?? '(empty)'}, requestId=${
-            request.requestId
-          }, error=${message}`,
-        );
+        handleError(error);
       },
     );
   }

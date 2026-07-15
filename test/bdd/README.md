@@ -109,6 +109,14 @@ http://localhost:8080/?workspaceDir=<absolute workspace path>&aiNative=true&aiPa
 
 The fixture is ignored unless the page is on a loopback host and `aiNative=true` is present. It forces the ACP readiness checkpoint to reject before ACP chat initialization so Agentic fallback rendering can be validated without a real ACP session.
 
+Queued-turn start-failure recovery uses a separate loopback-only, one-shot runtime fixture:
+
+```text
+http://localhost:8080/?workspaceDir=<absolute>&aiNative=true&acpBddQueuedTurnStartFailure=reject-once
+```
+
+The fixture is ignored unless the page is on a loopback host, `aiNative=true` is present, and the query value is exactly `reject-once`. The code-level fixture integration guarantees that the first queued-turn production-port start rejects before a handle is returned. Runtime BDD asserts only the visible contract: no user row or active loading/Stop state appears, the same queue head is restored, and `Resume Queue` retries it through the real ACP path.
+
 Configure the ACP agent command with `test/bdd/fixtures/acp-agent/mock-acp-agent.mjs`:
 
 ```json
@@ -141,6 +149,8 @@ The fixture can be selected either with `--fixture=<name>` or `OPENSUMI_ACP_BDD_
 | `history` | Multi-session history/list/switching, seeded session metadata, and bounded rich replay updates on `session/load`. |
 
 If a scenario needs more than one fixture class, run the subcases as separate deterministic fixture passes and record the fixture used for each pass in evidence. Do not mix these deterministic fixture assertions with live-agent assertions in a single PASS unless every fixture-only assertion actually ran.
+
+For an Active Session switch that must keep a newly submitted history-fixture turn active long enough to enqueue and edit later drafts, run `--fixture=history --delay-ms=2000`. Observe active loading and an enabled Stop control before enqueueing, and confirm both remain visible immediately before switching; otherwise restart the pass instead of counting it as PASS.
 
 ## Tool Names
 
@@ -257,6 +267,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-layout-switch.scenario.md` | `runtime-ui` | `default` | Agentic/Classic switching, Explorer interop, resize bounds, and read-only state checks. |
 | `editor-pinned-tabs.scenario.md` | `runtime-ui` | `default` | Editor Pinned Tabs core behavior, sticky and wrap reachability, keyboard access, close protection, and persistence. |
 | `acp-chat-agentic-input-send.scenario.md` | `runtime-ui` | `interactive` | Draft input, first send, commands, mentions, attachments, scroll, and recovery. |
+| `acp-chat-agentic-queued-turns.scenario.md` | `runtime-ui` | `interactive` | Queued-turn FIFO, editing, Stop/Resume, Immediate Send, one-shot start failure, Active Session clearing, and focus. |
 | `acp-chat-agentic-stream-rendering.scenario.md` | `runtime-ui` | `interactive` | Deterministic ACP Agent stream rendering for content, reasoning, plan, tool calls, session state, completion, and recovery. |
 | `acp-chat-agentic-deep-thinking-collapse.scenario.md` | `runtime-ui` | `interactive` | Deep Thinking default collapse, streaming expansion, explicit toggle state, and metadata-only state checks. |
 | `acp-chat-agentic-cancel-stop.scenario.md` | `runtime-ui` | `interactive` | Long-stream stop/cancel behavior, input recovery, and follow-up send. |

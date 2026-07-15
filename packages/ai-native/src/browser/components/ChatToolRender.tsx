@@ -94,7 +94,18 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
       .replace(/\\v/g, '\v') // 垂直制表符
       .replace(/\\0/g, '\0'); // 空字符
   const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
+    setIsExpanded((expanded) => !expanded);
+  };
+
+  const handleHeaderKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+
+    event.preventDefault();
+    if (!event.repeat) {
+      toggleExpand();
+    }
   };
 
   const stateInfo = getStateInfo(value.state);
@@ -110,7 +121,14 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
     />
   ) : (
     <div className={styles.chat_tool_render}>
-      <div className={styles.tool_header} onClick={toggleExpand}>
+      <div
+        aria-expanded={isExpanded}
+        className={styles.tool_header}
+        onClick={toggleExpand}
+        onKeyDown={handleHeaderKeyDown}
+        role='button'
+        tabIndex={0}
+      >
         <div className={styles.tool_name}>
           <Icon iconClass={`codicon codicon-chevron-${isExpanded ? 'down' : 'right'}`} />
           <Icon size='small' iconClass={cls('codicon codicon-tools', styles.tool_icon)} />
@@ -127,7 +145,11 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
           </div>
         )}
       </div>
-      <div className={cls(styles.tool_content, { [styles.expanded]: isExpanded })}>
+      <div
+        aria-hidden={!isExpanded}
+        className={cls(styles.tool_content, { [styles.expanded]: isExpanded })}
+        {...(!isExpanded ? { inert: '' } : {})}
+      >
         {value?.function?.arguments && (
           <div className={styles.tool_arguments}>
             <div className={styles.section_label}>{localize('ai.native.mcp.tool.arguments')}:</div>

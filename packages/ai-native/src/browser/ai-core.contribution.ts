@@ -117,6 +117,7 @@ import { MCP_SERVER_TYPE } from '../common/types';
 
 import { AcpChatInput } from './acp/components/AcpChatInput';
 import { AcpChatMentionInput } from './acp/components/AcpChatMentionInput';
+import { AcpQueuedTurnEditor } from './acp/components/AcpQueuedTurnEditor';
 import { WebMcpGroupRegistry } from './acp/webmcp-group-registry';
 import { createAcpChatGroup } from './acp/webmcp-groups/acp-chat.webmcp-group';
 import { createDiagnosticsGroup } from './acp/webmcp-groups/diagnostics.webmcp-group';
@@ -127,6 +128,7 @@ import { createSearchGroup } from './acp/webmcp-groups/search.webmcp-group';
 import { createTerminalGroup } from './acp/webmcp-groups/terminal.webmcp-group';
 import { createWorkspaceGroup } from './acp/webmcp-groups/workspace.webmcp-group';
 import { registerWebMcpModelContextTools } from './acp/webmcp-model-context-adapter';
+import { AI_CHAT_INPUT_TOGGLE_EXPANDED } from './chat/acp-chat-input.commands';
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
@@ -677,6 +679,8 @@ export class AINativeBrowserContribution
     this.chatInputRegistry.registerChatInput({
       id: 'acp-mention-input',
       component: AcpChatMentionInput,
+      capabilities: ['restore-draft', 'focus', 'expand', 'images', 'mentions', 'paste', 'rich-queued-edit'],
+      queuedTurnEditor: AcpQueuedTurnEditor,
       priority: 200,
       when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
     });
@@ -684,6 +688,7 @@ export class AINativeBrowserContribution
     this.chatInputRegistry.registerChatInput({
       id: 'acp-chat-input',
       component: AcpChatInput,
+      capabilities: ['restore-draft', 'focus', 'expand'],
       priority: 150,
       when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
     });
@@ -935,6 +940,10 @@ export class AINativeBrowserContribution
 
   registerCommands(commands: CommandRegistry): void {
     registerAgenticWorkbenchRevealCommandInterceptors(commands, this.panelLayoutService, this.mainLayoutService);
+
+    commands.registerCommand(AI_CHAT_INPUT_TOGGLE_EXPANDED, {
+      execute: () => this.chatInputRegistry.getActiveInputHandle()?.toggleExpanded?.(),
+    });
 
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {

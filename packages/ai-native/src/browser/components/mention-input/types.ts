@@ -107,10 +107,24 @@ export interface FooterConfig {
   configOptions?: Record<string, any>[];
 }
 
+export type MentionInputSubmitResult = void | boolean | { accepted: boolean; draftDisposition?: 'queued' };
+
+export type MentionInputSubmitHandler = (
+  content: string,
+  config?: { model: string; [key: string]: any },
+) => MentionInputSubmitResult | Promise<MentionInputSubmitResult>;
+
 export interface MentionInputProps {
   mentionItems?: MentionItem[]; // 简化为单一菜单项配置
-  onSend?: (content: string, config?: { model: string; [key: string]: any }) => void;
+  onSend?: MentionInputSubmitHandler;
+  onSendImmediately?: MentionInputSubmitHandler;
   onStop?: () => void;
+  onEscape?: () => void;
+  onEmptyArrowUp?: () => boolean;
+  onEmptySubmit?: () => void;
+  hasSendPayload?: () => boolean;
+  onToggleExpanded?: () => void;
+  onUserInput?: () => void;
   placeholder?: string;
   loading?: boolean;
   onSelectionChange?: (value: string) => void;
@@ -122,6 +136,14 @@ export interface MentionInputProps {
   workspaceService?: IWorkspaceService;
   contextService?: LLMContextService;
   expanded?: boolean;
+  allowEmptySubmit?: boolean;
+}
+
+export interface MentionInputHandle {
+  getSerializedContent(): string;
+  restoreSerializedContent(content: string): void;
+  focus(): void;
+  closeTransientUi(): boolean;
 }
 
 export const MENTION_KEYWORD = '@';
