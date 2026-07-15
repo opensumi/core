@@ -1251,6 +1251,7 @@ export const localizationBundle = {
     'aiNative.chat.agentSelector.appliesToNewChats': '将应用于新的对话',
     'aiNative.chat.agentSelector.moreActions': 'Agent 操作',
     'aiNative.chat.agentSelector.configureAgents': 'Agent 配置',
+    'aiNative.chat.agenticTask.workingDirectory': 'Agent 工作目录：{0}',
     'aiNative.chat.imageUpload': '上传图片',
     'aiNative.chat.clearContext': '清空上下文',
     'aiNative.chat.context.description': '共 {0} 个引用',

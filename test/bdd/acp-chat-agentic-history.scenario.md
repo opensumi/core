@@ -1,8 +1,8 @@
-# Scenario: Agentic Task Workbench - Header Launch, Project-Bound Activation, and Safe Restore
+# Scenario: Agentic Task Workbench - Contextual Launch, Project Management, and Safe Restore
 
 **Trigger:** `packages/ai-native/src/browser/chat/AgenticChatPanelHeader.tsx`, `packages/ai-native/src/browser/acp/components/AgenticTaskList.tsx`, `packages/ai-native/src/browser/acp/components/AgenticTaskLaunchMenu.tsx`, `packages/ai-native/src/browser/acp/agentic-workspace-switch.service.ts`, `packages/ai-native/src/browser/acp/agentic-task-registry.service.ts`, or `packages/ai-native/src/browser/chat/chat.internal.service.acp.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** A deterministic ACP `history` fixture with at least two named agents; the default workspace; a second existing workspace; fixture-local registry state containing (a) a current-workspace Project with two Tasks, (b) a second existing Project with one Task, and (c) an unavailable Project whose cwd does not exist. Dirty-editor branches require a controllable dirty-editor dialog fixture. **Workspace mutation:** The fixture may switch only between its two disposable workspaces and must restore the default workspace. It must not delete or mutate a user workspace. **Automation status:** Current-workspace lifecycle and persistence are converted in `tools/playwright/src/tests/acp-chat-agentic-history.test.ts` and `tools/playwright/src/tests/acp-chat-agentic-rich-history-restore.test.ts`. Header-launch placement, unavailable-project filtering, and multi-workspace switching require the expanded deterministic catalog fixture described above.
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** A deterministic ACP `history` fixture with at least two named agents; the default workspace; a second existing workspace; fixture-local registry state containing (a) a current-workspace Project with two Tasks, (b) a second existing Project with one Task, and (c) an unavailable Project whose cwd does not exist. **Workspace mutation:** Fixture setup may populate the disposable Project workspaces, then returns to the default workspace before the behavior under test. The runtime assertions must not navigate away from that workspace. It must not delete or mutate a user workspace. **Automation status:** Current-workspace lifecycle and persistence are converted in `tools/playwright/src/tests/acp-chat-agentic-history.test.ts` and `tools/playwright/src/tests/acp-chat-agentic-rich-history-restore.test.ts`. The deterministic Task Workbench fixture covers cross-project in-place session activation and Project-group launch in `tools/playwright/src/tests/acp-chat-agentic-task-workbench.test.ts`.
 
 ## Given
 
@@ -21,38 +21,36 @@
 
 1. Observe the Task List header.
    - It shows `Task List` and any attention count.
-   - It does not show a global `New Task` button.
+   - It shows an `Add Project` directory action, not a global Project picker.
    - It includes `Project Current` and `Project Other` only.
    - It does not render `Project Missing`, its Task count, or `Missing ready` in either active or archived Task List content.
 2. Observe every rendered active and archived Project label.
-   - The visible label uses the custom Project name when defined, otherwise its workspace path.
+   - A custom Project name is rendered exactly as entered. Otherwise, the visible label is the final segment of the normalized cwd, or `/` for a filesystem root.
+   - When two available unnamed Projects share that final segment, each label includes the shortest parent-path suffix that distinguishes the set. Search filtering does not change these labels; they recompute only after a Project becomes available or unavailable, is added, or is removed.
    - Hovering the label exposes the complete workspace cwd, even when its visible text is ellipsized.
 3. Search for `Current older`.
    - Only matching immutable Task titles remain visible.
    - Searching does not reorder Tasks or change their stored titles.
 
-### B. Header New Task placement and Project-first launch
+### B. Contextual New Task launch and Agent selection
 
 4. Observe the chat-panel action area.
    - The compact `New Task` icon is immediately left of the fullscreen/restore action.
    - It has an accessible `New Task` label and is visually equivalent in size to the existing header action.
 5. Click `New Task`.
-   - The first menu level is `Choose Project`.
-   - `Project Current` is preselected and receives initial focus because it is the active workspace.
-   - `Project Other` remains selectable in registry order.
-   - `Project Missing` is filtered out and is not rendered in the picker.
-   - The user must still explicitly confirm a Project before Agent choices are shown.
-6. Confirm `Project Current` or select `Project Other`.
-   - The second menu level is `Choose ACP Agent`.
-   - `Agent A` is preselected and receives initial focus because it is the active Agent.
-   - Both `Agent A` and `Agent B` are selectable.
-   - The back row returns to Project selection without creating a draft or changing the default Agent preference.
-7. Select `Agent B`.
-   - The menu closes only after the Agent is selected.
-   - A pending launch for `Project Other` and `Agent B` is prepared.
-   - The IDE opens the target workspace, then creates an Agentic draft with that Agent and target cwd.
-   - The user's default Agent preference remains unchanged.
-8. When no registered Project is currently available, `New Task` is disabled and no empty Project picker opens.
+   - It opens an ACP Agent dropdown anchored to the header action; hover does not open it and it never renders `Choose Project`.
+   - The menu contains `Agent A`, `Agent B`, a check mark for the Agent resolved for the next Task, and `Agent Configuration`.
+   - Choosing an Agent opens an Agent-bound draft for the selected durable Task's Project when a Task is selected; otherwise it uses the current IDE workspace. The target supplies the Agent working directory without navigating the IDE. The draft receives a Task List row only after its first prompt is sent.
+   - Choosing an Agent updates that Project's Agent Recall without changing the user default Agent preference.
+   - Opening the current workspace alone does not add it to the persisted Project Catalog.
+6. Observe a Project Group.
+   - Its only Task creation control is an icon-only `+`; it does not render a `New Task` label or Agent override arrow.
+   - Its `+` opens an Agent-bound draft using that Project's resolved Agent Recall and its Project path as the Agent working directory. It does not navigate, reload the workbench, or invoke a dirty-editor guard when the Project differs from the current IDE workspace.
+   - Its `…` menu contains Rename and contains Remove Project only for a manually added Project without retained Tasks.
+7. When no ACP Agent is available, the header `New Task` action remains enabled and its menu exposes `Agent Configuration`; every Project Group `+` is disabled while `Add Project` remains available.
+8. Click `Add Project` and select one directory.
+   - The existing directory picker is used; the IDE editor and file tree do not navigate.
+   - The Project appears as an empty Project Group. Selecting an existing directory revalidates the existing Project instead of creating a duplicate.
 
 ### C. Task activation in the current Project
 
@@ -66,16 +64,17 @@
     - Bounded rich-history recovery is usable.
     - Registry metadata remains content-free.
 
-### D. Cross-Project activation and dirty editors
+### D. Cross-Project in-place activation and launch
 
-11. With no dirty editor, click `Other ready`.
-    - A pending activation for that Task is stored before switching workspaces.
-    - The IDE opens `Project Other` with `preserveWindow: true`.
-    - After the target workspace is ready, the stored Task session activates and its unread marker clears.
-12. With a dirty editor, click `Other ready` and choose each dialog branch independently.
-    - `Save All and Switch`: all documents save; switching continues only when no dirty editor remains.
-    - `Discard Changes and Switch`: documents close/discard; switching continues.
-    - `Cancel`: workspace, active session, pending activation, and unread state remain unchanged.
+11. With a dirty editor in `Project Current`, click `Other ready`.
+    - `acp_chat_get_session_state({})` activates the `Other ready` ACP session in place and clears its unread marker only after activation succeeds.
+    - The browser URL, IDE workspace cwd, file tree, and dirty editor remain unchanged.
+    - No `Save All and Switch`, `Discard Changes and Switch`, or `Cancel` dialog appears.
+    - The Agentic Chat View header exposes the `Agent working directory` indicator for `Project Other`; its hover title is the complete `Project Other` cwd.
+12. Click the `Project Other` Project-group `+` while the IDE remains in `Project Current`.
+    - It opens an Agent-bound draft whose working directory is `Project Other`.
+    - The browser URL and IDE workspace cwd remain unchanged, the dirty editor remains open, and no save/discard dialog appears.
+    - The Header `New Task` action while that foreign Task is selected also targets `Project Other` without navigation.
 
 ### E. Unavailable Project filtering and task safety
 
@@ -83,8 +82,8 @@
     - Its Project and Tasks remain in the persisted registry for future recovery.
     - Its Project header, Task rows, archived entries, and search results are filtered out of the Task List by default.
     - It does not contribute a visible Task count or attention count.
-14. Open `New Task` with `Project Missing` present.
-    - The missing Project is filtered out of the Project picker.
+14. Observe task creation with `Project Missing` present.
+    - The missing Project has no visible Project Group, `+`, or Agent selection entry.
     - A missing cwd never triggers `workspaceService.open`.
 
 ### F. Archive, Classic Layout, and boundaries
@@ -99,12 +98,11 @@
 
 ## Pass / Blocked Judgment
 
-- **PASS** - every enabled Project can launch and activate through the declared Project-first flow; the active Project and Agent are preselected but explicitly confirmed; unavailable Projects are filtered from user-facing Task List and launch choices and never switch workspaces; the header action, cwd tooltips, persistence, archive, and layout boundaries satisfy the assertions above.
-- **BLOCKED** - the IDE dev server, interactive profile, deterministic multi-project catalog, second disposable workspace, dirty-editor dialog fixture, or stable runtime selector is unavailable.
-- **FAIL** - an Agent is selected without a Project, a task opens the wrong workspace/session, an unavailable cwd is opened, the default Agent preference changes, task metadata stores content, or Agentic changes Classic/IDE Layout behavior.
+- **PASS** - every enabled Project can open and activate through its contextual launch action without changing the current workbench URL or workspace; the header uses its Agent dropdown for the selected Task Project or current workspace, each Project-group `+` supplies its group's working directory directly, Agent Recall and explicit selection follow their declared order without changing the user default, unavailable Projects are filtered, and the header action, cwd tooltips, persistence, archive, and layout boundaries satisfy the assertions above.
+- **BLOCKED** - the IDE dev server, interactive profile, deterministic multi-project catalog, second disposable workspace, or stable runtime selector is unavailable.
+- **FAIL** - a contextual launch renders a Project picker, a Task selection or Project-group launch navigates the workbench or opens a save/discard dialog, a task opens the wrong session or Agent working directory, an unavailable cwd is opened, the default Agent preference changes, task metadata stores content, or Agentic changes Classic/IDE Layout behavior.
 
 ## Codegen Plan
 
 - Keep the existing single-project history and restore Playwright coverage.
-- Add `tools/playwright/src/tests/acp-chat-agentic-task-workbench.test.ts` only after the deterministic two-workspace catalog fixture and dirty-editor dialog fixture are available.
-- Use accessible `New Task`, `Choose Project`, `Choose ACP Agent`, Project-label title, Task-row, and dialog locators; do not assert LLM-generated text or real-agent timing.
+- Use `agentic-task-row-*`, `agentic-task-launch-button`, `agentic-task-execution-context`, the visible `.AI-Chat-slot [contenteditable="true"]` draft composer, and Project-label title locators to prove cross-project selection and launch retain the URL and current workspace; do not assert LLM-generated text or real-agent timing.

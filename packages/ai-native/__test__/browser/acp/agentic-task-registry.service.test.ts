@@ -79,7 +79,7 @@ describe('AgenticTaskRegistryService', () => {
     expect(serialized).not.toContain('message history content');
     expect(JSON.parse(serialized)).toEqual({
       version: 3,
-      projects: [project],
+      projects: [{ ...project, lastAgentId: 'agent-a' }],
       tasks: [
         {
           sessionId: 'acp:a',
@@ -129,11 +129,14 @@ describe('AgenticTaskRegistryService', () => {
     });
 
     expect(await registry.getProject(project.id)).toMatchObject({ joinedAt: 1, label: 'Project A' });
-    expect(await registry.listProjects()).toEqual([projectB, project]);
+    expect(await registry.listProjects()).toEqual([
+      { ...projectB, lastAgentId: 'agent-b' },
+      { ...project, lastAgentId: 'agent-a' },
+    ]);
     expect(await registry.listActiveGroups()).toEqual([
-      { project: projectB, tasks: [expect.objectContaining({ sessionId: 'acp:b' })] },
+      { project: { ...projectB, lastAgentId: 'agent-b' }, tasks: [expect.objectContaining({ sessionId: 'acp:b' })] },
       {
-        project,
+        project: { ...project, lastAgentId: 'agent-a' },
         tasks: [
           expect.objectContaining({ sessionId: 'acp:a-new' }),
           expect.objectContaining({ sessionId: 'acp:a-old' }),
@@ -142,20 +145,85 @@ describe('AgenticTaskRegistryService', () => {
     ]);
   });
 
-  it('migrates legacy automatic labels and persists a custom Project name without changing its identity', async () => {
-    storage.get.mockReturnValue({ version: 2, projects: [project], tasks: [] });
+  it('keeps a manually managed Project visible without Tasks and removes it when it has no history', async () => {
+    const projectManagementRegistry = registry as unknown as {
+      registerManagedProject: (project: AgenticProjectRecord) => Promise<AgenticProjectRecord>;
+      removeManagedProject: (projectId: string) => Promise<boolean>;
+    };
 
-    expect((await registry.getProject(project.id))?.label).toBeUndefined();
+    await projectManagementRegistry.registerManagedProject(project);
+
+    await expect(registry.listActiveGroups()).resolves.toEqual([
+      {
+        project: expect.objectContaining({ id: project.id, managed: true }),
+        tasks: [],
+      },
+    ]);
+    await expect(projectManagementRegistry.removeManagedProject(project.id)).resolves.toBe(true);
+    await expect(registry.listProjects()).resolves.toEqual([]);
+  });
+
+  it('revalidates an existing Project when the same directory is manually added again', async () => {
+    const projectManagementRegistry = registry as unknown as {
+      registerManagedProject: (project: AgenticProjectRecord) => Promise<AgenticProjectRecord>;
+    };
+    await registry.registerProject({ ...project, availability: 'unavailable' });
+
+    await expect(projectManagementRegistry.registerManagedProject(project)).resolves.toMatchObject({
+      availability: 'available',
+      managed: true,
+    });
+  });
+
+  it('drops legacy MRU-only Projects but retains task history and Project Agent recall', async () => {
+    const mruOnlyProject = {
+      ...project,
+      id: 'file:///workspace/mru-only',
+      workspaceUri: 'file:///workspace/mru-only',
+      workspacePath: '/workspace/mru-only',
+      label: undefined,
+    };
+    const taskProject = { ...project, label: undefined };
+    storage.get.mockReturnValue({
+      version: 3,
+      projects: [mruOnlyProject, taskProject],
+      tasks: [
+        {
+          sessionId: 'acp:retained',
+          projectId: taskProject.id,
+          agentId: 'agent-a',
+          title: 'Retained task',
+          createdAt: 1,
+          archived: false,
+          unread: false,
+        },
+      ],
+    });
+    const projectManagementRegistry = registry as unknown as {
+      rememberProjectAgent: (projectId: string, agentId: string) => Promise<AgenticProjectRecord | undefined>;
+    };
+
+    await expect(registry.listProjects()).resolves.toEqual([taskProject]);
+    await expect(projectManagementRegistry.rememberProjectAgent(taskProject.id, 'agent-b')).resolves.toMatchObject({
+      lastAgentId: 'agent-b',
+    });
+    await expect(registry.getProject(taskProject.id)).resolves.toMatchObject({ lastAgentId: 'agent-b' });
+  });
+
+  it('preserves a legacy v3 custom Project name as explicit Project management', async () => {
+    storage.get.mockReturnValue({ version: 3, projects: [{ ...project, label: 'Payments' }], tasks: [] });
+
+    await expect(registry.getProject(project.id)).resolves.toMatchObject({ label: 'Payments', managed: true });
 
     const registryWithRename = registry as unknown as {
       renameProject: (projectId: string, label: string) => Promise<AgenticProjectRecord | undefined>;
     };
 
-    await expect(registryWithRename.renameProject(project.id, '  Payments  ')).resolves.toMatchObject({
+    await expect(registryWithRename.renameProject(project.id, '  Billing  ')).resolves.toMatchObject({
       id: project.id,
-      label: 'Payments',
+      label: 'Billing',
     });
-    expect(await registry.getProject(project.id)).toMatchObject({ id: project.id, label: 'Payments' });
+    expect(await registry.getProject(project.id)).toMatchObject({ id: project.id, label: 'Billing', managed: true });
 
     await expect(registryWithRename.renameProject(project.id, '   ')).resolves.toMatchObject({ id: project.id });
     expect((await registry.getProject(project.id))?.label).toBeUndefined();
@@ -191,7 +259,7 @@ describe('AgenticTaskRegistryService', () => {
     expect(await registry.listActiveGroups('project a')).toEqual([]);
     expect(await registry.listActiveGroups('match')).toEqual([
       {
-        project,
+        project: { ...project, lastAgentId: 'agent-a' },
         tasks: [
           expect.objectContaining({
             sessionId: 'acp:active',
@@ -203,7 +271,10 @@ describe('AgenticTaskRegistryService', () => {
       },
     ]);
     expect(await registry.listArchivedGroups()).toEqual([
-      { project, tasks: [expect.objectContaining({ sessionId: 'acp:archived' })] },
+      {
+        project: { ...project, lastAgentId: 'agent-a' },
+        tasks: [expect.objectContaining({ sessionId: 'acp:archived' })],
+      },
     ]);
     expect(await registry.unarchive('acp:archived')).toBe(true);
     expect(await registry.markProjectAvailability(project.id, 'unavailable')).toMatchObject({

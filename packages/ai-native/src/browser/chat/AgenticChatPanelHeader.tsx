@@ -2,13 +2,21 @@ import cls from 'classnames';
 import React from 'react';
 
 import { COMMON_COMMANDS, PreferenceService, getIcon, localize, useInjectable } from '@opensumi/ide-core-browser';
-import { ACPAgentType, AgentConfig, ChatMessageRole, CommandService, PreferenceScope } from '@opensumi/ide-core-common';
+import {
+  ACPAgentType,
+  AgentConfig,
+  ChatMessageRole,
+  CommandService,
+  PreferenceScope,
+  URI,
+} from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
 import { cleanAttachedTextWrapper } from '../../common/utils';
 import { AgenticProjectRecord, AgenticTaskRegistryService } from '../acp/agentic-task-registry.service';
+import { getAgenticProjectDisplayLabel } from '../acp/components/agentic-project-label';
 import { AgenticTaskLaunchMenu } from '../acp/components/AgenticTaskLaunchMenu';
 import { AIPanelLayoutService } from '../layout/panel-layout.service';
 
@@ -67,29 +75,48 @@ export function getAgenticChatPanelTitle(sessionModel: ChatModel | undefined, pr
   return messageTitle || localize('aiNative.chat.ai.assistant.name');
 }
 
-function AgenticChatHeaderTaskLauncher({ sessionModel }: { sessionModel: ChatModel | undefined }) {
+function AgenticChatHeaderTaskLauncher({
+  onExecutionContextChange,
+  sessionModel,
+}: {
+  onExecutionContextChange: (project: AgenticProjectRecord | undefined) => void;
+  sessionModel: ChatModel | undefined;
+}) {
   const acpChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const registry = useInjectable<AgenticTaskRegistryService>(AgenticTaskRegistryService);
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
-  const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
-  const [preferredProjectId, setPreferredProjectId] = React.useState<string>();
+  const [project, setProject] = React.useState<AgenticProjectRecord>();
   const [preferredAgentId, setPreferredAgentId] = React.useState<string>();
   const refreshVersionRef = React.useRef(0);
 
   const refreshProjects = React.useCallback(async () => {
     const refreshVersion = ++refreshVersionRef.current;
-    const currentWorkspaceUri = workspaceService.workspace?.uri;
+    const currentWorkspace = workspaceService.workspace;
     const latestRequest = sessionModel?.requests?.at(-1);
     try {
-      const [catalog, activeTask] = await Promise.all([
-        registry.listProjects(),
-        sessionModel ? registry.getTask(sessionModel.sessionId) : Promise.resolve(undefined),
-      ]);
+      const workspaceUri = currentWorkspace?.uri ? URI.parse(currentWorkspace.uri) : undefined;
+      const currentProject =
+        workspaceUri?.scheme === 'file' && currentWorkspace?.isDirectory !== false
+          ? {
+              id: workspaceUri.toString(),
+              workspaceUri: workspaceUri.toString(),
+              workspacePath: workspaceUri.codeUri.fsPath,
+              joinedAt: 0,
+              availability: 'available' as const,
+            }
+          : undefined;
+      const activeTask = sessionModel ? await registry.getTask(sessionModel.sessionId) : undefined;
+      const activeTaskProject = activeTask?.projectId ? await registry.getProject(activeTask.projectId) : undefined;
+      const persistedCurrentProject = currentProject ? await registry.getProject(currentProject.id) : undefined;
       if (refreshVersion !== refreshVersionRef.current) {
         return;
       }
-      setProjects(catalog);
-      setPreferredProjectId(catalog.find((project) => project.workspaceUri === currentWorkspaceUri)?.id);
+      setProject(activeTaskProject || persistedCurrentProject || currentProject);
+      onExecutionContextChange(
+        activeTaskProject && activeTaskProject.workspacePath !== currentProject?.workspacePath
+          ? activeTaskProject
+          : undefined,
+      );
       setPreferredAgentId(
         activeTask?.agentId ||
           latestRequest?.message.agentId ||
@@ -97,12 +124,12 @@ function AgenticChatHeaderTaskLauncher({ sessionModel }: { sessionModel: ChatMod
       );
     } catch {
       if (refreshVersion === refreshVersionRef.current) {
-        setProjects([]);
-        setPreferredProjectId(undefined);
+        setProject(undefined);
+        onExecutionContextChange(undefined);
         setPreferredAgentId(undefined);
       }
     }
-  }, [acpChatService, registry, sessionModel, workspaceService]);
+  }, [acpChatService, onExecutionContextChange, registry, sessionModel, workspaceService]);
 
   React.useEffect(() => {
     void refreshProjects();
@@ -119,14 +146,7 @@ function AgenticChatHeaderTaskLauncher({ sessionModel }: { sessionModel: ChatMod
     };
   }, [refreshProjects, registry, workspaceService]);
 
-  return (
-    <AgenticTaskLaunchMenu
-      preferredAgentId={preferredAgentId}
-      preferredProjectId={preferredProjectId}
-      projects={projects}
-      variant='chat-header'
-    />
-  );
+  return <AgenticTaskLaunchMenu project={project} preferredAgentId={preferredAgentId} variant='chat-header' />;
 }
 
 export function AgenticChatPanelHeader({
@@ -139,6 +159,7 @@ export function AgenticChatPanelHeader({
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const [panelLayout, setPanelLayout] = React.useState(() => panelLayoutService.getLayoutMode());
   const [title, setTitle] = React.useState(() => getAgenticChatPanelTitle(sessionModel, preferSessionTitle));
+  const [executionContext, setExecutionContext] = React.useState<AgenticProjectRecord>();
 
   const refreshTitle = React.useCallback(() => {
     setTitle(getAgenticChatPanelTitle(sessionModel, preferSessionTitle));
@@ -169,8 +190,26 @@ export function AgenticChatPanelHeader({
       <div className={styles.agentic_chat_panel_title} data-testid='agentic-chat-panel-header-title' title={title}>
         {title}
       </div>
+      {executionContext && (
+        <div
+          aria-label={localize(
+            'aiNative.chat.agenticTask.workingDirectory',
+            'Agent working directory: {0}',
+            executionContext.workspacePath,
+          )}
+          className={styles.agentic_task_execution_context}
+          data-testid='agentic-task-execution-context'
+          title={executionContext.workspacePath}
+        >
+          {localize(
+            'aiNative.chat.agenticTask.workingDirectory',
+            'Agent working directory: {0}',
+            getAgenticProjectDisplayLabel(executionContext),
+          )}
+        </div>
+      )}
       <div className={styles.agentic_chat_panel_actions}>
-        <AgenticChatHeaderTaskLauncher sessionModel={sessionModel} />
+        <AgenticChatHeaderTaskLauncher onExecutionContextChange={setExecutionContext} sessionModel={sessionModel} />
         <AgenticChatHeaderMaximizeAction id='agentic-chat-panel-header-maximize' />
       </div>
     </div>

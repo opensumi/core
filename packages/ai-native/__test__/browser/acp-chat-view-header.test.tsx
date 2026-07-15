@@ -376,11 +376,10 @@ function createMockServices({
     sendRequest: sendRequest || jest.fn(),
     setLatestRequestId: jest.fn(),
   };
-  const ChatInputForTest = React.forwardRef((_props: any, _ref) => {
-    const props = _props;
-    return React.createElement(
+  const ChatInputForTest = React.forwardRef<HTMLDivElement, any>((props, ref) =>
+    React.createElement(
       'div',
-      null,
+      { ref },
       React.createElement(
         'button',
         {
@@ -426,8 +425,8 @@ function createMockServices({
         },
         'send command only',
       ),
-    );
-  });
+    ),
+  );
 
   return {
     aiChatService,
@@ -440,6 +439,7 @@ function createMockServices({
       start: jest.fn(() => 'relation-1'),
     },
     agenticTaskRegistry: {
+      getProject: jest.fn(() => Promise.resolve(undefined)),
       getTask: jest.fn(() => Promise.resolve(undefined)),
       listProjects: jest.fn(() => Promise.resolve([])),
       onDidChange: jest.fn(() => disposable()),
@@ -589,6 +589,7 @@ function createMockServices({
       },
     },
     workspaceSwitch: {
+      launchTask: jest.fn(() => Promise.resolve(true)),
       refreshProjectAvailability: jest.fn(() => Promise.resolve()),
       restorePendingWork: jest.fn(() => Promise.resolve()),
       seedProjectCatalog: jest.fn(() => Promise.resolve()),
@@ -949,7 +950,53 @@ describe('ACP chat view headers', () => {
     expect(getAction()?.className).toBe('icon-fullescreen');
   });
 
-  it('preselects the active Project and Agent in the header New Task flow', async () => {
+  it('preselects the active Agent in the header New Task menu', async () => {
+    const services = createMockServices({
+      agentConfigs: {
+        'agent-a': { command: 'agent-a', description: 'Agent A' },
+        'agent-b': { command: 'agent-b', description: 'Agent B' },
+      },
+      panelLayout: 'agentic',
+      session: createMockSession(),
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    const currentProject = {
+      availability: 'available' as const,
+      id: 'project-current',
+      joinedAt: 2,
+      label: 'Project Current',
+      workspacePath: '/work/current',
+      workspaceUri: 'file:///work/current',
+    };
+    services.workspaceService.workspace = { uri: currentProject.workspaceUri };
+    services.agenticTaskRegistry.getProject.mockResolvedValue(currentProject);
+    services.agenticTaskRegistry.getTask.mockResolvedValue({ agentId: 'agent-b' });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      await flushPromises();
+      await flushPromises();
+    });
+
+    const launch = container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement;
+    await act(async () => {
+      launch.click();
+    });
+
+    const agentBButton = container.querySelector(
+      '[data-testid="agentic-task-agent-option-agent-b"]',
+    ) as HTMLButtonElement;
+    expect(agentBButton.getAttribute('aria-current')).toBe('true');
+
+    await act(async () => {
+      agentBButton.click();
+      await Promise.resolve();
+    });
+    expect(services.workspaceSwitch.launchTask).toHaveBeenCalledWith(currentProject, 'agent-b');
+  });
+
+  it('uses the active Task Project for Header New Task and displays a foreign execution context', async () => {
     const services = createMockServices({
       agentConfigs: {
         'agent-a': { command: 'agent-a', description: 'Agent A' },
@@ -976,8 +1023,14 @@ describe('ACP chat view headers', () => {
       workspaceUri: 'file:///work/other',
     };
     services.workspaceService.workspace = { uri: currentProject.workspaceUri };
-    services.agenticTaskRegistry.listProjects.mockResolvedValue([otherProject, currentProject]);
-    services.agenticTaskRegistry.getTask.mockResolvedValue({ agentId: 'agent-b' });
+    services.agenticTaskRegistry.getTask.mockResolvedValue({
+      agentId: 'agent-b',
+      projectId: otherProject.id,
+      sessionId: 'acp:current',
+    });
+    services.agenticTaskRegistry.getProject.mockImplementation((projectId: string) =>
+      Promise.resolve(projectId === otherProject.id ? otherProject : currentProject),
+    );
     installInjectableMocks(services);
 
     await renderHeader(React.createElement(AIChatViewACPContent));
@@ -986,27 +1039,58 @@ describe('ACP chat view headers', () => {
       await flushPromises();
     });
 
-    const launch = container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement;
-    await act(async () => {
-      launch.click();
-    });
-
-    const currentProjectButton = Array.from(container.querySelectorAll('[role="menuitem"]')).find(
-      (button) => button.textContent === 'Project Current',
-    ) as HTMLButtonElement;
-    expect(currentProjectButton.getAttribute('aria-current')).toBe('true');
+    const executionContext = container.querySelector('[data-testid="agentic-task-execution-context"]');
+    expect(executionContext?.getAttribute('title')).toBe(otherProject.workspacePath);
+    expect(executionContext?.getAttribute('aria-label')).toBe(`Agent working directory: ${otherProject.workspacePath}`);
+    expect(executionContext?.textContent).toContain('Agent working directory:');
+    expect(executionContext?.textContent).toContain(otherProject.label);
+    expect(services.agenticTaskRegistry.getProject).toHaveBeenCalledWith(otherProject.id);
 
     await act(async () => {
-      currentProjectButton.click();
+      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-agent-option-agent-b"]') as HTMLButtonElement).click();
+      await flushPromises();
     });
 
-    const agentBButton = Array.from(container.querySelectorAll('[role="menuitem"]')).find(
-      (button) => button.textContent === 'Agent B',
-    ) as HTMLButtonElement;
-    expect(agentBButton.getAttribute('aria-current')).toBe('true');
+    expect(services.workspaceSwitch.launchTask).toHaveBeenCalledWith(otherProject, 'agent-b');
   });
 
-  it('refreshes the preferred Project when the active workspace changes', async () => {
+  it('does not display an execution context when the active Task uses the IDE workspace', async () => {
+    const services = createMockServices({
+      panelLayout: 'agentic',
+      session: createMockSession(),
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    const currentProject = {
+      availability: 'available' as const,
+      id: 'project-current',
+      joinedAt: 2,
+      label: 'Project Current',
+      workspacePath: '/work/current',
+      workspaceUri: 'file:///work/current',
+    };
+    services.workspaceService.workspace = { uri: currentProject.workspaceUri };
+    services.agenticTaskRegistry.getTask.mockResolvedValue({
+      agentId: 'agent-a',
+      projectId: currentProject.id,
+      sessionId: 'acp:current',
+    });
+    services.agenticTaskRegistry.getProject.mockResolvedValue(currentProject);
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      await flushPromises();
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-task-execution-context"]')).toBeNull();
+  });
+
+  it('launches the newly active workspace from the header Agent menu', async () => {
     const services = createMockServices({
       agentConfigs: {
         'agent-a': { command: 'agent-a', description: 'Agent A' },
@@ -1031,7 +1115,9 @@ describe('ACP chat view headers', () => {
       workspaceUri: 'file:///work/other',
     };
     services.workspaceService.workspace = { uri: currentProject.workspaceUri };
-    services.agenticTaskRegistry.listProjects.mockResolvedValue([currentProject, otherProject]);
+    services.agenticTaskRegistry.getProject.mockImplementation((projectId: string) =>
+      Promise.resolve(projectId === otherProject.workspaceUri ? otherProject : currentProject),
+    );
     installInjectableMocks(services);
 
     await renderHeader(React.createElement(AIChatViewACPContent));
@@ -1044,10 +1130,11 @@ describe('ACP chat view headers', () => {
     await act(async () => {
       (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
     });
-    const otherProjectButton = Array.from(container.querySelectorAll('[role="menuitem"]')).find(
-      (button) => button.textContent === 'Project Other',
-    ) as HTMLButtonElement;
-    expect(otherProjectButton.getAttribute('aria-current')).toBe('true');
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-agent-option-agent-a"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+    });
+    expect(services.workspaceSwitch.launchTask).toHaveBeenCalledWith(otherProject, 'agent-a');
   });
 
   it('uses the current Agentic draft target before the first prompt is registered', async () => {
@@ -1071,7 +1158,7 @@ describe('ACP chat view headers', () => {
       workspaceUri: 'file:///work/current',
     };
     services.workspaceService.workspace = { uri: currentProject.workspaceUri };
-    services.agenticTaskRegistry.listProjects.mockResolvedValue([currentProject]);
+    services.agenticTaskRegistry.getProject.mockResolvedValue(currentProject);
     services.aiChatService.getActiveAgenticTaskAgentId.mockReturnValue('agent-b');
     installInjectableMocks(services);
 
@@ -1083,16 +1170,8 @@ describe('ACP chat view headers', () => {
     await act(async () => {
       (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
     });
-    await act(async () => {
-      (
-        Array.from(container.querySelectorAll('[role="menuitem"]')).find(
-          (button) => button.textContent === 'Project Current',
-        ) as HTMLButtonElement
-      ).click();
-    });
-
-    const agentBButton = Array.from(container.querySelectorAll('[role="menuitem"]')).find(
-      (button) => button.textContent === 'Agent B',
+    const agentBButton = container.querySelector(
+      '[data-testid="agentic-task-agent-option-agent-b"]',
     ) as HTMLButtonElement;
     expect(agentBButton.getAttribute('aria-current')).toBe('true');
   });

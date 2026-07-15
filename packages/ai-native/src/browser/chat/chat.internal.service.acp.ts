@@ -164,6 +164,8 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private bootstrapSessionAttempted = false;
 
+  private agenticTaskSelectionVersion = 0;
+
   private pendingAgenticTarget: AcpTargetConfigRequest | undefined;
 
   private readonly agenticTaskTargets = new Map<string, AcpTargetConfigRequest>();
@@ -434,7 +436,8 @@ export class AcpChatInternalService extends ChatInternalService {
       return;
     }
 
-    const workspaceUri = this.workspaceService?.workspace?.uri;
+    const target = this.agenticTaskTargets.get(sessionId);
+    const workspaceUri = target ? URI.file(target.cwd).toString() : this.workspaceService?.workspace?.uri;
     if (!workspaceUri || !model) {
       return;
     }
@@ -442,7 +445,7 @@ export class AcpChatInternalService extends ChatInternalService {
     const uri = URI.parse(workspaceUri);
     const project = {
       workspaceUri: uri.toString(),
-      workspacePath: getCachedWorkspaceDir(),
+      workspacePath: target?.cwd || getCachedWorkspaceDir(),
       joinedAt: Date.now(),
       availability: 'available' as const,
     };
@@ -450,7 +453,7 @@ export class AcpChatInternalService extends ChatInternalService {
     await this.agenticTaskRegistry.registerProject(project);
     await this.agenticTaskRegistry.registerFirstPrompt({
       sessionId,
-      agentId: this.agenticTaskTargets.get(sessionId)?.agentId || request.message.agentId,
+      agentId: target?.agentId || request.message.agentId,
       project,
       firstPrompt: request.message.prompt,
       createdAt: model.createdAt,
@@ -771,6 +774,59 @@ export class AcpChatInternalService extends ChatInternalService {
     return this.chatManagerService.getSessions();
   }
 
+  private async applyActivatedSession(
+    sessionId: string,
+    session: ChatModel,
+    shouldApply: () => boolean = () => true,
+  ): Promise<boolean> {
+    const task = this.isAgenticLayout() ? await this.agenticTaskRegistry.getTask(session.sessionId) : undefined;
+    if (!shouldApply()) {
+      return false;
+    }
+
+    this._sessionModel = session;
+    if (task) {
+      this.observeTaskSession(session);
+    }
+    // Notify permission bridge of session change
+    const rawSessionId = this.stripAcpPrefix(sessionId);
+    this.permissionBridgeService.setActiveSession(rawSessionId);
+    this.setAvailableCommands((this.chatManagerService as AcpChatManagerService).getAvailableCommands());
+    this._onSessionModelChange.fire(this._sessionModel);
+    this._onChangeSession.fire(this._sessionModel.sessionId);
+    return true;
+  }
+
+  async activateAgenticTaskSession(sessionId: string, shouldApply: () => boolean = () => true): Promise<boolean> {
+    const selectionVersion = ++this.agenticTaskSelectionVersion;
+    this._onSessionLoadingChange.fire(true);
+    try {
+      await (this.chatManagerService as AcpChatManagerService).loadSession(sessionId);
+      const session = this.chatManagerService.getSession(sessionId);
+      if (selectionVersion !== this.agenticTaskSelectionVersion || !shouldApply()) {
+        return false;
+      }
+      if (!session) {
+        this.messageService.info(formatAcpLoadSessionFallbackMessage(new Error(`Session ${sessionId} not found`)));
+        return false;
+      }
+      return this.applyActivatedSession(
+        sessionId,
+        session,
+        () => selectionVersion === this.agenticTaskSelectionVersion && shouldApply(),
+      );
+    } catch (error) {
+      if (selectionVersion === this.agenticTaskSelectionVersion && shouldApply()) {
+        this.messageService.info(formatAcpLoadSessionFallbackMessage(error));
+      }
+      return false;
+    } finally {
+      if (selectionVersion === this.agenticTaskSelectionVersion) {
+        this._onSessionLoadingChange.fire(false);
+      }
+    }
+  }
+
   override async activateSession(sessionId: string) {
     this._onSessionLoadingChange.fire(true);
     try {
@@ -784,16 +840,7 @@ export class AcpChatInternalService extends ChatInternalService {
         this.enterDraftSession({ force: true });
         return;
       }
-      this._sessionModel = updatedSession;
-      if (this.isAgenticLayout() && (await this.agenticTaskRegistry.getTask(updatedSession.sessionId))) {
-        this.observeTaskSession(updatedSession);
-      }
-      // Notify permission bridge of session change
-      const rawSessionId = this.stripAcpPrefix(sessionId);
-      this.permissionBridgeService.setActiveSession(rawSessionId);
-      this.setAvailableCommands(acpManager.getAvailableCommands());
-      this._onSessionModelChange.fire(this._sessionModel);
-      this._onChangeSession.fire(this._sessionModel.sessionId);
+      await this.applyActivatedSession(sessionId, updatedSession);
     } catch (error) {
       this.messageService.info(formatAcpLoadSessionFallbackMessage(error));
       this.enterDraftSession({ force: true });

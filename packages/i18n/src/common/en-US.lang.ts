@@ -1483,6 +1483,7 @@ export const localizationBundle = {
     'aiNative.chat.agentSelector.appliesToNewChats': 'Applies to new chats',
     'aiNative.chat.agentSelector.moreActions': 'Agent actions',
     'aiNative.chat.agentSelector.configureAgents': 'Agent Configurations',
+    'aiNative.chat.agenticTask.workingDirectory': 'Agent working directory: {0}',
     'aiNative.chat.imageUpload': 'Upload Image',
     'aiNative.chat.clearContext': 'Clear Context',
     'aiNative.chat.context.description': 'Total {0} References',

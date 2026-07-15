@@ -12,6 +12,8 @@ export interface AgenticProjectRecord {
   workspaceUri: string;
   workspacePath: string;
   label?: string;
+  managed?: true;
+  lastAgentId?: string;
   joinedAt: number;
   availability: 'available' | 'unavailable';
 }
@@ -89,6 +91,41 @@ export class AgenticTaskRegistryService {
     return { ...normalized };
   }
 
+  async registerManagedProject(project: AgenticProjectRegistration): Promise<AgenticProjectRecord> {
+    await this.ensureInitialized();
+
+    const normalized = this.normalizeProject({ ...project, managed: true });
+    if (!normalized) {
+      throw new Error('A managed project must include a workspace URI, path, and join time.');
+    }
+
+    const existing = this.findProject(normalized.id);
+    if (existing) {
+      if (!existing.managed || existing.availability !== normalized.availability) {
+        existing.managed = true;
+        existing.availability = normalized.availability;
+        await this.persist();
+      }
+      return { ...existing };
+    }
+
+    this.currentState.projects.push(normalized);
+    await this.persist();
+    return { ...normalized };
+  }
+
+  async removeManagedProject(projectId: string): Promise<boolean> {
+    await this.ensureInitialized();
+    const project = this.findProject(projectId);
+    if (!project || !project.managed || this.currentState.tasks.some((task) => task.projectId === projectId)) {
+      return false;
+    }
+
+    this.currentState.projects = this.currentState.projects.filter((candidate) => candidate.id !== projectId);
+    await this.persist();
+    return true;
+  }
+
   async registerFirstPrompt(options: RegisterFirstPromptOptions): Promise<AgenticTaskRecord> {
     await this.ensureInitialized();
     const project = await this.registerProject(options.project);
@@ -107,8 +144,28 @@ export class AgenticTaskRegistryService {
       unread: false,
     };
     this.currentState.tasks.push(task);
+    const storedProject = this.findProject(project.id);
+    if (storedProject && storedProject.lastAgentId !== options.agentId) {
+      storedProject.lastAgentId = options.agentId;
+    }
     await this.persist();
     return { ...task };
+  }
+
+  async rememberProjectAgent(projectId: string, agentId: string): Promise<AgenticProjectRecord | undefined> {
+    await this.ensureInitialized();
+    const project = this.findProject(projectId);
+    const normalizedAgentId = agentId.trim();
+    if (!project || !normalizedAgentId) {
+      return undefined;
+    }
+    if (project.lastAgentId === normalizedAgentId) {
+      return { ...project };
+    }
+
+    project.lastAgentId = normalizedAgentId;
+    await this.persist();
+    return { ...project };
   }
 
   async getProject(projectId: string): Promise<AgenticProjectRecord | undefined> {
@@ -277,7 +334,7 @@ export class AgenticTaskRegistryService {
         .sort((a, b) => b.createdAt - a.createdAt)
         .map((task) => ({ ...task }));
 
-      if (tasks.length) {
+      if (tasks.length || (!archived && !normalizedQuery && project.managed)) {
         groups.push({ project: { ...project }, tasks });
       }
       return groups;
@@ -344,6 +401,9 @@ export class AgenticTaskRegistryService {
     source.projects.forEach((project) => {
       const normalized = this.normalizeProject(project, source.version === 3);
       if (normalized && !projectIds.has(normalized.id)) {
+        if (source.version === 3 && !normalized.managed && normalized.label) {
+          normalized.managed = true;
+        }
         projectIds.add(normalized.id);
         projects.push(normalized);
       }
@@ -359,7 +419,12 @@ export class AgenticTaskRegistryService {
       }
     });
 
-    return { version: 3, projects, tasks };
+    const retainedProjectIds = new Set(tasks.map((task) => task.projectId));
+    return {
+      version: 3,
+      projects: projects.filter((project) => project.managed || retainedProjectIds.has(project.id)),
+      tasks,
+    };
   }
 
   private normalizeProject(value: unknown, preserveLabel = true): AgenticProjectRecord | undefined {
@@ -377,6 +442,7 @@ export class AgenticTaskRegistryService {
 
     const workspaceUri = this.toCanonicalWorkspaceUri(value.workspaceUri);
     const label = preserveLabel && typeof value.label === 'string' ? value.label.trim() : '';
+    const lastAgentId = typeof value.lastAgentId === 'string' ? value.lastAgentId.trim() : '';
     return {
       id: workspaceUri,
       workspaceUri,
@@ -384,6 +450,8 @@ export class AgenticTaskRegistryService {
       joinedAt: value.joinedAt,
       availability: value.availability,
       ...(label ? { label } : {}),
+      ...(value.managed === true ? { managed: true as const } : {}),
+      ...(lastAgentId ? { lastAgentId } : {}),
     };
   }
 

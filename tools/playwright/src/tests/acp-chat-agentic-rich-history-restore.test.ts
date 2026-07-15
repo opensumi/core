@@ -126,7 +126,7 @@ function sendButton() {
 }
 
 async function startTaskInCurrentProject() {
-  const agentLabel = await launchTaskInCurrentProject(page, runtime.workspaceDir);
+  const agentLabel = await launchTaskInCurrentProject(page);
   expect(agentLabel).toBeTruthy();
   await expect.poll(async () => (await getSessionState()).active, { timeout: 30_000 }).toBe(false);
 }

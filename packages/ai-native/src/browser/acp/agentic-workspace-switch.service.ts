@@ -1,18 +1,12 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
 import { AcpChatInternalService } from '../chat/chat.internal.service.acp';
 
 import { AgenticProjectRecord, AgenticTaskRecord, AgenticTaskRegistryService } from './agentic-task-registry.service';
-
-const SAVE_AND_SWITCH = 'Save All and Switch';
-const DISCARD_AND_SWITCH = 'Discard Changes and Switch';
-const CANCEL_SWITCH = 'Cancel';
 
 @Injectable()
 export class AgenticWorkspaceSwitchService {
@@ -28,103 +22,96 @@ export class AgenticWorkspaceSwitchService {
   @Autowired(IFileServiceClient)
   private readonly fileService: IFileServiceClient;
 
-  @Autowired(WorkbenchEditorService)
-  private readonly editorService: WorkbenchEditorService;
-
-  @Autowired(IMessageService)
-  private readonly messageService: IMessageService;
-
-  private pendingActivationGeneration = 0;
-  private pendingLaunchGeneration = 0;
+  private taskActionGeneration = 0;
 
   async seedProjectCatalog(): Promise<void> {
     await this.workspaceService.whenReady;
+  }
 
-    const currentWorkspace = this.workspaceService.workspace;
-    if (currentWorkspace) {
-      await this.registerWorkspaceUri(currentWorkspace.uri);
+  async addProject(workspaceUri: URI): Promise<AgenticProjectRecord | undefined> {
+    if (workspaceUri.scheme !== 'file') {
+      return undefined;
     }
 
-    const recentWorkspaces = await this.workspaceService.getMostRecentlyUsedWorkspaces();
-    for (const workspaceUri of recentWorkspaces) {
-      const uri = this.toFileUri(workspaceUri);
-      if (!uri) {
-        continue;
+    try {
+      const stat = await this.fileService.getFileStat(workspaceUri.toString(), false);
+      if (!stat || !stat.isDirectory) {
+        return undefined;
       }
 
-      try {
-        const stat = await this.fileService.getFileStat(uri.toString(), false);
-        if (stat) {
-          await this.registerWorkspaceUri(stat.uri);
-        }
-      } catch {
-        // An unavailable MRU entry is not a Project until it can be resolved by the file service.
-      }
+      return this.registry.registerManagedProject({
+        workspaceUri: workspaceUri.toString(),
+        workspacePath: workspaceUri.codeUri.fsPath,
+        joinedAt: Date.now(),
+        availability: 'available',
+      });
+    } catch {
+      return undefined;
     }
   }
 
-  async activateTask(task: AgenticTaskRecord): Promise<void> {
+  async activateTask(task: AgenticTaskRecord): Promise<boolean> {
+    const actionGeneration = ++this.taskActionGeneration;
+    const shouldApply = () => actionGeneration === this.taskActionGeneration;
     const project = await this.registry.getProject(task.projectId);
-    if (!project || !(await this.ensureProjectAvailable(project))) {
-      return;
+    if (!shouldApply() || !project) {
+      return false;
     }
 
-    if (project.workspaceUri === this.currentWorkspaceUri()) {
-      await this.aiChatService.activateSession(task.sessionId);
+    const available = await this.ensureProjectAvailable(project);
+    if (!shouldApply() || !available) {
+      return false;
+    }
+
+    const activated = await this.aiChatService.activateAgenticTaskSession(task.sessionId, shouldApply);
+    if (activated && shouldApply()) {
       await this.registry.markUnread(task.sessionId, false);
-      return;
     }
-
-    if (!(await this.confirmDirtyEditors())) {
-      return;
-    }
-
-    const generation = ++this.pendingActivationGeneration;
-    this.registry.preparePendingActivation({ sessionId: task.sessionId });
-    try {
-      await this.workspaceService.open(URI.file(project.workspacePath), { preserveWindow: true });
-    } catch (error) {
-      if (generation === this.pendingActivationGeneration) {
-        this.registry.consumePendingActivation();
-      }
-      throw error;
-    }
+    return activated && shouldApply();
   }
 
   async launchTask(project: AgenticProjectRecord, agentId: string): Promise<boolean> {
-    const targetProject = await this.registry.getProject(project.id);
-    if (!targetProject || !(await this.ensureProjectAvailable(targetProject))) {
+    const actionGeneration = ++this.taskActionGeneration;
+    const shouldApply = () => actionGeneration === this.taskActionGeneration;
+    const registeredProject = await this.registry.getProject(project.id);
+    if (!shouldApply()) {
+      return false;
+    }
+    const currentWorkspaceProject = this.currentWorkspaceProject();
+    const isCurrentWorkspace =
+      !!currentWorkspaceProject && project.workspaceUri === currentWorkspaceProject.workspaceUri;
+    const targetProject = registeredProject || (isCurrentWorkspace ? currentWorkspaceProject : undefined);
+    if (!targetProject) {
       return false;
     }
 
-    if (targetProject.workspaceUri === this.currentWorkspaceUri()) {
-      this.registry.preparePendingLaunch({ projectId: targetProject.id, agentId });
-      this.aiChatService.enterAgenticTaskDraft({ agentId, cwd: targetProject.workspacePath });
-      return true;
-    }
-
-    if (!(await this.confirmDirtyEditors())) {
-      return false;
-    }
-
-    const generation = ++this.pendingLaunchGeneration;
-    this.registry.preparePendingLaunch({ projectId: targetProject.id, agentId });
-    try {
-      await this.workspaceService.open(URI.file(targetProject.workspacePath), { preserveWindow: true });
-    } catch (error) {
-      if (generation === this.pendingLaunchGeneration) {
-        this.registry.consumePendingLaunch();
+    if (registeredProject) {
+      const available = await this.ensureProjectAvailable(registeredProject);
+      if (!shouldApply() || !available) {
+        return false;
       }
-      throw error;
     }
+
+    if (registeredProject) {
+      await this.registry.rememberProjectAgent(targetProject.id, agentId);
+      if (!shouldApply()) {
+        return false;
+      }
+      this.registry.preparePendingLaunch({ projectId: targetProject.id, agentId });
+    }
+    this.aiChatService.enterAgenticTaskDraft({ agentId, cwd: targetProject.workspacePath });
     return true;
   }
 
   async restorePendingWork(): Promise<void> {
+    const actionGeneration = ++this.taskActionGeneration;
+    const shouldApply = () => actionGeneration === this.taskActionGeneration;
     const activation = this.registry.consumePendingActivation();
     if (activation) {
-      await this.aiChatService.activateSession(activation.sessionId);
-      await this.registry.markUnread(activation.sessionId, false);
+      const activated = await this.aiChatService.activateAgenticTaskSession(activation.sessionId, shouldApply);
+      if (activated && shouldApply()) {
+        await this.registry.markUnread(activation.sessionId, false);
+      }
       return;
     }
 
@@ -134,7 +121,7 @@ export class AgenticWorkspaceSwitchService {
     }
 
     const project = await this.registry.getProject(launch.projectId);
-    if (!project || project.availability === 'unavailable') {
+    if (!shouldApply() || !project || project.availability === 'unavailable') {
       return;
     }
 
@@ -167,51 +154,25 @@ export class AgenticWorkspaceSwitchService {
     }
   }
 
-  private async confirmDirtyEditors(): Promise<boolean> {
-    if (!(await this.hasDirtyEditors())) {
-      return true;
-    }
-
-    const choice = await this.messageService.warning('You have unsaved editor changes. Choose how to continue.', [
-      SAVE_AND_SWITCH,
-      DISCARD_AND_SWITCH,
-      CANCEL_SWITCH,
-    ]);
-    if (choice === SAVE_AND_SWITCH) {
-      await this.editorService.saveAll(true);
-      return !(await this.hasDirtyEditors());
-    }
-
-    if (choice === DISCARD_AND_SWITCH) {
-      await this.editorService.closeAll(undefined, true);
-      return true;
-    }
-
-    return false;
-  }
-
-  private async hasDirtyEditors(): Promise<boolean> {
-    const documents = await this.editorService.getAllOpenedDocuments();
-    return documents.some((document) => document.dirty);
-  }
-
-  private async registerWorkspaceUri(workspaceUri: string): Promise<void> {
-    const uri = this.toFileUri(workspaceUri);
-    if (!uri) {
-      return;
-    }
-
-    await this.registry.registerProject({
-      workspaceUri: uri.toString(),
-      workspacePath: uri.codeUri.fsPath,
-      joinedAt: Date.now(),
-      availability: 'available',
-    });
-  }
-
   private currentWorkspaceUri(): string | undefined {
     const workspaceUri = this.workspaceService.workspace?.uri;
     return workspaceUri ? this.toFileUri(workspaceUri)?.toString() : undefined;
+  }
+
+  private currentWorkspaceProject(): AgenticProjectRecord | undefined {
+    const workspaceUri = this.currentWorkspaceUri();
+    if (!workspaceUri) {
+      return undefined;
+    }
+
+    const uri = URI.parse(workspaceUri);
+    return {
+      id: workspaceUri,
+      workspaceUri,
+      workspacePath: uri.codeUri.fsPath,
+      joinedAt: 0,
+      availability: 'available',
+    };
   }
 
   private toFileUri(value: string): URI | undefined {

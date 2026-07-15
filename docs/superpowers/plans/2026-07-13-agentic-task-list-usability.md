@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make the Agent Layout Task List resizable when space is available, use workspace paths for unnamed projects, and let users rename projects safely.
+**Goal:** Make the Agent Layout Task List resizable when space is available, use compact and unambiguous cwd-derived labels for unnamed projects, and let users rename projects safely.
 
-**Architecture:** The registry remains the single durable source for optional custom project labels and task-to-project identity. The Task List derives one display name from that record, while a local modal invokes the registry rename API. Width remains local presentation state on `#ai_chat_view`; its dynamic limit is driven by the slot’s measured width, never by IDE Layout state.
+**Architecture:** The registry remains the single durable source for optional custom project labels and task-to-project identity. The Task List derives non-persisted default labels from the complete available Project set, while a local modal invokes the registry rename API. Width remains local presentation state on `#ai_chat_view`; its dynamic limit is driven by the slot’s measured width, never by IDE Layout state.
 
 **Tech Stack:** TypeScript, React, Less modules, OpenSumi DI/storage, Jest/jsdom, `@opensumi/ide-components` Modal.
 
@@ -13,7 +13,7 @@
 - Change only Agent Layout ACP files under `packages/ai-native`; do not alter IDE Layout or `packages/ai-native/src/browser/layout/`.
 - Preserve a 360px minimum Main Conversation Area, a 208px Task List minimum, and a 480px hard Task List maximum.
 - Project IDs remain canonical workspace URIs; no task/session migration or workspace switch behavior changes.
-- Empty or whitespace-only custom names mean “display the workspace path.”
+- Empty or whitespace-only custom names mean “derive the default cwd label”; defaults use the last normalized path segment and add the shortest parent suffix only for collisions among available unnamed Projects.
 
 ---
 
@@ -27,7 +27,7 @@
 **Interfaces:**
 
 - Produces: `renameProject(projectId: string, label: string): Promise<AgenticProjectRecord | undefined>`.
-- Produces: an optional `label` on `AgenticProjectRecord`; consumers derive `label?.trim() || workspacePath`.
+- Produces: an optional `label` on `AgenticProjectRecord`; consumers render a custom label exactly or derive a non-persisted default label from all available Projects.
 
 - [ ] **Step 1: Write the failing registry tests**
 
@@ -83,13 +83,13 @@ Expected: PASS.
 **Interfaces:**
 
 - Consumes: `registry.renameProject(projectId, label)` from Task 1.
-- Consumes: `getProjectDisplayLabel(project) => project.label?.trim() || project.workspacePath`.
+- Consumes: a derived display-label map for all available Projects, where `project.label?.trim()` wins and defaults are collision-aware cwd suffixes.
 
 - [ ] **Step 1: Write failing component tests**
 
 ```tsx
-expect(container.textContent).toContain('/work/a');
-(container.querySelector('[aria-label="Rename /work/a"]') as HTMLButtonElement).click();
+expect(container.textContent).toContain('a');
+(container.querySelector('[aria-label="Rename a"]') as HTMLButtonElement).click();
 // enter a label, save, and assert active groups plus launcher use “Payments”.
 expect(services.registry.renameProject).toHaveBeenCalledWith('project-a', 'Payments');
 ```
