@@ -99,6 +99,22 @@ describe('ChatToolRender', () => {
     });
   }
 
+  function getToolHeader(): HTMLDivElement {
+    return container.querySelector('.tool_header') as HTMLDivElement;
+  }
+
+  function getToolContent(): HTMLDivElement {
+    return container.querySelector('.tool_content') as HTMLDivElement;
+  }
+
+  function keyDown(header: HTMLDivElement, key: string, repeat = false): KeyboardEvent {
+    const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key, repeat });
+    act(() => {
+      header.dispatchEvent(event);
+    });
+    return event;
+  }
+
   it('uses a neutral prefix for non-MCP tool calls', () => {
     registry.getMCPTool.mockReturnValue(undefined);
 
@@ -118,5 +134,73 @@ describe('ChatToolRender', () => {
 
     expect(container.textContent).toContain('Called MCP Tool');
     expect(container.textContent).toContain('Read File');
+  });
+
+  it('exposes the tool header as a focusable disclosure button', () => {
+    renderToolCall('terminal');
+
+    const header = getToolHeader();
+    expect(header.tabIndex).toBe(0);
+    expect(header.getAttribute('role')).toBe('button');
+    expect(header.getAttribute('aria-expanded')).toBe('false');
+
+    header.focus();
+    expect(document.activeElement).toBe(header);
+  });
+
+  it('keeps click expansion behavior and exposes the expanded state', () => {
+    renderToolCall('terminal');
+
+    const header = getToolHeader();
+    const content = getToolContent();
+
+    act(() => header.click());
+    expect(header.getAttribute('aria-expanded')).toBe('true');
+    expect(content.classList.contains('expanded')).toBe(true);
+
+    act(() => header.click());
+    expect(header.getAttribute('aria-expanded')).toBe('false');
+    expect(content.classList.contains('expanded')).toBe(false);
+  });
+
+  it('toggles from Enter without losing focus or reacting to key repeat', () => {
+    renderToolCall('terminal');
+
+    const header = getToolHeader();
+    header.focus();
+
+    keyDown(header, 'Enter');
+    expect(header.getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement).toBe(header);
+
+    keyDown(header, 'Enter', true);
+    expect(header.getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement).toBe(header);
+
+    keyDown(header, 'Enter');
+    expect(header.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(header);
+  });
+
+  it('toggles from Space, prevents scrolling, and ignores key repeat', () => {
+    renderToolCall('terminal');
+
+    const header = getToolHeader();
+    header.focus();
+
+    const expandEvent = keyDown(header, ' ');
+    expect(expandEvent.defaultPrevented).toBe(true);
+    expect(header.getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement).toBe(header);
+
+    const repeatedEvent = keyDown(header, ' ', true);
+    expect(repeatedEvent.defaultPrevented).toBe(true);
+    expect(header.getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement).toBe(header);
+
+    const collapseEvent = keyDown(header, ' ');
+    expect(collapseEvent.defaultPrevented).toBe(true);
+    expect(header.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(header);
   });
 });
