@@ -1100,6 +1100,68 @@ describe('AcpQueuedTurnModule', () => {
     expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['old queued']);
   });
 
+  it('reports queue ownership when corrective cancellation fails after stop cancellation fails', async () => {
+    const port = new ControlledTurnPort();
+    port.cancelCurrent = jest
+      .fn<Promise<void>, []>()
+      .mockRejectedValueOnce(new Error('stop cancel failed'))
+      .mockRejectedValueOnce(new Error('corrective cancel failed'));
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'old queued' });
+    await turns.stop();
+
+    await expect(turns.submit({ message: 'corrective draft' })).resolves.toEqual({
+      accepted: false,
+      reason: 'cancel-failed',
+      draftDisposition: 'queued',
+    });
+
+    expect(port.cancelCurrent).toHaveBeenCalledTimes(2);
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'cancel-failed' });
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['corrective draft', 'old queued']);
+
+    await expect(turns.resume()).resolves.toEqual({ accepted: true, outcome: 'resumed' });
+    port.complete(0);
+    await turns.whenSettled();
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'corrective draft']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['old queued']);
+  });
+
+  it('reports queue ownership when corrective cancellation succeeds but replacement start fails', async () => {
+    const port = new RejectingNextStartTurnPort();
+    port.cancelCurrent = jest
+      .fn<Promise<void>, []>()
+      .mockRejectedValueOnce(new Error('stop cancel failed'))
+      .mockImplementationOnce(async () => {
+        port.status = 'idle';
+      });
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+    await turns.submit({ message: 'running' });
+    await turns.submit({ message: 'old queued' });
+    await turns.stop();
+    port.failNextStart = true;
+
+    await expect(turns.submit({ message: 'corrective draft' })).resolves.toEqual({
+      accepted: false,
+      reason: 'start-failed',
+      draftDisposition: 'queued',
+    });
+
+    expect(port.cancelCurrent).toHaveBeenCalledTimes(2);
+    expect(port.failedStarts.map(({ message }) => message)).toEqual(['corrective draft']);
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'start-failed' });
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['corrective draft', 'old queued']);
+
+    await expect(turns.resume()).resolves.toEqual({ accepted: true, outcome: 'resumed' });
+
+    expect(port.starts.map(({ draft }) => draft.message)).toEqual(['running', 'corrective draft']);
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['old queued']);
+  });
+
   it('resumes the remaining FIFO after removing a Queued Turn while paused', async () => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);

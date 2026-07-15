@@ -153,7 +153,9 @@ export class AcpQueuedTurnModule implements IDisposable {
     if (this.processing === 'paused' && this.activeDelivery) {
       const correctiveTurn = this.createQueuedTurn(submittedDraft);
       this.entries.unshift(correctiveTurn);
-      return this.sendImmediately(correctiveTurn.id);
+      return this.sendImmediately(correctiveTurn.id).then((result) =>
+        this.withQueuedDraftDisposition(correctiveTurn, result),
+      );
     }
 
     return this.serialize(async () => {

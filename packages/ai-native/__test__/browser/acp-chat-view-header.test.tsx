@@ -2234,6 +2234,127 @@ describe('ACP chat view headers', () => {
     }
   });
 
+  it.each([
+    { failure: 'corrective cancellation fails', replacementStartFails: false },
+    { failure: 'corrective replacement start fails', replacementStartFails: true },
+  ])('keeps one production-owned corrective copy when $failure', async ({ replacementStartFails }) => {
+    const session = createMockSession({ messages: [] });
+    const responses: ReturnType<typeof createRequestResponse>[] = [];
+    let failedCorrectiveStart = false;
+    const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => {
+      if (replacementStartFails && message === 'corrective draft' && !failedCorrectiveStart) {
+        failedCorrectiveStart = true;
+        throw new Error('corrective start failed');
+      }
+      const response = createRequestResponse();
+      responses.push(response);
+      return {
+        message: { agentId, command, images, prompt: message },
+        requestId: `request-${responses.length}`,
+        response,
+      };
+    });
+    const sendRequest = jest.fn();
+    const services = createMockServices({ createRequest, sendRequest, session });
+    let contenteditableProps: any;
+    const ContenteditableInput = React.forwardRef((props: any, _ref) => {
+      contenteditableProps = props;
+      const editorRef = React.useRef<HTMLDivElement>(null);
+      React.useEffect(() => {
+        props.onInputHandleReady?.({
+          focus: () => editorRef.current?.focus(),
+          restoreDraft: (draft: { message: string }) => {
+            editorRef.current?.replaceChildren(document.createTextNode(draft.message));
+          },
+          setExpanded: jest.fn(),
+        });
+        return () => props.onInputHandleReady?.(null);
+      }, [props.onInputHandleReady]);
+      return React.createElement('div', {
+        'data-testid': 'production-corrective-contenteditable',
+        contentEditable: true,
+        onKeyDown: async (event: React.KeyboardEvent<HTMLDivElement>) => {
+          if (event.key !== 'Enter') {
+            return;
+          }
+          event.preventDefault();
+          const message = editorRef.current?.textContent || '';
+          if (!message) {
+            await props.turnActions.fastTrack();
+            return;
+          }
+          const result = await props.turnActions.submit({ message }, 'normal');
+          if (result.accepted || result.draftDisposition === 'queued') {
+            editorRef.current?.replaceChildren();
+          }
+        },
+        ref: editorRef,
+        suppressContentEditableWarning: true,
+      });
+    });
+    services.setActiveChatInputForTest({
+      id: 'production-corrective-contenteditable-input',
+      component: ContenteditableInput,
+      capabilities: ['focus', 'restore-draft'],
+      queuedTurnEditor: undefined,
+    });
+    services.aiChatService.cancelRequest
+      .mockRejectedValueOnce(new Error('stop cancel failed'))
+      .mockImplementationOnce(() => {
+        if (replacementStartFails) {
+          responses[0].finish('manual-stop');
+          return undefined;
+        }
+        return Promise.reject(new Error('corrective cancel failed'));
+      });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    const editor = container.querySelector('[data-testid="production-corrective-contenteditable"]') as HTMLDivElement;
+    editor.textContent = 'running';
+    await act(async () => {
+      editor.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Enter' }));
+      await flushPromises();
+    });
+    expect(sendRequest).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await contenteditableProps.turnActions.stop();
+      await flushPromises();
+    });
+    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Paused');
+
+    editor.textContent = 'corrective draft';
+    await act(async () => {
+      editor.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Enter' }));
+      await flushPromises();
+    });
+
+    expect(editor.textContent).toBe('');
+    expect(container.querySelectorAll('[data-testid="acp-queued-turn-preview"]')).toHaveLength(1);
+    expect(container.querySelector('[data-testid="acp-queued-turn-preview"]')?.textContent).toContain(
+      'corrective draft',
+    );
+    expect(container.querySelector('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Paused');
+
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-queued-turn-resume"]') as HTMLButtonElement).click();
+      if (!replacementStartFails) {
+        responses[0].finish('completed');
+      }
+      await flushPromises();
+    });
+
+    expect(sendRequest).toHaveBeenCalledTimes(2);
+    expect(sendRequest.mock.calls[1][0].message.prompt).toBe('corrective draft');
+
+    await act(async () => {
+      editor.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Enter' }));
+      await flushPromises();
+    });
+    expect(sendRequest).toHaveBeenCalledTimes(2);
+  });
+
   it('waits for the matching response cancellation before Immediate Send starts another request', async () => {
     const session = createMockSession({ messages: [] });
     const responses: ReturnType<typeof createRequestResponse>[] = [];
