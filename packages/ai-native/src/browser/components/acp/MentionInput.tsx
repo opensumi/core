@@ -1170,20 +1170,10 @@ const MentionInputImpl = (
       const fragment = document.createDocumentFragment();
 
       lines.forEach((line, index) => {
-        // 处理行首空格，将每个空格转换为 &nbsp;
-        const processedLine = line.replace(/^[ ]+/g, (match) => {
-          const span = document.createElement('span');
-          span.innerHTML = ' '.repeat(match.length);
-          return span.innerHTML;
-        });
-
-        // 创建一个临时容器来保持 HTML 内容
-        const container = document.createElement('span');
-        container.innerHTML = processedLine;
-
-        // 将容器的内容添加到文档片段
-        while (container.firstChild) {
-          fragment.appendChild(container.firstChild);
+        const leadingSpaces = line.match(/^ +/)?.[0].length || 0;
+        const literalLine = `${'\u00a0'.repeat(leadingSpaces)}${line.slice(leadingSpaces)}`;
+        if (literalLine) {
+          fragment.appendChild(document.createTextNode(literalLine));
         }
 
         // 如果不是最后一行，添加换行符
@@ -1685,7 +1675,12 @@ const MentionInputImpl = (
     const finishAcceptedSend = (sendResult: MentionInputSubmitResult) => {
       const accepted =
         sendResult !== false &&
-        !(typeof sendResult === 'object' && sendResult !== null && sendResult.accepted === false);
+        !(
+          typeof sendResult === 'object' &&
+          sendResult !== null &&
+          sendResult.accepted === false &&
+          sendResult.draftDisposition !== 'queued'
+        );
       if (!accepted) {
         return sendResult;
       }

@@ -43,6 +43,7 @@ export type TurnActionResult =
   | { accepted: true; outcome: 'started' | 'queued' | 'updated' | 'removed' | 'resumed' | 'stopped' }
   | {
       accepted: false;
+      draftDisposition?: 'queued';
       reason:
         | 'empty-content'
         | 'turn-not-found'
@@ -145,7 +146,9 @@ export class AcpQueuedTurnModule implements IDisposable {
       const immediateTurn = this.createQueuedTurn(submittedDraft);
       this.entries.push(immediateTurn);
       this.fireDidChange();
-      return this.sendImmediately(immediateTurn.id);
+      return this.sendImmediately(immediateTurn.id).then((result) =>
+        this.withQueuedDraftDisposition(immediateTurn, result),
+      );
     }
     if (this.processing === 'paused' && this.activeDelivery) {
       const correctiveTurn = this.createQueuedTurn(submittedDraft);
@@ -158,7 +161,8 @@ export class AcpQueuedTurnModule implements IDisposable {
         return { accepted: false, reason: 'stale-session' };
       }
       if (this.processing === 'paused' && !this.activeDelivery) {
-        return this.startReservedTurn(this.createQueuedTurn(submittedDraft), true);
+        const turn = this.createQueuedTurn(submittedDraft);
+        return this.withQueuedDraftDisposition(turn, await this.startReservedTurn(turn, true));
       }
 
       if (
@@ -175,7 +179,8 @@ export class AcpQueuedTurnModule implements IDisposable {
         return { accepted: true, outcome: 'queued' };
       }
 
-      return this.startReservedTurn(this.createQueuedTurn(submittedDraft), true);
+      const turn = this.createQueuedTurn(submittedDraft);
+      return this.withQueuedDraftDisposition(turn, await this.startReservedTurn(turn, true));
     });
   }
 
@@ -552,6 +557,16 @@ export class AcpQueuedTurnModule implements IDisposable {
       }
       return { accepted: false, reason: 'turn-not-found' };
     }
+    if (!this.activeDelivery && this.port.getStatus(cancellationSessionId) === 'idle') {
+      if (this.immediateReservation !== turn) {
+        return { accepted: false, reason: 'turn-not-found' };
+      }
+      this.immediateReservation = undefined;
+      this.immediateReservationIndex = undefined;
+      this.processing = 'auto';
+      this.pauseReason = undefined;
+      return this.startReservedTurn(turn, true);
+    }
     try {
       await this.port.cancelCurrent(cancellationSessionId);
     } catch {
@@ -561,8 +576,7 @@ export class AcpQueuedTurnModule implements IDisposable {
       if (this.immediateReservation !== turn) {
         return { accepted: false, reason: 'turn-not-found' };
       }
-      const reservationIndex = this.immediateReservationIndex ?? originalIndex;
-      this.entries.splice(Math.min(reservationIndex, this.entries.length), 0, turn);
+      this.entries.unshift(turn);
       this.immediateReservation = undefined;
       this.immediateReservationIndex = undefined;
       this.processing = 'paused';
@@ -679,6 +693,13 @@ export class AcpQueuedTurnModule implements IDisposable {
       ...draft,
       images: draft.images ? [...draft.images] : undefined,
     };
+  }
+
+  private withQueuedDraftDisposition(turn: QueuedTurn, result: TurnActionResult): TurnActionResult {
+    if (!result.accepted && this.entries.some(({ id }) => id === turn.id)) {
+      return { ...result, draftDisposition: 'queued' };
+    }
+    return result;
   }
 
   private takePendingActivation(): { pending: boolean; sessionId: string | undefined } {

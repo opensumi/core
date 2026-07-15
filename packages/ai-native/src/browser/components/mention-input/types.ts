@@ -107,7 +107,7 @@ export interface FooterConfig {
   configOptions?: Record<string, any>[];
 }
 
-export type MentionInputSubmitResult = void | boolean | { accepted: boolean };
+export type MentionInputSubmitResult = void | boolean | { accepted: boolean; draftDisposition?: 'queued' };
 
 export type MentionInputSubmitHandler = (
   content: string,

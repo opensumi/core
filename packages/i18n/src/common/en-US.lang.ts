@@ -1499,7 +1499,7 @@ export const localizationBundle = {
     'aiNative.chat.queue.immediate': 'Immediate Send',
     'aiNative.chat.queue.cancelEdit': 'Cancel',
     'aiNative.chat.queue.finishEditBeforeCollapse': 'Finish editing before collapsing',
-    'aiNative.chat.queue.imageUpload.partialFailure': 'Some images could not be uploaded',
+    'aiNative.chat.queue.imageUpload.partialFailure': '{0} image(s) failed to upload',
     'aiNative.chat.queue.ariaLabel': 'Queued turns',
     'aiNative.chat.queue.toggleAriaLabel': 'Toggle queued turns',
     'aiNative.chat.queue.resumeAriaLabel': 'Resume queued turns',

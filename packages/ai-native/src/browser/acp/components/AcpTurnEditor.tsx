@@ -113,7 +113,7 @@ export interface AcpTurnEditorProps extends IChatMentionInputProps {
 }
 
 function isAcceptedTurnActionResult(result: TurnActionResult | void): boolean {
-  return result === undefined || result.accepted;
+  return result === undefined || result.accepted || result.draftDisposition === 'queued';
 }
 
 /**
@@ -1046,7 +1046,11 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
 
       if (failedCount > 0) {
         messageService.error(
-          localize('aiNative.chat.imageUpload.partialFailure', '{0} image(s) failed', String(failedCount)),
+          localize(
+            'aiNative.chat.queue.imageUpload.partialFailure',
+            '{0} image(s) failed to upload',
+            String(failedCount),
+          ),
         );
       }
     },
@@ -1147,6 +1151,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
       return false;
     }
     inputHandle.restoreDraft?.(turn);
+    inputHandle.focus?.();
     return true;
   }, [inputHandle, isQueued, props.turnActions]);
 

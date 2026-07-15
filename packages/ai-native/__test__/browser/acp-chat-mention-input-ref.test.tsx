@@ -25,6 +25,14 @@ jest.mock('@opensumi/ide-core-browser', () => {
   };
 });
 
+jest.mock('@opensumi/ide-core-common', () => {
+  const actual = jest.requireActual('@opensumi/ide-core-common');
+  return {
+    ...actual,
+    localize: jest.fn(actual.localize),
+  };
+});
+
 jest.mock('@opensumi/ide-core-browser/lib/components', () => ({
   Icon: ({ className }: { className?: string }) => require('react').createElement('span', { className }),
   Popover: ({ children, title }: { children: React.ReactNode; title?: string }) =>
@@ -207,6 +215,8 @@ jest.mock('../../src/browser/components/components.module.less', () => ({
   delete_button: 'delete_button',
 }));
 
+import { localizationBundle as enUSLocalizationBundle } from '../../../i18n/src/common/en-US.lang';
+import { localizationBundle as zhCNLocalizationBundle } from '../../../i18n/src/common/zh-CN.lang';
 import { AcpChatMentionInput } from '../../src/browser/acp/components/AcpChatMentionInput';
 import { AcpQueuedTurnEditor } from '../../src/browser/acp/components/AcpQueuedTurnEditor';
 import { AcpTurnEditor } from '../../src/browser/acp/components/AcpTurnEditor';
@@ -870,7 +880,18 @@ describe('AcpChatMentionInput ref contract', () => {
 
     expect(ref.current!.getDraft().images).toEqual(['data:image/png;base64,ok']);
     expect(container.querySelectorAll('img')).toHaveLength(1);
-    expect(service.error).toHaveBeenCalledWith('{0} image(s) failed');
+    expect(service.error).toHaveBeenCalledWith('{0} image(s) failed to upload');
+    expect(jest.requireMock('@opensumi/ide-core-common').localize).toHaveBeenCalledWith(
+      'aiNative.chat.queue.imageUpload.partialFailure',
+      '{0} image(s) failed to upload',
+      '1',
+    );
+  });
+
+  it('keeps the partial-upload failure count placeholder in both localization bundles', () => {
+    const key = 'aiNative.chat.queue.imageUpload.partialFailure';
+    expect(enUSLocalizationBundle.contents[key]).toContain('{0}');
+    expect(zhCNLocalizationBundle.contents[key]).toContain('{0}');
   });
 
   it('ignores upload success and failure from an old session generation', async () => {
@@ -1638,6 +1659,83 @@ describe('AcpChatMentionInput ref contract', () => {
     expect(container.querySelector('[data-testid="acp-queued-editor-actions"]')).not.toBeNull();
   });
 
+  it('transfers a start-failed main draft to the queue without leaving a second contenteditable copy', async () => {
+    mockUseActualMentionInput = true;
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(createMockService());
+    let status: 'idle' | 'generating' = 'idle';
+    let startCount = 0;
+    const outcome = deferred<AcpTurnOutcome>();
+    const port: AcpQueuedTurnPort = {
+      getStatus: () => status,
+      start: jest.fn(async (sessionId: string | undefined, draft: AcpTurnDraft): Promise<AcpTurnHandle> => {
+        startCount += 1;
+        if (startCount === 1) {
+          throw new Error('start failed');
+        }
+        status = 'generating';
+        return {
+          id: `delivery-${startCount}`,
+          sessionId: sessionId || 'acp:session-1',
+          outcome: outcome.promise,
+        };
+      }),
+      cancelCurrent: jest.fn(async () => {
+        status = 'idle';
+      }),
+    };
+    const turns = new AcpQueuedTurnModule(port);
+    turns.activate('acp:session-1');
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          variant: 'main',
+          onSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+          turnActions: {
+            submit: (draft: AcpTurnDraft, intent: 'normal' | 'immediate') => turns.submit(draft, intent),
+            stop: () => turns.stop(),
+            fastTrack: () => turns.fastTrack(),
+            invalidateFastTrack: () => turns.invalidateFastTrack(),
+            takeBackLastQueuedTurn: () => turns.takeBackLast(),
+          },
+        }),
+        container,
+      );
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    act(() => {
+      editor.textContent = 'start failure draft';
+      editor.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await act(async () => {
+      dispatchEditorKey(editor, { key: 'Enter' });
+      await turns.whenSettled();
+    });
+
+    expect(turns.snapshot.entries.map(({ message }) => message)).toEqual(['start failure draft']);
+    expect(turns.snapshot).toMatchObject({ phase: 'paused', pauseReason: 'start-failed' });
+    expect(editor.textContent).toBe('');
+
+    await act(async () => {
+      await turns.resume();
+      await turns.whenSettled();
+    });
+    expect(port.start).toHaveBeenCalledTimes(2);
+    expect(turns.snapshot.entries).toEqual([]);
+
+    await act(async () => {
+      dispatchEditorKey(editor, { key: 'Enter' });
+      await turns.whenSettled();
+    });
+    expect(port.start).toHaveBeenCalledTimes(2);
+  });
+
   it.each(['cancel-failed', 'start-failed'] as const)(
     'restores the real queued contenteditable and edit lease after %s Immediate Send',
     async (failure) => {
@@ -1960,6 +2058,73 @@ describe('AcpChatMentionInput ref contract', () => {
         unmountComponentAtNode(container);
       });
     }
+  });
+
+  it('focuses the restored ArrowUp draft at the end and appends the next character there', () => {
+    mockUseActualMentionInput = true;
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(createMockService());
+    const ref = React.createRef<AcpTurnEditorHandle>();
+    const restoredDraft = {
+      id: 'queued-restored',
+      message: '{{@file:/workspace/review.ts}} restored draft',
+      images: ['data:image/png;base64,restored'],
+      agentId: 'restored-agent',
+      command: '/restored-command',
+    };
+    const takeBackLastQueuedTurn = jest.fn(() => restoredDraft);
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          ref,
+          variant: 'main',
+          onSend: jest.fn(),
+          setTheme: jest.fn(),
+          agentId: '',
+          setAgentId: jest.fn(),
+          command: '',
+          setCommand: jest.fn(),
+          turnActions: {
+            submit: jest.fn(),
+            stop: jest.fn(),
+            fastTrack: jest.fn(),
+            invalidateFastTrack: jest.fn(),
+            takeBackLastQueuedTurn,
+          },
+        }),
+        container,
+      );
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    editor.focus();
+    act(() => {
+      dispatchEditorKey(editor, { key: 'ArrowUp' });
+    });
+
+    expect(document.activeElement).toBe(editor);
+    const selection = window.getSelection()!;
+    expect(selection.isCollapsed).toBe(true);
+    const range = selection.getRangeAt(0);
+    expect(range.endContainer).toBe(editor);
+    expect(range.endOffset).toBe(editor.childNodes.length);
+    expect(ref.current!.getDraft()).toEqual({
+      message: restoredDraft.message,
+      images: restoredDraft.images,
+      agentId: restoredDraft.agentId,
+      command: restoredDraft.command,
+    });
+
+    act(() => {
+      const inserted = document.createTextNode('!');
+      range.insertNode(inserted);
+      range.setStartAfter(inserted);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      editor.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(ref.current!.getDraft().message).toBe(`${restoredDraft.message}!`);
   });
 
   it('uses canonical empty markup and preserves full queued payloads during ArrowUp history navigation', async () => {

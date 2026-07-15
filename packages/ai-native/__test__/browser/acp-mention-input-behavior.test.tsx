@@ -42,7 +42,7 @@ jest.mock('../../src/browser/components/mention-input/mention-select', () => ({
 }));
 
 import { MentionInput } from '../../src/browser/components/acp/MentionInput';
-import { MentionInputProps } from '../../src/browser/components/mention-input/types';
+import { MentionInputHandle, MentionInputProps } from '../../src/browser/components/mention-input/types';
 
 type FutureMentionInputProps = Partial<MentionInputProps> & {
   onSendImmediately?: (content: string, config?: { model: string; [key: string]: any }) => void;
@@ -274,6 +274,49 @@ it('uploads pasted images and inserts text at the current caret', async () => {
   expect(editor.textContent).toBe('before pastedafter');
   expect(window.getSelection()?.isCollapsed).toBe(true);
   expect(caretOffset(editor)).toBe('before pasted'.length);
+});
+
+it('keeps HTML-looking text/plain literal during a mixed image paste', async () => {
+  const ref = React.createRef<MentionInputHandle>();
+  const onImageUpload = jest.fn(async () => undefined);
+  act(() => {
+    root.render(
+      <MentionInput
+        ref={ref}
+        footerConfig={{ buttons: [], showModelSelector: false }}
+        mentionItems={[]}
+        onImageUpload={onImageUpload}
+      />,
+    );
+  });
+  const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+  const image = new File(['png'], 'literal.png', { type: 'image/png' });
+  const plainText = '  <tag> &\n    <img src=x onerror=alert(1)>\n\t& tail';
+  const expected = '  <tag> &\n    <img src=x onerror=alert(1)>\n    & tail';
+  editor.focus();
+  const range = document.createRange();
+  range.selectNodeContents(editor);
+  range.collapse(false);
+  window.getSelection()?.removeAllRanges();
+  window.getSelection()?.addRange(range);
+
+  await paste(editor, {
+    items: [{ kind: 'file', type: 'image/png', getAsFile: () => image }],
+    text: plainText,
+  });
+
+  expect(onImageUpload).toHaveBeenCalledWith([image]);
+  expect(editor.querySelector('tag')).toBeNull();
+  expect(editor.querySelector('img')).toBeNull();
+  expect(editor.querySelector('[onerror]')).toBeNull();
+  expect(Array.from(editor.children).every(({ tagName }) => tagName === 'BR')).toBe(true);
+  expect(editor.innerHTML).toContain('&lt;tag&gt; &amp;');
+  expect(editor.innerHTML).toContain('&lt;img src=x onerror=alert(1)&gt;');
+  expect(ref.current!.getSerializedContent()).toBe(expected);
+  const selection = window.getSelection();
+  expect(selection?.isCollapsed).toBe(true);
+  expect(selection?.getRangeAt(0).endContainer).toBe(editor);
+  expect(selection?.getRangeAt(0).endOffset).toBe(editor.childNodes.length);
 });
 
 it('inserts mixed-paste text synchronously at the originating range before a deferred upload settles', async () => {

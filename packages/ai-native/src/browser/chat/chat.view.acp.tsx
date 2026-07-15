@@ -490,16 +490,41 @@ export const AIChatViewACPContent = () => {
 
   const handleQueuedEditorReady = React.useMemo(() => {
     const owner = {};
+    const lifecycleGeneration = viewLifecycleRef.current.generation;
+    const sessionId = queuedTurns.snapshot.activeSessionId;
+    const editingTurnId = queuedTurnSnapshot.editingTurnId;
+    let didFocus = false;
     return (handle: ChatInputHandle | null) => {
       if (handle) {
         queuedEditorHandleOwnerRef.current = owner;
         queuedEditorHandleRef.current = handle;
+        const lifecycle = viewLifecycleRef.current;
+        if (
+          !didFocus &&
+          editingTurnId &&
+          lifecycle.mounted &&
+          lifecycle.generation === lifecycleGeneration &&
+          queuedEditorHandleOwnerRef.current === owner &&
+          queuedTurns.snapshot.activeSessionId === sessionId &&
+          queuedTurns.snapshot.editingTurnId === editingTurnId &&
+          liveSessionIdRef.current === sessionId &&
+          aiChatService.sessionModel?.sessionId === sessionId
+        ) {
+          didFocus = true;
+          handle.focus?.();
+        }
       } else if (queuedEditorHandleOwnerRef.current === owner) {
         queuedEditorHandleOwnerRef.current = null;
         queuedEditorHandleRef.current = null;
       }
     };
-  }, [activeChatInputId, activeChatInput?.queuedTurnEditor, queuedTurnSnapshot.editingTurnId]);
+  }, [
+    activeChatInputId,
+    activeChatInput?.queuedTurnEditor,
+    aiChatService,
+    queuedTurnSnapshot.editingTurnId,
+    queuedTurns,
+  ]);
 
   const captureMainInputFocus = React.useCallback(
     () => ({
@@ -1208,16 +1233,9 @@ export const AIChatViewACPContent = () => {
       stop: () => queuedTurns.stop(),
       fastTrack: () => queuedTurns.fastTrack(),
       invalidateFastTrack: () => queuedTurns.invalidateFastTrack(),
-      takeBackLastQueuedTurn: () => {
-        const focus = captureMainInputFocus();
-        const turn = queuedTurns.takeBackLast();
-        if (turn) {
-          focusMainInputAfterAction(focus);
-        }
-        return turn;
-      },
+      takeBackLastQueuedTurn: () => queuedTurns.takeBackLast(),
     }),
-    [captureMainInputFocus, focusMainInputAfterAction, queuedTurns],
+    [queuedTurns],
   );
 
   const handleSend = React.useCallback(

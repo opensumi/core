@@ -1267,7 +1267,7 @@ export const localizationBundle = {
     'aiNative.chat.queue.immediate': '立即发送',
     'aiNative.chat.queue.cancelEdit': '取消',
     'aiNative.chat.queue.finishEditBeforeCollapse': '完成编辑后再收起',
-    'aiNative.chat.queue.imageUpload.partialFailure': '部分图片上传失败',
+    'aiNative.chat.queue.imageUpload.partialFailure': '{0} 张图片上传失败',
     'aiNative.chat.queue.ariaLabel': '排队任务',
     'aiNative.chat.queue.toggleAriaLabel': '展开或收起排队任务',
     'aiNative.chat.queue.resumeAriaLabel': '继续处理排队任务',
