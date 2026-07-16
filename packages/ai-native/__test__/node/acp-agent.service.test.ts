@@ -13,6 +13,7 @@ jest.mock('@opensumi/di', () => {
 import { DEFAULT_ACP_THREAD_POOL_SIZE } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
+import { AcpAgentLifecycleContribution } from '../../src/node';
 import { AcpAgentService, AcpAgentServiceToken } from '../../src/node/acp/acp-agent.service';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from '../../src/node/acp/handlers/terminal.handler';
 
@@ -1549,6 +1550,93 @@ describe('AcpAgentService (Thread Pool)', () => {
     });
   });
 
+  describe('attachSession()', () => {
+    it('should emit the current snapshot before forwarding later session updates without prompting again', async () => {
+      const { service, thread } = createServiceWithAutoEvents();
+      const historyUpdates = [
+        {
+          sessionId: 'session-1',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: { type: 'text', text: 'keep working' },
+          },
+        },
+      ];
+      thread.getSessionNotifications.mockReturnValue(historyUpdates);
+      thread.getStatus.mockReturnValue('working');
+
+      setTimeout(() => {
+        thread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'session-1',
+            update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+          },
+        });
+      }, 10);
+
+      const createResult = await service.createSession(mockAgentProcessConfig);
+      thread.prompt.mockClear();
+
+      const attachment = service.attachSession(createResult.sessionId);
+      const updates: any[] = [];
+      attachment.onData((update) => updates.push(update));
+
+      thread._fireEvent({
+        type: 'session_notification',
+        notification: {
+          sessionId: createResult.sessionId,
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: 'still running' },
+          },
+        },
+      });
+
+      expect(updates[0]).toEqual(
+        expect.objectContaining({
+          type: 'snapshot',
+          snapshot: expect.objectContaining({
+            sessionId: createResult.sessionId,
+            historyUpdates,
+            threadStatus: 'working',
+          }),
+        }),
+      );
+      expect(updates).toContainEqual(
+        expect.objectContaining({
+          type: 'update',
+          update: expect.objectContaining({ type: 'message', content: 'still running' }),
+        }),
+      );
+      expect(thread.prompt).not.toHaveBeenCalled();
+      attachment.end();
+    });
+
+    it('should release the thread event subscription when an attachment ends', async () => {
+      const { service, thread } = createServiceWithAutoEvents();
+
+      setTimeout(() => {
+        thread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'session-1',
+            update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+          },
+        });
+      }, 10);
+
+      const createResult = await service.createSession(mockAgentProcessConfig);
+      const attachmentSubscription = { dispose: jest.fn() };
+      thread.onEvent.mockReturnValueOnce(attachmentSubscription);
+
+      const attachment = service.attachSession(createResult.sessionId);
+      attachment.end();
+
+      expect(attachmentSubscription.dispose).toHaveBeenCalledTimes(1);
+    });
+  });
+
   // -----------------------------------------------------------------------
   // cancelRequest
   // -----------------------------------------------------------------------
@@ -1744,6 +1832,16 @@ describe('AcpAgentService (Thread Pool)', () => {
       await service.dispose();
 
       expect(thread.dispose).toHaveBeenCalled();
+    });
+
+    it('should dispose the container-owned agent service during application shutdown', async () => {
+      const agentService = { dispose: jest.fn().mockResolvedValue(undefined) };
+      const contribution = new AcpAgentLifecycleContribution();
+      Object.defineProperty(contribution, 'agentService', { value: agentService });
+
+      await contribution.onStop();
+
+      expect(agentService.dispose).toHaveBeenCalledTimes(1);
     });
   });
 

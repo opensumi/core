@@ -8,14 +8,12 @@ import {
   type AcpBddFixtureRuntime,
   ensureAgenticLayout,
   loadAcpBddFixtureWorkbench,
-  waitForAcpChatReady,
   waitForWorkbenchReady,
 } from './utils/acp-bdd-fixture';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const LONG_STREAM_PROMPT = 'BDD reload during long stream';
 const ACTIVE_STREAM_SENTINEL = 'BDD_LONG_STREAM_CHUNK_02';
-const POST_RELOAD_DRAFT = 'BDD post reload draft';
 
 let runtime: AcpBddFixtureRuntime;
 
@@ -28,7 +26,7 @@ async function loadLongStreamWorkbench() {
     fixture: 'long-stream',
     profile: 'interactive',
     delayMs: 40,
-    longStreamTicks: 160,
+    longStreamTicks: 1000,
     showChatView: true,
     ensureAgenticLayout: true,
     viewport: { width: 1600, height: 900 },
@@ -59,8 +57,26 @@ async function showAcpChatView() {
   await page.evaluate(async () => {
     await (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {});
   });
-  await waitForAcpChatReady(page);
   await ensureAgenticLayout(page);
+}
+
+async function getSessionState() {
+  const result = await page.evaluate(async () =>
+    (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
+  );
+  expect(result.success).toBe(true);
+  return result.result as {
+    active: boolean;
+    session: { sessionId?: string; threadStatus?: string; requestCount?: number } | null;
+  };
+}
+
+async function getHighestVisibleStreamChunk(): Promise<number> {
+  const text = (await chatSlot().textContent()) || '';
+  return Array.from(text.matchAll(/BDD_LONG_STREAM_CHUNK_(\d+)/g)).reduce(
+    (highest, match) => Math.max(highest, Number(match[1])),
+    0,
+  );
 }
 
 test.describe('ACP Chat Agentic Reload During Stream', () => {
@@ -86,6 +102,7 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
     await sendPrompt(LONG_STREAM_PROMPT);
     await expect(chatSlot().getByText(ACTIVE_STREAM_SENTINEL)).toBeVisible({ timeout: 30_000 });
     await expect(chatButton('Stop')).toBeVisible();
+    const beforeReloadState = await getSessionState();
 
     const beforeReloadProof = await evidence.saveJson(
       '01-active-before-reload',
@@ -93,6 +110,7 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
         url: page.url(),
         hasActiveSentinel: await chatSlot().getByText(ACTIVE_STREAM_SENTINEL).isVisible(),
         stopVisible: await chatButton('Stop').isVisible(),
+        session: beforeReloadState.session,
       },
       'long-stream request is active immediately before browser reload',
     );
@@ -101,28 +119,33 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
     await waitForWorkbenchReady(page);
     await showAcpChatView();
 
-    await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible({ timeout: 30_000 });
-    await expect(chatButton('Send')).toBeVisible({ timeout: 30_000 });
-    await expect(chatButton('Stop')).toBeHidden();
+    await expect(chatSlot()).toBeVisible({ timeout: 30_000 });
+    await expect(chatSlot().getByText(ACTIVE_STREAM_SENTINEL)).toBeVisible({ timeout: 30_000 });
+    await expect(chatButton('Stop')).toBeVisible({ timeout: 30_000 });
+    const afterReloadState = await getSessionState();
+    const restoredHighestChunk = await getHighestVisibleStreamChunk();
+    const continuedChunk = restoredHighestChunk + 5;
+    const continuedStreamSentinel = `BDD_LONG_STREAM_CHUNK_${String(continuedChunk).padStart(2, '0')}`;
+    await expect(chatSlot().getByText(continuedStreamSentinel)).toBeVisible({ timeout: 30_000 });
 
-    const input = chatInput();
-    await expect(input).toBeVisible();
-    await input.click();
-    await page.keyboard.type(POST_RELOAD_DRAFT);
-    await expect(input).toContainText(POST_RELOAD_DRAFT);
+    expect(afterReloadState.active).toBe(true);
+    expect(afterReloadState.session?.sessionId).toBe(beforeReloadState.session?.sessionId);
+    expect(afterReloadState.session?.threadStatus).toBe('working');
+    expect(afterReloadState.session?.requestCount).toBe(1);
 
     const afterReloadProof = await evidence.saveJson(
       '02-usable-after-reload',
       {
         url: page.url(),
-        headingVisible: await page.getByRole('heading', { name: 'AI Assistant' }).isVisible(),
-        sendVisible: await chatButton('Send').isVisible(),
-        stopVisible: await chatButton('Stop')
-          .isVisible()
-          .catch(() => false),
-        inputText: await input.textContent(),
+        chatVisible: await chatSlot().isVisible(),
+        restoredActiveSentinel: await chatSlot().getByText(ACTIVE_STREAM_SENTINEL).isVisible(),
+        restoredHighestChunk,
+        continuedChunk,
+        continuedStreamSentinel: await chatSlot().getByText(continuedStreamSentinel).isVisible(),
+        stopVisible: await chatButton('Stop').isVisible(),
+        session: afterReloadState.session,
       },
-      'browser reload recovers to a usable Agentic chat shell',
+      'browser reload restores the same running Agentic session and continued output',
     );
 
     evidence.recordCriticalPoint({
@@ -133,7 +156,7 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
     });
     evidence.recordCriticalPoint({
       id: 'CP2',
-      requirement: 'Reload returns to the same workspace with a usable Agentic chat shell.',
+      requirement: 'Reload restores the same running session, prior output, and continued output without resending.',
       status: 'pass',
       evidence: [afterReloadProof].filter(Boolean) as string[],
     });

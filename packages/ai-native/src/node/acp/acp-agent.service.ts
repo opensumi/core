@@ -84,8 +84,17 @@ export interface SessionLoadResult {
   currentModelId?: string;
   configOptions?: Record<string, any>[];
   status: AgentSessionStatus;
+  threadStatus?: ThreadStatus;
   historyUpdates: SessionNotification[];
 }
+
+export interface AgentSessionSnapshot extends SessionLoadResult {
+  threadStatus: ThreadStatus;
+}
+
+export type AgentSessionAttachmentUpdate =
+  | { type: 'snapshot'; snapshot: AgentSessionSnapshot }
+  | { type: 'update'; update: AgentUpdate };
 
 interface PendingSessionLoad {
   promise: Promise<SessionLoadResult>;
@@ -134,6 +143,11 @@ export interface IAcpAgentService {
    * Send message to Agent (streaming)
    */
   sendMessage(request: AgentRequest, config: AgentProcessConfig): SumiReadableStream<AgentUpdate>;
+
+  /**
+   * Observe an active Agent Session without sending another prompt.
+   */
+  attachSession(sessionId: string): SumiReadableStream<AgentSessionAttachmentUpdate>;
 
   /**
    * Cancel a request
@@ -981,6 +995,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         ? ([...sessionState.configOptions] as Record<string, any>[])
         : undefined,
       status: 'ready',
+      threadStatus: thread.getStatus(),
       historyUpdates,
     };
   }
@@ -1097,6 +1112,68 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // -----------------------------------------------------------------------
   // sendMessage — streaming forward
   // -----------------------------------------------------------------------
+
+  attachSession(sessionId: string): SumiReadableStream<AgentSessionAttachmentUpdate> {
+    const stream = new SumiReadableStream<AgentSessionAttachmentUpdate>();
+    const thread = this.sessions.get(sessionId);
+    if (!thread || thread.getStatus() === 'disconnected') {
+      stream.emitError(new Error(`No active session for sessionId: ${sessionId}`));
+      return stream;
+    }
+
+    this.touchSession(sessionId);
+    let snapshotEmitted = false;
+    const bufferedUpdates: AgentUpdate[] = [];
+
+    const emitUpdate = (update: AgentUpdate) => {
+      update.sessionId = update.sessionId || sessionId;
+      update.threadStatus = update.threadStatus || thread.getStatus();
+      if (!snapshotEmitted) {
+        bufferedUpdates.push(update);
+        return;
+      }
+      stream.emitData({ type: 'update', update });
+    };
+
+    const eventDisposable = thread.onEvent((event: AcpThreadEvent) => {
+      if (event.type === 'session_notification') {
+        if (event.notification.sessionId && event.notification.sessionId !== sessionId) {
+          this.logger.warn(
+            `[AcpAgentService] attachSession() — ignoring notification for ${event.notification.sessionId}; current session is ${sessionId}`,
+          );
+          return;
+        }
+        const agentUpdates = toAgentUpdate(event.notification);
+        if (Array.isArray(agentUpdates)) {
+          agentUpdates.forEach(emitUpdate);
+        } else if (agentUpdates) {
+          emitUpdate(agentUpdates);
+        }
+      } else if (event.type === 'status_changed') {
+        emitUpdate({
+          type: 'thread_status',
+          content: '',
+          sessionId,
+          threadStatus: event.status,
+        });
+      }
+    });
+
+    const disposeSubscription = () => eventDisposable.dispose();
+    stream.onEnd(disposeSubscription);
+    stream.onError(disposeSubscription);
+
+    stream.emitData({
+      type: 'snapshot',
+      snapshot: {
+        ...this.buildSessionLoadResult(sessionId, thread),
+        threadStatus: thread.getStatus(),
+      },
+    });
+    snapshotEmitted = true;
+    bufferedUpdates.splice(0).forEach((update) => stream.emitData({ type: 'update', update }));
+    return stream;
+  }
 
   sendMessage(request: AgentRequest, config: AgentProcessConfig): SumiReadableStream<AgentUpdate> {
     const stream = new SumiReadableStream<AgentUpdate>();

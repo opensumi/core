@@ -1,16 +1,34 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AIBackSerivcePath, AgentProcessConfig, Domain, IACPConfigProvider, IAIBackService } from '@opensumi/ide-core-common';
+import {
+  AIBackSerivcePath,
+  AgentProcessConfig,
+  ChatMessageRole,
+  Domain,
+  IACPConfigProvider,
+  IAIBackService,
+  IChatProgress,
+  IChatSessionSnapshot,
+  IChatToolCall,
+  SessionNotification,
+  ThreadStatus,
+} from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
+import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { AgenticTaskRegistryService } from '../acp/agentic-task-registry.service';
 
+import { IChatProgressResponseContent } from './chat-model';
 import {
   ISessionModel,
   ISessionModelExtension,
   ISessionProvider,
   SessionCreationOptions,
   SessionProviderDomain,
+  isAcpResponsePending,
 } from './session-provider';
+
+const DEFAULT_ACP_CHAT_AGENT_ID = 'Default_Chat_Agent';
 
 /**
  * ACP Session Provider
@@ -190,6 +208,31 @@ export class ACPSessionProvider implements ISessionProvider {
     }
   }
 
+  async attachSession(sessionId: string): Promise<SumiReadableStream<IChatProgress> | undefined> {
+    if (!sessionId || !this.aiBackService?.attachSession) {
+      return undefined;
+    }
+    const agentSessionId = sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
+    return this.aiBackService.attachSession(agentSessionId);
+  }
+
+  restoreSessionSnapshot(sessionId: string, snapshot: IChatSessionSnapshot): ISessionModel | undefined {
+    if (snapshot.historyUpdates.length === 0) {
+      return undefined;
+    }
+    return this.convertAgentSessionToModel(sessionId, {
+      sessionId: snapshot.sessionId,
+      modes: snapshot.modes,
+      currentModeId: snapshot.currentModeId,
+      models: snapshot.models,
+      currentModelId: snapshot.currentModelId,
+      configOptions: snapshot.configOptions,
+      threadStatus: snapshot.threadStatus,
+      historyUpdates: snapshot.historyUpdates,
+      messages: [],
+    });
+  }
+
   private async resolveSessionConfig(sessionId: string): Promise<AgentProcessConfig> {
     const task = await this.agenticTaskRegistry?.getTask(sessionId);
     if (!task) {
@@ -213,6 +256,8 @@ export class ACPSessionProvider implements ISessionProvider {
       models?: ISessionModel['agentModels'];
       currentModelId?: string;
       configOptions?: ISessionModel['configOptions'];
+      threadStatus?: ThreadStatus;
+      historyUpdates?: SessionNotification[];
       messages: Array<{
         role: 'user' | 'assistant';
         content: string;
@@ -220,6 +265,11 @@ export class ACPSessionProvider implements ISessionProvider {
       }>;
     },
   ): ISessionModel {
+    const historyUpdates = agentSession.historyUpdates;
+    if (historyUpdates?.length) {
+      return this.convertHistoryUpdatesToModel(sessionId, { ...agentSession, historyUpdates });
+    }
+
     // 过滤掉包含 <command-name> 或 <local-command-stdout> 的系统消息
     const filteredMessages = agentSession.messages.filter((msg, index) => {
       // 如果内容包含系统命令的 XML 标签，则过滤掉
@@ -254,6 +304,224 @@ export class ACPSessionProvider implements ISessionProvider {
     };
 
     return result;
+  }
+
+  private convertHistoryUpdatesToModel(
+    sessionId: string,
+    agentSession: {
+      modes?: ISessionModel['agentModes'];
+      currentModeId?: string;
+      models?: ISessionModel['agentModels'];
+      currentModelId?: string;
+      configOptions?: ISessionModel['configOptions'];
+      threadStatus?: ThreadStatus;
+      historyUpdates: SessionNotification[];
+    },
+  ): ISessionModel {
+    interface RestoredTurn {
+      userContent: string;
+      assistantContent: string;
+      responseParts: IChatProgressResponseContent[];
+      toolCalls: Map<string, IChatToolCall>;
+    }
+
+    const turns: RestoredTurn[] = [];
+    let current: RestoredTurn | undefined;
+    const ensureTurn = () => {
+      if (!current) {
+        current = {
+          userContent: '',
+          assistantContent: '',
+          responseParts: [],
+          toolCalls: new Map(),
+        };
+      }
+      return current;
+    };
+    const flushTurn = () => {
+      if (current && (current.userContent || current.responseParts.length > 0)) {
+        turns.push(current);
+      }
+      current = undefined;
+    };
+    const appendMarkdown = (turn: RestoredTurn, text: string) => {
+      const last = turn.responseParts[turn.responseParts.length - 1];
+      if (last?.kind === 'markdownContent') {
+        turn.responseParts[turn.responseParts.length - 1] = {
+          kind: 'markdownContent',
+          content: new MarkdownString(last.content.value + text, last.content),
+        };
+      } else {
+        turn.responseParts.push({ kind: 'markdownContent', content: new MarkdownString(text) });
+      }
+      turn.assistantContent += text;
+    };
+    const appendReasoning = (turn: RestoredTurn, text: string) => {
+      const last = turn.responseParts[turn.responseParts.length - 1];
+      if (last?.kind === 'reasoning') {
+        last.content += text;
+      } else {
+        turn.responseParts.push({ kind: 'reasoning', content: text.replace(/^<think>/, '') });
+      }
+    };
+
+    for (const notification of agentSession.historyUpdates) {
+      const update = notification.update as any;
+      if (!update) {
+        continue;
+      }
+      switch (update.sessionUpdate) {
+        case 'user_message_chunk': {
+          const text = update.content?.type === 'text' ? update.content.text : '';
+          if (!text) {
+            break;
+          }
+          if (current && (current.assistantContent || current.responseParts.length > 0)) {
+            flushTurn();
+          }
+          ensureTurn().userContent += text;
+          break;
+        }
+        case 'agent_message_chunk': {
+          const text = update.content?.type === 'text' ? update.content.text : '';
+          if (text) {
+            appendMarkdown(ensureTurn(), text);
+          }
+          break;
+        }
+        case 'agent_thought_chunk': {
+          const text = update.content?.type === 'text' ? update.content.text : '';
+          if (text) {
+            appendReasoning(ensureTurn(), text);
+          }
+          break;
+        }
+        case 'tool_call': {
+          const turn = ensureTurn();
+          const toolCall: IChatToolCall = {
+            id: update.toolCallId || '',
+            type: 'function',
+            function: {
+              name: update.title || update.toolCallId || '',
+              arguments: JSON.stringify(update.rawInput ?? {}),
+            },
+            state: 'streaming-start',
+          };
+          turn.toolCalls.set(toolCall.id, toolCall);
+          turn.responseParts.push({ kind: 'toolCall', content: toolCall });
+          break;
+        }
+        case 'tool_call_update': {
+          const turn = ensureTurn();
+          const toolCall = turn.toolCalls.get(update.toolCallId);
+          if (!toolCall) {
+            break;
+          }
+          if (update.rawInput !== undefined) {
+            toolCall.function.arguments = JSON.stringify(update.rawInput);
+          }
+          if (update.status === 'in_progress') {
+            toolCall.state = 'streaming';
+            break;
+          }
+          if (update.status !== 'completed' && update.status !== 'failed') {
+            break;
+          }
+          if (update.rawOutput !== undefined) {
+            toolCall.result =
+              typeof update.rawOutput === 'string' ? update.rawOutput : JSON.stringify(update.rawOutput);
+            toolCall.state = 'result';
+          } else if (Array.isArray(update.content)) {
+            const diff = update.content.find((item: any) => item?.type === 'diff');
+            if (diff?.path) {
+              toolCall.result = `Modified ${diff.path}`;
+              toolCall.state = 'result';
+            }
+          } else if (update.status === 'failed') {
+            toolCall.result = 'Tool failed';
+            toolCall.state = 'result';
+          } else {
+            toolCall.state = 'complete';
+          }
+          break;
+        }
+        case 'plan': {
+          const entries = update.plan?.entries ?? update.entries;
+          if (Array.isArray(entries) && entries.length > 0) {
+            appendMarkdown(
+              ensureTurn(),
+              `${entries
+                .map((entry: any) =>
+                  entry.completed || entry.status === 'completed' ? `- [x] ${entry.content}` : `- [ ] ${entry.content}`,
+                )
+                .join('\n')}\n\n`,
+            );
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
+    flushTurn();
+
+    const messages: ISessionModel['history']['messages'] = [];
+    const requests: ISessionModel['requests'] = [];
+    turns.forEach((turn, index) => {
+      const relationId = `${sessionId}-restored-relation-${index}`;
+      const requestId = `${sessionId}-restored-request-${index}`;
+      messages.push({
+        id: `${sessionId}-restored-user-${index}`,
+        role: ChatMessageRole.User,
+        content: turn.userContent,
+        order: messages.length,
+        relationId,
+        agentId: DEFAULT_ACP_CHAT_AGENT_ID,
+        agentCommand: '',
+        images: [],
+      });
+      messages.push({
+        id: `${sessionId}-restored-assistant-${index}`,
+        role: ChatMessageRole.Assistant,
+        content: turn.assistantContent,
+        order: messages.length,
+        relationId,
+        requestId,
+        agentId: DEFAULT_ACP_CHAT_AGENT_ID,
+        agentCommand: '',
+        images: [],
+      });
+      requests.push({
+        requestId,
+        message: {
+          prompt: turn.userContent,
+          agentId: DEFAULT_ACP_CHAT_AGENT_ID,
+          command: '',
+          images: [],
+        },
+        response: {
+          isComplete: index < turns.length - 1 || !isAcpResponsePending(agentSession.threadStatus),
+          isCanceled: false,
+          responseText: turn.assistantContent,
+          responseContents: turn.responseParts,
+          responseParts: turn.responseParts,
+          errorDetails: undefined,
+          followups: undefined,
+        },
+      });
+    });
+
+    return {
+      sessionId,
+      createdAt: undefined,
+      modelId: agentSession.currentModelId,
+      agentModes: agentSession.modes,
+      currentModeId: agentSession.currentModeId,
+      agentModels: agentSession.models,
+      configOptions: agentSession.configOptions,
+      history: { additional: {}, messages },
+      requests,
+    };
   }
 
   async saveSessions(sessions: ISessionModel[]): Promise<void> {}

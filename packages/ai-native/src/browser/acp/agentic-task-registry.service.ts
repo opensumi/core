@@ -4,6 +4,7 @@ import { Emitter, Event, IStorage, STORAGE_NAMESPACE, StorageProvider, URI } fro
 const TASK_REGISTRY_STORAGE_KEY = 'agentic.task-registry.v2';
 const PENDING_TASK_ACTIVATION_STORAGE_KEY = 'agentic.pending-task-activation.v2';
 const PENDING_TASK_LAUNCH_STORAGE_KEY = 'agentic.pending-task-launch.v2';
+const ACTIVE_TASK_SESSION_STORAGE_KEY = 'agentic.active-task-session.v1';
 
 const ARCHIVABLE_STATUSES = new Set<AgenticTaskStatus>(['ready', 'stopped', 'error']);
 
@@ -299,6 +300,26 @@ export class AgenticTaskRegistryService {
     return { sessionId: value.sessionId };
   }
 
+  rememberActiveTaskSession(sessionId: string): void {
+    this.writeSessionValue(ACTIVE_TASK_SESSION_STORAGE_KEY, { sessionId });
+  }
+
+  getRememberedActiveTaskSession(): AgenticPendingTaskActivation | undefined {
+    const value = this.readSessionValue(ACTIVE_TASK_SESSION_STORAGE_KEY);
+    if (!this.isRecord(value) || typeof value.sessionId !== 'string') {
+      return undefined;
+    }
+    return { sessionId: value.sessionId };
+  }
+
+  clearRememberedActiveTaskSession(sessionId?: string): void {
+    const remembered = this.getRememberedActiveTaskSession();
+    if (sessionId && remembered?.sessionId !== sessionId) {
+      return;
+    }
+    this.removeSessionValue(ACTIVE_TASK_SESSION_STORAGE_KEY);
+  }
+
   preparePendingLaunch(launch: AgenticPendingTaskLaunch): void {
     if (typeof launch?.projectId !== 'string' || typeof launch.agentId !== 'string') {
       return;
@@ -520,6 +541,23 @@ export class AgenticTaskRegistryService {
       return value ? this.parseJSON(value) : undefined;
     } catch {
       return undefined;
+    }
+  }
+
+  private readSessionValue(key: string): unknown {
+    try {
+      const value = window.sessionStorage.getItem(key);
+      return value ? this.parseJSON(value) : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private removeSessionValue(key: string): void {
+    try {
+      window.sessionStorage.removeItem(key);
+    } catch {
+      // Session-only UI state is best effort and must not block the caller.
     }
   }
 

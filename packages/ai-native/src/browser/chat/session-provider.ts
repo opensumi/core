@@ -1,8 +1,12 @@
 import {
   AcpTargetConfigRequest,
   AvailableCommand,
+  IChatProgress,
+  IChatSessionSnapshot,
   IHistoryChatMessage,
+  ThreadStatus,
 } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatFollowup, IChatRequestMessage, IChatResponseErrorDetails } from '../../common';
 
@@ -25,6 +29,7 @@ export interface ISessionModel {
     message: IChatRequestMessage;
     response: {
       isCanceled: boolean;
+      isComplete?: boolean;
       responseText: string;
       responseContents: IChatProgressResponseContent[];
       responseParts: IChatProgressResponseContent[];
@@ -95,11 +100,21 @@ export interface ISessionProvider {
    */
   loadSession(sessionId: string): Promise<ISessionModel | undefined>;
 
+  /** Observe an already loaded ACP session without starting another prompt. */
+  attachSession?(sessionId: string): Promise<SumiReadableStream<IChatProgress> | undefined>;
+
+  /** Convert the first attachment snapshot into the browser session model. */
+  restoreSessionSnapshot?(sessionId: string, snapshot: IChatSessionSnapshot): ISessionModel | undefined;
+
   /**
    * 保存会话（可选实现）
    * @param sessions Session 数据列表
    */
   saveSessions?(sessions: ISessionModel[]): Promise<void>;
+}
+
+export function isAcpResponsePending(status: ThreadStatus | undefined): boolean {
+  return status === 'working' || status === 'auth_required';
 }
 
 /**

@@ -1,4 +1,5 @@
 import { ChatMessageRole } from '@opensumi/ide-core-common';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { ACPSessionProvider } from '../../../src/browser/chat/acp-session-provider';
 import { AcpChatManagerService } from '../../../src/browser/chat/chat-manager.service.acp';
@@ -219,6 +220,153 @@ describe('AcpChatManagerService', () => {
     expect(loadAgentSession).toHaveBeenCalledWith(config, 'b');
   });
 
+  it('restores ACP thought and tool-call state into an incomplete request snapshot', async () => {
+    const provider = createSessionProvider();
+    Object.defineProperty(provider, 'agenticTaskRegistry', {
+      value: {
+        getTask: jest.fn().mockResolvedValue(undefined),
+      },
+    });
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        loadAgentSession: jest.fn().mockResolvedValue({
+          sessionId: 'running',
+          threadStatus: 'working',
+          modes: [],
+          messages: [],
+          historyUpdates: [
+            {
+              sessionId: 'running',
+              update: {
+                sessionUpdate: 'user_message_chunk',
+                content: { type: 'text', text: 'inspect the project' },
+              },
+            },
+            {
+              sessionId: 'running',
+              update: {
+                sessionUpdate: 'agent_thought_chunk',
+                content: { type: 'text', text: 'checking files' },
+              },
+            },
+            {
+              sessionId: 'running',
+              update: {
+                sessionUpdate: 'tool_call',
+                toolCallId: 'tool-1',
+                title: 'ReadFile',
+                rawInput: { path: 'package.json' },
+              },
+            },
+            {
+              sessionId: 'running',
+              update: {
+                sessionUpdate: 'tool_call_update',
+                toolCallId: 'tool-1',
+                status: 'completed',
+                rawOutput: 'file contents',
+              },
+            },
+            {
+              sessionId: 'running',
+              update: {
+                sessionUpdate: 'agent_message_chunk',
+                content: { type: 'text', text: 'partial answer' },
+              },
+            },
+          ],
+        }),
+      },
+    });
+
+    const session = await provider.loadSession('acp:running');
+
+    expect(session?.requests).toHaveLength(1);
+    expect(session?.requests[0].response.isComplete).toBe(false);
+    expect(session?.requests[0].response.responseContents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'reasoning', content: 'checking files' }),
+        expect.objectContaining({
+          kind: 'toolCall',
+          content: expect.objectContaining({ id: 'tool-1', result: 'file contents', state: 'result' }),
+        }),
+        expect.objectContaining({ kind: 'markdownContent' }),
+      ]),
+    );
+    expect(session?.history.messages[1]).toEqual(expect.objectContaining({ requestId: expect.any(String) }));
+  });
+
+  it('keeps an auth-required restored response open for later progress', () => {
+    const provider = createSessionProvider();
+
+    const session = provider.restoreSessionSnapshot('acp:auth-required', {
+      kind: 'sessionSnapshot',
+      sessionId: 'auth-required',
+      threadStatus: 'auth_required',
+      historyUpdates: [
+        {
+          sessionId: 'auth-required',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: { type: 'text', text: 'continue after auth' },
+          },
+        },
+        {
+          sessionId: 'auth-required',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: 'waiting' },
+          },
+        },
+      ],
+    });
+
+    expect(session.requests[0].response.isComplete).toBe(false);
+  });
+
+  it('restores an in-progress ACP tool call with a non-terminal state', () => {
+    const provider = createSessionProvider();
+
+    const session = provider.restoreSessionSnapshot('acp:tool-running', {
+      kind: 'sessionSnapshot',
+      sessionId: 'tool-running',
+      threadStatus: 'working',
+      historyUpdates: [
+        {
+          sessionId: 'tool-running',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: { type: 'text', text: 'inspect files' },
+          },
+        },
+        {
+          sessionId: 'tool-running',
+          update: {
+            sessionUpdate: 'tool_call',
+            toolCallId: 'tool-running-1',
+            title: 'ReadFile',
+            rawInput: { path: 'package.json' },
+          },
+        },
+        {
+          sessionId: 'tool-running',
+          update: {
+            sessionUpdate: 'tool_call_update',
+            toolCallId: 'tool-running-1',
+            status: 'in_progress',
+          },
+        },
+      ],
+    });
+
+    expect(session.requests[0].response.responseParts).toContainEqual(
+      expect.objectContaining({
+        kind: 'toolCall',
+        content: expect.objectContaining({ id: 'tool-running-1', state: 'streaming' }),
+      }),
+    );
+  });
+
   it('passes an explicit target only to ACP session creation', async () => {
     const service = createService();
     const createSession = jest.fn().mockResolvedValue({
@@ -432,6 +580,231 @@ describe('AcpChatManagerService', () => {
     const loadedModel = service.sessionModels.get(sessionId);
     expect(loadedModel?.title).toBe('commit');
     expect(loadedModel?.history.getMessages()).toHaveLength(1);
+  });
+
+  it('reattaches a loaded ACP session and applies snapshot status plus later output', async () => {
+    const service = createService();
+    const sessionId = 'acp:s-running';
+    const attachment = new SumiReadableStream<any>();
+    const attachSession = jest.fn().mockResolvedValue(attachment);
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue({
+          sessionId,
+          history: {
+            additional: {},
+            messages: [
+              {
+                id: `${sessionId}-user`,
+                role: ChatMessageRole.User,
+                content: 'continue the task',
+                order: 0,
+                relationId: 'relation-1',
+                agentId: 'Default_Chat_Agent',
+                agentCommand: '',
+                images: [],
+              },
+              {
+                id: `${sessionId}-assistant`,
+                role: ChatMessageRole.Assistant,
+                content: '',
+                order: 1,
+                relationId: 'relation-1',
+                requestId: 'request-1',
+              },
+            ],
+          },
+          requests: [
+            {
+              requestId: 'request-1',
+              message: {
+                prompt: 'continue the task',
+                agentId: 'Default_Chat_Agent',
+                command: '',
+                images: [],
+              },
+              response: {
+                isComplete: false,
+                isCanceled: false,
+                responseText: '',
+                responseContents: [],
+                responseParts: [],
+                errorDetails: undefined,
+                followups: undefined,
+              },
+            },
+          ],
+        }),
+        attachSession,
+      },
+    });
+
+    await service.loadSession(sessionId);
+    attachment.emitData({
+      kind: 'sessionSnapshot',
+      sessionId: 's-running',
+      threadStatus: 'working',
+      historyUpdates: [],
+    });
+    attachment.emitData({ kind: 'content', content: 'continued output' });
+
+    const model = service.getSession(sessionId)!;
+    expect(attachSession).toHaveBeenCalledWith(sessionId);
+    expect(model.threadStatus).toBe('working');
+    expect(model.getRequest('request-1')?.response.responseText).toBe('continued output');
+    attachment.end();
+  });
+
+  it('reattaches an already populated ACP session without reloading or resending its prompt', async () => {
+    const service = createService();
+    const provider = createSessionProvider();
+    const sessionId = 'acp:s-existing';
+    const attachment = new SumiReadableStream<any>();
+    const attachSession = jest.fn().mockResolvedValue(attachment);
+    const loadSession = jest.fn();
+    const [existingModel] = service.fromAcpJSON([
+      {
+        sessionId,
+        history: {
+          additional: {},
+          messages: [
+            {
+              id: `${sessionId}-user`,
+              role: ChatMessageRole.User,
+              content: 'keep working',
+              order: 0,
+            },
+          ],
+        },
+        requests: [
+          {
+            requestId: 'request-existing',
+            message: {
+              prompt: 'keep working',
+              agentId: 'Default_Chat_Agent',
+              command: '',
+              images: [],
+            },
+            response: {
+              isComplete: false,
+              isCanceled: false,
+              responseText: 'before reload',
+              responseContents: [{ kind: 'markdownContent', content: { value: 'before reload' } }],
+              responseParts: [{ kind: 'markdownContent', content: { value: 'before reload' } }],
+            },
+          },
+        ],
+      },
+    ]);
+    service.sessionModels.set(sessionId, existingModel);
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession,
+        attachSession,
+        restoreSessionSnapshot: provider.restoreSessionSnapshot.bind(provider),
+      },
+    });
+
+    await service.loadSession(sessionId);
+    attachment.emitData({
+      kind: 'sessionSnapshot',
+      sessionId: 's-existing',
+      threadStatus: 'working',
+      historyUpdates: [
+        {
+          sessionId: 's-existing',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: { type: 'text', text: 'keep working' },
+          },
+        },
+        {
+          sessionId: 's-existing',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: 'before reload while offline' },
+          },
+        },
+      ],
+    });
+    attachment.emitData({ kind: 'content', content: ' after reload' });
+
+    expect(loadSession).not.toHaveBeenCalled();
+    expect(attachSession).toHaveBeenCalledWith(sessionId);
+    expect(service.getSession(sessionId)?.requests[0].response.responseText).toBe(
+      'before reload while offline after reload',
+    );
+    attachment.end();
+  });
+
+  it('does not complete an auth-required attachment before later output arrives', async () => {
+    const service = createService();
+    const sessionId = 'acp:s-auth';
+    const attachment = new SumiReadableStream<any>();
+    const [model] = service.fromAcpJSON([
+      {
+        sessionId,
+        history: {
+          additional: {},
+          messages: [{ id: 'user', role: ChatMessageRole.User, content: 'authenticate', order: 0 }],
+        },
+        requests: [
+          {
+            requestId: 'request-auth',
+            message: { prompt: 'authenticate', agentId: 'Default_Chat_Agent', command: '', images: [] },
+            response: {
+              isComplete: false,
+              isCanceled: false,
+              responseText: '',
+              responseContents: [],
+              responseParts: [],
+            },
+          },
+        ],
+      },
+    ]);
+    service.sessionModels.set(sessionId, model);
+    Object.defineProperty(service, 'mainProvider', {
+      value: { attachSession: jest.fn().mockResolvedValue(attachment) },
+    });
+
+    await service.loadSession(sessionId);
+    attachment.emitData({
+      kind: 'sessionSnapshot',
+      sessionId: 's-auth',
+      threadStatus: 'auth_required',
+      historyUpdates: [],
+    });
+    attachment.emitData({ kind: 'content', content: 'continued after auth' });
+
+    expect(model.getRequest('request-auth')?.response.isComplete).toBe(false);
+    expect(model.getRequest('request-auth')?.response.responseText).toBe('continued after auth');
+    attachment.end();
+  });
+
+  it('preserves incomplete response state when serializing an ACP session', () => {
+    const service = createService();
+    const [model] = service.fromAcpJSON([
+      {
+        sessionId: 'acp:s-incomplete',
+        history: { additional: {}, messages: [] },
+        requests: [
+          {
+            requestId: 'request-incomplete',
+            message: { prompt: 'continue', agentId: 'Default_Chat_Agent', command: '', images: [] },
+            response: {
+              isComplete: false,
+              isCanceled: false,
+              responseText: 'partial',
+              responseContents: [],
+              responseParts: [],
+            },
+          },
+        ],
+      },
+    ]);
+
+    expect(service.toSessionData(model).requests[0].response.isComplete).toBe(false);
   });
 
   it('preserves creation time when restoring and serializing ACP sessions', () => {

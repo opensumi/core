@@ -1,4 +1,4 @@
-import { Injectable, Provider } from '@opensumi/di';
+import { Autowired, Injectable, Provider } from '@opensumi/di';
 import {
   AIBackSerivcePath,
   AIBackSerivceToken,
@@ -7,7 +7,7 @@ import {
   AcpWebMcpBridgePath,
   AcpWebMcpCallerServiceToken,
 } from '@opensumi/ide-core-common';
-import { NodeModule } from '@opensumi/ide-core-node';
+import { Domain, NodeModule, ServerAppContribution } from '@opensumi/ide-core-node';
 
 import { SumiMCPServerProxyServicePath, TokenMCPServerProxyService } from '../common';
 import { ToolInvocationRegistryManager, ToolInvocationRegistryManagerImpl } from '../common/tool-invocation-registry';
@@ -111,6 +111,7 @@ export class AINativeModule extends NodeModule {
     OpenSumiMcpHttpServer,
     // Language models for non-ACP fallback
     OpenAICompatibleModel,
+    AcpAgentLifecycleContribution,
   ];
 
   backServices = [
@@ -139,4 +140,14 @@ export class AINativeModule extends NodeModule {
       token: AcpWebMcpRpcBridgeServiceToken,
     },
   ];
+}
+
+@Domain(ServerAppContribution)
+export class AcpAgentLifecycleContribution implements ServerAppContribution {
+  @Autowired(AcpAgentServiceToken)
+  private agentService: AcpAgentService;
+
+  async onStop(): Promise<void> {
+    await this.agentService.dispose();
+  }
 }

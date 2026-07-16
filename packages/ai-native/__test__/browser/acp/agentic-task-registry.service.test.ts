@@ -353,4 +353,18 @@ describe('AgenticTaskRegistryService', () => {
     expect(registry.consumePendingLaunch()).toEqual({ projectId: 'project-b', agentId: 'agent-b' });
     expect(registry.consumePendingLaunch()).toBeUndefined();
   });
+
+  it('keeps the last active Task session across repeated reads', () => {
+    registry.rememberActiveTaskSession('acp:active');
+
+    expect(window.sessionStorage.getItem('agentic.active-task-session.v1')).toBe('{"sessionId":"acp:active"}');
+    expect(registry.getRememberedActiveTaskSession()).toEqual({ sessionId: 'acp:active' });
+    expect(registry.getRememberedActiveTaskSession()).toEqual({ sessionId: 'acp:active' });
+
+    registry.clearRememberedActiveTaskSession('acp:other');
+    expect(registry.getRememberedActiveTaskSession()).toEqual({ sessionId: 'acp:active' });
+
+    registry.clearRememberedActiveTaskSession('acp:active');
+    expect(registry.getRememberedActiveTaskSession()).toBeUndefined();
+  });
 });

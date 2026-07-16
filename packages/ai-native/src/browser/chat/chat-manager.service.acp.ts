@@ -4,19 +4,23 @@ import {
   AvailableCommand,
   ChatMessageRole,
   Emitter,
+  IChatProgress,
+  IChatSessionSnapshot,
   IChatSessionState,
   IStorage,
   STORAGE_NAMESPACE,
   StorageProvider,
   debounce,
 } from '@opensumi/ide-core-common';
+import { IDisposable } from '@opensumi/ide-utils';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { cleanAttachedTextWrapper } from '../../common/utils';
 import { MsgHistoryManager } from '../model/msg-history-manager';
 
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel, ChatResponseModel } from './chat-model';
-import { ISessionModel, ISessionProvider, SessionCreationOptions } from './session-provider';
+import { ISessionModel, ISessionProvider, SessionCreationOptions, isAcpResponsePending } from './session-provider';
 import { ISessionProviderRegistry } from './session-provider-registry';
 
 const MAX_SESSION_COUNT = 20;
@@ -60,6 +64,10 @@ export class AcpChatManagerService extends ChatManagerService {
 
   private acpSessionDisplayTitleOverrides: Record<string, string> = {};
 
+  private sessionAttachments:
+    | Map<string, { stream: SumiReadableStream<IChatProgress>; disposables: IDisposable[] }>
+    | undefined;
+
   private readonly onDidApplySessionStateEmitter = this.registerDispose(new Emitter<AcpSessionStateChangeEvent>());
   public readonly onDidApplySessionState = this.onDidApplySessionStateEmitter.event;
 
@@ -81,7 +89,8 @@ export class AcpChatManagerService extends ChatManagerService {
       return;
     }
 
-    this.mainProvider = this.sessionProviderRegistry.getAllProviders().find((provider) => provider.canHandle('acp')) || null;
+    this.mainProvider =
+      this.sessionProviderRegistry.getAllProviders().find((provider) => provider.canHandle('acp')) || null;
   }
 
   override async init() {
@@ -335,39 +344,129 @@ export class AcpChatManagerService extends ChatManagerService {
     this.useAcpProviderWhenAvailable();
     if (this.aiNativeConfig.capabilities.supportsAgentMode) {
       const existingSession = this.peekSession(sessionId);
-      if (existingSession?.history?.getMessages()?.length) {
-        return;
-      }
+      const hasLoadedHistory = Boolean(existingSession?.history?.getMessages()?.length);
 
-      if (this.mainProvider?.loadSession && sessionId) {
-        return this.mainProvider.loadSession(sessionId).then((sessionData) => {
+      if (this.mainProvider && sessionId) {
+        const attachmentPromise = this.mainProvider.attachSession?.(sessionId);
+        if (!hasLoadedHistory && this.mainProvider.loadSession) {
+          const sessionData = await this.mainProvider.loadSession(sessionId);
           if (sessionData) {
-            const existingTitle = this.getExistingTitleForLoadedSession(sessionId, existingSession);
-            const sessionDataWithTitle =
-              existingTitle && (!sessionData.title || this.isLikelyAcpContextTitle(sessionData.title))
-                ? {
-                    ...sessionData,
-                    title: existingTitle,
-                  }
-                : sessionData;
-            const sessions = this.fromAcpJSON([sessionDataWithTitle]);
-            if (sessions.length > 0) {
-              const session = sessions[0];
-              this.setSessionPreservingOrder(sessionId, session);
-              this.listenSession(session);
-              if (
-                !existingSession &&
-                session.title &&
-                session.title !== DEFAULT_ACP_SESSION_TITLE &&
-                !this.isLikelyAcpContextTitle(session.title)
-              ) {
-                this.setDisplayTitleOverride(sessionId, session.title);
-              }
-            }
+            this.restoreLoadedSession(sessionId, sessionData, existingSession);
           }
-        });
+        }
+        const attachment = await attachmentPromise;
+        if (attachment) {
+          this.observeSessionAttachment(sessionId, attachment);
+        }
       }
     }
+  }
+
+  private restoreLoadedSession(sessionId: string, sessionData: ISessionModel, existingSession?: ChatModel): void {
+    const existingTitle = this.getExistingTitleForLoadedSession(sessionId, existingSession);
+    const sessionDataWithTitle =
+      existingTitle && (!sessionData.title || this.isLikelyAcpContextTitle(sessionData.title))
+        ? { ...sessionData, title: existingTitle }
+        : sessionData;
+    const [session] = this.fromAcpJSON([sessionDataWithTitle]);
+    if (!session) {
+      return;
+    }
+    this.setSessionPreservingOrder(sessionId, session);
+    this.listenSession(session);
+    if (
+      !existingSession &&
+      session.title &&
+      session.title !== DEFAULT_ACP_SESSION_TITLE &&
+      !this.isLikelyAcpContextTitle(session.title)
+    ) {
+      this.setDisplayTitleOverride(sessionId, session.title);
+    }
+  }
+
+  private getSessionAttachments(): Map<
+    string,
+    { stream: SumiReadableStream<IChatProgress>; disposables: IDisposable[] }
+  > {
+    if (!this.sessionAttachments) {
+      this.sessionAttachments = new Map();
+    }
+    return this.sessionAttachments;
+  }
+
+  private observeSessionAttachment(sessionId: string, stream: SumiReadableStream<IChatProgress>): void {
+    const attachments = this.getSessionAttachments();
+    const previous = attachments.get(sessionId);
+    if (previous) {
+      previous.disposables.forEach((disposable) => disposable.dispose());
+      previous.stream.end();
+    }
+
+    const applyThreadStatus = (status: IChatSessionSnapshot['threadStatus']) => {
+      const model = this.getSession(sessionId);
+      if (!model) {
+        return;
+      }
+      model.setThreadStatus(status);
+      if (!isAcpResponsePending(status)) {
+        const request = model.requests[model.requests.length - 1];
+        if (request && !request.response.isComplete) {
+          request.response.complete();
+        }
+      }
+    };
+
+    const disposables: IDisposable[] = [];
+    const cleanup = () => {
+      if (attachments.get(sessionId)?.stream === stream) {
+        attachments.delete(sessionId);
+      }
+      disposables.splice(0).forEach((disposable) => disposable.dispose());
+    };
+
+    const register = (factory: () => IDisposable) => {
+      const disposable = factory();
+      if (attachments.get(sessionId)?.stream !== stream) {
+        disposable.dispose();
+      } else {
+        disposables.push(disposable);
+      }
+    };
+
+    attachments.set(sessionId, { stream, disposables });
+    register(() =>
+      stream.onData((progress) => {
+        if (progress.kind === 'sessionSnapshot') {
+          const restoredSession = this.mainProvider?.restoreSessionSnapshot?.(sessionId, progress);
+          if (restoredSession) {
+            this.restoreLoadedSession(sessionId, restoredSession, this.peekSession(sessionId));
+          }
+          applyThreadStatus(progress.threadStatus);
+          this.applySessionStateUpdate(sessionId, {
+            currentModeId: progress.currentModeId,
+            currentModelId: progress.currentModelId,
+            configOptions: progress.configOptions,
+          });
+          return;
+        }
+        if (progress.kind === 'threadStatus') {
+          applyThreadStatus(progress.threadStatus);
+          return;
+        }
+        if (progress.kind === 'sessionState') {
+          this.applySessionStateUpdate(sessionId, progress);
+          return;
+        }
+
+        const model = this.getSession(sessionId);
+        const request = model?.requests[model.requests.length - 1];
+        if (model && request && !request.response.isComplete) {
+          model.acceptResponseProgress(request, progress);
+        }
+      }),
+    );
+    register(() => stream.onEnd(cleanup));
+    register(() => stream.onError(cleanup));
   }
 
   override createRequest(sessionId: string, message: string, agentId: string, command?: string, images?: string[]) {
@@ -491,6 +590,7 @@ export class AcpChatManagerService extends ChatManagerService {
         message: request.message,
         response: {
           isCanceled: request.response.isCanceled,
+          isComplete: request.response.isComplete,
           responseText: request.response.responseText,
           responseContents: request.response.responseContents,
           responseParts: request.response.responseParts,
@@ -524,7 +624,7 @@ export class AcpChatManagerService extends ChatManagerService {
               request.message,
               new ChatResponseModel(request.requestId, model, request.message.agentId, {
                 responseContents: request.response.responseContents,
-                isComplete: true,
+                isComplete: request.response.isComplete ?? true,
                 responseText: request.response.responseText,
                 responseParts: request.response.responseParts,
                 errorDetails: request.response.errorDetails,
@@ -545,5 +645,14 @@ export class AcpChatManagerService extends ChatManagerService {
     }
     const sessionsData = this.getSessions().map((model) => this.toSessionData(model));
     await this.mainProvider.saveSessions(sessionsData);
+  }
+
+  override dispose(): void {
+    this.sessionAttachments?.forEach(({ stream, disposables }) => {
+      disposables.forEach((disposable) => disposable.dispose());
+      stream.end();
+    });
+    this.sessionAttachments?.clear();
+    super.dispose();
   }
 }

@@ -191,10 +191,12 @@ describe('AcpChatInternalService', () => {
         startSession: jest.fn(() => Promise.resolve(model)),
       };
       const registry = {
+        clearRememberedActiveTaskSession: jest.fn(),
         consumePendingLaunch: jest.fn(),
         getTask: jest.fn(),
         getProject: jest.fn(),
         markUnread: jest.fn().mockResolvedValue(undefined),
+        rememberActiveTaskSession: jest.fn(),
         registerFirstPrompt: jest.fn().mockResolvedValue(undefined),
         registerProject: jest.fn().mockResolvedValue(undefined),
         updateAttention: jest.fn().mockResolvedValue(undefined),
@@ -332,7 +334,7 @@ describe('AcpChatInternalService', () => {
     });
 
     it('keeps later new chat lazy after the bootstrap session has been used', async () => {
-      const { chatManagerService, model, service } = createService();
+      const { chatManagerService, model, registry, service } = createService();
       const nextModel = new ChatModel(new ChatFeatureRegistry(), {
         sessionId: 'acp:sess-2',
       });
@@ -350,6 +352,7 @@ describe('AcpChatInternalService', () => {
 
       service.enterDraftSession();
 
+      expect(registry.clearRememberedActiveTaskSession).toHaveBeenCalledWith(model.sessionId);
       expect(service.sessionModel).toBeUndefined();
       expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
 
@@ -425,6 +428,16 @@ describe('AcpChatInternalService', () => {
           agentId: 'claude-agent-acp',
         }),
       );
+      expect(registry.rememberActiveTaskSession).toHaveBeenCalledWith(model.sessionId);
+    });
+
+    it('remembers the activated Agentic Task as the reload target', async () => {
+      const { model, registry, service } = createService();
+      registry.getTask.mockResolvedValue({ sessionId: model.sessionId });
+
+      await expect(service.activateAgenticTaskSession(model.sessionId)).resolves.toBe(true);
+
+      expect(registry.rememberActiveTaskSession).toHaveBeenCalledWith(model.sessionId);
     });
 
     it('uses pending Project and Agent metadata when the active chat service creates the Task session', async () => {
@@ -520,6 +533,29 @@ describe('AcpChatInternalService', () => {
       await service.sendRequest(request);
 
       expect(registry.updateStatus).toHaveBeenCalledWith('acp:sess-1', 'running');
+    });
+
+    it('records the active session before waiting for a long-running first prompt', () => {
+      const { chatManagerService, model, registry, service } = createService();
+      let resolveSend!: () => void;
+      chatManagerService.sendRequest.mockReturnValue(
+        new Promise<void>((resolve) => {
+          resolveSend = resolve;
+        }),
+      );
+      service._sessionModel = model;
+      const request = model.addRequest({
+        prompt: 'Long task',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      const send = service.sendRequest(request);
+
+      expect(registry.rememberActiveTaskSession).toHaveBeenCalledWith(model.sessionId);
+      resolveSend();
+      return send;
     });
 
     it('does not infer input attention from a generic background assistant component', async () => {

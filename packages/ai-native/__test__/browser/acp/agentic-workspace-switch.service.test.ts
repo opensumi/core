@@ -72,6 +72,7 @@ describe('AgenticWorkspaceSwitchService', () => {
     registry = {
       consumePendingActivation: jest.fn(),
       consumePendingLaunch: jest.fn(),
+      getRememberedActiveTaskSession: jest.fn(),
       getProject: jest.fn(),
       markProjectAvailability: jest.fn().mockResolvedValue(undefined),
       markUnread: jest.fn().mockResolvedValue(undefined),
@@ -241,12 +242,23 @@ describe('AgenticWorkspaceSwitchService', () => {
   });
 
   it('consumes a pending launch only after no activation is available', async () => {
+    registry.getRememberedActiveTaskSession.mockReturnValue({ sessionId: 'acp:a' });
     registry.consumePendingLaunch.mockReturnValue({ projectId: projectB.id, agentId: 'agent-b' });
     registry.getProject.mockResolvedValue(projectB);
 
     await switcher.restorePendingWork();
 
     expect(aiChatService.enterAgenticTaskDraft).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
+    expect(aiChatService.activateAgenticTaskSession).not.toHaveBeenCalled();
+  });
+
+  it('restores the remembered active Task only when no pending activation or launch exists', async () => {
+    registry.getRememberedActiveTaskSession.mockReturnValue({ sessionId: 'acp:a' });
+
+    await switcher.restorePendingWork();
+
+    expect(aiChatService.activateAgenticTaskSession).toHaveBeenCalledWith('acp:a', expect.any(Function));
+    expect(registry.markUnread).toHaveBeenCalledWith('acp:a', false);
   });
 
   it('does not admit the current Workspace or MRU entries while refreshing the Project catalog', async () => {

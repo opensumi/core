@@ -244,6 +244,9 @@ export class AcpChatInternalService extends ChatInternalService {
 
   override sendRequest(request: ChatRequestModel, regenerate = false) {
     const sessionId = this._sessionModel?.sessionId;
+    if (sessionId && this.isAgenticLayout()) {
+      this.agenticTaskRegistry.rememberActiveTaskSession(sessionId);
+    }
     this.logger.log(
       `[ACP Chat][Frontend] sendRequest start — sessionId=${sessionId ?? '(empty)'}, requestId=${
         request.requestId
@@ -409,6 +412,7 @@ export class AcpChatInternalService extends ChatInternalService {
       return;
     }
 
+    this.agenticTaskRegistry.clearRememberedActiveTaskSession(this._sessionModel?.sessionId);
     this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || this.draftSessionState;
     this._sessionModel = undefined as unknown as ChatModel;
     this.permissionBridgeService.setActiveSession(undefined);
@@ -472,6 +476,7 @@ export class AcpChatInternalService extends ChatInternalService {
       firstPrompt: request.message.prompt,
       createdAt: model.createdAt,
     });
+    this.agenticTaskRegistry.rememberActiveTaskSession(sessionId);
     this.agenticTaskTargets.delete(sessionId);
     this.observeTaskSession(model);
     await this.observeRegisteredTaskSessions();
@@ -801,6 +806,9 @@ export class AcpChatInternalService extends ChatInternalService {
     this._sessionModel = session;
     if (task) {
       this.observeTaskSession(session);
+    }
+    if (this.isAgenticLayout()) {
+      this.agenticTaskRegistry.rememberActiveTaskSession(session.sessionId);
     }
     // Notify permission bridge of session change
     const rawSessionId = this.stripAcpPrefix(sessionId);

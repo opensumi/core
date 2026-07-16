@@ -116,16 +116,24 @@ export class AgenticWorkspaceSwitchService {
     }
 
     const launch = this.registry.consumePendingLaunch();
-    if (!launch) {
+    if (launch) {
+      const project = await this.registry.getProject(launch.projectId);
+      if (!shouldApply() || !project || project.availability === 'unavailable') {
+        return;
+      }
+
+      this.aiChatService.enterAgenticTaskDraft({ agentId: launch.agentId, cwd: project.workspacePath });
       return;
     }
 
-    const project = await this.registry.getProject(launch.projectId);
-    if (!shouldApply() || !project || project.availability === 'unavailable') {
+    const activeTask = this.registry.getRememberedActiveTaskSession();
+    if (!activeTask) {
       return;
     }
-
-    this.aiChatService.enterAgenticTaskDraft({ agentId: launch.agentId, cwd: project.workspacePath });
+    const activated = await this.aiChatService.activateAgenticTaskSession(activeTask.sessionId, shouldApply);
+    if (activated && shouldApply()) {
+      await this.registry.markUnread(activeTask.sessionId, false);
+    }
   }
 
   async refreshProjectAvailability(project: AgenticProjectRecord): Promise<void> {
