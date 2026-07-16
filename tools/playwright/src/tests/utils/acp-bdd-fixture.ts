@@ -76,6 +76,11 @@ const AGENTIC_LAYOUT_TIMEOUT_MS = 30 * 1000;
 const AGENTIC_WORKBENCH_TOGGLE_SELECTOR = '#agentic-chat-panel-header-maximize';
 const AI_NATIVE_PANEL_LAYOUT_SETTING_ID = 'ai.native.panelLayout';
 const ACP_DELIVERY_MODE_SETTING_ID = 'ai-native.acp.deliveryMode';
+const ACP_BDD_TRANSIENT_SESSION_STORAGE_KEYS = [
+  'agentic.active-task-session.v1',
+  'agentic.pending-task-activation.v2',
+  'agentic.pending-task-launch.v2',
+] as const;
 let nextRuntimeId = 1;
 
 function assertSupportedFixture(fixture: string): asserts fixture is AcpBddFixture {
@@ -97,6 +102,18 @@ function withRuntimeDefaults(options: AcpBddFixtureOptions): AcpBddFixtureOption
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function clearAcpBddTransientSessionState(page: Page): Promise<void> {
+  if (!/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\//.test(page.url())) {
+    return;
+  }
+
+  await page.evaluate((keys) => {
+    for (const key of keys) {
+      window.sessionStorage.removeItem(key);
+    }
+  }, ACP_BDD_TRANSIENT_SESSION_STORAGE_KEYS);
 }
 
 async function acquireRuntimeLock(): Promise<() => Promise<void>> {
@@ -384,6 +401,8 @@ export async function loadAcpBddFixtureWorkbench(
     if (runtimeOptions.viewport) {
       await page.setViewportSize(runtimeOptions.viewport);
     }
+
+    await clearAcpBddTransientSessionState(page);
 
     const profile = runtimeOptions.profile || 'default';
     const panelLayout = runtimeOptions.panelLayout || 'agentic';

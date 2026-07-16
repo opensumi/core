@@ -2146,6 +2146,34 @@ describe('ACP chat view headers', () => {
     expect(container.querySelector('[data-testid="acp-queued-turns-summary"]')).toBeNull();
   });
 
+  it('awaiting_prompt 状态下直接发送下一条消息，不进入排队列表', async () => {
+    const session = createMockSession({ messages: [] });
+    session.threadStatus = 'awaiting_prompt';
+    const response = createRequestResponse();
+    const createRequest = jest.fn((message: string, agentId: string, images?: string[], command?: string) => ({
+      message: { agentId, command, images, prompt: message },
+      requestId: 'request-1',
+      response,
+    }));
+    const sendRequest = jest.fn();
+    const services = createMockServices({ createRequest, sendRequest, session });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    expect(services.getLatestChatInputProps().loading).toBe(false);
+
+    let accepted = false;
+    await act(async () => {
+      accepted = await services.getLatestChatInputProps().onSend('下一条消息');
+      await flushPromises();
+    });
+
+    expect(accepted).toBe(true);
+    expect(createRequest).toHaveBeenCalledWith('下一条消息', 'default-agent', undefined, undefined);
+    expect(sendRequest).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[data-testid="acp-queued-turns-summary"]')).toBeNull();
+  });
+
   it('completes the response as agent-error when sendRequest throws synchronously', async () => {
     const session = createMockSession({ messages: [] });
     const response = createRequestResponse();

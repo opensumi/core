@@ -80,6 +80,7 @@ import { ChatInternalService } from './chat.internal.service';
 import { AcpChatInternalService } from './chat.internal.service.acp';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
+import { isAcpResponsePending } from './session-provider';
 
 import type { AcpQueuedTurnPort, AcpTurnDraft, AcpTurnOutcome } from './acp-chat-queued-turns';
 import type { ChatInputHandle, ChatInputTurnActions } from './chat.input.registry';
@@ -1190,11 +1191,7 @@ export const AIChatViewACPContent = () => {
       if (!sessionModel || (sessionId !== undefined && sessionModel.sessionId !== sessionId)) {
         return 'idle';
       }
-      return sessionModel.threadStatus === 'working' ||
-        sessionModel.threadStatus === 'awaiting_prompt' ||
-        sessionModel.threadStatus === 'auth_required'
-        ? 'generating'
-        : 'idle';
+      return isAcpResponsePending(sessionModel.threadStatus) ? 'generating' : 'idle';
     },
     start: async (sessionId, draft, assertRuntimeActive) => {
       let activeSessionId = sessionId;
@@ -1463,6 +1460,20 @@ export const AIChatViewACPContent = () => {
       cancellationTokenSource.cancel();
     };
   }, [aiChatService.sessionModel, msgHistoryManager, recover]);
+
+  React.useEffect(() => {
+    const sessionModel = aiChatService.sessionModel;
+    if (!sessionModel) {
+      return;
+    }
+
+    const syncLoadingWithThreadStatus = () => {
+      setChatLoading(isAcpResponsePending(sessionModel.threadStatus));
+    };
+    const disposable = sessionModel.onThreadStatusChange(syncLoadingWithThreadStatus);
+    syncLoadingWithThreadStatus();
+    return () => disposable.dispose();
+  }, [aiChatService.sessionModel, setChatLoading]);
 
   return (
     <div id={styles.ai_chat_view}>
