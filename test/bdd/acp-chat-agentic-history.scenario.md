@@ -24,6 +24,7 @@
    - It shows an `Add Project` directory action, not a global Project picker.
    - It includes `Project Current` and `Project Other` only.
    - It does not render `Project Missing`, its Task count, or `Missing ready` in either active or archived Task List content.
+   - A Task Row has no leading ACP status or attention dot. Its immutable title is followed by right-aligned status or attention text; the independent unread marker remains a trailing dot only when unread.
 2. Observe every rendered active and archived Project label.
    - A custom Project name is rendered exactly as entered. Otherwise, the visible label is the final segment of the normalized cwd, or `/` for a filesystem root.
    - When two available unnamed Projects share that final segment, each label includes the shortest parent-path suffix that distinguishes the set. Search filtering does not change these labels; they recompute only after a Project becomes available or unavailable, is added, or is removed.
@@ -89,8 +90,12 @@
 ### F. Archive, Classic Layout, and boundaries
 
 15. Archive then unarchive a ready Task.
-    - Only ready, stopped, or error Tasks expose Archive.
+    - Ready, stopped, and error Tasks expose an icon-only Archive action with an accessible name; running and missing-status Tasks do not.
+    - Before an action is revealed, the Task Row shows its right-aligned status or attention text and no leading state dot.
+    - Hovering an actionable Task Row or moving keyboard focus into it reveals Archive or Unarchive and visually hides the state text without shifting the row; the state text remains available to assistive technology.
+    - Moving hover and focus away restores the visible state text. A non-actionable Task Row keeps its state text visible on hover and focus.
     - Unarchive returns the Task to its original Project group without losing title, Project reference, or status.
+    - Permission or input attention replaces the ordinary status text; the independent unread marker is unchanged.
 16. Switch Agentic -> Classic -> Agentic.
     - Classic retains its own ACP history popover/button behavior.
     - Agentic restores the Task List and header `New Task` action.

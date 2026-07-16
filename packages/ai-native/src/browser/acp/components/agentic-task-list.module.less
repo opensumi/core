@@ -415,7 +415,7 @@
 .task_row {
   position: relative;
   display: grid;
-  grid-template-columns: 14px minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 6px;
   width: 100%;
@@ -464,46 +464,6 @@
   &::before {
     display: block;
   }
-}
-
-.task_state {
-  position: relative;
-  width: 12px;
-  height: 12px;
-
-  &::after {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--descriptionForeground);
-    content: '';
-  }
-}
-
-.task_attention_permission::after,
-.task_attention_input::after {
-  top: 2px;
-  left: 2px;
-  width: 7px;
-  height: 7px;
-  background: var(--editorWarning-foreground, #cca700);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--editorWarning-foreground, #cca700) 14%, transparent);
-}
-
-.task_status_running::after {
-  background: var(--focusBorder);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focusBorder) 14%, transparent);
-}
-
-.task_status_ready::after {
-  background: var(--testing-iconPassed, #73c991);
-}
-
-.task_status_error::after {
-  background: var(--errorForeground);
 }
 
 .task_title,
@@ -568,6 +528,11 @@
 .task_row_wrap:focus-within .archive_button {
   opacity: 1;
   pointer-events: auto;
+}
+
+.task_row_wrap_actionable:hover .task_meta,
+.task_row_wrap_actionable:focus-within .task_meta {
+  opacity: 0;
 }
 
 .archived_area {

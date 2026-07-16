@@ -163,26 +163,6 @@ function TaskListResizeHandle({
   );
 }
 
-function TaskState({ task }: { task: AgenticTaskRecord }) {
-  if (task.attention) {
-    return (
-      <span
-        aria-label={task.attention === 'permission' ? 'Permission needed' : 'Input needed'}
-        className={`${styles.task_state} ${styles[`task_attention_${task.attention}`]}`}
-        data-testid={`agentic-task-attention-${task.sessionId}`}
-      />
-    );
-  }
-
-  return (
-    <span
-      aria-label={task.status || 'Unknown task state'}
-      className={`${styles.task_state} ${task.status ? styles[`task_status_${task.status}`] : ''}`}
-      data-testid={`agentic-task-status-${task.sessionId}`}
-    />
-  );
-}
-
 function getTaskRowMeta(task: AgenticTaskRecord): string {
   if (task.attention === 'permission') {
     return 'permission';
@@ -191,6 +171,13 @@ function getTaskRowMeta(task: AgenticTaskRecord): string {
     return 'input';
   }
   return task.status || '';
+}
+
+function getTaskRowMetaTestId(task: AgenticTaskRecord): string {
+  if (task.attention) {
+    return `agentic-task-attention-${task.sessionId}`;
+  }
+  return `agentic-task-status-${task.sessionId}`;
 }
 
 function ProjectRenameModal({
@@ -262,10 +249,12 @@ function TaskRow({
   task: AgenticTaskRecord;
 }) {
   const archiveEligible = !!task.status && ARCHIVABLE_STATUSES.has(task.status) && !task.archived;
+  const actionAvailable = archiveEligible || (task.archived && !!onUnarchive);
   const rowMeta = getTaskRowMeta(task);
+  const rowMetaTestId = getTaskRowMetaTestId(task);
 
   return (
-    <div className={styles.task_row_wrap}>
+    <div className={`${styles.task_row_wrap} ${actionAvailable ? styles.task_row_wrap_actionable : ''}`}>
       <button
         aria-current={active ? 'true' : undefined}
         className={`${styles.task_row} ${active ? styles.task_row_selected : ''}`}
@@ -275,9 +264,10 @@ function TaskRow({
         title={projectAvailable ? task.title : `${task.title} (Project unavailable)`}
         type='button'
       >
-        <TaskState task={task} />
         <span className={styles.task_title}>{task.title}</span>
-        {rowMeta && <span className={styles.task_meta}>{rowMeta}</span>}
+        <span className={styles.task_meta} data-testid={rowMetaTestId}>
+          {rowMeta}
+        </span>
         {task.unread && (
           <span aria-label='Unread' className={styles.unread} data-testid={`agentic-task-unread-${task.sessionId}`} />
         )}

@@ -370,6 +370,8 @@ describe('AgenticTaskList', () => {
       'Project A',
     );
     expect(container.querySelectorAll('[data-testid="agentic-task-row-acp:layout"]')).toHaveLength(1);
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:layout"]')?.textContent).toBe('running');
+    expect(container.querySelector('[data-testid="agentic-task-archive-acp:layout"]')).toBeNull();
   });
 
   it('renders attention before status, archives eligible Tasks, and filters unavailable Projects', async () => {
@@ -399,6 +401,15 @@ describe('AgenticTaskList', () => {
             unread: false,
             status: 'ready' as const,
           },
+          {
+            sessionId: 'acp:unknown',
+            projectId: projectA.id,
+            agentId: 'agent-a',
+            title: 'Unknown status task',
+            createdAt: -1,
+            archived: false,
+            unread: false,
+          },
         ],
       },
       {
@@ -420,14 +431,20 @@ describe('AgenticTaskList', () => {
     services.registry.listProjects.mockResolvedValue([projectA, { ...projectB, availability: 'unavailable' as const }]);
     await renderTaskList(services);
 
-    expect(container.querySelector('[data-testid="agentic-task-attention-acp:permission"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-attention-acp:permission"]')?.textContent).toBe(
+      'permission',
+    );
     expect(container.querySelector('[data-testid="agentic-task-status-acp:permission"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-unread-acp:permission"]')).not.toBeNull();
+    expect(container.querySelector('.task_state')).toBeNull();
 
     const readyRow = container.querySelector('[data-testid="agentic-task-row-acp:ready"]');
     expect(readyRow?.textContent).toContain('Ready task');
     expect(readyRow?.textContent).toContain('ready');
     expect(readyRow?.textContent).not.toContain('agent-a');
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:ready"]')?.textContent).toBe('ready');
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:unknown"]')?.textContent).toBe('');
+    expect(container.querySelector('[data-testid="agentic-task-archive-acp:unknown"]')).toBeNull();
 
     const archive = container.querySelector('[data-testid="agentic-task-archive-acp:ready"]');
     expect(archive?.textContent).toBe('');
