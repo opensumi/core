@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   AIBackSerivcePath,
+  ACP_THREAD_POOL_SATURATED_ERROR_NAME,
   AgentProcessConfig,
   ChatMessageRole,
   Domain,
@@ -11,6 +12,7 @@ import {
   IChatToolCall,
   SessionNotification,
   ThreadStatus,
+  localize,
 } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
@@ -29,6 +31,23 @@ import {
 } from './session-provider';
 
 const DEFAULT_ACP_CHAT_AGENT_ID = 'Default_Chat_Agent';
+
+function isAcpThreadPoolSaturatedError(error: unknown): error is { name: string; message?: unknown } {
+  return (
+    Boolean(error) &&
+    typeof error === 'object' &&
+    (error as { name?: unknown }).name === ACP_THREAD_POOL_SATURATED_ERROR_NAME
+  );
+}
+
+function createAcpThreadPoolSaturatedError(): Error {
+  return new Error(
+    localize(
+      'aiNative.chat.acp.threadPoolSaturated',
+      'ACP concurrent tasks have reached the configured limit. Switch to or stop an active task, then try again.',
+    ),
+  );
+}
 
 /**
  * ACP Session Provider
@@ -105,9 +124,11 @@ export class ACPSessionProvider implements ISessionProvider {
       this.loadedSessionMap.set(sessionId, sessionModel);
 
       return sessionModel;
-    } catch (e) {
-      this.messageService.error(e.message);
-      throw e;
+    } catch (error) {
+      if (isAcpThreadPoolSaturatedError(error)) {
+        throw createAcpThreadPoolSaturatedError();
+      }
+      throw error;
     }
   }
 

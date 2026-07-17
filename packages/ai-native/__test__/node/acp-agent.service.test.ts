@@ -403,7 +403,7 @@ describe('AcpAgentService (Thread Pool)', () => {
         secondError = error as Error;
       }
       expect(secondError).toBeInstanceOf(Error);
-      expect(secondError!.name).toBe('AcpThreadPoolSaturatedError');
+      expect(secondError!.name).toBe('ACP_THREAD_POOL_SATURATED');
       expect(secondError!.message).toContain('Thread pool is full (1)');
       expect(warmingThread.dispose).not.toHaveBeenCalled();
 
@@ -646,7 +646,7 @@ describe('AcpAgentService (Thread Pool)', () => {
       }
 
       expect(saturationError).toBeInstanceOf(Error);
-      expect(saturationError!.name).toBe('AcpThreadPoolSaturatedError');
+      expect(saturationError!.name).toBe('ACP_THREAD_POOL_SATURATED');
       expect(saturationError!.message).toContain('Thread pool is full');
       expect(createdThreads.every((thread) => thread.dispose.mock.calls.length === 0)).toBe(true);
       expect((service as any).sessions.size).toBe(SMALL_THREAD_POOL_SIZE);

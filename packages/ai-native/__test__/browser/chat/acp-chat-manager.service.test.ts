@@ -179,6 +179,33 @@ describe('AcpChatManagerService', () => {
     }
   });
 
+  it('maps a named ACP thread-pool saturation error to an actionable message without notifying directly', async () => {
+    const provider = createSessionProvider();
+    const saturationError = new Error('Thread pool is full (3), no reusable LRU thread available');
+    saturationError.name = 'ACP_THREAD_POOL_SATURATED';
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        createSession: jest.fn().mockRejectedValue(saturationError),
+      },
+    });
+
+    await expect(provider.createSession()).rejects.toThrow(
+      'ACP concurrent tasks have reached the configured limit. Switch to or stop an active task, then try again.',
+    );
+    expect((provider as any).messageService.error).not.toHaveBeenCalled();
+  });
+
+  it('preserves unrelated ACP session creation errors', async () => {
+    const provider = createSessionProvider();
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        createSession: jest.fn().mockRejectedValue(new Error('Agent startup failed')),
+      },
+    });
+
+    await expect(provider.createSession()).rejects.toThrow('Agent startup failed');
+  });
+
   it('uses an explicit ACP target when creating an ACP session', async () => {
     const provider = createSessionProvider();
     const config = { agentId: 'agent-b', cwd: '/work/b' };

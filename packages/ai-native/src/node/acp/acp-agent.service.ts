@@ -11,7 +11,10 @@ import {
   SessionInfo,
   SessionNotification,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
-import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
+import {
+  ACP_THREAD_POOL_SATURATED_ERROR_NAME,
+  AgentProcessConfig,
+} from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
@@ -44,8 +47,6 @@ const WEBMCP_CAPABILITY_HINT = [
   'Use the opensumi-ide MCP catalog tools to discover and enable IDE capability groups before invoking non-default OpenSumi tools.',
   '</opensumi_mcp_usage_hint>',
 ].join('\n');
-
-const ACP_THREAD_POOL_SATURATED_ERROR_NAME = 'AcpThreadPoolSaturatedError';
 
 // ============================================================================
 // Agent Session Types

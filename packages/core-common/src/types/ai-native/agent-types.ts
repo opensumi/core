@@ -11,6 +11,12 @@ export type ACPAgentType = string;
 // Default agent type (fallback when no preference is set)
 export const DEFAULT_AGENT_TYPE: ACPAgentType = 'claude-agent-acp';
 
+/**
+ * Stable error name exposed when all ACP thread-pool capacity is owned by
+ * active foreground work.
+ */
+export const ACP_THREAD_POOL_SATURATED_ERROR_NAME = 'ACP_THREAD_POOL_SATURATED';
+
 // Supported agent types
 export enum ACPAgentTypeEnum {
   Qwen = 'qwen',

@@ -394,6 +394,25 @@ describe('AcpChatInternalService', () => {
       expect(loadingChanges).toEqual([true, false]);
     });
 
+    it('keeps the active ACP session and draft state after a failed create while notifying once', async () => {
+      const { chatManagerService, messageService, model: currentModel, service } = createService();
+      const loadingChanges: boolean[] = [];
+      const saturationMessage =
+        'ACP concurrent tasks have reached the configured limit. Switch to or stop an active task, then try again.';
+      service._sessionModel = currentModel;
+      service.draftSessionState = { currentModeId: 'code' };
+      chatManagerService.startSession.mockRejectedValueOnce(new Error(saturationMessage));
+      service.onSessionLoadingChange((loading) => loadingChanges.push(loading));
+
+      await service.createSessionModel();
+
+      expect(service.sessionModel).toBe(currentModel);
+      expect(service.getDraftSessionState()).toEqual({ currentModeId: 'code' });
+      expect(loadingChanges).toEqual([true, false]);
+      expect(messageService.error).toHaveBeenCalledTimes(1);
+      expect(messageService.error).toHaveBeenCalledWith(`Failed to create session. (${saturationMessage})`);
+    });
+
     it('starts a one-off Agentic draft with its target without writing user preferences', async () => {
       const { chatManagerService, model, service } = createService();
       const preferenceService = { set: jest.fn() };
