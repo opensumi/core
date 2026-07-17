@@ -326,6 +326,11 @@
 .project_new_task {
   margin-left: auto;
   opacity: 0.72;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    opacity: 1;
+  }
 }
 
 .project_manage {
@@ -333,8 +338,6 @@
   opacity: 0.72;
 }
 
-.project_header:hover .project_new_task,
-.project_header:focus-within .project_new_task,
 .project_header:hover .project_manage,
 .project_header:focus-within .project_manage {
   opacity: 1;

@@ -324,6 +324,12 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
     await expect(currentGroup.getByTestId('agentic-task-agent-menu-button')).toHaveCount(0);
     await expect(page.getByText('Project Missing', { exact: true })).toHaveCount(0);
     await expect(page.getByText('Missing ready', { exact: true })).toHaveCount(0);
+    const currentProjectLaunchButton = currentGroup.getByTestId('agentic-task-launch-button');
+    await expect(currentProjectLaunchButton).toHaveCSS('opacity', '0.72');
+    await currentProjectLaunchButton.hover();
+    await expect(currentProjectLaunchButton).toHaveCSS('opacity', '1');
+    await currentProjectLaunchButton.focus();
+    await expect(currentProjectLaunchButton).toHaveCSS('opacity', '1');
 
     const search = page.getByPlaceholder('Search tasks');
     await search.fill('Current older');
