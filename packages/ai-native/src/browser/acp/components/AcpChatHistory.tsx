@@ -6,6 +6,8 @@ import { localize } from '@opensumi/ide-core-browser';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { ThreadStatus } from '@opensumi/ide-core-common';
 
+import { AI_CHAT_NEW_CHAT } from '../../chat/acp-new-draft.commands';
+import { useCommandKeybindingLabel } from '../../chat/use-command-keybinding-label';
 import styles from '../../components/acp/chat-history.module.less';
 
 const threadStatusIcon: Record<ThreadStatus, string> = {
@@ -88,6 +90,9 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     } | null>(null);
     const [searchValue, setSearchValue] = useState('');
     const inputRef = useRef<any>(null);
+    const newChatKeybinding = useCommandKeybindingLabel(AI_CHAT_NEW_CHAT.id);
+    const newChatLabel = localize('aiNative.operate.newChat.title', 'New Chat');
+    const newChatTitle = `${newChatLabel}${newChatKeybinding ? ` (${newChatKeybinding})` : ''}`;
 
     // 处理搜索输入变化
     const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -328,18 +333,14 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     const getPopupContainer = useCallback((triggerNode: HTMLElement) => triggerNode.parentElement!, []);
 
     const renderNewChatAction = () => (
-      <Popover
-        id={'ai-chat-header-new'}
-        position={PopoverPosition.top}
-        title={localize('aiNative.operate.newChat.title')}
-      >
+      <Popover id={'ai-chat-header-new'} position={PopoverPosition.top} title={newChatTitle}>
         {disabled ? (
           <div className={cls(styles.chat_history_header_actions_new, styles.chat_history_header_actions_new_disabled)}>
             <Loading />
           </div>
         ) : (
           <EnhanceIcon
-            ariaLabel={localize('aiNative.operate.newChat.title')}
+            ariaLabel={newChatLabel}
             className={styles.chat_history_header_actions_new}
             iconClass='codicon codicon-add'
             onClick={handleNewChat}

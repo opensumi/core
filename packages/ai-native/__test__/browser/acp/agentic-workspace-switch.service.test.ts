@@ -1,4 +1,5 @@
 import { URI } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 
 import { AgenticProjectRecord, AgenticTaskRecord } from '../../../src/browser/acp/agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
@@ -36,6 +37,7 @@ describe('AgenticWorkspaceSwitchService', () => {
   let fileService: any;
   let dialogService: any;
   let registry: any;
+  let preferenceService: any;
   let switcher: AgenticWorkspaceSwitchService;
   let windowService: any;
   let workspaceService: any;
@@ -57,6 +59,8 @@ describe('AgenticWorkspaceSwitchService', () => {
       ),
       activateSession: jest.fn().mockResolvedValue(undefined),
       enterAgenticTaskDraft: jest.fn(),
+      getActiveAgenticTaskAgentId: jest.fn(),
+      sessionModel: undefined,
     };
     editorService = {
       closeAll: jest.fn().mockResolvedValue(undefined),
@@ -74,6 +78,7 @@ describe('AgenticWorkspaceSwitchService', () => {
       consumePendingLaunch: jest.fn(),
       getRememberedActiveTaskSession: jest.fn(),
       getProject: jest.fn(),
+      getTask: jest.fn(),
       markProjectAvailability: jest.fn().mockResolvedValue(undefined),
       markUnread: jest.fn().mockResolvedValue(undefined),
       rememberProjectAgent: jest.fn().mockResolvedValue(undefined),
@@ -81,6 +86,20 @@ describe('AgenticWorkspaceSwitchService', () => {
       preparePendingLaunch: jest.fn(),
       registerManagedProject: jest.fn().mockResolvedValue(projectB),
       registerProject: jest.fn().mockResolvedValue(undefined),
+    };
+    preferenceService = {
+      get: jest.fn((preferenceId: string, fallback: unknown) => {
+        if (preferenceId === AINativeSettingSectionsId.AgentConfigs) {
+          return {
+            'agent-a': { command: 'agent-a', description: 'Agent A' },
+            'agent-b': { command: 'agent-b', description: 'Agent B' },
+          };
+        }
+        if (preferenceId === AINativeSettingSectionsId.DefaultAgentType) {
+          return 'agent-a';
+        }
+        return fallback;
+      }),
     };
     workspaceService = {
       getMostRecentlyUsedWorkspaces: jest.fn().mockResolvedValue([]),
@@ -97,6 +116,7 @@ describe('AgenticWorkspaceSwitchService', () => {
       aiChatService: { value: aiChatService },
       editorService: { value: editorService },
       fileService: { value: fileService },
+      preferenceService: { value: preferenceService },
       dialogService: { value: dialogService },
       registry: { value: registry },
       windowService: { value: windowService },
@@ -164,6 +184,77 @@ describe('AgenticWorkspaceSwitchService', () => {
     expect(windowService.openWorkspace).not.toHaveBeenCalled();
     expect(dialogService.warning).not.toHaveBeenCalled();
     expect(workspaceService.open).not.toHaveBeenCalled();
+  });
+
+  it('resolves Header Task Launch from the selected Task Project and Project Agent Recall', async () => {
+    aiChatService.sessionModel = {
+      sessionId: 'acp:b',
+      requests: [{ message: { agentId: 'agent-a' } }],
+    };
+    registry.getTask.mockResolvedValue(taskFor('/work/b'));
+    registry.getProject.mockImplementation((projectId: string) => {
+      if (projectId === projectB.id) {
+        return Promise.resolve({ ...projectB, lastAgentId: 'agent-b' });
+      }
+      return Promise.resolve(undefined);
+    });
+
+    await expect(switcher.resolveHeaderTaskLaunchContext()).resolves.toMatchObject({
+      project: { id: projectB.id },
+      preferredAgentId: 'agent-b',
+      executionContext: { id: projectB.id },
+    });
+  });
+
+  it('single-flights Task Launch and publishes its pending state', async () => {
+    let resolveProject!: (project: AgenticProjectRecord) => void;
+    registry.getProject.mockReturnValueOnce(
+      new Promise<AgenticProjectRecord>((resolve) => {
+        resolveProject = resolve;
+      }),
+    );
+    const pendingStates: boolean[] = [];
+    switcher.onDidChangeTaskLaunchPending((pending) => pendingStates.push(pending));
+
+    const firstLaunch = switcher.launchTask(projectB, 'agent-b');
+
+    expect(switcher.isTaskLaunchPending).toBe(true);
+    await expect(switcher.launchTask(projectB, 'agent-b')).resolves.toBe(false);
+    expect(registry.getProject).toHaveBeenCalledTimes(1);
+
+    resolveProject(projectB);
+    await expect(firstLaunch).resolves.toBe(true);
+    expect(switcher.isTaskLaunchPending).toBe(false);
+    expect(pendingStates).toEqual([true, false]);
+  });
+
+  it('rejects Header Task Launch when the selected Workspace Target is unavailable', async () => {
+    aiChatService.sessionModel = { sessionId: 'acp:b', requests: [] };
+    registry.getTask.mockResolvedValue(taskFor('/work/b'));
+    registry.getProject.mockImplementation((projectId: string) =>
+      Promise.resolve(projectId === projectB.id ? { ...projectB, availability: 'unavailable' } : projectA),
+    );
+
+    await expect(switcher.launchHeaderTask()).resolves.toEqual({ status: 'project-unavailable' });
+    expect(aiChatService.enterAgenticTaskDraft).not.toHaveBeenCalled();
+  });
+
+  it('reports no Agent when the configured Agent catalog is empty', async () => {
+    preferenceService.get.mockImplementation((preferenceId: string, fallback: unknown) =>
+      preferenceId === AINativeSettingSectionsId.AgentConfigs ? {} : fallback,
+    );
+    registry.getProject.mockResolvedValue(projectA);
+
+    await expect(switcher.launchHeaderTask()).resolves.toEqual({ status: 'no-agent' });
+    expect(aiChatService.enterAgenticTaskDraft).not.toHaveBeenCalled();
+  });
+
+  it('preserves the active conversation when Header Task Launch fails', async () => {
+    registry.getProject.mockResolvedValue(projectA);
+    registry.rememberProjectAgent.mockRejectedValue(new Error('storage failed'));
+
+    await expect(switcher.launchHeaderTask('agent-a')).resolves.toEqual({ status: 'failed' });
+    expect(aiChatService.enterAgenticTaskDraft).not.toHaveBeenCalled();
   });
 
   it('creates a target draft immediately in the current Project', async () => {

@@ -26,6 +26,12 @@ function hasCommand(config: AgentConfig | undefined): config is AgentConfig {
   return typeof config?.command === 'string' && config.command.trim().length > 0;
 }
 
+export function getConfiguredAgentConfigs(preferenceService: PreferenceService): Record<string, AgentConfig> {
+  return Object.fromEntries(
+    Object.entries(getUserAgentConfigs(preferenceService)).filter(([, config]) => hasCommand(config)),
+  );
+}
+
 export function getAvailableAgentConfigs(preferenceService: PreferenceService): Record<string, AgentConfig> {
   const userConfigs = getUserAgentConfigs(preferenceService);
   const mergedConfigs: Record<string, AgentConfig> = {};

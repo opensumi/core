@@ -273,6 +273,26 @@ describe('AcpChatInternalService', () => {
       expect(chatManagerService.startSession).not.toHaveBeenCalled();
     });
 
+    it('keeps an isolated copy of the unsent input draft across view remounts', () => {
+      const { service } = createService();
+      const draft = {
+        message: 'preserve me',
+        images: ['attachment'],
+        agentId: 'agent-a',
+        command: 'review',
+      };
+
+      service.updateInputDraft(draft);
+      draft.images.push('mutated');
+
+      expect(service.getInputDraft()).toEqual({
+        message: 'preserve me',
+        images: ['attachment'],
+        agentId: 'agent-a',
+        command: 'review',
+      });
+    });
+
     it('creates one bootstrap ACP session and exposes its footer metadata', async () => {
       const { chatManagerService, model, permissionBridgeService, service } = createService();
 

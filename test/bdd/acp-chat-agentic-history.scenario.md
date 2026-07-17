@@ -36,19 +36,20 @@
 ### B. Contextual New Task launch and Agent selection
 
 4. Observe the chat-panel action area.
-   - The compact `New Task` icon is immediately left of the fullscreen/restore action.
-   - It has an accessible `New Task` label and is visually equivalent in size to the existing header action.
+   - A compact split action is immediately left of the fullscreen/restore action: the primary `New Task` `+` and an always-visible `Choose Agent` dropdown.
+   - The primary action names the recalled Agent and effective New Task shortcut in its accessible tooltip; both segments are visually equivalent in size to the existing header actions.
 5. Click `New Task`.
-   - It opens an ACP Agent dropdown anchored to the header action; hover does not open it and it never renders `Choose Project`.
-   - The menu contains `Agent A`, `Agent B`, a check mark for the Agent resolved for the next Task, and `Agent Configuration`.
-   - Choosing an Agent opens an Agent-bound draft for the selected durable Task's Project when a Task is selected; otherwise it uses the current IDE workspace. The target supplies the Agent working directory without navigating the IDE. The draft receives a Task List row only after its first prompt is sent.
-   - Choosing an Agent updates that Project's Agent Recall without changing the user default Agent preference.
+   - The primary `+` immediately opens an Agent-bound Task Draft with the recalled Agent and never opens the Agent menu or renders `Choose Project`.
+   - Clicking the adjacent dropdown opens a menu containing `Agent A`, `Agent B`, a check mark for the Agent resolved for the next Task, and `Agent Configuration`; hover does not open it.
+   - Direct launch and explicit Agent choice use the selected durable Task's Project when a Task is selected; otherwise they use the current IDE workspace. The target supplies the Agent working directory without navigating the IDE. The draft receives a Task List row only after its first prompt is sent.
+   - When the first prompt registers that Task, its new Task List row immediately becomes the active row and the previously selected row clears its active state.
+   - Choosing an Agent launches immediately and updates that Project's Agent Recall without changing the user default Agent preference; a later primary launch uses the recalled Agent.
    - Opening the current workspace alone does not add it to the persisted Project Catalog.
 6. Observe a Project Group.
    - Its only Task creation control is an icon-only `+`; it does not render a `New Task` label or Agent override arrow.
    - Its `+` opens an Agent-bound draft using that Project's resolved Agent Recall and its Project path as the Agent working directory. It does not navigate, reload the workbench, or invoke a dirty-editor guard when the Project differs from the current IDE workspace.
    - Its `…` menu contains Rename and contains Remove Project only for a manually added Project without retained Tasks.
-7. When no ACP Agent is available, the header `New Task` action remains enabled and its menu exposes `Agent Configuration`; every Project Group `+` is disabled while `Add Project` remains available.
+7. When no ACP Agent is available, the header primary `New Task` action is disabled with an explanation while the adjacent dropdown remains enabled and exposes `Agent Configuration`; the shortcut shows one non-blocking recovery message, every Project Group `+` is disabled, and `Add Project` remains available.
 8. Click `Add Project` and select one directory.
    - The existing directory picker is used; the IDE editor and file tree do not navigate.
    - The Project appears as an empty Project Group. Selecting an existing directory revalidates the existing Project instead of creating a duplicate.

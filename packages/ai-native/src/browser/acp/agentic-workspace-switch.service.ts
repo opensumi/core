@@ -1,12 +1,32 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { URI } from '@opensumi/ide-core-common';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { Emitter, URI } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
 import { AcpChatInternalService } from '../chat/chat.internal.service.acp';
+import { getConfiguredAgentConfigs, getDefaultAgentType } from '../chat/get-default-agent-type';
 
 import { AgenticProjectRecord, AgenticTaskRecord, AgenticTaskRegistryService } from './agentic-task-registry.service';
+
+export interface AgenticHeaderTaskLaunchContext {
+  project?: AgenticProjectRecord;
+  preferredAgentId?: string;
+  executionContext?: AgenticProjectRecord;
+}
+
+export type AgenticHeaderTaskLaunchStatus =
+  | 'launched'
+  | 'busy'
+  | 'no-agent'
+  | 'no-project'
+  | 'project-unavailable'
+  | 'failed';
+
+export interface AgenticHeaderTaskLaunchResult {
+  status: AgenticHeaderTaskLaunchStatus;
+}
 
 @Injectable()
 export class AgenticWorkspaceSwitchService {
@@ -22,7 +42,18 @@ export class AgenticWorkspaceSwitchService {
   @Autowired(IFileServiceClient)
   private readonly fileService: IFileServiceClient;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   private taskActionGeneration = 0;
+  private taskLaunchPending = false;
+  private readonly onDidChangeTaskLaunchPendingEmitter = new Emitter<boolean>();
+
+  readonly onDidChangeTaskLaunchPending = this.onDidChangeTaskLaunchPendingEmitter.event;
+
+  get isTaskLaunchPending(): boolean {
+    return this.taskLaunchPending;
+  }
 
   async seedProjectCatalog(): Promise<void> {
     await this.workspaceService.whenReady;
@@ -71,6 +102,18 @@ export class AgenticWorkspaceSwitchService {
   }
 
   async launchTask(project: AgenticProjectRecord, agentId: string): Promise<boolean> {
+    if (!this.beginTaskLaunch()) {
+      return false;
+    }
+
+    try {
+      return await this.performTaskLaunch(project, agentId);
+    } finally {
+      this.finishTaskLaunch();
+    }
+  }
+
+  private async performTaskLaunch(project: AgenticProjectRecord, agentId: string): Promise<boolean> {
     const actionGeneration = ++this.taskActionGeneration;
     const shouldApply = () => actionGeneration === this.taskActionGeneration;
     const registeredProject = await this.registry.getProject(project.id);
@@ -101,6 +144,63 @@ export class AgenticWorkspaceSwitchService {
     }
     this.aiChatService.enterAgenticTaskDraft({ agentId, cwd: targetProject.workspacePath });
     return true;
+  }
+
+  async resolveHeaderTaskLaunchContext(): Promise<AgenticHeaderTaskLaunchContext> {
+    const sessionModel = this.aiChatService.sessionModel;
+    const currentWorkspaceProject = this.currentWorkspaceProject();
+    const persistedCurrentProject = currentWorkspaceProject
+      ? await this.registry.getProject(currentWorkspaceProject.id)
+      : undefined;
+    const activeTask = sessionModel?.sessionId ? await this.registry.getTask(sessionModel.sessionId) : undefined;
+    const activeTaskProject = activeTask?.projectId ? await this.registry.getProject(activeTask.projectId) : undefined;
+    const project = activeTaskProject || persistedCurrentProject || currentWorkspaceProject;
+    const agentIds = Object.keys(getConfiguredAgentConfigs(this.preferenceService));
+    const latestRequestAgentId = sessionModel?.requests?.at(-1)?.message.agentId;
+    const activeDraftAgentId = this.aiChatService.getActiveAgenticTaskAgentId(sessionModel?.sessionId);
+    const preferredAgentId = [
+      project?.lastAgentId,
+      activeTask?.agentId,
+      latestRequestAgentId,
+      activeDraftAgentId,
+      getDefaultAgentType(this.preferenceService),
+    ].find((agentId): agentId is string => !!agentId && agentIds.includes(agentId));
+
+    return {
+      project,
+      preferredAgentId: preferredAgentId || agentIds[0],
+      executionContext:
+        activeTaskProject && activeTaskProject.workspacePath !== currentWorkspaceProject?.workspacePath
+          ? activeTaskProject
+          : undefined,
+    };
+  }
+
+  async launchHeaderTask(agentId?: string): Promise<AgenticHeaderTaskLaunchResult> {
+    if (!this.beginTaskLaunch()) {
+      return { status: 'busy' };
+    }
+
+    try {
+      const context = await this.resolveHeaderTaskLaunchContext();
+      if (!context.project) {
+        return { status: 'no-project' };
+      }
+      if (context.project.availability === 'unavailable') {
+        return { status: 'project-unavailable' };
+      }
+      const resolvedAgentId = agentId || context.preferredAgentId;
+      if (!resolvedAgentId) {
+        return { status: 'no-agent' };
+      }
+      return (await this.performTaskLaunch(context.project, resolvedAgentId))
+        ? { status: 'launched' }
+        : { status: 'failed' };
+    } catch {
+      return { status: 'failed' };
+    } finally {
+      this.finishTaskLaunch();
+    }
   }
 
   async restorePendingWork(): Promise<void> {
@@ -160,6 +260,20 @@ export class AgenticWorkspaceSwitchService {
     } catch {
       return 'unavailable';
     }
+  }
+
+  private beginTaskLaunch(): boolean {
+    if (this.taskLaunchPending) {
+      return false;
+    }
+    this.taskLaunchPending = true;
+    this.onDidChangeTaskLaunchPendingEmitter.fire(true);
+    return true;
+  }
+
+  private finishTaskLaunch(): void {
+    this.taskLaunchPending = false;
+    this.onDidChangeTaskLaunchPendingEmitter.fire(false);
   }
 
   private currentWorkspaceUri(): string | undefined {

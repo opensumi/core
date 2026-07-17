@@ -66,6 +66,7 @@ export interface IChatMentionInputProps {
     option?: { model: string; [key: string]: any },
   ) => TurnActionResult | void | Promise<TurnActionResult | void>;
   onValueChange?: (value: string) => void;
+  onDraftChange?: (draft: AcpTurnDraft) => void;
   onExpand?: (value: boolean) => void;
   placeholder?: string;
   enableOptions?: boolean;
@@ -276,6 +277,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         propsRef.current.setAgentId(agentIdRef.current);
         propsRef.current.setCommand(commandRef.current);
         propsRef.current.onValueChange?.(draft.message);
+        propsRef.current.onDraftChange?.({ ...draft, images: draft.images ? [...draft.images] : undefined });
       },
       setInputValue: (inputValue) => {
         draftGenerationRef.current += 1;
@@ -289,6 +291,12 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           setDefaultInput(inputValue);
         }
         propsRef.current.onValueChange?.(inputValue);
+        propsRef.current.onDraftChange?.({
+          message: inputValue,
+          images: imagesRef.current.map((image) => image.toString()),
+          agentId: agentIdRef.current,
+          command: commandRef.current,
+        });
       },
       focus: () => mentionInputRef.current?.focus(),
       setExpanded: (expanded) => {
@@ -986,6 +994,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         props.setCommand('');
         imagesRef.current = props.images ? [...props.images] : [];
         setImages(imagesRef.current);
+        propsRef.current.onDraftChange?.({ message: '', images: [], agentId: '', command: '' });
         return result ?? true;
       } finally {
         submitInFlightRef.current = false;
@@ -1041,6 +1050,10 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         }
         const nextImages = [...currentImages, ...uploadedData];
         imagesRef.current = nextImages;
+        propsRef.current.onDraftChange?.({
+          ...inputHandle.getDraft(),
+          images: nextImages.map((image) => image.toString()),
+        });
         return nextImages;
       });
 
@@ -1054,7 +1067,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         );
       }
     },
-    [chatFeatureRegistry, messageService],
+    [chatFeatureRegistry, inputHandle, messageService],
   );
 
   const handleModeChange = useCallback(
@@ -1118,7 +1131,8 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
     if (!isQueued) {
       props.turnActions?.invalidateFastTrack();
     }
-  }, [isQueued, props.turnActions]);
+    propsRef.current.onDraftChange?.(inputHandle.getDraft());
+  }, [inputHandle, isQueued, props.turnActions]);
 
   const toggleExpanded = useCallback(
     () => commandService.executeCommand(AI_CHAT_INPUT_TOGGLE_EXPANDED.id),

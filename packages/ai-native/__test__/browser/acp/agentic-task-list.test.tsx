@@ -3,6 +3,7 @@ import { Root, createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
 jest.mock('@opensumi/ide-core-browser', () => ({
+  KeybindingRegistry: class KeybindingRegistry {},
   PreferenceService: class PreferenceService {},
   useInjectable: jest.fn(),
 }));
@@ -17,6 +18,7 @@ jest.mock('../../../src/browser/acp/agentic-workspace-switch.service', () => ({
 
 jest.mock('../../../src/browser/chat/get-default-agent-type', () => ({
   getAvailableAgentConfigs: jest.fn(),
+  getConfiguredAgentConfigs: jest.fn(),
   getDefaultAgentType: jest.fn(),
 }));
 
@@ -36,6 +38,7 @@ jest.mock('@opensumi/ide-components/lib/modal', () => ({
   },
 }));
 
+import { KeybindingRegistry } from '@opensumi/ide-core-browser';
 import { URI } from '@opensumi/ide-core-common';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 
@@ -43,7 +46,11 @@ import { AgenticTaskRegistryService } from '../../../src/browser/acp/agentic-tas
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
 import { AgenticTaskList } from '../../../src/browser/acp/components/AgenticTaskList';
 import chatStyles from '../../../src/browser/chat/chat.module.less';
-import { getAvailableAgentConfigs, getDefaultAgentType } from '../../../src/browser/chat/get-default-agent-type';
+import {
+  getAvailableAgentConfigs,
+  getConfiguredAgentConfigs,
+  getDefaultAgentType,
+} from '../../../src/browser/chat/get-default-agent-type';
 import { IChatInternalService } from '../../../src/common';
 
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -82,9 +89,16 @@ function createServices() {
     workspaceSwitch: {
       activateTask: jest.fn(() => Promise.resolve()),
       addProject: jest.fn(() => Promise.resolve(projectA)),
+      isTaskLaunchPending: false,
       launchTask: jest.fn(() => Promise.resolve()),
+      onDidChangeTaskLaunchPending: jest.fn(() => ({ dispose: jest.fn() })),
       refreshProjectAvailability: jest.fn(() => Promise.resolve()),
       seedProjectCatalog: jest.fn(() => Promise.resolve()),
+    },
+    keybindingRegistry: {
+      acceleratorFor: jest.fn(() => []),
+      getKeybindingsForCommand: jest.fn(() => []),
+      onKeybindingsChanged: jest.fn(() => ({ dispose: jest.fn() })),
     },
     aiChatService: {
       enterAgenticTaskDraft: jest.fn(),
@@ -106,6 +120,10 @@ describe('AgenticTaskList', () => {
 
   beforeEach(() => {
     (getAvailableAgentConfigs as jest.Mock).mockReturnValue({
+      'agent-a': { command: 'agent-a', description: 'Agent A' },
+      'agent-b': { command: 'agent-b', description: 'Agent B' },
+    });
+    (getConfiguredAgentConfigs as jest.Mock).mockReturnValue({
       'agent-a': { command: 'agent-a', description: 'Agent A' },
       'agent-b': { command: 'agent-b', description: 'Agent B' },
     });
@@ -145,6 +163,9 @@ describe('AgenticTaskList', () => {
       }
       if (token === IWindowDialogService) {
         return services.windowDialogService;
+      }
+      if (token === KeybindingRegistry) {
+        return services.keybindingRegistry;
       }
       return services.preferenceService;
     });
@@ -218,6 +239,10 @@ describe('AgenticTaskList', () => {
     services.aiChatService.sessionModel = { requests: [], sessionId: 'acp:active' };
     services.aiChatService.onChangeSession = jest.fn(() => ({ dispose: jest.fn() }));
     (getAvailableAgentConfigs as jest.Mock).mockReturnValue({
+      'agent-a': { command: 'agent-a', description: 'Agent A' },
+      'agent-b': { command: 'agent-b', description: 'Agent B' },
+    });
+    (getConfiguredAgentConfigs as jest.Mock).mockReturnValue({
       'agent-a': { command: 'agent-a', description: 'Agent A' },
       'agent-b': { command: 'agent-b', description: 'Agent B' },
     });

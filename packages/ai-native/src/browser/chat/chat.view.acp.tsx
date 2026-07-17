@@ -67,6 +67,7 @@ import { BaseApplyService } from '../mcp/base-apply.service';
 import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
 import { AcpQueuedTurnModule } from './acp-chat-queued-turns';
+import { AI_CHAT_NEW_CHAT } from './acp-new-draft.commands';
 import { AcpQueuedTurns } from './AcpQueuedTurns';
 import { AgenticChatHeaderMaximizeAction } from './AgenticChatHeaderMaximizeAction';
 import { AgenticChatPanelHeader } from './AgenticChatPanelHeader';
@@ -1379,8 +1380,9 @@ export const AIChatViewACPContent = () => {
   }, [queuedTurns]);
 
   const handleCloseChatView = React.useCallback(() => {
+    aiChatService.updateInputDraft(chatInputRegistry.preserveActiveDraft() || aiChatService.getInputDraft());
     panelLayoutService.hideAIChatView();
-  }, [panelLayoutService]);
+  }, [aiChatService, chatInputRegistry, panelLayoutService]);
 
   const HeaderRender: ChatViewHeaderRender = chatRenderRegistry.chatViewHeaderRender || DefaultChatViewHeaderACP;
 
@@ -1565,6 +1567,8 @@ export const AIChatViewACPContent = () => {
             )}
             <ChatInputWrapperRender
               onSend={handleSend}
+              initialDraft={aiChatService.getInputDraft()}
+              onDraftChange={(draft) => aiChatService.updateInputDraft(draft)}
               disabled={sessionLoading}
               loading={loading || sessionLoading}
               enableOptions={true}
@@ -1609,6 +1613,7 @@ export function DefaultChatViewHeaderACP({
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
+  const commandService = useInjectable<CommandService>(CommandService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
@@ -1624,8 +1629,8 @@ export function DefaultChatViewHeaderACP({
   }, [panelLayoutService]);
 
   const handleNewChat = React.useCallback(() => {
-    aiChatService.enterDraftSession();
-  }, [aiChatService]);
+    void commandService.executeCommand(AI_CHAT_NEW_CHAT.id);
+  }, [commandService]);
   const handleHistoryItemSelect = React.useCallback(
     (item: IChatHistoryItem) => {
       aiChatService.activateSession(item.id);

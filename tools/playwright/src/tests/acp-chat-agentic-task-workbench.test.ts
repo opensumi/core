@@ -151,9 +151,9 @@ function getAgentOptionTestId(agentLabel: 'Agent A' | 'Agent B'): string {
 
 async function createTask(title: string, agentLabel: 'Agent A' | 'Agent B' = 'Agent A'): Promise<string> {
   const header = page.getByTestId('agentic-chat-panel-header');
-  const launcher = header.getByTestId('agentic-task-launch-button');
-  await expect(launcher).toBeVisible({ timeout: 30_000 });
-  await launcher.click();
+  const menuButton = header.getByTestId('agentic-task-agent-menu-button');
+  await expect(menuButton).toBeVisible({ timeout: 30_000 });
+  await menuButton.click();
   const menu = header.getByTestId('agentic-task-agent-menu');
   await expect(menu).toBeVisible();
   await menu.getByTestId(getAgentOptionTestId(agentLabel)).click();

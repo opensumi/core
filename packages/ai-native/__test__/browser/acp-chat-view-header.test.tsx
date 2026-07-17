@@ -14,7 +14,9 @@ jest.mock('@opensumi/ide-core-browser', () => ({
       id: 'core.openpreference',
     },
   },
+  CommandService: Symbol('CommandService'),
   LabelService: Symbol('LabelService'),
+  KeybindingRegistry: Symbol('KeybindingRegistry'),
   PreferenceService: Symbol('PreferenceService'),
   QuickPickService: Symbol('QuickPickService'),
   getIcon: (name: string) => `icon-${name}`,
@@ -244,6 +246,7 @@ import { ChatMessageRole } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 
 import { AcpChatViewHeader } from '../../src/browser/acp/components/AcpChatViewHeader';
+import { AI_CHAT_NEW_CHAT, AI_CHAT_NEW_TASK } from '../../src/browser/chat/acp-new-draft.commands';
 import { DefaultChatViewHeader } from '../../src/browser/chat/chat.view';
 import { AIChatViewACPContent, DefaultChatViewHeaderACP } from '../../src/browser/chat/chat.view.acp';
 
@@ -411,6 +414,7 @@ function createMockServices({
     createSessionModel: createSessionModel || jest.fn(),
     enterDraftSession: enterDraftSession || jest.fn(),
     getDraftSessionState: jest.fn(() => ({ isDraft: false })),
+    getInputDraft: jest.fn(() => undefined),
     getActiveAgenticTaskAgentId: jest.fn(() => undefined),
     ensureSessionModel: jest.fn(async () => {
       const ensuredSession = ensureSessionModel
@@ -437,6 +441,7 @@ function createMockServices({
     onSessionLoadingChange: jest.fn(() => disposable()),
     sendRequest: sendRequest || jest.fn(),
     setLatestRequestId: jest.fn(),
+    updateInputDraft: jest.fn(),
   };
   const ChatInputForTest = React.forwardRef<HTMLDivElement, any>((props, ref) => {
     latestChatInputProps = props;
@@ -614,8 +619,11 @@ function createMockServices({
       getMessageSummaryProvider: jest.fn(() => undefined),
     },
     chatInputRegistry: {
+      focusActiveInput: jest.fn(() => activeInputHandle?.focus?.()),
       getActiveChatInput: jest.fn(() => activeChatInput),
       getActiveInputHandle: jest.fn(() => activeInputHandle),
+      preserveActiveDraft: jest.fn(),
+      restoreActiveDraft: jest.fn(),
       setActiveInputHandle: jest.fn(
         (handle: { focus: jest.Mock; restoreDraft: jest.Mock; setExpanded: jest.Mock } | null, ownerId?: string) => {
           if (handle && ownerId !== activeChatInput.id) {
@@ -628,6 +636,11 @@ function createMockServices({
           activeInputHandleOwnerId = handle ? ownerId : undefined;
         },
       ),
+    },
+    keybindingRegistry: {
+      acceleratorFor: jest.fn(() => []),
+      getKeybindingsForCommand: jest.fn(() => []),
+      onKeybindingsChanged: jest.fn(() => disposable()),
     },
     chatRenderRegistry: {
       chatViewHeaderRender,
@@ -743,7 +756,9 @@ function createMockServices({
       },
     },
     workspaceSwitch: {
+      isTaskLaunchPending: false,
       launchTask: jest.fn(() => Promise.resolve(true)),
+      onDidChangeTaskLaunchPending: jest.fn(() => disposable()),
       refreshProjectAvailability: jest.fn(() => Promise.resolve()),
       restorePendingWork: jest.fn(() => Promise.resolve()),
       seedProjectCatalog: jest.fn(() => Promise.resolve()),
@@ -787,6 +802,10 @@ function installInjectableMocks(services: ReturnType<typeof createMockServices>)
 
     if (key.includes('ChatInputRegistry')) {
       return services.chatInputRegistry;
+    }
+
+    if (key.includes('KeybindingRegistry')) {
+      return services.keybindingRegistry;
     }
 
     if (key.includes('ChatRenderRegistry')) {
@@ -960,7 +979,8 @@ describe('ACP chat view headers', () => {
   });
 
   it('does not show the maximize action in the default ACP chat header in classic layout', async () => {
-    installInjectableMocks(createMockServices({ panelLayout: 'classic' }));
+    const services = createMockServices({ panelLayout: 'classic' });
+    installInjectableMocks(services);
 
     await renderHeader(
       React.createElement(DefaultChatViewHeaderACP, {
@@ -970,6 +990,10 @@ describe('ACP chat view headers', () => {
     );
 
     expect(container.querySelector('#ai-chat-header-maximize')).toBeNull();
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-chat-history-new"]') as HTMLButtonElement).click();
+    });
+    expect(services.commandService.executeCommand).toHaveBeenCalledWith(AI_CHAT_NEW_CHAT.id);
   });
 
   it('hides the clear action in the ACP-specific header while keeping workspace switch and close actions', async () => {
@@ -1146,7 +1170,7 @@ describe('ACP chat view headers', () => {
       await flushPromises();
     });
 
-    const launch = container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement;
+    const launch = container.querySelector('[data-testid="agentic-task-agent-menu-button"]') as HTMLButtonElement;
     await act(async () => {
       launch.click();
     });
@@ -1160,7 +1184,7 @@ describe('ACP chat view headers', () => {
       agentBButton.click();
       await Promise.resolve();
     });
-    expect(services.workspaceSwitch.launchTask).toHaveBeenCalledWith(currentProject, 'agent-b');
+    expect(services.commandService.executeCommand).toHaveBeenCalledWith(AI_CHAT_NEW_TASK.id, 'agent-b');
   });
 
   it('uses the active Task Project for Header New Task and displays a foreign execution context', async () => {
@@ -1214,7 +1238,7 @@ describe('ACP chat view headers', () => {
     expect(services.agenticTaskRegistry.getProject).toHaveBeenCalledWith(otherProject.id);
 
     await act(async () => {
-      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="agentic-task-agent-menu-button"]') as HTMLButtonElement).click();
       await flushPromises();
     });
     await act(async () => {
@@ -1222,7 +1246,7 @@ describe('ACP chat view headers', () => {
       await flushPromises();
     });
 
-    expect(services.workspaceSwitch.launchTask).toHaveBeenCalledWith(otherProject, 'agent-b');
+    expect(services.commandService.executeCommand).toHaveBeenCalledWith(AI_CHAT_NEW_TASK.id, 'agent-b');
   });
 
   it('does not display an execution context when the active Task uses the IDE workspace', async () => {
@@ -1295,13 +1319,13 @@ describe('ACP chat view headers', () => {
     });
 
     await act(async () => {
-      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="agentic-task-agent-menu-button"]') as HTMLButtonElement).click();
     });
     await act(async () => {
       (container.querySelector('[data-testid="agentic-task-agent-option-agent-a"]') as HTMLButtonElement).click();
       await Promise.resolve();
     });
-    expect(services.workspaceSwitch.launchTask).toHaveBeenCalledWith(otherProject, 'agent-a');
+    expect(services.commandService.executeCommand).toHaveBeenCalledWith(AI_CHAT_NEW_TASK.id, 'agent-a');
   });
 
   it('uses the current Agentic draft target before the first prompt is registered', async () => {
@@ -1335,7 +1359,7 @@ describe('ACP chat view headers', () => {
       await flushPromises();
     });
     await act(async () => {
-      (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="agentic-task-agent-menu-button"]') as HTMLButtonElement).click();
     });
     const agentBButton = container.querySelector(
       '[data-testid="agentic-task-agent-option-agent-b"]',

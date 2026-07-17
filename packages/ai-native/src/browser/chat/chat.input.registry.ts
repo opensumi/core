@@ -19,6 +19,7 @@ export type ChatInputCapability =
   | 'rich-queued-edit';
 
 export interface ChatInputHandle {
+  getDraft?(): AcpTurnDraft;
   restoreDraft?(draft: AcpTurnDraft): void;
   focus?(): void;
   setExpanded?(expanded: boolean): void;
@@ -56,6 +57,7 @@ export interface IChatInputProps {
     option?: { model: string; [key: string]: any },
   ) => void;
   onValueChange?: (value: string) => void;
+  onDraftChange?: (draft: AcpTurnDraft) => void;
   onExpand?: (value: boolean) => void;
   placeholder?: string;
   enableOptions?: boolean;
@@ -64,6 +66,7 @@ export interface IChatInputProps {
   sendBtnClassName?: string;
   defaultHeight?: number;
   value?: string;
+  initialDraft?: AcpTurnDraft;
   images?: Array<DataContent | URL>;
   autoFocus?: boolean;
   theme?: string | null;
@@ -111,6 +114,9 @@ export interface IChatInputRegistry {
   getActiveChatInput(): ChatInputContribution | null;
   setActiveInputHandle(handle: ChatInputHandle | null, ownerId?: string): void;
   getActiveInputHandle(): ChatInputHandle | null;
+  preserveActiveDraft(): AcpTurnDraft | undefined;
+  restoreActiveDraft(draft: AcpTurnDraft | undefined): void;
+  focusActiveInput(): void;
 }
 
 @Injectable()
@@ -119,6 +125,7 @@ export class ChatInputRegistry extends Disposable implements IChatInputRegistry 
   private activeInputHandle: ChatInputHandle | null = null;
   private activeInputHandleOwnerId: string | undefined;
   private activeContribution: ChatInputContribution | null = null;
+  private activeInputFocusPending = false;
 
   registerChatInput(contribution: ChatInputContribution): IDisposable {
     if (this.contributions.some(({ id }) => id === contribution.id)) {
@@ -174,11 +181,39 @@ export class ChatInputRegistry extends Disposable implements IChatInputRegistry 
     }
     this.activeInputHandle = handle;
     this.activeInputHandleOwnerId = handle ? ownerId : undefined;
+    if (handle && this.activeInputFocusPending) {
+      this.focusActiveInput();
+    }
   }
 
   getActiveInputHandle(): ChatInputHandle | null {
     this.updateActiveContribution();
     return this.activeInputHandle;
+  }
+
+  preserveActiveDraft(): AcpTurnDraft | undefined {
+    try {
+      return this.activeInputHandle?.getDraft?.();
+    } catch {
+      return undefined;
+    }
+  }
+
+  restoreActiveDraft(draft: AcpTurnDraft | undefined): void {
+    if (!draft) {
+      return;
+    }
+    this.activeInputHandle?.restoreDraft?.(draft);
+  }
+
+  focusActiveInput(): void {
+    const handle = this.getActiveInputHandle();
+    if (!handle?.focus) {
+      this.activeInputFocusPending = true;
+      return;
+    }
+    this.activeInputFocusPending = false;
+    handle.focus();
   }
 
   private updateActiveContribution(): ChatInputContribution | null {

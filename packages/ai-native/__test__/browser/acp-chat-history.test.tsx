@@ -48,7 +48,13 @@ jest.mock('@opensumi/ide-components', () => {
 });
 
 jest.mock('@opensumi/ide-core-browser', () => ({
+  KeybindingRegistry: class KeybindingRegistry {},
   localize: (_key: string, defaultValue?: string) => defaultValue || _key,
+  useInjectable: () => ({
+    acceleratorFor: () => ['Ctrl+Alt+N'],
+    getKeybindingsForCommand: () => [{ keybinding: 'ctrlcmd+alt+n', priority: 0, resolved: [{}] }],
+    onKeybindingsChanged: () => ({ dispose: jest.fn() }),
+  }),
 }));
 
 jest.mock('@opensumi/ide-core-browser/lib/components/ai-native', () => ({
@@ -236,6 +242,14 @@ describe('AcpChatHistory BDD', () => {
     expect(title.textContent).not.toContain('AI Assistant');
     expect(newChatAction).toBeNull();
     expect(onNewChat).not.toHaveBeenCalled();
+  });
+
+  it('Given popover history, when New Chat renders, then its tooltip shows the effective shortcut', () => {
+    renderHistory();
+
+    expect(container.querySelector('[data-popover-id="ai-chat-header-new"]')?.getAttribute('title')).toBe(
+      'New Chat (Ctrl+Alt+N)',
+    );
   });
 
   it('Given inline variant has an MCP config action, when the header renders, then it appears after collapse and opens MCP config', () => {

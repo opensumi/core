@@ -24,6 +24,8 @@ import { ChatInternalService } from './chat.internal.service';
 import { getCachedWorkspaceDir } from './pick-workspace-dir';
 import { AcpSessionConfigOption, AcpSessionModeOption, AcpSessionModelOption } from './session-provider';
 
+import type { AcpTurnDraft } from './acp-chat-queued-turns';
+
 const ACP_LOAD_SESSION_FALLBACK_MESSAGE =
   'Unable to open this chat history. A new chat draft is ready, and a session will be created when you send a message.';
 const ACP_LOAD_SESSION_NOT_FOUND_MESSAGE =
@@ -153,6 +155,7 @@ export class AcpChatInternalService extends ChatInternalService {
   private availableCommands: AvailableCommand[] = [];
 
   private draftSessionState: AcpDraftSessionState = {};
+  private inputDraft: AcpTurnDraft | undefined;
 
   private sessionStateDisposable: IDisposable | undefined;
 
@@ -210,6 +213,14 @@ export class AcpChatInternalService extends ChatInternalService {
 
   getDraftSessionState(): AcpDraftSessionState {
     return this.draftSessionState;
+  }
+
+  getInputDraft(): AcpTurnDraft | undefined {
+    return this.inputDraft ? this.cloneInputDraft(this.inputDraft) : undefined;
+  }
+
+  updateInputDraft(draft: AcpTurnDraft | undefined): void {
+    this.inputDraft = draft ? this.cloneInputDraft(draft) : undefined;
   }
 
   getVisibleSessions(): ChatModel[] {
@@ -595,6 +606,13 @@ export class AcpChatInternalService extends ChatInternalService {
       agentModels: model.agentModels ? [...model.agentModels] : undefined,
       modelId: model.modelId,
       configOptions: cloneConfigOptions(model.configOptions),
+    };
+  }
+
+  private cloneInputDraft(draft: AcpTurnDraft): AcpTurnDraft {
+    return {
+      ...draft,
+      images: draft.images ? [...draft.images] : undefined,
     };
   }
 
