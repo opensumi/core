@@ -150,6 +150,21 @@ describe('DefaultACPConfigProvider', () => {
     expect((provider as any).quickPick.show).not.toHaveBeenCalled();
   });
 
+  it('resolves a background warmup config for a single-root workspace without prompting', async () => {
+    const provider = await createProvider();
+
+    await expect(provider.resolvePrewarmConfig()).resolves.toMatchObject({ cwd: rootA });
+    expect((provider as any).quickPick.show).not.toHaveBeenCalled();
+  });
+
+  it('skips background warmup config resolution for an unselected multi-root workspace', async () => {
+    const provider = await createProvider({ isMultiRoot: true });
+
+    await expect(provider.resolvePrewarmConfig()).resolves.toBeUndefined();
+    expect((provider as any).quickPick.show).not.toHaveBeenCalled();
+    expect((provider as any).mcpConfigService.getACPServers).not.toHaveBeenCalled();
+  });
+
   it('falls back to the built-in Claude ACP agent when the selected custom agent is missing', async () => {
     const provider = await createProvider({ defaultAgentType: 'missing-agent' });
 

@@ -142,6 +142,13 @@ export interface IACPConfigProvider {
   resolveConfig(): Promise<AgentProcessConfig>;
 
   /**
+   * Build an AgentProcessConfig suitable for background pool warmup.
+   * Implementations must not prompt the user; return undefined when no safe
+   * working directory is available yet.
+   */
+  resolvePrewarmConfig?(): Promise<AgentProcessConfig | undefined>;
+
+  /**
    * Build an AgentProcessConfig for an explicit ACP Agent and working directory.
    */
   resolveConfigForTarget?(request: AcpTargetConfigRequest): Promise<AgentProcessConfig>;

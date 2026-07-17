@@ -7,6 +7,7 @@ import {
   DEFAULT_ACP_THREAD_POOL_SIZE,
   IACPConfigProvider,
   MCPConfigServiceToken,
+  URI,
 } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -15,7 +16,7 @@ import { buildAcpAgentProcessConfig } from '../acp/build-agent-process-config';
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
 import { getAgentConfig, getDefaultAgentType } from './get-default-agent-type';
-import { pickWorkspaceDir } from './pick-workspace-dir';
+import { getCachedWorkspaceDir, pickWorkspaceDir } from './pick-workspace-dir';
 
 /**
  * Default implementation of IACPConfigProvider.
@@ -52,6 +53,30 @@ export class DefaultACPConfigProvider implements IACPConfigProvider {
     await this.workspaceService.whenReady;
 
     return this.buildConfig(request);
+  }
+
+  async resolvePrewarmConfig(): Promise<AgentProcessConfig | undefined> {
+    await this.workspaceService.whenReady;
+
+    const cachedWorkspaceDir = getCachedWorkspaceDir();
+    if (cachedWorkspaceDir) {
+      return this.buildConfig({
+        agentId: getDefaultAgentType(this.preferenceService),
+        cwd: cachedWorkspaceDir,
+      });
+    }
+
+    // Background startup must never show the multi-root cwd picker or choose
+    // a root on the user's behalf. The first ACP interaction retains the
+    // existing selection flow.
+    if (this.workspaceService.isMultiRootWorkspaceOpened || !this.workspaceService.workspace) {
+      return undefined;
+    }
+
+    return this.buildConfig({
+      agentId: getDefaultAgentType(this.preferenceService),
+      cwd: new URI(this.workspaceService.workspace.uri).codeUri.fsPath,
+    });
   }
 
   private async buildConfig(request: AcpTargetConfigRequest): Promise<AgentProcessConfig> {

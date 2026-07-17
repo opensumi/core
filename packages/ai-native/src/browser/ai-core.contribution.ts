@@ -56,6 +56,7 @@ import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/consta
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
+  AIBackSerivcePath,
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
   ChatInputRegistryToken,
@@ -63,7 +64,10 @@ import {
   ChatServiceToken,
   ChatViewRegistryToken,
   CommandService,
+  IACPConfigProvider,
+  IAIBackService,
   IDisposable,
+  ILogger,
   InlineChatFeatureRegistryToken,
   IntelligentCompletionsRegistryToken,
   MCPConfigServiceToken,
@@ -271,6 +275,15 @@ export class AINativeBrowserContribution
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
 
+  @Autowired(AIBackSerivcePath)
+  private readonly aiBackService: IAIBackService;
+
+  @Autowired(IACPConfigProvider)
+  private readonly acpConfigProvider: IACPConfigProvider;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
   @Autowired(DesignLayoutConfig)
   private readonly designLayoutConfig: DesignLayoutConfig;
 
@@ -448,8 +461,13 @@ export class AINativeBrowserContribution
     this.registerWebMcpSurface();
 
     runWhenIdle(() => {
-      const { supportsRenameSuggestions, supportsInlineChat, supportsMCP, supportsCustomLLMSettings } =
-        this.aiNativeConfigService.capabilities;
+      const {
+        supportsAgentMode,
+        supportsRenameSuggestions,
+        supportsInlineChat,
+        supportsMCP,
+        supportsCustomLLMSettings,
+      } = this.aiNativeConfigService.capabilities;
       const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
@@ -516,11 +534,40 @@ export class AINativeBrowserContribution
       if (supportsMCP) {
         this.initMCPServers();
       }
+
+      if (supportsAgentMode) {
+        this.warmUpDefaultAcpPool();
+      }
     });
   }
 
   onStop() {
     this.webMcpModelContextDisposable?.dispose();
+  }
+
+  private warmUpDefaultAcpPool(): void {
+    const warmUpAgentPool = this.aiBackService.warmUpAgentPool;
+    const resolvePrewarmConfig = this.acpConfigProvider.resolvePrewarmConfig;
+    if (!warmUpAgentPool || !resolvePrewarmConfig) {
+      return;
+    }
+
+    void resolvePrewarmConfig
+      .call(this.acpConfigProvider)
+      .then(
+        async (config) => {
+          if (!config) {
+            return;
+          }
+          await warmUpAgentPool.call(this.aiBackService, config);
+        },
+        (error) => {
+          this.logger.warn('[AINative] Failed to resolve ACP pool warmup config', error);
+        },
+      )
+      .catch((error) => {
+        this.logger.warn('[AINative] Failed to warm up ACP agent pool', error);
+      });
   }
 
   private registerWebMcpSurface() {

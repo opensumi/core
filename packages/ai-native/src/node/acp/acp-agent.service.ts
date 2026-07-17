@@ -183,6 +183,12 @@ export interface IAcpAgentService {
   }>;
 
   /**
+   * Start and initialize the idle thread pool for one runtime configuration.
+   * Does not create an ACP session.
+   */
+  warmUpAgentPool(config: AgentProcessConfig): Promise<void>;
+
+  /**
    * List all ACP Agent sessions
    */
   listSessions(params?: ListSessionsRequest, config?: AgentProcessConfig): Promise<ListSessionsResponse>;
@@ -299,6 +305,13 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // Threads reserved by createSession() before the real ACP sessionId is known.
   private reservedThreads = new Set<AcpThread>();
 
+  // Threads that have been added to the pool but are still completing ACP
+  // initialize(). They cannot be used until a caller explicitly claims them.
+  private warmingThreads = new Map<AcpThread, Promise<void>>();
+
+  // One background warmup task per agent runtime configuration.
+  private poolWarmups = new Map<string, Promise<void>>();
+
   // Pool limit (configurable)
   private maxPoolSize = DEFAULT_ACP_THREAD_POOL_SIZE;
 
@@ -333,16 +346,16 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
 
     // 2. Pool has idle thread (idle or awaiting_prompt, not bound to active session)
-    const idleThread = this.threadPool.find(
-      (t) =>
-        !this.reservedThreads.has(t) &&
-        !this.hasActiveSession(t) &&
-        this.canReuseThreadForConfig(t, config) &&
-        ['idle', 'awaiting_prompt'].includes(t.getStatus()),
-    );
+    const idleThread = this.findReusableIdleThread(config);
     if (idleThread) {
       this.bindSession(sessionId, idleThread);
       return idleThread;
+    }
+
+    const warmingThread = await this.reserveWarmingThread(config);
+    if (warmingThread) {
+      this.bindSession(sessionId, warmingThread);
+      return warmingThread;
     }
 
     // 3. Pool not full, create new
@@ -425,6 +438,48 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     return this.threadRuntimeConfigKeys.get(thread) === this.createThreadRuntimeConfigKey(config);
   }
 
+  private findReusableIdleThread(config: AgentProcessConfig): AcpThread | undefined {
+    return this.threadPool.find(
+      (thread) =>
+        !this.reservedThreads.has(thread) &&
+        !this.warmingThreads.has(thread) &&
+        !this.hasActiveSession(thread) &&
+        this.canReuseThreadForConfig(thread, config) &&
+        ['idle', 'awaiting_prompt'].includes(thread.getStatus()),
+    );
+  }
+
+  /**
+   * Claim an in-flight prewarmed thread so the caller can wait for the same
+   * initialization instead of starting a duplicate CLI process.
+   */
+  private async reserveWarmingThread(config: AgentProcessConfig): Promise<AcpThread | undefined> {
+    const thread = this.threadPool.find(
+      (candidate) =>
+        !this.reservedThreads.has(candidate) &&
+        !this.hasActiveSession(candidate) &&
+        this.canReuseThreadForConfig(candidate, config) &&
+        this.warmingThreads.has(candidate),
+    );
+    if (!thread) {
+      return undefined;
+    }
+
+    const warmup = this.warmingThreads.get(thread);
+    if (!warmup) {
+      return undefined;
+    }
+
+    this.reservedThreads.add(thread);
+    await warmup;
+    if (this.threadPool.includes(thread)) {
+      return thread;
+    }
+
+    this.reservedThreads.delete(thread);
+    return undefined;
+  }
+
   private getBoundSessionId(thread: AcpThread): string | undefined {
     for (const [sessionId, mappedThread] of this.sessions) {
       if (mappedThread === thread) {
@@ -439,6 +494,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       const sessionId = this.getBoundSessionId(thread);
       if (
         this.reservedThreads.has(thread) ||
+        this.warmingThreads.has(thread) ||
         (sessionId ? this.pendingSessionLoads.has(sessionId) : false) ||
         !this.isThreadReusableForLRU(thread)
       ) {
@@ -503,6 +559,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     for (const [sessionId, thread] of this.sessions) {
       if (
         this.reservedThreads.has(thread) ||
+        this.warmingThreads.has(thread) ||
         this.pendingSessionLoads.has(sessionId) ||
         !this.isThreadReusableForLRU(thread) ||
         (config && !this.canReuseThreadForConfig(thread, config))
@@ -583,16 +640,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   private async findOrCreateIdleThread(config: AgentProcessConfig): Promise<AcpThread> {
     this.syncMaxPoolSize(config);
 
-    const idleThread = this.threadPool.find(
-      (t) =>
-        !this.reservedThreads.has(t) &&
-        !this.hasActiveSession(t) &&
-        this.canReuseThreadForConfig(t, config) &&
-        ['idle', 'awaiting_prompt'].includes(t.getStatus()),
-    );
+    const idleThread = this.findReusableIdleThread(config);
     if (idleThread) {
       this.reservedThreads.add(idleThread);
       return idleThread;
+    }
+
+    const warmingThread = await this.reserveWarmingThread(config);
+    if (warmingThread) {
+      return warmingThread;
     }
 
     if (this.threadPool.length < this.maxPoolSize) {
@@ -673,6 +729,93 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.logger.warn(`[AcpAgentService] Skipping built-in MCP server "${serverName}"; failed to start`, error);
       return configuredServers;
     }
+  }
+
+  /**
+   * Fill the available pool capacity with initialized, sessionless threads for
+   * one agent runtime configuration. Callers with the same configuration can
+   * claim an in-flight warmup instead of spawning another process.
+   */
+  async warmUpAgentPool(config: AgentProcessConfig): Promise<void> {
+    this.syncMaxPoolSize(config);
+
+    const runtimeConfigKey = this.createThreadRuntimeConfigKey(config);
+    const existingWarmup = this.poolWarmups.get(runtimeConfigKey);
+    if (existingWarmup) {
+      return existingWarmup;
+    }
+
+    const warmup = this.doWarmUpAgentPool(config);
+    this.poolWarmups.set(runtimeConfigKey, warmup);
+    try {
+      await warmup;
+    } finally {
+      if (this.poolWarmups.get(runtimeConfigKey) === warmup) {
+        this.poolWarmups.delete(runtimeConfigKey);
+      }
+    }
+  }
+
+  private async doWarmUpAgentPool(config: AgentProcessConfig): Promise<void> {
+    const matchingThreadCount = this.threadPool.filter((thread) => this.canReuseThreadForConfig(thread, config)).length;
+    const capacity = Math.max(0, this.maxPoolSize - this.threadPool.length);
+    const targetCount = Math.min(Math.max(0, this.maxPoolSize - matchingThreadCount), capacity);
+
+    if (targetCount === 0) {
+      return;
+    }
+
+    this.logger.log(
+      `[AcpAgentService] warmUpAgentPool() — starting ${targetCount} threads for command=${config.command}, cwd=${config.cwd}`,
+    );
+
+    const warmups: Promise<void>[] = [];
+    for (let index = 0; index < targetCount; index += 1) {
+      const thread = this.createThreadInstance('', config);
+      this.threadPool.push(thread);
+
+      warmups.push(this.initializeWarmingThread(thread, config));
+    }
+
+    await Promise.all(warmups);
+    this.logger.log(
+      `[AcpAgentService] warmUpAgentPool() — completed, pool=${this.threadPool.length}/${this.maxPoolSize}`,
+    );
+    this.logPoolStatus('after-warmUpAgentPool');
+  }
+
+  private initializeWarmingThread(thread: AcpThread, config: AgentProcessConfig): Promise<void> {
+    // Defer initialize to a microtask so the thread is visible as warming
+    // before an implementation can synchronously throw.
+    const warmup = Promise.resolve()
+      .then(async () => {
+        await thread.initialize(config as any);
+      })
+      .catch(async (error) => {
+        this.logger.warn(
+          `[AcpAgentService] warmUpAgentPool() — failed to initialize thread ${thread.threadId}: ${getAcpErrorMessage(
+            error,
+          )}`,
+        );
+        const index = this.threadPool.indexOf(thread);
+        if (index !== -1) {
+          this.threadPool.splice(index, 1);
+        }
+        try {
+          await thread.dispose();
+        } catch (disposeError) {
+          this.logger.warn(
+            `[AcpAgentService] warmUpAgentPool() — failed to dispose thread ${thread.threadId}: ${getAcpErrorMessage(
+              disposeError,
+            )}`,
+          );
+        }
+      })
+      .finally(() => {
+        this.warmingThreads.delete(thread);
+      });
+    this.warmingThreads.set(thread, warmup);
+    return warmup;
   }
 
   private didAppendBuiltInMcpServer(config: AgentProcessConfig, mcpServers: McpServer[]): boolean {
@@ -860,13 +1003,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
 
     // 3. Pool has idle Thread
-    const idleThread = this.threadPool.find(
-      (t) =>
-        !this.reservedThreads.has(t) &&
-        !this.hasActiveSession(t) &&
-        this.canReuseThreadForConfig(t, config) &&
-        ['idle', 'awaiting_prompt'].includes(t.getStatus()),
-    );
+    const idleThread = this.findReusableIdleThread(config);
     if (idleThread) {
       this.logger.log(
         `[AcpAgentService] loadSession() — reusing idle thread ${idleThread.threadId}, cwd=${idleThread.cwd}`,
@@ -876,6 +1013,17 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.permissionRouting.registerSession(sessionId);
       this.registerThreadStatusListener(sessionId, idleThread);
       return this.startPendingLoadSessionAndReleaseReservation(sessionId, idleThread, config, false);
+    }
+
+    const warmingThread = await this.reserveWarmingThread(config);
+    if (warmingThread) {
+      this.logger.log(
+        `[AcpAgentService] loadSession() — waiting for prewarmed thread ${warmingThread.threadId}, cwd=${warmingThread.cwd}`,
+      );
+      this.bindSession(sessionId, warmingThread);
+      this.permissionRouting.registerSession(sessionId);
+      this.registerThreadStatusListener(sessionId, warmingThread);
+      return this.startPendingLoadSessionAndReleaseReservation(sessionId, warmingThread, config, false);
     }
 
     // 4. Pool not full -> new Thread
@@ -1746,6 +1894,8 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.unregisterThreadStatusListener(sessionId);
     }
     this.threadPool = [];
+    this.warmingThreads.clear();
+    this.poolWarmups.clear();
     this.sessions.clear();
     this.pendingSessionLoads.clear();
     this.reservedThreads.clear();

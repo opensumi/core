@@ -979,6 +979,11 @@ ${input}`;
     return this.agentService.createSession(config);
   }
 
+  async warmUpAgentPool(config: AgentProcessConfig): Promise<void> {
+    this.logger.log(`[ACP Back] warmUpAgentPool called, cwd=${config?.cwd}`);
+    await this.agentService.warmUpAgentPool(config);
+  }
+
   async listSessions(config: AgentProcessConfig): Promise<ListSessionsResponse> {
     this.logger.log(`[ACP Back] listSessions called, cwd=${config?.cwd}`);
     return this.agentService.listSessions(config?.cwd ? { cwd: config.cwd } : undefined, config);

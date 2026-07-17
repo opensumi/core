@@ -316,6 +316,12 @@ export interface IAIBackService<
 
   createSession?(config: AgentProcessConfig): Promise<AgentSessionCreateResult>;
 
+  /**
+   * Start and initialize idle ACP agent processes for the supplied runtime configuration.
+   * This does not create an ACP session.
+   */
+  warmUpAgentPool?(config: AgentProcessConfig): Promise<void>;
+
   setSessionMode?(sessionId: string, modeId: string): Promise<void>;
   setSessionConfigOption?(sessionId: string, configId: string, value: boolean | string): Promise<void>;
   setSessionModel?(sessionId: string, model: string): Promise<void>;

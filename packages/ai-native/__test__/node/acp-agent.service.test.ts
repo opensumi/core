@@ -209,6 +209,113 @@ describe('AcpAgentService (Thread Pool)', () => {
     });
   });
 
+  describe('warmUpAgentPool()', () => {
+    it('initializes the configured pool size without creating sessions', async () => {
+      const threads: MockThread[] = [];
+      const mockFactory = jest.fn(() => {
+        const thread = createMockThread();
+        thread.initialize.mockImplementation(async () => {
+          thread.initialized = true;
+          return { protocolVersion: 1, agentCapabilities: {} };
+        });
+        threads.push(thread);
+        return thread;
+      });
+      const service = setupServiceWithMockFactory(mockFactory);
+
+      await service.warmUpAgentPool(mockAgentProcessConfigWithSmallPool);
+
+      expect(mockFactory).toHaveBeenCalledTimes(SMALL_THREAD_POOL_SIZE);
+      expect(threads.every((thread) => thread.initialize.mock.calls.length === 1)).toBe(true);
+      expect(threads.every((thread) => thread.newSession.mock.calls.length === 0)).toBe(true);
+      expect((service as any).threadPool).toHaveLength(SMALL_THREAD_POOL_SIZE);
+      expect((service as any).sessions.size).toBe(0);
+    });
+
+    it('deduplicates concurrent and repeated warmups for the same runtime config', async () => {
+      const initializeGate = createDeferred<any>();
+      const threads: MockThread[] = [];
+      const mockFactory = jest.fn(() => {
+        const thread = createMockThread();
+        thread.initialize.mockImplementation(async () => {
+          await initializeGate.promise;
+          thread.initialized = true;
+          return { protocolVersion: 1, agentCapabilities: {} };
+        });
+        threads.push(thread);
+        return thread;
+      });
+      const service = setupServiceWithMockFactory(mockFactory);
+
+      const firstWarmup = service.warmUpAgentPool(mockAgentProcessConfigWithSmallPool);
+      const secondWarmup = service.warmUpAgentPool(mockAgentProcessConfigWithSmallPool);
+      expect(mockFactory).toHaveBeenCalledTimes(SMALL_THREAD_POOL_SIZE);
+
+      initializeGate.resolve({ protocolVersion: 1, agentCapabilities: {} });
+      await Promise.all([firstWarmup, secondWarmup]);
+      await service.warmUpAgentPool(mockAgentProcessConfigWithSmallPool);
+
+      expect(mockFactory).toHaveBeenCalledTimes(SMALL_THREAD_POOL_SIZE);
+      expect(threads.every((thread) => thread.initialize.mock.calls.length === 1)).toBe(true);
+    });
+
+    it('lets a session claim a warming thread without initializing a second CLI', async () => {
+      const initializeGate = createDeferred<any>();
+      const thread = createMockThread();
+      thread.initialize.mockImplementation(async () => {
+        await initializeGate.promise;
+        thread.initialized = true;
+        return { protocolVersion: 1, agentCapabilities: {} };
+      });
+      thread.newSession.mockImplementation(async () => {
+        thread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'new-session-1',
+            update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+          },
+        });
+        return { sessionId: 'new-session-1' };
+      });
+      const service = setupServiceWithMockFactory(jest.fn().mockReturnValue(thread));
+      const oneThreadConfig = { ...mockAgentProcessConfig, threadPoolSize: 1 };
+
+      const warmup = service.warmUpAgentPool(oneThreadConfig);
+      const session = service.createSession(oneThreadConfig);
+      await flushAsyncWork();
+
+      expect(thread.initialize).toHaveBeenCalledTimes(1);
+      initializeGate.resolve({ protocolVersion: 1, agentCapabilities: {} });
+      await Promise.all([warmup, session]);
+
+      expect(thread.initialize).toHaveBeenCalledTimes(1);
+      expect(thread.newSession).toHaveBeenCalledTimes(1);
+    });
+
+    it('disposes failed warmup threads while retaining successfully initialized threads', async () => {
+      const failedThread = createMockThread({
+        initialize: jest.fn().mockRejectedValue(new Error('warmup failed')),
+      });
+      const firstThread = createMockThread();
+      const thirdThread = createMockThread();
+      [firstThread, thirdThread].forEach((thread) => {
+        thread.initialize.mockImplementation(async () => {
+          thread.initialized = true;
+          return { protocolVersion: 1, agentCapabilities: {} };
+        });
+      });
+      const service = setupServiceWithMockFactory(
+        jest.fn().mockReturnValueOnce(firstThread).mockReturnValueOnce(failedThread).mockReturnValueOnce(thirdThread),
+      );
+
+      await service.warmUpAgentPool(mockAgentProcessConfigWithSmallPool);
+
+      expect(failedThread.dispose).toHaveBeenCalledTimes(1);
+      expect((service as any).threadPool).toEqual([firstThread, thirdThread]);
+      expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('failed to initialize thread'));
+    });
+  });
+
   describe('getSessionMcpServers()', () => {
     it('should start and return the built-in OpenSumi MCP server connection descriptor', async () => {
       const { service } = createService();
