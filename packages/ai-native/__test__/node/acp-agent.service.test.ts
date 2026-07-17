@@ -2187,6 +2187,92 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(thread.dispose).toHaveBeenCalledTimes(1);
       expect((service as any).threadPool).toHaveLength(0);
     });
+
+    it('waits for a fresh createSession initialization before completing shutdown', async () => {
+      const initializeGate = createDeferred<any>();
+      const thread = createMockThread();
+      thread.initialize.mockImplementation(async () => {
+        await initializeGate.promise;
+        thread.initialized = true;
+        return { protocolVersion: 1, agentCapabilities: {} };
+      });
+      thread.newSession.mockImplementation(async () => {
+        thread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'foreground-session',
+            update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+          },
+        });
+        return { sessionId: 'foreground-session' };
+      });
+      const service = setupServiceWithMockFactory(jest.fn().mockReturnValue(thread));
+      const config = { ...mockAgentProcessConfig, threadPoolSize: 1 };
+
+      const createOutcome = service.createSession(config).then(
+        (result) => result,
+        (error) => error as Error,
+      );
+      await flushAsyncWork();
+      expect(thread.initialize).toHaveBeenCalledTimes(1);
+
+      let stopSettled = false;
+      const stop = service.stopAgent().finally(() => {
+        stopSettled = true;
+      });
+      await flushAsyncWork();
+
+      expect(stopSettled).toBe(false);
+      expect(thread.dispose).not.toHaveBeenCalled();
+
+      initializeGate.resolve({ protocolVersion: 1, agentCapabilities: {} });
+      const [outcome] = await Promise.all([createOutcome, stop]);
+
+      expect(outcome).toBeInstanceOf(Error);
+      expect((outcome as Error).name).toBe('AcpAgentServiceStoppingError');
+      expect(thread.dispose).toHaveBeenCalledTimes(1);
+      expect((service as any).threadPool).toHaveLength(0);
+    });
+
+    it('does not create an incompatible warmup replacement after shutdown begins', async () => {
+      const initializeGate = createDeferred<any>();
+      const warmingThread = createMockThread();
+      warmingThread.initialize.mockImplementation(async () => {
+        await initializeGate.promise;
+        warmingThread.initialized = true;
+        return { protocolVersion: 1, agentCapabilities: {} };
+      });
+      const replacementThread = createMockThread();
+      const mockFactory = jest.fn().mockReturnValueOnce(warmingThread).mockReturnValueOnce(replacementThread);
+      const service = setupServiceWithMockFactory(mockFactory);
+      const warmupConfig = { ...mockAgentProcessConfig, cwd: '/workspace-a', threadPoolSize: 1 };
+      const foregroundConfig = { ...mockAgentProcessConfig, cwd: '/workspace-b', threadPoolSize: 1 };
+
+      const warmup = service.warmUpAgentPool(warmupConfig);
+      const createOutcome = service.createSession(foregroundConfig).then(
+        (result) => result,
+        (error) => error as Error,
+      );
+      await flushAsyncWork();
+      expect((service as any).reservedThreads.has(warmingThread)).toBe(true);
+
+      const stop = service.stopAgent();
+      await flushAsyncWork();
+
+      expect(mockFactory).toHaveBeenCalledTimes(1);
+      expect(warmingThread.dispose).not.toHaveBeenCalled();
+
+      initializeGate.resolve({ protocolVersion: 1, agentCapabilities: {} });
+      const [, outcome] = await Promise.all([warmup, createOutcome, stop]);
+
+      expect(outcome).toBeInstanceOf(Error);
+      expect((outcome as Error).name).toBe('AcpAgentServiceStoppingError');
+      expect(mockFactory).toHaveBeenCalledTimes(1);
+      expect(replacementThread.initialize).not.toHaveBeenCalled();
+      expect(replacementThread.dispose).not.toHaveBeenCalled();
+      expect(warmingThread.dispose).toHaveBeenCalledTimes(1);
+      expect((service as any).threadPool).toHaveLength(0);
+    });
   });
 
   // -----------------------------------------------------------------------

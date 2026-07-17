@@ -314,6 +314,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // One background warmup task per agent runtime configuration.
   private poolWarmups = new Map<string, Promise<void>>();
 
+  // Service lifecycle gate. Foreground acquisition operations that started
+  // before shutdown are drained before any pooled process is disposed.
+  private stopping = false;
+  private foregroundOperations = new Set<Promise<unknown>>();
+
   // Pool limit (configurable)
   private maxPoolSize = DEFAULT_ACP_THREAD_POOL_SIZE;
 
@@ -359,6 +364,8 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.bindSession(sessionId, warmingThread);
       return warmingThread;
     }
+
+    this.throwIfStopping();
 
     // 3. Pool not full, create new
     if (this.threadPool.length < this.maxPoolSize) {
@@ -429,6 +436,36 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     return error;
   }
 
+  private createServiceStoppingError(): Error {
+    const error = new Error('ACP Agent service is stopping');
+    error.name = 'AcpAgentServiceStoppingError';
+    return error;
+  }
+
+  private throwIfStopping(): void {
+    if (this.stopping) {
+      throw this.createServiceStoppingError();
+    }
+  }
+
+  private trackForegroundOperation<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.stopping) {
+      return Promise.reject(this.createServiceStoppingError());
+    }
+
+    let tracked!: Promise<T>;
+    tracked = Promise.resolve()
+      .then(() => {
+        this.throwIfStopping();
+        return operation();
+      })
+      .finally(() => {
+        this.foregroundOperations.delete(tracked);
+      });
+    this.foregroundOperations.add(tracked);
+    return tracked;
+  }
+
   private createThreadRuntimeConfigKey(config: AgentThreadRuntimeConfigKey): string {
     const env = Array.isArray(config.env)
       ? config.env
@@ -490,9 +527,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
 
     this.reservedThreads.add(thread);
-    await warmup;
-    if (this.threadPool.includes(thread)) {
-      return thread;
+    try {
+      await warmup;
+      this.throwIfStopping();
+      if (this.threadPool.includes(thread)) {
+        return thread;
+      }
+    } catch (error) {
+      this.reservedThreads.delete(thread);
+      throw error;
     }
 
     this.reservedThreads.delete(thread);
@@ -551,9 +594,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     try {
       if (sessionId) {
         await this.releaseSessionMapping(sessionId);
+        this.throwIfStopping();
       }
       await thread.dispose();
       this.removeThreadFromPool(thread);
+      this.throwIfStopping();
       const replacement = this.createThreadInstance(
         nextSessionId === 'pending-create-session' ? '' : nextSessionId,
         config,
@@ -580,9 +625,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     this.reservedThreads.add(thread);
     try {
       await warmup;
+      this.throwIfStopping();
       if (this.threadPool.includes(thread)) {
         await thread.dispose();
         this.removeThreadFromPool(thread);
+        this.throwIfStopping();
       }
       if (this.threadPool.length >= this.maxPoolSize) {
         this.throwThreadPoolSaturated(nextSessionId, reason, config);
@@ -703,6 +750,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       );
       try {
         await this.releaseSessionMapping(sessionId);
+        this.throwIfStopping();
         return thread;
       } catch (error) {
         this.reservedThreads.delete(thread);
@@ -772,6 +820,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       return warmingThread;
     }
 
+    this.throwIfStopping();
     if (this.threadPool.length < this.maxPoolSize) {
       const runtimeConfig: AcpThreadRuntimeConfig = {
         agentId: config.agentId,
@@ -858,6 +907,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
    * of spawning another process.
    */
   async warmUpAgentPool(config: AgentProcessConfig): Promise<void> {
+    if (this.stopping) {
+      return;
+    }
     this.syncMaxPoolSize(config);
 
     const runtimeConfigKey = this.createThreadRuntimeConfigKey(config);
@@ -967,7 +1019,19 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // createSession — with Deferred pattern (NOT setTimeout)
   // -----------------------------------------------------------------------
 
-  async createSession(config: AgentProcessConfig): Promise<{
+  createSession(config: AgentProcessConfig): Promise<{
+    sessionId: string;
+    availableCommands: AvailableCommand[];
+    modes?: Array<{ id: string; name: string; description?: string }>;
+    currentModeId?: string;
+    models?: Array<{ modelId: string; name: string; description?: string | null }>;
+    currentModelId?: string;
+    configOptions?: Record<string, any>[];
+  }> {
+    return this.trackForegroundOperation(() => this.doCreateSession(config));
+  }
+
+  private async doCreateSession(config: AgentProcessConfig): Promise<{
     sessionId: string;
     availableCommands: AvailableCommand[];
     modes?: Array<{ id: string; name: string; description?: string }>;
@@ -997,8 +1061,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     let realSessionId: string | undefined;
 
     try {
+      this.throwIfStopping();
       if (!thread.initialized) {
         await thread.initialize(config as any);
+        this.throwIfStopping();
       }
       if (thread.needsReset) {
         thread.reset();
@@ -1094,7 +1160,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // loadSession
   // -----------------------------------------------------------------------
 
-  async loadSession(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
+  loadSession(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
+    return this.trackForegroundOperation(() => this.doLoadSessionRequest(sessionId, config));
+  }
+
+  private async doLoadSessionRequest(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
     this.syncMaxPoolSize(config);
     this.logger.log(`[AcpAgentService] loadSession() — sessionId=${sessionId}`);
 
@@ -1146,6 +1216,8 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.registerThreadStatusListener(sessionId, warmingThread);
       return this.startPendingLoadSessionAndReleaseReservation(sessionId, warmingThread, config, false);
     }
+
+    this.throwIfStopping();
 
     // 4. Pool not full -> new Thread
     if (this.threadPool.length < this.maxPoolSize) {
@@ -1230,6 +1302,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   private async doLoadSession(sessionId: string, thread: AcpThread, config: AgentProcessConfig): Promise<void> {
     if (!thread.initialized) {
       await thread.initialize(config as any);
+      this.throwIfStopping();
     }
     if (thread.needsReset) {
       thread.reset();
@@ -1598,7 +1671,14 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // listSessions
   // -----------------------------------------------------------------------
 
-  async listSessions(params?: ListSessionsRequest, config?: AgentProcessConfig): Promise<ListSessionsResponse> {
+  listSessions(params?: ListSessionsRequest, config?: AgentProcessConfig): Promise<ListSessionsResponse> {
+    return this.trackForegroundOperation(() => this.doListSessions(params, config));
+  }
+
+  private async doListSessions(
+    params?: ListSessionsRequest,
+    config?: AgentProcessConfig,
+  ): Promise<ListSessionsResponse> {
     const sessionsMap = new Map<string, SessionInfo>();
     let lastNextCursor: string | undefined;
     let activeThreadCount = 0;
@@ -1628,6 +1708,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       try {
         if (!thread.initialized) {
           await thread.initialize(config as any);
+          this.throwIfStopping();
         }
         if (thread.needsReset) {
           thread.reset();
@@ -1683,7 +1764,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // loadSessionOrNew — with fallback
   // -----------------------------------------------------------------------
 
-  async loadSessionOrNew(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
+  loadSessionOrNew(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
+    return this.trackForegroundOperation(() => this.doLoadSessionOrNew(sessionId, config));
+  }
+
+  private async doLoadSessionOrNew(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
     this.syncMaxPoolSize(config);
     this.logger.log(`[AcpAgentService] loadSessionOrNew() — sessionId=${sessionId}`);
 
@@ -1717,6 +1802,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       .then(async (): Promise<SessionLoadResult> => {
         if (!thread.initialized) {
           await thread.initialize(config as any);
+          this.throwIfStopping();
         }
         if (thread.needsReset) {
           thread.reset();
@@ -1998,13 +2084,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // -----------------------------------------------------------------------
 
   async stopAgent(): Promise<void> {
+    this.stopping = true;
     this.logger?.log(
       `[AcpAgentService] stopAgent() — disposing ${this.threadPool.length} threads, ${this.sessions.size} active sessions`,
     );
 
     const warmingPromises = [...this.warmingThreads.values()];
-    if (warmingPromises.length > 0) {
-      await Promise.allSettled(warmingPromises);
+    const foregroundPromises = [...this.foregroundOperations];
+    if (warmingPromises.length > 0 || foregroundPromises.length > 0) {
+      await Promise.allSettled([...warmingPromises, ...foregroundPromises]);
     }
 
     for (const thread of this.threadPool) {
@@ -2028,6 +2116,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     this.sessionRefCounts.clear();
     this.lastSessionInfo = null;
     this.builtInMcpSessionIds.clear();
+    this.stopping = false;
     this.logPoolStatus('after-stopAgent');
   }
 
