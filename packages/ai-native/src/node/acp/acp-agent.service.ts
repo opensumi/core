@@ -509,12 +509,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   }
 
   private async releaseSessionMapping(sessionId: string): Promise<void> {
-    await this.terminalHandler.releaseSessionTerminals(sessionId);
     this.permissionRouting.unregisterSession(sessionId);
     this.unregisterThreadStatusListener(sessionId);
     this.sessions.delete(sessionId);
     this.sessionRefCounts.delete(sessionId);
     this.builtInMcpSessionIds.delete(sessionId);
+    await this.terminalHandler.releaseSessionTerminals(sessionId);
   }
 
   private removeThreadFromPool(thread: AcpThread): void {
@@ -878,11 +878,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   }
 
   private async doWarmUpAgentPool(config: AgentProcessConfig): Promise<void> {
-    const hasMatchingThread = this.threadPool.some(
-      (thread) => this.canReuseThreadForConfig(thread, config) && thread.getStatus() !== 'disconnected',
-    );
+    const hasWarmupProcess = this.threadPool.some((thread) => thread.getStatus() !== 'disconnected');
     const capacity = Math.max(0, this.maxPoolSize - this.threadPool.length);
-    const targetCount = hasMatchingThread || capacity === 0 ? 0 : 1;
+    const targetCount = hasWarmupProcess || capacity === 0 ? 0 : 1;
 
     if (targetCount === 0) {
       return;
@@ -2003,6 +2001,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     this.logger?.log(
       `[AcpAgentService] stopAgent() — disposing ${this.threadPool.length} threads, ${this.sessions.size} active sessions`,
     );
+
+    const warmingPromises = [...this.warmingThreads.values()];
+    if (warmingPromises.length > 0) {
+      await Promise.allSettled(warmingPromises);
+    }
 
     for (const thread of this.threadPool) {
       try {

@@ -259,6 +259,33 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(threads.every((thread) => thread.initialize.mock.calls.length === 1)).toBe(true);
     });
 
+    it('starts at most one warmup process across concurrent different runtime configurations', async () => {
+      const initializeGate = createDeferred<any>();
+      const thread = createMockThread();
+      thread.initialize.mockImplementation(async () => {
+        await initializeGate.promise;
+        thread.initialized = true;
+        return { protocolVersion: 1, agentCapabilities: {} };
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+      const configA = { ...mockAgentProcessConfigWithSmallPool, cwd: '/workspace-a' };
+      const configB = { ...mockAgentProcessConfigWithSmallPool, cwd: '/workspace-b' };
+
+      const warmupA = service.warmUpAgentPool(configA);
+      const warmupB = service.warmUpAgentPool(configB);
+      await flushAsyncWork();
+
+      expect(mockFactory).toHaveBeenCalledTimes(1);
+      expect(thread.initialize).toHaveBeenCalledTimes(1);
+      expect((service as any).threadPool).toEqual([thread]);
+
+      initializeGate.resolve({ protocolVersion: 1, agentCapabilities: {} });
+      await Promise.all([warmupA, warmupB]);
+
+      expect(mockFactory).toHaveBeenCalledTimes(1);
+    });
+
     it('lets a session claim a warming thread without replenishing another standby', async () => {
       const initializeGate = createDeferred<any>();
       const thread = createMockThread();
@@ -1235,6 +1262,61 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect((service as any).sessions.get('session-3')).toBe(threads[0]);
       expect((service as any).sessions.get('session-4')).toBe(threads[1]);
     });
+
+    it('prevents a reserved reclamation candidate from starting a concurrent prompt', async () => {
+      const releaseGate = createDeferred<void>();
+      let status = 'awaiting_prompt';
+      const thread = createMockThread({
+        threadId: 'reclamation-candidate',
+        getStatus: jest.fn(() => status),
+        newSession: jest.fn(async () => {
+          thread._fireEvent({
+            type: 'session_notification',
+            notification: {
+              sessionId: 'session-0',
+              update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+            },
+          });
+          return { sessionId: 'session-0' };
+        }),
+        loadSession: jest.fn(async ({ sessionId }) => ({ sessionId })),
+        prompt: jest.fn(async () => {
+          status = 'working';
+          return { stopReason: 'end_turn' };
+        }),
+      });
+      const service = setupServiceWithMockFactory(jest.fn().mockReturnValue(thread));
+      const oneThreadConfig = { ...mockAgentProcessConfig, threadPoolSize: 1 };
+      mockTerminalHandler.releaseSessionTerminals.mockImplementation(async (sessionId: string) => {
+        if (sessionId === 'session-0') {
+          await releaseGate.promise;
+        }
+      });
+
+      await service.createSession(oneThreadConfig);
+
+      const replacementLoad = service.loadSession('session-1', oneThreadConfig);
+      await flushAsyncWork();
+      expect(mockTerminalHandler.releaseSessionTerminals).toHaveBeenCalledWith('session-0');
+      expect((service as any).reservedThreads.has(thread)).toBe(true);
+
+      const promptErrors: Error[] = [];
+      const stream = service.sendMessage({ sessionId: 'session-0', prompt: 'do not start' }, oneThreadConfig);
+      stream.onError((error) => promptErrors.push(error));
+      await flushAsyncWork();
+
+      expect(thread.prompt).not.toHaveBeenCalled();
+      expect(status).toBe('awaiting_prompt');
+      expect(promptErrors).toHaveLength(1);
+      expect(promptErrors[0].name).toBe('AcpThreadPoolSaturatedError');
+
+      releaseGate.resolve();
+      await replacementLoad;
+
+      expect(thread.loadSession).toHaveBeenCalledWith(
+        expect.objectContaining({ sessionId: 'session-1', cwd: oneThreadConfig.cwd }),
+      );
+    });
   });
 
   describe('loadSessionOrNew()', () => {
@@ -2075,6 +2157,34 @@ describe('AcpAgentService (Thread Pool)', () => {
       const { service } = createService();
       await service.stopAgent();
 
+      expect((service as any).threadPool).toHaveLength(0);
+    });
+
+    it('waits for warming initialization to settle before disposing the thread', async () => {
+      const initializeGate = createDeferred<any>();
+      const thread = createMockThread();
+      thread.initialize.mockImplementation(async () => {
+        await initializeGate.promise;
+        thread.initialized = true;
+        return { protocolVersion: 1, agentCapabilities: {} };
+      });
+      const service = setupServiceWithMockFactory(jest.fn().mockReturnValue(thread));
+      const config = { ...mockAgentProcessConfig, threadPoolSize: 1 };
+
+      const warmup = service.warmUpAgentPool(config);
+      let stopSettled = false;
+      const stop = service.stopAgent().finally(() => {
+        stopSettled = true;
+      });
+      await flushAsyncWork();
+
+      expect(stopSettled).toBe(false);
+      expect(thread.dispose).not.toHaveBeenCalled();
+
+      initializeGate.resolve({ protocolVersion: 1, agentCapabilities: {} });
+      await Promise.all([warmup, stop]);
+
+      expect(thread.dispose).toHaveBeenCalledTimes(1);
       expect((service as any).threadPool).toHaveLength(0);
     });
   });
