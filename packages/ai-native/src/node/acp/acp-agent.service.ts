@@ -591,7 +591,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
   private async cleanupFailedSessionOperation(sessionId: string | undefined, thread: AcpThread): Promise<void> {
     if (sessionId) {
-      this.clearSessionRuntimeState(sessionId);
+      try {
+        await this.releaseSessionResources(sessionId);
+      } catch (error) {
+        this.logger.warn(`[AcpAgentService] Failed to release resources for unsuccessful session ${sessionId}`, error);
+      }
     }
     await this.recoverThreadAfterSessionFailure(thread);
   }

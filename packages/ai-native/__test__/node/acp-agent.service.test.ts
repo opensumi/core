@@ -774,6 +774,28 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect((service as any).sessions.size).toBe(0);
     });
 
+    it('releases session resources when creation fails after receiving a session id', async () => {
+      const thread = createMockThread({
+        onEvent: jest.fn(() => ({ dispose: jest.fn() })),
+        newSession: jest.fn().mockResolvedValue({ sessionId: 'partially-created-session' }),
+        getSessionState: jest.fn(() => {
+          throw new Error('Session state failed');
+        }),
+      });
+      thread.initialize.mockImplementation(async () => {
+        thread.initialized = true;
+        return { protocolVersion: 1, agentCapabilities: {} };
+      });
+      const service = setupServiceWithMockFactory(jest.fn().mockReturnValue(thread));
+
+      await expect(service.createSession(mockAgentProcessConfig)).rejects.toThrow('Session state failed');
+
+      expect(mockTerminalHandler.releaseSessionTerminals).toHaveBeenCalledWith('partially-created-session');
+      expect(mockPermissionRouting.unregisterSession).toHaveBeenCalledWith('partially-created-session');
+      expect(thread.reset).toHaveBeenCalled();
+      expect(thread.dispose).not.toHaveBeenCalled();
+    });
+
     it('disposes a fresh replacement when its initialization fails', async () => {
       const originalThread = createMockThread({
         threadId: 'original-thread',
@@ -1103,6 +1125,7 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(mockFactory).toHaveBeenCalledTimes(1);
       expect(thread.reset).toHaveBeenCalled();
       expect(thread.dispose).not.toHaveBeenCalled();
+      expect(mockTerminalHandler.releaseSessionTerminals).toHaveBeenCalledWith('failed-session');
       expect((service as any).sessions.has('failed-session')).toBe(false);
       expect((service as any).sessions.get('next-session')).toBe(thread);
     });
@@ -1500,6 +1523,7 @@ describe('AcpAgentService (Thread Pool)', () => {
 
       expect(thread.reset).toHaveBeenCalled();
       expect(thread.dispose).not.toHaveBeenCalled();
+      expect(mockTerminalHandler.releaseSessionTerminals).toHaveBeenCalledWith('failed-session');
       expect((service as any).threadPool).toEqual([thread]);
       expect((service as any).sessions.has('failed-session')).toBe(false);
     });
