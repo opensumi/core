@@ -10,6 +10,7 @@ jest.mock('@opensumi/di', () => {
   };
 });
 
+import { ACP_THREAD_POOL_SATURATED_ERROR_NAME } from '@opensumi/ide-core-common';
 import { DEFAULT_ACP_THREAD_POOL_SIZE } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
@@ -1113,7 +1114,7 @@ describe('AcpAgentService (Thread Pool)', () => {
       }
 
       expect(saturationError).toBeInstanceOf(Error);
-      expect(saturationError!.name).toBe('AcpThreadPoolSaturatedError');
+      expect(saturationError!.name).toBe(ACP_THREAD_POOL_SATURATED_ERROR_NAME);
       expect(workingThreads.every((thread) => thread.dispose.mock.calls.length === 0)).toBe(true);
       expect((service as any).sessions.size).toBe(SMALL_THREAD_POOL_SIZE);
     });
@@ -1308,7 +1309,7 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(thread.prompt).not.toHaveBeenCalled();
       expect(status).toBe('awaiting_prompt');
       expect(promptErrors).toHaveLength(1);
-      expect(promptErrors[0].name).toBe('AcpThreadPoolSaturatedError');
+      expect(promptErrors[0].name).toBe(ACP_THREAD_POOL_SATURATED_ERROR_NAME);
 
       releaseGate.resolve();
       await replacementLoad;

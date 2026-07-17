@@ -77,7 +77,7 @@
 - Part D does not recycle `working` or `auth_required` threads.
 - Part D fails fast with `error.name === ACP_THREAD_POOL_SATURATED`.
 - Part D shows one actionable localized browser message explaining that the configured concurrent-task limit has been reached and suggesting switching to or stopping an active task before retrying; it does not expose internal LRU terminology.
-- Part D logs `thread-pool-switch-failed` with a `candidates` array.
+- Part D logs `thread-pool-saturated` with a `candidates` array.
 - Each failure candidate includes `threadId`, `sessionId`, `status`, `reserved`, `warming`, `pendingLoad`, `runtimeCompatible`, `processReusable`, `capacityReclaimable`, and explicit `exclusionReasons`.
 - Candidate diagnostics do not include Agent command arguments, environment values, tokens, authentication material, or MCP headers.
 - Part D resets browser session loading state to false and shows a create session failure message instead of leaving the page stuck in loading.
