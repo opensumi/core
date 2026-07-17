@@ -1549,6 +1549,10 @@ export const localizationBundle = {
 
     'aiNative.chat.welcome.loading.text': 'Initializing...',
     'aiNative.chat.acp.initializing.text': 'Initializing ACP service...',
+    'aiNative.chat.acp.threadPoolSaturated':
+      'ACP concurrent tasks have reached the configured limit. Switch to or stop an active task, then try again.',
+    'aiNative.chat.acp.threadPoolSaturated.withLimit':
+      'ACP concurrent tasks have reached the configured limit of {0}. Switch to or stop an active task, then try again.',
     'aiNative.acp.permissionPending': 'Permission pending',
     'aiNative.chat.ai.assistant.limit.message': '{0} earliest messages are dropped due to the input token limit',
     'aiNative.inlineDiff.acceptAll': 'Accept All',

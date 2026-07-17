@@ -755,6 +755,63 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(thread.dispose).toHaveBeenCalled();
     });
 
+    it('keeps a connected process reusable when newSession fails', async () => {
+      const thread = createMockThread({
+        onEvent: jest.fn(() => ({ dispose: jest.fn() })),
+        newSession: jest.fn().mockRejectedValue(new Error('Session creation failed')),
+      });
+      thread.initialize.mockImplementation(async () => {
+        thread.initialized = true;
+        return { protocolVersion: 1, agentCapabilities: {} };
+      });
+      const service = setupServiceWithMockFactory(jest.fn().mockReturnValue(thread));
+
+      await expect(service.createSession(mockAgentProcessConfig)).rejects.toThrow('Session creation failed');
+
+      expect(thread.reset).toHaveBeenCalled();
+      expect(thread.dispose).not.toHaveBeenCalled();
+      expect((service as any).threadPool).toEqual([thread]);
+      expect((service as any).sessions.size).toBe(0);
+    });
+
+    it('disposes a fresh replacement when its initialization fails', async () => {
+      const originalThread = createMockThread({
+        threadId: 'original-thread',
+        getStatus: jest.fn().mockReturnValue('awaiting_prompt'),
+        newSession: jest.fn(async () => {
+          originalThread._fireEvent({
+            type: 'session_notification',
+            notification: {
+              sessionId: 'session-a',
+              update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+            },
+          });
+          return { sessionId: 'session-a' };
+        }),
+      });
+      originalThread.initialize.mockImplementation(async () => {
+        originalThread.initialized = true;
+        return { protocolVersion: 1, agentCapabilities: {} };
+      });
+      const replacementThread = createMockThread({
+        threadId: 'replacement-thread',
+        initialize: jest.fn().mockRejectedValue(new Error('Replacement init failed')),
+      });
+      const service = setupServiceWithMockFactory(
+        jest.fn().mockReturnValueOnce(originalThread).mockReturnValueOnce(replacementThread),
+      );
+      const configA = { ...mockAgentProcessConfig, cwd: '/workspace-a', threadPoolSize: 1 };
+      const configB = { ...mockAgentProcessConfig, cwd: '/workspace-b', threadPoolSize: 1 };
+
+      await service.createSession(configA);
+      await expect(service.createSession(configB)).rejects.toThrow('Replacement init failed');
+
+      expect(originalThread.dispose).toHaveBeenCalled();
+      expect(replacementThread.dispose).toHaveBeenCalled();
+      expect(replacementThread.reset).not.toHaveBeenCalled();
+      expect((service as any).threadPool).toEqual([]);
+    });
+
     it('should apply valid default mode, model, and config options after creating a session', async () => {
       jest.useFakeTimers();
       const { service, thread } = createServiceWithAutoEvents();
@@ -1021,6 +1078,33 @@ describe('AcpAgentService (Thread Pool)', () => {
         configId: 'approval',
         value: 'on-request',
       });
+    });
+
+    it('keeps a connected process reusable when loadSession fails', async () => {
+      const thread = createMockThread({
+        loadSession: jest
+          .fn()
+          .mockRejectedValueOnce(new Error('Session load failed'))
+          .mockResolvedValueOnce({ sessionId: 'next-session' }),
+      });
+      thread.initialize.mockImplementation(async () => {
+        thread.initialized = true;
+        return { protocolVersion: 1, agentCapabilities: {} };
+      });
+      const mockFactory = jest.fn().mockReturnValue(thread);
+      const service = setupServiceWithMockFactory(mockFactory);
+
+      await expect(service.loadSession('failed-session', mockAgentProcessConfig)).rejects.toThrow(
+        'Session load failed',
+      );
+      const result = await service.loadSession('next-session', mockAgentProcessConfig);
+
+      expect(result.sessionId).toBe('next-session');
+      expect(mockFactory).toHaveBeenCalledTimes(1);
+      expect(thread.reset).toHaveBeenCalled();
+      expect(thread.dispose).not.toHaveBeenCalled();
+      expect((service as any).sessions.has('failed-session')).toBe(false);
+      expect((service as any).sessions.get('next-session')).toBe(thread);
     });
 
     it('should join an in-flight load instead of returning a half-loaded thread', async () => {
@@ -1398,6 +1482,26 @@ describe('AcpAgentService (Thread Pool)', () => {
         expect.objectContaining({ sessionId: 'session-3', cwd: mockAgentProcessConfig.cwd }),
       );
       expect((service as any).reservedThreads.has(threads[0])).toBe(false);
+    });
+
+    it('keeps a connected process reusable when loadSessionOrNew fails', async () => {
+      const thread = createMockThread({
+        loadSessionOrNew: jest.fn().mockRejectedValue(new Error('Load or create failed')),
+      });
+      thread.initialize.mockImplementation(async () => {
+        thread.initialized = true;
+        return { protocolVersion: 1, agentCapabilities: {} };
+      });
+      const service = setupServiceWithMockFactory(jest.fn().mockReturnValue(thread));
+
+      await expect(service.loadSessionOrNew('failed-session', mockAgentProcessConfig)).rejects.toThrow(
+        'Load or create failed',
+      );
+
+      expect(thread.reset).toHaveBeenCalled();
+      expect(thread.dispose).not.toHaveBeenCalled();
+      expect((service as any).threadPool).toEqual([thread]);
+      expect((service as any).sessions.has('failed-session')).toBe(false);
     });
   });
 

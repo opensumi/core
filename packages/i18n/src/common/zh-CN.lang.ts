@@ -1317,6 +1317,9 @@ export const localizationBundle = {
 
     'aiNative.chat.welcome.loading.text': '初始化中...',
     'aiNative.chat.acp.initializing.text': '正在初始化 ACP 服务...',
+    'aiNative.chat.acp.threadPoolSaturated': 'ACP 并发任务已达到配置上限。请切换到或停止一个活动任务，然后重试。',
+    'aiNative.chat.acp.threadPoolSaturated.withLimit':
+      'ACP 并发任务已达到配置上限（{0}）。请切换到或停止一个活动任务，然后重试。',
     'aiNative.acp.permissionPending': '权限请求等待中',
     'aiNative.chat.ai.assistant.limit.message': '{0} 条最早的消息因输入 Tokens 限制而被丢弃',
     'aiNative.inlineDiff.acceptAll': '接受全部',
