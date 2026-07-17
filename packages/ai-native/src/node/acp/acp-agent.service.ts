@@ -45,6 +45,8 @@ const WEBMCP_CAPABILITY_HINT = [
   '</opensumi_mcp_usage_hint>',
 ].join('\n');
 
+const ACP_THREAD_POOL_SATURATED_ERROR_NAME = 'AcpThreadPoolSaturatedError';
+
 // ============================================================================
 // Agent Session Types
 // ============================================================================
@@ -406,8 +408,25 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     this.maxPoolSize = Math.floor(threadPoolSize);
   }
 
-  private isThreadReusableForLRU(thread: AcpThread): boolean {
+  private isThreadProcessReusable(thread: AcpThread): boolean {
     return ['idle', 'awaiting_prompt'].includes(thread.getStatus());
+  }
+
+  private isThreadCapacityReclaimable(thread: AcpThread, sessionId = this.getBoundSessionId(thread)): boolean {
+    if (
+      this.reservedThreads.has(thread) ||
+      this.warmingThreads.has(thread) ||
+      (sessionId ? this.pendingSessionLoads.has(sessionId) : false)
+    ) {
+      return false;
+    }
+    return ['idle', 'awaiting_prompt', 'disconnected'].includes(thread.getStatus());
+  }
+
+  private createThreadPoolSaturatedError(): Error {
+    const error = new Error(`Thread pool is full (${this.maxPoolSize}), no reusable LRU thread available`);
+    error.name = ACP_THREAD_POOL_SATURATED_ERROR_NAME;
+    return error;
   }
 
   private createThreadRuntimeConfigKey(config: AgentThreadRuntimeConfigKey): string {
@@ -445,7 +464,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         !this.warmingThreads.has(thread) &&
         !this.hasActiveSession(thread) &&
         this.canReuseThreadForConfig(thread, config) &&
-        ['idle', 'awaiting_prompt'].includes(thread.getStatus()),
+        this.isThreadProcessReusable(thread),
     );
   }
 
@@ -489,80 +508,189 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     return undefined;
   }
 
-  private async disposeLeastRecentlyUsedReusableThread(nextSessionId: string, reason: string): Promise<void> {
-    for (const thread of this.threadPool) {
-      const sessionId = this.getBoundSessionId(thread);
-      if (
-        this.reservedThreads.has(thread) ||
-        this.warmingThreads.has(thread) ||
-        (sessionId ? this.pendingSessionLoads.has(sessionId) : false) ||
-        !this.isThreadReusableForLRU(thread)
-      ) {
-        continue;
-      }
+  private async releaseSessionMapping(sessionId: string): Promise<void> {
+    await this.terminalHandler.releaseSessionTerminals(sessionId);
+    this.permissionRouting.unregisterSession(sessionId);
+    this.unregisterThreadStatusListener(sessionId);
+    this.sessions.delete(sessionId);
+    this.sessionRefCounts.delete(sessionId);
+    this.builtInMcpSessionIds.delete(sessionId);
+  }
 
-      this.reservedThreads.add(thread);
-      this.logger.log(
-        `[AcpAgentService] thread-pool-dispose — reason=${reason}, evictSessionId=${
-          sessionId ?? '-'
-        }, nextSessionId=${nextSessionId}, threadId=${thread.threadId}, status=${thread.getStatus()}, pool=${
-          this.threadPool.length
-        }/${this.maxPoolSize}`,
-      );
-      try {
-        if (sessionId) {
-          await this.terminalHandler.releaseSessionTerminals(sessionId);
-          this.permissionRouting.unregisterSession(sessionId);
-          this.unregisterThreadStatusListener(sessionId);
-          this.sessions.delete(sessionId);
-          this.sessionRefCounts.delete(sessionId);
-          this.builtInMcpSessionIds.delete(sessionId);
-        }
-        await thread.dispose();
-        const idx = this.threadPool.indexOf(thread);
-        if (idx !== -1) {
-          this.threadPool.splice(idx, 1);
-        }
-        this.reservedThreads.delete(thread);
-        return;
-      } catch (error) {
-        this.reservedThreads.delete(thread);
-        throw error;
+  private removeThreadFromPool(thread: AcpThread): void {
+    const index = this.threadPool.indexOf(thread);
+    if (index !== -1) {
+      this.threadPool.splice(index, 1);
+    }
+  }
+
+  private async replaceThreadForConfig(
+    thread: AcpThread,
+    sessionId: string | undefined,
+    nextSessionId: string,
+    reason: string,
+    config: AgentProcessConfig,
+  ): Promise<AcpThread> {
+    this.reservedThreads.add(thread);
+    this.logger.log(
+      '[AcpAgentService] thread-pool-dispose — reason=' +
+        reason +
+        ', evictSessionId=' +
+        (sessionId ?? '-') +
+        ', nextSessionId=' +
+        nextSessionId +
+        ', threadId=' +
+        thread.threadId +
+        ', status=' +
+        thread.getStatus() +
+        ', pool=' +
+        this.threadPool.length +
+        '/' +
+        this.maxPoolSize,
+    );
+    try {
+      if (sessionId) {
+        await this.releaseSessionMapping(sessionId);
       }
+      await thread.dispose();
+      this.removeThreadFromPool(thread);
+      const replacement = this.createThreadInstance(
+        nextSessionId === 'pending-create-session' ? '' : nextSessionId,
+        config,
+      );
+      this.threadPool.push(replacement);
+      this.reservedThreads.add(replacement);
+      return replacement;
+    } finally {
+      this.reservedThreads.delete(thread);
+    }
+  }
+
+  private async replaceIncompatibleWarmingThread(
+    thread: AcpThread,
+    nextSessionId: string,
+    reason: string,
+    config: AgentProcessConfig,
+  ): Promise<AcpThread> {
+    const warmup = this.warmingThreads.get(thread);
+    if (!warmup) {
+      throw this.createThreadPoolSaturatedError();
     }
 
-    const candidates = this.threadPool.map((thread) => {
-      const sessionId = this.getBoundSessionId(thread);
-      const status = thread.getStatus();
-      return {
-        threadId: thread.threadId,
-        sessionId: sessionId ?? '-',
-        status,
-        reserved: this.reservedThreads.has(thread),
-        pendingLoad: sessionId ? this.pendingSessionLoads.has(sessionId) : false,
-        reusable: ['idle', 'awaiting_prompt'].includes(status),
-      };
-    });
+    this.reservedThreads.add(thread);
+    try {
+      await warmup;
+      if (this.threadPool.includes(thread)) {
+        await thread.dispose();
+        this.removeThreadFromPool(thread);
+      }
+      if (this.threadPool.length >= this.maxPoolSize) {
+        this.throwThreadPoolSaturated(nextSessionId, reason, config);
+      }
+      const replacement = this.createThreadInstance(
+        nextSessionId === 'pending-create-session' ? '' : nextSessionId,
+        config,
+      );
+      this.threadPool.push(replacement);
+      this.reservedThreads.add(replacement);
+      return replacement;
+    } finally {
+      this.reservedThreads.delete(thread);
+    }
+  }
+
+  private getThreadAllocationDiagnostics(thread: AcpThread, config: AgentProcessConfig) {
+    const sessionId = this.getBoundSessionId(thread);
+    const status = thread.getStatus();
+    const reserved = this.reservedThreads.has(thread);
+    const warming = this.warmingThreads.has(thread);
+    const pendingLoad = sessionId ? this.pendingSessionLoads.has(sessionId) : false;
+    const runtimeCompatible = this.canReuseThreadForConfig(thread, config);
+    const processReusable = this.isThreadProcessReusable(thread);
+    const capacityReclaimable = this.isThreadCapacityReclaimable(thread, sessionId);
+    const exclusionReasons: string[] = [];
+    if (reserved) {
+      exclusionReasons.push('reserved');
+    }
+    if (warming) {
+      exclusionReasons.push('warming');
+    }
+    if (pendingLoad) {
+      exclusionReasons.push('pending-load');
+    }
+    if (!runtimeCompatible) {
+      exclusionReasons.push('runtime-incompatible');
+    }
+    if (!processReusable) {
+      exclusionReasons.push('process-not-reusable:' + status);
+    }
+    if (!capacityReclaimable) {
+      exclusionReasons.push('capacity-not-reclaimable:' + status);
+    }
+    return {
+      threadId: thread.threadId,
+      sessionId: sessionId ?? '-',
+      status,
+      reserved,
+      warming,
+      pendingLoad,
+      runtimeCompatible,
+      processReusable,
+      capacityReclaimable,
+      exclusionReasons,
+    };
+  }
+
+  private throwThreadPoolSaturated(nextSessionId: string, reason: string, config: AgentProcessConfig): never {
+    const candidates = this.threadPool.map((thread) => this.getThreadAllocationDiagnostics(thread, config));
     this.logger.warn(
-      `[AcpAgentService] thread-pool-dispose-failed — reason=${reason}, nextSessionId=${nextSessionId}, pool=${
-        this.threadPool.length
-      }/${this.maxPoolSize}, candidates=${JSON.stringify(candidates)}`,
+      '[AcpAgentService] thread-pool-saturated — reason=' +
+        reason +
+        ', nextSessionId=' +
+        nextSessionId +
+        ', pool=' +
+        this.threadPool.length +
+        '/' +
+        this.maxPoolSize +
+        ', candidates=' +
+        JSON.stringify(candidates),
     );
-    throw new Error(`Thread pool is full (${this.maxPoolSize}), no reusable LRU thread available`);
+    throw this.createThreadPoolSaturatedError();
   }
 
   private async recycleLeastRecentlyUsedThread(
     nextSessionId: string,
     reason: string,
-    config?: AgentProcessConfig,
+    config: AgentProcessConfig,
   ): Promise<AcpThread> {
+    for (const thread of this.threadPool) {
+      const sessionId = this.getBoundSessionId(thread);
+      const status = thread.getStatus();
+      if (
+        sessionId ||
+        !this.isThreadCapacityReclaimable(thread, sessionId) ||
+        (status !== 'disconnected' &&
+          (this.canReuseThreadForConfig(thread, config) || !this.isThreadProcessReusable(thread)))
+      ) {
+        continue;
+      }
+      return this.replaceThreadForConfig(thread, undefined, nextSessionId, reason + '-unbound', config);
+    }
+
+    for (const [sessionId, thread] of this.sessions) {
+      if (thread.getStatus() !== 'disconnected' || !this.isThreadCapacityReclaimable(thread, sessionId)) {
+        continue;
+      }
+      return this.replaceThreadForConfig(thread, sessionId, nextSessionId, reason + '-disconnected', config);
+    }
+
     for (const [sessionId, thread] of this.sessions) {
       if (
         this.reservedThreads.has(thread) ||
         this.warmingThreads.has(thread) ||
         this.pendingSessionLoads.has(sessionId) ||
-        !this.isThreadReusableForLRU(thread) ||
-        (config && !this.canReuseThreadForConfig(thread, config))
+        thread.getStatus() !== 'awaiting_prompt' ||
+        !this.canReuseThreadForConfig(thread, config)
       ) {
         continue;
       }
@@ -574,12 +702,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         }, status=${thread.getStatus()}, pool=${this.threadPool.length}/${this.maxPoolSize}`,
       );
       try {
-        await this.terminalHandler.releaseSessionTerminals(sessionId);
-        this.permissionRouting.unregisterSession(sessionId);
-        this.unregisterThreadStatusListener(sessionId);
-        this.sessions.delete(sessionId);
-        this.sessionRefCounts.delete(sessionId);
-        this.builtInMcpSessionIds.delete(sessionId);
+        await this.releaseSessionMapping(sessionId);
         return thread;
       } catch (error) {
         this.reservedThreads.delete(thread);
@@ -587,31 +710,29 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       }
     }
 
-    if (config) {
-      await this.disposeLeastRecentlyUsedReusableThread(nextSessionId, `${reason}-different-config`);
-      const thread = this.createThreadInstance(nextSessionId === 'pending-create-session' ? '' : nextSessionId, config);
-      this.threadPool.push(thread);
-      return thread;
+    for (const [sessionId, thread] of this.sessions) {
+      if (
+        thread.getStatus() !== 'awaiting_prompt' ||
+        !this.isThreadCapacityReclaimable(thread, sessionId) ||
+        this.canReuseThreadForConfig(thread, config)
+      ) {
+        continue;
+      }
+      return this.replaceThreadForConfig(thread, sessionId, nextSessionId, reason + '-different-config', config);
     }
 
-    const candidates = this.threadPool.map((thread) => {
-      const sessionId = this.getBoundSessionId(thread);
-      const status = thread.getStatus();
-      return {
-        threadId: thread.threadId,
-        sessionId: sessionId ?? '-',
-        status,
-        reserved: this.reservedThreads.has(thread),
-        pendingLoad: sessionId ? this.pendingSessionLoads.has(sessionId) : false,
-        reusable: ['idle', 'awaiting_prompt'].includes(status),
-      };
-    });
-    this.logger.warn(
-      `[AcpAgentService] thread-pool-switch-failed — reason=${reason}, nextSessionId=${nextSessionId}, pool=${
-        this.threadPool.length
-      }/${this.maxPoolSize}, candidates=${JSON.stringify(candidates)}`,
+    const incompatibleWarmingThread = this.threadPool.find(
+      (thread) =>
+        !this.reservedThreads.has(thread) &&
+        !this.hasActiveSession(thread) &&
+        this.warmingThreads.has(thread) &&
+        !this.canReuseThreadForConfig(thread, config),
     );
-    throw new Error(`Thread pool is full (${this.maxPoolSize}), no reusable LRU thread available`);
+    if (incompatibleWarmingThread) {
+      return this.replaceIncompatibleWarmingThread(incompatibleWarmingThread, nextSessionId, reason, config);
+    }
+
+    return this.throwThreadPoolSaturated(nextSessionId, reason, config);
   }
 
   /**
@@ -732,9 +853,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   }
 
   /**
-   * Fill the available pool capacity with initialized, sessionless threads for
-   * one agent runtime configuration. Callers with the same configuration can
-   * claim an in-flight warmup instead of spawning another process.
+   * Initialize at most one process for one agent runtime configuration.
+   * Callers with the same configuration can claim an in-flight warmup instead
+   * of spawning another process.
    */
   async warmUpAgentPool(config: AgentProcessConfig): Promise<void> {
     this.syncMaxPoolSize(config);
@@ -757,9 +878,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   }
 
   private async doWarmUpAgentPool(config: AgentProcessConfig): Promise<void> {
-    const matchingThreadCount = this.threadPool.filter((thread) => this.canReuseThreadForConfig(thread, config)).length;
+    const hasMatchingThread = this.threadPool.some(
+      (thread) => this.canReuseThreadForConfig(thread, config) && thread.getStatus() !== 'disconnected',
+    );
     const capacity = Math.max(0, this.maxPoolSize - this.threadPool.length);
-    const targetCount = Math.min(Math.max(0, this.maxPoolSize - matchingThreadCount), capacity);
+    const targetCount = hasMatchingThread || capacity === 0 ? 0 : 1;
 
     if (targetCount === 0) {
       return;
