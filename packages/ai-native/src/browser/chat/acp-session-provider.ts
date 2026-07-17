@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  AIBackSerivcePath,
   ACP_THREAD_POOL_SATURATED_ERROR_NAME,
+  AIBackSerivcePath,
   AgentProcessConfig,
   ChatMessageRole,
   Domain,
@@ -15,6 +15,7 @@ import {
   localize,
 } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { strings } from '@opensumi/ide-utils';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
@@ -40,13 +41,24 @@ function isAcpThreadPoolSaturatedError(error: unknown): error is { name: string;
   );
 }
 
-function createAcpThreadPoolSaturatedError(): Error {
-  return new Error(
-    localize(
-      'aiNative.chat.acp.threadPoolSaturated',
-      'ACP concurrent tasks have reached the configured limit. Switch to or stop an active task, then try again.',
-    ),
-  );
+function createAcpThreadPoolSaturatedError(error: { message?: unknown }): Error {
+  const limit =
+    typeof error.message === 'string' ? error.message.match(/\bThread pool is full \((\d+)\)/)?.[1] : undefined;
+  const message = limit
+    ? strings.format(
+        localize(
+          'aiNative.chat.acp.threadPoolSaturated.withLimit',
+          'ACP concurrent tasks have reached the configured limit of {0}. Switch to or stop an active task, then try again.',
+        ),
+        limit,
+      )
+    : localize(
+        'aiNative.chat.acp.threadPoolSaturated',
+        'ACP concurrent tasks have reached the configured limit. Switch to or stop an active task, then try again.',
+      );
+  const mappedError = new Error(message);
+  mappedError.name = ACP_THREAD_POOL_SATURATED_ERROR_NAME;
+  return mappedError;
 }
 
 /**
@@ -126,7 +138,7 @@ export class ACPSessionProvider implements ISessionProvider {
       return sessionModel;
     } catch (error) {
       if (isAcpThreadPoolSaturatedError(error)) {
-        throw createAcpThreadPoolSaturatedError();
+        throw createAcpThreadPoolSaturatedError(error);
       }
       throw error;
     }

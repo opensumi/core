@@ -189,21 +189,43 @@ describe('AcpChatManagerService', () => {
       },
     });
 
-    await expect(provider.createSession()).rejects.toThrow(
-      'ACP concurrent tasks have reached the configured limit. Switch to or stop an active task, then try again.',
-    );
+    await expect(provider.createSession()).rejects.toMatchObject({
+      name: 'ACP_THREAD_POOL_SATURATED',
+      message:
+        'ACP concurrent tasks have reached the configured limit of 3. Switch to or stop an active task, then try again.',
+    });
+    expect((provider as any).messageService.error).not.toHaveBeenCalled();
+  });
+
+  it('maps a saturation error without a parseable limit to the actionable fallback', async () => {
+    const provider = createSessionProvider();
+    const saturationError = new Error('Pool unavailable');
+    saturationError.name = 'ACP_THREAD_POOL_SATURATED';
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        createSession: jest.fn().mockRejectedValue(saturationError),
+      },
+    });
+
+    await expect(provider.createSession()).rejects.toMatchObject({
+      name: 'ACP_THREAD_POOL_SATURATED',
+      message:
+        'ACP concurrent tasks have reached the configured limit. Switch to or stop an active task, then try again.',
+    });
     expect((provider as any).messageService.error).not.toHaveBeenCalled();
   });
 
   it('preserves unrelated ACP session creation errors', async () => {
     const provider = createSessionProvider();
+    const originalError = new Error('Agent startup failed');
+    originalError.name = 'AgentStartupError';
     Object.defineProperty(provider, 'aiBackService', {
       value: {
-        createSession: jest.fn().mockRejectedValue(new Error('Agent startup failed')),
+        createSession: jest.fn().mockRejectedValue(originalError),
       },
     });
 
-    await expect(provider.createSession()).rejects.toThrow('Agent startup failed');
+    await expect(provider.createSession()).rejects.toBe(originalError);
   });
 
   it('uses an explicit ACP target when creating an ACP session', async () => {
