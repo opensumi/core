@@ -4,6 +4,8 @@
 
 **Layer:** `node-contract` **Required profile:** `default` **Fixtures:** The mock ACP agent at `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs` covers session creation/loading, `--fixture=stream-rich` streaming, `--fixture=long-stream` detach/reattach and cancellation, `--fixture=send-failure` prompt errors, `--fixture=load-failure` load fallback, and advertised HTTP MCP capability controls. The service harness can create two browser-scoped `AcpCliBackService` instances over one container-scoped `AcpAgentService`. **Workspace mutation:** None. **Automation status:** Automated contract spec; browser preflight is optional when validating the visible provider path.
 
+**Acceptance coverage:** `E-01`, `E-02`, and `E-07` from `test/bdd/feat-0710-acceptance.md`.
+
 ## Given
 
 - Common preflight in `test/bdd/README.md` passes if this is run through the IDE.
@@ -56,10 +58,19 @@
 ### Part E - Cancel And Container-Owned Dispose
 
 28. Start another working request, detach, reattach, and call `cancelRequest(sessionId)` from the replacement browser connection.
-29. Dispose the session with `force=false`.
-30. Dispose another active session with `force=true`.
-31. Emit a late status update from a disposed thread.
-32. Stop the application or dispose the container-owned agent service.
+29. Retain/load the same Session through two browser owners, then call `disposeSession(force=false)` from the first owner.
+30. Confirm the Session remains bound, then release the final owner with `disposeSession(force=false)`.
+31. Dispose another active session with `force=true`.
+32. Emit a late status update from a disposed thread.
+33. Stop the application or dispose the container-owned agent service.
+
+### Part F - Failed Create And Load Cleanup
+
+34. Fail `newSession` after the agent has already returned an actual session id and session-scoped routing/resources have begun registering.
+35. Fail `loadSession` and `loadSessionOrNew` while the selected process remains connected and otherwise reusable.
+36. Fail initialization of a fresh replacement process before it can be bound.
+37. After each failure, inspect permission routing, thread-status subscriptions, node session mappings, reference counts, built-in MCP session markers, and session-owned terminals.
+38. Create or load a healthy session after cleanup.
 
 ## Then
 
@@ -79,13 +90,17 @@
 - If the prompt completes or fails while detached, the replacement client receives the resulting authoritative session state.
 - `cancelRequest` is idempotent when the session is missing.
 - Explicit cancellation from the replacement browser connection still reaches the running session after reattachment.
-- `disposeSession(force=false)` releases session terminals, unregisters permission routing, removes the session mapping, and keeps the thread eligible for reuse.
+- Releasing one of multiple retained owners does not release terminals, unregister routing, or remove the shared Session mapping.
+- The final `disposeSession(force=false)` releases session terminals, unregisters permission routing, removes the session mapping, and keeps the thread eligible for reuse.
 - `disposeSession(force=true)` also disposes the thread and removes it from the pool.
 - Late status updates from disposed or unbound threads do not recreate session mappings or browser status subscriptions.
 - If the pool has 3 live non-idle threads, creating or loading another session fails with a thread-pool-full error.
 - Application shutdown or container-owned `dispose` releases every thread and child process and leaves no active sessions.
+- A create/load failure releases any partially registered permission route, status subscription, session mapping, reference count, built-in MCP marker, and session-owned terminal.
+- An ordinary create/load failure keeps a still-connected process reusable; a fresh replacement whose initialization fails is disposed and removed from pool capacity.
+- A later healthy create/load succeeds without a phantom Session, leaked listener, duplicate notification, or permanently occupied capacity slot.
 
 ## Pass / Fail Judgment
 
-- **PASS** - session lifecycle operations preserve raw session ids, status events, permission routing, MCP bridge injection, browser detach/reattach continuity, explicit cancellation, and container-owned cleanup.
-- **FAIL** - browser disconnect terminates a running prompt, attachment resends work or loses/duplicates updates, sessions leak across disposals, status changes are not observable, wrong session updates are streamed, or the MCP bridge is not injected when the agent supports HTTP MCP.
+- **PASS** - session lifecycle operations preserve raw session ids, status events, permission routing, MCP bridge injection, browser detach/reattach continuity, explicit cancellation, failure cleanup, and container-owned disposal.
+- **FAIL** - browser disconnect terminates a running prompt, attachment resends work or loses/duplicates updates, failed create/load leaks session resources or capacity, sessions leak across disposals, status changes are not observable, wrong session updates are streamed, or the MCP bridge is not injected when the agent supports HTTP MCP.

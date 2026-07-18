@@ -141,10 +141,14 @@ async function readLayoutBounds(): Promise<LayoutBoundsProof> {
   });
 }
 
-function expectLayoutBounds(proof: LayoutBoundsProof) {
+function expectLayoutBounds(proof: LayoutBoundsProof, workbenchExpected = true) {
   expect(proof.chatSlot?.width).toBeGreaterThanOrEqual(640);
   expect(proof.chatSlot?.right).toBeLessThanOrEqual(proof.viewport.width + 2);
-  expect(proof.workbench?.width).toBeGreaterThan(0);
+  if (workbenchExpected) {
+    expect(proof.workbench?.width).toBeGreaterThan(0);
+  } else {
+    expect(proof.workbench?.width ?? 0).toBe(0);
+  }
   expect(proof.messageCount).toBeGreaterThanOrEqual(2);
   expect(proof.overflowingMessageCount).toBe(0);
   expect(proof.pageHasHorizontalOverflow).toBe(false);
@@ -195,17 +199,48 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
       'long-stream content remains within Agentic layout bounds at the default viewport',
     );
 
-    await page.setViewportSize({ width: 1366, height: 768 });
-    await ensureAgenticLayout(page);
+    await page.setViewportSize({ width: 900, height: 768 });
+    await page.waitForFunction(() => !document.querySelector('#workbench-editor'));
     await expect(chatSlot().getByText(LONG_CONTENT_SENTINEL)).toBeVisible();
     await waitForScrollableMessageList();
 
     const narrowBounds = await readLayoutBounds();
-    expectLayoutBounds(narrowBounds);
+    expectLayoutBounds(narrowBounds, false);
     const narrowProof = await evidence.saveJson(
       '02-narrow-layout-bounds',
       narrowBounds,
-      'long-stream content remains within Agentic layout bounds after viewport resize',
+      'the workbench temporarily collapses below 980px while long-stream content remains usable',
+    );
+
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await page.waitForFunction(() => {
+      const workbench = document.querySelector('#workbench-editor');
+      return Boolean(workbench && workbench.getBoundingClientRect().width > 0);
+    });
+    await expect(chatSlot().getByText(LONG_CONTENT_SENTINEL)).toBeVisible();
+    await waitForScrollableMessageList();
+
+    const restoredBounds = await readLayoutBounds();
+    expectLayoutBounds(restoredBounds);
+    const restoredProof = await evidence.saveJson(
+      '03-restored-layout-bounds',
+      restoredBounds,
+      'the requested workbench visibility returns after the viewport grows above 980px',
+    );
+
+    await page.locator('#agentic-chat-panel-header-maximize [role="button"]').first().click();
+    await page.waitForFunction(() => !document.querySelector('#workbench-editor'));
+    await page.setViewportSize({ width: 900, height: 768 });
+    await page.waitForFunction(() => !document.querySelector('#workbench-editor'));
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await page.waitForTimeout(100);
+
+    const hiddenPreferenceBounds = await readLayoutBounds();
+    expectLayoutBounds(hiddenPreferenceBounds, false);
+    const hiddenPreferenceProof = await evidence.saveJson(
+      '04-hidden-preference-layout-bounds',
+      hiddenPreferenceBounds,
+      'an explicitly hidden workbench remains hidden after a responsive viewport round trip',
     );
 
     await stopStreamIfActive();
@@ -214,13 +249,19 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
       id: 'CP1',
       requirement: 'Long deterministic stream content stays inside the Agentic chat bounds.',
       status: 'pass',
-      evidence: [wideProof, narrowProof].filter(Boolean) as string[],
+      evidence: [wideProof, narrowProof, restoredProof, hiddenPreferenceProof].filter(Boolean) as string[],
     });
     evidence.recordCriticalPoint({
       id: 'CP2',
       requirement: 'The long message list remains scrollable without overlapping the input.',
       status: 'pass',
-      evidence: [wideProof, narrowProof].filter(Boolean) as string[],
+      evidence: [wideProof, narrowProof, restoredProof, hiddenPreferenceProof].filter(Boolean) as string[],
+    });
+    evidence.recordCriticalPoint({
+      id: 'CP3',
+      requirement: 'The workbench temporarily collapses below 980px and restores above the breakpoint.',
+      status: 'pass',
+      evidence: [narrowProof, restoredProof, hiddenPreferenceProof].filter(Boolean) as string[],
     });
 
     await evidence.finalize({

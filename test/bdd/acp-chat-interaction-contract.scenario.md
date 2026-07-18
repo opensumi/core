@@ -4,7 +4,7 @@
 
 **Layer:** `node-contract` **Required profile:** `interactive` **Fixtures:** A deterministic `AcpTurnPort` with controllable start, completion, cancellation, and failure promises; rich main and queued-editor jsdom harnesses with IME and clipboard events; deterministic image upload success/failure promises; and a tool-call disclosure containing focusable descendants. **Workspace mutation:** None. **Automation status:** Automated by focused Jest suites in `packages/ai-native/__test__/browser/chat/acp-chat-queued-turns.test.ts`, `packages/ai-native/__test__/browser/acp-mention-input-behavior.test.tsx`, `packages/ai-native/__test__/browser/acp-chat-mention-input-ref.test.tsx`, `packages/ai-native/__test__/browser/acp-queued-turn-editor.test.tsx`, and `packages/ai-native/__test__/browser/chat-tool-render.test.tsx`.
 
-**Acceptance coverage:** Contract completion for `C-03`, `C-06`, `C-08`, `C-10` through `C-14`, `D-01`, and `D-02` from `test/bdd/feat-0710-acceptance.md`.
+**Acceptance coverage:** Contract completion for `C-03`, `C-06`, `C-08`, `C-10` through `C-14`, `C-16`, `D-01`, and `D-02` from `test/bdd/feat-0710-acceptance.md`.
 
 ## Given
 
@@ -33,20 +33,22 @@
 11. With the main input empty, press ArrowUp with and without a queued tail.
 12. In the queued editor, dispatch Enter, Shift+Enter, `Cmd/Ctrl+Shift+Enter`, and Escape for accepted, empty-rejected, cancellation-failed, and start-failed outcomes.
 13. Attempt a second queued edit while one edit lease is active, then Save, Cancel, Delete, or Immediately Send the leased turn.
+14. Submit contenteditable blank markup and a command-only draft in separate main-input passes.
+15. Hold one main-input submission promise pending, repeat Enter/Send, then modify text, images, Agent, and command state before the first submission settles.
 
 ### Part C - Paste and Asynchronous Editor Lifetime
 
-14. Paste HTML-looking `text/plain` and verify it remains literal text at the current selection.
-15. Paste mixed text and images while one upload resolves and one rejects.
-16. Move focus and selection to another editor before uploads settle.
-17. Unmount the originating editor before a deferred upload settles, then mount a new live editor.
+16. Paste HTML-looking `text/plain` and verify it remains literal text at the current selection.
+17. Paste mixed text and images while one upload resolves and one rejects.
+18. Move focus and selection to another editor before uploads settle.
+19. Unmount the originating editor before a deferred upload settles, then mount a new live editor.
 
 ### Part D - Tool-Call Disclosure Accessibility
 
-18. Inspect the collapsed tool header role, tab focusability, `aria-expanded`, and content `inert`/`aria-hidden` state.
-19. Focus the header and dispatch Enter, repeated Enter, Space, and repeated Space.
-20. Expand, collapse, and re-expand while checking descendant focusability and accessibility exposure.
-21. Render one registered MCP tool and one non-MCP tool.
+20. Inspect the collapsed tool header role, tab focusability, `aria-expanded`, and content `inert`/`aria-hidden` state.
+21. Focus the header and dispatch Enter, repeated Enter, Space, and repeated Space.
+22. Expand, collapse, and re-expand while checking descendant focusability and accessibility exposure.
+23. Render one registered MCP tool and one non-MCP tool.
 
 ## Then
 
@@ -60,6 +62,8 @@
 - Expansion Escape has priority over transient/plain Escape, transient UI closes before Stop, and one-shot fast track is consumed once and invalidated only by the declared state changes.
 - ArrowUp atomically takes back only the tail, restores supported draft fields, focuses the main input, and otherwise delegates to input history.
 - Queued-editor shortcuts preserve multiline content, rejected actions retain draft/edit focus, and accepted Save/Cancel/Delete/Immediate Send return focus to the main input.
+- Contenteditable blank markup does not create a Session, request, row, or queue item; command-only content remains valid.
+- Main-input submission is single-flight while its promise is pending, and accepted cleanup removes only the submitted snapshot without erasing later text, image, Agent, or command changes.
 - HTML-looking plain text remains literal; mixed paste inserts text synchronously at the originating range, retains successful images, reports only failed images, and never applies deferred selection/text changes to another or newly mounted editor.
 - The tool header is a focusable disclosure button with accurate `aria-expanded`; Enter and Space toggle without losing focus, Space prevents scrolling, and repeat events do not toggle again.
 - Collapsed content remains mounted but is `inert` and `aria-hidden`, so descendants cannot receive focus or enter the accessibility tree; expansion restores both capabilities.

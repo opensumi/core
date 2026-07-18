@@ -4,6 +4,8 @@
 
 **Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Deterministic ACP thread pool with controllable statuses, reservations, and pending loads. Process-backed subcases may use the mock ACP agent `--fixture=history` for reloadable sessions, `--fixture=long-stream` for `working` threads, and `--fixture=auth-required` for auth-required status/error recovery, but reservation and pending-load races still require a dedicated service harness. **Workspace mutation:** None. **Automation status:** Automated contract spec; visible loading-state checks may also run through the IDE.
 
+**Acceptance coverage:** `E-03` through `E-06` from `test/bdd/feat-0710-acceptance.md`.
+
 ## Given
 
 - Common preflight in `test/bdd/README.md` passes if this is run through the IDE.

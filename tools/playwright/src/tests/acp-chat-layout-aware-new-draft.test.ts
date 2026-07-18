@@ -1,4 +1,4 @@
-// Source: test/bdd/acp-chat-agentic-history.scenario.md
+// Source: test/bdd/acp-chat-layout-aware-new-draft.scenario.md
 
 import { expect } from '@playwright/test';
 
@@ -89,6 +89,7 @@ test.describe('ACP Chat layout-aware New Draft actions', () => {
     const input = chatInput();
     await input.click();
     await page.keyboard.insertText('preserved Agentic draft');
+    expect((await getSessionState()).active).toBe(true);
     await primary.click();
     await expect(header.getByTestId('agentic-task-agent-menu')).toHaveCount(0);
     await expect(input).toContainText('preserved Agentic draft');

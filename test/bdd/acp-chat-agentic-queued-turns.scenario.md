@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/chat/acp-chat-queued-turns.ts`, `packages/ai-native/src/browser/chat/AcpQueuedTurns.tsx`, `packages/ai-native/src/browser/chat/chat.view.acp.tsx`, `packages/ai-native/src/browser/acp/components/AcpQueuedTurnEditor.tsx`, or `packages/ai-native/src/browser/acp/acp-bdd-runtime-fixtures.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** separate deterministic `long-stream`, `stream-rich`, bounded slow `history` (`--fixture=history --delay-ms=2000`), and loopback `acpBddQueuedTurnStartFailure=reject-once` passes. The rich input must support queued-editor focus, queue Clear, ArrowUp take-back, and the one-shot empty-Enter fast track. **Workspace mutation:** None. **Automation status:** Runtime BDD first; convert stable deterministic subcases only after a `CONVERT` verdict. Queue cancellation/start failure races, Agent-error recovery, IME, paste, and disclosure accessibility contracts are specified separately in `acp-chat-interaction-contract.scenario.md` and hardened by focused Jest suites.
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** separate deterministic `long-stream`, `stream-rich`, bounded slow `history` (`--fixture=history --delay-ms=2000`), and loopback `acpBddQueuedTurnStartFailure=reject-once` passes. The rich input must support queued-editor focus, queue Clear, ArrowUp take-back, and the one-shot empty-Enter fast track. **Workspace mutation:** None. **Automation status:** The visible localized queue-count subcase is converted in `tools/playwright/src/tests/acp-chat-agentic-queued-turns.test.ts` with a `CONVERT` verdict. FIFO editing, Stop/Resume, Immediate Send, failure recovery, Clear/Take Back, and Active Session switching remain runtime BDD-first until their deterministic fixture passes are converted. Queue cancellation/start failure races, Agent-error recovery, IME, paste, and disclosure accessibility contracts are specified separately in `acp-chat-interaction-contract.scenario.md` and hardened by focused Jest suites.
 
 **Acceptance coverage:** Runtime coverage for `C-01` through `C-05`, `C-07`, `C-09`, `C-10`, and `C-12` from `test/bdd/feat-0710-acceptance.md`. Contract completion for `C-03`, `C-06`, `C-08`, and `C-10` through `C-14` is in `acp-chat-interaction-contract.scenario.md`.
 
@@ -110,12 +110,15 @@
 2. Wait until Session A visibly owns an active loading state and its Stop control is enabled. Only then enqueue two labeled drafts.
 3. Begin editing one queued draft, confirm focus is inside the queued editor, and immediately before switching confirm the loading state and enabled Stop control are still visible. If either disappeared, restart this pass rather than counting it toward PASS.
 4. Switch the Active Session to Session B through the visible Task/History surface.
-5. Record the queue region, main draft, expanded state, active element, and metadata-only active session id.
-6. Switch back to Session A and record the queue region again.
+5. While the switch is pending, record the accessible loading surface, busy state, queue controls, main input, Send/Stop action, and footer selectors.
+6. After switching settles, record the queue region, main draft, expanded state, active element, and metadata-only active session id.
+7. Switch back to Session A and record the queue region again.
 
 ## Then - Active Session Switch and Focus
 
 - Session B does not display Session A's queued rows, edit state, or active loading state after the Active Session switch.
+- While switching, the message region exposes `role='status'`, `aria-busy='true'`, and `Loading chat…`; queue actions, main submission, Send/Stop, mode, model, and config controls are disabled without pretending that Session B is streaming.
+- After switching settles, the accessible loading surface disappears and the active input/config controls return to the state owned by Session B.
 - Stale completion from Session A does not start an old queued turn and does not move focus into Session B.
 - The main draft is not cleared by the session switch; the main input collapses without an unexpected focus move.
 - Switching back does not resurrect the cleared queue.

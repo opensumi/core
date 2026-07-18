@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/chat/chat.view.acp.tsx`, `packages/ai-native/src/browser/chat/chat.internal.service.acp.ts`, `packages/ai-native/src/browser/chat/chat-manager.service.acp.ts`, or `packages/ai-native/src/node/acp/acp-agent.service.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** The mock ACP agent uses `--fixture=history` for two deterministic ACP sessions, `--fixture=long-stream` for a controlled active stream, and `--fixture=stream-rich` for completed stream assertions. A real LLM-backed ACP agent may be used only for live two-session smoke coverage. History surface is available, and a fresh MCP session runs in a profile exposing `acp_chat_get_session_state` and `acp_chat_list_sessions`. **Workspace mutation:** None. **Automation status:** History-backed isolation is converted to `tools/playwright/src/tests/acp-chat-agentic-session-isolation.test.ts` with `fixture=history`, `profile=interactive`, deterministic per-session send/switch assertions, and metadata-only state/list checks. Concurrent long-stream isolation remains blocked until a fixture pass can preserve an active stream while switching sessions.
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** The mock ACP agent uses `--fixture=history` for two deterministic ACP sessions, `--fixture=long-stream` for a controlled active stream, and `--fixture=stream-rich` for completed stream assertions. A deterministic delayed-activation seam keeps one Session switch pending long enough to inspect its loading and disabled-control state. A real LLM-backed ACP agent may be used only for live two-session smoke coverage. History surface is available, and a fresh MCP session runs in a profile exposing `acp_chat_get_session_state` and `acp_chat_list_sessions`. **Workspace mutation:** None. **Automation status:** History-backed isolation is converted to `tools/playwright/src/tests/acp-chat-agentic-session-isolation.test.ts` with `fixture=history`, `profile=interactive`, deterministic per-session send/switch assertions, and metadata-only state/list checks. Concurrent long-stream isolation and delayed-switch accessibility remain runtime BDD/Jest-backed until their fixture seams are converted.
 
 ## Given
 
@@ -15,16 +15,19 @@
 1. Select or create Session A.
 2. Start a long-running deterministic stream in Session A.
 3. Switch to Session B from the history surface while Session A is still working.
-4. Send a short deterministic prompt in Session B and wait for completion.
-5. Record visible rows, loading state, and current session marker.
-6. Let Session A emit more stream updates while Session B remains selected.
-7. Record whether Session B DOM changes.
-8. Switch back to Session A and record its stream/status state.
-9. Record `acp_chat_get_session_state({})` and `acp_chat_list_sessions({})`.
+4. Before delayed activation settles, record the message-region role/text/busy state, queue controls, main input, Send/Stop action, and mode/model/config controls.
+5. Complete the activation, send a short deterministic prompt in Session B, and wait for completion.
+6. Record visible rows, loading state, and current session marker.
+7. Let Session A emit more stream updates while Session B remains selected.
+8. Record whether Session B DOM changes.
+9. Switch back to Session A and record its stream/status state.
+10. Record `acp_chat_get_session_state({})` and `acp_chat_list_sessions({})`.
 
 ## Then
 
 - Session B does not receive Session A content, reasoning, tool cards, status, or permission badges.
+- During delayed activation, the message region exposes `role='status'`, `aria-busy='true'`, and `Loading chat…`; submission, queue actions, Send/Stop, and footer configuration are disabled while request-loading remains false.
+- When activation completes, the loading surface is removed and Session B controls become usable according to its own state.
 - Session A working status remains scoped to Session A while another session is selected.
 - Session B can send and complete while Session A is still active or pending.
 - Switching back to Session A shows only Session A rows and active status.

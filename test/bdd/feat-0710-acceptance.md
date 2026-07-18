@@ -4,6 +4,7 @@
 
 - 验收分支：`feat/0710`
 - 对比分支：`main`
+- 验收快照：`eb36968e371999ca1dc294bdbc8d9087a8799b4c`
 - Merge Base：`094b998ee11d130821ea25af4390e656e35ea425`
 - 对比范围：`main...HEAD` 中的产品代码和测试代码；不包含本地未提交的文档与临时文件。
 - 本清单用于人工验收。仓库内已有自动化场景仍以对应 `.scenario.md`、Jest 和 Playwright 用例为准。
@@ -14,12 +15,16 @@
 2. Agentic 布局新增常驻任务工作台，包括项目管理、任务创建、跨项目会话激活、项目名称、归档和尺寸调整。
 3. ACP Chat 新增排队任务，包括严格 FIFO、行内编辑、暂停/继续、立即发送、失败恢复和会话隔离。
 4. ACP 输入补充快捷键、焦点、粘贴、图片和展开行为；工具调用卡片补充键盘和无障碍交互。
+5. ACP 会话补充启动预热、进程池容量保护、浏览器断开后重连、流式会话恢复、显式取消和失败资源清理。
+6. Agentic 布局补充最大化、窄屏自动收起、会话切换加载态，并升级弹窗、通知和终端上下文生命周期。
 
 ## 验收环境与数据
 
 - 使用一次性工作区，至少包含 `editor.js`、`editor2.js`、`editor3.js`。
 - 默认布局用例使用 `default` profile；Agentic 任务和排队任务使用 `interactive` profile。
 - Agentic 用例建议使用 `test/bdd/fixtures/acp-agent/mock-acp-agent.mjs` 的确定性 fixture，避免依赖真实模型输出。
+- 流式恢复用例使用 `--fixture=long-stream`；历史恢复使用 `--fixture=history`；错误恢复分别使用 `--fixture=create-failure`、`--fixture=send-failure` 和 `--fixture=load-failure`。
+- 进程池用例将 `ai.native.acp.threadPoolSize` 设为 3；容量竞态和失败注入优先执行 node-contract，不依赖真实模型。
 - 跨项目用例准备三个目录：当前项目、另一个存在的项目、一个已删除或不可访问的项目。
 - 验收期间不要断言 Agent 回复正文、思考内容、工具参数或精确流式时序。
 - 启动服务前可检查端口：
@@ -36,11 +41,14 @@ lsof -nP -iTCP:8000 -sTCP:LISTEN || true
 ## `.scenario.md` 覆盖映射
 
 - A-01 ～ A-10：`editor-pinned-tabs.scenario.md`；A-02、A-09、A-10 的模型边界以及 A-11：`editor-pinned-tabs-contract.scenario.md`。
-- B-01 ～ B-14：`acp-chat-agentic-history.scenario.md`。
-- C-01 ～ C-05、C-07、C-09、C-10、C-12：`acp-chat-agentic-queued-turns.scenario.md`。
+- B-01 ～ B-15：`acp-chat-agentic-history.scenario.md`；B-07、B-14 的跨布局新草稿行为：`acp-chat-layout-aware-new-draft.scenario.md`；B-16：`acp-chat-agentic-header-maximize.scenario.md`；B-17：`acp-chat-agentic-layout-stress.scenario.md`。
+- C-01 ～ C-05、C-07、C-09、C-10、C-12：`acp-chat-agentic-queued-turns.scenario.md`；C-09 的可访问加载态和禁用控件：`acp-chat-agentic-session-isolation.scenario.md`。
 - C-03、C-06、C-08、C-10 ～ C-14：`acp-chat-interaction-contract.scenario.md`。
-- C-13 ～ C-15：`acp-chat-agentic-input-send.scenario.md`；C-11 ～ C-13 的键盘可见行为：`acp-chat-agentic-keyboard-a11y.scenario.md`。
+- C-13 ～ C-16：`acp-chat-agentic-input-send.scenario.md`；C-11 ～ C-13 的键盘可见行为：`acp-chat-agentic-keyboard-a11y.scenario.md`。
 - D-01、D-02：`acp-chat-agentic-keyboard-a11y.scenario.md` 和 `acp-chat-interaction-contract.scenario.md` 共同覆盖。
+- E-01、E-02：`acp-chat-agentic-reload-during-stream.scenario.md` 和 `acp-agent-session-lifecycle.scenario.md`。
+- E-03 ～ E-06：`acp-thread-pool-lru.scenario.md`；E-07：`acp-agent-session-lifecycle.scenario.md`；E-08：`acp-chat-session-storage.scenario.md`、`acp-chat-agentic-draft-footer.scenario.md` 和 `acp-chat-layout-aware-new-draft.scenario.md`。
+- F-01 ～ F-03：`ui-overlay-and-terminal-lifecycle-contract.scenario.md`。
 
 Runtime 场景负责真实 IDE 可见行为；`node-contract` 场景负责扩展 API、竞态、失败注入、IME、异步粘贴生命周期和无障碍树隔离等不适合稳定浏览器驱动的契约。
 
@@ -174,7 +182,7 @@ Runtime 场景负责真实 IDE 可见行为；`node-contract` 场景负责扩展
 - 前置：以 Agentic 布局打开 IDE。
 - 操作：显示 AI Chat。
 - 预期：
-  - 任务列表、主对话区、资源管理器和编辑器同时可见。
+  - 左侧区域标题为 `Agent Tasks`，任务列表、主对话区、资源管理器和编辑器同时可见。
   - 任务列表位于 ACP Chat 槽位内部，不覆盖编辑器或资源管理器。
   - 行样式接近 OpenSumi 原生树/列表，不出现卡片式任务行、渐变栏或永久文字操作按钮。
 - 自动化参考：`tools/playwright/src/tests/acp-chat-agentic-task-workbench.test.ts`。
@@ -186,9 +194,10 @@ Runtime 场景负责真实 IDE 可见行为；`node-contract` 场景负责扩展
 - 操作：分别用鼠标拖拽和键盘调整宽度，再缩窄整个 Chat 槽位。
 - 预期：
   - 默认宽度约为 244px，最小宽度为 208px。
-  - 最大宽度为 `min(480px, Chat 槽位宽度 - 360px)`。
+  - 最大宽度为 `min(280px, Chat 槽位宽度 - 360px)`。
   - 主对话区始终保留至少 360px。
-  - Chat 槽位变窄后，之前保存的过宽值会被安全收敛。
+  - 调整结果保存在当前浏览器标签页；页面刷新后恢复用户宽度。
+  - Chat 槽位变窄后，之前保存的过宽值会被安全收敛；重新变宽后恢复用户原先偏好的宽度，但不超过 280px。
   - 指针离开窄调整手柄后，拖拽仍连续生效；焦点样式清晰。
 
 ### B-03 项目显示名称与完整路径
@@ -240,13 +249,14 @@ Runtime 场景负责真实 IDE 可见行为；`node-contract` 场景负责扩展
 
 - 优先级：P0
 - 前置：配置 `Agent A`、`Agent B`。
-- 操作：点击对话标题栏 `+`，选择 Agent 后发送首条内容。
+- 操作：分别点击标题栏主 `+` 和相邻的 Agent 下拉按钮，再发送首条内容。
 - 预期：
-  - 点击才打开锚定菜单，悬停不会打开；菜单不出现“选择项目”。
-  - 菜单包含 Agent 列表、下一任务将使用的 Agent 勾选状态和“Agent 配置”。
+  - 主 `+` 使用当前项目记忆的 Agent 直接打开任务草稿，不打开菜单。
+  - 相邻 Agent 下拉按钮点击后才打开锚定菜单，悬停不会打开；菜单不出现“选择项目”。
+  - 菜单包含 Agent 列表、下一任务将使用的 Agent 勾选状态和“Agent 配置”；选择 Agent 后立即打开对应草稿。
   - 已选中持久任务时，新草稿沿用该任务所属项目；否则使用当前 IDE 工作区。
   - Agent 选择只更新目标项目的 Agent 记忆，不修改用户级默认 Agent。
-  - 无可用 Agent 时标题栏 `+` 仍可打开“Agent 配置”，项目组 `+` 则禁用并给出原因。
+  - 无可用 Agent 时主 `+` 禁用并给出原因，Agent 下拉仍可打开“Agent 配置”，项目组 `+` 禁用并给出原因。
 
 ### B-08 当前项目任务激活
 
@@ -300,7 +310,8 @@ Runtime 场景负责真实 IDE 可见行为；`node-contract` 场景负责扩展
 - 预期：
   - 只按不可变任务标题过滤，不搜索提示词或消息内容。
   - 搜索不改变项目和任务原始顺序。
-  - 注意力状态优先于普通运行状态显示。
+  - `ready` 任务不显示冗余状态文字；运行中、停止和错误任务显示语义图标与可见状态文字。
+  - 权限或输入注意力状态优先于普通运行状态，并替换普通状态展示；未读圆点仍独立保留。
   - 任务行保持单行，完整标题仍可通过悬停或无障碍信息访问。
 
 ### B-13 归档与恢复
@@ -322,6 +333,38 @@ Runtime 场景负责真实 IDE 可见行为；`node-contract` 场景负责扩展
   - Classic 保留原有 ACP 历史按钮/弹层行为，不显示 Agentic 任务工作台。
   - 回到 Agentic 后任务列表、标题栏新建任务入口和原任务身份恢复。
   - 不改变 IDE 通用布局生命周期。
+
+### B-15 项目组折叠与搜索展开
+
+- 优先级：P1
+- 前置：至少两个非空项目组，其中一个已折叠。
+- 操作：使用鼠标、Enter 和 Space 折叠/展开项目组；折叠后搜索组内任务，再清空搜索。
+- 预期：
+  - 项目名称和数量组成一个带 `aria-expanded` 的折叠按钮；项目组 `+` 与管理按钮是独立操作，不触发折叠。
+  - 只隐藏当前项目的任务行，不影响其他项目；空项目不显示可交互折叠按钮。
+  - 搜索期间匹配项目临时展开，清空搜索后恢复用户之前的折叠状态。
+  - 搜索不会永久修改折叠选择，也不会改变项目或任务顺序。
+
+### B-16 Agentic 对话最大化与恢复
+
+- 优先级：P0
+- 前置：Agentic 布局中任务列表、资源管理器和编辑器均可见。
+- 操作：点击标题栏最大化，再点击恢复；期间打开一个前台编辑器文件。
+- 预期：
+  - 最大化只隐藏 Agentic 工作台区域，保留当前任务、会话、输入草稿和排队任务。
+  - 恢复后资源管理器和编辑器重新出现，原编辑器和任务选中态不变。
+  - 最大化/恢复按钮图标和无障碍名称同步变化。
+  - 工作台隐藏时，用户主动打开前台编辑器会重新显示工作台；后台打开或打开失败不会强制显示。
+
+### B-17 窄屏响应式收起
+
+- 优先级：P1
+- 前置：Agentic 工作台已处于显示状态。
+- 操作：将浏览器视口缩窄到 980px 以下，再恢复到 980px 以上。
+- 预期：
+  - 窄屏时工作台临时收起，只保留可用的 Agentic Chat 主区域，不产生横向溢出或覆盖。
+  - 恢复宽度后，工作台按缩窄前的用户可见性选择恢复。
+  - 临时响应式收起不清除任务、编辑器、布局缓存或用户的最大化选择。
 
 ---
 
@@ -421,6 +464,8 @@ Runtime 场景负责真实 IDE 可见行为；`node-contract` 场景负责扩展
 - 预期：
   - Session B 不显示 Session A 的队列、编辑器或加载状态。
   - Session A 的旧完成回调不能在 Session B 启动旧任务，也不能抢焦点。
+  - 切换期间消息区域显示带 `role=status` 的“Loading chat…”状态并标记 busy；主输入、发送/停止、模式和模型配置暂时禁用。
+  - 切换完成后输入与配置恢复可用，不把会话切换误显示为 Agent 正在生成。
   - 主草稿不被意外清空；输入展开状态退出但不发生异常焦点跳转。
   - 切回 Session A 不恢复已经清除的旧队列。
 
@@ -489,6 +534,17 @@ Runtime 场景负责真实 IDE 可见行为；`node-contract` 场景负责扩展
   - 展开/收起不重建草稿，文本、Mention、图片、光标、选区和焦点全部保留。
   - Active Session 切换时退出展开状态。
 
+### C-16 空白、命令与重复提交边界
+
+- 优先级：P0
+- 前置：分别准备空闲、`awaiting_prompt` 和正在生成的 Active Session。
+- 操作：提交纯空白、contenteditable 空标签、仅 Slash Command 的草稿，并在一次异步提交尚未完成时快速双击发送或连续按 Enter。
+- 预期：
+  - 纯空白和视觉空白标签不创建会话、用户消息或请求；仅命令草稿仍是有效提交。
+  - 空闲或 `awaiting_prompt` 时直接发送，不进入排队列表；确实正在生成时才形成排队任务。
+  - 同一草稿的并发重复提交只接受一次，不产生重复用户行、重复请求或重复队列项。
+  - 提交等待期间用户新输入的文本、图片、Agent 或命令修改不会被旧提交完成后的清理覆盖。
+
 ---
 
 ## D. 工具调用卡片无障碍行为
@@ -516,20 +572,150 @@ Runtime 场景负责真实 IDE 可见行为；`node-contract` 场景负责扩展
 
 ---
 
+## E. ACP 会话恢复与进程池可靠性
+
+### E-01 流式生成期间刷新并恢复
+
+- 优先级：P0
+- 前置：使用 `long-stream` 启动一个仍在生成的 Agentic 任务，记录会话 ID 和已显示输出。
+- 操作：刷新浏览器，等待 IDE 与 Agentic Chat 恢复，再观察后续输出并点击“停止”。
+- 预期：
+  - 恢复同一个任务和会话 ID，不新增空会话，也不重复用户消息或重新发送提示词。
+  - 刷新前已显示的内容恢复，刷新后的新流式更新继续到达。
+  - 状态仍为生成中并提供“停止”；停止可以取消同一个重连会话，输入随后恢复可用。
+  - 不出现永久加载、重复流、幽灵任务或 MCP token 泄漏。
+
+### E-02 浏览器断开、重连与显式取消
+
+- 优先级：P0
+- 前置：同一个容器级 ACP 服务上存在运行中的会话，可建立新的浏览器连接。
+- 操作：断开原浏览器连接，在 Agent 继续生成时建立新连接并重新附着，随后取消请求。
+- 预期：
+  - 浏览器断开只释放该连接的监听器，不终止 Agent 进程、不取消正在运行的请求。
+  - 新连接先得到完整快照，再按顺序收到竞态窗口和后续更新；每条更新只出现一次。
+  - 重新附着不创建、加载替代会话或重发提示词。
+  - 新连接的取消操作能到达原运行会话；重复取消或会话已不存在时保持幂等。
+
+### E-03 启动预热不阻塞前台任务
+
+- 优先级：P1
+- 前置：启用 ACP，准备一个安全的默认 cwd，并可控制预热线程初始化完成时机。
+- 操作：启动 IDE，同时快速创建前台任务；再用不同 cwd 制造与预热不兼容的前台请求。
+- 预期：
+  - 启动最多预热一个待命进程，不创建会话、不阻塞 IDE 启动，预热失败只记录日志。
+  - 并发或重复预热不会创建重复进程；待命进程被前台任务占用后不会自动持续补满。
+  - 前台会话优先于预热；不兼容时等待预热初始化安全结束后替换，不误报容量已满。
+  - 任意时刻进程数不超过配置上限。
+
+### E-04 容量已满时保护运行中任务
+
+- 优先级：P0
+- 前置：进程池上限为 3，三个会话分别处于运行中、等待权限、保留/加载中等不可回收状态。
+- 操作：创建或加载第四个会话。
+- 预期：
+  - 不驱逐运行中、等待权限、预热、保留或加载中的线程，也不超过 3 个进程。
+  - 快速返回可操作的本地化提示，说明并发任务达到上限并建议切换或停止现有任务后重试。
+  - 新建页面退出加载态，输入仍可恢复操作，不暴露 LRU、命令参数、环境变量、Token 或 MCP Header。
+  - 其他已有任务仍可选择和继续运行。
+
+### E-05 LRU 回收后历史会话仍可继续
+
+- 优先级：P0
+- 前置：池中有三个可复用的 `awaiting_prompt` 会话，并标记一个最久未使用会话。
+- 操作：创建第四个会话，再选择被回收的历史会话并发送新内容。
+- 预期：
+  - 创建第四个会话复用最久未使用的可复用线程，池大小保持不变。
+  - 被回收会话仍保留在历史和任务列表中；重新选择时自动懒加载，不显示“No active session”。
+  - 懒加载完成后正常发送一次，不丢失历史、不重复提示词、不影响其他工作会话。
+
+### E-06 断线进程回收但持久会话保留
+
+- 优先级：P1
+- 前置：存在一个已断线但仍有持久历史的会话，进程池接近容量上限。
+- 操作：创建其他会话占用该容量，再重新选择断线会话。
+- 预期：
+  - 断线进程实例、终端、权限路由、监听器和活动映射被释放，可供新会话使用。
+  - 持久会话元数据和对话历史不被删除，仍可通过新进程重新加载。
+  - 普通提示词失败但进程仍连接时，不被错误当作可回收断线进程。
+
+### E-07 创建、加载失败后的资源清理
+
+- 优先级：P1
+- 前置：分别注入新会话创建失败、已取得 sessionId 后失败、加载失败和替换进程初始化失败。
+- 操作：执行新建或恢复，然后再次创建一个正常会话。
+- 预期：
+  - 失败会话释放权限路由、状态监听、引用计数、内置 MCP 标记和会话终端。
+  - 同一会话被多个浏览器所有者保留时，释放单个引用不会提前清理；最后一个引用释放后才统一清理会话资源。
+  - 已连接且健康的进程在普通创建/加载失败后仍可复用；初始化失败的新替换进程被销毁。
+  - 后续正常会话可成功创建，容量不被幽灵会话占用，也不残留重复通知或永久 loading。
+
+### E-08 空草稿与首条消息会话边界
+
+- 优先级：P1
+- 前置：首次打开 Agentic Chat，历史中没有当前空会话。
+- 操作：观察初始历史，连续新建但不发送草稿，再发送第一条有效内容；另行注入启动预建会话失败后重试首条发送。
+- 预期：
+  - 未使用的启动会话和未发送草稿不出现在可见历史或任务列表中，不产生多个“New Session”空记录。
+  - 第一条有效内容复用可用的启动会话；若启动预建失败，则在首发时惰性创建并正常发送。
+  - 任务或历史记录只在用户内容被接受后出现，首条消息不会创建两个会话或两条用户记录。
+  - 新建空草稿不会改变已有 Active Session 的持久恢复目标。
+
+---
+
+## F. 基础组件与终端回归
+
+### F-01 项目重命名弹窗样式与交互回归
+
+- 优先级：P1
+- 前置：从 Agentic 项目管理菜单打开重命名弹窗。
+- 操作：检查居中、遮罩、外层自定义样式、保存和取消，再重复打开关闭。
+- 预期：
+  - 弹窗保持居中和既有 wrapper 样式，遮罩及按钮交互正常。
+  - 重复打开关闭不出现 React 18 旧渲染 API 警告、重复弹窗或残留遮罩。
+
+### F-02 通知显示、关闭与销毁回归
+
+- 优先级：P1
+- 前置：触发任务历史不可用、创建失败或容量已满等非阻塞通知。
+- 操作：连续触发不同位置/类型通知，关闭单条，再执行全部销毁。
+- 预期：
+  - 通知在正确容器和位置显示，图标、关闭按钮和自动关闭行为正常。
+  - 相同实例可继续追加通知；关闭或销毁后 DOM 容器被清理，不重复显示、不残留空节点。
+  - 控制台不出现 `ReactDOM.render` 已废弃警告。
+
+### F-03 终端视图重复挂载生命周期
+
+- 优先级：P1
+- 前置：打开终端并让其获得焦点。
+- 操作：切换布局或反复显示/隐藏终端，使终端视图卸载并重新挂载；随后聚焦、失焦和打开右键菜单。
+- 预期：
+  - 每次挂载只保留一个有效终端上下文服务，旧上下文被释放。
+  - `terminalFocus` 和终端初始化上下文状态与当前视图一致；聚焦、快捷键和右键菜单继续正常。
+  - 视图尚未挂载或正在切换时不会因空上下文抛错。
+
+---
+
 ## 验收结果记录
 
 | 用例         | 结果   | 缺陷或证据 |
 | ------------ | ------ | ---------- |
 | A-01 ～ A-11 | 待验收 |            |
-| B-01 ～ B-14 | 待验收 |            |
-| C-01 ～ C-15 | 待验收 |            |
+| B-01 ～ B-17 | 待验收 |            |
+| C-01 ～ C-16 | 待验收 |            |
 | D-01 ～ D-02 | 待验收 |            |
+| E-01 ～ E-08 | 待验收 |            |
+| F-01 ～ F-03 | 待验收 |            |
 
 ## 已有自动化入口
 
 - 编辑器固定标签：`test/bdd/editor-pinned-tabs.scenario.md`、`tools/playwright/src/tests/editor.test.ts`。
 - 编辑器固定标签契约：`test/bdd/editor-pinned-tabs-contract.scenario.md`，以及 Editor Group 和 Extension Tab API 聚焦 Jest 测试。
 - Agentic 任务工作台：`test/bdd/acp-chat-agentic-history.scenario.md`、`tools/playwright/src/tests/acp-chat-agentic-task-workbench.test.ts`。
+- Agentic 新草稿、最大化、响应式与会话切换：`test/bdd/acp-chat-layout-aware-new-draft.scenario.md`、`test/bdd/acp-chat-agentic-header-maximize.scenario.md`、`test/bdd/acp-chat-agentic-layout-stress.scenario.md`、`test/bdd/acp-chat-agentic-session-isolation.scenario.md` 及其对应 Playwright/Jest。
 - ACP 排队任务：`test/bdd/acp-chat-agentic-queued-turns.scenario.md`，以及 `packages/ai-native/__test__/browser/chat/acp-chat-queued-turns.test.ts` 等聚焦测试。
 - 输入与工具卡片：`packages/ai-native/__test__/browser/acp-mention-input-behavior.test.tsx`、`packages/ai-native/__test__/browser/chat-tool-render.test.tsx`。
 - 输入、队列失败和工具卡片契约：`test/bdd/acp-chat-interaction-contract.scenario.md`。
+- 流式重载与会话生命周期：`test/bdd/acp-chat-agentic-reload-during-stream.scenario.md`、`test/bdd/acp-agent-session-lifecycle.scenario.md`。
+- 空草稿、首发与会话存储：`test/bdd/acp-chat-session-storage.scenario.md`、`test/bdd/acp-chat-agentic-draft-footer.scenario.md`、`packages/ai-native/__test__/browser/chat/acp-chat-internal.service.test.ts`。
+- 进程池容量与回收：`test/bdd/acp-thread-pool-lru.scenario.md`、`packages/ai-native/__test__/node/acp-agent.service.test.ts`。
+- 基础组件与终端：`test/bdd/ui-overlay-and-terminal-lifecycle-contract.scenario.md` 及对应 Modal、Notification、Terminal Controller Jest 测试。

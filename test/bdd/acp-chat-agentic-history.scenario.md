@@ -4,7 +4,7 @@
 
 **Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** A deterministic ACP `history` fixture with at least two named agents; the default workspace; a second existing workspace; fixture-local registry state containing (a) a current-workspace Project with two Tasks, (b) a second existing Project with one Task, (c) an unavailable Project whose cwd does not exist, (d) ready/running/stopped/error and permission/input-attention Task records, and (e) deterministic failed and deferred Task activation seams for last-selection-wins checks. The Agentic Chat Slot must expose stable Task List resize geometry and the standard Project rename modal. **Workspace mutation:** Fixture setup may populate disposable Project workspaces and Project labels, then returns to the default workspace before the behavior under test. The runtime assertions must not navigate away from that workspace. It must not delete or mutate a user workspace. **Automation status:** Current-workspace lifecycle, persistence, and actionable Task Row state-text replacement on Archive/Unarchive reveal are converted in `tools/playwright/src/tests/acp-chat-agentic-history.test.ts`; rich restore is converted in `tools/playwright/src/tests/acp-chat-agentic-rich-history-restore.test.ts`. The deterministic Task Workbench fixture covers cross-project in-place session activation and Project-group launch in `tools/playwright/src/tests/acp-chat-agentic-task-workbench.test.ts`. Resize, rename, the complete status/attention matrix, failed activation, and last-selection-wins contracts are additionally hardened by focused component/service Jest suites; runtime conversion of non-actionable status rows and the other extended subcases remains pending stable fixture injection.
 
-**Acceptance coverage:** `B-01` through `B-14` from `test/bdd/feat-0710-acceptance.md`.
+**Acceptance coverage:** `B-01` through `B-15` from `test/bdd/feat-0710-acceptance.md`.
 
 ## Given
 
@@ -43,8 +43,9 @@
    - Revealing Archive or Unarchive on hover or keyboard focus overlays the right-side action area without shifting the Task Title.
    - Icon-only actions expose accessible names, tooltips, and visible focus styles; truncated Project and Task text retains full accessible or hover detail.
 5. Resize the Task List with mouse drag and keyboard controls, then narrow and widen the Agentic Chat Slot.
-   - The default width is approximately `244px`, the minimum is `208px`, and the maximum is `min(480px, chatSlotWidth - 360px)`.
+   - The default width is approximately `244px`, the minimum is `208px`, and the maximum is `min(280px, chatSlotWidth - 360px)`.
    - The Main Conversation Area retains at least `360px`; a previously stored wide value clamps after the Chat Slot narrows.
+   - The preferred width is stored for the current browser tab, survives a page remount/reload, and is restored after a temporary narrow-slot clamp without exceeding `280px`.
    - A drag continues when the pointer leaves the narrow handle, and a `ResizeObserver`-driven bound refresh applies before the next drag.
 6. Open Rename from an active Project's management menu.
    - The standard OpenSumi Modal opens with a focused `Project name` input.

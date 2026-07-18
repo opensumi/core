@@ -53,7 +53,7 @@
 - The first tool call renders one tool-call card with the stable tool name.
 - The second tool-call update with the same id updates the existing card instead of adding a duplicate card.
 - The final tool-call result update makes the existing card show a result-ready state and a result section after expansion.
-- The input is disabled only while session creation or streaming is active and becomes editable after success or failure.
+- The input is disabled while session creation, Active Session switching, or streaming is active and becomes editable after the owning operation succeeds or fails; session-switch loading must not be presented as a streaming Stop state.
 - The failure fixture shows a user-visible error, clears stale loading state, preserves the user row, and allows a successful retry without duplicating stale assistant/tool rows.
 - `STATE_AFTER_STREAM` returns `success: true` and remains metadata-only; it may include bounded title metadata, but must not include full prompt/message bodies, assistant text, reasoning text, plan content, tool arguments, tool results, raw ACP JSON, MCP tokens, or permission content.
 - No step uses or expects legacy direct ACP tools such as `acp_sendMessage`, `acp_cancelRequest`, or older camelCase ACP Chat tool names.

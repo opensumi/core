@@ -52,12 +52,10 @@ test.describe('ACP Chat Agentic startup layout', () => {
       await (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {});
     });
 
-    await ensureAgenticLayout(page);
     await waitForAcpChatReady(page);
     await expect(page.locator('.AI-Chat-slot')).not.toContainText('Initializing ACP service');
-    await waitForExplorerViewVisible(page);
 
-    const layout = await page.evaluate(async () => {
+    const initialLayout = await page.evaluate(async () => {
       const modelContext = (navigator as any).modelContext;
       const tools = await modelContext.getTools();
       const toolNames = tools.map((tool: { name: string }) => tool.name).sort();
@@ -95,35 +93,50 @@ test.describe('ACP Chat Agentic startup layout', () => {
         ),
         aiChat: aiChat && { x: aiChat.x, width: aiChat.width, height: aiChat.height },
         workbench: workbench && { x: workbench.x, width: workbench.width, height: workbench.height },
+        viewportWidth: window.innerWidth,
         statusVisible,
         state,
         permission,
       };
     });
+
+    await ensureAgenticLayout(page);
+    await waitForExplorerViewVisible(page);
+    const restoredLayout = await page.evaluate(() => {
+      const aiChat = document.querySelector('.AI-Chat-slot')?.getBoundingClientRect();
+      const workbench = document.querySelector('#workbench-editor')?.getBoundingClientRect();
+      return {
+        aiChat: aiChat && { x: aiChat.x, width: aiChat.width, height: aiChat.height },
+        workbench: workbench && { x: workbench.x, width: workbench.width, height: workbench.height },
+      };
+    });
     const layoutProof = await evidence.saveJson(
       '01-layout-and-tools',
-      layout,
-      'layout geometry and default tool surface',
+      { initialLayout, restoredLayout },
+      'collapsed startup geometry, restored workbench geometry, and default tool surface',
     );
     const layoutScreenshot = await evidence.captureScreenshot(page, '02-agentic-startup', 'Agentic chat startup UI');
 
-    expect(layout.acpTools).toEqual([
+    expect(initialLayout.acpTools).toEqual([
       'acp_chat_get_permission_state',
       'acp_chat_get_session_state',
       'acp_chat_show_chat_view',
     ]);
-    expect(layout.forbiddenTools).toEqual([]);
-    expect(layout.aiChat?.x).toBeLessThan(layout.workbench?.x ?? Number.POSITIVE_INFINITY);
-    expect(layout.aiChat?.width).toBeGreaterThanOrEqual(640);
-    expect(layout.aiChat?.width).toBeLessThanOrEqual(1440);
-    expect(layout.workbench?.width).toBeGreaterThanOrEqual(480);
-    expect(layout.statusVisible).toBe(true);
-    expect(layout.state.success).toBe(true);
-    expect(layout.permission.success).toBe(true);
+    expect(initialLayout.forbiddenTools).toEqual([]);
+    expect(initialLayout.aiChat?.width).toBeGreaterThanOrEqual(initialLayout.viewportWidth - 2);
+    expect(initialLayout.aiChat?.width).toBeLessThanOrEqual(initialLayout.viewportWidth + 2);
+    expect(initialLayout.workbench).toBeUndefined();
+    expect(initialLayout.statusVisible).toBe(true);
+    expect(initialLayout.state.success).toBe(true);
+    expect(initialLayout.permission.success).toBe(true);
+    expect(restoredLayout.aiChat?.x).toBeLessThan(restoredLayout.workbench?.x ?? Number.POSITIVE_INFINITY);
+    expect(restoredLayout.aiChat?.width).toBeGreaterThanOrEqual(640);
+    expect(restoredLayout.aiChat?.width).toBeLessThanOrEqual(1440);
+    expect(restoredLayout.workbench?.width).toBeGreaterThanOrEqual(480);
 
     evidence.recordCriticalPoint({
       id: 'CP1',
-      requirement: 'Agentic AI Chat opens as the leftmost major surface with Explorer and status bar visible.',
+      requirement: 'Agentic AI Chat starts as the only main surface and explicitly restores Explorer/workbench.',
       status: 'pass',
       evidence: [layoutProof, layoutScreenshot].filter(Boolean) as string[],
     });
