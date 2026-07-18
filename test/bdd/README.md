@@ -265,9 +265,9 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-side-entry-filter.scenario.md` | `runtime-ui` | `default` | Agentic side entry filter showing only Explorer and Git while Classic remains unchanged. |
 | `acp-chat-agentic-fallback.scenario.md` | `runtime-ui` | `default` | Usable Agentic chat surface when ACP backend readiness fails. |
 | `acp-layout-switch.scenario.md` | `runtime-ui` | `default` | Agentic/Classic switching, Explorer interop, resize bounds, and read-only state checks. |
-| `editor-pinned-tabs.scenario.md` | `runtime-ui` | `default` | Editor Pinned Tabs core behavior, sticky and wrap reachability, keyboard access, close protection, and persistence. |
-| `acp-chat-agentic-input-send.scenario.md` | `runtime-ui` | `interactive` | Draft input, first send, commands, mentions, attachments, scroll, and recovery. |
-| `acp-chat-agentic-queued-turns.scenario.md` | `runtime-ui` | `interactive` | Queued-turn FIFO, editing, Stop/Resume, Immediate Send, one-shot start failure, Active Session clearing, and focus. |
+| `editor-pinned-tabs.scenario.md` | `runtime-ui` | `default` | Editor Pinned Tabs visible behavior, complete close policy, sticky/wrap reachability, keyboard access, drag/split movement, group locality, and persistence. |
+| `acp-chat-agentic-input-send.scenario.md` | `runtime-ui` | `interactive` | Draft input, first send, commands, mentions, attachments, partial-failure paste, queued-editor shortcuts, focus, expansion, scroll, and recovery. |
+| `acp-chat-agentic-queued-turns.scenario.md` | `runtime-ui` | `interactive` | Queued-turn FIFO, head/non-head editing, Stop/Resume, Immediate Send, one-shot start failure, Clear/Take Back/fast-track, Active Session clearing, and focus. |
 | `acp-chat-agentic-stream-rendering.scenario.md` | `runtime-ui` | `interactive` | Deterministic ACP Agent stream rendering for content, reasoning, plan, tool calls, session state, completion, and recovery. |
 | `acp-chat-agentic-deep-thinking-collapse.scenario.md` | `runtime-ui` | `interactive` | Deep Thinking default collapse, streaming expansion, explicit toggle state, and metadata-only state checks. |
 | `acp-chat-agentic-cancel-stop.scenario.md` | `runtime-ui` | `interactive` | Long-stream stop/cancel behavior, input recovery, and follow-up send. |
@@ -277,14 +277,14 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-config-controls.scenario.md` | `runtime-ui` | `full` | Footer `configOptions` controls with deterministic ACP `stream-rich` fixture coverage for mode, model, thought level, boolean values, returned-state refresh, send-time snapshots, and safe state-summary checks. |
 | `acp-chat-agentic-context-attachments.scenario.md` | `runtime-ui` | `interactive` | File, folder, code, and rule context chips, attachment cleanup, and metadata safety. |
 | `acp-chat-agentic-command-surface.scenario.md` | `runtime-ui` | `interactive` | Slash command discovery, selection, cancellation, send, and metadata parity. |
-| `acp-chat-agentic-reload-during-stream.scenario.md` | `runtime-ui` | `interactive` | Page reload while streaming and recovery to a usable Agentic chat state. |
+| `acp-chat-agentic-reload-during-stream.scenario.md` | `runtime-ui` | `interactive` | Page reload while streaming, same-session continuation, and explicit Stop after reattachment. |
 | `acp-chat-agentic-error-taxonomy.scenario.md` | `runtime-ui` | `interactive` | Create, load, send, auth, disconnected, and config failure visibility and retry. |
 | `acp-chat-agentic-layout-stress.scenario.md` | `runtime-ui` | `interactive` | Long content, tool results, scrolling, resizing, and layout round-trip stability. |
-| `acp-chat-agentic-keyboard-a11y.scenario.md` | `runtime-ui` | `interactive` | Keyboard-only input, commands, history, dialogs, and tool-card interaction. |
+| `acp-chat-agentic-keyboard-a11y.scenario.md` | `runtime-ui` | `interactive` | Keyboard-only input, commands, history, dialogs, queued actions, and tool-card disclosure/accessibility isolation. |
 | `acp-chat-agentic-debug-log-from-chat.scenario.md` | `runtime-ui` | `full` | Debug log viewer correlation and controls after a chat stream; redaction audit is blocked until product support exists. |
 | `acp-chat-agentic-theme-persistence.scenario.md` | `runtime-ui` | `default` | Theme, Agentic layout preference, geometry, and visual usability persistence. |
 | `acp-chat-agentic-header-maximize.scenario.md` | `runtime-ui` | `interactive` | Chat header active-session title and maximize action collapsing workbench/editor/Explorer while keeping AI Chat visible. |
-| `acp-chat-agentic-history.scenario.md` | `runtime-ui` | `interactive` | New Chat, persisted history, session switching, and permission badges. |
+| `acp-chat-agentic-history.scenario.md` | `runtime-ui` | `interactive` | Agentic Task Workbench presentation, resizing, Project naming/launch, session-first activation, failure/race safety, status/attention, archive, and layout boundaries. |
 | `acp-chat-agentic-layout-interop.scenario.md` | `runtime-ui` | `interactive` | Explorer/editor interop, resize, reload, and Agentic/Classic round trip. |
 | `available-commands.scenario.md` | `mcp-contract` | `interactive/full` | Command metadata through profile-granted `acp_chat`. |
 | `webmcp-capability-surface.scenario.md` | `mcp-contract` | `interactive/full` | Browser and MCP surfaces expose the same canonical tool names. |
@@ -295,17 +295,19 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `error-handling.scenario.md` | `mcp-contract` | `full` | Capability boundaries, invalid inputs, and redacted structured errors. |
 | `webmcp-ide-capability-groups.scenario.md` | `mcp-contract` | `full` | Workspace, search, diagnostics, file, terminal, and editor groups. |
 | `terminal-file-tree-refresh.scenario.md` | `runtime-ui` | `full` | Terminal-created and terminal-deleted files refresh Explorer automatically. |
-| `acp-agent-session-lifecycle.scenario.md` | `node-contract` | `default` | Node-side session creation, loading, streaming, cancellation, disposal, and pool cleanup. |
+| `editor-pinned-tabs-contract.scenario.md` | `node-contract` | `default` | Pinned-tab restoration edges, protected close policy, movement failure atomicity, group locality, and VS Code Tab API synchronization. |
+| `acp-chat-interaction-contract.scenario.md` | `node-contract` | `interactive` | Queued-turn failure/race recovery, IME and editor keyboard semantics, paste lifetime safety, and tool disclosure accessibility. |
+| `acp-agent-session-lifecycle.scenario.md` | `node-contract` | `default` | Node-owned session streaming across browser detach/reattach, cancellation, disposal, and pool cleanup. |
 | `acp-session-advanced-operations.scenario.md` | `node-contract` | `default` | Config option, fork, resume, close, model selection, and available-mode operations. |
 | `acp-thread-pool-lru.scenario.md` | `node-contract` | `default` | Thread-pool LRU recycling, evicted-session reload, race handling, and failure diagnostics. |
 | `acp-agent-protocol-client.scenario.md` | `node-contract` | `default` | ACP protocol handshake, status machine, notification filtering, and entry conversion. |
 | `acp-permission-routing.scenario.md` | `node-contract` | `full` | Node permission routing and browser permission bridge lifecycle. |
 | `acp-process-config.scenario.md` | `node-contract` | `default` | Browser config merge and node spawn config resolution. |
 | `acp-client-handlers.scenario.md` | `node-contract` | `default` | ACP client file and terminal handlers exposed to the agent process. |
-| `acp-chat-session-storage.scenario.md` | `node-contract` | `default` | Browser chat session provider, activation, fallback, command propagation, and permission cleanup. |
+| `acp-chat-session-storage.scenario.md` | `node-contract` | `default` | Browser session activation, reload reattachment, snapshot/live restoration, fallback, and permission cleanup. |
 | `acp-debug-log.scenario.md` | `runtime-ui` | `full` | Protocol trace store, entry bounds, raw viewer controls, and blocked redaction audit. |
 | `acp-error-and-recovery.scenario.md` | `node-contract` | `full` | Structured failures and recovery across node, MCP, and browser UI boundaries. |
-| `acp-rpc-bridge-and-status.scenario.md` | `node-contract` | `default` | Browser/node WebMCP RPC definitions, execution, and thread status synchronization. |
+| `acp-rpc-bridge-and-status.scenario.md` | `node-contract` | `default` | Browser/node RPC definitions, existing-session attachment, execution, and thread status synchronization. |
 
 ## Evidence and Reports
 

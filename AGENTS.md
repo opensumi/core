@@ -32,6 +32,7 @@ lsof -nP -iTCP:8000 -sTCP:LISTEN || true
 
 ## Architecture Boundaries
 
+- Follow the durable agent-facing design rules in `docs/agent-design-guidelines.md` before making high-risk changes to public APIs, runtime boundaries, layout/workbench behavior, persisted state, protocol surfaces, extension-facing behavior, or shared services.
 - Respect the `browser`, `node`, and `common` split:
   - `browser` code must not import `node` runtime modules.
   - `node` code must not import `browser` runtime modules.
@@ -92,6 +93,20 @@ yarn test:ui-report
 - For cross-package changes, check API compatibility, import boundaries, and whether dependent packages need updated tests.
 - For UI/layout reviews, check real runtime behavior, not just component snapshots.
 - For protocol, MCP, WebMCP, or extension-facing changes, check naming stability, capability gating, backwards compatibility, and log/token safety.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are local Markdown files under `.scratch/`; never publish issue content to a remote tracker. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Local issue status uses the canonical triage vocabulary. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a multi-context repository. See `docs/agents/domain.md` and `CONTEXT-MAP.md`.
 
 ## Current Focus Appendix
 

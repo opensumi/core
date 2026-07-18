@@ -103,6 +103,9 @@ export interface ISessionProvider {
   /** Observe an already loaded ACP session without starting another prompt. */
   attachSession?(sessionId: string): Promise<SumiReadableStream<IChatProgress> | undefined>;
 
+  /** Cancel an existing ACP session, including one restored after browser reload. */
+  cancelSession?(sessionId: string): Promise<void>;
+
   /** Convert the first attachment snapshot into the browser session model. */
   restoreSessionSnapshot?(sessionId: string, snapshot: IChatSessionSnapshot): ISessionModel | undefined;
 

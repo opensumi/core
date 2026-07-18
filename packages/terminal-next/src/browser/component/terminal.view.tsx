@@ -69,7 +69,7 @@ export default () => {
       controller.initContextKey(wrapperRef.current);
       controller.viewReady.resolve();
     }
-  }, [wrapperRef.current]);
+  }, []);
 
   return (
     <div

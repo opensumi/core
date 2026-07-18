@@ -773,6 +773,9 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
       icon: 'image',
       title: localize('aiNative.chat.imageUpload'),
       onClick: () => {
+        if (disabled) {
+          return;
+        }
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -883,16 +886,20 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
     modeOptions,
     modelOptions,
     aiNativeConfigService.capabilities.supportsAgentMode,
+    disabled,
     isQueued,
     preferenceService,
   ]);
 
   const handleStop = useCallback(() => {
+    if (disabled) {
+      return;
+    }
     if (props.turnActions) {
       return props.turnActions.stop();
     }
     return aiChatService.cancelRequest();
-  }, [aiChatService, props.turnActions]);
+  }, [aiChatService, disabled, props.turnActions]);
 
   const handleSend = useCallback(
     async (content: string, option?: { model: string; [key: string]: any }) => {
@@ -1018,6 +1025,9 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
 
   const handleImageUpload = useCallback(
     async (files: File[]) => {
+      if (disabled) {
+        return;
+      }
       const uploadGeneration = uploadGenerationRef.current;
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
@@ -1067,33 +1077,42 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         );
       }
     },
-    [chatFeatureRegistry, inputHandle, messageService],
+    [chatFeatureRegistry, disabled, inputHandle, messageService],
   );
 
   const handleModeChange = useCallback(
     async (modeId: string) => {
+      if (disabled) {
+        return;
+      }
       try {
         await aiChatService.setSessionMode(modeId);
       } catch (error) {
         messageService.error('Failed to switch mode: ' + (error instanceof Error ? error.message : String(error)));
       }
     },
-    [aiChatService, messageService],
+    [aiChatService, disabled, messageService],
   );
 
   const handleModelChange = useCallback(
     async (modelId: string) => {
+      if (disabled) {
+        return;
+      }
       try {
         await aiChatService.setSessionModel(modelId);
       } catch (error) {
         messageService.error('Failed to switch model: ' + (error instanceof Error ? error.message : String(error)));
       }
     },
-    [aiChatService, messageService],
+    [aiChatService, disabled, messageService],
   );
 
   const handleConfigOptionChange = useCallback(
     async (configId: string, value: boolean | string) => {
+      if (disabled) {
+        return;
+      }
       try {
         await aiChatService.setSessionConfigOption(configId, value);
       } catch (error) {
@@ -1102,20 +1121,33 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         );
       }
     },
-    [aiChatService, messageService],
+    [aiChatService, disabled, messageService],
   );
 
-  const handleDeleteImage = useCallback((index: number) => {
-    draftGenerationRef.current += 1;
-    setImages((currentImages) => {
-      const nextImages = currentImages.filter((_, i) => i !== index);
-      imagesRef.current = nextImages;
-      return nextImages;
-    });
-  }, []);
+  const handleDeleteImage = useCallback(
+    (index: number) => {
+      if (disabled) {
+        return;
+      }
+      draftGenerationRef.current += 1;
+      setImages((currentImages) => {
+        const nextImages = currentImages.filter((_, i) => i !== index);
+        imagesRef.current = nextImages;
+        propsRef.current.onDraftChange?.({
+          ...inputHandle.getDraft(),
+          images: nextImages.map((image) => image.toString()),
+        });
+        return nextImages;
+      });
+    },
+    [disabled, inputHandle],
+  );
 
   const handleSlashSelect = useCallback(
     (nameWithSlash: string) => {
+      if (disabled) {
+        return;
+      }
       const commandModel = chatFeatureRegistry.getSlashCommandBySlashName(nameWithSlash);
       if (commandModel) {
         props.setTheme(nameWithSlash);
@@ -1123,41 +1155,48 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         props.setCommand(commandModel.command!);
       }
     },
-    [chatFeatureRegistry],
+    [chatFeatureRegistry, disabled],
   );
 
   const handleUserInput = useCallback(() => {
+    if (disabled) {
+      return;
+    }
     draftGenerationRef.current += 1;
     if (!isQueued) {
       props.turnActions?.invalidateFastTrack();
     }
     propsRef.current.onDraftChange?.(inputHandle.getDraft());
-  }, [inputHandle, isQueued, props.turnActions]);
+  }, [disabled, inputHandle, isQueued, props.turnActions]);
 
-  const toggleExpanded = useCallback(
-    () => commandService.executeCommand(AI_CHAT_INPUT_TOGGLE_EXPANDED.id),
-    [commandService],
-  );
+  const toggleExpanded = useCallback(() => {
+    if (!disabled) {
+      return commandService.executeCommand(AI_CHAT_INPUT_TOGGLE_EXPANDED.id);
+    }
+  }, [commandService, disabled]);
 
   const handleImmediateSend = useCallback(() => {
     const draft = inputHandle.getDraft();
-    if (props.immediateSendDisabled || !props.onImmediateSend || !hasAcpChatSendPayload(draft)) {
+    if (disabled || props.immediateSendDisabled || !props.onImmediateSend || !hasAcpChatSendPayload(draft)) {
       return;
     }
     return submitDraft(draft.message, undefined, 'immediate');
-  }, [inputHandle, props.immediateSendDisabled, props.onImmediateSend, submitDraft]);
+  }, [disabled, inputHandle, props.immediateSendDisabled, props.onImmediateSend, submitDraft]);
 
   const handleEscape = useCallback(() => {
+    if (disabled) {
+      return;
+    }
     if (isQueued) {
       return props.onCancelEdit?.();
     }
     if (loading) {
       return handleStop();
     }
-  }, [handleStop, isQueued, loading, props.onCancelEdit]);
+  }, [disabled, handleStop, isQueued, loading, props.onCancelEdit]);
 
   const handleEmptyArrowUp = useCallback(() => {
-    if (isQueued || hasAcpChatSendPayload(inputHandle.getDraft())) {
+    if (disabled || isQueued || hasAcpChatSendPayload(inputHandle.getDraft())) {
       return false;
     }
     const turn = props.turnActions?.takeBackLastQueuedTurn();
@@ -1167,14 +1206,14 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
     inputHandle.restoreDraft?.(turn);
     inputHandle.focus?.();
     return true;
-  }, [inputHandle, isQueued, props.turnActions]);
+  }, [disabled, inputHandle, isQueued, props.turnActions]);
 
   const handleEmptySubmit = useCallback(() => {
-    if (hasAcpChatSendPayload(inputHandle.getDraft())) {
+    if (disabled || hasAcpChatSendPayload(inputHandle.getDraft())) {
       return;
     }
     void props.turnActions?.fastTrack();
-  }, [inputHandle, props.turnActions]);
+  }, [disabled, inputHandle, props.turnActions]);
 
   return (
     <div
@@ -1185,7 +1224,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
       )}
     >
       {!isQueued && (
-        <div className={styles.expand_icon} onClick={toggleExpanded}>
+        <div className={styles.expand_icon} onClick={disabled ? undefined : toggleExpanded}>
           <Popover
             id={'ai_chat_input_expand'}
             title={localize(isExpanded ? 'aiNative.chat.expand.unfullscreen' : 'aiNative.chat.expand.fullescreen')}
@@ -1195,7 +1234,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           </Popover>
         </div>
       )}
-      {images.length > 0 && <ImagePreviewer images={images} onDelete={handleDeleteImage} />}
+      {images.length > 0 && <ImagePreviewer disabled={disabled} images={images} onDelete={handleDeleteImage} />}
       <div className={styles.chat_input_body}>
         <MentionInput
           ref={mentionInputRef}
@@ -1214,6 +1253,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           hasSendPayload={() => hasAcpChatSendPayload(inputHandle.getDraft())}
           onToggleExpanded={isQueued ? undefined : toggleExpanded}
           onUserInput={handleUserInput}
+          disabled={disabled}
           loading={loading}
           labelService={labelService}
           workspaceService={workspaceService}
@@ -1236,10 +1276,10 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
       </div>
       {isQueued && (
         <div className='acp-queued-editor-actions' data-testid='acp-queued-editor-actions'>
-          <button onClick={props.onCancelEdit} type='button'>
+          <button disabled={disabled} onClick={props.onCancelEdit} type='button'>
             {localize('aiNative.chat.queue.cancelEdit', 'Cancel')}
           </button>
-          <button disabled={props.immediateSendDisabled} onClick={handleImmediateSend} type='button'>
+          <button disabled={disabled || props.immediateSendDisabled} onClick={handleImmediateSend} type='button'>
             {localize('aiNative.chat.queue.immediate', 'Immediate Send')}
           </button>
         </div>
@@ -1249,9 +1289,11 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
 });
 
 const ImagePreviewer = ({
+  disabled,
   images,
   onDelete,
 }: {
+  disabled?: boolean;
   images: Array<DataContent | URL>;
   onDelete: (index: number) => void;
 }) => (
@@ -1260,7 +1302,7 @@ const ImagePreviewer = ({
       {images.map((image, index) => (
         <div key={index} className={styles.thumbnail}>
           <Image src={image.toString()} />
-          <button onClick={() => onDelete(index)} className={styles.delete_button}>
+          <button disabled={disabled} onClick={() => onDelete(index)} className={styles.delete_button}>
             <Icon iconClass='codicon codicon-close' />
           </button>
         </div>

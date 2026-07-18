@@ -1,3 +1,5 @@
+@import '@opensumi/ide-core-browser/lib/style/variable.less';
+
 .task_list {
   position: relative;
   display: flex;
@@ -5,7 +7,7 @@
   flex-direction: column;
   width: var(--agentic-task-list-width, 244px);
   min-width: 208px;
-  max-width: var(--agentic-task-list-max-width, 480px);
+  max-width: var(--agentic-task-list-max-width, 280px);
   min-height: 0;
   overflow: hidden;
   border-right: 1px solid var(--panel-border);
@@ -55,12 +57,12 @@
 .attention_count {
   margin-left: 6px;
   color: var(--editorWarning-foreground, #cca700);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .launch_menu_group {
   position: relative;
-  margin-left: auto;
+  flex: 0 0 22px;
 }
 
 .launch_button,
@@ -87,7 +89,7 @@
   background: var(--button-background);
   color: var(--button-foreground);
   cursor: pointer;
-  font-size: 11px;
+  font-size: 12px;
 
   &:hover:not(:disabled) {
     background: var(--button-hoverBackground);
@@ -95,7 +97,7 @@
 
   &:focus-visible {
     outline: 1px solid var(--focusBorder);
-    outline-offset: 1px;
+    outline-offset: -1px;
   }
 
   &:disabled {
@@ -108,8 +110,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   padding: 0;
   border: 0;
   border-radius: 3px;
@@ -117,9 +119,13 @@
   color: var(--descriptionForeground);
   cursor: pointer;
 
-  &:hover:not(:disabled),
+  &:hover:not(:disabled) {
+    background: var(--list-hoverBackground);
+  }
+
   &:focus-visible {
-    outline: none;
+    outline: 1px solid var(--focusBorder);
+    outline-offset: -1px;
     background: var(--list-hoverBackground);
   }
 
@@ -163,7 +169,7 @@
 .launch_menu_label {
   padding: 5px 7px;
   color: var(--descriptionForeground);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -178,11 +184,16 @@
   background: transparent;
   color: var(--menu-foreground, var(--foreground));
   cursor: pointer;
+  font-size: 12px;
   text-align: left;
 
-  &:hover:not(:disabled),
+  &:hover:not(:disabled) {
+    background: var(--list-hoverBackground);
+  }
+
   &:focus-visible {
-    outline: none;
+    outline: 1px solid var(--focusBorder);
+    outline-offset: -1px;
     background: var(--list-hoverBackground);
   }
 
@@ -203,7 +214,7 @@
   margin-left: auto;
   padding-left: 8px;
   color: var(--disabledForeground);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .search {
@@ -221,6 +232,12 @@
 
   &:focus-within {
     border-color: var(--focusBorder);
+    outline: 1px solid var(--focusBorder);
+    outline-offset: -1px;
+  }
+
+  > :global(.codicon) {
+    font-size: 16px;
   }
 
   input {
@@ -246,7 +263,7 @@
 
 .project_group,
 .archived_project_group {
-  margin: 4px 5px 0;
+  margin: 6px 5px 0;
 }
 
 .project_header {
@@ -254,24 +271,62 @@
   display: flex;
   align-items: center;
   min-width: 0;
-  height: 24px;
-  padding: 0 6px;
+  height: 22px;
+  padding: 0;
   color: var(--descriptionForeground);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
 }
 
 .project_chevron {
-  flex: 0 0 14px;
-  width: 14px;
+  flex: 0 0 20px;
+  width: 20px;
   color: var(--descriptionForeground);
-  font-size: 13px;
+  font-size: 16px;
+}
+
+.project_toggle,
+.project_toggle_placeholder {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+  height: 22px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--descriptionForeground);
+  font: inherit;
+  text-align: left;
+}
+
+.project_toggle {
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--kt-tree-hoverBackground, var(--list-hoverBackground));
+    color: var(--foreground);
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--focusBorder);
+    outline-offset: -1px;
+    background: var(--kt-tree-hoverBackground, var(--list-hoverBackground));
+    color: var(--foreground);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
 }
 
 .project_label {
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   color: var(--descriptionForeground);
+  font-size: 12px;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -279,7 +334,7 @@
 .project_count {
   margin-left: 6px;
   color: var(--disabledForeground);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 400;
 }
 
@@ -299,14 +354,22 @@
   background: transparent;
   color: var(--icon-foreground);
   cursor: pointer;
-  font-size: 14px;
   line-height: 1;
 
-  &:hover:not(:disabled),
-  &:focus-visible {
-    outline: none;
+  &:hover:not(:disabled) {
     background: var(--toolbar-hoverBackground, var(--list-hoverBackground));
     color: var(--foreground);
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--focusBorder);
+    outline-offset: -1px;
+    background: var(--toolbar-hoverBackground, var(--list-hoverBackground));
+    color: var(--foreground);
+  }
+
+  > :global(.codicon) {
+    font-size: 16px;
   }
 
   &:disabled {
@@ -324,7 +387,6 @@
 }
 
 .project_new_task {
-  margin-left: auto;
   opacity: 0.72;
 
   &:hover:not(:disabled),
@@ -338,8 +400,12 @@
   opacity: 0.72;
 }
 
-.project_header:hover .project_manage,
-.project_header:focus-within .project_manage {
+.project_group:hover .project_manage,
+.project_group:focus-within .project_manage {
+  opacity: 1;
+}
+
+.project_manage_open {
   opacity: 1;
 }
 
@@ -367,11 +433,16 @@
   color: var(--menu-foreground, var(--foreground));
   cursor: pointer;
   font: inherit;
+  font-size: 12px;
   text-align: left;
 
-  &:hover,
+  &:hover {
+    background: var(--list-hoverBackground);
+  }
+
   &:focus-visible {
-    outline: none;
+    outline: 1px solid var(--focusBorder);
+    outline-offset: -1px;
     background: var(--list-hoverBackground);
   }
 }
@@ -422,32 +493,37 @@
   align-items: center;
   gap: 6px;
   width: 100%;
-  height: 25px;
-  min-height: 25px;
+  height: 22px;
+  min-height: 22px;
   padding: 0 6px;
   border: 0;
   border-radius: 4px;
   background: transparent;
   color: var(--foreground);
   cursor: pointer;
-  font-size: 12px;
+  font-size: @base-font-size;
   text-align: left;
 
   &::before {
     position: absolute;
-    top: 4px;
-    bottom: 4px;
+    top: 2px;
+    bottom: 2px;
     left: 0;
     display: none;
     width: 2px;
-    border-radius: 2px;
+    border-radius: 1px;
     background: var(--focusBorder);
     content: '';
   }
 
-  &:hover:not(:disabled),
+  &:hover:not(:disabled) {
+    background: var(--kt-tree-hoverBackground, var(--list-hoverBackground));
+    color: var(--kt-tree-hoverForeground, var(--foreground));
+  }
+
   &:focus-visible {
-    outline: none;
+    outline: 1px solid var(--list-focusOutline, var(--focusBorder));
+    outline-offset: -1px;
     background: var(--kt-tree-hoverBackground, var(--list-hoverBackground));
     color: var(--kt-tree-hoverForeground, var(--foreground));
   }
@@ -459,13 +535,21 @@
 }
 
 .task_row_selected {
-  outline: 1px solid var(--list-focusOutline, var(--focusBorder));
-  outline-offset: -1px;
-  background: var(--kt-tree-inactiveSelectionBackground, var(--list-activeSelectionBackground));
-  color: var(--kt-tree-inactiveSelectionForeground, var(--list-activeSelectionForeground));
+  background: var(--list-activeSelectionBackground, var(--kt-tree-inactiveSelectionBackground));
+  color: var(--list-activeSelectionForeground, var(--kt-tree-inactiveSelectionForeground));
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    background: var(--list-activeSelectionBackground, var(--kt-tree-inactiveSelectionBackground));
+    color: var(--list-activeSelectionForeground, var(--kt-tree-inactiveSelectionForeground));
+  }
 
   &::before {
     display: block;
+  }
+
+  .task_meta {
+    color: var(--list-activeSelectionForeground, var(--kt-tree-inactiveSelectionForeground));
   }
 }
 
@@ -479,15 +563,51 @@
 
 .task_title {
   color: inherit;
-  font-size: 12px;
-  line-height: 25px;
+  font-size: @base-font-size;
+  line-height: 22px;
 }
 
 .task_meta {
-  max-width: 72px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 92px;
+  font-size: 12px;
+  line-height: 22px;
+
+  > :global(.codicon) {
+    flex: 0 0 auto;
+    font-size: 14px;
+  }
+
+  > span:last-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.task_meta_information {
+  color: var(--editorInfo-foreground, var(--focusBorder));
+}
+
+.task_meta_secondary {
   color: var(--descriptionForeground);
-  font-size: 11px;
-  line-height: 25px;
+}
+
+.task_meta_error {
+  color: var(--editorError-foreground, #f14c4c);
+}
+
+.task_meta_warning {
+  color: var(--editorWarning-foreground, #cca700);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task_meta_information > :global(.codicon-modifier-spin) {
+    animation: none;
+  }
 }
 
 .unread {
@@ -513,18 +633,35 @@
   background: var(--panel-background);
   color: var(--icon-foreground);
   cursor: pointer;
-  font-size: 14px;
   opacity: 0;
   pointer-events: none;
 
-  &:hover,
-  &:focus-visible {
+  &:hover {
     opacity: 1;
     pointer-events: auto;
-    outline: none;
     background: var(--toolbar-hoverBackground, var(--list-hoverBackground));
     color: var(--foreground);
   }
+
+  &:focus-visible {
+    opacity: 1;
+    pointer-events: auto;
+    outline: 1px solid var(--focusBorder);
+    outline-offset: -1px;
+    background: var(--toolbar-hoverBackground, var(--list-hoverBackground));
+    color: var(--foreground);
+  }
+
+  > :global(.codicon) {
+    font-size: 16px;
+  }
+}
+
+.task_row_selected ~ .archive_button,
+.task_row_selected ~ .archive_button:hover,
+.task_row_selected ~ .archive_button:focus-visible {
+  background: var(--list-activeSelectionBackground, var(--kt-tree-inactiveSelectionBackground));
+  color: var(--list-activeSelectionForeground, var(--kt-tree-inactiveSelectionForeground));
 }
 
 .task_row_wrap:hover .archive_button,
@@ -555,18 +692,27 @@
   align-items: center;
   gap: 4px;
   width: 100%;
-  height: 30px;
+  height: 22px;
   padding: 0 10px;
   background: transparent;
   color: var(--descriptionForeground);
   cursor: pointer;
-  font-size: 11px;
+  font-size: 12px;
   text-align: left;
 
-  &:hover,
-  &:focus-visible {
-    outline: none;
+  &:hover {
     color: var(--foreground);
     background: var(--kt-tree-hoverBackground, var(--list-hoverBackground));
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--focusBorder);
+    outline-offset: -1px;
+    color: var(--foreground);
+    background: var(--kt-tree-hoverBackground, var(--list-hoverBackground));
+  }
+
+  > :global(.codicon) {
+    font-size: 16px;
   }
 }

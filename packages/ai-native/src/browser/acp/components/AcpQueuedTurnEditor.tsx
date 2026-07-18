@@ -12,6 +12,7 @@ export const AcpQueuedTurnEditor = ({
   onCancel,
   onImmediateSend,
   onReady,
+  disabled,
   immediateSendDisabled,
 }: QueuedTurnEditorProps) => {
   const appConfig = useInjectable<AppConfig>(AppConfig);
@@ -36,6 +37,7 @@ export const AcpQueuedTurnEditor = ({
       onCancelEdit={onCancel}
       onImmediateSend={onImmediateSend}
       onInputHandleReady={onReady}
+      disabled={disabled}
       immediateSendDisabled={immediateSendDisabled}
     />
   );

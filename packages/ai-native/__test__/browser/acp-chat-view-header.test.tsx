@@ -253,6 +253,13 @@ import { AIChatViewACPContent, DefaultChatViewHeaderACP } from '../../src/browse
 const disposable = () => ({ dispose: jest.fn() });
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+if (!HTMLElement.prototype.scrollIntoView) {
+  Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+    configurable: true,
+    value: jest.fn(),
+  });
+}
+
 function createDeferred<T>() {
   let resolve!: (value: T | PromiseLike<T>) => void;
   const promise = new Promise<T>((resolvePromise) => {
@@ -355,6 +362,7 @@ function createMockServices({
   session,
   sessions,
   chatViewHeaderRender,
+  chatWelcomePageRender,
   activeInputCapabilities = ['rich-queued-edit'],
   withQueuedEditor = true,
 }: {
@@ -370,6 +378,7 @@ function createMockServices({
   session?: ReturnType<typeof createMockSession> | null;
   sessions?: ReturnType<typeof createMockSession>[];
   chatViewHeaderRender?: any;
+  chatWelcomePageRender?: any;
   activeInputCapabilities?: string[];
   withQueuedEditor?: boolean;
 } = {}) {
@@ -380,6 +389,7 @@ function createMockServices({
   const defaultAgentTypeListeners = new Set<(change: { newValue: string }) => void>();
   const agentConfigListeners = new Set<(change: { newValue: typeof agentConfigs }) => void>();
   const cancelRequestListeners = new Set<() => void>();
+  const sessionLoadingListeners = new Set<(loading: boolean) => void>();
   let currentPanelLayout = panelLayout;
   let currentDefaultAgentType = defaultAgentType;
   let currentAgentConfigs = agentConfigs;
@@ -395,6 +405,7 @@ function createMockServices({
   const mainInputSetExpanded = jest.fn();
   const queuedEditorFocus = jest.fn();
   const aiChatService = {
+    isSessionLoading: false,
     sessionModel: currentSession,
     activateSession: jest.fn(),
     cancelRequest: jest.fn(() => {
@@ -438,7 +449,10 @@ function createMockServices({
     }),
     onChangeSession: jest.fn(() => disposable()),
     onSessionModelChange: jest.fn(() => disposable()),
-    onSessionLoadingChange: jest.fn(() => disposable()),
+    onSessionLoadingChange: jest.fn((listener: (loading: boolean) => void) => {
+      sessionLoadingListeners.add(listener);
+      return { dispose: jest.fn(() => sessionLoadingListeners.delete(listener)) };
+    }),
     sendRequest: sendRequest || jest.fn(),
     setLatestRequestId: jest.fn(),
     updateInputDraft: jest.fn(),
@@ -644,6 +658,7 @@ function createMockServices({
     },
     chatRenderRegistry: {
       chatViewHeaderRender,
+      chatWelcomePageRender,
     },
     commandService: {
       executeCommand: jest.fn(),
@@ -776,6 +791,10 @@ function createMockServices({
     mainInputRestoreDraft,
     mainInputSetExpanded,
     queuedEditorFocus,
+    setSessionLoadingForTest: (loading: boolean) => {
+      aiChatService.isSessionLoading = loading;
+      sessionLoadingListeners.forEach((listener) => listener(loading));
+    },
   };
 }
 
@@ -1100,12 +1119,21 @@ describe('ACP chat view headers', () => {
       }),
       chatViewHeaderRender: AcpChatViewHeader,
     });
+    services.agenticTaskRegistry.getTask.mockResolvedValue({
+      sessionId: 'acp:current',
+      projectId: 'project-current',
+      agentId: 'agent-a',
+      title: 'UX validation task for Agent Layout',
+      createdAt: 1,
+      archived: false,
+      unread: false,
+    });
     installInjectableMocks(services);
 
     await renderHeader(React.createElement(AIChatViewACPContent));
 
     expect(container.querySelector('[data-testid="agentic-chat-panel-header-title"]')?.textContent).toBe(
-      'ACP-specific server title',
+      'UX validation task for Agent Layout',
     );
     expect(container.querySelector('[data-testid="agentic-task-list"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="acp-chat-history-inline"]')).toBeNull();
@@ -1139,6 +1167,57 @@ describe('ACP chat view headers', () => {
 
     expect(services.panelLayoutService.toggleAgenticWorkbenchVisibility).toHaveBeenCalledWith(true);
     expect(getAction()?.className).toBe('icon-fullescreen');
+  });
+
+  it('replaces the ACP message area with an accessible loading state while switching sessions', async () => {
+    const services = createMockServices({ panelLayout: 'agentic' });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    await act(async () => {
+      services.setSessionLoadingForTest(true);
+    });
+
+    const loadingState = container.querySelector('[data-testid="acp-session-loading"]');
+    expect(loadingState?.getAttribute('role')).toBe('status');
+    expect(loadingState?.textContent).toBe('Loading chat…');
+    expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
+    expect(services.getLatestChatInputProps()).toEqual(
+      expect.objectContaining({
+        disabled: true,
+        loading: false,
+        disableModelSelector: true,
+      }),
+    );
+
+    await act(async () => {
+      services.setSessionLoadingForTest(false);
+    });
+
+    expect(container.querySelector('[data-testid="acp-session-loading"]')).toBeNull();
+    expect(services.getLatestChatInputProps()).toEqual(
+      expect.objectContaining({
+        disabled: false,
+        loading: false,
+      }),
+    );
+  });
+
+  it('keeps the Agentic welcome page without rendering the Task selection guidance', async () => {
+    const services = createMockServices({
+      panelLayout: 'agentic',
+      session: createMockSession({ messages: [] }),
+      chatWelcomePageRender: () => React.createElement('div', { 'data-testid': 'agentic-welcome-page' }, 'Welcome'),
+    });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    expect(container.querySelector('[data-testid="agentic-welcome-page"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-empty-state"]')).toBeNull();
+    expect(container.textContent).not.toContain('Select a task or create a new one');
+    expect(container.textContent).not.toContain('Choose a task from Task List, or use New Task to start one.');
   });
 
   it('preselects the active Agent in the header New Task menu', async () => {

@@ -157,13 +157,20 @@ export function AgenticChatPanelHeader({
   sessionModel?: ChatModel;
 }) {
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
+  const registry = useInjectable<AgenticTaskRegistryService>(AgenticTaskRegistryService);
   const [panelLayout, setPanelLayout] = React.useState(() => panelLayoutService.getLayoutMode());
   const [title, setTitle] = React.useState(() => getAgenticChatPanelTitle(sessionModel, preferSessionTitle));
   const [executionContext, setExecutionContext] = React.useState<AgenticProjectRecord>();
+  const titleRefreshVersionRef = React.useRef(0);
 
-  const refreshTitle = React.useCallback(() => {
-    setTitle(getAgenticChatPanelTitle(sessionModel, preferSessionTitle));
-  }, [preferSessionTitle, sessionModel]);
+  const refreshTitle = React.useCallback(async () => {
+    const refreshVersion = ++titleRefreshVersionRef.current;
+    const task = sessionModel?.sessionId ? await registry.getTask(sessionModel.sessionId) : undefined;
+    if (refreshVersion !== titleRefreshVersionRef.current) {
+      return;
+    }
+    setTitle(task?.title?.slice(0, MAX_TITLE_LENGTH) || getAgenticChatPanelTitle(sessionModel, preferSessionTitle));
+  }, [preferSessionTitle, registry, sessionModel]);
 
   React.useEffect(() => {
     setPanelLayout(panelLayoutService.getLayoutMode());
@@ -175,11 +182,16 @@ export function AgenticChatPanelHeader({
   }, [panelLayoutService]);
 
   React.useEffect(() => {
-    refreshTitle();
-    const disposable = sessionModel?.history.onMessageChange(refreshTitle);
+    void refreshTitle();
+    const messageDisposable = sessionModel?.history.onMessageChange(() => void refreshTitle());
+    const registryDisposable = registry.onDidChange(() => void refreshTitle());
 
-    return () => disposable?.dispose();
-  }, [refreshTitle, sessionModel]);
+    return () => {
+      titleRefreshVersionRef.current += 1;
+      messageDisposable?.dispose();
+      registryDisposable.dispose();
+    };
+  }, [refreshTitle, registry, sessionModel]);
 
   if (panelLayout !== 'agentic') {
     return null;

@@ -30,6 +30,8 @@ const ACP_LOAD_SESSION_FALLBACK_MESSAGE =
   'Unable to open this chat history. A new chat draft is ready, and a session will be created when you send a message.';
 const ACP_LOAD_SESSION_NOT_FOUND_MESSAGE =
   'This chat history is no longer available. A new chat draft is ready, and a session will be created when you send a message.';
+const ACP_LOAD_TASK_FALLBACK_MESSAGE = 'Unable to open this task history. The previous Task remains active.';
+const ACP_LOAD_TASK_NOT_FOUND_MESSAGE = 'This task history is no longer available. The previous Task remains active.';
 
 function getReadableErrorMessage(error: unknown): string {
   if (error instanceof Error) {
@@ -66,6 +68,14 @@ export function formatAcpLoadSessionFallbackMessage(error: unknown): string {
   }
 
   return ACP_LOAD_SESSION_FALLBACK_MESSAGE;
+}
+function formatAcpLoadTaskFallbackMessage(error: unknown): string {
+  const errorMessage = getReadableErrorMessage(error);
+  if (/session .*not found|not found|does not exist|no session/i.test(errorMessage)) {
+    return ACP_LOAD_TASK_NOT_FOUND_MESSAGE;
+  }
+
+  return ACP_LOAD_TASK_FALLBACK_MESSAGE;
 }
 
 function updateConfigOptionValue(option: Record<string, any>, value: boolean | string): Record<string, any> {
@@ -145,6 +155,11 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private readonly _onSessionLoadingChange = new Emitter<boolean>();
   public readonly onSessionLoadingChange: Event<boolean> = this._onSessionLoadingChange.event;
+  private sessionLoadingCount = 0;
+
+  public get isSessionLoading(): boolean {
+    return this.sessionLoadingCount > 0;
+  }
 
   private readonly _onSessionModelChange = new Emitter<ChatModel | undefined>();
   public readonly onSessionModelChange: Event<ChatModel | undefined> = this._onSessionModelChange.event;
@@ -167,7 +182,12 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private bootstrapSessionAttempted = false;
 
-  private agenticTaskSelectionVersion = 0;
+  /**
+   * Guards all asynchronous session activations. A later user selection must
+   * always win, regardless of whether it came from the regular history or
+   * the Agentic Task list.
+   */
+  private sessionSelectionVersion = 0;
 
   private pendingAgenticTarget: AcpTargetConfigRequest | undefined;
 
@@ -177,6 +197,22 @@ export class AcpChatInternalService extends ChatInternalService {
     string,
     { model: ChatModel; disposable: DisposableCollection }
   >();
+  private beginSessionLoading(): void {
+    this.sessionLoadingCount += 1;
+    if (this.sessionLoadingCount === 1) {
+      this._onSessionLoadingChange.fire(true);
+    }
+  }
+
+  private endSessionLoading(): void {
+    if (this.sessionLoadingCount === 0) {
+      return;
+    }
+    this.sessionLoadingCount -= 1;
+    if (this.sessionLoadingCount === 0) {
+      this._onSessionLoadingChange.fire(false);
+    }
+  }
 
   private stripAcpPrefix(sessionId: string): string {
     return sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
@@ -380,13 +416,13 @@ export class AcpChatInternalService extends ChatInternalService {
       return this.sessionCreationPromise;
     }
 
-    this._onSessionLoadingChange.fire(true);
+    this.beginSessionLoading();
     this.sessionCreationPromise = this.doStartSessionModel();
     try {
       return await this.sessionCreationPromise;
     } finally {
       this.sessionCreationPromise = undefined;
-      this._onSessionLoadingChange.fire(false);
+      this.endSessionLoading();
     }
   }
 
@@ -838,39 +874,41 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   async activateAgenticTaskSession(sessionId: string, shouldApply: () => boolean = () => true): Promise<boolean> {
-    const selectionVersion = ++this.agenticTaskSelectionVersion;
-    this._onSessionLoadingChange.fire(true);
+    const selectionVersion = ++this.sessionSelectionVersion;
+    this.beginSessionLoading();
     try {
       await (this.chatManagerService as AcpChatManagerService).loadSession(sessionId);
       const session = this.chatManagerService.getSession(sessionId);
-      if (selectionVersion !== this.agenticTaskSelectionVersion || !shouldApply()) {
+      if (selectionVersion !== this.sessionSelectionVersion || !shouldApply()) {
         return false;
       }
       if (!session) {
-        this.messageService.info(formatAcpLoadSessionFallbackMessage(new Error(`Session ${sessionId} not found`)));
+        this.messageService.info(formatAcpLoadTaskFallbackMessage(new Error(`Session ${sessionId} not found`)));
         return false;
       }
       return this.applyActivatedSession(
         sessionId,
         session,
-        () => selectionVersion === this.agenticTaskSelectionVersion && shouldApply(),
+        () => selectionVersion === this.sessionSelectionVersion && shouldApply(),
       );
     } catch (error) {
-      if (selectionVersion === this.agenticTaskSelectionVersion && shouldApply()) {
-        this.messageService.info(formatAcpLoadSessionFallbackMessage(error));
+      if (selectionVersion === this.sessionSelectionVersion && shouldApply()) {
+        this.messageService.info(formatAcpLoadTaskFallbackMessage(error));
       }
       return false;
     } finally {
-      if (selectionVersion === this.agenticTaskSelectionVersion) {
-        this._onSessionLoadingChange.fire(false);
-      }
+      this.endSessionLoading();
     }
   }
 
   override async activateSession(sessionId: string) {
-    this._onSessionLoadingChange.fire(true);
+    const selectionVersion = ++this.sessionSelectionVersion;
+    this.beginSessionLoading();
     try {
       const acpManager = this.chatManagerService as AcpChatManagerService;
+      if (selectionVersion !== this.sessionSelectionVersion) {
+        return;
+      }
       await acpManager.loadSession(sessionId);
       const updatedSession = this.chatManagerService.getSession(sessionId);
       if (!updatedSession) {
@@ -880,12 +918,19 @@ export class AcpChatInternalService extends ChatInternalService {
         this.enterDraftSession({ force: true });
         return;
       }
-      await this.applyActivatedSession(sessionId, updatedSession);
+      await this.applyActivatedSession(
+        sessionId,
+        updatedSession,
+        () => selectionVersion === this.sessionSelectionVersion,
+      );
+      if (selectionVersion !== this.sessionSelectionVersion) {
+        return;
+      }
     } catch (error) {
       this.messageService.info(formatAcpLoadSessionFallbackMessage(error));
       this.enterDraftSession({ force: true });
     } finally {
-      this._onSessionLoadingChange.fire(false);
+      this.endSessionLoading();
     }
   }
 

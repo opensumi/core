@@ -345,6 +345,10 @@ export class AgenticTaskRegistryService {
     const projects = await this.listProjects();
 
     return projects.reduce<AgenticTaskGroup[]>((groups, project) => {
+      if (project.availability === 'unavailable') {
+        return groups;
+      }
+
       const tasks = this.currentState.tasks
         .filter(
           (task) =>

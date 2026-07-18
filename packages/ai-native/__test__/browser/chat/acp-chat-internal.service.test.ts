@@ -811,7 +811,9 @@ describe('AcpChatInternalService', () => {
 
     it('falls back to draft when loading an ACP session fails', async () => {
       const { chatManagerService, messageService, service } = createService();
+      const loadingChanges: boolean[] = [];
       chatManagerService.loadSession.mockRejectedValueOnce(new Error('Session not found'));
+      service.onSessionLoadingChange((loading) => loadingChanges.push(loading));
 
       await service.activateSession('acp:missing');
 
@@ -820,16 +822,23 @@ describe('AcpChatInternalService', () => {
         'This chat history is no longer available. A new chat draft is ready, and a session will be created when you send a message.',
       );
       expect(service.sessionModel).toBeUndefined();
+      expect(loadingChanges).toEqual([true, false]);
     });
 
-    it('keeps the active ACP session when an Agentic Task session cannot load', async () => {
-      const { chatManagerService, model: currentModel, service } = createService();
+    it('keeps the active ACP session and composer state when an Agentic Task session cannot load', async () => {
+      const { chatManagerService, messageService, model: currentModel, service } = createService();
+      const loadingChanges: boolean[] = [];
       service._sessionModel = currentModel;
       chatManagerService.loadSession.mockRejectedValueOnce(new Error('Session not found'));
+      service.onSessionLoadingChange((loading) => loadingChanges.push(loading));
 
       await expect(service.activateAgenticTaskSession('acp:missing')).resolves.toBe(false);
 
       expect(service.sessionModel).toBe(currentModel);
+      expect(loadingChanges).toEqual([true, false]);
+      expect(messageService.info).toHaveBeenCalledWith(
+        'This task history is no longer available. The previous Task remains active.',
+      );
     });
 
     it('keeps the active ACP session and reports missing history when ACP load returns no session', async () => {
@@ -841,7 +850,7 @@ describe('AcpChatInternalService', () => {
 
       expect(service.sessionModel).toBe(currentModel);
       expect(messageService.info).toHaveBeenCalledWith(
-        'This chat history is no longer available. A new chat draft is ready, and a session will be created when you send a message.',
+        'This task history is no longer available. The previous Task remains active.',
       );
     });
 
@@ -849,6 +858,7 @@ describe('AcpChatInternalService', () => {
       const { chatManagerService, service } = createService();
       const firstModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:first' });
       const secondModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:second' });
+      const loadingChanges: boolean[] = [];
       let resolveFirst!: () => void;
       let resolveSecond!: () => void;
       const firstLoad = new Promise<void>((resolve) => (resolveFirst = resolve));
@@ -860,15 +870,92 @@ describe('AcpChatInternalService', () => {
         }
         return id === 'acp:second' ? secondModel : undefined;
       });
+      service.onSessionLoadingChange((loading) => loadingChanges.push(loading));
 
       const firstActivation = service.activateAgenticTaskSession('acp:first');
       const secondActivation = service.activateAgenticTaskSession('acp:second');
       resolveSecond();
       await secondActivation;
+      expect(loadingChanges).toEqual([true]);
+      expect(service.isSessionLoading).toBe(true);
       resolveFirst();
 
       await expect(firstActivation).resolves.toBe(false);
       expect(service.sessionModel?.sessionId).toBe('acp:second');
+      expect(loadingChanges).toEqual([true, false]);
+      expect(service.isSessionLoading).toBe(false);
+    });
+
+    it('activates only the latest overlapping ordinary ACP session selection', async () => {
+      const { chatManagerService, service } = createService();
+      const firstModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:first' });
+      const secondModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:second' });
+      const loadingChanges: boolean[] = [];
+      let resolveFirst!: () => void;
+      let resolveSecond!: () => void;
+      const firstLoad = new Promise<void>((resolve) => (resolveFirst = resolve));
+      const secondLoad = new Promise<void>((resolve) => (resolveSecond = resolve));
+      chatManagerService.loadSession.mockImplementation((id: string) => (id === 'acp:first' ? firstLoad : secondLoad));
+      chatManagerService.getSession.mockImplementation((id: string) => {
+        if (id === 'acp:first') {
+          return firstModel;
+        }
+        return id === 'acp:second' ? secondModel : undefined;
+      });
+      service.onSessionLoadingChange((loading) => loadingChanges.push(loading));
+
+      const firstActivation = service.activateSession('acp:first');
+      const secondActivation = service.activateSession('acp:second');
+      resolveSecond();
+      await secondActivation;
+
+      expect(service.sessionModel).toBe(secondModel);
+      expect(loadingChanges).toEqual([true]);
+      expect(service.isSessionLoading).toBe(true);
+
+      resolveFirst();
+      await firstActivation;
+
+      expect(service.sessionModel).toBe(secondModel);
+      expect(loadingChanges).toEqual([true, false]);
+      expect(service.isSessionLoading).toBe(false);
+    });
+
+    it('does not publish an ordinary session selection invalidated while its task lookup is pending', async () => {
+      const { chatManagerService, permissionBridgeService, registry, service } = createService();
+      const firstModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:first' });
+      const secondModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:second' });
+      let resolveFirstTask!: () => void;
+      let signalFirstTaskLookup!: () => void;
+      const firstTask = new Promise<void>((resolve) => (resolveFirstTask = resolve));
+      const firstTaskLookup = new Promise<void>((resolve) => (signalFirstTaskLookup = resolve));
+      const sessionChanges: string[] = [];
+      chatManagerService.getSession.mockImplementation((id: string) => {
+        if (id === 'acp:first') {
+          return firstModel;
+        }
+        return id === 'acp:second' ? secondModel : undefined;
+      });
+      registry.getTask.mockImplementation((sessionId: string) => {
+        if (sessionId === 'acp:first') {
+          signalFirstTaskLookup();
+          return firstTask;
+        }
+        return Promise.resolve(undefined);
+      });
+      service.onChangeSession((sessionId: string) => sessionChanges.push(sessionId));
+      permissionBridgeService.setActiveSession.mockClear();
+
+      const firstActivation = service.activateSession('acp:first');
+      await firstTaskLookup;
+      await service.activateSession('acp:second');
+      resolveFirstTask();
+      await firstActivation;
+
+      expect(service.sessionModel).toBe(secondModel);
+      expect(permissionBridgeService.setActiveSession).toHaveBeenCalledTimes(1);
+      expect(permissionBridgeService.setActiveSession).toHaveBeenCalledWith('second');
+      expect(sessionChanges).toEqual(['acp:second']);
     });
 
     it('does not publish a stale Task selection after its task lookup overlaps a newer selection', async () => {

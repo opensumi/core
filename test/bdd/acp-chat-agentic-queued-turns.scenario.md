@@ -2,7 +2,9 @@
 
 **Trigger:** `packages/ai-native/src/browser/chat/acp-chat-queued-turns.ts`, `packages/ai-native/src/browser/chat/AcpQueuedTurns.tsx`, `packages/ai-native/src/browser/chat/chat.view.acp.tsx`, `packages/ai-native/src/browser/acp/components/AcpQueuedTurnEditor.tsx`, or `packages/ai-native/src/browser/acp/acp-bdd-runtime-fixtures.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** separate deterministic `long-stream`, `stream-rich`, bounded slow `history` (`--fixture=history --delay-ms=2000`), and loopback `acpBddQueuedTurnStartFailure=reject-once` passes. **Workspace mutation:** None. **Automation status:** Runtime BDD first; convert stable deterministic subcases only after a `CONVERT` verdict.
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** separate deterministic `long-stream`, `stream-rich`, bounded slow `history` (`--fixture=history --delay-ms=2000`), and loopback `acpBddQueuedTurnStartFailure=reject-once` passes. The rich input must support queued-editor focus, queue Clear, ArrowUp take-back, and the one-shot empty-Enter fast track. **Workspace mutation:** None. **Automation status:** Runtime BDD first; convert stable deterministic subcases only after a `CONVERT` verdict. Queue cancellation/start failure races, Agent-error recovery, IME, paste, and disclosure accessibility contracts are specified separately in `acp-chat-interaction-contract.scenario.md` and hardened by focused Jest suites.
+
+**Acceptance coverage:** Runtime coverage for `C-01` through `C-05`, `C-07`, `C-09`, `C-10`, and `C-12` from `test/bdd/feat-0710-acceptance.md`. Contract completion for `C-03`, `C-06`, `C-08`, and `C-10` through `C-14` is in `acp-chat-interaction-contract.scenario.md`.
 
 ## Given
 
@@ -25,6 +27,25 @@
 - Automatic advancement starts only the queue head and removes exactly that head from the visible queue.
 - Each deterministic user draft is delivered once in FIFO order, with no duplicate user row or duplicate queue row.
 - Confirming the queued edit with `Send` or Enter returns focus to the main input after the action is accepted; automatic advancement does not steal focus.
+
+## When - Head Editing and Single-Editor Lease
+
+1. Start one deterministic active turn and enqueue `edit-head`, `edit-middle`, and `edit-tail`.
+2. Begin editing `edit-head`, then let the active turn reach terminal completion.
+3. Confirm the queue remains idle with `edit-head` visible at index 1 and no queued user row starts.
+4. While the head editor has unsaved content, attempt to collapse the queue and attempt to edit `edit-middle`.
+5. Run three separate passes from the same initial state:
+   - save the edited head;
+   - cancel editing the head;
+   - delete the edited head.
+
+## Then - Head Editing and Single-Editor Lease
+
+- An edited head blocks automatic advancement until its edit lease is released.
+- The queue cannot collapse while unsaved queued edits exist.
+- Attempting to edit another row keeps and focuses the existing editor; it does not open a second editor, auto-save, or discard changes.
+- Save dispatches the edited head, Cancel dispatches the original head, and Delete permits the next eligible row to dispatch.
+- Each accepted action returns focus to the main input; a rejected empty Save keeps the editor, draft, and focus in place.
 
 ## When - Manual Stop and Resume Queue
 
@@ -65,6 +86,24 @@
 - `start-failure-head` returns to queue index 1 with status `Paused` and reason `Could not start`.
 - The query fixture is consumed once: Resume retries the same head successfully without a reload, duplicate row, or reordered queue entry.
 
+## When - Clear, Take Back, and One-Shot Fast Track
+
+1. During a deterministic active request, enqueue `control-first`, `control-middle`, and `control-tail` and begin editing one row.
+2. Delete `control-middle`; confirm only that row disappears and the remaining relative order is unchanged.
+3. With the main input empty, press unmodified ArrowUp; confirm only `control-tail` is removed from the queue and restored into the main input with the caret at the end.
+4. Clear the restored main draft, ensure the queue is non-empty, and activate `Clear All` while an already acknowledged active delivery is still running.
+5. Confirm entries, edit state, pause state, and fast-track state clear, while the acknowledged active delivery remains the owner of the current loading state.
+6. In a fresh active-request pass, enqueue `fast-track-head`; without changing the now-empty main draft, press Enter once.
+7. Confirm `fast-track-head` follows the Immediate Send cancellation gate and starts once. Press empty Enter again and confirm it does not fast-track a second time.
+8. Repeat from a fresh queue, but type and remove a real character, switch Active Session, clear the queue, or perform another head-changing action before the second Enter.
+
+## Then - Clear, Take Back, and One-Shot Fast Track
+
+- Delete removes exactly its target and never reorders retained entries.
+- ArrowUp takes back only the queue tail before falling back to existing input history, restores supported draft fields, focuses the main input, and places the caret at the end.
+- Clear All removes queued, editing, pause, and one-shot fast-track state without falsely ending or duplicating an already acknowledged active delivery.
+- Empty Enter immediately after queueing consumes a one-shot fast track for the current head; consuming it or changing the draft, Active Session, queue, or relevant head invalidates it.
+
 ## When - Active Session Switch and Focus
 
 1. Run `--fixture=history --delay-ms=2000` with two deterministic sessions, select Session A, and submit one turn.
@@ -83,6 +122,6 @@
 
 ## Pass / Fail Judgment
 
-- **PASS** - all separate deterministic passes preserve FIFO and focus, gate Immediate Send on confirmed cancellation, recover manual stop and one-shot start failure, and clear queue state on Active Session change.
-- **BLOCKED** - the run lacks the interactive profile, a declared fixture pass, stable queue/focus selectors, two history sessions, or the loopback query fixture URL.
-- **FAIL** - queue order changes, an edited second item moves, Stop auto-advances, Immediate Send starts before cancellation confirmation, a failed start loses or duplicates the head, session switching retains stale queue state, or focus moves to the wrong editor/session.
+- **PASS** - all separate deterministic passes preserve FIFO and focus, enforce the single-editor/head-blocking contract, gate Immediate Send on confirmed cancellation, recover manual stop and one-shot start failure, implement Clear/Take Back/fast-track behavior, and clear queue state on Active Session change.
+- **BLOCKED** - the run lacks the interactive profile, a declared fixture pass, stable queue/editor/focus selectors, queue controls, two history sessions, or the loopback query fixture URL.
+- **FAIL** - queue order changes, an edit moves or silently disappears, an edited head auto-advances, Stop auto-advances, Immediate Send starts before cancellation confirmation, Clear/Take Back/fast-track corrupt ownership, a failed start loses or duplicates the head, session switching retains stale queue state, or focus moves to the wrong editor/session.

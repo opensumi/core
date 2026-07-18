@@ -38,11 +38,16 @@ jest.mock('../../src/browser/components/mention-input/mention-panel', () => ({
 }));
 
 jest.mock('../../src/browser/components/mention-input/mention-select', () => ({
-  MentionSelect: () => require('react').createElement('select'),
+  MentionSelect: ({ disabled }: { disabled?: boolean }) =>
+    require('react').createElement('select', { 'data-testid': 'mention-select', disabled }),
 }));
 
 import { MentionInput } from '../../src/browser/components/acp/MentionInput';
-import { MentionInputHandle, MentionInputProps } from '../../src/browser/components/mention-input/types';
+import {
+  FooterButtonPosition,
+  MentionInputHandle,
+  MentionInputProps,
+} from '../../src/browser/components/mention-input/types';
 
 type FutureMentionInputProps = Partial<MentionInputProps> & {
   onSendImmediately?: (content: string, config?: { model: string; [key: string]: any }) => void;
@@ -51,6 +56,11 @@ type FutureMentionInputProps = Partial<MentionInputProps> & {
   onEmptySubmit?: () => void;
   onToggleExpanded?: () => void;
   onUserInput?: () => void;
+  onModeChange?: (modeId: string) => void;
+  onConfigOptionChange?: (configId: string, value: boolean | string) => void;
+  modeOptions?: Array<{ id: string; name: string }>;
+  currentMode?: string;
+  configOptions?: Array<Record<string, unknown>>;
 };
 
 let container: HTMLDivElement;
@@ -183,6 +193,117 @@ it('orders Immediate Send, normal submit, native newline, and IME submit handlin
   expect(composingImmediate.defaultPrevented).toBe(false);
   expect(onSend).toHaveBeenCalledTimes(1);
   expect(onSendImmediately).toHaveBeenCalledTimes(1);
+});
+
+it('renders multiple ACP config controls without React list key warnings', () => {
+  const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+  renderMentionInput({
+    footerConfig: {
+      buttons: [],
+      configOptions: [
+        {
+          id: 'model',
+          name: 'Model',
+          currentValue: 'small',
+          options: [{ label: 'Small', value: 'small' }],
+        },
+        {
+          id: 'permission',
+          name: 'Permission',
+          currentValue: 'default',
+          options: [{ label: 'Default', value: 'default' }],
+        },
+      ],
+      disableModelSelector: true,
+      showModelSelector: false,
+    },
+  });
+
+  expect(consoleError.mock.calls.flat().join('\n')).not.toContain(
+    'Each child in a list should have a unique "key" prop',
+  );
+  consoleError.mockRestore();
+});
+
+it('blocks editor, attachment, selector, send, Stop, and Escape actions while disabled', () => {
+  const onSend = jest.fn();
+  const onStop = jest.fn();
+  const onEscape = jest.fn();
+  const onUserInput = jest.fn();
+  const onImageUpload = jest.fn();
+  const onAttachmentClick = jest.fn();
+  const onSelectionChange = jest.fn();
+  const onModeChange = jest.fn();
+  const onConfigOptionChange = jest.fn();
+
+  renderMentionInput({
+    disabled: true,
+    loading: true,
+    onSend,
+    onStop,
+    onEscape,
+    onUserInput,
+    onImageUpload,
+    onSelectionChange,
+    onModeChange,
+    onConfigOptionChange,
+    modeOptions: [{ id: 'default', name: 'Default' }],
+    currentMode: 'default',
+    configOptions: [
+      {
+        id: 'permission',
+        name: 'Permission',
+        currentValue: 'default',
+        options: [{ label: 'Default', value: 'default' }],
+      },
+    ],
+    footerConfig: {
+      buttons: [
+        {
+          id: 'upload-image',
+          icon: 'image',
+          title: 'Upload image',
+          onClick: onAttachmentClick,
+          position: FooterButtonPosition.LEFT,
+        },
+      ],
+      modelOptions: [{ label: 'Model', value: 'model' }],
+      defaultModel: 'model',
+      showModelSelector: true,
+    },
+  });
+
+  const editor = container.querySelector('[contenteditable="false"]') as HTMLDivElement;
+  expect(editor).not.toBeNull();
+  expect(editor.getAttribute('aria-disabled')).toBe('true');
+  expect(container.querySelector('[contenteditable="true"]')).toBeNull();
+  expect(
+    Array.from(container.querySelectorAll('[data-testid="mention-select"]')).every(
+      (selector) => (selector as HTMLSelectElement).disabled,
+    ),
+  ).toBe(true);
+
+  editor.textContent = 'do not mutate';
+  input(editor);
+  keydown(editor, { key: 'Enter' });
+  keydown(editor, { key: 'Escape' });
+  dispatchPaste(editor, { items: [], text: 'pasted' });
+  act(() => {
+    (container.querySelector('[aria-label="Upload image"]') as HTMLButtonElement).click();
+    (container.querySelector('[aria-label="Stop"]') as HTMLButtonElement).click();
+  });
+
+  expect(editor.textContent).toBe('do not mutate');
+  expect(onSend).not.toHaveBeenCalled();
+  expect(onStop).not.toHaveBeenCalled();
+  expect(onEscape).not.toHaveBeenCalled();
+  expect(onUserInput).not.toHaveBeenCalled();
+  expect(onImageUpload).not.toHaveBeenCalled();
+  expect(onAttachmentClick).not.toHaveBeenCalled();
+  expect(onSelectionChange).not.toHaveBeenCalled();
+  expect(onModeChange).not.toHaveBeenCalled();
+  expect(onConfigOptionChange).not.toHaveBeenCalled();
 });
 
 it('gives the expansion shortcut priority over transient and delegated Escape handling', () => {

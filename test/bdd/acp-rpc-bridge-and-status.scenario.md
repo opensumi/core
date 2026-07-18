@@ -1,8 +1,8 @@
 # Scenario: ACP RPC Bridge and Thread Status - Browser/Node Synchronization
 
-**Trigger:** `packages/ai-native/src/browser/acp/acp-webmcp-rpc.service.ts`, `packages/ai-native/src/node/acp/acp-webmcp-caller.service.ts`, `packages/ai-native/src/browser/acp/acp-thread-status-rpc.service.ts`, or `packages/ai-native/src/node/acp/acp-thread-status-caller.service.ts`
+**Trigger:** `packages/core-common/src/types/ai-native/index.ts`, `packages/ai-native/src/browser/acp/acp-webmcp-rpc.service.ts`, `packages/ai-native/src/node/acp/acp-webmcp-caller.service.ts`, `packages/ai-native/src/browser/acp/acp-thread-status-rpc.service.ts`, `packages/ai-native/src/node/acp/acp-thread-status-caller.service.ts`, or `packages/ai-native/src/node/acp/acp-cli-back.service.ts`
 
-**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Browser WebMCP registry, node RPC caller services, and controllable RPC client spies. **Workspace mutation:** None. **Automation status:** Automated contract spec for browser/node RPC synchronization.
+**Layer:** `node-contract` **Required profile:** `default` **Fixtures:** Browser WebMCP registry, node RPC caller services, controllable RPC client spies, an existing ACP session snapshot, and two browser back-service connections. **Workspace mutation:** None. **Automation status:** Automated contract spec for browser/node RPC synchronization and existing-session attachment.
 
 ## Given
 
@@ -11,6 +11,7 @@
 - The Node side has an `AcpWebMcpCallerService` and `AcpThreadStatusCallerService`.
 - The browser chat manager has at least one ACP chat model whose browser id is `acp:<rawSessionId>`.
 - The test harness can replace or spy on the RPC client used by the node caller services.
+- The node service owns an existing ACP session that may remain active while the browser RPC connection is replaced.
 
 ## When
 
@@ -40,6 +41,13 @@
 13. Call `notifyThreadStatusChange` for an unknown raw session id.
 14. Clear the status RPC client and call `notifyThreadStatusChange(rawSessionId, "disconnected")`.
 
+### Part E - Existing Session Attachment RPC
+
+15. Dispose the first browser back-service RPC connection while its ACP prompt is `working`.
+16. Create a replacement connection and call the existing AI back-service RPC method `attachSession(rawSessionId)`.
+17. Observe the attachment snapshot and emit an update during snapshot construction plus another update afterward.
+18. End the attachment stream and dispose the replacement connection.
+
 ## Then
 
 - Part A returns group definitions from the browser registry without constructing a separate node-side catalog.
@@ -53,8 +61,12 @@
 - Unknown-session status notifications are ignored without creating a new chat model.
 - Missing status RPC clients are ignored silently so node-side ACP streaming does not fail just because the browser is not ready.
 - A later valid status notification still updates the existing model after the RPC client is restored.
+- Session recovery uses the existing AI back-service RPC surface; it does not introduce a separate HTTP recovery endpoint.
+- `attachSession` accepts the existing raw ACP session id and returns a snapshot-first stream without invoking prompt submission.
+- Connection disposal releases only connection-owned subscriptions; the shared agent service and running thread remain node-owned.
+- The attachment stream preserves the snapshot/live-update boundary without losing or duplicating the race-window update.
 
 ## Pass / Fail Judgment
 
-- **PASS** - WebMCP definitions/execution and thread-status updates cross the browser/node RPC boundary with canonical names, structured failures, raw/prefixed session id normalization, and no hangs when RPC is missing.
-- **FAIL** - node builds a divergent catalog, tool names drift from the browser registry, missing RPC causes a stuck MCP call, status updates miss valid ACP sessions, or unknown status updates create phantom sessions.
+- **PASS** - WebMCP definitions/execution, thread-status updates, and existing-session attachment cross the browser/node RPC boundary with canonical names, structured failures, raw/prefixed session id normalization, and no hangs when RPC is missing.
+- **FAIL** - node builds a divergent catalog, tool names drift from the browser registry, missing RPC causes a stuck MCP call, attachment repeats a prompt or loses updates, status updates miss valid ACP sessions, or unknown status updates create phantom sessions.

@@ -64,6 +64,9 @@ function chatInput() {
 }
 
 function chatButton(name: string) {
+  if (name === 'Stop') {
+    return chatSlot().getByLabel('Stop', { exact: true });
+  }
   return chatSlot().getByRole('button', { name });
 }
 

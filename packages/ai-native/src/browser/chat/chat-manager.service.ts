@@ -342,9 +342,11 @@ export class ChatManagerService extends Disposable {
     this._chatStorage.set('sessionModels', this.getSessions());
   }
 
-  cancelRequest(sessionId: string) {
-    this.#pendingRequests.get(sessionId)?.cancel();
+  cancelRequest(sessionId: string): boolean {
+    const pendingRequest = this.#pendingRequests.get(sessionId);
+    pendingRequest?.cancel();
     this.#pendingRequests.disposeKey(sessionId);
     this.saveSessions();
+    return Boolean(pendingRequest);
   }
 }

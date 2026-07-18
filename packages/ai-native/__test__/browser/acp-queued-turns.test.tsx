@@ -55,6 +55,7 @@ function renderQueue(
   overrides: Partial<AcpQueuedTurnSnapshot> & {
     capabilities?: ChatInputCapability[];
     QueuedEditor?: React.ComponentType<QueuedTurnEditorProps>;
+    disabled?: boolean;
     onToggleExpanded?: jest.Mock;
     onClear?: jest.Mock;
     onBeginEdit?: jest.Mock;
@@ -84,6 +85,7 @@ function renderQueue(
       <AcpQueuedTurns
         snapshot={snapshot}
         expanded
+        disabled={overrides.disabled}
         capabilities={overrides.capabilities || ['rich-queued-edit']}
         QueuedEditor={Editor}
         onToggleExpanded={handlers.onToggleExpanded}
@@ -107,6 +109,22 @@ it('renders paused state and resumes', () => {
   expect(query('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Stopped');
   click('[data-testid="acp-queued-turn-resume"]');
   expect(onResume).toHaveBeenCalledTimes(1);
+});
+
+it.each([
+  [0, '0 Queued Turns'],
+  [1, '1 Queued Turn'],
+  [2, '2 Queued Turns'],
+  [3, '3 Queued Turns'],
+])('renders the queued turn count for %i entries without an unresolved placeholder', (count, expectedTitle) => {
+  renderQueue({
+    entries: Array.from({ length: count }, (_, index) => ({ id: `turn-${index}`, message: `message-${index}` })),
+    phase: count === 0 ? 'paused' : 'generating',
+  });
+
+  const summary = query('[data-testid="acp-queued-turns-summary"]');
+  expect(summary?.textContent).toContain(expectedTitle);
+  expect(summary?.textContent).not.toContain('{0}');
 });
 
 it('keeps one inline editor and disables collapse while editing', () => {
@@ -226,4 +244,74 @@ it('disables the inline editor Immediate Send action while another cancellation 
   expect(immediate.disabled).toBe(true);
   click('[data-testid="queued-editor-immediate-disabled"]');
   expect(onCommitEdit).not.toHaveBeenCalled();
+});
+
+it('disables every queued-turn action while its session is loading', () => {
+  const handlers = renderQueue({
+    disabled: true,
+    phase: 'paused',
+    canResume: true,
+  });
+
+  const selectors = [
+    '[data-testid="acp-queued-turns-summary"]',
+    '[data-testid="acp-queued-turn-resume"]',
+    '[aria-label="Clear queued turns"]',
+    '[data-testid="acp-queued-turn-edit"]',
+    '[data-testid="acp-queued-turn-delete"]',
+    '[data-testid="acp-queued-turn-immediate"]',
+  ];
+  for (const selector of selectors) {
+    expect((query(selector) as HTMLButtonElement).disabled).toBe(true);
+    click(selector);
+  }
+
+  expect(onResume).not.toHaveBeenCalled();
+  expect(handlers.onToggleExpanded).not.toHaveBeenCalled();
+  expect(handlers.onClear).not.toHaveBeenCalled();
+  expect(handlers.onBeginEdit).not.toHaveBeenCalled();
+  expect(handlers.onDelete).not.toHaveBeenCalled();
+  expect(handlers.onImmediateSend).not.toHaveBeenCalled();
+});
+
+it('disables queued editor mutations while its session is loading', () => {
+  const DisabledAwareEditor = (props: QueuedTurnEditorProps) => (
+    <>
+      <button
+        data-testid='queued-editor-save-disabled'
+        disabled={props.disabled}
+        onClick={() => props.onSave(props.turn)}
+      >
+        save
+      </button>
+      <button data-testid='queued-editor-cancel-disabled' disabled={props.disabled} onClick={props.onCancel}>
+        cancel
+      </button>
+      <button
+        data-testid='queued-editor-immediate-loading-disabled'
+        disabled={props.disabled || props.immediateSendDisabled}
+        onClick={() => props.onImmediateSend(props.turn)}
+      >
+        immediate
+      </button>
+    </>
+  );
+  const handlers = renderQueue({
+    disabled: true,
+    editingTurnId: 'turn-1',
+    QueuedEditor: DisabledAwareEditor,
+  });
+
+  const selectors = [
+    '[data-testid="queued-editor-save-disabled"]',
+    '[data-testid="queued-editor-cancel-disabled"]',
+    '[data-testid="queued-editor-immediate-loading-disabled"]',
+  ];
+  for (const selector of selectors) {
+    expect((query(selector) as HTMLButtonElement).disabled).toBe(true);
+    click(selector);
+  }
+
+  expect(handlers.onCommitEdit).not.toHaveBeenCalled();
+  expect(handlers.onCancelEdit).not.toHaveBeenCalled();
 });

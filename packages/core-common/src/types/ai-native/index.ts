@@ -312,6 +312,8 @@ export interface IAIBackService<
 
   attachSession?(sessionId: string): Promise<StreamResponse>;
 
+  cancelSession?(sessionId: string): Promise<void>;
+
   listSessions?(config: AgentProcessConfig): Promise<ListSessionsResponse>;
 
   createSession?(config: AgentProcessConfig): Promise<AgentSessionCreateResult>;

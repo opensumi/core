@@ -306,6 +306,7 @@ const MentionInputImpl = (
     hasSendPayload,
     onToggleExpanded,
     onUserInput,
+    disabled = false,
     loading = false,
     mentionKeyword = MENTION_KEYWORD,
     onSelectionChange,
@@ -373,6 +374,12 @@ const MentionInputImpl = (
     }
     return wasOpen;
   }, []);
+
+  React.useEffect(() => {
+    if (disabled) {
+      closeTransientUi();
+    }
+  }, [closeTransientUi, disabled]);
 
   // 添加模型选择状态
   const [selectedModel, setSelectedModel] = React.useState<string>(footerConfig.defaultModel || '');
@@ -615,7 +622,7 @@ const MentionInputImpl = (
   React.useEffect(() => {
     const handleInsertSlash = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (!editorRef.current || !detail?.nameWithSlash) {
+      if (disabled || !editorRef.current || !detail?.nameWithSlash) {
         return;
       }
 
@@ -653,12 +660,12 @@ const MentionInputImpl = (
     return () => {
       window.removeEventListener('opensumi-chat-input-insert-slash', handleInsertSlash);
     };
-  }, []);
+  }, [disabled]);
 
   // 监听外部打开 slash panel 的事件（如 footer "/" 按钮点击）
   React.useEffect(() => {
     const handleOpenSlashPanel = () => {
-      if (!editorRef.current) {
+      if (disabled || !editorRef.current) {
         return;
       }
 
@@ -704,7 +711,7 @@ const MentionInputImpl = (
     return () => {
       window.removeEventListener('opensumi-chat-input-open-slash-panel', handleOpenSlashPanel);
     };
-  }, []);
+  }, [disabled]);
 
   // 获取光标位置
   const getCursorPosition = (element: HTMLElement): number => {
@@ -721,6 +728,9 @@ const MentionInputImpl = (
   };
 
   const handleInput = () => {
+    if (disabled) {
+      return;
+    }
     editorGenerationRef.current += 1;
     // 如果用户开始输入，退出历史导航模式
     if (isNavigatingHistory) {
@@ -894,6 +904,11 @@ const MentionInputImpl = (
 
   // 处理键盘事件
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (disabled) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     if (e.key === 'Enter' && e.nativeEvent.isComposing) {
       return;
     }
@@ -1129,6 +1144,10 @@ const MentionInputImpl = (
   };
 
   const handlePaste = async (e: React.ClipboardEvent<HTMLDivElement>) => {
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
     const items = e.clipboardData.items;
     const text = e.clipboardData.getData('text/plain');
     const editor = editorRef.current;
@@ -1246,7 +1265,7 @@ const MentionInputImpl = (
 
   // 选择提及项目
   const handleSelectItem = (item: MentionItem, isTriggerByClick = true) => {
-    if (!editorRef.current) {
+    if (disabled || !editorRef.current) {
       return;
     }
 
@@ -1622,19 +1641,25 @@ const MentionInputImpl = (
   // 处理模型选择变更
   const handleModelChange = React.useCallback(
     (value: string) => {
+      if (disabled) {
+        return;
+      }
       setSelectedModel(value);
       onSelectionChange?.(value);
     },
-    [selectedModel, onSelectionChange],
+    [disabled, selectedModel, onSelectionChange],
   );
 
   // 处理 Mode 选择变更
   const handleModeChange = React.useCallback(
     (value: string) => {
+      if (disabled) {
+        return;
+      }
       setSelectedMode(value);
       onModeChange?.(value);
     },
-    [onModeChange],
+    [disabled, onModeChange],
   );
 
   const normalizedConfigOptions = React.useMemo(
@@ -1644,13 +1669,16 @@ const MentionInputImpl = (
 
   const handleConfigOptionChange = React.useCallback(
     (config: NormalizedConfigOption, value: string) => {
+      if (disabled) {
+        return;
+      }
       onConfigOptionChange?.(config.id, config.isBoolean ? value === 'true' : value);
     },
-    [onConfigOptionChange],
+    [disabled, onConfigOptionChange],
   );
 
   const handleSendWith = (send?: MentionInputSubmitHandler) => {
-    if (!editorRef.current) {
+    if (disabled || !editorRef.current) {
       return;
     }
 
@@ -1739,11 +1767,14 @@ const MentionInputImpl = (
   const handleSendImmediately = () => handleSendWith(onSendImmediately);
 
   const handleClearContext = React.useCallback(() => {
+    if (disabled) {
+      return;
+    }
     contextService?.cleanFileContext();
-  }, [contextService]);
+  }, [contextService, disabled]);
 
   const handleTitleClick = React.useCallback(() => {
-    if (!editorRef.current) {
+    if (disabled || !editorRef.current) {
       return;
     }
 
@@ -1800,13 +1831,13 @@ const MentionInputImpl = (
       loading: false,
       trigger: '@',
     });
-  }, []);
+  }, [disabled]);
 
   const handleStop = React.useCallback(() => {
-    if (onStop) {
+    if (!disabled && onStop) {
       onStop();
     }
-  }, [onStop]);
+  }, [disabled, onStop]);
 
   // 渲染自定义按钮
   const renderButtons = React.useCallback(
@@ -1826,10 +1857,10 @@ const MentionInputImpl = (
               >
                 <EnhanceIcon
                   className={cls(getIcon('at-sign'), styles.mention_trigger_logo)}
-                  tabIndex={0}
+                  tabIndex={disabled ? -1 : 0}
                   role='button'
                   ariaLabel={button.title}
-                  onClick={handleTitleClick}
+                  onClick={disabled ? undefined : handleTitleClick}
                 />
               </Popover>
             );
@@ -1844,15 +1875,15 @@ const MentionInputImpl = (
             >
               <EnhanceIcon
                 className={cls(button.icon ? getIcon(button.icon) : button.iconClass, styles[`${button.id}_logo`])}
-                tabIndex={0}
+                tabIndex={disabled ? -1 : 0}
                 role='button'
                 ariaLabel={button.title}
-                onClick={button.onClick}
+                onClick={disabled ? undefined : button.onClick}
               />
             </Popover>
           );
         }),
-    [footerConfig.buttons, handleTitleClick],
+    [disabled, footerConfig.buttons, handleTitleClick],
   );
 
   const hasContext = React.useMemo(
@@ -1903,6 +1934,9 @@ const MentionInputImpl = (
 
   const removeContext = React.useCallback(
     (type: MentionType, uri: URI) => {
+      if (disabled) {
+        return;
+      }
       if (type === MentionType.FILE) {
         contextService?.removeFileFromContext(uri, true);
       } else if (type === MentionType.FOLDER) {
@@ -1911,7 +1945,7 @@ const MentionInputImpl = (
         contextService?.removeRuleFromContext(uri);
       }
     },
-    [contextService],
+    [contextService, disabled],
   );
 
   const getFileNameFromPath = (path: string) => decodeURIComponent(path.split('/').pop() || 'Unknown Rule');
@@ -1971,9 +2005,28 @@ const MentionInputImpl = (
   );
 
   return (
-    <div className={cls(styles.input_container, expanded && styles.input_container_expanded)}>
+    <div
+      aria-disabled={disabled}
+      className={cls(styles.input_container, expanded && styles.input_container_expanded)}
+      onClickCapture={
+        disabled
+          ? (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          : undefined
+      }
+      onKeyDownCapture={
+        disabled
+          ? (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          : undefined
+      }
+    >
       <PermissionDialogWidget dialogManager={permissionDialogManager} bottom={optionsBottomPosition} />
-      {mentionState.active && (
+      {!disabled && mentionState.active && (
         <div ref={mentionPanelContainerRef} className={styles.mention_panel_container}>
           <MentionPanel
             items={mentionState.trigger === '/' ? getSlashItems() : getCurrentItems()}
@@ -1991,7 +2044,8 @@ const MentionInputImpl = (
         <div
           ref={editorRef}
           className={styles.editor}
-          contentEditable={true}
+          aria-disabled={disabled}
+          contentEditable={!disabled}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
@@ -2019,7 +2073,7 @@ const MentionInputImpl = (
                 onChange={handleModelChange}
                 className={styles.model_selector}
                 size='small'
-                disabled={footerConfig.disableModelSelector}
+                disabled={disabled || footerConfig.disableModelSelector}
                 showThinking={footerConfig.showThinking}
                 thinkingEnabled={footerConfig.thinkingEnabled}
                 onThinkingChange={footerConfig.onThinkingChange}
@@ -2040,22 +2094,25 @@ const MentionInputImpl = (
                 onChange={handleModeChange}
                 className={styles.mode_selector}
                 size='small'
+                disabled={disabled}
               />,
             )}
 
           <div className={styles.config_controls}>
-            {normalizedConfigOptions.map((config) =>
-              renderModelSelectorTip(
-                <MentionSelect
-                  key={config.id}
-                  options={config.options}
-                  value={config.currentValue}
-                  onChange={(value) => handleConfigOptionChange(config, value)}
-                  className={styles.config_selector}
-                  size='small'
-                />,
-              ),
-            )}
+            {normalizedConfigOptions.map((config) => (
+              <React.Fragment key={config.id}>
+                {renderModelSelectorTip(
+                  <MentionSelect
+                    options={config.options}
+                    value={config.currentValue}
+                    onChange={(value) => handleConfigOptionChange(config, value)}
+                    className={styles.config_selector}
+                    size='small'
+                    disabled={disabled}
+                  />,
+                )}
+              </React.Fragment>
+            ))}
           </div>
 
           {footerItems
@@ -2075,17 +2132,17 @@ const MentionInputImpl = (
               <EnhanceIcon
                 wrapperClassName={styles.send_logo}
                 className={cls(getIcon('send-outlined'), styles.send_logo_icon)}
-                tabIndex={0}
+                tabIndex={disabled ? -1 : 0}
                 role='button'
-                onClick={handleSend}
+                onClick={disabled ? undefined : handleSend}
                 ariaLabel={'Send'}
               />
             ) : (
               <EnhanceIcon
                 wrapperClassName={styles.stop_logo}
                 className={cls(getIcon('close'), styles.stop_logo_icon)}
-                onClick={handleStop}
-                tabIndex={0}
+                onClick={disabled ? undefined : handleStop}
+                tabIndex={disabled ? -1 : 0}
                 role='button'
                 ariaLabel={'Stop'}
               />

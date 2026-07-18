@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agentic Layout — 任务管理工作台设计稿</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #11151c;
+        --window: #171c25;
+        --surface: #1b212c;
+        --surface-2: #202734;
+        --surface-hover: #283141;
+        --selected: #29415d;
+        --line: #303a49;
+        --line-quiet: #28313f;
+        --text: #edf2f8;
+        --muted: #9aa7b9;
+        --quiet: #657288;
+        --blue: #65a9ff;
+        --blue-soft: #315a89;
+        --yellow: #f4c451;
+        --green: #64cc9d;
+        --red: #ed8585;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        min-width: 1280px;
+        min-height: 760px;
+        margin: 0;
+        overflow: hidden;
+        background: radial-gradient(circle at 50% 0, #202a3b 0, var(--bg) 54%);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      button,
+      input {
+        font: inherit;
+      }
+
+      .note {
+        position: fixed;
+        left: 27px;
+        bottom: 17px;
+        color: #748198;
+        font-size: 11px;
+        letter-spacing: 0.02em;
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 48px minmax(590px, 46%) minmax(640px, 1fr);
+        grid-template-rows: 36px minmax(0, 1fr) 23px;
+        width: calc(100vw - 64px);
+        height: calc(100vh - 72px);
+        min-height: 690px;
+        margin: 35px 32px 37px;
+        overflow: hidden;
+        border: 1px solid #344052;
+        border-radius: 13px;
+        background: var(--window);
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+      }
+      .titlebar {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 14px;
+        border-bottom: 1px solid var(--line-quiet);
+        color: #8e9bb0;
+        font-size: 12px;
+      }
+      .traffic {
+        display: flex;
+        gap: 6px;
+        margin-right: 9px;
+      }
+      .traffic i {
+        display: block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ff5f57;
+      }
+      .traffic i:nth-child(2) {
+        background: #febc2e;
+      }
+      .traffic i:nth-child(3) {
+        background: #28c840;
+      }
+      .titlebar b {
+        color: #cbd5e4;
+        font-weight: 600;
+      }
+
+      .activity {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 17px;
+        padding-top: 14px;
+        border-right: 1px solid var(--line-quiet);
+        background: #151a22;
+      }
+      .activity span {
+        display: grid;
+        place-items: center;
+        width: 27px;
+        height: 27px;
+        border-radius: 7px;
+        color: #8390a3;
+        font-size: 15px;
+      }
+      .activity .on {
+        color: #e4effe;
+        background: #263c57;
+        box-shadow: inset 2px 0 0 var(--blue);
+      }
+      .activity .space {
+        flex: 1;
+      }
+
+      /* Agentic Layout: this whole region is the existing ACP Chat slot. */
+      .agentic-chat {
+        display: grid;
+        grid-template-columns: 244px minmax(346px, 1fr);
+        min-width: 0;
+        border-right: 1px solid var(--line);
+        background: #191f29;
+      }
+      .tasks {
+        min-width: 0;
+        overflow: hidden;
+        border-right: 1px solid var(--line);
+        background: #181e28;
+      }
+      .tasks-head,
+      .chat-head,
+      .editor-head,
+      .files-head {
+        display: flex;
+        align-items: center;
+        height: 43px;
+        border-bottom: 1px solid var(--line-quiet);
+      }
+      .tasks-head {
+        padding: 0 11px 0 14px;
+      }
+      .tasks-head h1 {
+        margin: 0;
+        color: #e1e8f2;
+        font-size: 13px;
+        font-weight: 650;
+      }
+      .tasks-head .count {
+        margin-left: 7px;
+        color: var(--quiet);
+        font-size: 11px;
+      }
+      .icon-button {
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        margin-left: 4px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        background: transparent;
+        color: #9facbf;
+        font-size: 15px;
+      }
+      .icon-button:first-of-type {
+        margin-left: auto;
+      }
+      .icon-button.primary {
+        border-color: #497fb8;
+        background: #315f91;
+        color: white;
+      }
+      .task-search {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 30px;
+        margin: 10px 10px 8px;
+        padding: 0 8px;
+        border: 1px solid #354152;
+        border-radius: 6px;
+        background: #131820;
+        color: #7c89a0;
+        font-size: 11px;
+      }
+      .task-search kbd {
+        margin-left: auto;
+        color: #637086;
+        font-family: inherit;
+        font-size: 10px;
+      }
+      .project {
+        margin: 8px 5px 0;
+      }
+      .project-title {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        height: 29px;
+        padding: 0 7px;
+        color: #abb7c8;
+        font-size: 11px;
+        font-weight: 650;
+      }
+      .project-title .folder {
+        margin-right: 6px;
+        color: #7ca5da;
+      }
+      .project-title .project-count {
+        margin-left: 6px;
+        color: #647187;
+        font-size: 10px;
+        font-weight: 500;
+      }
+      .project-title .mini-plus {
+        margin-left: auto;
+        color: #8493aa;
+        font-size: 15px;
+      }
+      .task-row {
+        display: grid;
+        grid-template-columns: 15px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 5px;
+        min-height: 37px;
+        margin: 1px 0;
+        padding: 4px 7px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+      }
+      .task-row.selected {
+        border-color: #406989;
+        background: var(--selected);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+      }
+      .task-state {
+        position: relative;
+        width: 14px;
+        height: 14px;
+      }
+      .task-state::after {
+        content: '';
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #74829a;
+      }
+      .task-state.permission::after {
+        width: 7px;
+        height: 7px;
+        top: 3px;
+        left: 3px;
+        background: var(--yellow);
+        box-shadow: 0 0 0 3px rgba(244, 196, 81, 0.12);
+      }
+      .task-state.running::after {
+        background: var(--blue);
+        box-shadow: 0 0 0 3px rgba(101, 169, 255, 0.12);
+      }
+      .task-state.ready::after {
+        background: var(--green);
+      }
+      .task-copy {
+        min-width: 0;
+      }
+      .task-title {
+        overflow: hidden;
+        color: #d6dee9;
+        font-size: 11px;
+        line-height: 14px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .task-sub {
+        color: #748198;
+        font-size: 10px;
+        line-height: 13px;
+      }
+      .task-time {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #718096;
+        font-size: 10px;
+      }
+      .unread {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #77b1ff;
+      }
+      .archive-row {
+        display: flex;
+        align-items: center;
+        height: 32px;
+        margin: 10px 7px 0;
+        padding: 0 7px;
+        border-top: 1px solid #2b3544;
+        color: #8491a6;
+        font-size: 11px;
+      }
+      .archive-row b {
+        margin-left: auto;
+        color: #68758a;
+        font-size: 10px;
+        font-weight: 500;
+      }
+
+      .conversation {
+        position: relative;
+        min-width: 0;
+        background: linear-gradient(160deg, #1d242f 0, #191f29 48%, #171d26 100%);
+      }
+      .chat-head {
+        padding: 0 13px;
+      }
+      .agent-mark {
+        display: grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        margin-right: 9px;
+        border-radius: 7px;
+        background: linear-gradient(135deg, #2b649c, #344176);
+        color: #d8eaff;
+        font-size: 13px;
+      }
+      .chat-title {
+        min-width: 0;
+        overflow: hidden;
+        color: #e8edf4;
+        font-size: 12px;
+        font-weight: 650;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .chat-meta {
+        margin-left: 7px;
+        color: #8290a4;
+        font-size: 10px;
+      }
+      .chat-actions {
+        display: flex;
+        margin-left: auto;
+      }
+      .chat-body {
+        max-width: 545px;
+        margin: 33px auto 110px;
+        padding: 0 27px;
+      }
+      .user-message {
+        margin-left: auto;
+        padding: 11px 13px;
+        border: 1px solid #3a5b7f;
+        border-radius: 9px 9px 2px 9px;
+        background: #263a52;
+        color: #e4eef9;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .agent-message {
+        display: flex;
+        gap: 10px;
+        margin-top: 22px;
+        color: #c9d3e1;
+        font-size: 12px;
+        line-height: 1.65;
+      }
+      .agent-message .avatar {
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background: #2a3c59;
+        color: #d5e7ff;
+        font-size: 11px;
+      }
+      .agent-message strong {
+        color: #edf2f8;
+      }
+      .tool-card {
+        margin-top: 12px;
+        padding: 10px 11px;
+        border: 1px solid #344153;
+        border-radius: 7px;
+        background: #151b24;
+        color: #9dabbf;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 10px;
+        line-height: 1.7;
+      }
+      .composer {
+        position: absolute;
+        right: 21px;
+        bottom: 18px;
+        left: 21px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 43px;
+        padding: 6px 7px 6px 11px;
+        border: 1px solid #405069;
+        border-radius: 8px;
+        background: #151b24;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+        color: #74829a;
+        font-size: 11px;
+      }
+      .composer .send {
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        margin-left: auto;
+        border-radius: 6px;
+        background: #356a9e;
+        color: white;
+        font-size: 14px;
+      }
+
+      /* Existing Agentic workbench retains editor first, file explorer second. */
+      .workbench {
+        display: grid;
+        grid-template-columns: minmax(360px, 1fr) 256px;
+        min-width: 0;
+        background: #181e28;
+      }
+      .editor {
+        min-width: 0;
+        border-right: 1px solid var(--line);
+        background: #171d26;
+      }
+      .editor-tabs {
+        display: flex;
+        align-items: stretch;
+        height: 43px;
+        border-bottom: 1px solid var(--line-quiet);
+      }
+      .editor-tab {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0 14px;
+        border-right: 1px solid #2a3341;
+        color: #8996aa;
+        font-size: 11px;
+      }
+      .editor-tab.active {
+        border-top: 1px solid var(--blue);
+        background: #1d2531;
+        color: #e2e9f3;
+      }
+      .editor-tab i {
+        width: 7px;
+        height: 7px;
+        border-radius: 2px;
+        background: #5a96d6;
+      }
+      .breadcrumbs {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 29px;
+        padding: 0 15px;
+        border-bottom: 1px solid #27303d;
+        color: #79879d;
+        font-size: 10px;
+      }
+      .breadcrumbs strong {
+        color: #a9b6c8;
+        font-weight: 500;
+      }
+      .code {
+        display: grid;
+        grid-template-columns: 43px minmax(0, 1fr);
+        padding-top: 12px;
+        color: #aeb9c9;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 11px;
+        line-height: 1.82;
+      }
+      .lines {
+        padding-right: 11px;
+        color: #526075;
+        text-align: right;
+        user-select: none;
+      }
+      .code pre {
+        margin: 0;
+        overflow: hidden;
+        white-space: pre-wrap;
+      }
+      .kw {
+        color: #c792ea;
+      }
+      .type {
+        color: #76c7d8;
+      }
+      .fn {
+        color: #8bd5ca;
+      }
+      .str {
+        color: #d8b779;
+      }
+      .comment {
+        color: #5d6b80;
+      }
+      .prop {
+        color: #8ab4f8;
+      }
+      .files {
+        min-width: 0;
+        background: #1a202a;
+      }
+      .files-head {
+        justify-content: space-between;
+        padding: 0 13px;
+        color: #c1cad7;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+      }
+      .file-tree {
+        padding: 7px 8px;
+        color: #91a0b4;
+        font-size: 11px;
+      }
+      .file-tree div {
+        min-width: 0;
+        overflow: hidden;
+        padding: 5px 4px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .file-tree .indent1 {
+        padding-left: 18px;
+      }
+      .file-tree .indent2 {
+        padding-left: 32px;
+      }
+      .file-tree .indent3 {
+        padding-left: 46px;
+      }
+      .file-tree .active-file {
+        border-radius: 5px;
+        background: #293445;
+        color: #e0e7f1;
+      }
+      .file-tree .dirty {
+        float: right;
+        color: #e4b75a;
+      }
+      .statusbar {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 0 12px;
+        border-top: 1px solid #2c3543;
+        background: #273e59;
+        color: #d7e6f8;
+        font-size: 10px;
+      }
+      .statusbar .right {
+        margin-left: auto;
+        color: #b8cae0;
+      }
+
+      .label {
+        position: absolute;
+        z-index: 5;
+        top: 52px;
+        padding: 5px 7px;
+        border: 1px solid #4b607b;
+        border-radius: 5px;
+        background: rgba(25, 31, 41, 0.95);
+        color: #b9c6d8;
+        font-size: 10px;
+        box-shadow: 0 4px 13px rgba(0, 0, 0, 0.25);
+      }
+      .label.task-label {
+        left: 82px;
+      }
+      .label.chat-label {
+        left: 330px;
+      }
+      .label.editor-label {
+        right: 260px;
+      }
+      .label.files-label {
+        right: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app" aria-label="Agentic Layout 任务管理设计稿">
+      <header class="titlebar">
+        <span class="traffic"><i></i><i></i><i></i></span><span><b>opensumi-core</b>　/　Agentic Layout</span>
+      </header>
+      <nav class="activity" aria-label="工作台活动栏">
+        <span class="on">✦</span><span>▱</span><span>⌕</span><span>⑂</span><span>◇</span><span class="space"></span
+        ><span>⚙</span>
+      </nav>
+
+      <section class="agentic-chat" aria-label="现有 ACP Chat 区域的扩展">
+        <aside class="tasks" aria-label="任务管理列表">
+          <header class="tasks-head">
+            <h1>任务</h1>
+            <span class="count">8</span><button class="icon-button" aria-label="搜索任务">⌕</button
+            ><button class="icon-button primary" aria-label="新建任务">＋</button>
+          </header>
+          <div class="task-search"><span>⌕</span><span>搜索任务</span><kbd>⌘K</kbd></div>
+          <section class="project">
+            <div class="project-title">
+              <span class="folder">▾ ▱</span>opensumi-core <span class="project-count">3</span
+              ><span class="mini-plus">＋</span>
+            </div>
+            <div class="task-row selected">
+              <span class="task-state permission"></span>
+              <div class="task-copy">
+                <div class="task-title">修复跨项目任务切换</div>
+                <div class="task-sub">需要确认权限</div>
+              </div>
+              <span class="task-time">刚刚<i class="unread"></i></span>
+            </div>
+            <div class="task-row">
+              <span class="task-state running"></span>
+              <div class="task-copy">
+                <div class="task-title">实现 Agentic 任务列表</div>
+                <div class="task-sub">Claude ACP · 运行中</div>
+              </div>
+              <span class="task-time">2m</span>
+            </div>
+            <div class="task-row">
+              <span class="task-state ready"></span>
+              <div class="task-copy">
+                <div class="task-title">补齐会话恢复用例</div>
+                <div class="task-sub">等待下一条指令</div>
+              </div>
+              <span class="task-time">18m</span>
+            </div>
+          </section>
+          <section class="project">
+            <div class="project-title">
+              <span class="folder">▾ ▱</span>ai-native-playground <span class="project-count">2</span
+              ><span class="mini-plus">＋</span>
+            </div>
+            <div class="task-row">
+              <span class="task-state ready"></span>
+              <div class="task-copy">
+                <div class="task-title">权限请求的状态映射</div>
+                <div class="task-sub">等待下一条指令</div>
+              </div>
+              <span class="task-time">昨天<i class="unread"></i></span>
+            </div>
+            <div class="task-row">
+              <span class="task-state"></span>
+              <div class="task-copy">
+                <div class="task-title">检查 Header 信息密度</div>
+                <div class="task-sub">已停止</div>
+              </div>
+              <span class="task-time">昨天</span>
+            </div>
+          </section>
+          <div class="archive-row"><span>▸　已归档任务</span><b>12</b></div>
+        </aside>
+
+        <section class="conversation" aria-label="主会话区域">
+          <header class="chat-head">
+            <span class="agent-mark">✦</span><span class="chat-title">修复跨项目任务切换</span
+            ><span class="chat-meta">Claude ACP</span>
+            <div class="chat-actions"><button class="icon-button">⌘</button><button class="icon-button">⛶</button></div>
+          </header>
+          <div class="chat-body">
+            <div class="user-message">选择其他项目的任务时，先检查当前编辑器是否有未保存修改。</div>
+            <div class="agent-message">
+              <span class="avatar">✦</span>
+              <div>
+                <strong>我已定位现有 Agentic Layout 的布局边界。</strong><br />任务列表会嵌入 ACP Chat
+                区域的左侧；编辑器和文件树继续使用 Agentic Workbench 的原有位置与行为。
+                <div class="tool-card">
+                  ✓ packages/ai-native/src/browser/layout/ai-layout.tsx<br />✓ Workspace-aware Task Switch<br />•
+                  Waiting for permission decision
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="composer"><span>＋</span><span>回复 Agent…</span><span class="send">↑</span></div>
+        </section>
+      </section>
+
+      <section class="workbench" aria-label="现有 Agentic Workbench">
+        <section class="editor" aria-label="编辑器">
+          <div class="editor-tabs">
+            <span class="editor-tab active"><i></i>AgentTaskHistory.tsx　×</span
+            ><span class="editor-tab">ai-layout.tsx　×</span>
+          </div>
+          <div class="breadcrumbs">
+            <span>packages</span><span>›</span><span>ai-native</span><span>›</span><span>components</span><span>›</span
+            ><strong>AgentTaskHistory.tsx</strong>
+          </div>
+          <div class="code">
+            <div class="lines">
+              1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />11<br />12<br />13<br />14<br />15
+            </div>
+            <pre><span class="kw">export const</span> <span class="fn">AgentTaskHistory</span> = () =&gt; {
+  <span class="kw">const</span> { tasks, activeTask } =
+    <span class="fn">useAgenticTasks</span>();
+
+  <span class="kw">return</span> (
+    &lt;<span class="type">TaskList</span>
+      <span class="prop">tasks</span>={tasks}
+      <span class="prop">activeTaskId</span>={activeTask?.id}
+      <span class="prop">onSelect</span>={<span class="fn">activateTask</span>}
+    /&gt;
+  );
+};
+
+<span class="comment">// Agentic Layout only — no IDE Layout changes.</span></pre>
+          </div>
+        </section>
+        <aside class="files" aria-label="文件树列表">
+          <header class="files-head"><span>资源管理器</span><span>···</span></header>
+          <div class="file-tree">
+            <div>⌄　OPENSUMI-CORE</div>
+            <div class="indent1">⌄　packages</div>
+            <div class="indent2">⌄　ai-native</div>
+            <div class="indent3">⌄　components</div>
+            <div class="indent3 active-file">◇　AgentTaskHistory.tsx <b class="dirty">M</b></div>
+            <div class="indent3">◇　AcpChatViewHeader.tsx</div>
+            <div class="indent2">⌄　layout</div>
+            <div class="indent3">◇　ai-layout.tsx</div>
+            <div class="indent1">⌄　test</div>
+          </div>
+        </aside>
+      </section>
+      <footer class="statusbar">
+        <span>◉　Agentic Layout</span><span>ACP: connected</span><span>任务列表 244px</span
+        ><span class="right">UTF-8　TypeScript React　Ln 4, Col 18</span>
+      </footer>
+      <span class="label task-label">任务管理列表</span><span class="label chat-label">主会话区域</span
+      ><span class="label editor-label">编辑器</span><span class="label files-label">文件树</span>
+    </main>
+    <p class="note">设计预览（非生产实现） · 任务列表嵌入现有 ACP Chat Slot；IDE Layout 不变</p>
+  </body>
+</html>

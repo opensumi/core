@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
 
-import { expect } from '@playwright/test';
+import { type Locator, expect } from '@playwright/test';
 
 import { OpenSumiApp } from '../app';
 import { OpenSumiExplorerView } from '../explorer-view';
@@ -30,6 +30,7 @@ const OTHER_SESSION_PREFIX = 'bdd-task-workbench-other';
 const MISSING_SESSION_PREFIX = 'bdd-task-workbench-missing';
 const DIRTY_EDITOR_MESSAGE = 'You have unsaved editor changes. Choose how to continue.';
 const PENDING_ACTIVATION_STORAGE_KEY = 'agentic.pending-task-activation.v2';
+const ACTIVE_TASK_SESSION_STORAGE_KEY = 'agentic.active-task-session.v1';
 
 interface SessionState {
   active: boolean;
@@ -121,6 +122,10 @@ async function openWorkspace(workspaceDir: string, layout: 'agentic' | 'classic'
   await showAgenticChatView();
 }
 
+async function clearRememberedActiveTask(): Promise<void> {
+  await page.evaluate((key) => window.sessionStorage.removeItem(key), ACTIVE_TASK_SESSION_STORAGE_KEY);
+}
+
 function workspaceUrl(workspaceDir: string, layout: 'agentic' | 'classic' = 'agentic'): string {
   const workspace = [currentWorkspace, otherWorkspace, missingWorkspace].find(
     (candidate) => candidate?.workspace.codeUri.fsPath === workspaceDir,
@@ -149,6 +154,28 @@ function getAgentOptionTestId(agentLabel: 'Agent A' | 'Agent B'): string {
   return `agentic-task-agent-option-${agentLabel === 'Agent A' ? 'claude-agent-acp' : 'agent-b'}`;
 }
 
+function getProjectToggle(group: Locator, projectLabel: string, expanded: boolean): Locator {
+  return group.getByRole('button', {
+    name: `${expanded ? 'Collapse' : 'Expand'} ${projectLabel}`,
+    exact: true,
+  });
+}
+
+async function expectSquareControl(control: Locator): Promise<void> {
+  await expect(control).toHaveCSS('width', '22px');
+  await expect(control).toHaveCSS('height', '22px');
+}
+
+async function expectCodiconSize(icon: Locator): Promise<void> {
+  await expect(icon).toHaveCSS('font-size', '16px');
+}
+
+async function expectTruncatedText(text: Locator): Promise<void> {
+  await expect(text).toHaveCSS('overflow', 'hidden');
+  await expect(text).toHaveCSS('text-overflow', 'ellipsis');
+  await expect(text).toHaveCSS('white-space', 'nowrap');
+}
+
 async function createTask(title: string, agentLabel: 'Agent A' | 'Agent B' = 'Agent A'): Promise<string> {
   const header = page.getByTestId('agentic-chat-panel-header');
   const menuButton = header.getByTestId('agentic-task-agent-menu-button');
@@ -159,6 +186,11 @@ async function createTask(title: string, agentLabel: 'Agent A' | 'Agent B' = 'Ag
   await menu.getByTestId(getAgentOptionTestId(agentLabel)).click();
   await expect(menu).toBeHidden();
   return submitTaskDraft(title, agentLabel);
+}
+
+async function pressNewDraftShortcut(): Promise<void> {
+  const isMac = await page.evaluate(() => /Mac/.test(navigator.platform));
+  await page.keyboard.press(`${isMac ? 'Meta' : 'Control'}+Alt+N`);
 }
 
 function getTaskDraftComposer() {
@@ -182,7 +214,9 @@ async function submitTaskDraft(title: string, agentLabel = 'Agent A'): Promise<s
     .click();
   await expect.poll(async () => (await getSessionState()).session?.sessionId, { timeout: 30_000 }).toBeTruthy();
   const sessionId = (await getSessionState()).session!.sessionId;
-  await expect(page.getByTestId(`agentic-task-row-${sessionId}`)).toBeVisible({ timeout: 30_000 });
+  const taskRow = page.getByTestId(`agentic-task-row-${sessionId}`);
+  await expect(taskRow).toBeVisible({ timeout: 30_000 });
+  await expect(taskRow).toHaveAttribute('aria-current', 'true');
   return sessionId;
 }
 
@@ -263,15 +297,18 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
     );
     await renameProjectForTask(currentNewerSessionId, 'Project Current');
 
+    await clearRememberedActiveTask();
     await openWorkspace(otherWorkspaceDir);
     otherReadySessionId = await createTask('Other ready');
     await renameProjectForTask(otherReadySessionId, 'Project Other');
 
+    await clearRememberedActiveTask();
     await openWorkspace(missingWorkspaceDir);
     const missingReadySessionId = await createTask('Missing ready');
     await renameProjectForTask(missingReadySessionId, 'Project Missing');
     await fs.rm(missingWorkspaceDir, { recursive: true, force: true });
 
+    await clearRememberedActiveTask();
     await openWorkspace(currentWorkspaceDir);
     await renameProjectForTask(currentNewerSessionId, 'Project Current');
     await renameProjectForTask(otherReadySessionId, 'Project Other');
@@ -302,10 +339,10 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
       hardeningVerdict: 'CONVERT',
     });
     const currentGroup = page.locator('[data-testid="agentic-task-project-group"]').filter({
-      has: page.getByTestId(`agentic-task-row-${currentNewerSessionId}`),
+      has: page.getByTitle(currentWorkspaceDir, { exact: true }),
     });
     const otherGroup = page.locator('[data-testid="agentic-task-project-group"]').filter({
-      has: page.getByTestId(`agentic-task-row-${otherReadySessionId}`),
+      has: page.getByTitle(otherWorkspaceDir, { exact: true }),
     });
 
     await expect(page.getByTestId('agentic-task-list')).toBeVisible();
@@ -324,14 +361,94 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
     await expect(currentGroup.getByTestId('agentic-task-agent-menu-button')).toHaveCount(0);
     await expect(page.getByText('Project Missing', { exact: true })).toHaveCount(0);
     await expect(page.getByText('Missing ready', { exact: true })).toHaveCount(0);
+
+    const search = page.getByPlaceholder('Search tasks');
+    const searchControl = search.locator('..');
+    const currentProjectLabel = currentGroup.getByTitle(currentWorkspaceDir, { exact: true });
+    const currentProjectToggle = getProjectToggle(currentGroup, 'Project Current', true);
+    const otherProjectToggle = getProjectToggle(otherGroup, 'Project Other', true);
+    const currentNewerRow = page.getByTestId(`agentic-task-row-${currentNewerSessionId}`);
+    const currentNewerTitle = currentNewerRow.getByText('Current newer', { exact: true });
+    const currentNewerStatus = page.getByTestId(`agentic-task-status-${currentNewerSessionId}`);
+    const addProjectButton = page.getByTestId('agentic-project-add-button');
     const currentProjectLaunchButton = currentGroup.getByTestId('agentic-task-launch-button');
+    const currentProjectManageButton = currentGroup.getByRole('button', {
+      name: 'Manage Project Current',
+      exact: true,
+    });
+    const archiveCurrentNewer = page.getByTestId(`agentic-task-archive-${currentNewerSessionId}`);
+    const archivedToggle = page.getByRole('button', { name: 'Archived Tasks', exact: true });
+
+    await expect(page.getByRole('heading', { name: 'Agent Tasks', exact: true })).toHaveCSS('font-size', '12px');
+    await expect(page.getByRole('heading', { name: 'Agent Tasks', exact: true })).toHaveCSS('font-weight', '600');
+    await expect(searchControl).toHaveCSS('height', '28px');
+    await expect(search).toHaveCSS('font-size', '12px');
+    await expect(currentGroup.locator('header').first()).toHaveCSS('height', '22px');
+    await expect(currentProjectLabel).toHaveCSS('font-size', '12px');
+    await expect(currentProjectLabel).toHaveCSS('font-weight', '600');
+    await expectTruncatedText(currentProjectLabel);
+    await expect(currentProjectToggle.getByText('2', { exact: true })).toHaveCSS('font-size', '12px');
+    await expect(currentProjectToggle).toHaveCSS('transition-duration', '0s');
+    await expect(currentNewerRow).toHaveCSS('height', '22px');
+    await expect(currentNewerTitle).toHaveCSS('font-size', '13px');
+    await expectTruncatedText(currentNewerTitle);
+    await expect(currentNewerStatus).toHaveCSS('font-size', '12px');
+    await expect(archivedToggle).toHaveCSS('height', '22px');
+    await Promise.all(
+      [addProjectButton, currentProjectLaunchButton, currentProjectManageButton, archiveCurrentNewer].map(
+        expectSquareControl,
+      ),
+    );
+    await Promise.all(
+      [
+        searchControl.locator('.codicon-search'),
+        currentProjectToggle.locator('.codicon').first(),
+        addProjectButton.locator('.codicon'),
+        currentProjectLaunchButton.locator('.codicon'),
+        currentProjectManageButton.locator('.codicon'),
+        archiveCurrentNewer.locator('.codicon'),
+        archivedToggle.locator('.codicon'),
+      ].map(expectCodiconSize),
+    );
     await expect(currentProjectLaunchButton).toHaveCSS('opacity', '0.72');
     await currentProjectLaunchButton.hover();
     await expect(currentProjectLaunchButton).toHaveCSS('opacity', '1');
     await currentProjectLaunchButton.focus();
     await expect(currentProjectLaunchButton).toHaveCSS('opacity', '1');
 
-    const search = page.getByPlaceholder('Search tasks');
+    await currentProjectToggle.focus();
+    await expect(currentProjectToggle).toHaveCSS('outline-width', '1px');
+    await expect(currentProjectToggle).toHaveCSS('outline-style', 'solid');
+    const projectToggleOutlineColor = await currentProjectToggle.evaluate(
+      (element) => window.getComputedStyle(element).outlineColor,
+    );
+    expect(projectToggleOutlineColor).not.toBe('transparent');
+    expect(projectToggleOutlineColor).not.toBe('rgba(0, 0, 0, 0)');
+
+    const activeSessionIdBeforeDisclosure = (await getSessionState()).session?.sessionId ?? null;
+    await currentProjectToggle.click();
+    await expect(getProjectToggle(currentGroup, 'Project Current', false)).toHaveAttribute('aria-expanded', 'false');
+    await expect(currentNewerRow).toBeHidden();
+    expect((await getSessionState()).session?.sessionId ?? null).toBe(activeSessionIdBeforeDisclosure);
+    await getProjectToggle(currentGroup, 'Project Current', false).press('Enter');
+    await expect(getProjectToggle(currentGroup, 'Project Current', true)).toHaveAttribute('aria-expanded', 'true');
+    await expect(currentNewerRow).toBeVisible();
+    expect((await getSessionState()).session?.sessionId ?? null).toBe(activeSessionIdBeforeDisclosure);
+    await getProjectToggle(currentGroup, 'Project Current', true).press('Space');
+    await expect(getProjectToggle(currentGroup, 'Project Current', false)).toHaveAttribute('aria-expanded', 'false');
+    await expect(currentNewerRow).toBeHidden();
+    expect((await getSessionState()).session?.sessionId ?? null).toBe(activeSessionIdBeforeDisclosure);
+
+    await otherProjectToggle.click();
+    await expect(getProjectToggle(otherGroup, 'Project Other', false)).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByTestId(`agentic-task-row-${otherReadySessionId}`)).toBeHidden();
+    expect((await getSessionState()).session?.sessionId ?? null).toBe(activeSessionIdBeforeDisclosure);
+
+    await search.fill('Current');
+    await expect(getProjectToggle(currentGroup, 'Project Current', true)).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByTestId(`agentic-task-row-${currentOlderSessionId}`)).toBeVisible();
+    await expect(page.getByTestId(`agentic-task-row-${currentNewerSessionId}`)).toBeVisible();
+    await expect(page.getByTestId(`agentic-task-row-${otherReadySessionId}`)).toHaveCount(0);
     await search.fill('Current older');
     await expect(page.getByTestId(`agentic-task-row-${currentOlderSessionId}`)).toBeVisible();
     await expect(page.getByTestId(`agentic-task-row-${currentNewerSessionId}`)).toHaveCount(0);
@@ -339,6 +456,23 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
     await search.fill('Missing');
     await expect(page.getByText('Missing ready', { exact: true })).toHaveCount(0);
     await search.fill('');
+    await expect(getProjectToggle(currentGroup, 'Project Current', false)).toHaveAttribute('aria-expanded', 'false');
+    await expect(getProjectToggle(otherGroup, 'Project Other', false)).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByTestId(`agentic-task-row-${currentOlderSessionId}`)).toBeHidden();
+    await expect(page.getByTestId(`agentic-task-row-${otherReadySessionId}`)).toBeHidden();
+    await getProjectToggle(currentGroup, 'Project Current', false).click();
+    await getProjectToggle(otherGroup, 'Project Other', false).click();
+    await expect(getProjectToggle(currentGroup, 'Project Current', true)).toHaveAttribute('aria-expanded', 'true');
+    await expect(otherProjectToggle).toHaveAttribute('aria-expanded', 'true');
+
+    await currentProjectManageButton.click();
+    const renameCurrentProject = currentGroup.getByRole('button', { name: 'Rename Project Current', exact: true });
+    await expect(renameCurrentProject).toBeVisible();
+    await expect(renameCurrentProject).toHaveCSS('font-size', '12px');
+    await expect(getProjectToggle(currentGroup, 'Project Current', true)).toHaveAttribute('aria-expanded', 'true');
+    await expect(currentNewerRow).toBeVisible();
+    await currentProjectManageButton.click();
+    await expect(renameCurrentProject).toBeHidden();
 
     const initialTaskListState = {
       currentNewerVisible: await page.getByTestId(`agentic-task-row-${currentNewerSessionId}`).isVisible(),
@@ -359,23 +493,34 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
 
     const header = page.getByTestId('agentic-chat-panel-header');
     const launcher = header.getByTestId('agentic-task-launch-button');
+    const agentMenuButton = header.getByTestId('agentic-task-agent-menu-button');
     const fullscreen = page.locator('#agentic-chat-panel-header-maximize [role="button"]');
     const [launcherBox, fullscreenBox] = await Promise.all([launcher.boundingBox(), fullscreen.boundingBox()]);
     expect(launcherBox).not.toBeNull();
     expect(fullscreenBox).not.toBeNull();
     expect((launcherBox?.x || 0) + (launcherBox?.width || 0)).toBeLessThanOrEqual(fullscreenBox?.x || 0);
+    await expect(launcher).toHaveAttribute('aria-label', /New Task with Agent A.*N/);
+    await expect(agentMenuButton).toHaveAttribute('aria-label', 'Choose Agent');
 
     await launcher.click();
     const agentMenu = header.getByTestId('agentic-task-agent-menu');
-    await expect(agentMenu).toBeVisible();
+    await expect(agentMenu).toHaveCount(0);
     await expect(page.getByText('Choose Project', { exact: true })).toHaveCount(0);
-    await agentMenu.getByTestId(getAgentOptionTestId('Agent A')).click();
     const headerDirectSession = await submitTaskDraft('Header direct draft');
     await expect(page.getByTestId(`agentic-task-row-${headerDirectSession}`)).toBeVisible();
+
+    await agentMenuButton.click();
+    await expect(agentMenu).toBeVisible();
+    await expect(agentMenu.getByTestId(getAgentOptionTestId('Agent A'))).toBeVisible();
+    await expect(agentMenu.getByTestId(getAgentOptionTestId('Agent B'))).toBeVisible();
+    await agentMenuButton.click();
+    await expect(agentMenu).toBeHidden();
 
     const urlBeforeProjectLaunch = page.url();
     await otherGroup.getByTestId('agentic-task-launch-button').click();
     await expect(getTaskDraftComposer()).toBeVisible();
+    await expect(otherProjectToggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByTestId(`agentic-task-row-${otherReadySessionId}`)).toBeVisible();
     expect(page.url()).toBe(urlBeforeProjectLaunch);
     await submitTaskDraft('Project recall draft');
     const urlBeforeHeaderForeignProjectLaunch = page.url();
@@ -390,7 +535,7 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
         projectLaunchUrl: urlBeforeProjectLaunch,
         launchedTaskVisible: await page.getByTestId(`agentic-task-row-${launchedAgentBSession}`).isVisible(),
       },
-      'Project Other launches its recalled Agent in place, and the Header Agent menu keeps the selected Task Project without navigating the current workspace',
+      'Header New Task launches directly, the adjacent Agent menu supports explicit override, and Project Other remains the target without navigating the current workspace',
     );
 
     await selectTask(currentOlderSessionId);
@@ -435,17 +580,18 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
       'Cross-project selection and Project-group launch retain the dirty current-workspace editor without displaying a save/discard dialog',
     );
 
-    const currentNewerRow = page.getByTestId(`agentic-task-row-${currentNewerSessionId}`);
-    const archiveCurrentNewer = page.getByTestId(`agentic-task-archive-${currentNewerSessionId}`);
     await currentNewerRow.hover();
     await expect(archiveCurrentNewer).toHaveCSS('pointer-events', 'auto');
     await archiveCurrentNewer.click();
+    await expect(getProjectToggle(currentGroup, 'Project Current', true)).toHaveAttribute('aria-expanded', 'true');
     await expect(page.getByTestId(`agentic-task-row-${currentNewerSessionId}`)).toHaveCount(0);
     await page.getByRole('button', { name: 'Archived Tasks', exact: true }).click();
     const archivedCurrentNewer = page.getByTestId(`agentic-task-row-${currentNewerSessionId}`);
     const unarchiveCurrentNewer = page.getByTestId(`agentic-task-unarchive-${currentNewerSessionId}`);
     await archivedCurrentNewer.hover();
     await expect(unarchiveCurrentNewer).toHaveCSS('pointer-events', 'auto');
+    await expectSquareControl(unarchiveCurrentNewer);
+    await expectCodiconSize(unarchiveCurrentNewer.locator('.codicon'));
     await unarchiveCurrentNewer.click();
     await expect(page.getByTestId(`agentic-task-row-${currentNewerSessionId}`)).toBeVisible();
 
@@ -460,15 +606,27 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
     });
     await waitForAcpChatReady(page);
     await expect(page.getByTestId('acp-chat-history-button')).toBeVisible();
+    await page.getByLabel('Close', { exact: true }).click();
+    await expect(page.locator('.AI-Chat-slot')).toBeHidden();
+    await page.locator('.monaco-editor textarea').first().focus();
+    await pressNewDraftShortcut();
+    await expect(page.locator('.AI-Chat-slot')).toBeVisible();
+    await expect(getTaskDraftComposer()).toBeFocused();
+    expect((await getSessionState()).active).toBe(false);
 
     await writeAiNativePanelLayoutSettings(currentWorkspaceDir, 'agentic');
     await openWorkspace(currentWorkspaceDir);
     await expect(page.getByTestId('agentic-task-list')).toBeVisible();
     await expect(page.getByTestId('agentic-chat-panel-header').getByTestId('agentic-task-launch-button')).toBeVisible();
+    await page.locator('.monaco-editor textarea').first().focus();
+    await pressNewDraftShortcut();
+    await expect(getTaskDraftComposer()).toBeFocused();
+    expect((await getSessionState()).active).toBe(false);
+    await expect(page.getByTestId('agentic-task-agent-menu')).toHaveCount(0);
     const layoutProof = await evidence.saveJson(
       '05-archive-and-layout-boundary',
-      { classicHistoryButton: true },
-      'Archive/unarchive keeps the Task in its Project and Classic retains its own history action before Agentic is restored',
+      { agenticShortcutFocusedDraft: true, classicHistoryButton: true, classicShortcutRevealedDraft: true },
+      'Classic and Agentic share the layout-appropriate shortcut while preserving Classic history and restoring Agentic Task List composition',
     );
 
     evidence.recordCriticalPoint({
@@ -481,7 +639,7 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
     evidence.recordCriticalPoint({
       id: 'CP2',
       requirement:
-        'Header New Task is adjacent to fullscreen and opens an Agent dropdown; Project-group + uses its recalled Agent and the Header retains the selected Task Project without an override arrow or workspace navigation.',
+        'Header New Task launches directly with its recalled Agent, keeps an adjacent explicit Agent dropdown, and retains the selected Task Project without workspace navigation.',
       status: 'pass',
       evidence: [launchProof].filter(Boolean) as string[],
     });
@@ -501,7 +659,8 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
     });
     evidence.recordCriticalPoint({
       id: 'CP5',
-      requirement: 'Archive and Classic/Agentic boundaries preserve Task identity and legacy history behavior.',
+      requirement:
+        'Archive and Classic/Agentic boundaries preserve Task identity, legacy history behavior, and the shared layout-aware New Chat/New Task shortcut.',
       status: 'pass',
       evidence: [layoutProof].filter(Boolean) as string[],
     });

@@ -11,6 +11,8 @@ let mockMentionInputOnEmptyArrowUp: (() => boolean) | undefined;
 let mockMentionInputOnEmptySubmit: (() => void) | undefined;
 let mockMentionInputOnToggleExpanded: (() => void) | undefined;
 let mockMentionInputOnUserInput: (() => void) | undefined;
+let mockMentionInputDisabled = false;
+let mockMentionInputLoading = false;
 let mockUseActualMentionInput = false;
 const mockMentionInputRestore = jest.fn();
 const mockMentionInputFocus = jest.fn();
@@ -81,6 +83,7 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => {
       {
         currentMode,
         defaultInput,
+        disabled,
         expanded,
         footerConfig,
         mentionItems,
@@ -94,9 +97,11 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => {
         onSendImmediately,
         onToggleExpanded,
         onUserInput,
+        loading,
       }: {
         currentMode?: string;
         defaultInput?: string;
+        disabled?: boolean;
         expanded?: boolean;
         footerConfig?: {
           buttons?: Array<{ id: string }>;
@@ -116,6 +121,7 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => {
         onSendImmediately?: (content: string, option?: { model: string }) => unknown;
         onToggleExpanded?: () => void;
         onUserInput?: () => void;
+        loading?: boolean;
       },
       ref: React.ForwardedRef<unknown>,
     ) => {
@@ -130,6 +136,8 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => {
       mockMentionInputOnEmptySubmit = onEmptySubmit;
       mockMentionInputOnToggleExpanded = onToggleExpanded;
       mockMentionInputOnUserInput = onUserInput;
+      mockMentionInputDisabled = !!disabled;
+      mockMentionInputLoading = !!loading;
 
       React.useEffect(() => {
         setValue(defaultInput || '');
@@ -158,12 +166,14 @@ jest.mock('../../src/browser/components/acp/MentionInput', () => {
           'data-testid': 'acp-mention-input',
           'data-expanded': expanded ? 'true' : 'false',
           'data-current-mode': currentMode,
+          'data-disabled': disabled ? 'true' : 'false',
           'data-default-model': footerConfig?.defaultModel,
           'data-config-option-count': String(footerConfig?.configOptions?.length ?? 0),
           'data-direct-config-option-count': String(configOptions?.length ?? 0),
           'data-footer-buttons': (footerConfig?.buttons || []).map(({ id }) => id).join(','),
           'data-mention-item-count': String(mentionItems?.length ?? 0),
           'data-mode-option-count': String(modeOptions?.length ?? 0),
+          'data-loading': loading ? 'true' : 'false',
           'data-on-image-upload': onImageUpload ? 'true' : 'false',
           'data-show-mode-selector': footerConfig?.showModeSelector ? 'true' : 'false',
           'data-show-model-selector': footerConfig?.showModelSelector ? 'true' : 'false',
@@ -322,6 +332,8 @@ describe('AcpChatMentionInput ref contract', () => {
     mockMentionInputOnEmptySubmit = undefined;
     mockMentionInputOnToggleExpanded = undefined;
     mockMentionInputOnUserInput = undefined;
+    mockMentionInputDisabled = false;
+    mockMentionInputLoading = false;
     mockUseActualMentionInput = false;
     jest.clearAllMocks();
   });
@@ -449,6 +461,63 @@ describe('AcpChatMentionInput ref contract', () => {
     expect(mockMentionInputRestore).toHaveBeenCalledWith('taken back draft');
     expect(setAgentId).toHaveBeenCalledWith('restored-agent');
     expect(setCommand).toHaveBeenCalledWith('/restore');
+  });
+
+  it('keeps session-switch disabling distinct from request loading and blocks main editor actions', async () => {
+    const submit = jest.fn();
+    const stop = jest.fn();
+    const fastTrack = jest.fn();
+    const invalidateFastTrack = jest.fn();
+    const takeBackLastQueuedTurn = jest.fn();
+    const onSend = jest.fn();
+    const setTheme = jest.fn();
+    const setAgentId = jest.fn();
+    const setCommand = jest.fn();
+
+    act(() => {
+      render(
+        React.createElement(AcpTurnEditor, {
+          variant: 'main',
+          disabled: true,
+          loading: false,
+          onSend,
+          setTheme,
+          agentId: 'outgoing-agent',
+          setAgentId,
+          command: '/outgoing-command',
+          setCommand,
+          turnActions: { submit, stop, fastTrack, invalidateFastTrack, takeBackLastQueuedTurn },
+        }),
+        container,
+      );
+    });
+
+    expect(mockMentionInputDisabled).toBe(true);
+    expect(mockMentionInputLoading).toBe(false);
+    expect((container.querySelector('[data-testid="acp-mention-input"]') as HTMLTextAreaElement).dataset).toMatchObject(
+      { disabled: 'true', loading: 'false' },
+    );
+
+    await act(async () => {
+      await mockMentionInputOnSend?.('blocked draft', { model: 'model-1' });
+      await mockMentionInputOnSendImmediately?.('blocked immediate draft', { model: 'model-1' });
+      await mockMentionInputOnImageUpload?.([new File(['blocked'], 'blocked.png', { type: 'image/png' })]);
+      mockMentionInputOnEscape?.();
+      mockMentionInputOnEmptySubmit?.();
+      mockMentionInputOnEmptyArrowUp?.();
+      mockMentionInputOnUserInput?.();
+      mockMentionInputOnToggleExpanded?.();
+    });
+
+    expect(submit).not.toHaveBeenCalled();
+    expect(stop).not.toHaveBeenCalled();
+    expect(fastTrack).not.toHaveBeenCalled();
+    expect(invalidateFastTrack).not.toHaveBeenCalled();
+    expect(takeBackLastQueuedTurn).not.toHaveBeenCalled();
+    expect(onSend).not.toHaveBeenCalled();
+    expect(setTheme).not.toHaveBeenCalled();
+    expect(setAgentId).not.toHaveBeenCalled();
+    expect(setCommand).not.toHaveBeenCalled();
   });
 
   it('maps queued editor Enter, Immediate Send, and Escape without expansion', async () => {

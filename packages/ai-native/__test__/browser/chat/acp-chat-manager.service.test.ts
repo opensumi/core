@@ -786,6 +786,31 @@ describe('AcpChatManagerService', () => {
     attachment.end();
   });
 
+  it('cancels a reattached working ACP session through the provider when no browser request token exists', () => {
+    const { service } = createConstructedService();
+    const sessionId = 'acp:s-reattached';
+    const model = new ChatModel(new ChatFeatureRegistry(), { sessionId });
+    const cancelSession = jest.fn().mockResolvedValue(undefined);
+    model.setThreadStatus('working');
+    (service as any).sessionModels.set(sessionId, model);
+    (service as any).mainProvider = { cancelSession };
+
+    expect(service.cancelRequest(sessionId)).toBe(true);
+    expect(cancelSession).toHaveBeenCalledWith(sessionId);
+  });
+
+  it('normalizes the ACP session id when explicitly cancelling through the back service', async () => {
+    const provider = createSessionProvider();
+    const cancelSession = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(provider, 'aiBackService', {
+      value: { cancelSession },
+    });
+
+    await provider.cancelSession('acp:s-reattached');
+
+    expect(cancelSession).toHaveBeenCalledWith('s-reattached');
+  });
+
   it('does not complete an auth-required attachment before later output arrives', async () => {
     const service = createService();
     const sessionId = 'acp:s-auth';

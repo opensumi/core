@@ -367,7 +367,7 @@ export const AIChatViewACPContent = () => {
   }, []);
   const queuedTurns = queuedTurnRuntime.queuedTurns;
   const [queuedTurnSnapshot, setQueuedTurnSnapshot] = React.useState(() => queuedTurns.snapshot);
-  const [sessionLoading, setSessionLoading] = React.useState(false);
+  const [sessionLoading, setSessionLoading] = React.useState(() => aiChatService.isSessionLoading);
   const [agentId, setAgentId] = React.useState('');
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
@@ -427,6 +427,7 @@ export const AIChatViewACPContent = () => {
     const dispose = aiChatService.onSessionLoadingChange((isLoading) => {
       setSessionLoading(isLoading);
     });
+    setSessionLoading(aiChatService.isSessionLoading);
     return () => dispose.dispose();
   }, [aiChatService]);
 
@@ -643,7 +644,7 @@ export const AIChatViewACPContent = () => {
     disposer.addDispose(
       chatApiService.onChatMessageLaunch(async (message) => {
         if (message.immediate !== false) {
-          if (loading) {
+          if (loading || sessionLoading) {
             return;
           }
           await handleSend(message.message, message.images, message.agentId, message.command);
@@ -756,7 +757,7 @@ export const AIChatViewACPContent = () => {
     );
 
     return () => disposer.dispose();
-  }, [chatApiService, chatRenderRegistry.chatAIRoleRender, msgHistoryManager]);
+  }, [chatApiService, chatRenderRegistry.chatAIRoleRender, msgHistoryManager, sessionLoading]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
@@ -1262,6 +1263,9 @@ export const AIChatViewACPContent = () => {
       command?: string,
       _option?: { model: string; [key: string]: unknown },
     ) => {
+      if (sessionLoading) {
+        return false;
+      }
       const resolvedAgentId = agentId || ChatProxyService.AGENT_ID;
       const result = await queuedTurns.submit(
         {
@@ -1277,7 +1281,7 @@ export const AIChatViewACPContent = () => {
       }
       return result.accepted;
     },
-    [queuedTurns],
+    [queuedTurns, sessionLoading],
   );
 
   const handleClear = React.useCallback(() => {
@@ -1477,6 +1481,20 @@ export const AIChatViewACPContent = () => {
     return () => disposable.dispose();
   }, [aiChatService.sessionModel, setChatLoading]);
 
+  const welcomePageRender = chatRenderRegistry.chatWelcomePageRender;
+  const showWelcomePage = !hasUserSentMessage && messageListData.length <= 1 && !!welcomePageRender;
+  const showAgenticTaskEmptyState = showWelcomePage && panelLayoutService.getLayoutMode() === 'agentic';
+  const welcomePage =
+    showWelcomePage && welcomePageRender
+      ? React.createElement(welcomePageRender, {
+          onSend: handleSend,
+          agentId,
+          setAgentId,
+          command,
+          setCommand,
+        })
+      : undefined;
+
   return (
     <div id={styles.ai_chat_view}>
       <div className={styles.header_container}>
@@ -1489,15 +1507,24 @@ export const AIChatViewACPContent = () => {
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>
           <AgenticChatPanelHeader preferSessionTitle={true} sessionModel={aiChatService.sessionModel} />
-          <div className={styles.chat_container} ref={containerRef}>
-            {!hasUserSentMessage && messageListData.length <= 1 && chatRenderRegistry.chatWelcomePageRender ? (
-              React.createElement(chatRenderRegistry.chatWelcomePageRender, {
-                onSend: handleSend,
-                agentId,
-                setAgentId,
-                command,
-                setCommand,
-              })
+          <div aria-busy={sessionLoading} className={styles.chat_container} ref={containerRef}>
+            {sessionLoading ? (
+              <div
+                aria-live='polite'
+                className={styles.loading_container}
+                data-testid='acp-session-loading'
+                role='status'
+              >
+                {localize('aiNative.chat.session.loading', 'Loading chat…')}
+              </div>
+            ) : showWelcomePage ? (
+              showAgenticTaskEmptyState ? (
+                <div className={styles.agentic_task_empty_layout}>
+                  <div className={styles.agentic_task_empty_content}>{welcomePage}</div>
+                </div>
+              ) : (
+                welcomePage
+              )
             ) : (
               <MessageList
                 className={styles.message_list}
@@ -1508,7 +1535,7 @@ export const AIChatViewACPContent = () => {
               />
             )}
           </div>
-          {aiChatService.sessionModel?.slicedMessageCount ? (
+          {!sessionLoading && aiChatService.sessionModel?.slicedMessageCount ? (
             <div className={styles.chat_tips_text}>
               <div className={styles.chat_tips_container}>
                 {formatLocalize(
@@ -1522,6 +1549,7 @@ export const AIChatViewACPContent = () => {
             <AcpQueuedTurns
               snapshot={queuedTurnSnapshot}
               expanded={queuedTurnsExpanded}
+              disabled={sessionLoading}
               capabilities={activeChatInput?.capabilities || []}
               QueuedEditor={activeChatInput?.queuedTurnEditor}
               onToggleExpanded={handleQueuedTurnsToggle}
@@ -1553,7 +1581,7 @@ export const AIChatViewACPContent = () => {
             {changeList.length > 0 && (
               <FileListDisplay
                 files={changeList}
-                hideActions={loading}
+                hideActions={loading || sessionLoading}
                 onFileClick={(filePath) => {
                   editorService.open(URI.file(path.join(appConfig.workspaceDir, filePath)));
                 }}
@@ -1570,7 +1598,7 @@ export const AIChatViewACPContent = () => {
               initialDraft={aiChatService.getInputDraft()}
               onDraftChange={(draft) => aiChatService.updateInputDraft(draft)}
               disabled={sessionLoading}
-              loading={loading || sessionLoading}
+              loading={loading}
               enableOptions={true}
               theme={theme}
               setTheme={setTheme}
@@ -1582,7 +1610,9 @@ export const AIChatViewACPContent = () => {
               contextService={llmContextService}
               ref={chatInputRef}
               disableModelSelector={
-                aiNativeConfigService.capabilities.supportsAgentMode ? loading : sessionModelId !== undefined || loading
+                aiNativeConfigService.capabilities.supportsAgentMode
+                  ? loading || sessionLoading
+                  : sessionModelId !== undefined || loading || sessionLoading
               }
               activeSessionId={activeServiceSessionId}
               sessionModelId={sessionModelId}

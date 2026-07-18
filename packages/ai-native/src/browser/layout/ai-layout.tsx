@@ -19,6 +19,7 @@ import { AIPanelLayoutService, getAIChatDefaultSize, getPanelLayoutStorageKey } 
 
 const AGENTIC_EDITOR_MIN_SIZE = 360;
 const AGENTIC_WORKBENCH_MIN_RESIZE = 640;
+const AGENTIC_WORKBENCH_RESPONSIVE_BREAKPOINT = 980;
 const SIDE_SLOT_MAX_RESIZE = 480;
 
 // 使用 UA 判断是否为移动设备
@@ -141,6 +142,18 @@ export const AgenticShell = () => {
     return () => {
       disposable.dispose();
     };
+  }, [panelLayoutService]);
+
+  useEffect(() => {
+    const updateResponsiveConstraint = () => {
+      panelLayoutService.setAgenticWorkbenchWidthConstrained(
+        window.innerWidth < AGENTIC_WORKBENCH_RESPONSIVE_BREAKPOINT,
+      );
+    };
+
+    updateResponsiveConstraint();
+    window.addEventListener('resize', updateResponsiveConstraint);
+    return () => window.removeEventListener('resize', updateResponsiveConstraint);
   }, [panelLayoutService]);
 
   const aiChatLayout = layout[AI_CHAT_VIEW_ID];

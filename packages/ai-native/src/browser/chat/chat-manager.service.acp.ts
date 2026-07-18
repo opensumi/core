@@ -519,6 +519,26 @@ export class AcpChatManagerService extends ChatManagerService {
     }
   }
 
+  override cancelRequest(sessionId: string): boolean {
+    const canceledPendingRequest = super.cancelRequest(sessionId);
+    if (canceledPendingRequest) {
+      return true;
+    }
+
+    const model = this.getSession(sessionId);
+    if (!model || !isAcpResponsePending(model.threadStatus) || !this.mainProvider?.cancelSession) {
+      return false;
+    }
+
+    void this.mainProvider.cancelSession(sessionId).catch((error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `[ACP Chat][Manager] cancel attached session failed — sessionId=${sessionId}, error=${message}`,
+      );
+    });
+    return true;
+  }
+
   protected override shouldValidateModelChange(sessionId: string): boolean {
     return !sessionId.startsWith('acp:');
   }

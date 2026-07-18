@@ -249,6 +249,14 @@ export class ACPSessionProvider implements ISessionProvider {
     return this.aiBackService.attachSession(agentSessionId);
   }
 
+  async cancelSession(sessionId: string): Promise<void> {
+    if (!sessionId || !this.aiBackService?.cancelSession) {
+      return;
+    }
+    const agentSessionId = sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
+    await this.aiBackService.cancelSession(agentSessionId);
+  }
+
   restoreSessionSnapshot(sessionId: string, snapshot: IChatSessionSnapshot): ISessionModel | undefined {
     if (snapshot.historyUpdates.length === 0) {
       return undefined;

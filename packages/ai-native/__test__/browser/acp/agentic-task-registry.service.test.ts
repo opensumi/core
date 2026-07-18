@@ -163,6 +163,41 @@ describe('AgenticTaskRegistryService', () => {
     await expect(registry.listProjects()).resolves.toEqual([]);
   });
 
+  it('retains unavailable Project history without exposing its active, archived, or searched Task groups', async () => {
+    const unavailableProject: AgenticProjectRecord = {
+      ...project,
+      id: 'file:///workspace/missing',
+      workspaceUri: 'file:///workspace/missing',
+      workspacePath: '/workspace/missing',
+      label: 'Missing Project',
+      availability: 'unavailable',
+    };
+    await registry.registerFirstPrompt({
+      sessionId: 'acp:missing-active',
+      agentId: 'agent-a',
+      project: unavailableProject,
+      firstPrompt: 'Missing active Task',
+      createdAt: 1,
+    });
+    await registry.registerFirstPrompt({
+      sessionId: 'acp:missing-archived',
+      agentId: 'agent-a',
+      project: unavailableProject,
+      firstPrompt: 'Missing archived Task',
+      createdAt: 2,
+    });
+    await registry.updateStatus('acp:missing-archived', 'ready');
+    await registry.archive('acp:missing-archived');
+
+    await expect(registry.listProjects()).resolves.toEqual([
+      expect.objectContaining({ id: unavailableProject.id, availability: 'unavailable' }),
+    ]);
+    await expect(registry.listActiveGroups()).resolves.toEqual([]);
+    await expect(registry.listActiveGroups('missing active')).resolves.toEqual([]);
+    await expect(registry.listArchivedGroups()).resolves.toEqual([]);
+    await expect(registry.listArchivedGroups('missing archived')).resolves.toEqual([]);
+  });
+
   it('revalidates an existing Project when the same directory is manually added again', async () => {
     const projectManagementRegistry = registry as unknown as {
       registerManagedProject: (project: AgenticProjectRecord) => Promise<AgenticProjectRecord>;

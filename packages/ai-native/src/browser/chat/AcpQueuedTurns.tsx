@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { getIcon, localize } from '@opensumi/ide-core-browser';
 import { Icon } from '@opensumi/ide-core-browser/lib/components';
+import { strings } from '@opensumi/ide-utils';
 
 import { cleanAttachedTextWrapper } from '../../common/utils';
 
@@ -13,6 +14,7 @@ import type { ChatInputCapability, ChatInputHandle, QueuedTurnEditorProps } from
 export interface AcpQueuedTurnsProps {
   snapshot: AcpQueuedTurnSnapshot;
   expanded: boolean;
+  disabled?: boolean;
   capabilities: readonly ChatInputCapability[];
   QueuedEditor?: React.ComponentType<QueuedTurnEditorProps>;
   onToggleExpanded(): void;
@@ -63,6 +65,7 @@ function getPauseReasonLabel(reason: AcpQueuedTurnSnapshot['pauseReason']): stri
 export const AcpQueuedTurns = ({
   snapshot,
   expanded,
+  disabled = false,
   capabilities,
   QueuedEditor,
   onToggleExpanded,
@@ -84,7 +87,7 @@ export const AcpQueuedTurns = ({
   const title =
     snapshot.entries.length === 1
       ? localize('aiNative.chat.queue.one', '1 Queued Turn')
-      : localize('aiNative.chat.queue.many', '{0} Queued Turns', String(snapshot.entries.length));
+      : strings.format(localize('aiNative.chat.queue.many', '{0} Queued Turns'), snapshot.entries.length);
   const pauseReason = getPauseReasonLabel(snapshot.pauseReason);
 
   return (
@@ -95,10 +98,10 @@ export const AcpQueuedTurns = ({
           aria-label={localize('aiNative.chat.queue.toggleAriaLabel', 'Toggle queued turns')}
           className={styles.queued_turns_summary}
           data-testid='acp-queued-turns-summary'
-          disabled={isEditing}
+          disabled={disabled || isEditing}
           onClick={onToggleExpanded}
           title={
-            isEditing
+            disabled || isEditing
               ? localize('aiNative.chat.queue.finishEditBeforeCollapse', 'Finish editing before collapsing')
               : undefined
           }
@@ -120,6 +123,7 @@ export const AcpQueuedTurns = ({
                   aria-label={localize('aiNative.chat.queue.resumeAriaLabel', 'Resume queued turns')}
                   className={styles.queued_turns_resume}
                   data-testid='acp-queued-turn-resume'
+                  disabled={disabled}
                   onClick={onResume}
                   type='button'
                 >
@@ -132,6 +136,7 @@ export const AcpQueuedTurns = ({
             <button
               aria-label={localize('aiNative.chat.queue.clearAriaLabel', 'Clear queued turns')}
               className={styles.queued_turns_clear}
+              disabled={disabled}
               onClick={onClear}
               type='button'
             >
@@ -154,11 +159,16 @@ export const AcpQueuedTurns = ({
                   <div className={styles.queued_turn_editor} data-testid='acp-queued-turn-editor'>
                     <QueuedEditor
                       turn={turn}
-                      onSave={(draft) => onCommitEdit(turn.id, draft, false)}
-                      onCancel={() => onCancelEdit(turn.id)}
-                      onImmediateSend={(draft) => onCommitEdit(turn.id, draft, true)}
+                      onSave={(draft) => (disabled ? undefined : onCommitEdit(turn.id, draft, false))}
+                      onCancel={() => {
+                        if (!disabled) {
+                          onCancelEdit(turn.id);
+                        }
+                      }}
+                      onImmediateSend={(draft) => (disabled ? undefined : onCommitEdit(turn.id, draft, true))}
                       onReady={onEditorReady}
-                      immediateSendDisabled={snapshot.phase === 'cancelling-for-immediate'}
+                      disabled={disabled}
+                      immediateSendDisabled={disabled || snapshot.phase === 'cancelling-for-immediate'}
                     />
                   </div>
                 ) : (
@@ -172,6 +182,7 @@ export const AcpQueuedTurns = ({
                         <button
                           aria-label={localize('aiNative.chat.queue.editAriaLabel', 'Edit queued turn')}
                           data-testid='acp-queued-turn-edit'
+                          disabled={disabled}
                           onClick={() => onBeginEdit(turn.id)}
                           type='button'
                         >
@@ -181,6 +192,7 @@ export const AcpQueuedTurns = ({
                       <button
                         aria-label={localize('aiNative.chat.queue.deleteAriaLabel', 'Delete queued turn')}
                         data-testid='acp-queued-turn-delete'
+                        disabled={disabled}
                         onClick={() => onDelete(turn.id)}
                         type='button'
                       >
@@ -189,7 +201,7 @@ export const AcpQueuedTurns = ({
                       <button
                         aria-label={localize('aiNative.chat.queue.immediateAriaLabel', 'Send queued turn immediately')}
                         data-testid='acp-queued-turn-immediate'
-                        disabled={snapshot.phase === 'cancelling-for-immediate'}
+                        disabled={disabled || snapshot.phase === 'cancelling-for-immediate'}
                         onClick={() => onImmediateSend(turn.id)}
                         type='button'
                       >

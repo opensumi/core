@@ -22,8 +22,9 @@ import { AgenticTaskLaunchMenu } from './AgenticTaskLaunchMenu';
 
 const DEFAULT_TASK_LIST_WIDTH = 244;
 const MIN_TASK_LIST_WIDTH = 208;
-const MAX_TASK_LIST_WIDTH = 480;
+const MAX_TASK_LIST_WIDTH = 280;
 const MIN_CONVERSATION_WIDTH = 360;
+const TASK_LIST_WIDTH_STORAGE_KEY = 'agentic.task-list-width.v1';
 const ARCHIVABLE_STATUSES = new Set<AgenticTaskStatus>(['ready', 'stopped', 'error']);
 
 function clampTaskListWidth(width: number, maximumWidth = MAX_TASK_LIST_WIDTH): number {
@@ -60,6 +61,23 @@ function getConfiguredTaskListWidth(chatView: HTMLElement | undefined, maximumWi
     : clampTaskListWidth(DEFAULT_TASK_LIST_WIDTH, maximumWidth);
 }
 
+function getStoredTaskListWidth(): number | undefined {
+  try {
+    const storedWidth = Number.parseFloat(window.sessionStorage.getItem(TASK_LIST_WIDTH_STORAGE_KEY) || '');
+    return Number.isFinite(storedWidth) ? storedWidth : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function storeTaskListWidth(width: number): void {
+  try {
+    window.sessionStorage.setItem(TASK_LIST_WIDTH_STORAGE_KEY, String(width));
+  } catch {
+    // Ignore unavailable tab storage and keep the in-memory preference.
+  }
+}
+
 function TaskListResizeHandle({
   getConfiguredWidth,
   maximumWidth,
@@ -84,8 +102,8 @@ function TaskListResizeHandle({
   );
 
   React.useEffect(() => {
-    setWidth((currentWidth) => clampTaskListWidth(currentWidth, maximumWidth));
-  }, [maximumWidth]);
+    setWidth(getConfiguredWidth(maximumWidth));
+  }, [getConfiguredWidth, maximumWidth]);
 
   React.useEffect(() => {
     const onPointerMove = (event: PointerEvent) => {
@@ -133,7 +151,7 @@ function TaskListResizeHandle({
 
   return (
     <div
-      aria-label='Resize Task List'
+      aria-label='Resize Agent Tasks'
       aria-orientation='vertical'
       aria-valuemax={maximumWidth}
       aria-valuemin={MIN_TASK_LIST_WIDTH}
@@ -163,21 +181,58 @@ function TaskListResizeHandle({
   );
 }
 
-function getTaskRowMeta(task: AgenticTaskRecord): string {
-  if (task.attention === 'permission') {
-    return 'permission';
-  }
-  if (task.attention === 'input') {
-    return 'input';
-  }
-  return task.status || '';
+type TaskRowMetaKind = AgenticTaskStatus | 'permission' | 'input';
+
+interface TaskRowPresentation {
+  icon: string;
+  kind: TaskRowMetaKind;
+  label: string;
+  testIdPrefix: 'agentic-task-attention' | 'agentic-task-status';
+  tone: 'error' | 'information' | 'secondary' | 'warning';
 }
 
-function getTaskRowMetaTestId(task: AgenticTaskRecord): string {
-  if (task.attention) {
-    return `agentic-task-attention-${task.sessionId}`;
-  }
-  return `agentic-task-status-${task.sessionId}`;
+const TASK_ROW_PRESENTATIONS: Readonly<Record<TaskRowMetaKind, TaskRowPresentation | undefined>> = {
+  running: {
+    icon: 'codicon-loading codicon-modifier-spin',
+    kind: 'running',
+    label: 'Running',
+    testIdPrefix: 'agentic-task-status',
+    tone: 'information',
+  },
+  stopped: {
+    icon: 'codicon-circle-slash',
+    kind: 'stopped',
+    label: 'Stopped',
+    testIdPrefix: 'agentic-task-status',
+    tone: 'secondary',
+  },
+  error: {
+    icon: 'codicon-error',
+    kind: 'error',
+    label: 'Error',
+    testIdPrefix: 'agentic-task-status',
+    tone: 'error',
+  },
+  ready: undefined,
+  permission: {
+    icon: 'codicon-warning',
+    kind: 'permission',
+    label: 'Permission',
+    testIdPrefix: 'agentic-task-attention',
+    tone: 'warning',
+  },
+  input: {
+    icon: 'codicon-warning',
+    kind: 'input',
+    label: 'Input needed',
+    testIdPrefix: 'agentic-task-attention',
+    tone: 'warning',
+  },
+};
+
+function getTaskRowPresentation(task: AgenticTaskRecord): TaskRowPresentation | undefined {
+  const kind = task.attention || task.status;
+  return kind ? TASK_ROW_PRESENTATIONS[kind] : undefined;
 }
 
 function ProjectRenameModal({
@@ -250,8 +305,7 @@ function TaskRow({
 }) {
   const archiveEligible = !!task.status && ARCHIVABLE_STATUSES.has(task.status) && !task.archived;
   const actionAvailable = archiveEligible || (task.archived && !!onUnarchive);
-  const rowMeta = getTaskRowMeta(task);
-  const rowMetaTestId = getTaskRowMetaTestId(task);
+  const presentation = getTaskRowPresentation(task);
 
   return (
     <div className={`${styles.task_row_wrap} ${actionAvailable ? styles.task_row_wrap_actionable : ''}`}>
@@ -265,9 +319,17 @@ function TaskRow({
         type='button'
       >
         <span className={styles.task_title}>{task.title}</span>
-        <span className={styles.task_meta} data-testid={rowMetaTestId}>
-          {rowMeta}
-        </span>
+        {presentation && (
+          <span
+            className={`${styles.task_meta} ${styles[`task_meta_${presentation.tone}`]}`}
+            data-agentic-task-meta-kind={presentation.kind}
+            data-testid={`${presentation.testIdPrefix}-${task.sessionId}`}
+            title={presentation.label}
+          >
+            <span aria-hidden='true' className={`codicon ${presentation.icon}`} />
+            <span>{presentation.label}</span>
+          </span>
+        )}
         {task.unread && (
           <span aria-label='Unread' className={styles.unread} data-testid={`agentic-task-unread-${task.sessionId}`} />
         )}
@@ -302,34 +364,66 @@ function TaskRow({
 
 function ProjectGroup({
   activeSessionId,
+  collapseDisabled,
+  expanded,
   group,
   onArchive,
   onRemove,
   onRename,
   onTaskActivate,
+  onToggleExpanded,
   preferredAgentId,
   projectLabel,
 }: {
   activeSessionId: string | undefined;
+  collapseDisabled: boolean;
+  expanded: boolean;
   group: AgenticTaskGroup;
   onArchive: (task: AgenticTaskRecord) => void;
   onRemove: (project: AgenticProjectRecord) => void;
   onRename: (project: AgenticProjectRecord) => void;
   onTaskActivate: (task: AgenticTaskRecord) => void;
+  onToggleExpanded: () => void;
   preferredAgentId?: string;
   projectLabel: string;
 }) {
   const projectAvailable = group.project.availability === 'available';
+  const hasTasks = group.tasks.length > 0;
   const [managementMenuOpen, setManagementMenuOpen] = React.useState(false);
 
   return (
     <section className={styles.project_group} data-testid='agentic-task-project-group'>
       <header className={styles.project_header}>
-        <span aria-hidden='true' className={`${styles.project_chevron} codicon codicon-chevron-down`} />
-        <span className={styles.project_label} title={group.project.workspacePath}>
-          {projectLabel}
-        </span>
-        <span className={styles.project_count}>{group.tasks.length}</span>
+        {hasTasks ? (
+          <button
+            aria-expanded={expanded}
+            aria-label={`${expanded ? 'Collapse' : 'Expand'} ${projectLabel}`}
+            className={styles.project_toggle}
+            data-testid={`agentic-task-project-toggle-${group.project.id}`}
+            disabled={collapseDisabled}
+            onClick={onToggleExpanded}
+            type='button'
+          >
+            <span
+              aria-hidden='true'
+              className={`${styles.project_chevron} codicon ${
+                expanded ? 'codicon-chevron-down' : 'codicon-chevron-right'
+              }`}
+            />
+            <span className={styles.project_label} title={group.project.workspacePath}>
+              {projectLabel}
+            </span>
+            <span className={styles.project_count}>{group.tasks.length}</span>
+          </button>
+        ) : (
+          <div className={styles.project_toggle_placeholder}>
+            <span aria-hidden='true' className={styles.project_chevron} />
+            <span className={styles.project_label} title={group.project.workspacePath}>
+              {projectLabel}
+            </span>
+            <span className={styles.project_count}>{group.tasks.length}</span>
+          </div>
+        )}
         <AgenticTaskLaunchMenu
           preferredAgentId={preferredAgentId}
           project={group.project}
@@ -338,7 +432,7 @@ function ProjectGroup({
         <button
           aria-expanded={managementMenuOpen}
           aria-label={`Manage ${projectLabel}`}
-          className={styles.project_manage}
+          className={`${styles.project_manage} ${managementMenuOpen ? styles.project_manage_open : ''}`}
           onClick={() => setManagementMenuOpen((open) => !open)}
           title={`Manage ${projectLabel}`}
           type='button'
@@ -374,16 +468,17 @@ function ProjectGroup({
           </div>
         )}
       </header>
-      {group.tasks.map((task) => (
-        <TaskRow
-          active={task.sessionId === activeSessionId}
-          key={task.sessionId}
-          onActivate={onTaskActivate}
-          onArchive={onArchive}
-          projectAvailable={projectAvailable}
-          task={task}
-        />
-      ))}
+      {expanded &&
+        group.tasks.map((task) => (
+          <TaskRow
+            active={task.sessionId === activeSessionId}
+            key={task.sessionId}
+            onActivate={onTaskActivate}
+            onArchive={onArchive}
+            projectAvailable={projectAvailable}
+            task={task}
+          />
+        ))}
     </section>
   );
 }
@@ -495,19 +590,26 @@ export function AgenticTaskList() {
   const taskListRef = React.useRef<HTMLElement>(null);
   const [query, setQuery] = React.useState('');
   const [groups, setGroups] = React.useState<AgenticTaskGroup[]>([]);
+  const [collapsedProjectIds, setCollapsedProjectIds] = React.useState<Set<string>>(() => new Set());
   const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
   const [activeSessionId, setActiveSessionId] = React.useState<string>();
   const [activeAgentId, setActiveAgentId] = React.useState<string>();
   const [renameProject, setRenameProject] = React.useState<AgenticProjectRecord>();
   const [projectRevision, setProjectRevision] = React.useState(0);
   const [maximumTaskListWidth, setMaximumTaskListWidth] = React.useState(MAX_TASK_LIST_WIDTH);
+  const preferredTaskListWidthRef = React.useRef<number>();
   const taskActivationVersionRef = React.useRef(0);
+  const activeTaskContextVersionRef = React.useRef(0);
   const projectLabels = React.useMemo(() => getAgenticProjectDisplayLabels(projects), [projects]);
 
-  const getConfiguredWidth = React.useCallback(
-    (maximumWidth: number) => getConfiguredTaskListWidth(getAgenticChatView(taskListRef.current), maximumWidth),
-    [],
-  );
+  const getConfiguredWidth = React.useCallback((maximumWidth: number) => {
+    if (preferredTaskListWidthRef.current === undefined) {
+      preferredTaskListWidthRef.current =
+        getStoredTaskListWidth() ||
+        getConfiguredTaskListWidth(getAgenticChatView(taskListRef.current), MAX_TASK_LIST_WIDTH);
+    }
+    return clampTaskListWidth(preferredTaskListWidthRef.current, maximumWidth);
+  }, []);
 
   const refreshMaximumTaskListWidth = React.useCallback(() => {
     const chatView = getAgenticChatView(taskListRef.current);
@@ -524,6 +626,8 @@ export function AgenticTaskList() {
 
   const resize = React.useCallback(
     (width: number) => {
+      preferredTaskListWidthRef.current = width;
+      storeTaskListWidth(width);
       const maximumWidth = refreshMaximumTaskListWidth();
       getAgenticChatView(taskListRef.current)?.style.setProperty(
         '--agentic-task-list-width',
@@ -555,6 +659,11 @@ export function AgenticTaskList() {
     await Promise.all(projectCatalog.map((project) => workspaceSwitch.refreshProjectAvailability(project)));
     const refreshedProjectCatalog = await registry.listProjects();
     setProjects(refreshedProjectCatalog);
+    const projectIds = new Set(refreshedProjectCatalog.map((project) => project.id));
+    setCollapsedProjectIds((currentIds) => {
+      const retainedIds = new Set(Array.from(currentIds).filter((projectId) => projectIds.has(projectId)));
+      return retainedIds.size === currentIds.size ? currentIds : retainedIds;
+    });
     return refreshedProjectCatalog;
   }, [registry, workspaceSwitch]);
 
@@ -576,29 +685,42 @@ export function AgenticTaskList() {
     };
   }, [refresh]);
 
-  const refreshActiveAgent = React.useCallback(async () => {
-    const sessionModel = aiChatService.sessionModel;
-    const activeTask = sessionModel ? await registry.getTask(sessionModel.sessionId) : undefined;
-    setActiveAgentId(
-      activeTask?.agentId ||
-        sessionModel?.requests?.at(-1)?.message.agentId ||
-        aiChatService.getActiveAgenticTaskAgentId?.(sessionModel?.sessionId),
-    );
-  }, [aiChatService, registry]);
+  const refreshActiveTaskContext = React.useCallback(
+    async (requestedSessionId?: string) => {
+      const refreshVersion = ++activeTaskContextVersionRef.current;
+      const sessionModel = aiChatService.sessionModel;
+      const sessionId = requestedSessionId || sessionModel?.sessionId;
+      const activeTask = sessionId ? await registry.getTask(sessionId) : undefined;
+      if (refreshVersion !== activeTaskContextVersionRef.current) {
+        return;
+      }
+      const matchingSessionModel = sessionModel?.sessionId === sessionId ? sessionModel : undefined;
+      setActiveSessionId(activeTask?.sessionId);
+      setActiveAgentId(
+        activeTask?.agentId ||
+          matchingSessionModel?.requests?.at(-1)?.message.agentId ||
+          aiChatService.getActiveAgenticTaskAgentId?.(sessionId),
+      );
+    },
+    [aiChatService, registry],
+  );
 
   React.useEffect(() => {
-    void refreshActiveAgent();
-    const disposable = aiChatService.onChangeSession?.(() => void refreshActiveAgent());
+    void refreshActiveTaskContext();
+    const disposable = aiChatService.onChangeSession?.(
+      (sessionId) => void refreshActiveTaskContext(sessionId || undefined),
+    );
     return () => disposable?.dispose();
-  }, [aiChatService, refreshActiveAgent]);
+  }, [aiChatService, refreshActiveTaskContext]);
 
   React.useEffect(() => {
     const disposable = registry.onDidChange(() => {
       setProjectRevision((revision) => revision + 1);
       void refresh();
+      void refreshActiveTaskContext();
     });
     return () => disposable.dispose();
-  }, [refresh, registry]);
+  }, [refresh, refreshActiveTaskContext, registry]);
 
   const attentionCount = groups.reduce(
     (count, group) => count + group.tasks.filter((task) => task.attention !== undefined).length,
@@ -668,8 +790,22 @@ export function AgenticTaskList() {
     }
   }, [windowDialogService, workspaceSwitch]);
 
+  const toggleProjectExpanded = React.useCallback((projectId: string) => {
+    setCollapsedProjectIds((currentIds) => {
+      const nextIds = new Set(currentIds);
+      if (nextIds.has(projectId)) {
+        nextIds.delete(projectId);
+      } else {
+        nextIds.add(projectId);
+      }
+      return nextIds;
+    });
+  }, []);
+
+  const collapseDisabled = query.trim().length > 0;
+
   return (
-    <aside aria-label='Task List' className={styles.task_list} data-testid='agentic-task-list' ref={taskListRef}>
+    <aside aria-label='Agent Tasks' className={styles.task_list} data-testid='agentic-task-list' ref={taskListRef}>
       <TaskListResizeHandle
         getConfiguredWidth={getConfiguredWidth}
         maximumWidth={maximumTaskListWidth}
@@ -677,7 +813,7 @@ export function AgenticTaskList() {
         refreshMaximumWidth={refreshMaximumTaskListWidth}
       />
       <header className={styles.task_list_header}>
-        <h2>Task List</h2>
+        <h2>Agent Tasks</h2>
         {attentionCount > 0 && <span className={styles.attention_count}>{attentionCount}</span>}
         <button
           aria-label='Add Project'
@@ -687,7 +823,7 @@ export function AgenticTaskList() {
           title='Add Project'
           type='button'
         >
-          <span aria-hidden='true' className='codicon codicon-add' />
+          <span aria-hidden='true' className='codicon codicon-new-folder' />
         </button>
       </header>
       <label className={styles.search}>
@@ -703,12 +839,15 @@ export function AgenticTaskList() {
         {groups.map((group) => (
           <ProjectGroup
             activeSessionId={activeSessionId}
+            collapseDisabled={collapseDisabled}
+            expanded={collapseDisabled || !collapsedProjectIds.has(group.project.id)}
             group={group}
             key={group.project.id}
             onArchive={(task) => void archive(task)}
             onRemove={(project) => void remove(project)}
             onRename={setRenameProject}
             onTaskActivate={activate}
+            onToggleExpanded={() => toggleProjectExpanded(group.project.id)}
             preferredAgentId={activeAgentId}
             projectLabel={projectLabels.get(group.project.id) || getAgenticProjectDisplayLabel(group.project)}
           />
