@@ -129,7 +129,10 @@ export class ACPSessionProvider implements ISessionProvider {
         },
         requests: [],
         title: '',
-        ...(result.availableCommands?.length ? { extension: { availableCommands: result.availableCommands } } : {}),
+        extension: {
+          availableCommands: result.availableCommands || [],
+          acpTarget: { agentId: config.agentId, cwd: config.cwd },
+        },
       };
 
       // 新创建的 Session 不需要 load，直接加入缓存

@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { Injectable } from '@opensumi/di';
 import {
+  AcpTargetConfigRequest,
   Disposable,
   Emitter,
   Event,
@@ -334,6 +335,7 @@ export class ChatModel extends Disposable implements IChatModel {
       currentModeId?: string;
       agentModels?: AcpSessionModelOption[];
       configOptions?: AcpSessionConfigOption[];
+      acpTarget?: AcpTargetConfigRequest;
     },
   ) {
     super();
@@ -346,7 +348,11 @@ export class ChatModel extends Disposable implements IChatModel {
     this.#currentModeId = initParams?.currentModeId;
     this.#agentModels = initParams?.agentModels ?? [];
     this.#configOptions = initParams?.configOptions ?? [];
+    this.acpTarget = initParams?.acpTarget;
   }
+
+  /** Resolved ACP process identity for this browser session. Never serialized. */
+  readonly acpTarget?: AcpTargetConfigRequest;
 
   #title: string;
   get title(): string {

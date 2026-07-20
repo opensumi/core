@@ -15,7 +15,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { buildAcpAgentProcessConfig } from '../acp/build-agent-process-config';
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
-import { getAgentConfig, getDefaultAgentType } from './get-default-agent-type';
+import { getAgentConfig, getAvailableAgentConfigs, getDefaultAgentType } from './get-default-agent-type';
 import { getCachedWorkspaceDir, pickWorkspaceDir } from './pick-workspace-dir';
 
 /**
@@ -51,6 +51,10 @@ export class DefaultACPConfigProvider implements IACPConfigProvider {
 
   async resolveConfigForTarget(request: AcpTargetConfigRequest): Promise<AgentProcessConfig> {
     await this.workspaceService.whenReady;
+
+    if (!getAvailableAgentConfigs(this.preferenceService)[request.agentId]) {
+      throw new Error(`ACP Agent unavailable: ${request.agentId}`);
+    }
 
     return this.buildConfig(request);
   }

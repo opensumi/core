@@ -1,4 +1,9 @@
-import { AgentProcessConfig, CancellationToken, Emitter } from '@opensumi/ide-core-common';
+import {
+  ACP_SESSION_NOT_FOUND_ERROR_NAME,
+  AgentProcessConfig,
+  CancellationToken,
+  Emitter,
+} from '@opensumi/ide-core-common';
 import { ChatReadableStream, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
@@ -849,6 +854,17 @@ describe('AcpCliBackService', () => {
         'Failed to load session sess-1: Session not found',
       );
       expect(mockLogger.error).toHaveBeenCalled();
+    });
+
+    it('should preserve the stable missing-session error name across the backend RPC boundary', async () => {
+      const missingSessionError = new Error('Resource not found: sess-1');
+      missingSessionError.name = ACP_SESSION_NOT_FOUND_ERROR_NAME;
+      mockAgentService.loadSession.mockRejectedValue(missingSessionError);
+
+      await expect(service.loadAgentSession(mockAgentSessionConfig, 'sess-1')).rejects.toMatchObject({
+        name: ACP_SESSION_NOT_FOUND_ERROR_NAME,
+        message: 'Failed to load session sess-1: Resource not found: sess-1',
+      });
     });
 
     it('should handle non-Error throw', async () => {

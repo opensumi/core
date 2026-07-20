@@ -144,7 +144,7 @@ describe('AcpChatManagerService', () => {
 
     Object.defineProperty(provider, 'configProvider', {
       value: {
-        resolveConfig: jest.fn().mockResolvedValue({ cwd: '/workspace' }),
+        resolveConfig: jest.fn().mockResolvedValue({ agentId: 'claude-agent-acp', cwd: '/workspace' }),
       },
     });
     Object.defineProperty(provider, 'messageService', {
@@ -177,6 +177,24 @@ describe('AcpChatManagerService', () => {
     } finally {
       dateNowSpy.mockRestore();
     }
+  });
+
+  it('returns the resolved ACP target as non-persistent session metadata', async () => {
+    const provider = createSessionProvider();
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        createSession: jest.fn().mockResolvedValue({
+          sessionId: 's1',
+        }),
+      },
+    });
+
+    const session = await provider.createSession();
+
+    expect(session.extension?.acpTarget).toEqual({
+      agentId: 'claude-agent-acp',
+      cwd: '/workspace',
+    });
   });
 
   it('maps a named ACP thread-pool saturation error to an actionable message without notifying directly', async () => {
@@ -242,6 +260,34 @@ describe('AcpChatManagerService', () => {
 
     expect(resolveConfigForTarget).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
     expect(createSession).toHaveBeenCalledWith(config);
+  });
+
+  it('keeps ACP target metadata on a newly created browser session', async () => {
+    const service = createService();
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        canHandle: (mode: string) => mode === 'acp',
+        createSession: jest.fn().mockResolvedValue({
+          sessionId: 'acp:s1',
+          history: { additional: {}, messages: [] },
+          requests: [],
+          extension: {
+            availableCommands: [],
+            acpTarget: { agentId: 'claude-agent-acp', cwd: '/workspace' },
+          },
+        }),
+      },
+      writable: true,
+    });
+
+    const model = await service.startSession();
+
+    expect(model.acpTarget).toEqual({
+      agentId: 'claude-agent-acp',
+      cwd: '/workspace',
+    });
+    expect(service.toSessionData(model)).not.toHaveProperty('acpTarget');
+    expect(service.toSessionData(model)).not.toHaveProperty('extension');
   });
 
   it('reloads a registered Task through its stored Agent and Project target', async () => {

@@ -12,6 +12,7 @@ import {
   SessionNotification,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import {
+  ACP_SESSION_NOT_FOUND_ERROR_NAME,
   ACP_THREAD_POOL_SATURATED_ERROR_NAME,
   AgentProcessConfig,
 } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
@@ -49,6 +50,16 @@ const WEBMCP_CAPABILITY_HINT = [
 ].join('\n');
 
 const PENDING_CREATE_SESSION_LOG_LABEL = 'pending-create-session';
+
+function mapSessionLoadError(error: unknown): unknown {
+  if (error && typeof error === 'object' && (error as { code?: unknown }).code === -32002) {
+    const mappedError = new Error(getAcpErrorMessage(error));
+    mappedError.name = ACP_SESSION_NOT_FOUND_ERROR_NAME;
+    return mappedError;
+  }
+
+  return error;
+}
 
 // ============================================================================
 // Agent Session Types
@@ -1271,7 +1282,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       .catch(async (e) => {
         await this.cleanupFailedSessionOperation(sessionId, thread);
         this.logger.error(`[AcpAgentService] loadSession() — failed: ${getAcpErrorMessage(e)}`);
-        throw e;
+        throw mapSessionLoadError(e);
       })
       .finally(() => {
         this.pendingSessionLoads.delete(sessionId);

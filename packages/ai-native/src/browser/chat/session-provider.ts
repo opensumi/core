@@ -46,6 +46,8 @@ export interface ISessionModel {
  */
 export interface ISessionModelExtension {
   availableCommands: AvailableCommand[];
+  /** Resolved ACP process identity for a newly created session. Never persisted. */
+  acpTarget?: AcpTargetConfigRequest;
 }
 
 export interface AcpSessionModeOption {

@@ -369,6 +369,31 @@ describe('AgenticTaskRegistryService', () => {
     await expect(registry.archive('acp:loaded')).resolves.toBe(false);
   });
 
+  it('archives an unavailable Task without changing its last-known ACP status', async () => {
+    storage.get.mockReturnValue({
+      version: 3,
+      projects: [project],
+      tasks: [
+        {
+          sessionId: 'acp:unavailable',
+          projectId: project.id,
+          agentId: 'agent-a',
+          title: 'Unavailable task',
+          createdAt: 1,
+          archived: false,
+          unread: false,
+          status: 'running',
+        },
+      ],
+    });
+
+    await expect(registry.archiveUnavailable('acp:unavailable')).resolves.toBe(true);
+    await expect(registry.getTask('acp:unavailable')).resolves.toMatchObject({
+      archived: true,
+      status: 'running',
+    });
+  });
+
   it('consumes prompt-free pending activation and launch state once', () => {
     const launchWithPrivateContent = {
       projectId: 'project-b',

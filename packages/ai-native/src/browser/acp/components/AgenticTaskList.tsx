@@ -1,12 +1,14 @@
 import React from 'react';
 
 import { Modal } from '@opensumi/ide-components/lib/modal';
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
+import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 
 import { IChatInternalService } from '../../../common';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import chatStyles from '../../chat/chat.module.less';
+import { getAvailableAgentConfigs } from '../../chat/get-default-agent-type';
 import {
   AgenticProjectRecord,
   AgenticTaskGroup,
@@ -14,7 +16,7 @@ import {
   AgenticTaskRegistryService,
   AgenticTaskStatus,
 } from '../agentic-task-registry.service';
-import { AgenticWorkspaceSwitchService } from '../agentic-workspace-switch.service';
+import { AgenticWorkspaceSwitchService, isAgenticTaskStatusArchivable } from '../agentic-workspace-switch.service';
 
 import { getAgenticProjectDisplayLabel, getAgenticProjectDisplayLabels } from './agentic-project-label';
 import styles from './agentic-task-list.module.less';
@@ -25,7 +27,6 @@ const MIN_TASK_LIST_WIDTH = 208;
 const MAX_TASK_LIST_WIDTH = 280;
 const MIN_CONVERSATION_WIDTH = 360;
 const TASK_LIST_WIDTH_STORAGE_KEY = 'agentic.task-list-width.v1';
-const ARCHIVABLE_STATUSES = new Set<AgenticTaskStatus>(['ready', 'stopped', 'error']);
 
 function clampTaskListWidth(width: number, maximumWidth = MAX_TASK_LIST_WIDTH): number {
   return Math.max(MIN_TASK_LIST_WIDTH, Math.min(maximumWidth, width));
@@ -181,17 +182,18 @@ function TaskListResizeHandle({
   );
 }
 
-type TaskRowMetaKind = AgenticTaskStatus | 'permission' | 'input';
+type BaseTaskRowMetaKind = AgenticTaskStatus | 'permission' | 'input';
+type TaskRowMetaKind = BaseTaskRowMetaKind | 'agent-unavailable' | 'conversation-unavailable';
 
 interface TaskRowPresentation {
   icon: string;
   kind: TaskRowMetaKind;
   label: string;
-  testIdPrefix: 'agentic-task-attention' | 'agentic-task-status';
+  testIdPrefix: 'agentic-task-attention' | 'agentic-task-status' | 'agentic-task-availability';
   tone: 'error' | 'information' | 'secondary' | 'warning';
 }
 
-const TASK_ROW_PRESENTATIONS: Readonly<Record<TaskRowMetaKind, TaskRowPresentation | undefined>> = {
+const TASK_ROW_PRESENTATIONS: Readonly<Record<BaseTaskRowMetaKind, TaskRowPresentation | undefined>> = {
   running: {
     icon: 'codicon-loading codicon-modifier-spin',
     kind: 'running',
@@ -230,9 +232,34 @@ const TASK_ROW_PRESENTATIONS: Readonly<Record<TaskRowMetaKind, TaskRowPresentati
   },
 };
 
-function getTaskRowPresentation(task: AgenticTaskRecord): TaskRowPresentation | undefined {
+function getTaskRowPresentation(
+  task: AgenticTaskRecord,
+  options: { agentAvailable: boolean; conversationUnavailable: boolean; statusLive: boolean },
+): TaskRowPresentation | undefined {
+  if (!options.agentAvailable) {
+    return {
+      icon: 'codicon-warning',
+      kind: 'agent-unavailable',
+      label: 'Agent unavailable',
+      testIdPrefix: 'agentic-task-availability',
+      tone: 'warning',
+    };
+  }
+  if (options.conversationUnavailable) {
+    return {
+      icon: 'codicon-error',
+      kind: 'conversation-unavailable',
+      label: 'History unavailable',
+      testIdPrefix: 'agentic-task-availability',
+      tone: 'error',
+    };
+  }
   const kind = task.attention || task.status;
-  return kind ? TASK_ROW_PRESENTATIONS[kind] : undefined;
+  const presentation = kind ? TASK_ROW_PRESENTATIONS[kind] : undefined;
+  if (!presentation || task.attention || options.statusLive) {
+    return presentation;
+  }
+  return { ...presentation, label: `Last known: ${presentation.label}` };
 }
 
 function ProjectRenameModal({
@@ -293,19 +320,35 @@ function TaskRow({
   onArchive,
   onActivate,
   onUnarchive,
+  agentAvailable,
+  conversationUnavailable,
   projectAvailable,
+  statusLive,
   task,
 }: {
   active: boolean;
+  agentAvailable: boolean;
+  conversationUnavailable: boolean;
   onArchive: (task: AgenticTaskRecord) => void;
   onActivate: (task: AgenticTaskRecord) => void;
   onUnarchive?: (task: AgenticTaskRecord) => void;
   projectAvailable: boolean;
+  statusLive: boolean;
   task: AgenticTaskRecord;
 }) {
-  const archiveEligible = !!task.status && ARCHIVABLE_STATUSES.has(task.status) && !task.archived;
+  const archiveEligible =
+    !task.archived &&
+    (!agentAvailable || conversationUnavailable || !statusLive || isAgenticTaskStatusArchivable(task.status));
   const actionAvailable = archiveEligible || (task.archived && !!onUnarchive);
-  const presentation = getTaskRowPresentation(task);
+  const presentation = getTaskRowPresentation(task, { agentAvailable, conversationUnavailable, statusLive });
+  const activationAvailable = projectAvailable && agentAvailable;
+  const title = !projectAvailable
+    ? `${task.title} (Project unavailable)`
+    : !agentAvailable
+    ? `${task.title} (Agent unavailable)`
+    : conversationUnavailable
+    ? `${task.title} (History unavailable; click to retry)`
+    : task.title;
 
   return (
     <div className={`${styles.task_row_wrap} ${actionAvailable ? styles.task_row_wrap_actionable : ''}`}>
@@ -313,12 +356,19 @@ function TaskRow({
         aria-current={active ? 'true' : undefined}
         className={`${styles.task_row} ${active ? styles.task_row_selected : ''}`}
         data-testid={`agentic-task-row-${task.sessionId}`}
-        disabled={!projectAvailable}
+        disabled={!activationAvailable}
         onClick={() => onActivate(task)}
-        title={projectAvailable ? task.title : `${task.title} (Project unavailable)`}
+        title={title}
         type='button'
       >
         <span className={styles.task_title}>{task.title}</span>
+        <span
+          className={styles.task_agent}
+          data-testid={`agentic-task-agent-${task.sessionId}`}
+          title={`Agent: ${task.agentId}`}
+        >
+          {task.agentId}
+        </span>
         {presentation && (
           <span
             className={`${styles.task_meta} ${styles[`task_meta_${presentation.tone}`]}`}
@@ -364,7 +414,9 @@ function TaskRow({
 
 function ProjectGroup({
   activeSessionId,
+  availableAgentIds,
   collapseDisabled,
+  conversationUnavailableSessionIds,
   expanded,
   group,
   onArchive,
@@ -374,9 +426,12 @@ function ProjectGroup({
   onToggleExpanded,
   preferredAgentId,
   projectLabel,
+  isTaskSessionObserved,
 }: {
   activeSessionId: string | undefined;
+  availableAgentIds: ReadonlySet<string>;
   collapseDisabled: boolean;
+  conversationUnavailableSessionIds: ReadonlySet<string>;
   expanded: boolean;
   group: AgenticTaskGroup;
   onArchive: (task: AgenticTaskRecord) => void;
@@ -386,6 +441,7 @@ function ProjectGroup({
   onToggleExpanded: () => void;
   preferredAgentId?: string;
   projectLabel: string;
+  isTaskSessionObserved: (sessionId: string) => boolean;
 }) {
   const projectAvailable = group.project.availability === 'available';
   const hasTasks = group.tasks.length > 0;
@@ -472,10 +528,13 @@ function ProjectGroup({
         group.tasks.map((task) => (
           <TaskRow
             active={task.sessionId === activeSessionId}
+            agentAvailable={availableAgentIds.has(task.agentId)}
+            conversationUnavailable={conversationUnavailableSessionIds.has(task.sessionId)}
             key={task.sessionId}
             onActivate={onTaskActivate}
             onArchive={onArchive}
             projectAvailable={projectAvailable}
+            statusLive={isTaskSessionObserved(task.sessionId)}
             task={task}
           />
         ))}
@@ -486,12 +545,15 @@ function ProjectGroup({
 function ArchivedTaskGroups({
   projectRevision,
   projectLabels,
+  availableAgentIds,
   query,
   refreshProjectCatalog,
   registry,
   onUnarchive,
   workspaceSwitch,
+  isTaskSessionObserved,
 }: {
+  availableAgentIds: ReadonlySet<string>;
   projectRevision: number;
   projectLabels: ReadonlyMap<string, string>;
   query: string;
@@ -499,6 +561,7 @@ function ArchivedTaskGroups({
   registry: AgenticTaskRegistryService;
   onUnarchive: (task: AgenticTaskRecord) => Promise<boolean>;
   workspaceSwitch: AgenticWorkspaceSwitchService;
+  isTaskSessionObserved: (sessionId: string) => boolean;
 }) {
   const [expanded, setExpanded] = React.useState(false);
   const [groups, setGroups] = React.useState<AgenticTaskGroup[]>([]);
@@ -564,6 +627,8 @@ function ArchivedTaskGroups({
             {group.tasks.map((task) => (
               <TaskRow
                 active={false}
+                agentAvailable={availableAgentIds.has(task.agentId)}
+                conversationUnavailable={false}
                 key={task.sessionId}
                 onActivate={(archivedTask) => {
                   if (group.project.availability === 'available') {
@@ -572,6 +637,7 @@ function ArchivedTaskGroups({
                 }}
                 onArchive={() => undefined}
                 projectAvailable={group.project.availability === 'available'}
+                statusLive={isTaskSessionObserved(task.sessionId)}
                 task={task}
                 onUnarchive={(archivedTask) => void unarchive(archivedTask)}
               />
@@ -586,6 +652,7 @@ export function AgenticTaskList() {
   const registry = useInjectable<AgenticTaskRegistryService>(AgenticTaskRegistryService);
   const workspaceSwitch = useInjectable<AgenticWorkspaceSwitchService>(AgenticWorkspaceSwitchService);
   const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
+  const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const windowDialogService = useInjectable<IWindowDialogService>(IWindowDialogService);
   const taskListRef = React.useRef<HTMLElement>(null);
   const [query, setQuery] = React.useState('');
@@ -594,6 +661,12 @@ export function AgenticTaskList() {
   const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
   const [activeSessionId, setActiveSessionId] = React.useState<string>();
   const [activeAgentId, setActiveAgentId] = React.useState<string>();
+  const [availableAgentIds, setAvailableAgentIds] = React.useState<Set<string>>(
+    () => new Set(Object.keys(getAvailableAgentConfigs(preferenceService))),
+  );
+  const [conversationUnavailableSessionIds, setConversationUnavailableSessionIds] = React.useState<Set<string>>(
+    () => new Set(),
+  );
   const [renameProject, setRenameProject] = React.useState<AgenticProjectRecord>();
   const [projectRevision, setProjectRevision] = React.useState(0);
   const [maximumTaskListWidth, setMaximumTaskListWidth] = React.useState(MAX_TASK_LIST_WIDTH);
@@ -601,6 +674,21 @@ export function AgenticTaskList() {
   const taskActivationVersionRef = React.useRef(0);
   const activeTaskContextVersionRef = React.useRef(0);
   const projectLabels = React.useMemo(() => getAgenticProjectDisplayLabels(projects), [projects]);
+  const isTaskSessionObserved = React.useCallback(
+    (sessionId: string) => aiChatService.isAgenticTaskSessionObserved?.(sessionId) ?? false,
+    [aiChatService],
+  );
+
+  React.useEffect(() => {
+    const refreshAvailableAgentIds = () =>
+      setAvailableAgentIds(new Set(Object.keys(getAvailableAgentConfigs(preferenceService))));
+    refreshAvailableAgentIds();
+    const disposable = preferenceService.onSpecificPreferenceChange?.(
+      AINativeSettingSectionsId.AgentConfigs,
+      refreshAvailableAgentIds,
+    );
+    return () => disposable?.dispose();
+  }, [preferenceService]);
 
   const getConfiguredWidth = React.useCallback((maximumWidth: number) => {
     if (preferredTaskListWidthRef.current === undefined) {
@@ -698,8 +786,8 @@ export function AgenticTaskList() {
       setActiveSessionId(activeTask?.sessionId);
       setActiveAgentId(
         activeTask?.agentId ||
-          matchingSessionModel?.requests?.at(-1)?.message.agentId ||
-          aiChatService.getActiveAgenticTaskAgentId?.(sessionId),
+          aiChatService.getActiveAgenticTaskAgentId?.(sessionId) ||
+          matchingSessionModel?.requests?.at(-1)?.message.agentId,
       );
     },
     [aiChatService, registry],
@@ -728,13 +816,16 @@ export function AgenticTaskList() {
   );
   const archive = React.useCallback(
     async (task: AgenticTaskRecord) => {
-      if (!task.status || !ARCHIVABLE_STATUSES.has(task.status)) {
-        return;
+      const conversationUnavailable = conversationUnavailableSessionIds.has(task.sessionId);
+      const result = await workspaceSwitch.archiveTask(task, { conversationUnavailable });
+      if (result.availability === 'conversation-unavailable') {
+        setConversationUnavailableSessionIds((currentIds) => new Set(currentIds).add(task.sessionId));
       }
-      await registry.archive(task.sessionId);
-      await refresh();
+      if (result.status === 'archived') {
+        await refresh();
+      }
     },
-    [refresh, registry],
+    [conversationUnavailableSessionIds, refresh, workspaceSwitch],
   );
 
   const unarchive = React.useCallback(
@@ -755,8 +846,22 @@ export function AgenticTaskList() {
         return;
       }
       const activationVersion = ++taskActivationVersionRef.current;
-      if ((await workspaceSwitch.activateTask(task)) && activationVersion === taskActivationVersionRef.current) {
+      const result = await workspaceSwitch.activateTask(task);
+      if (activationVersion !== taskActivationVersionRef.current) {
+        return;
+      }
+      if (result.status === 'activated') {
+        setConversationUnavailableSessionIds((currentIds) => {
+          if (!currentIds.has(task.sessionId)) {
+            return currentIds;
+          }
+          const nextIds = new Set(currentIds);
+          nextIds.delete(task.sessionId);
+          return nextIds;
+        });
         setActiveSessionId(task.sessionId);
+      } else if (result.status === 'conversation-unavailable') {
+        setConversationUnavailableSessionIds((currentIds) => new Set(currentIds).add(task.sessionId));
       }
     },
     [groups, workspaceSwitch],
@@ -839,7 +944,9 @@ export function AgenticTaskList() {
         {groups.map((group) => (
           <ProjectGroup
             activeSessionId={activeSessionId}
+            availableAgentIds={availableAgentIds}
             collapseDisabled={collapseDisabled}
+            conversationUnavailableSessionIds={conversationUnavailableSessionIds}
             expanded={collapseDisabled || !collapsedProjectIds.has(group.project.id)}
             group={group}
             key={group.project.id}
@@ -850,10 +957,12 @@ export function AgenticTaskList() {
             onToggleExpanded={() => toggleProjectExpanded(group.project.id)}
             preferredAgentId={activeAgentId}
             projectLabel={projectLabels.get(group.project.id) || getAgenticProjectDisplayLabel(group.project)}
+            isTaskSessionObserved={isTaskSessionObserved}
           />
         ))}
       </div>
       <ArchivedTaskGroups
+        availableAgentIds={availableAgentIds}
         query={query}
         refreshProjectCatalog={refreshProjectCatalog}
         registry={registry}
@@ -861,6 +970,7 @@ export function AgenticTaskList() {
         projectRevision={projectRevision}
         projectLabels={projectLabels}
         workspaceSwitch={workspaceSwitch}
+        isTaskSessionObserved={isTaskSessionObserved}
       />
       <ProjectRenameModal
         onClose={() => setRenameProject(undefined)}

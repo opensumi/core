@@ -10,7 +10,7 @@ jest.mock('@opensumi/di', () => {
   };
 });
 
-import { ACP_THREAD_POOL_SATURATED_ERROR_NAME } from '@opensumi/ide-core-common';
+import { ACP_SESSION_NOT_FOUND_ERROR_NAME, ACP_THREAD_POOL_SATURATED_ERROR_NAME } from '@opensumi/ide-core-common';
 import { DEFAULT_ACP_THREAD_POOL_SIZE } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
@@ -1128,6 +1128,22 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(mockTerminalHandler.releaseSessionTerminals).toHaveBeenCalledWith('failed-session');
       expect((service as any).sessions.has('failed-session')).toBe(false);
       expect((service as any).sessions.get('next-session')).toBe(thread);
+    });
+
+    it('maps ACP resource-not-found during session/load to the stable missing-session error', async () => {
+      const missingSessionError = Object.assign(new Error('Resource not found: missing-session'), { code: -32002 });
+      const thread = createMockThread({
+        loadSession: jest.fn().mockRejectedValueOnce(missingSessionError),
+      });
+      thread.initialize.mockImplementation(async () => {
+        thread.initialized = true;
+        return { protocolVersion: 1, agentCapabilities: {} };
+      });
+      const service = setupServiceWithMockFactory(jest.fn().mockReturnValue(thread));
+
+      await expect(service.loadSession('missing-session', mockAgentProcessConfig)).rejects.toMatchObject({
+        name: ACP_SESSION_NOT_FOUND_ERROR_NAME,
+      });
     });
 
     it('should join an in-flight load instead of returning a half-loaded thread', async () => {

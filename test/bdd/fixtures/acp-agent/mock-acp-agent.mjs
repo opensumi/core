@@ -6,6 +6,7 @@ import { Readable, Writable } from 'node:stream';
 const DEFAULT_DELAY_MS = 40;
 const DEFAULT_LONG_STREAM_TICKS = 80;
 const PROCESS_EXIT_FIXTURE_CODE = 17;
+const TASK_SESSION_MISSING_EXIT_CODE = 18;
 
 function parseArgs(argv) {
   const options = {
@@ -74,6 +75,7 @@ Fixtures:
   send-failure      Fails deterministically during session/prompt.
   create-failure    Fails deterministically during session/new.
   load-failure      Fails deterministically during session/load.
+  task-session-missing Completes a Task, exits, then reports its Session missing after restart.
   auth-required     Raises an ACP auth-required error during session/prompt.
   config-failure    Fails deterministic session/set_config_option calls.
   process-exit      Emits prompt updates, then exits the ACP agent process.
@@ -606,7 +608,7 @@ test/test.js
     },
 
     async loadSession(params) {
-      if (options.fixture === 'load-failure') {
+      if (options.fixture === 'load-failure' || options.fixture === 'task-session-missing') {
         throw RequestError.resourceNotFound(params.sessionId);
       }
 
@@ -723,7 +725,7 @@ test/test.js
       }
 
       await runRichStream(session, promptText);
-      return {
+      const response = {
         stopReason: 'end_turn',
         usage: {
           inputTokens: Math.max(1, promptText.length),
@@ -732,6 +734,10 @@ test/test.js
           thoughtTokens: 4,
         },
       };
+      if (options.fixture === 'task-session-missing') {
+        setTimeout(() => process.exit(TASK_SESSION_MISSING_EXIT_CODE), 50);
+      }
+      return response;
     },
 
     async cancel(params) {

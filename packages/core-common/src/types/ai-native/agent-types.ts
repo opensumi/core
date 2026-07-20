@@ -17,6 +17,12 @@ export const DEFAULT_AGENT_TYPE: ACPAgentType = 'claude-agent-acp';
  */
 export const ACP_THREAD_POOL_SATURATED_ERROR_NAME = 'ACP_THREAD_POOL_SATURATED';
 
+/**
+ * Stable error name exposed when ACP session/load reports that its target
+ * session resource does not exist.
+ */
+export const ACP_SESSION_NOT_FOUND_ERROR_NAME = 'ACP_SESSION_NOT_FOUND';
+
 // Supported agent types
 export enum ACPAgentTypeEnum {
   Qwen = 'qwen',

@@ -1,4 +1,4 @@
-import { Emitter, URI } from '@opensumi/ide-core-common';
+import { ACP_SESSION_NOT_FOUND_ERROR_NAME, Emitter, URI } from '@opensumi/ide-core-common';
 
 import { ChatModel } from '../../../src/browser/chat/chat-model';
 import { ChatFeatureRegistry } from '../../../src/browser/chat/chat.feature.registry';
@@ -79,6 +79,37 @@ describe('AcpChatInternalService', () => {
     expect(modeChanges).toEqual(['code']);
   });
 
+  it('does not treat lightweight Agentic session-list models as live observations on storage init', async () => {
+    const service = new AcpChatInternalService() as any;
+    const model = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:retained' });
+    let onStorageInit: (() => Promise<void>) | undefined;
+    const registry = {
+      getTask: jest.fn().mockResolvedValue({ sessionId: model.sessionId }),
+      updateStatus: jest.fn(),
+    };
+
+    Object.defineProperties(service, {
+      agenticTaskRegistry: { value: registry },
+      aiNativeConfigService: { value: { capabilities: { supportsAgentMode: true } } },
+      chatManagerService: {
+        value: {
+          getSessions: jest.fn(() => [model]),
+          onStorageInit: jest.fn((listener) => {
+            onStorageInit = listener;
+            return disposable();
+          }),
+        },
+      },
+      panelLayoutService: { value: { getLayoutMode: jest.fn(() => 'agentic') } },
+    });
+
+    service.init();
+    await onStorageInit?.();
+
+    expect(service.isAgenticTaskSessionObserved(model.sessionId)).toBe(false);
+    expect(registry.updateStatus).not.toHaveBeenCalled();
+  });
+
   it('notifies session model listeners for non-mode ACP session state changes', () => {
     const service = new AcpChatInternalService() as any;
     const stateEmitter = new Emitter<any>();
@@ -148,10 +179,11 @@ describe('AcpChatInternalService', () => {
   });
 
   describe('draft session lifecycle', () => {
-    function createService() {
+    function createService(acpTarget = { agentId: 'agent-b', cwd: '/work/a' }) {
       const service = new AcpChatInternalService() as any;
       const model = new ChatModel(new ChatFeatureRegistry(), {
         sessionId: 'acp:sess-1',
+        acpTarget,
         modelId: 'model-a',
         agentModels: [
           {
@@ -321,6 +353,27 @@ describe('AcpChatInternalService', () => {
       expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
     });
 
+    it('registers a default bootstrap Task with the resolved ACP Agent identity', async () => {
+      const { model, registry, service } = createService({ agentId: 'claude-agent-acp', cwd: '/work/a' });
+
+      await service.ensureBootstrapSessionModel();
+      const request = model.addRequest({
+        prompt: 'Recover this Task later',
+        agentId: 'Default_Chat_Agent',
+        command: '',
+        images: [],
+      });
+
+      await service.sendRequest(request);
+
+      expect(registry.registerFirstPrompt).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: model.sessionId,
+          agentId: 'claude-agent-acp',
+        }),
+      );
+    });
+
     it('hides an unused bootstrap session from visible history until it receives user content', async () => {
       const { model, service } = createService();
 
@@ -449,7 +502,7 @@ describe('AcpChatInternalService', () => {
     });
 
     it('stores the selected ACP Agent instead of the chat-agent message identity for a new Task', async () => {
-      const { model, registry, service } = createService();
+      const { model, registry, service } = createService({ agentId: 'claude-agent-acp', cwd: '/work/a' });
       service.enterAgenticTaskDraft({ agentId: 'claude-agent-acp', cwd: '/work/a' });
       await service.ensureSessionModel();
       const request = model.addRequest({
@@ -474,7 +527,7 @@ describe('AcpChatInternalService', () => {
       const { model, registry, service } = createService();
       registry.getTask.mockResolvedValue({ sessionId: model.sessionId });
 
-      await expect(service.activateAgenticTaskSession(model.sessionId)).resolves.toBe(true);
+      await expect(service.activateAgenticTaskSession(model.sessionId)).resolves.toEqual({ status: 'activated' });
 
       expect(registry.rememberActiveTaskSession).toHaveBeenCalledWith(model.sessionId);
     });
@@ -493,7 +546,10 @@ describe('AcpChatInternalService', () => {
 
     it('registers the first accepted Agentic prompt and marks background Agent content unread', async () => {
       const { chatManagerService, model, registry, service } = createService();
-      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:background' });
+      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), {
+        sessionId: 'acp:background',
+        acpTarget: { agentId: 'agent-b', cwd: '/work/a' },
+      });
       chatManagerService.getSessions.mockReturnValue([model, backgroundModel]);
       registry.getTask.mockImplementation((sessionId: string) =>
         Promise.resolve(sessionId === 'acp:background' ? { sessionId } : undefined),
@@ -599,7 +655,10 @@ describe('AcpChatInternalService', () => {
 
     it('does not infer input attention from a generic background assistant component', async () => {
       const { chatManagerService, model, registry, service } = createService();
-      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:background' });
+      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), {
+        sessionId: 'acp:background',
+        acpTarget: { agentId: 'agent-b', cwd: '/work/a' },
+      });
       chatManagerService.getSessions.mockReturnValue([model, backgroundModel]);
       registry.getTask.mockImplementation((sessionId: string) =>
         Promise.resolve(sessionId === 'acp:background' ? { sessionId } : undefined),
@@ -621,7 +680,10 @@ describe('AcpChatInternalService', () => {
 
     it('maps ACP thread statuses and background permission attention only for registered Agentic Tasks', async () => {
       const { chatManagerService, model, permissionRequestEmitter, registry, service } = createService();
-      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:background' });
+      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), {
+        sessionId: 'acp:background',
+        acpTarget: { agentId: 'agent-b', cwd: '/work/a' },
+      });
       chatManagerService.getSessions.mockReturnValue([model, backgroundModel]);
       registry.getTask.mockImplementation((sessionId: string) =>
         Promise.resolve(sessionId === 'acp:background' ? { sessionId } : undefined),
@@ -646,7 +708,10 @@ describe('AcpChatInternalService', () => {
     it('clears background permission attention when the ACP permission request resolves', async () => {
       const { chatManagerService, model, permissionRequestEmitter, permissionResultEmitter, registry, service } =
         createService();
-      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:background' });
+      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), {
+        sessionId: 'acp:background',
+        acpTarget: { agentId: 'agent-b', cwd: '/work/a' },
+      });
       chatManagerService.getSessions.mockReturnValue([model, backgroundModel]);
       registry.getTask.mockImplementation((sessionId: string) =>
         Promise.resolve(sessionId === 'acp:background' ? { sessionId } : undefined),
@@ -782,8 +847,7 @@ describe('AcpChatInternalService', () => {
     });
 
     it('registers an Agentic draft first prompt under its target Project instead of the IDE workspace', async () => {
-      const { model, registry, service } = createService();
-      service.agenticTaskTargets.set(model.sessionId, { agentId: 'agent-b', cwd: '/work/other' });
+      const { model, registry, service } = createService({ agentId: 'agent-b', cwd: '/work/other' });
 
       await service.registerFirstAgenticPrompt(
         {
@@ -812,7 +876,9 @@ describe('AcpChatInternalService', () => {
     it('falls back to draft when loading an ACP session fails', async () => {
       const { chatManagerService, messageService, service } = createService();
       const loadingChanges: boolean[] = [];
-      chatManagerService.loadSession.mockRejectedValueOnce(new Error('Session not found'));
+      const missingSessionError = new Error('Resource not found: acp:missing');
+      missingSessionError.name = ACP_SESSION_NOT_FOUND_ERROR_NAME;
+      chatManagerService.loadSession.mockRejectedValueOnce(missingSessionError);
       service.onSessionLoadingChange((loading) => loadingChanges.push(loading));
 
       await service.activateSession('acp:missing');
@@ -829,10 +895,14 @@ describe('AcpChatInternalService', () => {
       const { chatManagerService, messageService, model: currentModel, service } = createService();
       const loadingChanges: boolean[] = [];
       service._sessionModel = currentModel;
-      chatManagerService.loadSession.mockRejectedValueOnce(new Error('Session not found'));
+      const missingSessionError = new Error('Resource not found: acp:missing');
+      missingSessionError.name = ACP_SESSION_NOT_FOUND_ERROR_NAME;
+      chatManagerService.loadSession.mockRejectedValueOnce(missingSessionError);
       service.onSessionLoadingChange((loading) => loadingChanges.push(loading));
 
-      await expect(service.activateAgenticTaskSession('acp:missing')).resolves.toBe(false);
+      await expect(service.activateAgenticTaskSession('acp:missing')).resolves.toEqual({
+        status: 'conversation-unavailable',
+      });
 
       expect(service.sessionModel).toBe(currentModel);
       expect(loadingChanges).toEqual([true, false]);
@@ -846,12 +916,45 @@ describe('AcpChatInternalService', () => {
       service._sessionModel = currentModel;
       chatManagerService.getSession.mockReturnValue(undefined);
 
-      await expect(service.activateAgenticTaskSession('acp:missing')).resolves.toBe(false);
+      await expect(service.activateAgenticTaskSession('acp:missing')).resolves.toEqual({ status: 'failed' });
 
       expect(service.sessionModel).toBe(currentModel);
       expect(messageService.info).toHaveBeenCalledWith(
-        'This task history is no longer available. The previous Task remains active.',
+        'Unable to open this task history. The previous Task remains active.',
       );
+    });
+
+    it('does not infer a missing Task Conversation from legacy error text', async () => {
+      const { chatManagerService, messageService, model: currentModel, service } = createService();
+      service._sessionModel = currentModel;
+      chatManagerService.loadSession.mockRejectedValueOnce(new Error('Session not found'));
+
+      await expect(service.activateAgenticTaskSession('acp:missing')).resolves.toEqual({ status: 'failed' });
+
+      expect(service.sessionModel).toBe(currentModel);
+      expect(messageService.info).toHaveBeenCalledWith(
+        'Unable to open this task history. The previous Task remains active.',
+      );
+    });
+
+    it('validates an Agentic Task session for archive without changing the Active Session', async () => {
+      const { chatManagerService, model: currentModel, registry, service } = createService();
+      const validatedModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:validated' });
+      validatedModel.setThreadStatus('working');
+      service._sessionModel = currentModel;
+      chatManagerService.getSession.mockImplementation((sessionId: string) =>
+        sessionId === validatedModel.sessionId ? validatedModel : currentModel,
+      );
+      registry.getTask.mockResolvedValue({ sessionId: validatedModel.sessionId });
+
+      await expect(service.validateAgenticTaskSession(validatedModel.sessionId)).resolves.toEqual({
+        status: 'validated',
+        taskStatus: 'running',
+      });
+
+      expect(service.sessionModel).toBe(currentModel);
+      expect(registry.rememberActiveTaskSession).not.toHaveBeenCalledWith(validatedModel.sessionId);
+      expect(service.isAgenticTaskSessionObserved(validatedModel.sessionId)).toBe(true);
     });
 
     it('activates only the latest overlapping Agentic Task selection', async () => {
@@ -880,7 +983,7 @@ describe('AcpChatInternalService', () => {
       expect(service.isSessionLoading).toBe(true);
       resolveFirst();
 
-      await expect(firstActivation).resolves.toBe(false);
+      await expect(firstActivation).resolves.toEqual({ status: 'superseded' });
       expect(service.sessionModel?.sessionId).toBe('acp:second');
       expect(loadingChanges).toEqual([true, false]);
       expect(service.isSessionLoading).toBe(false);
@@ -985,10 +1088,10 @@ describe('AcpChatInternalService', () => {
 
       const firstActivation = service.activateAgenticTaskSession('acp:first');
       await firstTaskLookup;
-      await expect(service.activateAgenticTaskSession('acp:second')).resolves.toBe(true);
+      await expect(service.activateAgenticTaskSession('acp:second')).resolves.toEqual({ status: 'activated' });
       resolveFirstTask();
 
-      await expect(firstActivation).resolves.toBe(false);
+      await expect(firstActivation).resolves.toEqual({ status: 'superseded' });
       expect(service.sessionModel).toBe(secondModel);
       expect(permissionBridgeService.setActiveSession).toHaveBeenCalledTimes(1);
       expect(permissionBridgeService.setActiveSession).toHaveBeenCalledWith('second');
@@ -1011,7 +1114,7 @@ describe('AcpChatInternalService', () => {
       shouldApply = false;
       resolveLoad();
 
-      await expect(activation).resolves.toBe(false);
+      await expect(activation).resolves.toEqual({ status: 'superseded' });
       expect(service.sessionModel).toBe(currentModel);
     });
   });
@@ -1031,7 +1134,9 @@ describe('AcpChatInternalService', () => {
     });
 
     it('returns a friendly not-found message when the session no longer exists', () => {
-      expect(formatAcpLoadSessionFallbackMessage(new Error('Session not found'))).toBe(
+      const error = new Error('Resource not found: acp:missing');
+      error.name = ACP_SESSION_NOT_FOUND_ERROR_NAME;
+      expect(formatAcpLoadSessionFallbackMessage(error)).toBe(
         'This chat history is no longer available. A new chat draft is ready, and a session will be created when you send a message.',
       );
     });

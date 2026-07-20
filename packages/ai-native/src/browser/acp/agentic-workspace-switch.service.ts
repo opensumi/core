@@ -5,10 +5,29 @@ import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
-import { AcpChatInternalService } from '../chat/chat.internal.service.acp';
-import { getConfiguredAgentConfigs, getDefaultAgentType } from '../chat/get-default-agent-type';
+import {
+  AcpChatInternalService,
+  type AgenticTaskSessionActivationStatus,
+  type AgenticTaskSessionValidationResult,
+} from '../chat/chat.internal.service.acp';
+import {
+  getAvailableAgentConfigs,
+  getConfiguredAgentConfigs,
+  getDefaultAgentType,
+} from '../chat/get-default-agent-type';
 
-import { AgenticProjectRecord, AgenticTaskRecord, AgenticTaskRegistryService } from './agentic-task-registry.service';
+import {
+  AgenticProjectRecord,
+  AgenticTaskRecord,
+  AgenticTaskRegistryService,
+  AgenticTaskStatus,
+} from './agentic-task-registry.service';
+
+const ARCHIVABLE_TASK_STATUSES = new Set<AgenticTaskStatus>(['ready', 'stopped', 'error']);
+
+export function isAgenticTaskStatusArchivable(status: AgenticTaskStatus | undefined): boolean {
+  return Boolean(status && ARCHIVABLE_TASK_STATUSES.has(status));
+}
 
 export interface AgenticHeaderTaskLaunchContext {
   project?: AgenticProjectRecord;
@@ -27,6 +46,28 @@ export type AgenticHeaderTaskLaunchStatus =
 export interface AgenticHeaderTaskLaunchResult {
   status: AgenticHeaderTaskLaunchStatus;
 }
+
+export type AgenticTaskActivationStatus =
+  | AgenticTaskSessionActivationStatus
+  | 'project-unavailable'
+  | 'agent-unavailable';
+
+export interface AgenticTaskActivationResult {
+  status: AgenticTaskActivationStatus;
+}
+
+export type AgenticTaskValidationResult =
+  | AgenticTaskSessionValidationResult
+  | { status: 'project-unavailable' | 'agent-unavailable' };
+
+export interface AgenticTaskArchiveResult {
+  status: 'archived' | 'not-archivable' | 'failed';
+  availability?: 'conversation-unavailable' | 'agent-unavailable';
+}
+
+type AgenticTaskRouteResult =
+  | { status: 'ready' }
+  | { status: 'superseded' | 'failed' | 'project-unavailable' | 'agent-unavailable' };
 
 @Injectable()
 export class AgenticWorkspaceSwitchService {
@@ -81,24 +122,102 @@ export class AgenticWorkspaceSwitchService {
     }
   }
 
-  async activateTask(task: AgenticTaskRecord): Promise<boolean> {
+  async activateTask(task: AgenticTaskRecord): Promise<AgenticTaskActivationResult> {
     const actionGeneration = ++this.taskActionGeneration;
     const shouldApply = () => actionGeneration === this.taskActionGeneration;
+    const route = await this.prepareTaskRoute(task, shouldApply);
+    if (route.status !== 'ready') {
+      return route;
+    }
+
+    const result = await this.aiChatService.activateAgenticTaskSession(task.sessionId, shouldApply);
+    if (!shouldApply()) {
+      return { status: 'superseded' };
+    }
+    if (result.status === 'activated') {
+      await this.registry.markUnread(task.sessionId, false);
+    }
+    return result;
+  }
+
+  async validateTaskSession(task: AgenticTaskRecord): Promise<AgenticTaskValidationResult> {
+    const actionGeneration = ++this.taskActionGeneration;
+    const shouldApply = () => actionGeneration === this.taskActionGeneration;
+    const route = await this.prepareTaskRoute(task, shouldApply);
+    if (route.status !== 'ready') {
+      return route;
+    }
+
+    if (this.aiChatService.isAgenticTaskSessionObserved(task.sessionId)) {
+      const taskStatus = this.aiChatService.getObservedAgenticTaskStatus(task.sessionId);
+      return taskStatus ? { status: 'validated', taskStatus } : { status: 'failed' };
+    }
+
+    return this.aiChatService.validateAgenticTaskSession(task.sessionId, shouldApply);
+  }
+
+  async archiveTask(
+    task: AgenticTaskRecord,
+    options: { conversationUnavailable: boolean },
+  ): Promise<AgenticTaskArchiveResult> {
+    if (options.conversationUnavailable) {
+      const archived = await this.registry.archiveUnavailable(task.sessionId);
+      return {
+        status: archived ? 'archived' : 'failed',
+        availability: 'conversation-unavailable',
+      };
+    }
+
+    if (!getAvailableAgentConfigs(this.preferenceService)[task.agentId]) {
+      const archived = await this.registry.archiveUnavailable(task.sessionId);
+      return { status: archived ? 'archived' : 'failed', availability: 'agent-unavailable' };
+    }
+
+    if (this.aiChatService.isAgenticTaskSessionObserved(task.sessionId)) {
+      const status = this.aiChatService.getObservedAgenticTaskStatus(task.sessionId);
+      if (!isAgenticTaskStatusArchivable(status)) {
+        return { status: 'not-archivable' };
+      }
+      return { status: (await this.registry.archive(task.sessionId)) ? 'archived' : 'failed' };
+    }
+
+    const validation = await this.validateTaskSession(task);
+    if (validation.status === 'validated') {
+      if (!isAgenticTaskStatusArchivable(validation.taskStatus)) {
+        return { status: 'not-archivable' };
+      }
+      return { status: (await this.registry.archive(task.sessionId)) ? 'archived' : 'failed' };
+    }
+    if (validation.status === 'conversation-unavailable' || validation.status === 'agent-unavailable') {
+      const archived = await this.registry.archiveUnavailable(task.sessionId);
+      return {
+        status: archived ? 'archived' : 'failed',
+        availability: validation.status,
+      };
+    }
+    return { status: validation.status === 'failed' ? 'failed' : 'not-archivable' };
+  }
+
+  private async prepareTaskRoute(task: AgenticTaskRecord, shouldApply: () => boolean): Promise<AgenticTaskRouteResult> {
     const project = await this.registry.getProject(task.projectId);
-    if (!shouldApply() || !project) {
-      return false;
+    if (!shouldApply()) {
+      return { status: 'superseded' };
+    }
+    if (!project) {
+      return { status: 'failed' };
     }
 
     const available = await this.ensureProjectAvailable(project);
-    if (!shouldApply() || !available) {
-      return false;
+    if (!shouldApply()) {
+      return { status: 'superseded' };
     }
-
-    const activated = await this.aiChatService.activateAgenticTaskSession(task.sessionId, shouldApply);
-    if (activated && shouldApply()) {
-      await this.registry.markUnread(task.sessionId, false);
+    if (!available) {
+      return { status: 'project-unavailable' };
     }
-    return activated && shouldApply();
+    if (!getAvailableAgentConfigs(this.preferenceService)[task.agentId]) {
+      return { status: 'agent-unavailable' };
+    }
+    return { status: 'ready' };
   }
 
   async launchTask(project: AgenticProjectRecord, agentId: string): Promise<boolean> {
@@ -208,9 +327,9 @@ export class AgenticWorkspaceSwitchService {
     const shouldApply = () => actionGeneration === this.taskActionGeneration;
     const activation = this.registry.consumePendingActivation();
     if (activation) {
-      const activated = await this.aiChatService.activateAgenticTaskSession(activation.sessionId, shouldApply);
-      if (activated && shouldApply()) {
-        await this.registry.markUnread(activation.sessionId, false);
+      const task = await this.registry.getTask(activation.sessionId);
+      if (task && shouldApply()) {
+        await this.activateTask(task);
       }
       return;
     }
@@ -230,9 +349,9 @@ export class AgenticWorkspaceSwitchService {
     if (!activeTask) {
       return;
     }
-    const activated = await this.aiChatService.activateAgenticTaskSession(activeTask.sessionId, shouldApply);
-    if (activated && shouldApply()) {
-      await this.registry.markUnread(activeTask.sessionId, false);
+    const task = await this.registry.getTask(activeTask.sessionId);
+    if (task && shouldApply()) {
+      await this.activateTask(task);
     }
   }
 

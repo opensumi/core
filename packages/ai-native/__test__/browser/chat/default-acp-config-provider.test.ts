@@ -150,6 +150,14 @@ describe('DefaultACPConfigProvider', () => {
     expect((provider as any).quickPick.show).not.toHaveBeenCalled();
   });
 
+  it('does not fall back to the default Agent for an unavailable explicit Task target', async () => {
+    const provider = await createProvider();
+
+    await expect(provider.resolveConfigForTarget({ agentId: 'removed-agent', cwd: '/work/b' })).rejects.toThrow(
+      'ACP Agent unavailable: removed-agent',
+    );
+  });
+
   it('resolves a background warmup config for a single-root workspace without prompting', async () => {
     const provider = await createProvider();
 

@@ -271,6 +271,18 @@ export class AgenticTaskRegistryService {
     return true;
   }
 
+  async archiveUnavailable(sessionId: string): Promise<boolean> {
+    await this.ensureInitialized();
+    const task = this.findTask(sessionId);
+    if (!task || task.archived) {
+      return false;
+    }
+
+    task.archived = true;
+    await this.persist();
+    return true;
+  }
+
   async unarchive(sessionId: string): Promise<boolean> {
     await this.ensureInitialized();
     const task = this.findTask(sessionId);

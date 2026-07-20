@@ -14,6 +14,8 @@ jest.mock('../../../src/browser/acp/agentic-task-registry.service', () => ({
 
 jest.mock('../../../src/browser/acp/agentic-workspace-switch.service', () => ({
   AgenticWorkspaceSwitchService: class AgenticWorkspaceSwitchService {},
+  isAgenticTaskStatusArchivable: (status: string | undefined) =>
+    status === 'ready' || status === 'stopped' || status === 'error',
 }));
 
 jest.mock('../../../src/browser/chat/get-default-agent-type', () => ({
@@ -89,6 +91,7 @@ function createServices() {
   return {
     registry: {
       archive: jest.fn(() => Promise.resolve(true)),
+      archiveUnavailable: jest.fn(() => Promise.resolve(true)),
       listActiveGroups: jest.fn(() => Promise.resolve([])),
       listArchivedGroups: jest.fn(() => Promise.resolve([])),
       listProjects: jest.fn(() => Promise.resolve([projectA, projectB])),
@@ -99,8 +102,9 @@ function createServices() {
       unarchive: jest.fn(() => Promise.resolve(true)),
     },
     workspaceSwitch: {
-      activateTask: jest.fn(() => Promise.resolve()),
+      activateTask: jest.fn(() => Promise.resolve({ status: 'activated' })),
       addProject: jest.fn(() => Promise.resolve(projectA)),
+      archiveTask: jest.fn(() => Promise.resolve({ status: 'archived' })),
       isTaskLaunchPending: false,
       launchTask: jest.fn(() => Promise.resolve()),
       onDidChangeTaskLaunchPending: jest.fn(() => ({ dispose: jest.fn() })),
@@ -114,6 +118,7 @@ function createServices() {
     },
     aiChatService: {
       enterAgenticTaskDraft: jest.fn(),
+      isAgenticTaskSessionObserved: jest.fn(() => true),
     },
     preferenceService: {
       get: jest.fn(() => ({})),
@@ -496,7 +501,7 @@ describe('AgenticTaskList', () => {
       status: 'running' as const,
     };
     let tasks = [oldTask];
-    services.workspaceSwitch.activateTask.mockResolvedValue(true);
+    services.workspaceSwitch.activateTask.mockResolvedValue({ status: 'activated' });
     (services.registry as any).onDidChange = (listener: () => void) => {
       onRegistryChange = listener;
       return { dispose: jest.fn() };
@@ -868,7 +873,7 @@ describe('AgenticTaskList', () => {
     const readyRow = container.querySelector('[data-testid="agentic-task-row-acp:ready"]');
     expect(readyRow?.textContent).toContain('Ready task');
     expect(readyRow?.textContent).not.toContain('ready');
-    expect(readyRow?.textContent).not.toContain('agent-a');
+    expect(readyRow?.textContent).toContain('agent-a');
     expect(container.querySelector('[data-testid="agentic-task-status-acp:ready"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-status-acp:unknown"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-archive-acp:unknown"]')).toBeNull();
@@ -891,7 +896,10 @@ describe('AgenticTaskList', () => {
       (container.querySelector('[data-testid="agentic-task-archive-acp:ready"]') as HTMLButtonElement).click();
       await flushPromises();
     });
-    expect(services.registry.archive).toHaveBeenCalledWith('acp:ready');
+    expect(services.workspaceSwitch.archiveTask).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionId: 'acp:ready' }),
+      { conversationUnavailable: false },
+    );
 
     expect(container.querySelector('[data-testid="agentic-task-row-acp:unavailable"]')).toBeNull();
     expect(container.textContent).not.toContain('Unavailable task');
@@ -900,7 +908,9 @@ describe('AgenticTaskList', () => {
 
   it('keeps the active Task Row when the requested Task session fails to activate', async () => {
     const services = createServices();
-    services.workspaceSwitch.activateTask.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+    services.workspaceSwitch.activateTask
+      .mockResolvedValueOnce({ status: 'activated' })
+      .mockResolvedValueOnce({ status: 'conversation-unavailable' });
     services.registry.listActiveGroups.mockResolvedValue([
       {
         project: projectA,
@@ -943,16 +953,25 @@ describe('AgenticTaskList', () => {
     expect(
       container.querySelector('[data-testid="agentic-task-row-acp:failed"]')?.getAttribute('aria-current'),
     ).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-availability-acp:failed"]')?.textContent).toBe(
+      'History unavailable',
+    );
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-row-acp:failed"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    expect(services.workspaceSwitch.activateTask).toHaveBeenCalledTimes(3);
   });
 
   it('selects only the most recent Task Row after rapid successful activation requests', async () => {
     const services = createServices();
-    let resolveFirstActivation: (activated: boolean) => void;
-    let resolveSecondActivation: (activated: boolean) => void;
-    const firstActivation = new Promise<boolean>((resolve) => {
+    let resolveFirstActivation: (result: { status: 'activated' }) => void;
+    let resolveSecondActivation: (result: { status: 'activated' }) => void;
+    const firstActivation = new Promise<{ status: 'activated' }>((resolve) => {
       resolveFirstActivation = resolve;
     });
-    const secondActivation = new Promise<boolean>((resolve) => {
+    const secondActivation = new Promise<{ status: 'activated' }>((resolve) => {
       resolveSecondActivation = resolve;
     });
     services.workspaceSwitch.activateTask.mockReturnValueOnce(firstActivation).mockReturnValueOnce(secondActivation);
@@ -989,7 +1008,7 @@ describe('AgenticTaskList', () => {
       await flushPromises();
     });
     await act(async () => {
-      resolveFirstActivation!(true);
+      resolveFirstActivation!({ status: 'activated' });
       await flushPromises();
     });
 
@@ -1001,13 +1020,135 @@ describe('AgenticTaskList', () => {
     ).toBeNull();
 
     await act(async () => {
-      resolveSecondActivation!(true);
+      resolveSecondActivation!({ status: 'activated' });
       await flushPromises();
     });
 
     expect(container.querySelector('[data-testid="agentic-task-row-acp:second"]')?.getAttribute('aria-current')).toBe(
       'true',
     );
+  });
+
+  it('shows the originating Agent and marks persisted ACP status as last known until the session is observed', async () => {
+    const services = createServices();
+    services.aiChatService.isAgenticTaskSessionObserved.mockReturnValue(false);
+    services.registry.listActiveGroups.mockResolvedValue([
+      {
+        project: projectA,
+        tasks: [
+          {
+            sessionId: 'acp:last-known',
+            projectId: projectA.id,
+            agentId: 'agent-b',
+            title: 'Background task',
+            createdAt: 1,
+            archived: false,
+            unread: false,
+            status: 'running' as const,
+          },
+        ],
+      },
+    ]);
+
+    await renderTaskList(services);
+
+    expect(container.querySelector('[data-testid="agentic-task-agent-acp:last-known"]')?.textContent).toBe('agent-b');
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:last-known"]')?.textContent).toBe(
+      'Last known: Running',
+    );
+  });
+
+  it('validates Last-known status before archive and archives a missing Task Conversation without rewriting status', async () => {
+    const services = createServices();
+    services.aiChatService.isAgenticTaskSessionObserved.mockReturnValue(false);
+    services.workspaceSwitch.archiveTask
+      .mockResolvedValueOnce({ status: 'not-archivable' })
+      .mockResolvedValueOnce({ status: 'archived', availability: 'conversation-unavailable' });
+    services.registry.listActiveGroups.mockResolvedValue([
+      {
+        project: projectA,
+        tasks: [
+          {
+            sessionId: 'acp:archive-validation',
+            projectId: projectA.id,
+            agentId: 'agent-a',
+            title: 'Validate before archive',
+            createdAt: 1,
+            archived: false,
+            unread: false,
+            status: 'running' as const,
+          },
+        ],
+      },
+    ]);
+
+    await renderTaskList(services);
+    const archive = container.querySelector(
+      '[data-testid="agentic-task-archive-acp:archive-validation"]',
+    ) as HTMLButtonElement;
+
+    await act(async () => {
+      archive.click();
+      await flushPromises();
+    });
+    expect(services.workspaceSwitch.archiveTask).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ sessionId: 'acp:archive-validation' }),
+      { conversationUnavailable: false },
+    );
+
+    await act(async () => {
+      archive.click();
+      await flushPromises();
+    });
+    expect(services.workspaceSwitch.archiveTask).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ sessionId: 'acp:archive-validation' }),
+      { conversationUnavailable: false },
+    );
+  });
+
+  it('keeps a Task from a missing Agent visible, disables activation, and allows unavailable archive', async () => {
+    const services = createServices();
+    (getAvailableAgentConfigs as jest.Mock).mockReturnValue({
+      'agent-a': { command: 'agent-a', description: 'Agent A' },
+    });
+    services.aiChatService.isAgenticTaskSessionObserved.mockReturnValue(false);
+    services.registry.listActiveGroups.mockResolvedValue([
+      {
+        project: projectA,
+        tasks: [
+          {
+            sessionId: 'acp:missing-agent',
+            projectId: projectA.id,
+            agentId: 'agent-b',
+            title: 'Retained Agent B task',
+            createdAt: 1,
+            archived: false,
+            unread: false,
+            status: 'running' as const,
+          },
+        ],
+      },
+    ]);
+
+    await renderTaskList(services);
+
+    const row = container.querySelector('[data-testid="agentic-task-row-acp:missing-agent"]') as HTMLButtonElement;
+    expect(row.disabled).toBe(true);
+    expect(container.querySelector('[data-testid="agentic-task-availability-acp:missing-agent"]')?.textContent).toBe(
+      'Agent unavailable',
+    );
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-archive-acp:missing-agent"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    expect(services.workspaceSwitch.archiveTask).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionId: 'acp:missing-agent' }),
+      { conversationUnavailable: false },
+    );
+    expect(services.workspaceSwitch.activateTask).not.toHaveBeenCalled();
   });
 
   it('refreshes archived-only Projects and filters unavailable archived Task rows', async () => {

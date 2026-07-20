@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AINativeConfigService, ILogger } from '@opensumi/ide-core-browser';
 import {
+  ACP_SESSION_NOT_FOUND_ERROR_NAME,
   AcpTargetConfigRequest,
   AvailableCommand,
   ChatMessageRole,
@@ -12,7 +13,6 @@ import {
   URI,
 } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { AgenticTaskRegistryService, AgenticTaskStatus } from '../acp/agentic-task-registry.service';
 import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
@@ -21,7 +21,6 @@ import { AIPanelLayoutService } from '../layout/panel-layout.service';
 import { AcpChatManagerService } from './chat-manager.service.acp';
 import { ChatModel, ChatRequestModel } from './chat-model';
 import { ChatInternalService } from './chat.internal.service';
-import { getCachedWorkspaceDir } from './pick-workspace-dir';
 import { AcpSessionConfigOption, AcpSessionModeOption, AcpSessionModelOption } from './session-provider';
 
 import type { AcpTurnDraft } from './acp-chat-queued-turns';
@@ -33,50 +32,36 @@ const ACP_LOAD_SESSION_NOT_FOUND_MESSAGE =
 const ACP_LOAD_TASK_FALLBACK_MESSAGE = 'Unable to open this task history. The previous Task remains active.';
 const ACP_LOAD_TASK_NOT_FOUND_MESSAGE = 'This task history is no longer available. The previous Task remains active.';
 
-function getReadableErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (typeof error === 'string') {
-    return error;
-  }
-
-  if (error && typeof error === 'object') {
-    const errorRecord = error as Record<string, unknown>;
-    const message = errorRecord.message;
-    if (typeof message === 'string' && message.trim()) {
-      return message;
-    }
-
-    const nestedError = errorRecord.error;
-    if (nestedError && typeof nestedError === 'object') {
-      const nestedMessage = (nestedError as Record<string, unknown>).message;
-      if (typeof nestedMessage === 'string' && nestedMessage.trim()) {
-        return nestedMessage;
-      }
-    }
-  }
-
-  return '';
-}
-
 export function formatAcpLoadSessionFallbackMessage(error: unknown): string {
-  const errorMessage = getReadableErrorMessage(error);
-  if (/session .*not found|not found|does not exist|no session/i.test(errorMessage)) {
+  if (isAcpSessionNotFoundError(error)) {
     return ACP_LOAD_SESSION_NOT_FOUND_MESSAGE;
   }
 
   return ACP_LOAD_SESSION_FALLBACK_MESSAGE;
 }
 function formatAcpLoadTaskFallbackMessage(error: unknown): string {
-  const errorMessage = getReadableErrorMessage(error);
-  if (/session .*not found|not found|does not exist|no session/i.test(errorMessage)) {
+  if (isAcpSessionNotFoundError(error)) {
     return ACP_LOAD_TASK_NOT_FOUND_MESSAGE;
   }
 
   return ACP_LOAD_TASK_FALLBACK_MESSAGE;
 }
+
+function isAcpSessionNotFoundError(error: unknown): boolean {
+  return Boolean(
+    error && typeof error === 'object' && (error as { name?: unknown }).name === ACP_SESSION_NOT_FOUND_ERROR_NAME,
+  );
+}
+
+export type AgenticTaskSessionActivationStatus = 'activated' | 'superseded' | 'conversation-unavailable' | 'failed';
+
+export interface AgenticTaskSessionActivationResult {
+  status: AgenticTaskSessionActivationStatus;
+}
+
+export type AgenticTaskSessionValidationResult =
+  | { status: 'validated'; taskStatus: AgenticTaskStatus }
+  | { status: 'superseded' | 'conversation-unavailable' | 'failed' };
 
 function updateConfigOptionValue(option: Record<string, any>, value: boolean | string): Record<string, any> {
   const next = { ...option };
@@ -144,9 +129,6 @@ export class AcpChatInternalService extends ChatInternalService {
   @Autowired(AIPanelLayoutService)
   private panelLayoutService: AIPanelLayoutService;
 
-  @Autowired(IWorkspaceService)
-  private workspaceService: IWorkspaceService;
-
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
@@ -190,8 +172,6 @@ export class AcpChatInternalService extends ChatInternalService {
   private sessionSelectionVersion = 0;
 
   private pendingAgenticTarget: AcpTargetConfigRequest | undefined;
-
-  private readonly agenticTaskTargets = new Map<string, AcpTargetConfigRequest>();
 
   private readonly taskObservationDisposables = new Map<
     string,
@@ -396,9 +376,6 @@ export class AcpChatInternalService extends ChatInternalService {
     }
     const acpManager = this.chatManagerService as AcpChatManagerService;
     this._sessionModel = await acpManager.startSession(target ? { acpTarget: target } : undefined);
-    if (target) {
-      this.agenticTaskTargets.set(this._sessionModel.sessionId, target);
-    }
     this.pendingAgenticTarget = undefined;
     await this.applyDraftSessionState(this._sessionModel, draftSessionState);
     this.setAvailableCommands(acpManager.getAvailableCommands());
@@ -479,7 +456,11 @@ export class AcpChatInternalService extends ChatInternalService {
    * prompt is registered.
    */
   getActiveAgenticTaskAgentId(sessionId?: string): string | undefined {
-    return (sessionId ? this.agenticTaskTargets.get(sessionId) : this.pendingAgenticTarget)?.agentId;
+    if (!sessionId) {
+      return this.pendingAgenticTarget?.agentId;
+    }
+
+    return (this.chatManagerService.getSession(sessionId) as ChatModel | undefined)?.acpTarget?.agentId;
   }
 
   private isAgenticLayout(): boolean {
@@ -494,23 +475,25 @@ export class AcpChatInternalService extends ChatInternalService {
     const existingTask = await this.agenticTaskRegistry.getTask(sessionId);
     const model = this.chatManagerService.getSession(sessionId);
     if (existingTask) {
-      this.agenticTaskTargets.delete(sessionId);
       if (model) {
         this.observeTaskSession(model);
       }
       return;
     }
 
-    const target = this.agenticTaskTargets.get(sessionId);
-    const workspaceUri = target ? URI.file(target.cwd).toString() : this.workspaceService?.workspace?.uri;
-    if (!workspaceUri || !model) {
+    if (!model) {
       return;
     }
+    const target = model.acpTarget;
+    if (!target) {
+      throw new Error(`Resolved ACP target is unavailable for Agentic Task session ${sessionId}`);
+    }
+    const workspaceUri = URI.file(target.cwd).toString();
 
     const uri = URI.parse(workspaceUri);
     const project = {
       workspaceUri: uri.toString(),
-      workspacePath: target?.cwd || getCachedWorkspaceDir(),
+      workspacePath: target.cwd,
       joinedAt: Date.now(),
       availability: 'available' as const,
     };
@@ -518,13 +501,12 @@ export class AcpChatInternalService extends ChatInternalService {
     await this.agenticTaskRegistry.registerProject(project);
     await this.agenticTaskRegistry.registerFirstPrompt({
       sessionId,
-      agentId: target?.agentId || request.message.agentId,
+      agentId: target.agentId,
       project,
       firstPrompt: request.message.prompt,
       createdAt: model.createdAt,
     });
     this.agenticTaskRegistry.rememberActiveTaskSession(sessionId);
-    this.agenticTaskTargets.delete(sessionId);
     this.observeTaskSession(model);
     await this.observeRegisteredTaskSessions();
   }
@@ -535,7 +517,7 @@ export class AcpChatInternalService extends ChatInternalService {
     }
 
     for (const model of this.chatManagerService.getSessions()) {
-      if (await this.agenticTaskRegistry.getTask(model.sessionId)) {
+      if (model.acpTarget && (await this.agenticTaskRegistry.getTask(model.sessionId))) {
         this.observeTaskSession(model);
       }
     }
@@ -607,6 +589,15 @@ export class AcpChatInternalService extends ChatInternalService {
       }),
     );
     this.taskObservationDisposables.set(model.sessionId, { model, disposable });
+  }
+
+  isAgenticTaskSessionObserved(sessionId: string): boolean {
+    return this.taskObservationDisposables.has(sessionId);
+  }
+
+  getObservedAgenticTaskStatus(sessionId: string): AgenticTaskStatus | undefined {
+    const observation = this.taskObservationDisposables.get(sessionId);
+    return observation ? this.toAgenticTaskStatus(observation.model.threadStatus) : undefined;
   }
 
   private toAgenticTaskStatus(status: ThreadStatus): AgenticTaskStatus {
@@ -812,7 +803,6 @@ export class AcpChatInternalService extends ChatInternalService {
       this.enterDraftSession({ force: true });
       return;
     }
-    this.agenticTaskTargets.delete(sessionId);
     this._onWillClearSession.fire(sessionId);
     const clearedSessionId =
       this._sessionModel && sessionId === this._sessionModel.sessionId ? this.stripAcpPrefix(sessionId) : undefined;
@@ -873,29 +863,67 @@ export class AcpChatInternalService extends ChatInternalService {
     return true;
   }
 
-  async activateAgenticTaskSession(sessionId: string, shouldApply: () => boolean = () => true): Promise<boolean> {
+  async activateAgenticTaskSession(
+    sessionId: string,
+    shouldApply: () => boolean = () => true,
+  ): Promise<AgenticTaskSessionActivationResult> {
     const selectionVersion = ++this.sessionSelectionVersion;
     this.beginSessionLoading();
     try {
       await (this.chatManagerService as AcpChatManagerService).loadSession(sessionId);
       const session = this.chatManagerService.getSession(sessionId);
       if (selectionVersion !== this.sessionSelectionVersion || !shouldApply()) {
-        return false;
+        return { status: 'superseded' };
       }
       if (!session) {
-        this.messageService.info(formatAcpLoadTaskFallbackMessage(new Error(`Session ${sessionId} not found`)));
-        return false;
+        this.messageService.info(ACP_LOAD_TASK_FALLBACK_MESSAGE);
+        return { status: 'failed' };
       }
-      return this.applyActivatedSession(
+      const activated = await this.applyActivatedSession(
         sessionId,
         session,
         () => selectionVersion === this.sessionSelectionVersion && shouldApply(),
       );
+      return { status: activated ? 'activated' : 'superseded' };
     } catch (error) {
       if (selectionVersion === this.sessionSelectionVersion && shouldApply()) {
         this.messageService.info(formatAcpLoadTaskFallbackMessage(error));
+        return { status: isAcpSessionNotFoundError(error) ? 'conversation-unavailable' : 'failed' };
       }
-      return false;
+      return { status: 'superseded' };
+    } finally {
+      this.endSessionLoading();
+    }
+  }
+
+  async validateAgenticTaskSession(
+    sessionId: string,
+    shouldApply: () => boolean = () => true,
+  ): Promise<AgenticTaskSessionValidationResult> {
+    this.beginSessionLoading();
+    try {
+      await (this.chatManagerService as AcpChatManagerService).loadSession(sessionId);
+      if (!shouldApply()) {
+        return { status: 'superseded' };
+      }
+      const session = this.chatManagerService.getSession(sessionId);
+      if (!session) {
+        this.messageService.info(ACP_LOAD_TASK_FALLBACK_MESSAGE);
+        return { status: 'failed' };
+      }
+      if (await this.agenticTaskRegistry.getTask(sessionId)) {
+        this.observeTaskSession(session);
+      }
+      if (!shouldApply()) {
+        return { status: 'superseded' };
+      }
+      return { status: 'validated', taskStatus: this.toAgenticTaskStatus(session.threadStatus) };
+    } catch (error) {
+      if (!shouldApply()) {
+        return { status: 'superseded' };
+      }
+      this.messageService.info(formatAcpLoadTaskFallbackMessage(error));
+      return { status: isAcpSessionNotFoundError(error) ? 'conversation-unavailable' : 'failed' };
     } finally {
       this.endSessionLoading();
     }

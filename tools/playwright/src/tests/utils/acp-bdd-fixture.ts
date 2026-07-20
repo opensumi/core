@@ -14,6 +14,7 @@ export const ACP_BDD_FIXTURES = [
   'send-failure',
   'create-failure',
   'load-failure',
+  'task-session-missing',
   'auth-required',
   'config-failure',
   'process-exit',

@@ -20,7 +20,13 @@ import { MsgHistoryManager } from '../model/msg-history-manager';
 
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel, ChatResponseModel } from './chat-model';
-import { ISessionModel, ISessionProvider, SessionCreationOptions, isAcpResponsePending } from './session-provider';
+import {
+  ISessionModel,
+  ISessionModelExtension,
+  ISessionProvider,
+  SessionCreationOptions,
+  isAcpResponsePending,
+} from './session-provider';
 import { ISessionProviderRegistry } from './session-provider-registry';
 
 const MAX_SESSION_COUNT = 20;
@@ -41,6 +47,8 @@ export interface AcpSessionStateChangeEvent {
   currentModeId?: string;
   availableCommands?: AvailableCommand[];
 }
+
+type AcpSessionModelData = ISessionModel & { extension?: ISessionModelExtension };
 
 @Injectable()
 export class AcpChatManagerService extends ChatManagerService {
@@ -621,7 +629,7 @@ export class AcpChatManagerService extends ChatManagerService {
     };
   }
 
-  protected fromAcpJSON(data: ISessionModel[]) {
+  protected fromAcpJSON(data: AcpSessionModelData[]) {
     return data
       .filter((item) => item.history.messages.length > 0 || item.sessionId.startsWith('acp:'))
       .map((item) => {
@@ -635,6 +643,7 @@ export class AcpChatManagerService extends ChatManagerService {
           currentModeId: item.currentModeId,
           agentModels: item.agentModels,
           configOptions: item.configOptions,
+          acpTarget: item.extension?.acpTarget,
         });
         const requests = item.requests.map(
           (request) =>

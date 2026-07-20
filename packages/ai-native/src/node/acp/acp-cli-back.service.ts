@@ -1,5 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
+  ACP_SESSION_NOT_FOUND_ERROR_NAME,
   AvailableCommand,
   CLIENT_ID_TOKEN,
   CancellationToken,
@@ -904,7 +905,15 @@ ${input}`;
       this.logger.error(`Failed to load session ${sessionId}:`, errorMessage);
 
       // 抛出错误，让调用方感知实际错误
-      throw new Error(`Failed to load session ${sessionId}: ${errorMessage}`);
+      const wrappedError = new Error(`Failed to load session ${sessionId}: ${errorMessage}`);
+      if (
+        error &&
+        typeof error === 'object' &&
+        (error as { name?: unknown }).name === ACP_SESSION_NOT_FOUND_ERROR_NAME
+      ) {
+        wrappedError.name = ACP_SESSION_NOT_FOUND_ERROR_NAME;
+      }
+      throw wrappedError;
     }
   }
 

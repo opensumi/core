@@ -489,7 +489,7 @@
 .task_row {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   align-items: center;
   gap: 6px;
   width: 100%;
@@ -554,11 +554,18 @@
 }
 
 .task_title,
+.task_agent,
 .task_meta {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.task_agent {
+  max-width: 64px;
+  color: var(--descriptionForeground);
+  font-size: 11px;
 }
 
 .task_title {
