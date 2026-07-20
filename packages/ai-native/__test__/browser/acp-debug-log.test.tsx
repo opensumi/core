@@ -185,4 +185,66 @@ describe('AcpDebugLogView', () => {
     expect(aiBackService.getAcpDebugLog).toHaveBeenCalledTimes(2);
     expect(container.textContent).toContain('No ACP debug log entries yet.');
   });
+
+  it('redacts sensitive protocol fields and MCP credentials when rendering and copying', async () => {
+    const mcpToken = '0123456789abcdef0123456789abcdef';
+    const apiKey = 'sk-super-secret-value';
+    aiBackService.getAcpDebugLog.mockResolvedValueOnce([
+      {
+        agentId: 'codex',
+        direction: 'incoming',
+        id: 2,
+        payload: {
+          method: 'session/update',
+          params: {
+            prompt: 'BDD_SECRET_PROMPT',
+            update: {
+              content: 'BDD_SECRET_ASSISTANT',
+              rawInput: { apiKey },
+              rawOutput: 'BDD_SECRET_TOOL_RESULT',
+              url: `http://127.0.0.1:1234/mcp/${mcpToken}`,
+            },
+          },
+        },
+        raw: JSON.stringify({
+          method: 'session/request_permission',
+          params: { prompt: 'BDD_SECRET_PERMISSION', token: apiKey },
+        }),
+        sessionId: 'session-2',
+        threadId: 'thread-2',
+        timestamp: 1710000000000,
+      },
+    ]);
+
+    await act(async () => {
+      root.render(<AcpDebugLogView />);
+      await Promise.resolve();
+    });
+
+    const rendered = container.textContent || '';
+    expect(rendered).toContain('<redacted>');
+    expect(rendered).not.toContain(mcpToken);
+    expect(rendered).not.toContain(apiKey);
+    expect(rendered).not.toContain('BDD_SECRET_PROMPT');
+    expect(rendered).not.toContain('BDD_SECRET_ASSISTANT');
+    expect(rendered).not.toContain('BDD_SECRET_TOOL_RESULT');
+    expect(rendered).not.toContain('BDD_SECRET_PERMISSION');
+
+    await act(async () => {
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent === 'Copy All')!
+        .click();
+      await Promise.resolve();
+    });
+
+    const copiedCalls = clipboardService.writeText.mock.calls;
+    const copied = copiedCalls[copiedCalls.length - 1]?.[0] || '';
+    expect(copied).toContain('/mcp/<redacted>');
+    expect(copied).not.toContain(mcpToken);
+    expect(copied).not.toContain(apiKey);
+    expect(copied).not.toContain('BDD_SECRET_PROMPT');
+    expect(copied).not.toContain('BDD_SECRET_ASSISTANT');
+    expect(copied).not.toContain('BDD_SECRET_TOOL_RESULT');
+    expect(copied).not.toContain('BDD_SECRET_PERMISSION');
+  });
 });

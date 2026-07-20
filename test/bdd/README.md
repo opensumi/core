@@ -288,7 +288,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-editor-target-reveal.scenario.md` | `runtime-ui` | `default` | Foreground editor targets restore a hidden Agentic workbench before revealing Settings. |
 | `acp-chat-agentic-file-link-open.scenario.md` | `runtime-ui` | `interactive` | Agentic file links restore workbench/editor/Explorer and open the workspace target safely. |
 | `acp-chat-agentic-keyboard-a11y.scenario.md` | `runtime-ui` | `interactive` | Keyboard-only input, commands, history, dialogs, queued actions, and tool-card disclosure/accessibility isolation. |
-| `acp-chat-agentic-debug-log-from-chat.scenario.md` | `runtime-ui` | `full` | Debug log viewer correlation and controls after a chat stream; redaction audit is blocked until product support exists. |
+| `acp-chat-agentic-debug-log-from-chat.scenario.md` | `runtime-ui` | `full` | Debug log viewer correlation, controls, and shared render/copy redaction after a chat stream. |
 | `acp-chat-agentic-theme-persistence.scenario.md` | `runtime-ui` | `default` | Theme, Agentic layout preference, geometry, and visual usability persistence. |
 | `acp-chat-agentic-header-maximize.scenario.md` | `runtime-ui` | `interactive` | Chat header active-session title and maximize action collapsing workbench/editor/Explorer while keeping AI Chat visible. |
 | `acp-chat-agentic-task-list-presentation-and-resize.scenario.md` | `runtime-ui` | `interactive` | Workbench-native Agent Tasks presentation, accessibility, resize bounds, and width persistence. |
@@ -317,7 +317,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-process-config.scenario.md` | `node-contract` | `default` | Browser config merge and node spawn config resolution. |
 | `acp-client-handlers.scenario.md` | `node-contract` | `default` | ACP client file and terminal handlers exposed to the agent process. |
 | `acp-chat-session-storage.scenario.md` | `node-contract` | `default` | Browser session activation, reload reattachment, snapshot/live restoration, fallback, and permission cleanup. |
-| `acp-debug-log.scenario.md` | `runtime-ui` | `full` | Protocol trace store, entry bounds, raw viewer controls, and blocked redaction audit. |
+| `acp-debug-log.scenario.md` | `runtime-ui` | `full` | Raw protocol trace storage, entry bounds, and redacted viewer/copy controls. |
 | `acp-error-and-recovery.scenario.md` | `node-contract` | `full` | Structured failures and recovery across node, MCP, and browser UI boundaries. |
 | `acp-rpc-bridge-and-status.scenario.md` | `node-contract` | `default` | Browser/node RPC definitions, existing-session attachment, execution, and thread status synchronization. |
 

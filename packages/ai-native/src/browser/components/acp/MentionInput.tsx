@@ -921,9 +921,18 @@ const MentionInputImpl = (
 
     if (e.key === 'Escape') {
       e.preventDefault();
-      if (!closeTransientUi()) {
-        onEscape?.();
+      if (closeTransientUi()) {
+        return;
       }
+      const selectedSlashCommand = editorRef.current?.querySelector('[data-command]');
+      if (selectedSlashCommand) {
+        selectedSlashCommand.remove();
+        onSlashSelect?.('');
+        handleInput();
+        editorRef.current?.focus();
+        return;
+      }
+      onEscape?.();
       return;
     }
 
@@ -1970,7 +1979,16 @@ const MentionInputImpl = (
             />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
+              role='button'
+              tabIndex={disabled ? -1 : 0}
+              aria-label={`Remove file context ${new URI(file.uri.toString()).displayName}`}
               onClick={() => removeContext(MentionType.FILE, file.uri)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  removeContext(MentionType.FILE, file.uri);
+                }
+              }}
             />
             <span className={styles.context_preview_item_text}>{new URI(file.uri.toString()).displayName}</span>
           </div>
@@ -1981,7 +1999,16 @@ const MentionInputImpl = (
             <Icon iconClass={cls(getIcon('folder'), styles.context_preview_item_icon, styles.icon)} />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
+              role='button'
+              tabIndex={disabled ? -1 : 0}
+              aria-label={`Remove folder context ${new URI(folder.uri.toString()).displayName}`}
               onClick={() => removeContext(MentionType.FOLDER, folder.uri)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  removeContext(MentionType.FOLDER, folder.uri);
+                }
+              }}
             />
             <span className={styles.context_preview_item_text}>{new URI(folder.uri.toString()).displayName}</span>
           </div>
@@ -1992,7 +2019,16 @@ const MentionInputImpl = (
             <Icon iconClass={cls(getIcon('rules'), styles.context_preview_item_icon, styles.icon)} />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
+              role='button'
+              tabIndex={disabled ? -1 : 0}
+              aria-label={`Remove rule context ${getFileNameFromPath(rule.path).replace('.mdc', '')}`}
               onClick={() => removeContext(MentionType.RULE, new URI(rule.path))}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  removeContext(MentionType.RULE, new URI(rule.path));
+                }
+              }}
             />
             <span className={styles.context_preview_item_text}>
               {getFileNameFromPath(rule.path).replace('.mdc', '')}
@@ -2037,6 +2073,9 @@ const MentionInputImpl = (
             visible={true}
             level={mentionState.level}
             loading={mentionState.loading}
+            listId='agentic-chat-suggestion-list'
+            ariaLabel={mentionState.trigger === '/' ? 'Available commands' : 'Context suggestions'}
+            optionIdPrefix='agentic-chat-suggestion-option'
           />
         </div>
       )}
@@ -2044,7 +2083,16 @@ const MentionInputImpl = (
         <div
           ref={editorRef}
           className={styles.editor}
+          role='textbox'
+          aria-label='Agentic chat input'
           aria-disabled={disabled}
+          aria-multiline='true'
+          aria-autocomplete='list'
+          aria-expanded={!disabled && mentionState.active}
+          aria-controls={!disabled && mentionState.active ? 'agentic-chat-suggestion-list' : undefined}
+          aria-activedescendant={
+            !disabled && mentionState.active ? `agentic-chat-suggestion-option-${mentionState.activeIndex}` : undefined
+          }
           contentEditable={!disabled}
           onInput={handleInput}
           onKeyDown={handleKeyDown}

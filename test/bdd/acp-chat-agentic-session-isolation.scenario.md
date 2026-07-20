@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/browser/chat/chat.view.acp.tsx`, `packages/ai-native/src/browser/chat/chat.internal.service.acp.ts`, `packages/ai-native/src/browser/chat/chat-manager.service.acp.ts`, or `packages/ai-native/src/node/acp/acp-agent.service.ts`
 
-**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** The mock ACP agent uses `--fixture=history` for two deterministic ACP sessions, `--fixture=long-stream` for a controlled active stream, and `--fixture=stream-rich` for completed stream assertions. A deterministic delayed-activation seam keeps one Session switch pending long enough to inspect its loading and disabled-control state. A real LLM-backed ACP agent may be used only for live two-session smoke coverage. History surface is available, and a fresh MCP session runs in a profile exposing `acp_chat_get_session_state` and `acp_chat_list_sessions`. **Workspace mutation:** None. **Automation status:** History-backed isolation is converted to `tools/playwright/src/tests/acp-chat-agentic-session-isolation.test.ts` with `fixture=history`, `profile=interactive`, deterministic per-session send/switch assertions, and metadata-only state/list checks. Concurrent long-stream isolation and delayed-switch accessibility remain runtime BDD/Jest-backed until their fixture seams are converted.
+**Layer:** `runtime-ui` **Required profile:** `interactive` **Fixtures:** The mock ACP agent uses `--fixture=history` for two deterministic ACP sessions, `--fixture=long-stream` for a controlled active stream, and `--fixture=stream-rich` for completed stream assertions. A deterministic delayed-activation seam keeps one Session switch pending long enough to inspect its loading and disabled-control state. A real LLM-backed ACP agent may be used only for live two-session smoke coverage. The Agent Tasks list is available, and a fresh MCP session runs in a profile exposing `acp_chat_get_session_state` and `acp_chat_list_sessions`. **Workspace mutation:** None. **Automation status:** Agent Tasks session isolation is converted to `tools/playwright/src/tests/acp-chat-agentic-session-isolation.test.ts` with `fixture=history`, `profile=interactive`, two Tasks created through the normal first-prompt flow, deterministic per-session send/switch assertions, and metadata-only state/list checks. Concurrent long-stream isolation and delayed-switch accessibility remain runtime BDD/Jest-backed until their fixture seams are converted.
 
 ## Given
 
@@ -11,6 +11,18 @@
 - Session B can complete a short deterministic response with the mock `stream-rich` fixture, or the subcase is recorded as blocked if the harness cannot switch fixtures while preserving both sessions.
 
 ## When
+
+### Converted Agent Tasks subcase
+
+1. Create Session A and Session B through the normal Agentic first-prompt flow so both appear in Agent Tasks.
+2. Select Session A and Session B from Agent Tasks and record each completed baseline shell.
+3. Send one additional deterministic prompt in Session A and wait for completion.
+4. Switch to Session B and verify its baseline shell has not changed.
+5. Send one additional deterministic prompt in Session B and wait for completion.
+6. Switch back and forth through Agent Tasks and verify each Session restores only its own two turns.
+7. Record `acp_chat_get_session_state({})` and `acp_chat_list_sessions({})` and verify each Session reports two requests without content leakage.
+
+### Concurrent and delayed-activation subcase
 
 1. Select or create Session A.
 2. Start a long-running deterministic stream in Session A.

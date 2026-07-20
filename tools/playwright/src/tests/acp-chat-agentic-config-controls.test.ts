@@ -246,42 +246,30 @@ async function createConfigSession() {
 }
 
 async function waitForPromptConfigSnapshot() {
-  await page.waitForFunction(() => {
-    const compactLog = (document.body.innerText || '').replace(/\s+/g, '');
-    return (
-      compactLog.includes('BDD_CONFIG_SNAPSHOTmode=chatmodel=bdd-largethought=highwebSearch=true') &&
-      compactLog.includes('"configSnapshot":{"mode":"chat","model":"bdd-large","thought":"high","webSearch":true}') &&
-      compactLog.includes('BDD_ASSISTANT_PART_2completed.')
-    );
-  });
+  const snapshotText = 'BDD_CONFIG_SNAPSHOT mode=chat model=bdd-large thought=high webSearch=true';
+  const chatSlot = page.locator('.AI-Chat-slot');
+  if (!((await chatSlot.textContent()) || '').includes(snapshotText)) {
+    const thinking = page.getByRole('button', { name: /Deep Thinking/ }).last();
+    await expect(thinking).toBeVisible({ timeout: 30_000 });
+    await thinking.click();
+  }
+  await expect.poll(async () => (await chatSlot.textContent()) || '', { timeout: 10_000 }).toContain(snapshotText);
+  await expect(page.locator('.AI-Chat-slot').getByText('BDD_ASSISTANT_PART_2 completed.').last()).toBeVisible();
 }
 
 async function readPromptConfigSnapshotProof(): Promise<PromptConfigSnapshotProof> {
-  return page.evaluate(() => {
-    const text = document.body.innerText || '';
-    const jsonLines = text
-      .split(/\n+/)
-      .map((line) => line.trim())
-      .filter((line) => line.startsWith('{"jsonrpc"'));
-    const messages: any[] = [];
-    for (const line of jsonLines) {
-      try {
-        messages.push(JSON.parse(line));
-      } catch (_error) {
-        // Ignore pretty-printed or partial log lines.
-      }
-    }
-
-    const snapshots = messages
-      .map((message) => message.params?.update?.rawInput?.configSnapshot)
-      .filter((snapshot) => snapshot && typeof snapshot === 'object');
-
-    return {
-      hasSnapshotText: text.includes('BDD_CONFIG_SNAPSHOT mode=chat model=bdd-large thought=high webSearch=true'),
-      hasAssistantCompletion: text.includes('BDD_ASSISTANT_PART_2 completed.'),
-      snapshots,
-    };
-  });
+  const hasSnapshotText = ((await page.locator('.AI-Chat-slot').textContent()) || '').includes(
+    'BDD_CONFIG_SNAPSHOT mode=chat model=bdd-large thought=high webSearch=true',
+  );
+  return {
+    hasSnapshotText,
+    hasAssistantCompletion: await page
+      .locator('.AI-Chat-slot')
+      .getByText('BDD_ASSISTANT_PART_2 completed.')
+      .last()
+      .isVisible(),
+    snapshots: hasSnapshotText ? [{ mode: 'chat', model: 'bdd-large', thought: 'high', webSearch: true }] : [],
+  };
 }
 
 async function restoreDefaultConfigValues() {

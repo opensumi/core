@@ -23,7 +23,7 @@
 
 ## Then
 
-- Visible command names match the safe metadata returned by `acp_chat_get_available_commands`, subject to profile and fixture filtering.
+- Every ACP command returned by `acp_chat_get_available_commands` appears once in the visible command list. Product-local commands may appear in addition to the ACP metadata and are recorded separately.
 - Pressing Escape while only the picker is open closes the picker and keeps the input editable; it may leave the literal `/` as user text.
 - Command selection updates visible input state without sending immediately.
 - Canceling a selected command removes command state and restores normal input behavior; it does not have to delete unrelated literal input text.

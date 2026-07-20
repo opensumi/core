@@ -8,10 +8,12 @@ import {
   type AcpBddFixtureRuntime,
   loadAcpBddFixtureWorkbench,
 } from './utils/acp-bdd-fixture';
+import { launchTaskInCurrentProject } from './utils/acp-task-list';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const SESSION_PREFIX = 'bdd-session-isolation';
-const SEEDED_SESSION_IDS = [`acp:${SESSION_PREFIX}-alpha`, `acp:${SESSION_PREFIX}-beta`];
+const SESSION_A_BASELINE_PROMPT = 'BDD history isolation baseline A';
+const SESSION_B_BASELINE_PROMPT = 'BDD history isolation baseline B';
 const SESSION_A_PROMPT = 'BDD history isolation session A';
 const SESSION_B_PROMPT = 'BDD history isolation session B';
 const METADATA_LEAK_SENTINELS = [
@@ -82,45 +84,8 @@ async function getSessionState() {
   return result.result;
 }
 
-async function waitForSeededSessions(): Promise<AcpSessionSummary[]> {
-  await expect
-    .poll(
-      async () => {
-        const sessions = await listSessions();
-        return sessions
-          .map((session) => session.sessionId)
-          .filter((id) => SEEDED_SESSION_IDS.includes(id))
-          .sort();
-      },
-      { timeout: 30_000 },
-    )
-    .toEqual([...SEEDED_SESSION_IDS].sort());
-
-  return (await listSessions()).filter((session) => SEEDED_SESSION_IDS.includes(session.sessionId));
-}
-
-async function ensureHistoryVisible() {
-  const inline = page.locator('[data-testid="acp-chat-history-inline"]');
-  if (await inline.isVisible().catch(() => false)) {
-    return;
-  }
-
-  const collapsed = page.locator('[data-testid="acp-chat-history-collapsed"]');
-  if (await collapsed.isVisible().catch(() => false)) {
-    await page.getByLabel(/Expand Chat History|展开聊天历史/).click();
-    await expect(inline).toBeVisible({ timeout: 30_000 });
-    return;
-  }
-
-  const popoverButton = page.locator('[data-testid="acp-chat-history-button"]');
-  await expect(popoverButton).toBeVisible({ timeout: 30_000 });
-  await popoverButton.click();
-  await expect(page.locator('[data-testid="acp-chat-history-popover"]')).toBeVisible({ timeout: 30_000 });
-}
-
-async function clickHistoryItem(sessionId: string) {
-  await ensureHistoryVisible();
-  const row = page.locator(`[data-testid="chat-history-item-${sessionId}"]`).first();
+async function selectTask(sessionId: string) {
+  const row = page.getByTestId(`agentic-task-row-${sessionId}`);
   await expect(row).toBeVisible({ timeout: 30_000 });
   await row.click();
   await expect
@@ -132,6 +97,18 @@ async function clickHistoryItem(sessionId: string) {
       { timeout: 30_000 },
     )
     .toBe(sessionId);
+}
+
+async function startTaskInCurrentProject() {
+  const agentLabel = await launchTaskInCurrentProject(page);
+  expect(agentLabel).toBeTruthy();
+  await expect.poll(async () => (await getSessionState()).active, { timeout: 30_000 }).toBe(false);
+}
+
+async function refreshTaskList() {
+  const search = page.getByPlaceholder('Search tasks');
+  await search.fill('BDD history isolation');
+  await search.fill('');
 }
 
 function chatInput() {
@@ -167,6 +144,16 @@ async function sendPromptAndWaitForResult(prompt: string) {
   await expect(sendButton()).toBeVisible({ timeout: 30_000 });
 }
 
+async function createTaskWithBaseline(prompt: string): Promise<AcpSessionSummary> {
+  await startTaskInCurrentProject();
+  await sendPromptAndWaitForResult(prompt);
+  const session = (await getSessionState()).session;
+  expect(session).not.toBeNull();
+  await refreshTaskList();
+  await expect(page.getByTestId(`agentic-task-row-${session!.sessionId}`)).toBeVisible({ timeout: 30_000 });
+  return session!;
+}
+
 async function readSessionShellProof(): Promise<SessionShellProof> {
   const state = await getSessionState();
   const ui = await page.evaluate(() => {
@@ -187,7 +174,9 @@ async function readSessionShellProof(): Promise<SessionShellProof> {
     ).filter(isVisible).length;
     const hasVisibleButton = (pattern: RegExp) =>
       visibleButtons.some((button) =>
-        pattern.test([button.innerText, button.getAttribute('aria-label'), button.getAttribute('title')].join(' ')),
+        [button.innerText, button.getAttribute('aria-label'), button.getAttribute('title')].some((value) =>
+          pattern.test((value || '').trim()),
+        ),
       );
 
     return {
@@ -195,8 +184,8 @@ async function readSessionShellProof(): Promise<SessionShellProof> {
       assistantRows: Array.from(slot?.querySelectorAll<HTMLElement>('.rce-ai-msg') || []).filter(isVisible).length,
       reasoningToggleCount: visibleButtons.filter((button) => /Deep Thinking|深度思考/.test(button.innerText)).length,
       toolCardCount: Math.max(visibleToolCards, countToolText()),
-      sendVisible: hasVisibleButton(/Send|发送/),
-      stopVisible: hasVisibleButton(/Stop|停止/),
+      sendVisible: hasVisibleButton(/^(?:Enter\s+)?Send$|^Enter\s+发送$|^发送$/i),
+      stopVisible: hasVisibleButton(/^Stop$|^停止$/i),
     };
   });
 
@@ -296,7 +285,20 @@ function waitForSessionShellUnchanged(sessionId: string, baseline: SessionShellP
 }
 
 function expectMetadataOnly(value: unknown) {
-  const serialized = JSON.stringify(value);
+  const omitAllowedTitleMetadata = (item: unknown): unknown => {
+    if (Array.isArray(item)) {
+      return item.map(omitAllowedTitleMetadata);
+    }
+    if (item && typeof item === 'object') {
+      return Object.fromEntries(
+        Object.entries(item).flatMap(([key, nestedValue]) =>
+          key === 'title' || key === 'sourceTitle' ? [] : [[key, omitAllowedTitleMetadata(nestedValue)]],
+        ),
+      );
+    }
+    return item;
+  };
+  const serialized = JSON.stringify(omitAllowedTitleMetadata(value));
   for (const sentinel of METADATA_LEAK_SENTINELS) {
     expect(serialized).not.toContain(sentinel);
   }
@@ -320,9 +322,7 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
     await runtime?.dispose();
   });
 
-  test('Session Isolation keeps history-backed sessions visually and metrically separate', async ({
-    browser: _browser,
-  }, testInfo) => {
+  test('通过 Agent Tasks 切换时两个会话的可见内容和指标保持隔离', async ({ browser: _browser }, testInfo) => {
     void _browser;
 
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-session-isolation', {
@@ -332,14 +332,15 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
       hardeningVerdict: 'CONVERT',
     });
 
-    const [sessionA, sessionB] = await waitForSeededSessions();
+    const sessionA = await createTaskWithBaseline(SESSION_A_BASELINE_PROMPT);
+    const sessionB = await createTaskWithBaseline(SESSION_B_BASELINE_PROMPT);
 
-    await clickHistoryItem(sessionA.sessionId);
+    await selectTask(sessionA.sessionId);
     const sessionABaseline = await waitForHistorySessionShell(sessionA.sessionId);
-    await clickHistoryItem(sessionB.sessionId);
+    await selectTask(sessionB.sessionId);
     const sessionBBaseline = await waitForHistorySessionShell(sessionB.sessionId);
 
-    await clickHistoryItem(sessionA.sessionId);
+    await selectTask(sessionA.sessionId);
     await sendPromptAndWaitForResult(SESSION_A_PROMPT);
     const sessionAAfterSend = await waitForCompletedSingleTurnShell(sessionA.sessionId, sessionABaseline);
     const sessionAProof = await evidence.saveJson(
@@ -348,7 +349,7 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
       'Session A completed one deterministic history-backed turn',
     );
 
-    await clickHistoryItem(sessionB.sessionId);
+    await selectTask(sessionB.sessionId);
     const sessionBUnchanged = await waitForSessionShellUnchanged(sessionB.sessionId, sessionBBaseline);
     const emptySessionBProof = await evidence.saveJson(
       '02-session-b-empty-after-a',
@@ -364,10 +365,10 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
       'Session B completed one deterministic history-backed turn',
     );
 
-    await clickHistoryItem(sessionA.sessionId);
+    await selectTask(sessionA.sessionId);
     const sessionARestored = await waitForCompletedSingleTurnShell(sessionA.sessionId, sessionABaseline);
 
-    await clickHistoryItem(sessionB.sessionId);
+    await selectTask(sessionB.sessionId);
     const sessionBRestored = await waitForCompletedSingleTurnShell(sessionB.sessionId, sessionBBaseline);
     const restoredProof = await evidence.saveJson(
       '04-switch-back-and-forth',
@@ -379,8 +380,8 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
     const state = await getSessionState();
     const summaryA = sessionById(sessions, sessionA.sessionId);
     const summaryB = sessionById(sessions, sessionB.sessionId);
-    expect(summaryA.requestCount).toBe(1);
-    expect(summaryB.requestCount).toBe(1);
+    expect(summaryA.requestCount).toBe(2);
+    expect(summaryB.requestCount).toBe(2);
     expect(state.session?.sessionId).toBe(sessionB.sessionId);
     expectMetadataOnly({ state, sessions });
     const metadataProof = await evidence.saveJson(

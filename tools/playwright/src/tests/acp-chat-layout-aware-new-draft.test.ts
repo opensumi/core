@@ -15,7 +15,10 @@ import {
 
 let runtime: AcpBddFixtureRuntime;
 
-async function getSessionState(): Promise<{ active: boolean; session: { sessionId: string } | null }> {
+async function getSessionState(): Promise<{
+  active: boolean;
+  session: { sessionId: string; threadStatus?: string } | null;
+}> {
   const result = await page.evaluate(async () =>
     (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
   );
@@ -56,6 +59,25 @@ async function showAcpChat(): Promise<void> {
   await waitForAcpChatReady(page);
 }
 
+async function createExistingTaskConversation(): Promise<void> {
+  const input = chatInput();
+  await input.click();
+  await page.keyboard.insertText('BDD existing Task Conversation');
+  await chatSlot()
+    .getByRole('button', { name: /^(Enter\s+)?Send$|^Enter\s+发送$|^发送$/i })
+    .last()
+    .click();
+  await expect
+    .poll(
+      async () => {
+        const state = await getSessionState();
+        return state.active && state.session?.threadStatus === 'awaiting_prompt';
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+}
+
 test.describe('ACP Chat layout-aware New Draft actions', () => {
   test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
 
@@ -86,6 +108,7 @@ test.describe('ACP Chat layout-aware New Draft actions', () => {
     await expect(primary).toHaveAttribute('aria-label', /New Task with .+N/);
     await expect(dropdown).toHaveAttribute('aria-label', 'Choose Agent');
 
+    await createExistingTaskConversation();
     const input = chatInput();
     await input.click();
     await page.keyboard.insertText('preserved Agentic draft');

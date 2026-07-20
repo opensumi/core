@@ -46,7 +46,7 @@
 - Whitespace-only submits do not create a session, message, or request.
 - `STATE_BEFORE_SEND` is draft/inactive before first-send checks, and the first valid send creates or activates an ACP session before writing history.
 - `STATE_AFTER_SEND.result.active === true`, with non-empty `sessionId` and a raw id that has no `acp:` prefix.
-- The input preserves line breaks before send, clears after successful send, and is disabled while session creation, Active Session switching, or sending is active.
+- The input preserves line breaks before send and clears after successful send. It is disabled while session creation or Active Session switching owns the editor; during an active stream it remains editable so later turns can be queued while Stop is visible.
 - The user row appears exactly once and before the assistant row.
 - Assistant loading/streaming renders a single active row and resolves to a stable final row without duplicate ids or duplicate DOM rows.
 - Send/cancel/stop controls reflect loading state and do not expose old direct ACP tools.

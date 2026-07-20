@@ -238,6 +238,7 @@ describe('AcpChatInternalService', () => {
       const permissionResultEmitter = new Emitter<any>();
       const permissionBridgeService = {
         clearSessionDialogs: jest.fn(),
+        hasPendingForSession: jest.fn(() => false),
         onDidRequestPermission: permissionRequestEmitter.event,
         onDidReceivePermissionResult: permissionResultEmitter.event,
         setActiveSession: jest.fn(),
@@ -651,6 +652,35 @@ describe('AcpChatInternalService', () => {
       expect(registry.rememberActiveTaskSession).toHaveBeenCalledWith(model.sessionId);
       resolveSend();
       return send;
+    });
+
+    it('首个 Agentic 请求等待权限时应先注册任务并显示权限关注状态', async () => {
+      const { chatManagerService, model, permissionRequestEmitter, registry, service } = createService();
+      let resolveSend!: () => void;
+      chatManagerService.sendRequest.mockReturnValue(
+        new Promise<void>((resolve) => {
+          resolveSend = resolve;
+        }),
+      );
+      service._sessionModel = model;
+      const request = model.addRequest({
+        prompt: 'Permission task',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      const send = service.sendRequest(request);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(registry.registerFirstPrompt).toHaveBeenCalledWith(
+        expect.objectContaining({ sessionId: model.sessionId, firstPrompt: 'Permission task' }),
+      );
+      permissionRequestEmitter.fire({ requestId: 'permission-1', sessionId: 'sess-1' });
+      expect(registry.updateAttention).toHaveBeenCalledWith(model.sessionId, 'permission');
+
+      resolveSend();
+      await send;
     });
 
     it('does not infer input attention from a generic background assistant component', async () => {

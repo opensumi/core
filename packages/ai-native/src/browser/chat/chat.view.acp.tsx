@@ -218,17 +218,17 @@ export const AIChatViewACPContent = () => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
-  const chatInputRegistry = useInjectable<ChatInputRegistry>(ChatInputRegistryToken);
   const mcpServerRegistry = useInjectable<IMCPServerRegistry>(TokenMCPServerRegistry);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const llmContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
+  const chatInputRegistry = useInjectable<ChatInputRegistry>(ChatInputRegistryToken);
 
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const msgHistoryManager = aiChatService.sessionModel?.history;
   const containerRef = React.useRef<HTMLDivElement>(null);
   const autoScroll = React.useRef<boolean>(true);
-  const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
+  const chatInputRef = React.useRef<(ChatInputHandle & { setInputValue?: (v: string) => void }) | null>(null);
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const applyService = useInjectable<BaseApplyService>(BaseApplyService);
@@ -499,14 +499,25 @@ export const AIChatViewACPContent = () => {
     return ChatInput;
   }, [ActiveChatInputComponent, chatRenderRegistry.chatInputRender]);
 
-  const handleActiveInputReady = React.useCallback(
-    (handle: Parameters<ChatInputRegistry['setActiveInputHandle']>[0]) => {
-      if (activeChatInputId) {
+  const handleActiveInputReady = React.useMemo(() => {
+    let ownedHandle: ChatInputHandle | null = null;
+    return (handle: Parameters<ChatInputRegistry['setActiveInputHandle']>[0]) => {
+      if (handle) {
+        ownedHandle = handle;
         chatInputRegistry.setActiveInputHandle(handle, activeChatInputId);
-        mainInputHandleRef.current = chatInputRegistry.getActiveInputHandle();
+      } else if (ownedHandle && chatInputRegistry.getActiveInputHandle() === ownedHandle) {
+        chatInputRegistry.setActiveInputHandle(null, activeChatInputId);
       }
+      mainInputHandleRef.current = chatInputRegistry.getActiveInputHandle();
+    };
+  }, [activeChatInputId, chatInputRegistry]);
+
+  const handleChatInputRef = React.useCallback(
+    (handle: (ChatInputHandle & { setInputValue?: (v: string) => void }) | null) => {
+      chatInputRef.current = handle;
+      handleActiveInputReady(handle);
     },
-    [activeChatInputId, chatInputRegistry],
+    [handleActiveInputReady],
   );
 
   const handleQueuedEditorReady = React.useMemo(() => {
@@ -655,7 +666,7 @@ export const AIChatViewACPContent = () => {
           if (message.command) {
             setCommand(message.command);
           }
-          chatInputRef?.current?.setInputValue(message.message);
+          chatInputRef.current?.setInputValue?.(message.message);
         }
       }),
     );
@@ -1608,7 +1619,7 @@ export const AIChatViewACPContent = () => {
               command={command}
               setCommand={setCommand}
               contextService={llmContextService}
-              ref={chatInputRef}
+              ref={handleChatInputRef}
               disableModelSelector={
                 aiNativeConfigService.capabilities.supportsAgentMode
                   ? loading || sessionLoading
@@ -1623,7 +1634,7 @@ export const AIChatViewACPContent = () => {
               configOptions={footerConfigOptions}
               agentCwd={appConfig.workspaceDir}
               turnActions={turnActions}
-              onInputHandleReady={activeChatInput ? handleActiveInputReady : undefined}
+              onInputHandleReady={handleActiveInputReady}
               placeholder={localize('aiNative.chat.input.placeholder.acp')}
             />
           </div>

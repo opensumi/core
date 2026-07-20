@@ -1,4 +1,5 @@
 // Source: test/bdd/acp-chat-agentic-queued-turns.scenario.md
+// Source: test/bdd/acp-chat-agentic-keyboard-a11y.scenario.md
 
 import { expect } from '@playwright/test';
 
@@ -20,16 +21,20 @@ function mainInput() {
   return chatSlot().locator('[contenteditable="true"]').last();
 }
 
-async function submit(text: string): Promise<void> {
+async function submit(text: string, via: 'send-button' | 'enter' = 'send-button'): Promise<void> {
   const input = mainInput();
   await expect(input).toBeVisible();
   await input.click();
   await input.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
   await page.keyboard.type(text);
-  await chatSlot().getByRole('button', { name: 'Send', exact: true }).click();
+  if (via === 'enter') {
+    await input.press('Enter');
+  } else {
+    await chatSlot().getByRole('button', { name: 'Send', exact: true }).click();
+  }
 }
 
-test.describe('ACP Chat Agentic Queued Turns', () => {
+test.describe('ACP Chat Agentic 排队消息', () => {
   test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
 
   test.beforeAll(async () => {
@@ -48,7 +53,7 @@ test.describe('ACP Chat Agentic Queued Turns', () => {
     await runtime?.dispose();
   });
 
-  test('renders the actual queued count during an active request', async ({ browser: _browser }, testInfo) => {
+  test('活动请求期间按 Enter 提交的消息应显示真实排队数量', async ({ browser: _browser }, testInfo) => {
     void _browser;
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-queued-turns', {
       sourceScenario: 'test/bdd/acp-chat-agentic-queued-turns.scenario.md',
@@ -59,8 +64,8 @@ test.describe('ACP Chat Agentic Queued Turns', () => {
 
     await submit('count-active');
     await expect(chatSlot().getByRole('button', { name: 'Stop', exact: true })).toBeVisible({ timeout: 30_000 });
-    await submit('count-1');
-    await submit('count-2');
+    await submit('count-1', 'enter');
+    await submit('count-2', 'enter');
 
     const summary = page.getByTestId('acp-queued-turns-summary');
     await expect(page.getByTestId('acp-queued-turn')).toHaveCount(2);
