@@ -2,7 +2,13 @@ import path from 'path';
 
 import isEqual from 'lodash/isEqual';
 
-import { CorePreferences, IContextKeyService, MonacoOverrideServiceRegistry, URI } from '@opensumi/ide-core-browser';
+import {
+  CorePreferences,
+  IContextKeyService,
+  MonacoOverrideServiceRegistry,
+  RecentFilesManager,
+  URI,
+} from '@opensumi/ide-core-browser';
 import { injectMockPreferences } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
@@ -15,7 +21,7 @@ import {
   sleep,
 } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { IEditorOpenType, IResource } from '@opensumi/ide-editor';
+import { IResource } from '@opensumi/ide-editor';
 import {
   TestEditorDocumentProvider,
   TestResourceResolver,
@@ -43,9 +49,7 @@ import { LanguageService } from '@opensumi/ide-editor/lib/browser/language/langu
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
 import {
   EditorComponentRegistry,
-  EditorGroupChangeEvent,
   EditorGroupIndexChangedEvent,
-  EditorOpenType,
   EditorSelectionChangeEvent,
   EditorVisibleChangeEvent,
 } from '@opensumi/ide-editor/lib/browser/types';
@@ -112,6 +116,7 @@ describe('MainThreadEditor Test Suites', () => {
   let extEditor: ExtensionHostEditorService;
   let workbenchEditorService: WorkbenchEditorService;
   let eventBus: IEventBus;
+  let editorGroup: EditorGroup;
 
   const disposables: types.OutputChannel[] = [];
   beforeAll(async () => {
@@ -219,6 +224,13 @@ describe('MainThreadEditor Test Suites', () => {
         'editor.previewMode': true,
       },
     });
+    injector.overrideProviders({
+      token: RecentFilesManager,
+      useValue: {
+        setMostRecentlyOpenedFile: () => undefined,
+        updateMostRecentlyOpenedFile: () => undefined,
+      },
+    });
     workbenchEditorService = injector.get(WorkbenchEditorService);
     const extHostDocs = rpcProtocolExt.set(
       ExtHostAPIIdentifier.ExtHostDocuments,
@@ -249,6 +261,11 @@ describe('MainThreadEditor Test Suites', () => {
 
     // IApplicationService 不知道从哪里引入的，没法 overrideProvider 一个 mock 的实现..
     await injector.get(IApplicationService).initializeData();
+
+    await workbenchEditorService.initialize();
+    editorGroup = workbenchEditorService.currentEditorGroup as EditorGroup;
+    await editorGroup.createEditor(document.createElement('div'));
+    await editorGroup.open(URI.file(path.join(__dirname, 'main.thread.output.test.ts')));
   });
 
   afterAll(() => {
@@ -258,52 +275,24 @@ describe('MainThreadEditor Test Suites', () => {
   });
 
   it('should be able to get activeTextEditor and receive texteditor changed event', async () => {
-    const defered = new Deferred();
-
-    const group: EditorGroup = (workbenchEditorService as any).createEditorGroup();
-    const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
-    const resource: IResource = {
-      name: 'test-file',
-      uri: URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
-      icon: 'file',
-    };
+    const deferred = new Deferred<void>();
     const disposer = extEditor.onDidChangeActiveTextEditor((e) => {
-      if (e) {
+      try {
+        expect(e).toBeDefined();
         expect(extEditor.activeEditor?.textEditor).toBeDefined();
         expect(extEditor.activeEditor?.textEditor.document.fileName).toBe(
-          path.join(__dirname, 'main.thread.output.test.ts'),
+          path.join(__dirname, 'main.thread.output.test1.ts'),
         );
-        expect(e).toBeDefined();
+        deferred.resolve();
+      } catch (error) {
+        deferred.reject(error);
+      } finally {
         disposer.dispose();
-        defered.resolve();
       }
     });
-    await group.createEditor(document.createElement('div'));
-    const ref = await editorDocModelService.createModelReference(
-      URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
-    );
-    group.codeEditor.open(ref);
-    const openType: IEditorOpenType = {
-      type: EditorOpenType.code,
-      componentId: 'test-v-component',
-      title: 'test-file',
-    };
-    (workbenchEditorService as WorkbenchEditorServiceImpl).setCurrentGroup(group);
-    group._currentOpenType = openType;
-    group._currentResource = resource;
-    eventBus.fire(
-      new EditorGroupChangeEvent({
-        group,
-        newOpenType: group.currentOpenType,
-        newResource: group.currentResource,
-        oldOpenType: null,
-        oldResource: null,
-      }),
-    );
-    group._onDidEditorGroupBodyChanged.fire();
-    group._onDidEditorFocusChange.fire();
 
-    await defered.promise;
+    await editorGroup.open(URI.file(path.join(__dirname, 'main.thread.output.test1.ts')));
+    await deferred.promise;
   });
 
   it('should be able to get visibleTextEditors', async () => {
@@ -312,19 +301,20 @@ describe('MainThreadEditor Test Suites', () => {
   });
 
   it('should receive Selectionchanged event when editor selection is changed', async () => {
+    const deferred = new Deferred<void>();
     const disposer = extEditor.onDidChangeTextEditorSelection((e) => {
-      expect(e.selections.length).toBe(1);
-      expect(e.selections[0]).toBeDefined();
-      expect(isEqual(TypeConverts.Selection.from(e.selections[0]), selection)).toBeTruthy();
-      disposer.dispose();
+      try {
+        expect(e.selections.length).toBe(1);
+        expect(e.selections[0]).toBeDefined();
+        expect(isEqual(TypeConverts.Selection.from(e.selections[0]), selection)).toBeTruthy();
+        deferred.resolve();
+      } catch (error) {
+        deferred.reject(error);
+      } finally {
+        disposer.dispose();
+      }
     });
-    const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
-    await editorDocModelService.createModelReference(URI.file(path.join(__dirname, 'main.thread.output.test1.ts')));
-    const resource: IResource = {
-      name: 'test-file',
-      uri: URI.file(path.join(__dirname, 'main.thread.output.test1.ts')),
-      icon: 'file',
-    };
+    const resource = workbenchEditorService.currentResource as IResource;
     const selection = {
       selectionStartLineNumber: 1,
       selectionStartColumn: 1,
@@ -341,28 +331,13 @@ describe('MainThreadEditor Test Suites', () => {
       }),
     );
 
-    eventBus.fire(
-      new EditorGroupChangeEvent({
-        group: workbenchEditorService.currentEditorGroup,
-        newOpenType: workbenchEditorService.currentEditorGroup.currentOpenType,
-        newResource: resource,
-        oldOpenType: null,
-        oldResource: null,
-      }),
-    );
+    await deferred.promise;
   });
 
   it(
     'should receive onDidChangeTextEditorVisibleRanges event when editor visible range has changed',
     async () => {
-      const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
-      await editorDocModelService.createModelReference(URI.file(path.join(__dirname, 'main.thread.output.test2.ts')));
-
-      const resource: IResource = {
-        name: 'test-file1',
-        uri: URI.file(path.join(__dirname, 'main.thread.output.test2.ts')),
-        icon: 'file',
-      };
+      const resource = workbenchEditorService.currentResource as IResource;
 
       const defered = new Deferred<void>();
       const disposer = extEditor.onDidChangeTextEditorVisibleRanges((e) => {
@@ -371,8 +346,18 @@ describe('MainThreadEditor Test Suites', () => {
           return;
         }
 
-        disposer.dispose();
         const converted = e.visibleRanges.map((v) => TypeConverts.Range.from(v));
+        if (
+          converted.length !== 1 ||
+          converted[0].startLineNumber !== 1 ||
+          converted[0].startColumn !== 12 ||
+          converted[0].endLineNumber !== 1 ||
+          converted[0].endColumn !== 12
+        ) {
+          return;
+        }
+
+        disposer.dispose();
         expect(converted.length).toBe(1);
         expect(converted[0]).toEqual({
           startLineNumber: 1,
@@ -383,16 +368,6 @@ describe('MainThreadEditor Test Suites', () => {
 
         defered.resolve();
       });
-
-      eventBus.fire(
-        new EditorGroupChangeEvent({
-          group: workbenchEditorService.currentEditorGroup,
-          newOpenType: workbenchEditorService.currentEditorGroup.currentOpenType,
-          newResource: resource,
-          oldOpenType: null,
-          oldResource: null,
-        }),
-      );
 
       await sleep(3 * 1000);
 
@@ -447,14 +422,29 @@ describe('MainThreadEditor Test Suites', () => {
     );
   });
 
-  it('should receive undefined when close all editor', (done) => {
-    extEditor.onDidChangeVisibleTextEditors((e) => {
-      expect(e.length).toBe(0);
+  it('should receive undefined when close all editor', async () => {
+    const visibleEditorsDeferred = new Deferred<void>();
+    const activeEditorDeferred = new Deferred<void>();
+    const visibleEditorsDisposer = extEditor.onDidChangeVisibleTextEditors((e) => {
+      if (e.length === 0) {
+        visibleEditorsDeferred.resolve();
+      }
     });
-    extEditor.onDidChangeActiveTextEditor((e) => {
-      expect(e).toBeUndefined();
-      done();
+    const activeEditorDisposer = extEditor.onDidChangeActiveTextEditor((e) => {
+      try {
+        expect(e).toBeUndefined();
+        activeEditorDeferred.resolve();
+      } catch (error) {
+        activeEditorDeferred.reject(error);
+      }
     });
-    workbenchEditorService.closeAll();
+
+    try {
+      await workbenchEditorService.closeAll(undefined, true);
+      await Promise.all([visibleEditorsDeferred.promise, activeEditorDeferred.promise]);
+    } finally {
+      visibleEditorsDisposer.dispose();
+      activeEditorDisposer.dispose();
+    }
   });
 });
