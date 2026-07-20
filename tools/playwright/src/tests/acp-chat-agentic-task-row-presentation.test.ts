@@ -146,7 +146,8 @@ test.describe('ACP Chat Agentic Task Row presentation', () => {
       await row.hover();
       await expect(tooltipContent).toBeVisible();
       await expect(tooltipContent).toContainText(TASK_TITLE);
-      await expect(tooltipContent).toContainText('Agent:');
+      await expect(tooltipContent).toContainText('Agent');
+      await expect(tooltipContent).toHaveCSS('font-size', '12px');
       await expect(tooltipContent.getByRole('button')).toHaveCount(0);
       const tooltipBounds = await tooltipContent.evaluate((element) => {
         const rect = element.closest('[role="tooltip"]')!.getBoundingClientRect();

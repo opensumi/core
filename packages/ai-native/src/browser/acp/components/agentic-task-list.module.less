@@ -493,7 +493,7 @@
 .task_row {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(32px, 1fr) 30px 6px 22px;
+  grid-template-columns: minmax(32px, 1fr) 22px 6px 22px;
   align-items: center;
   gap: 3px;
   width: 100%;
@@ -576,18 +576,13 @@
   grid-column: 2;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  width: 30px;
+  width: 22px;
   height: 22px;
   line-height: 22px;
 
   > :global(.codicon) {
     flex: 0 0 auto;
     font-size: 14px;
-  }
-
-  > :global(.codicon-history:last-child:not(:first-child)) {
-    font-size: 9px;
   }
 }
 
@@ -632,26 +627,71 @@
 }
 
 .task_tooltip_overlay {
-  max-width: 320px;
+  max-width: 280px;
   pointer-events: none;
+  font-size: 12px;
+  line-height: 16px;
+  opacity: 1;
 
   :global(.kt-popover-content) {
-    max-width: 320px;
+    max-width: 280px;
+    padding: 7px 8px;
+    border: 1px solid var(--kt-popover-border, var(--panel-border));
+    border-radius: 4px;
+    background: var(--kt-popover-background);
+    box-shadow: 0 2px 8px var(--widget-shadow);
+    color: var(--kt-popover-foreground);
   }
 }
 
 .task_tooltip_content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  max-width: 296px;
+  gap: 6px;
+  min-width: 168px;
+  max-width: 262px;
   overflow-wrap: anywhere;
   white-space: normal;
 }
 
 .task_tooltip_title {
   color: inherit;
+  font-size: 12px;
   font-weight: 600;
+  line-height: 16px;
+}
+
+.task_tooltip_details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+
+.task_tooltip_row {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 12px;
+
+  dt,
+  dd {
+    margin: 0;
+  }
+
+  dt {
+    color: var(--descriptionForeground);
+  }
+
+  dd {
+    min-width: 0;
+    color: inherit;
+  }
+}
+
+.task_tooltip_hint {
+  padding-top: 5px;
+  border-top: 1px solid var(--panel-border);
+  color: var(--descriptionForeground);
 }
 
 .archive_button {

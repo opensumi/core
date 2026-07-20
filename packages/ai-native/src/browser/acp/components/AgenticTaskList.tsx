@@ -188,11 +188,11 @@ type TaskRowMetaKind = BaseTaskRowMetaKind | 'agent-unavailable' | 'conversation
 
 interface TaskRowPresentation {
   fullLabel: string;
-  historical?: boolean;
   icon: string;
   kind: TaskRowMetaKind;
   testIdPrefix: 'agentic-task-attention' | 'agentic-task-status' | 'agentic-task-availability';
   tone: 'error' | 'information' | 'secondary' | 'warning';
+  tooltipLabel?: string;
 }
 
 const TASK_ROW_PRESENTATIONS: Readonly<Record<BaseTaskRowMetaKind, TaskRowPresentation | undefined>> = {
@@ -264,8 +264,8 @@ function getTaskRowPresentation(
   return {
     ...presentation,
     fullLabel: `Last known status: ${presentation.fullLabel}`,
-    historical: true,
     icon: presentation.icon.replace(' codicon-modifier-spin', ''),
+    tooltipLabel: `Last known · ${presentation.fullLabel}`,
   };
 }
 
@@ -369,10 +369,20 @@ function TaskRow({
   const tooltip = (
     <div className={styles.task_tooltip_content} data-testid={`agentic-task-tooltip-content-${task.sessionId}`}>
       <div className={styles.task_tooltip_title}>{task.title}</div>
-      <div>Agent: {agentDescription}</div>
-      {presentation && <div>Status: {presentation.fullLabel}</div>}
-      {guidance && <div>{guidance}</div>}
-      {task.unread && <div>Unread</div>}
+      <dl className={styles.task_tooltip_details}>
+        <div className={styles.task_tooltip_row}>
+          <dt>Agent</dt>
+          <dd>{agentDescription}</dd>
+        </div>
+        {presentation && (
+          <div className={styles.task_tooltip_row}>
+            <dt>Status</dt>
+            <dd>{presentation.tooltipLabel || presentation.fullLabel}</dd>
+          </div>
+        )}
+      </dl>
+      {guidance && <div className={styles.task_tooltip_hint}>{guidance}</div>}
+      {task.unread && <div className={styles.task_tooltip_hint}>Unread activity</div>}
     </div>
   );
 
@@ -415,7 +425,6 @@ function TaskRow({
               data-testid={`${presentation.testIdPrefix}-${task.sessionId}`}
             >
               <span aria-hidden='true' className={`codicon ${presentation.icon}`} />
-              {presentation.historical && <span aria-hidden='true' className='codicon codicon-history' />}
             </span>
           )}
           {task.unread && (

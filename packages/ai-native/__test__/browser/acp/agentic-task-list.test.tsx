@@ -797,8 +797,8 @@ describe('AgenticTaskList', () => {
     expect(container.querySelector('[role="tooltip"]')?.textContent).toContain(
       'A deliberately long Task Title for compact presentation',
     );
-    expect(container.querySelector('[role="tooltip"]')?.textContent).toContain('Agent: Agent B (agent-b)');
-    expect(container.querySelector('[role="tooltip"]')?.textContent).toContain('Status: Running');
+    expect(container.querySelector('[role="tooltip"]')?.textContent).toContain('Agent B (agent-b)');
+    expect(container.querySelector('[role="tooltip"]')?.textContent).toContain('Running');
 
     await act(async () => {
       row.focus();
@@ -1128,15 +1128,20 @@ describe('AgenticTaskList', () => {
 
     expect(container.querySelector('[data-testid="agentic-task-agent-acp:last-known"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-status-acp:last-known"]')?.textContent).toBe('');
-    expect(
-      container.querySelector('[data-testid="agentic-task-status-acp:last-known"] .codicon.codicon-history'),
-    ).not.toBeNull();
+    expect(container.querySelectorAll('[data-testid="agentic-task-status-acp:last-known"] .codicon')).toHaveLength(1);
     expect(
       container.querySelector('[data-testid="agentic-task-status-acp:last-known"] .codicon-modifier-spin'),
     ).toBeNull();
     expect(
       container.querySelector('[data-testid="agentic-task-row-acp:last-known"]')?.getAttribute('aria-label'),
     ).toContain('Status: Last known status: Running.');
+
+    const popover = container.querySelector('[data-popover-id="agentic-task-tooltip-acp:last-known"]') as HTMLElement;
+    await act(async () => {
+      popover.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      await flushPromises();
+    });
+    expect(container.querySelector('[role="tooltip"]')?.textContent).toContain('StatusLast known · Running');
   });
 
   it('validates Last-known status before archive and archives a missing Task Conversation without rewriting status', async () => {
