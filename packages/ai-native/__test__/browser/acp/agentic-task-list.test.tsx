@@ -552,7 +552,7 @@ describe('AgenticTaskList', () => {
       container
         .querySelector('[data-testid="agentic-task-row-acp:old-session"]')
         ?.querySelector('[data-testid="agentic-task-status-acp:old-session"]')?.textContent,
-    ).toBe('Running');
+    ).toBe('');
 
     services.aiChatService.sessionModel = { requests: [], sessionId: 'acp:new-session' };
     await act(async () => {
@@ -754,7 +754,7 @@ describe('AgenticTaskList', () => {
       'Project A',
     );
     expect(container.querySelectorAll('[data-testid="agentic-task-row-acp:layout"]')).toHaveLength(1);
-    expect(container.querySelector('[data-testid="agentic-task-status-acp:layout"]')?.textContent).toBe('Running');
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:layout"]')?.textContent).toBe('');
     expect(container.querySelector('[data-testid="agentic-task-archive-acp:layout"]')).toBeNull();
   });
 
@@ -781,10 +781,9 @@ describe('AgenticTaskList', () => {
     await renderTaskList(services);
 
     const row = container.querySelector('[data-testid="agentic-task-row-acp:compact"]') as HTMLButtonElement;
-    const agent = container.querySelector('[data-testid="agentic-task-agent-acp:compact"]');
     expect(row.getAttribute('title')).toBeNull();
-    expect(agent?.textContent).toBe('Agent B');
-    expect(container.querySelector('[data-testid="agentic-task-status-acp:compact"]')?.textContent).toBe('Running');
+    expect(container.querySelector('[data-testid="agentic-task-agent-acp:compact"]')).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:compact"]')?.textContent).toBe('');
     expect(row.getAttribute('aria-label')).toBe(
       'A deliberately long Task Title for compact presentation. Agent: Agent B (agent-b). Status: Running.',
     );
@@ -912,37 +911,25 @@ describe('AgenticTaskList', () => {
     services.registry.listProjects.mockResolvedValue([projectA, { ...projectB, availability: 'unavailable' as const }]);
     await renderTaskList(services);
 
-    const expectMetadata = (testId: string, kind: string, label: string, iconClass: string, toneClass: string) => {
+    const expectMetadata = (testId: string, kind: string, iconClass: string, toneClass: string) => {
       const metadata = container.querySelector(`[data-testid="${testId}"]`);
       expect(metadata?.getAttribute('data-agentic-task-meta-kind')).toBe(kind);
-      expect(metadata?.textContent).toBe(label);
+      expect(metadata?.textContent).toBe('');
       expect(metadata?.className).toContain(toneClass);
       const icon = metadata?.querySelector(`.codicon.${iconClass}`);
       expect(icon?.getAttribute('aria-hidden')).toBe('true');
     };
 
-    expectMetadata(
-      'agentic-task-attention-acp:permission',
-      'permission',
-      'Permission',
-      'codicon-warning',
-      'task_meta_warning',
-    );
-    expectMetadata('agentic-task-attention-acp:input', 'input', 'Input', 'codicon-warning', 'task_meta_warning');
-    expectMetadata('agentic-task-status-acp:running', 'running', 'Running', 'codicon-loading', 'task_meta_information');
+    expectMetadata('agentic-task-attention-acp:permission', 'permission', 'codicon-shield', 'task_meta_warning');
+    expectMetadata('agentic-task-attention-acp:input', 'input', 'codicon-edit', 'task_meta_warning');
+    expectMetadata('agentic-task-status-acp:running', 'running', 'codicon-loading', 'task_meta_information');
     expect(
       container
         .querySelector('[data-testid="agentic-task-status-acp:running"] .codicon.codicon-modifier-spin')
         ?.getAttribute('aria-hidden'),
     ).toBe('true');
-    expectMetadata(
-      'agentic-task-status-acp:stopped',
-      'stopped',
-      'Stopped',
-      'codicon-circle-slash',
-      'task_meta_secondary',
-    );
-    expectMetadata('agentic-task-status-acp:error', 'error', 'Error', 'codicon-error', 'task_meta_error');
+    expectMetadata('agentic-task-status-acp:stopped', 'stopped', 'codicon-circle-slash', 'task_meta_secondary');
+    expectMetadata('agentic-task-status-acp:error', 'error', 'codicon-error', 'task_meta_error');
     expect(container.querySelector('[data-testid="agentic-task-status-acp:permission"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-unread-acp:permission"]')).not.toBeNull();
     expect(
@@ -956,7 +943,7 @@ describe('AgenticTaskList', () => {
     const readyRow = container.querySelector('[data-testid="agentic-task-row-acp:ready"]');
     expect(readyRow?.textContent).toContain('Ready task');
     expect(readyRow?.textContent).not.toContain('ready');
-    expect(readyRow?.textContent).toContain('Agent A');
+    expect(readyRow?.textContent).not.toContain('Agent A');
     expect(container.querySelector('[data-testid="agentic-task-status-acp:ready"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-status-acp:unknown"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-archive-acp:unknown"]')).toBeNull();
@@ -1036,9 +1023,10 @@ describe('AgenticTaskList', () => {
     expect(
       container.querySelector('[data-testid="agentic-task-row-acp:failed"]')?.getAttribute('aria-current'),
     ).toBeNull();
-    expect(container.querySelector('[data-testid="agentic-task-availability-acp:failed"]')?.textContent).toBe(
-      'No history',
-    );
+    expect(container.querySelector('[data-testid="agentic-task-availability-acp:failed"]')?.textContent).toBe('');
+    expect(
+      container.querySelector('[data-testid="agentic-task-availability-acp:failed"] .codicon.codicon-history'),
+    ).not.toBeNull();
     expect(
       container.querySelector('[data-testid="agentic-task-row-acp:failed"]')?.getAttribute('aria-label'),
     ).toContain('Status: History unavailable. Select the task to retry loading its history.');
@@ -1138,10 +1126,14 @@ describe('AgenticTaskList', () => {
 
     await renderTaskList(services);
 
-    expect(container.querySelector('[data-testid="agentic-task-agent-acp:last-known"]')?.textContent).toBe('Agent B');
-    expect(container.querySelector('[data-testid="agentic-task-status-acp:last-known"]')?.textContent).toBe(
-      'Last: Running',
-    );
+    expect(container.querySelector('[data-testid="agentic-task-agent-acp:last-known"]')).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:last-known"]')?.textContent).toBe('');
+    expect(
+      container.querySelector('[data-testid="agentic-task-status-acp:last-known"] .codicon.codicon-history'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="agentic-task-status-acp:last-known"] .codicon-modifier-spin'),
+    ).toBeNull();
     expect(
       container.querySelector('[data-testid="agentic-task-row-acp:last-known"]')?.getAttribute('aria-label'),
     ).toContain('Status: Last known status: Running.');
@@ -1227,11 +1219,14 @@ describe('AgenticTaskList', () => {
     expect(row.disabled).toBe(false);
     expect(row.getAttribute('aria-disabled')).toBe('true');
     expect(container.querySelector('[data-testid="agentic-task-availability-acp:missing-agent"]')?.textContent).toBe(
-      'No agent',
+      '',
     );
-    expect(container.querySelector('[data-testid="agentic-task-agent-acp:missing-agent"]')?.textContent).toBe(
-      'agent-b',
-    );
+    expect(
+      container.querySelector(
+        '[data-testid="agentic-task-availability-acp:missing-agent"] .codicon.codicon-debug-disconnect',
+      ),
+    ).not.toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-agent-acp:missing-agent"]')).toBeNull();
     expect(row.getAttribute('aria-label')).toContain('Status: Agent unavailable.');
     await act(async () => {
       row.focus();

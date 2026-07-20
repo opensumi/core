@@ -44,13 +44,47 @@ async function chooseTheme(label: string): Promise<void> {
   const input = page.locator('#opensumi-quickpick-input');
   await expect(input).toBeVisible();
   await input.fill('Color Theme');
-  const command = page.locator('#opensumi-quickpick-item[aria-label="Color Theme"]');
-  await expect(command).toBeVisible({ timeout: 15_000 });
-  await command.click({ force: true });
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const command = document.querySelector<HTMLElement>('#opensumi-quickpick-item[aria-label="Color Theme"]');
+        return !!command && command.getBoundingClientRect().height > 0;
+      }),
+    )
+    .toBe(true);
+  await page.evaluate(() => {
+    document
+      .querySelector<HTMLElement>('#opensumi-quickpick-item[aria-label="Color Theme"] [class*="item_label_container"]')
+      ?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        Array.from(document.querySelectorAll<HTMLElement>('#opensumi-quickpick-item')).some(
+          (element) =>
+            /High Contrast|default light|default dark/.test(element.textContent || '') &&
+            element.getBoundingClientRect().height > 0,
+        ),
+      ),
+    )
+    .toBe(true);
   await input.fill(label);
-  const option = page.getByText(label, { exact: true }).last();
-  await expect(option).toBeVisible({ timeout: 15_000 });
-  await option.click({ force: true });
+  await expect
+    .poll(() =>
+      page.evaluate((themeLabel) => {
+        const option = Array.from(document.querySelectorAll<HTMLElement>('#opensumi-quickpick-item')).find(
+          (element) => element.textContent?.includes(themeLabel) && element.getBoundingClientRect().height > 0,
+        );
+        return !!option;
+      }, label),
+    )
+    .toBe(true);
+  await page.evaluate((themeLabel) => {
+    Array.from(document.querySelectorAll<HTMLElement>('#opensumi-quickpick-item'))
+      .find((element) => element.textContent?.includes(themeLabel) && element.getBoundingClientRect().height > 0)
+      ?.querySelector<HTMLElement>('[class*="item_label_container"]')
+      ?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+  }, label);
   await expect(input).toBeHidden();
 }
 
@@ -83,7 +117,6 @@ test.describe('ACP Chat Agentic Task Row presentation', () => {
       expect(rowTestId).toBeTruthy();
       const sessionId = rowTestId!.replace('agentic-task-row-', '');
       const title = row.getByText(TASK_TITLE, { exact: true });
-      const agent = page.getByTestId(`agentic-task-agent-${sessionId}`);
       const archive = page.getByTestId(`agentic-task-archive-${sessionId}`);
       const tooltipContent = page.getByTestId(`agentic-task-tooltip-content-${sessionId}`);
 
@@ -92,7 +125,7 @@ test.describe('ACP Chat Agentic Task Row presentation', () => {
       await expect(row).toHaveCSS('overflow', 'hidden');
       await expect(title).toHaveCSS('white-space', 'nowrap');
       await expect(title).toHaveCSS('text-overflow', 'ellipsis');
-      await expect(agent).not.toHaveText('');
+      await expect(page.getByTestId(`agentic-task-agent-${sessionId}`)).toHaveCount(0);
       await expect(archive).toBeAttached({ timeout: 30_000 });
 
       for (const width of [208, 244, 280]) {
@@ -163,13 +196,11 @@ test.describe('ACP Chat Agentic Task Row presentation', () => {
       await expect(tooltipContent).toBeHidden();
 
       const titleBeforeAction = await title.boundingBox();
-      const agentBeforeAction = await agent.boundingBox();
       await row.hover();
       await expect(archive).toHaveCSS('pointer-events', 'auto');
       await archive.focus();
       await expect(tooltipContent).toBeHidden();
       expect(await title.boundingBox()).toEqual(titleBeforeAction);
-      expect(await agent.boundingBox()).toEqual(agentBeforeAction);
     } finally {
       await runtime.dispose();
     }

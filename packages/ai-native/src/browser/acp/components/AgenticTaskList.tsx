@@ -187,8 +187,8 @@ type BaseTaskRowMetaKind = AgenticTaskStatus | 'permission' | 'input';
 type TaskRowMetaKind = BaseTaskRowMetaKind | 'agent-unavailable' | 'conversation-unavailable';
 
 interface TaskRowPresentation {
-  compactLabel: string;
   fullLabel: string;
+  historical?: boolean;
   icon: string;
   kind: TaskRowMetaKind;
   testIdPrefix: 'agentic-task-attention' | 'agentic-task-status' | 'agentic-task-availability';
@@ -197,7 +197,6 @@ interface TaskRowPresentation {
 
 const TASK_ROW_PRESENTATIONS: Readonly<Record<BaseTaskRowMetaKind, TaskRowPresentation | undefined>> = {
   running: {
-    compactLabel: 'Running',
     fullLabel: 'Running',
     icon: 'codicon-loading codicon-modifier-spin',
     kind: 'running',
@@ -205,7 +204,6 @@ const TASK_ROW_PRESENTATIONS: Readonly<Record<BaseTaskRowMetaKind, TaskRowPresen
     tone: 'information',
   },
   stopped: {
-    compactLabel: 'Stopped',
     fullLabel: 'Stopped',
     icon: 'codicon-circle-slash',
     kind: 'stopped',
@@ -213,7 +211,6 @@ const TASK_ROW_PRESENTATIONS: Readonly<Record<BaseTaskRowMetaKind, TaskRowPresen
     tone: 'secondary',
   },
   error: {
-    compactLabel: 'Error',
     fullLabel: 'Error',
     icon: 'codicon-error',
     kind: 'error',
@@ -222,17 +219,15 @@ const TASK_ROW_PRESENTATIONS: Readonly<Record<BaseTaskRowMetaKind, TaskRowPresen
   },
   ready: undefined,
   permission: {
-    compactLabel: 'Permission',
     fullLabel: 'Permission required',
-    icon: 'codicon-warning',
+    icon: 'codicon-shield',
     kind: 'permission',
     testIdPrefix: 'agentic-task-attention',
     tone: 'warning',
   },
   input: {
-    compactLabel: 'Input',
     fullLabel: 'Input needed',
-    icon: 'codicon-warning',
+    icon: 'codicon-edit',
     kind: 'input',
     testIdPrefix: 'agentic-task-attention',
     tone: 'warning',
@@ -245,9 +240,8 @@ function getTaskRowPresentation(
 ): TaskRowPresentation | undefined {
   if (!options.agentAvailable) {
     return {
-      compactLabel: 'No agent',
       fullLabel: 'Agent unavailable',
-      icon: 'codicon-warning',
+      icon: 'codicon-debug-disconnect',
       kind: 'agent-unavailable',
       testIdPrefix: 'agentic-task-availability',
       tone: 'warning',
@@ -255,9 +249,8 @@ function getTaskRowPresentation(
   }
   if (options.conversationUnavailable) {
     return {
-      compactLabel: 'No history',
       fullLabel: 'History unavailable',
-      icon: 'codicon-error',
+      icon: 'codicon-history',
       kind: 'conversation-unavailable',
       testIdPrefix: 'agentic-task-availability',
       tone: 'error',
@@ -270,8 +263,9 @@ function getTaskRowPresentation(
   }
   return {
     ...presentation,
-    compactLabel: `Last: ${presentation.compactLabel}`,
     fullLabel: `Last known status: ${presentation.fullLabel}`,
+    historical: true,
+    icon: presentation.icon.replace(' codicon-modifier-spin', ''),
   };
 }
 
@@ -355,7 +349,6 @@ function TaskRow({
   const archiveEligible =
     !task.archived &&
     (!agentAvailable || conversationUnavailable || !statusLive || isAgenticTaskStatusArchivable(task.status));
-  const actionAvailable = archiveEligible || (task.archived && !!onUnarchive);
   const presentation = getTaskRowPresentation(task, { agentAvailable, conversationUnavailable, statusLive });
   const activationAvailable = projectAvailable && agentAvailable;
   const agentDescription = agentLabel === task.agentId ? agentLabel : `${agentLabel} (${task.agentId})`;
@@ -384,11 +377,7 @@ function TaskRow({
   );
 
   return (
-    <div
-      className={`${styles.task_row_wrap} ${actionAvailable ? styles.task_row_wrap_actionable : ''} ${
-        active ? styles.task_row_wrap_selected : ''
-      }`}
-    >
+    <div className={`${styles.task_row_wrap} ${active ? styles.task_row_wrap_selected : ''}`}>
       <Popover
         delay={400}
         id={`agentic-task-tooltip-${task.sessionId}`}
@@ -419,9 +408,6 @@ function TaskRow({
           type='button'
         >
           <span className={styles.task_title}>{task.title}</span>
-          <span className={styles.task_agent} data-testid={`agentic-task-agent-${task.sessionId}`}>
-            {agentLabel}
-          </span>
           {presentation && (
             <span
               className={`${styles.task_meta} ${styles[`task_meta_${presentation.tone}`]}`}
@@ -429,7 +415,7 @@ function TaskRow({
               data-testid={`${presentation.testIdPrefix}-${task.sessionId}`}
             >
               <span aria-hidden='true' className={`codicon ${presentation.icon}`} />
-              <span>{presentation.compactLabel}</span>
+              {presentation.historical && <span aria-hidden='true' className='codicon codicon-history' />}
             </span>
           )}
           {task.unread && (
