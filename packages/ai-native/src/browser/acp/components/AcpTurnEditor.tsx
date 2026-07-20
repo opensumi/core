@@ -1148,6 +1148,12 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
       if (disabled) {
         return;
       }
+      if (!nameWithSlash) {
+        props.setTheme(null);
+        props.setAgentId('');
+        props.setCommand('');
+        return;
+      }
       const commandModel = chatFeatureRegistry.getSlashCommandBySlashName(nameWithSlash);
       if (commandModel) {
         props.setTheme(nameWithSlash);
@@ -1155,7 +1161,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         props.setCommand(commandModel.command!);
       }
     },
-    [chatFeatureRegistry, disabled],
+    [chatFeatureRegistry, disabled, props.setAgentId, props.setCommand, props.setTheme],
   );
 
   const handleUserInput = useCallback(() => {

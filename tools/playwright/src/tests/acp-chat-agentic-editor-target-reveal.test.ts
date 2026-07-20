@@ -103,7 +103,7 @@ async function openSettingsFromShortcut() {
   await expect(page.locator('#workbench-editor [class*="preferences___"]').first()).toBeVisible({ timeout: 30_000 });
 }
 
-test.describe('ACP Chat Agentic Editor Target Reveal', () => {
+test.describe('ACP Chat Agentic 编辑目标显现', () => {
   test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
 
   test.beforeAll(async () => {
@@ -115,9 +115,7 @@ test.describe('ACP Chat Agentic Editor Target Reveal', () => {
     await runtime?.dispose();
   });
 
-  test('Settings opens the hidden Agentic workbench as a foreground editor target', async ({
-    browser: _browser,
-  }, testInfo) => {
+  test('打开设置时应将隐藏的 Agentic 工作台恢复为前台编辑目标', async ({ browser: _browser }, testInfo) => {
     void _browser;
 
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-editor-target-reveal', {
@@ -142,6 +140,10 @@ test.describe('ACP Chat Agentic Editor Target Reveal', () => {
     );
 
     await openSettingsFromShortcut();
+
+    await expect
+      .poll(async () => (await readRevealProof()).maximizeWorkbenchVisibleState, { timeout: 30_000 })
+      .toBe('true');
 
     const afterSettings = await readRevealProof();
     expect(afterSettings.aiChatVisible).toBe(true);

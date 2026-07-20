@@ -1,0 +1,185 @@
+- generic [active] [ref=f2e1]:
+    - generic [ref=f2e3]:
+        - generic [ref=f2e8]:
+            - generic [ref=f2e9]: File
+            - generic [ref=f2e10]: Edit
+            - generic [ref=f2e11]: Selection
+            - generic [ref=f2e12]: View
+            - generic [ref=f2e13]: Go
+            - generic [ref=f2e14]: Terminal
+            - generic [ref=f2e15]: Help
+        - generic [ref=f2e20]:
+            - listitem [ref=f2e595]:
+                - generic "AI Assistant" [ref=f2e597]: 
+            - generic [ref=f2e602]:
+                - complementary "Task List" [ref=f2e606]:
+                    - separator "Resize Task List" [ref=f2e607]
+                    - generic [ref=f2e608]:
+                        - heading "Task List" [level=2] [ref=f2e609]
+                        - button "Add Project" [ref=f2e610] [cursor=pointer]:
+                            - generic [ref=f2e611]: 
+                    - generic [ref=f2e612]:
+                        - generic [ref=f2e613]: 
+                        - searchbox [ref=f2e614]
+                    - generic [ref=f2e615]:
+                        - generic [ref=f2e616]:
+                            - generic [ref=f2e617]:
+                                - button "Collapse workspace-one" [expanded] [ref=f2e618] [cursor=pointer]:
+                                    - generic [ref=f2e619]: 
+                                    - generic "/tmp/opensumi-agent-layout-Nw0VoI/workspace-one" [ref=f2e620]: workspace-one
+                                    - generic [ref=f2e621]: '1'
+                                - button "New Task for workspace-one" [ref=f2e623] [cursor=pointer]:
+                                    - generic [ref=f2e624]: 
+                                - button "Manage workspace-one" [ref=f2e625] [cursor=pointer]:
+                                    - generic [ref=f2e626]: 
+                            - generic [ref=f2e627]:
+                                - button "UX validation task for Agent Layout ready" [ref=f2e628] [cursor=pointer]:
+                                    - generic [ref=f2e629]: UX validation task for Agent Layout
+                                    - generic "ready" [ref=f2e630]
+                                - button "Archive UX validation task for Agent Layout":
+                                    - generic: 
+                        - generic [ref=f2e631]:
+                            - generic [ref=f2e632]:
+                                - button "Collapse test" [expanded] [ref=f2e633] [cursor=pointer]:
+                                    - generic [ref=f2e634]: 
+                                    - generic "/Users/lujunsheng/ant/github/opensumi/core/tools/workspace" [ref=f2e635]: test
+                                    - generic [ref=f2e636]: '5'
+                                - button "New Task for test" [ref=f2e638] [cursor=pointer]:
+                                    - generic [ref=f2e639]: 
+                                - button "Manage test" [ref=f2e640] [cursor=pointer]:
+                                    - generic [ref=f2e641]: 
+                            - generic [ref=f2e642]:
+                                - button "1+ stopped" [ref=f2e643] [cursor=pointer]:
+                                    - generic [ref=f2e644]: 1+
+                                    - generic "stopped" [ref=f2e645]
+                                - button "Archive 1+":
+                                    - generic: 
+                            - generic [ref=f2e646]:
+                                - button "你好 stopped" [ref=f2e647] [cursor=pointer]:
+                                    - generic [ref=f2e648]: 你好
+                                    - generic "stopped" [ref=f2e649]
+                                - button "Archive 你好":
+                                    - generic: 
+                            - generic [ref=f2e650]:
+                                - button "hi stopped" [ref=f2e651] [cursor=pointer]:
+                                    - generic [ref=f2e652]: hi
+                                    - generic "stopped" [ref=f2e653]
+                                - button "Archive hi":
+                                    - generic: 
+                            - generic [ref=f2e654]:
+                                - button "hi ready" [ref=f2e655] [cursor=pointer]:
+                                    - generic [ref=f2e656]: hi
+                                    - generic "ready" [ref=f2e657]
+                                - button "Archive hi":
+                                    - generic: 
+                            - generic [ref=f2e658]:
+                                - button "hi ready" [ref=f2e659] [cursor=pointer]:
+                                    - generic [ref=f2e660]: hi
+                                    - generic "ready" [ref=f2e661]
+                                - button "Archive hi":
+                                    - generic: 
+                    - button "Archived Tasks" [ref=f2e663] [cursor=pointer]:
+                        - generic [ref=f2e664]: 
+                - generic [ref=f2e667]:
+                    - generic [ref=f2e668]:
+                        - generic "UX validation task for Agent Layout" [ref=f2e669]
+                        - generic [ref=f2e670]:
+                            - button "New Task" [ref=f2e672] [cursor=pointer]:
+                                - generic [ref=f2e673]: 
+                            - button "unfullscreen" [pressed] [ref=f2e676] [cursor=pointer]:
+                                - generic [ref=f2e677]: 
+                    - generic [ref=f2e680]:
+                        - generic [ref=f2e685]:
+                            - generic [ref=f2e686]: Hello, I am your dedicated AI assistant, here to answer questions about code and help you think. You can ask me some questions about code.
+                            - generic [ref=f2e690]: Generate a Java Quicksort Algorithm
+                        - generic [ref=f2e692]: BDD_USER_TURN_1
+                        - generic [ref=f2e701]:
+                            - generic [ref=f2e703]:
+                                - button " Deep Thinking " [ref=f2e705] [cursor=pointer]:
+                                    - generic [ref=f2e706]: 
+                                    - generic [ref=f2e707]: Deep Thinking
+                                    - generic [ref=f2e708]: 
+                                - generic [ref=f2e709]:
+                                    - list [ref=f2e710]:
+                                        - listitem [ref=f2e711]:
+                                            - checkbox [checked] [disabled] [ref=f2e712]
+                                            - text: 'BDD plan: prepare deterministic stream'
+                                        - listitem [ref=f2e713]:
+                                            - checkbox [disabled] [ref=f2e714]
+                                            - text: 'BDD plan: emit tool update'
+                                    - paragraph [ref=f2e715]: BDD_ASSISTANT_PART_1 for turn 1.
+                                - generic [ref=f2e716]:
+                                    - button "  Called Tool BDD deterministic tool " [ref=f2e717] [cursor=pointer]:
+                                        - generic [ref=f2e718]:
+                                            - generic [ref=f2e719]: 
+                                            - generic [ref=f2e720]: 
+                                            - generic [ref=f2e721]:
+                                                - generic [ref=f2e722]: Called Tool
+                                                - generic "BDD deterministic tool" [ref=f2e723]
+                                        - generic [ref=f2e724]: 
+                                    - generic [ref=f2e727]:
+                                        - generic [ref=f2e728]: 'Arguments:'
+                                        - generic [ref=f2e729]:
+                                            - generic [ref=f2e730]:
+                                                - button [ref=f2e732] [cursor=pointer]:
+                                                    - generic [ref=f2e733]: 
+                                                - button [ref=f2e735] [cursor=pointer]:
+                                                    - generic [ref=f2e736]: 
+                                            - code [ref=f2e738]: '{ "fixture": "history", "phase": "in_progress" }'
+                                    - generic [ref=f2e739]:
+                                        - generic [ref=f2e740]: 'Result:'
+                                        - generic [ref=f2e743]:
+                                            - generic [ref=f2e744]:
+                                                - button [ref=f2e746] [cursor=pointer]:
+                                                    - generic [ref=f2e747]: 
+                                                - button [ref=f2e749] [cursor=pointer]:
+                                                    - generic [ref=f2e750]: 
+                                            - code [ref=f2e752]: '{"ok":true,"sentinel":"BDD_TOOL_RESULT"}'
+                                - paragraph [ref=f2e754]: BDD_ASSISTANT_PART_2 completed.
+                            - generic [ref=f2e756]:
+                                - button "Thumbs up" [ref=f2e758] [cursor=pointer]:
+                                    - generic [ref=f2e759]: 
+                                - button "Thumbs down" [ref=f2e761] [cursor=pointer]:
+                                    - generic [ref=f2e762]: 
+                    - generic [ref=f2e764]:
+                        - generic [ref=f2e765]: 
+                        - generic [ref=f2e769]:
+                            - generic [ref=f2e770]: Message @ to include context, / for command
+                            - generic [ref=f2e772]:
+                                - generic [ref=f2e773]:
+                                    - generic [ref=f2e774]: /
+                                    - generic [ref=f2e776]: '@ Add Context'
+                                - generic [ref=f2e778]:
+                                    - generic [ref=f2e779]:
+                                        - combobox [ref=f2e781]:
+                                            - generic [ref=f2e782] [cursor=pointer]:
+                                                - generic [ref=f2e783]: Agent
+                                                - generic [ref=f2e786]: 
+                                        - combobox [ref=f2e788]:
+                                            - generic [ref=f2e789] [cursor=pointer]:
+                                                - generic [ref=f2e790]: BDD Small
+                                                - generic [ref=f2e793]: 
+                                        - combobox [ref=f2e795]:
+                                            - generic [ref=f2e796] [cursor=pointer]:
+                                                - generic [ref=f2e797]: Medium
+                                                - generic [ref=f2e800]: 
+                                        - combobox [ref=f2e802]:
+                                            - generic [ref=f2e803] [cursor=pointer]:
+                                                - generic [ref=f2e804]: 'Off'
+                                                - generic [ref=f2e807]: 
+                                    - button "Send" [ref=f2e809] [cursor=pointer]:
+                                        - generic [ref=f2e810]: 
+        - generic [ref=f2e126]:
+            - generic [ref=f2e127]:
+                - generic [ref=f2e130]:
+                    - button "MultiDiff" [ref=f2e131]
+                    - button "Test" [ref=f2e132]
+                - generic [ref=f2e135]:
+                    - generic [ref=f2e136] [cursor=pointer]: 
+                    - button "0" [ref=f2e137]
+                    - generic [ref=f2e138] [cursor=pointer]: 
+                    - button "0" [ref=f2e139]
+            - generic [ref=f2e140]: 
+    - generic [ref=f2e367]:
+        - alert
+        - alert

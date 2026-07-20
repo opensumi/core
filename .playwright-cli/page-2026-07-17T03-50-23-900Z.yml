@@ -1,0 +1,135 @@
+- generic [ref=f1e3]:
+    - generic [ref=f1e8]:
+        - generic [ref=f1e9]: File
+        - generic [ref=f1e10]: Edit
+        - generic [ref=f1e11]: Selection
+        - generic [ref=f1e12]: View
+        - generic [ref=f1e13]: Go
+        - generic [ref=f1e14]: Terminal
+        - generic [ref=f1e15]: Help
+    - generic [ref=f1e20]:
+        - listitem [ref=f1e22]:
+            - generic "AI Assistant" [ref=f1e24]: 
+        - generic [ref=f1e29]:
+            - complementary "Task List" [ref=f1e33]:
+                - separator "Resize Task List" [ref=f1e34]
+                - generic [ref=f1e35]:
+                    - heading "Task List" [level=2] [ref=f1e36]
+                    - button "Add Project" [ref=f1e37] [cursor=pointer]:
+                        - generic [ref=f1e38]: 
+                - generic [ref=f1e39]:
+                    - generic [ref=f1e40]: 
+                    - searchbox [ref=f1e41]: UX validation
+                - generic [ref=f1e89]:
+                    - button "Archived Tasks" [expanded] [active] [ref=f1e90] [cursor=pointer]:
+                        - generic [ref=f1e91]: 
+                    - generic [ref=f1e261]:
+                        - generic [ref=f1e262]:
+                            - generic "/tmp/opensumi-agent-layout-recheck-qBkzGL/workspace" [ref=f1e263]: workspace
+                            - generic [ref=f1e264]: '1'
+                        - generic [ref=f1e265]:
+                            - button "UX validation recheck task 20260717 ready" [ref=f1e266] [cursor=pointer]:
+                                - generic [ref=f1e267]: UX validation recheck task 20260717
+                                - generic "ready" [ref=f1e268]
+                            - button "Unarchive UX validation recheck task 20260717":
+                                - generic: 
+            - generic [ref=f1e94]:
+                - generic [ref=f1e95]:
+                    - generic "UX validation recheck task 20260717" [ref=f1e96]
+                    - generic [ref=f1e97]:
+                        - button "New Task" [ref=f1e99] [cursor=pointer]:
+                            - generic [ref=f1e100]: 
+                        - button "unfullscreen" [pressed] [ref=f1e103] [cursor=pointer]:
+                            - generic [ref=f1e104]: 
+                - generic [ref=f1e107]:
+                    - generic [ref=f1e112]:
+                        - generic [ref=f1e113]: Hello, I am your dedicated AI assistant, here to answer questions about code and help you think. You can ask me some questions about code.
+                        - generic [ref=f1e117]: Generate a Java Quicksort Algorithm
+                    - generic [ref=f1e119]: Restored Task context
+                    - generic [ref=f1e128]:
+                        - generic [ref=f1e130]:
+                            - button " Deep Thinking " [ref=f1e132] [cursor=pointer]:
+                                - generic [ref=f1e133]: 
+                                - generic [ref=f1e134]: Deep Thinking
+                                - generic [ref=f1e135]: 
+                            - generic [ref=f1e136]:
+                                - list [ref=f1e137]:
+                                    - listitem [ref=f1e138]:
+                                        - checkbox [checked] [disabled] [ref=f1e139]
+                                        - text: 'BDD history restored: restore session'
+                                    - listitem [ref=f1e140]:
+                                        - checkbox [checked] [disabled] [ref=f1e141]
+                                        - text: 'BDD history restored: keep replay bounded'
+                                - paragraph [ref=f1e142]: Restored Task response, part one.
+                            - generic [ref=f1e143]:
+                                - button "  Called Tool BDD history deterministic tool " [ref=f1e144] [cursor=pointer]:
+                                    - generic [ref=f1e145]:
+                                        - generic [ref=f1e146]: 
+                                        - generic [ref=f1e147]: 
+                                        - generic [ref=f1e148]:
+                                            - generic [ref=f1e149]: Called Tool
+                                            - generic "BDD history deterministic tool" [ref=f1e150]
+                                    - generic [ref=f1e151]: 
+                                - generic [ref=f1e154]:
+                                    - generic [ref=f1e155]: 'Arguments:'
+                                    - generic [ref=f1e156]:
+                                        - generic [ref=f1e157]:
+                                            - button [ref=f1e159] [cursor=pointer]:
+                                                - generic [ref=f1e160]: 
+                                            - button [ref=f1e162] [cursor=pointer]:
+                                                - generic [ref=f1e163]: 
+                                        - code [ref=f1e165]: '{ "fixture": "history", "sessionSeed": "restored", "bounded": true }'
+                                - generic [ref=f1e166]:
+                                    - generic [ref=f1e167]: 'Result:'
+                                    - generic [ref=f1e170]:
+                                        - generic [ref=f1e171]:
+                                            - button [ref=f1e173] [cursor=pointer]:
+                                                - generic [ref=f1e174]: 
+                                            - button [ref=f1e176] [cursor=pointer]:
+                                                - generic [ref=f1e177]: 
+                                        - code [ref=f1e179]: '{"ok":true,"sentinel":"BDD_HISTORY_TOOL_RESULT","sessionSeed":"restored"}'
+                            - paragraph [ref=f1e181]: Restored Task response, part two.
+                        - generic [ref=f1e183]:
+                            - button "Thumbs up" [ref=f1e185] [cursor=pointer]:
+                                - generic [ref=f1e186]: 
+                            - button "Thumbs down" [ref=f1e188] [cursor=pointer]:
+                                - generic [ref=f1e189]: 
+                - generic [ref=f1e191]:
+                    - generic [ref=f1e192]: 
+                    - generic [ref=f1e196]:
+                        - generic [ref=f1e197]: Message @ to include context, / for command
+                        - generic [ref=f1e199]:
+                            - generic [ref=f1e200]:
+                                - generic [ref=f1e201]: /
+                                - generic [ref=f1e203]: '@ Add Context'
+                            - generic [ref=f1e205]:
+                                - generic [ref=f1e206]:
+                                    - combobox [ref=f1e208]:
+                                        - generic [ref=f1e209] [cursor=pointer]:
+                                            - generic [ref=f1e210]: Agent
+                                            - generic [ref=f1e213]: 
+                                    - combobox [ref=f1e215]:
+                                        - generic [ref=f1e216] [cursor=pointer]:
+                                            - generic [ref=f1e217]: BDD Small
+                                            - generic [ref=f1e220]: 
+                                    - combobox [ref=f1e222]:
+                                        - generic [ref=f1e223] [cursor=pointer]:
+                                            - generic [ref=f1e224]: Medium
+                                            - generic [ref=f1e227]: 
+                                    - combobox [ref=f1e229]:
+                                        - generic [ref=f1e230] [cursor=pointer]:
+                                            - generic [ref=f1e231]: 'Off'
+                                            - generic [ref=f1e234]: 
+                                - button "Send" [ref=f1e236] [cursor=pointer]:
+                                    - generic [ref=f1e237]: 
+    - generic [ref=f1e240]:
+        - generic [ref=f1e241]:
+            - generic [ref=f1e244]:
+                - button "MultiDiff" [ref=f1e245]
+                - button "Test" [ref=f1e246]
+            - generic [ref=f1e249]:
+                - generic [ref=f1e250] [cursor=pointer]: 
+                - button "0" [ref=f1e251]
+                - generic [ref=f1e252] [cursor=pointer]: 
+                - button "0" [ref=f1e253]
+        - generic [ref=f1e254]: 

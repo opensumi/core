@@ -31,7 +31,7 @@ async function loadLongStreamWorkbench() {
     ensureAgenticLayout: true,
     viewport: { width: 1600, height: 900 },
   });
-  await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
+  await expect(page.locator('.AI-Chat-slot [contenteditable="true"]').last()).toBeVisible();
 }
 
 function chatInput() {
@@ -39,7 +39,7 @@ function chatInput() {
 }
 
 function chatButton(name: string) {
-  return chatSlot().getByRole('button', { name });
+  return chatSlot().getByRole('button', { name, exact: true });
 }
 
 async function sendPrompt(prompt: string) {

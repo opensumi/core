@@ -203,7 +203,7 @@ describe('AILayout BDD', () => {
     panelLayoutChangeListener = undefined;
     agenticWorkbenchVisible = false;
     agenticWorkbenchWidthConstrained = false;
-    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1200, writable: true });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1366, writable: true });
     agenticWorkbenchVisibilityListeners.clear();
     mockToggleSlot.mockClear();
     container = document.createElement('div');
@@ -358,10 +358,10 @@ describe('AILayout BDD', () => {
     expect(getSplitChildIds('main-horizontal-agentic')).toEqual(['main-vertical-agentic', 'view']);
   });
 
-  it('Given a narrow desktop viewport, when Agentic Layout renders, then it temporarily collapses the workbench', async () => {
+  it('在窄桌面视口渲染 Agentic Layout 时，应临时折叠工作台并在宽度恢复后重新显示', async () => {
     panelLayoutMode = 'agentic';
     agenticWorkbenchVisible = true;
-    window.innerWidth = 900;
+    window.innerWidth = 1280;
     const { AILayout } = await import('../../src/browser/layout/ai-layout');
 
     await act(async () => {
@@ -372,7 +372,7 @@ describe('AILayout BDD', () => {
     expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat']);
 
     await act(async () => {
-      window.innerWidth = 1200;
+      window.innerWidth = 1366;
       window.dispatchEvent(new Event('resize'));
       await Promise.resolve();
     });

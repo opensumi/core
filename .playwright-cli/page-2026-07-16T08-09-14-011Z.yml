@@ -1,0 +1,95 @@
+- generic [active] [ref=e1]:
+    - generic [ref=e383]:
+        - generic [ref=e388]:
+            - button "Open IDE layout" [ref=e392] [cursor=pointer]
+            - generic [ref=e393]: 
+            - generic [ref=e398] [cursor=pointer]: 
+        - generic [ref=e404]:
+            - listitem [ref=e406]:
+                - generic "AI Assistant" [ref=e408]: 
+            - generic [ref=e413]:
+                - complementary "Task List" [ref=e417]:
+                    - separator "Resize Task List" [ref=e418]
+                    - generic [ref=e419]:
+                        - heading "Task List" [level=2] [ref=e420]
+                        - button "Add Project" [ref=e421] [cursor=pointer]:
+                            - generic [ref=e422]: 
+                    - generic [ref=e423]:
+                        - generic [ref=e424]: 
+                        - searchbox [ref=e425]
+                    - generic [ref=e427]:
+                        - generic [ref=e428]:
+                            - generic [ref=e429]: 
+                            - generic "/Users/lujunsheng/ant/github/opensumi/core/tools/workspace" [ref=e430]: workspace
+                            - generic [ref=e431]: '2'
+                            - button "New Task for workspace" [ref=e433] [cursor=pointer]:
+                                - generic [ref=e434]: 
+                            - button "Manage workspace" [ref=e435] [cursor=pointer]:
+                                - generic [ref=e436]: 
+                        - generic [ref=e437]:
+                            - button "ready hi ready" [ref=e438] [cursor=pointer]:
+                                - generic "ready" [ref=e439]
+                                - generic [ref=e440]: hi
+                                - generic [ref=e441]: ready
+                            - button "Archive hi":
+                                - generic: 
+                        - generic [ref=e442]:
+                            - button "ready hi ready" [ref=e443] [cursor=pointer]:
+                                - generic "ready" [ref=e444]
+                                - generic [ref=e445]: hi
+                                - generic [ref=e446]: ready
+                            - button "Archive hi":
+                                - generic: 
+                    - button "Archived Tasks" [ref=e448] [cursor=pointer]:
+                        - generic [ref=e449]: 
+                - generic [ref=e452]:
+                    - generic [ref=e453]:
+                        - generic "AI Assistant" [ref=e454]
+                        - generic [ref=e455]:
+                            - button "New Task" [ref=e457] [cursor=pointer]:
+                                - generic [ref=e458]: 
+                            - button "unfullscreen" [pressed] [ref=e461] [cursor=pointer]:
+                                - generic [ref=e462]: 
+                    - generic [ref=e464]:
+                        - heading "AI Assistant" [level=2] [ref=e466]
+                        - generic [ref=e467]:
+                            - generic [ref=e468] [cursor=pointer]:
+                                - generic [ref=e469]: 
+                                - generic [ref=e470]: Explain my code
+                            - generic [ref=e471] [cursor=pointer]: Optimize my code
+                            - generic [ref=e473] [cursor=pointer]:
+                                - generic [ref=e474]: 
+                                - generic [ref=e475]: Generate unit tests
+                            - generic [ref=e476] [cursor=pointer]: Find and fix bugs
+                    - generic [ref=e479]:
+                        - generic [ref=e480]: 
+                        - generic [ref=e484]:
+                            - generic [ref=e485]: message claude-agent-acp @to include context, / for command
+                            - generic [ref=e487]:
+                                - generic [ref=e488]:
+                                    - generic [ref=e489]: /
+                                    - generic [ref=e491]: '@ Add Context'
+                                - button "Send" [ref=e495] [cursor=pointer]:
+                                    - generic [ref=e496]: 
+        - generic [ref=e499]:
+            - generic [ref=e500]:
+                - generic [ref=e503]:
+                    - button "MultiDiff" [ref=e504]
+                    - button "Test" [ref=e505]
+                - generic [ref=e508]:
+                    - generic [ref=e509] [cursor=pointer]: 
+                    - button "0" [ref=e510]
+                    - generic [ref=e511] [cursor=pointer]: 
+                    - button "0" [ref=e512]
+            - generic [ref=e513]:
+                - button "Ln1，Col1" [ref=e517]
+                - generic [ref=e519]:
+                    - button "Spaces:" [ref=e520]
+                    - button "2" [ref=e521]
+                - button "LF" [ref=e525]
+                - button "UTF8" [ref=e529]
+                - button "JavaScript" [ref=e533]
+                - generic [ref=e534]: 
+    - generic [ref=e359]:
+        - alert
+        - alert

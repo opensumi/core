@@ -295,6 +295,14 @@ export class AcpChatInternalService extends ChatInternalService {
       );
     };
 
+    const taskRegistration = this.registerFirstAgenticPrompt(request, sessionId).catch((error) => {
+      this.logger.error(
+        `[ACP Chat][Frontend] register Agentic task failed — sessionId=${sessionId ?? '(empty)'}, requestId=${
+          request.requestId
+        }, error=${error instanceof Error ? error.message : String(error)}`,
+      );
+    });
+
     let result: ReturnType<ChatInternalService['sendRequest']>;
     try {
       result = super.sendRequest(request, regenerate);
@@ -304,7 +312,7 @@ export class AcpChatInternalService extends ChatInternalService {
     }
     return Promise.resolve(result).then(
       async () => {
-        await this.registerFirstAgenticPrompt(request, sessionId);
+        await taskRegistration;
         this.logger.log(
           `[ACP Chat][Frontend] sendRequest done — sessionId=${sessionId ?? '(empty)'}, requestId=${request.requestId}`,
         );
@@ -582,12 +590,20 @@ export class AcpChatInternalService extends ChatInternalService {
     );
     disposable.push(
       this.permissionBridgeService.onDidReceivePermissionResult((result) => {
-        if (!pendingPermissionRequestIds.delete(result.requestId) || pendingPermissionRequestIds.size > 0) {
+        pendingPermissionRequestIds.delete(result.requestId);
+        if (
+          pendingPermissionRequestIds.size > 0 ||
+          this.permissionBridgeService.hasPendingForSession(model.sessionId)
+        ) {
           return;
         }
         void this.agenticTaskRegistry.updateAttention(model.sessionId, undefined);
       }),
     );
+    if (this.permissionBridgeService.hasPendingForSession(model.sessionId)) {
+      void this.agenticTaskRegistry.updateAttention(model.sessionId, 'permission');
+      this.markUnreadIfBackground(model.sessionId);
+    }
     this.taskObservationDisposables.set(model.sessionId, { model, disposable });
   }
 

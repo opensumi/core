@@ -66,6 +66,8 @@ export class AcpChatManagerService extends ChatManagerService {
 
   private mainProvider: ISessionProvider | null = null;
 
+  private localFallbackActive = false;
+
   private availableCommands: AvailableCommand[] = [];
 
   private acpTitleStorage: IStorage | undefined;
@@ -90,6 +92,7 @@ export class AcpChatManagerService extends ChatManagerService {
   private useAcpProviderWhenAvailable(): void {
     const canHandle = this.mainProvider?.canHandle;
     if (
+      this.localFallbackActive ||
       !this.aiNativeConfig.capabilities.supportsAgentMode ||
       typeof canHandle !== 'function' ||
       canHandle.call(this.mainProvider, 'acp')
@@ -601,6 +604,7 @@ export class AcpChatManagerService extends ChatManagerService {
     if (!localProvider) {
       return;
     }
+    this.localFallbackActive = true;
     this.mainProvider = localProvider;
     this.sessionModels.clear();
     this.loadSessionList();

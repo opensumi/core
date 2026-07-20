@@ -195,6 +195,39 @@ it('orders Immediate Send, normal submit, native newline, and IME submit handlin
   expect(onSendImmediately).toHaveBeenCalledTimes(1);
 });
 
+it('按 Escape 先关闭命令面板，再取消已选择的 slash 命令且保留普通文本', () => {
+  const onSlashSelect = jest.fn();
+  const editor = renderMentionInput({
+    onSlashSelect,
+    slashCommands: [{ nameWithSlash: '/bdd_plan', description: 'Plan' }],
+  } as FutureMentionInputProps);
+
+  editor.focus();
+  setCaret(editor, 0);
+  keydown(editor, { key: '/' });
+  editor.textContent = '/';
+  input(editor);
+
+  keydown(editor, { key: 'Escape' });
+  expect(onSlashSelect).not.toHaveBeenCalled();
+
+  editor.textContent = '保留文本';
+  setCaret(editor, editor.textContent.length);
+  act(() => {
+    window.dispatchEvent(
+      new CustomEvent('opensumi-chat-input-insert-slash', {
+        detail: { nameWithSlash: '/bdd_plan' },
+      }),
+    );
+  });
+  expect(editor.querySelector('[data-command="/bdd_plan"]')).not.toBeNull();
+
+  keydown(editor, { key: 'Escape' });
+  expect(onSlashSelect).toHaveBeenCalledWith('');
+  expect(editor.querySelector('[data-command="/bdd_plan"]')).toBeNull();
+  expect(editor.textContent).toContain('保留文本');
+});
+
 it('renders multiple ACP config controls without React list key warnings', () => {
   const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
 

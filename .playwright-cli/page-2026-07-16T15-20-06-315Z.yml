@@ -1,0 +1,357 @@
+- generic [ref=e1]:
+    - generic [ref=e3]:
+        - generic [ref=e8]:
+            - generic [ref=e9]: File
+            - generic [ref=e10]: Edit
+            - generic [ref=e11]: Selection
+            - generic [ref=e12]: View
+            - generic [ref=e13]: Go
+            - generic [ref=e14]: Terminal
+            - generic [ref=e15]: Help
+        - generic [ref=e20]:
+            - listitem [ref=e399]:
+                - generic "AI Assistant" [ref=e401]: 
+            - generic [ref=e406]:
+                - complementary "Task List" [ref=e410]:
+                    - separator "Resize Task List" [ref=e411]
+                    - generic [ref=e412]:
+                        - heading "Task List" [level=2] [ref=e413]
+                        - button "Add Project" [ref=e414] [cursor=pointer]:
+                            - generic [ref=e415]: 
+                    - generic [ref=e416]:
+                        - generic [ref=e417]: 
+                        - searchbox [ref=e418]
+                    - generic [ref=e419]:
+                        - generic [ref=e644]:
+                            - generic [ref=e645]:
+                                - button "Collapse Alpha Project" [expanded] [ref=e681] [cursor=pointer]:
+                                    - generic [ref=e647]: 
+                                    - generic "/tmp/opensumi-agent-layout-Nw0VoI/workspace-one" [ref=e648]: Alpha Project
+                                    - generic [ref=e649]: '1'
+                                - button "New Task for Alpha Project" [ref=e682] [cursor=pointer]:
+                                    - generic [ref=e652]: 
+                                - button "Manage Alpha Project" [ref=e683] [cursor=pointer]:
+                                    - generic [ref=e654]: 
+                            - generic [ref=e655]:
+                                - button "UX validation task for Agent Layout ready" [ref=e656] [cursor=pointer]:
+                                    - generic [ref=e657]: UX validation task for Agent Layout
+                                    - generic "ready" [ref=e658]
+                                - button "Archive UX validation task for Agent Layout":
+                                    - generic: 
+                        - generic [ref=e435]:
+                            - generic [ref=e436]:
+                                - button "Collapse test" [expanded] [ref=e437] [cursor=pointer]:
+                                    - generic [ref=e438]: 
+                                    - generic "/Users/lujunsheng/ant/github/opensumi/core/tools/workspace" [ref=e439]: test
+                                    - generic [ref=e440]: '5'
+                                - button "New Task for test" [ref=e442] [cursor=pointer]:
+                                    - generic [ref=e443]: 
+                                - button "Manage test" [ref=e444] [cursor=pointer]:
+                                    - generic [ref=e445]: 
+                            - generic [ref=e446]:
+                                - button "1+ stopped" [ref=e447] [cursor=pointer]:
+                                    - generic [ref=e448]: 1+
+                                    - generic "stopped" [ref=e449]
+                                - button "Archive 1+":
+                                    - generic: 
+                            - generic [ref=e450]:
+                                - button "你好 stopped" [ref=e451] [cursor=pointer]:
+                                    - generic [ref=e452]: 你好
+                                    - generic "stopped" [ref=e453]
+                                - button "Archive 你好":
+                                    - generic: 
+                            - generic [ref=e454]:
+                                - button "hi stopped" [ref=e455] [cursor=pointer]:
+                                    - generic [ref=e456]: hi
+                                    - generic "stopped" [ref=e457]
+                                - button "Archive hi":
+                                    - generic: 
+                            - generic [ref=e458]:
+                                - button "hi ready" [ref=e459] [cursor=pointer]:
+                                    - generic [ref=e460]: hi
+                                    - generic "ready" [ref=e461]
+                                - button "Archive hi":
+                                    - generic: 
+                            - generic [ref=e462]:
+                                - button "hi ready" [ref=e463] [cursor=pointer]:
+                                    - generic [ref=e464]: hi
+                                    - generic "ready" [ref=e465]
+                                - button "Archive hi":
+                                    - generic: 
+                    - button "Archived Tasks" [expanded] [ref=e467] [cursor=pointer]:
+                        - generic [ref=e468]: 
+                - generic [ref=e471]:
+                    - generic [ref=e472]:
+                        - generic "BDD Turn 1" [ref=e518]
+                        - generic [ref=e474]:
+                            - button "New Task" [ref=e476] [cursor=pointer]:
+                                - generic [ref=e477]: 
+                            - button "unfullscreen" [pressed] [ref=e480] [cursor=pointer]:
+                                - generic [ref=e481]: 
+                    - generic [ref=e520]:
+                        - generic [ref=e525]:
+                            - generic [ref=e526]: Hello, I am your dedicated AI assistant, here to answer questions about code and help you think. You can ask me some questions about code.
+                            - generic [ref=e530]: Generate a Java Quicksort Algorithm
+                        - generic [ref=e532]: BDD_USER_TURN_1
+                        - generic [ref=e541]:
+                            - generic [ref=e543]:
+                                - button " Deep Thinking " [ref=e545] [cursor=pointer]:
+                                    - generic [ref=e546]: 
+                                    - generic [ref=e547]: Deep Thinking
+                                    - generic [ref=e548]: 
+                                - generic [ref=e549]:
+                                    - list [ref=e550]:
+                                        - listitem [ref=e551]:
+                                            - checkbox [checked] [disabled] [ref=e552]
+                                            - text: 'BDD plan: prepare deterministic stream'
+                                        - listitem [ref=e553]:
+                                            - checkbox [disabled] [ref=e554]
+                                            - text: 'BDD plan: emit tool update'
+                                    - paragraph [ref=e555]: BDD_ASSISTANT_PART_1 for turn 1.
+                                - generic [ref=e556]:
+                                    - button "  Called Tool BDD deterministic tool " [ref=e557] [cursor=pointer]:
+                                        - generic [ref=e558]:
+                                            - generic [ref=e559]: 
+                                            - generic [ref=e560]: 
+                                            - generic [ref=e561]:
+                                                - generic [ref=e562]: Called Tool
+                                                - generic "BDD deterministic tool" [ref=e563]
+                                        - generic [ref=e564]: 
+                                    - generic [ref=e567]:
+                                        - generic [ref=e568]: 'Arguments:'
+                                        - generic [ref=e569]:
+                                            - generic [ref=e570]:
+                                                - button [ref=e572] [cursor=pointer]:
+                                                    - generic [ref=e573]: 
+                                                - button [ref=e575] [cursor=pointer]:
+                                                    - generic [ref=e576]: 
+                                            - code [ref=e578]: '{ "fixture": "history", "phase": "in_progress" }'
+                                    - generic [ref=e579]:
+                                        - generic [ref=e580]: 'Result:'
+                                        - generic [ref=e583]:
+                                            - generic [ref=e584]:
+                                                - button [ref=e586] [cursor=pointer]:
+                                                    - generic [ref=e587]: 
+                                                - button [ref=e589] [cursor=pointer]:
+                                                    - generic [ref=e590]: 
+                                            - code [ref=e592]: '{"ok":true,"sentinel":"BDD_TOOL_RESULT"}'
+                                - paragraph [ref=e594]: BDD_ASSISTANT_PART_2 completed.
+                            - generic [ref=e596]:
+                                - button "Thumbs up" [ref=e598] [cursor=pointer]:
+                                    - generic [ref=e599]: 
+                                - button "Thumbs down" [ref=e601] [cursor=pointer]:
+                                    - generic [ref=e602]: 
+                    - generic [ref=e498]:
+                        - generic [ref=e499]: 
+                        - generic [ref=e503]:
+                            - generic [ref=e504]: Message @ to include context, / for command
+                            - generic [ref=e506]:
+                                - generic [ref=e507]:
+                                    - generic [ref=e508]: /
+                                    - generic [ref=e510]: '@ Add Context'
+                                - generic [ref=e512]:
+                                    - generic [ref=e603]:
+                                        - combobox [ref=e605]:
+                                            - generic [ref=e606] [cursor=pointer]:
+                                                - generic [ref=e607]: Agent
+                                                - generic [ref=e610]: 
+                                        - combobox [ref=e612]:
+                                            - generic [ref=e613] [cursor=pointer]:
+                                                - generic [ref=e614]: BDD Small
+                                                - generic [ref=e617]: 
+                                        - combobox [ref=e619]:
+                                            - generic [ref=e620] [cursor=pointer]:
+                                                - generic [ref=e621]: Medium
+                                                - generic [ref=e624]: 
+                                        - combobox [ref=e626]:
+                                            - generic [ref=e627] [cursor=pointer]:
+                                                - generic [ref=e628]: 'Off'
+                                                - generic [ref=e631]: 
+                                    - button "Send" [ref=e514] [cursor=pointer]:
+                                        - generic [ref=e515]: 
+        - generic [ref=e141]:
+            - generic [ref=e142]:
+                - generic [ref=e145]:
+                    - button "MultiDiff" [ref=e146]
+                    - button "Test" [ref=e147]
+                - generic [ref=e150]:
+                    - generic [ref=e151] [cursor=pointer]: 
+                    - button "0" [ref=e152]
+                    - generic [ref=e153] [cursor=pointer]: 
+                    - button "0" [ref=e154]
+            - generic [ref=e155]: 
+    - generic [ref=e397]:
+        - alert
+        - alert
+    - generic [ref=e685]:
+        - dialog:
+            - generic [ref=e686]:
+                - button "Close" [ref=e687] [cursor=pointer]:
+                    - img "close" [ref=e689]
+                - generic [ref=e696]:
+                    - generic [ref=e697]: Add Project
+                    - generic [ref=e700] [cursor=pointer]:
+                        - generic [ref=e701]: /Users/lujunsheng/Desktop
+                        - generic [ref=e702]: 
+                    - generic [ref=e708]:
+                        - treeitem "alflog" [level=1] [ref=e709]:
+                            - generic "~/Desktop/alflog" [ref=e710] [cursor=pointer]:
+                                - generic [ref=e711]:
+                                    - generic [ref=e712]: 
+                                    - generic [ref=e714]: alflog
+                        - treeitem "AudioRecord" [level=1] [ref=e715]:
+                            - generic "~/Desktop/AudioRecord" [ref=e716] [cursor=pointer]:
+                                - generic [ref=e717]:
+                                    - generic [ref=e718]: 
+                                    - generic [ref=e720]: AudioRecord
+                        - treeitem "b0302ef2-aae7-4337-92f0-6fb9a50be918" [level=1] [ref=e721]:
+                            - generic "~/Desktop/b0302ef2-aae7-4337-92f0-6fb9a50be918" [ref=e722] [cursor=pointer]:
+                                - generic [ref=e723]:
+                                    - generic [ref=e724]: 
+                                    - generic [ref=e726]: b0302ef2-aae7-4337-92f0-6fb9a50be918
+                        - treeitem "gifs" [level=1] [ref=e727]:
+                            - generic "~/Desktop/gifs" [ref=e728] [cursor=pointer]:
+                                - generic [ref=e729]:
+                                    - generic [ref=e730]: 
+                                    - generic [ref=e732]: gifs
+                        - treeitem "llmtxt" [level=1] [ref=e733]:
+                            - generic "~/Desktop/llmtxt" [ref=e734] [cursor=pointer]:
+                                - generic [ref=e735]:
+                                    - generic [ref=e736]: 
+                                    - generic [ref=e738]: llmtxt
+                        - treeitem "oss-browser-darwin-x64" [level=1] [ref=e739]:
+                            - generic "~/Desktop/oss-browser-darwin-x64" [ref=e740] [cursor=pointer]:
+                                - generic [ref=e741]:
+                                    - generic [ref=e742]: 
+                                    - generic [ref=e744]: oss-browser-darwin-x64
+                        - treeitem "override" [level=1] [ref=e745]:
+                            - generic "~/Desktop/override" [ref=e746] [cursor=pointer]:
+                                - generic [ref=e747]:
+                                    - generic [ref=e748]: 
+                                    - generic [ref=e750]: override
+                        - treeitem "sft功能测试数据集" [level=1] [ref=e751]:
+                            - generic "~/Desktop/sft功能测试数据集" [ref=e752] [cursor=pointer]:
+                                - generic [ref=e753]:
+                                    - generic [ref=e754]: 
+                                    - generic [ref=e756]: sft功能测试数据集
+                        - treeitem "tmp" [level=1] [ref=e757]:
+                            - generic "~/Desktop/tmp" [ref=e758] [cursor=pointer]:
+                                - generic [ref=e759]:
+                                    - generic [ref=e760]: 
+                                    - generic [ref=e762]: tmp
+                        - treeitem "workspace-server-application-20260703103323-cfc17a01" [level=1] [ref=e763]:
+                            - generic "~/Desktop/workspace-server-application-20260703103323-cfc17a01" [ref=e764] [cursor=pointer]:
+                                - generic [ref=e765]:
+                                    - generic [ref=e766]: 
+                                    - generic [ref=e768]: workspace-server-application-20260703103323-cfc17a01
+                        - treeitem "1.jpg" [level=1] [ref=e769]:
+                            - generic "~/Desktop/1.jpg" [ref=e770] [cursor=pointer]: 1.jpg
+                        - treeitem "1.png" [level=1] [ref=e774]:
+                            - generic "~/Desktop/1.png" [ref=e775] [cursor=pointer]: 1.png
+                        - treeitem "ais.jpg" [level=1] [ref=e779]:
+                            - generic "~/Desktop/ais.jpg" [ref=e780] [cursor=pointer]: ais.jpg
+                        - treeitem "ais.png" [level=1] [ref=e784]:
+                            - generic "~/Desktop/ais.png" [ref=e785] [cursor=pointer]: ais.png
+                        - treeitem "aislogo.png" [level=1] [ref=e789]:
+                            - generic "~/Desktop/aislogo.png" [ref=e790] [cursor=pointer]: aislogo.png
+                        - treeitem "aistudio_pre_hook.sh" [level=1] [ref=e794]:
+                            - generic "~/Desktop/aistudio_pre_hook.sh" [ref=e795] [cursor=pointer]: aistudio_pre_hook.sh
+                        - treeitem "algo-component-dev-0.0.1.vsix" [level=1] [ref=e799]:
+                            - generic "~/Desktop/algo-component-dev-0.0.1.vsix" [ref=e800] [cursor=pointer]: algo-component-dev-0.0.1.vsix
+                        - treeitem "b0302ef2-aae7-4337-92f0-6fb9a50be918.tgz" [level=1] [ref=e804]:
+                            - generic "~/Desktop/b0302ef2-aae7-4337-92f0-6fb9a50be918.tgz" [ref=e805] [cursor=pointer]: b0302ef2-aae7-4337-92f0-6fb9a50be918.tgz
+                        - treeitem "beginner-guide.png" [level=1] [ref=e809]:
+                            - generic "~/Desktop/beginner-guide.png" [ref=e810] [cursor=pointer]: beginner-guide.png
+                        - treeitem "cmux-macos.dmg" [level=1] [ref=e814]:
+                            - generic "~/Desktop/cmux-macos.dmg" [ref=e815] [cursor=pointer]: cmux-macos.dmg
+                        - treeitem "conversations.jpg" [level=1] [ref=e819]:
+                            - generic "~/Desktop/conversations.jpg" [ref=e820] [cursor=pointer]: conversations.jpg
+                        - treeitem "CPU.speedscope.json" [level=1] [ref=e824]:
+                            - generic "~/Desktop/CPU.speedscope.json" [ref=e825] [cursor=pointer]: CPU.speedscope.json
+                        - treeitem "h200-61400532-command-audit-20260612.md" [level=1] [ref=e829]:
+                            - generic "~/Desktop/h200-61400532-command-audit-20260612.md" [ref=e830] [cursor=pointer]: h200-61400532-command-audit-20260612.md
+                        - treeitem "ide.jpg" [level=1] [ref=e834]:
+                            - generic "~/Desktop/ide.jpg" [ref=e835] [cursor=pointer]: ide.jpg
+                        - treeitem "IDE验证.png" [level=1] [ref=e839]:
+                            - generic "~/Desktop/IDE验证.png" [ref=e840] [cursor=pointer]: IDE验证.png
+                        - treeitem "IDE验证jpg.jpg" [level=1] [ref=e844]:
+                            - generic "~/Desktop/IDE验证jpg.jpg" [ref=e845] [cursor=pointer]: IDE验证jpg.jpg
+                        - treeitem "IMG_20250629_104743.jpg" [level=1] [ref=e849]:
+                            - generic "~/Desktop/IMG_20250629_104743.jpg" [ref=e850] [cursor=pointer]: IMG_20250629_104743.jpg
+                        - treeitem "IMG_20250629_161642.jpg" [level=1] [ref=e854]:
+                            - generic "~/Desktop/IMG_20250629_161642.jpg" [ref=e855] [cursor=pointer]: IMG_20250629_161642.jpg
+                        - treeitem "importance.svg" [level=1] [ref=e859]:
+                            - generic "~/Desktop/importance.svg" [ref=e860] [cursor=pointer]: importance.svg
+                        - treeitem "install-node.sh" [level=1] [ref=e864]:
+                            - generic "~/Desktop/install-node.sh" [ref=e865] [cursor=pointer]: install-node.sh
+                        - treeitem "large-sample.png" [level=1] [ref=e869]:
+                            - generic "~/Desktop/large-sample.png" [ref=e870] [cursor=pointer]: large-sample.png
+                        - treeitem "logs" [level=1] [ref=e874]:
+                            - generic "~/Desktop/logs" [ref=e875] [cursor=pointer]: logs
+                        - treeitem "long_text_2025-05-27-13-46-15.txt" [level=1] [ref=e879]:
+                            - generic "~/Desktop/long_text_2025-05-27-13-46-15.txt" [ref=e880] [cursor=pointer]: long_text_2025-05-27-13-46-15.txt
+                        - treeitem "mac-arm64.dmg" [level=1] [ref=e884]:
+                            - generic "~/Desktop/mac-arm64.dmg" [ref=e885] [cursor=pointer]: mac-arm64.dmg
+                        - treeitem "mobile.jpg" [level=1] [ref=e889]:
+                            - generic "~/Desktop/mobile.jpg" [ref=e890] [cursor=pointer]: mobile.jpg
+                        - treeitem "ncc1.speedscope.json" [level=1] [ref=e894]:
+                            - generic "~/Desktop/ncc1.speedscope.json" [ref=e895] [cursor=pointer]: ncc1.speedscope.json
+                        - treeitem "node-v22.14.0-linux-x64.tar.gz" [level=1] [ref=e899]:
+                            - generic "~/Desktop/node-v22.14.0-linux-x64.tar.gz" [ref=e900] [cursor=pointer]: node-v22.14.0-linux-x64.tar.gz
+                        - treeitem "node-v22.17.0-linux-arm64.tar.xz" [level=1] [ref=e904]:
+                            - generic "~/Desktop/node-v22.17.0-linux-arm64.tar.xz" [ref=e905] [cursor=pointer]: node-v22.17.0-linux-arm64.tar.xz
+                        - treeitem "opensumi-startup.log" [level=1] [ref=e909]:
+                            - generic "~/Desktop/opensumi-startup.log" [ref=e910] [cursor=pointer]: opensumi-startup.log
+                        - treeitem "oss-browser-darwin-x64.zip" [level=1] [ref=e914]:
+                            - generic "~/Desktop/oss-browser-darwin-x64.zip" [ref=e915] [cursor=pointer]: oss-browser-darwin-x64.zip
+                        - treeitem "README.md" [level=1] [ref=e919]:
+                            - generic "~/Desktop/README.md" [ref=e920] [cursor=pointer]: README.md
+                        - treeitem "result.json" [level=1] [ref=e924]:
+                            - generic "~/Desktop/result.json" [ref=e925] [cursor=pointer]: result.json
+                        - treeitem "sj知识库—英文.xlsx" [level=1] [ref=e929]:
+                            - generic "~/Desktop/sj知识库—英文.xlsx" [ref=e930] [cursor=pointer]: sj知识库—英文.xlsx
+                        - treeitem "sj知识库—英文.xlsx.zip" [level=1] [ref=e934]:
+                            - generic "~/Desktop/sj知识库—英文.xlsx.zip" [ref=e935] [cursor=pointer]: sj知识库—英文.xlsx.zip
+                        - treeitem "skytree-context.txt" [level=1] [ref=e939]:
+                            - generic "~/Desktop/skytree-context.txt" [ref=e940] [cursor=pointer]: skytree-context.txt
+                        - treeitem "tnvm-install.sh" [level=1] [ref=e944]:
+                            - generic "~/Desktop/tnvm-install.sh" [ref=e945] [cursor=pointer]: tnvm-install.sh
+                        - treeitem "VSCode-darwin-universal.dmg" [level=1] [ref=e949]:
+                            - generic "~/Desktop/VSCode-darwin-universal.dmg" [ref=e950] [cursor=pointer]: VSCode-darwin-universal.dmg
+                        - treeitem "workspace-server-application-20260703103323-cfc17a01.tar.gz" [level=1] [ref=e954]:
+                            - generic "~/Desktop/workspace-server-application-20260703103323-cfc17a01.tar.gz" [ref=e955] [cursor=pointer]: workspace-server-application-20260703103323-cfc17a01.tar.gz
+                        - treeitem "内推海报.png" [level=1] [ref=e959]:
+                            - generic "~/Desktop/内推海报.png" [ref=e960] [cursor=pointer]: 内推海报.png
+                        - treeitem "划词.gif" [level=1] [ref=e964]:
+                            - generic "~/Desktop/划词.gif" [ref=e965] [cursor=pointer]: 划词.gif
+                        - treeitem "屏幕录制2024-12-25 11.37.56.mov" [level=1] [ref=e969]:
+                            - generic "~/Desktop/屏幕录制2024-12-25 11.37.56.mov" [ref=e970] [cursor=pointer]: 屏幕录制2024-12-25 11.37.56.mov
+                        - treeitem "屏幕录制2025-01-03 16.05.09.mov" [level=1] [ref=e974]:
+                            - generic "~/Desktop/屏幕录制2025-01-03 16.05.09.mov" [ref=e975] [cursor=pointer]: 屏幕录制2025-01-03 16.05.09.mov
+                        - treeitem "录屏2025-11-05 20.00.00.mov" [level=1] [ref=e979]:
+                            - generic "~/Desktop/录屏2025-11-05 20.00.00.mov" [ref=e980] [cursor=pointer]: 录屏2025-11-05 20.00.00.mov
+                        - treeitem "录屏2025-11-05 20.00.20.mov" [level=1] [ref=e984]:
+                            - generic "~/Desktop/录屏2025-11-05 20.00.20.mov" [ref=e985] [cursor=pointer]: 录屏2025-11-05 20.00.20.mov
+                        - treeitem "录屏2025-11-05 20.14.59.mov" [level=1] [ref=e989]:
+                            - generic "~/Desktop/录屏2025-11-05 20.14.59.mov" [ref=e990] [cursor=pointer]: 录屏2025-11-05 20.14.59.mov
+                        - treeitem "录屏2025-11-25 10.44.46.mov" [level=1] [ref=e994]:
+                            - generic "~/Desktop/录屏2025-11-25 10.44.46.mov" [ref=e995] [cursor=pointer]: 录屏2025-11-25 10.44.46.mov
+                        - treeitem "录屏2025-12-03 16.49.16.mov" [level=1] [ref=e999]:
+                            - generic "~/Desktop/录屏2025-12-03 16.49.16.mov" [ref=e1000] [cursor=pointer]: 录屏2025-12-03 16.49.16.mov
+                        - treeitem "录屏2025-12-08 10.38.35.mov" [level=1] [ref=e1004]:
+                            - generic "~/Desktop/录屏2025-12-08 10.38.35.mov" [ref=e1005] [cursor=pointer]: 录屏2025-12-08 10.38.35.mov
+                        - treeitem "录屏2025-12-08 10.41.11.mov" [level=1] [ref=e1009]:
+                            - generic "~/Desktop/录屏2025-12-08 10.41.11.mov" [ref=e1010] [cursor=pointer]: 录屏2025-12-08 10.41.11.mov
+                        - treeitem "录屏2025-12-30 16.45.22.mov" [level=1] [ref=e1014]:
+                            - generic "~/Desktop/录屏2025-12-30 16.45.22.mov" [ref=e1015] [cursor=pointer]: 录屏2025-12-30 16.45.22.mov
+                        - treeitem "录屏2026-01-19 20.54.29.mov" [level=1] [ref=e1019]:
+                            - generic "~/Desktop/录屏2026-01-19 20.54.29.mov" [ref=e1020] [cursor=pointer]: 录屏2026-01-19 20.54.29.mov
+                        - treeitem "录屏2026-03-27 16.41.30.mov" [level=1] [ref=e1024]:
+                            - generic "~/Desktop/录屏2026-03-27 16.41.30.mov" [ref=e1025] [cursor=pointer]: 录屏2026-03-27 16.41.30.mov
+                        - treeitem "录屏2026-03-30 16.54.02.mov" [level=1] [ref=e1029]:
+                            - generic "~/Desktop/录屏2026-03-30 16.54.02.mov" [ref=e1030] [cursor=pointer]: 录屏2026-03-30 16.54.02.mov
+                        - treeitem "截屏2025-11-24 21.26.44.png" [level=1] [ref=e1034]:
+                            - generic "~/Desktop/截屏2025-11-24 21.26.44.png" [ref=e1035] [cursor=pointer]: 截屏2025-11-24 21.26.44.png
+                    - generic [ref=e1042]:
+                        - button "Close" [ref=e1043] [cursor=pointer]
+                        - button "OK" [ref=e1044] [cursor=pointer]

@@ -1,0 +1,214 @@
+- generic [active] [ref=e1]:
+    - generic [ref=e3]:
+        - generic [ref=e8]:
+            - generic [ref=e9]: File
+            - generic [ref=e10]: Edit
+            - generic [ref=e11]: Selection
+            - generic [ref=e12]: View
+            - generic [ref=e13]: Go
+            - generic [ref=e14]: Terminal
+            - generic [ref=e15]: Help
+        - generic [ref=e17]:
+            - generic [ref=e20]:
+                - listitem [ref=e161]:
+                    - generic "AI Assistant" [ref=e163]: 
+                - generic [ref=e168]:
+                    - complementary "Task List" [ref=e172]:
+                        - separator "Resize Task List" [ref=e173]
+                        - generic [ref=e174]:
+                            - heading "Task List" [level=2] [ref=e175]
+                            - button "Add Project" [ref=e176] [cursor=pointer]:
+                                - generic [ref=e177]: 
+                        - generic [ref=e178]:
+                            - generic [ref=e179]: 
+                            - searchbox [ref=e180]
+                        - generic [ref=e181]:
+                            - generic [ref=e182]:
+                                - generic [ref=e183]:
+                                    - button "Collapse workspace-one" [expanded] [ref=e184] [cursor=pointer]:
+                                        - generic [ref=e185]: 
+                                        - generic "/tmp/opensumi-agent-layout-Nw0VoI/workspace-one" [ref=e186]: workspace-one
+                                        - generic [ref=e187]: '1'
+                                    - button "New Task for workspace-one" [ref=e189] [cursor=pointer]:
+                                        - generic [ref=e190]: 
+                                    - button "Manage workspace-one" [ref=e191] [cursor=pointer]:
+                                        - generic [ref=e192]: 
+                                - generic [ref=e193]:
+                                    - button "UX validation task for Agent Layout ready" [ref=e194] [cursor=pointer]:
+                                        - generic [ref=e195]: UX validation task for Agent Layout
+                                        - generic "ready" [ref=e196]
+                                    - button "Archive UX validation task for Agent Layout":
+                                        - generic: 
+                            - generic [ref=e197]:
+                                - generic [ref=e198]:
+                                    - button "Collapse test" [expanded] [ref=e199] [cursor=pointer]:
+                                        - generic [ref=e200]: 
+                                        - generic "/Users/lujunsheng/ant/github/opensumi/core/tools/workspace" [ref=e201]: test
+                                        - generic [ref=e202]: '5'
+                                    - button "New Task for test" [ref=e204] [cursor=pointer]:
+                                        - generic [ref=e205]: 
+                                    - button "Manage test" [ref=e206] [cursor=pointer]:
+                                        - generic [ref=e207]: 
+                                - generic [ref=e208]:
+                                    - button "1+ stopped" [ref=e209] [cursor=pointer]:
+                                        - generic [ref=e210]: 1+
+                                        - generic "stopped" [ref=e211]
+                                    - button "Archive 1+":
+                                        - generic: 
+                                - generic [ref=e212]:
+                                    - button "你好 stopped" [ref=e213] [cursor=pointer]:
+                                        - generic [ref=e214]: 你好
+                                        - generic "stopped" [ref=e215]
+                                    - button "Archive 你好":
+                                        - generic: 
+                                - generic [ref=e216]:
+                                    - button "hi stopped" [ref=e217] [cursor=pointer]:
+                                        - generic [ref=e218]: hi
+                                        - generic "stopped" [ref=e219]
+                                    - button "Archive hi":
+                                        - generic: 
+                                - generic [ref=e220]:
+                                    - button "hi ready" [ref=e221] [cursor=pointer]:
+                                        - generic [ref=e222]: hi
+                                        - generic "ready" [ref=e223]
+                                    - button "Archive hi":
+                                        - generic: 
+                                - generic [ref=e224]:
+                                    - button "hi ready" [ref=e225] [cursor=pointer]:
+                                        - generic [ref=e226]: hi
+                                        - generic "ready" [ref=e227]
+                                    - button "Archive hi":
+                                        - generic: 
+                        - button "Archived Tasks" [ref=e229] [cursor=pointer]:
+                            - generic [ref=e230]: 
+                    - generic [ref=e233]:
+                        - generic [ref=e234]:
+                            - generic "AI Assistant" [ref=e235]
+                            - generic [ref=e236]:
+                                - button "New Task" [ref=e238] [cursor=pointer]:
+                                    - generic [ref=e239]: 
+                                - button "fullescreen" [ref=e242] [cursor=pointer]:
+                                    - generic [ref=e243]: 
+                        - generic [ref=e245]:
+                            - heading "AI Assistant" [level=2] [ref=e247]
+                            - generic [ref=e248]:
+                                - generic [ref=e249] [cursor=pointer]:
+                                    - generic [ref=e250]: 
+                                    - generic [ref=e251]: Explain my code
+                                - generic [ref=e252] [cursor=pointer]: Optimize my code
+                                - generic [ref=e254] [cursor=pointer]:
+                                    - generic [ref=e255]: 
+                                    - generic [ref=e256]: Generate unit tests
+                                - generic [ref=e257] [cursor=pointer]: Find and fix bugs
+                        - generic [ref=e260]:
+                            - generic [ref=e261]: 
+                            - generic [ref=e265]:
+                                - generic [ref=e266]: Message @ to include context, / for command
+                                - generic [ref=e268]:
+                                    - generic [ref=e269]:
+                                        - generic [ref=e270]: /
+                                        - generic [ref=e272]: '@ Add Context'
+                                    - button "Send" [ref=e276] [cursor=pointer]:
+                                        - generic [ref=e277]: 
+            - generic [ref=e280]:
+                - generic [ref=e282]:
+                    - generic [ref=e289]:
+                        - generic:
+                            - generic:
+                                - generic:
+                                    - generic:
+                                        - generic: Quick Open
+                                        - generic:
+                                            - generic "⌘ P":
+                                                - generic: ⌘
+                                                - generic: P
+                                    - generic:
+                                        - generic: Command Palette
+                                        - generic:
+                                            - generic "⇧ ⌘ P":
+                                                - generic: ⇧
+                                                - generic: ⌘
+                                                - generic: P
+                                    - generic:
+                                        - generic: Toggle Terminal Panel
+                                        - generic:
+                                            - 'generic "⌃ `"':
+                                                - generic: ⌃
+                                                - generic: '`'
+                                    - generic:
+                                        - generic: Toggle Search Panel
+                                        - generic:
+                                            - generic "⇧ ⌘ F":
+                                                - generic: ⇧
+                                                - generic: ⌘
+                                                - generic: F
+                    - generic [ref=e294]:
+                        - generic [ref=e297]:
+                            - listitem [ref=e298]:
+                                - generic [ref=e299]: PROBLEMS
+                            - listitem [ref=e301]:
+                                - generic [ref=e302]: OUTPUT
+                            - listitem [ref=e304]:
+                                - generic [ref=e305]: DEBUG CONSOLE
+                            - listitem [ref=e307]:
+                                - generic [ref=e308]: TERMINAL
+                        - generic [ref=e310]:                   
+                - generic [ref=e314]:
+                    - generic [ref=e316]:
+                        - generic [ref=e318]:
+                            - listitem [ref=e319]:
+                                - generic "Explorer (⇧+⌘+E)" [ref=e321] [cursor=pointer]: 
+                            - listitem [ref=e322]:
+                                - generic "Source Control (⇧+⌘+G)" [ref=e324]: 
+                        - button "Open Preference Panel" [ref=e326] [cursor=pointer]:
+                            - generic [ref=e327]: 
+                    - generic [ref=e328]:
+                        - generic [ref=e330]:
+                            - heading "Explorer" [level=1] [ref=e333]
+                            - generic [ref=e335]:
+                                - generic [ref=e339] [cursor=pointer]:
+                                    - generic [ref=e340]: 
+                                    - generic [ref=e341]: OPENED EDITORS
+                                - generic [ref=e344]:
+                                    - generic [ref=e345] [cursor=pointer]:
+                                        - generic [ref=e346]:
+                                            - generic [ref=e347]: 
+                                            - generic [ref=e348]: workspace-one
+                                        - text:     
+                                    - generic [ref=e355]:
+                                        - treeitem ".sumi" [level=1] [ref=e356]:
+                                            - generic "file:///tmp/opensumi-agent-layout-Nw0VoI/workspace-one/.sumi" [ref=e357] [cursor=pointer]:
+                                                - generic [ref=e358]:
+                                                    - generic [ref=e359]: 
+                                                    - generic [ref=e361]: .sumi
+                                        - treeitem "test" [level=1] [ref=e362]:
+                                            - generic "file:///tmp/opensumi-agent-layout-Nw0VoI/workspace-one/test" [ref=e363] [cursor=pointer]:
+                                                - generic [ref=e364]:
+                                                    - generic [ref=e365]: 
+                                                    - generic [ref=e367]: test
+                                        - treeitem "editor-undo-redo.text" [level=1] [ref=e368]:
+                                            - generic "file:///tmp/opensumi-agent-layout-Nw0VoI/workspace-one/editor-undo-redo.text" [ref=e369] [cursor=pointer]: editor-undo-redo.text
+                                        - treeitem "editor.js" [level=1] [ref=e373]:
+                                            - generic "file:///tmp/opensumi-agent-layout-Nw0VoI/workspace-one/editor.js" [ref=e374] [cursor=pointer]: editor.js
+                                        - treeitem "editor2.js" [level=1] [ref=e378]:
+                                            - generic "file:///tmp/opensumi-agent-layout-Nw0VoI/workspace-one/editor2.js" [ref=e379] [cursor=pointer]: editor2.js
+                                        - treeitem "editor3.js" [level=1] [ref=e383]:
+                                            - generic "file:///tmp/opensumi-agent-layout-Nw0VoI/workspace-one/editor3.js" [ref=e384] [cursor=pointer]: editor3.js
+                                - generic [ref=e394] [cursor=pointer]:
+                                    - generic [ref=e395]: 
+                                    - generic [ref=e396]: OutLine
+                        - text:       
+        - generic [ref=e141]:
+            - generic [ref=e142]:
+                - generic [ref=e145]:
+                    - button "MultiDiff" [ref=e146]
+                    - button "Test" [ref=e147]
+                - generic [ref=e150]:
+                    - generic [ref=e151] [cursor=pointer]: 
+                    - button "0" [ref=e152]
+                    - generic [ref=e153] [cursor=pointer]: 
+                    - button "0" [ref=e154]
+            - generic [ref=e155]: 
+    - generic [ref=e397]:
+        - alert
+        - alert

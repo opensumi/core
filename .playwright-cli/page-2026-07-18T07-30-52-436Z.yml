@@ -1,0 +1,217 @@
+- generic [active] [ref=e1]:
+    - generic [ref=e3]:
+        - generic [ref=e8]:
+            - generic [ref=e9]: File
+            - generic [ref=e10]: Edit
+            - generic [ref=e11]: Selection
+            - generic [ref=e12]: View
+            - generic [ref=e13]: Go
+            - generic [ref=e14]: Terminal
+            - generic [ref=e15]: Help
+        - generic [ref=e17]:
+            - generic [ref=e20]:
+                - listitem [ref=e163]:
+                    - generic "AI Assistant" [ref=e165]: 
+                - generic [ref=e170]:
+                    - complementary "Agent Tasks" [ref=e174]:
+                        - separator "Resize Agent Tasks" [ref=e175]
+                        - generic [ref=e176]:
+                            - heading "Agent Tasks" [level=2] [ref=e177]
+                            - button "Add Project" [ref=e178] [cursor=pointer]:
+                                - generic [ref=e179]: 
+                        - generic [ref=e180]:
+                            - generic [ref=e181]: 
+                            - searchbox [ref=e182]
+                        - generic [ref=e184]:
+                            - generic [ref=e185]:
+                                - button "Collapse test" [expanded] [ref=e186] [cursor=pointer]:
+                                    - generic [ref=e187]: 
+                                    - generic "/Users/lujunsheng/ant/github/opensumi/core/tools/workspace" [ref=e188]: test
+                                    - generic [ref=e189]: '7'
+                                - button "New Task for test" [ref=e191] [cursor=pointer]:
+                                    - generic [ref=e192]: 
+                                - button "Manage test" [ref=e193] [cursor=pointer]:
+                                    - generic [ref=e194]: 
+                            - generic [ref=e195]:
+                                - button "hia1 Stopped" [ref=e196] [cursor=pointer]:
+                                    - generic [ref=e197]: hia1
+                                    - generic "Stopped" [ref=e198]: 
+                                - button "Archive hia1":
+                                    - generic: 
+                            - generic [ref=e201]:
+                                - button "hi Stopped" [ref=e202] [cursor=pointer]:
+                                    - generic [ref=e203]: hi
+                                    - generic "Stopped" [ref=e204]: 
+                                - button "Archive hi":
+                                    - generic: 
+                            - generic [ref=e207]:
+                                - button "1+ Stopped" [ref=e208] [cursor=pointer]:
+                                    - generic [ref=e209]: 1+
+                                    - generic "Stopped" [ref=e210]: 
+                                - button "Archive 1+":
+                                    - generic: 
+                            - generic [ref=e213]:
+                                - button "你好 Stopped" [ref=e214] [cursor=pointer]:
+                                    - generic [ref=e215]: 你好
+                                    - generic "Stopped" [ref=e216]: 
+                                - button "Archive 你好":
+                                    - generic: 
+                            - generic [ref=e219]:
+                                - button "hi" [ref=e220] [cursor=pointer]
+                                - button "Archive hi":
+                                    - generic: 
+                            - generic [ref=e222]:
+                                - button "hi" [ref=e223] [cursor=pointer]
+                                - button "Archive hi":
+                                    - generic: 
+                            - generic [ref=e225]:
+                                - button "hi" [ref=e226] [cursor=pointer]
+                                - button "Archive hi":
+                                    - generic: 
+                        - button "Archived Tasks" [ref=e229] [cursor=pointer]:
+                            - generic [ref=e230]: 
+                    - generic [ref=e233]:
+                        - generic [ref=e234]:
+                            - generic "AI Assistant" [ref=e235]
+                            - generic [ref=e236]:
+                                - generic [ref=e237]:
+                                    - button "New Task with Qwen CLI Agent (⌥⌘N)" [ref=e238] [cursor=pointer]:
+                                        - generic [ref=e239]: 
+                                    - button "Choose Agent" [ref=e240] [cursor=pointer]:
+                                        - generic [ref=e241]: 
+                                - button "fullescreen" [ref=e244] [cursor=pointer]:
+                                    - generic [ref=e245]: 
+                        - generic [ref=e249]:
+                            - heading "AI Assistant" [level=2] [ref=e251]
+                            - generic [ref=e252]:
+                                - generic [ref=e253] [cursor=pointer]:
+                                    - generic [ref=e254]: 
+                                    - generic [ref=e255]: Explain my code
+                                - generic [ref=e256] [cursor=pointer]: Optimize my code
+                                - generic [ref=e258] [cursor=pointer]:
+                                    - generic [ref=e259]: 
+                                    - generic [ref=e260]: Generate unit tests
+                                - generic [ref=e261] [cursor=pointer]: Find and fix bugs
+                        - generic [ref=e264]:
+                            - generic [ref=e265]: 
+                            - generic [ref=e269]:
+                                - generic [ref=e270]: Message @ to include context, / for command
+                                - generic [ref=e272]:
+                                    - generic [ref=e273]:
+                                        - generic [ref=e274]: /
+                                        - generic [ref=e276]: '@ Add Context'
+                                    - button "Send" [ref=e280] [cursor=pointer]:
+                                        - generic [ref=e281]: 
+            - generic [ref=e284]:
+                - generic [ref=e286]:
+                    - generic [ref=e293]:
+                        - generic [ref=e295]:
+                            - tablist [ref=e299]:
+                                - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor.js" [ref=e301] [cursor=pointer]:
+                                    - generic [ref=e302]:
+                                        - tab "editor.js" [selected] [ref=e304]
+                                        - button "Unpin editor.js" [ref=e306]
+                            - generic [ref=e310]:
+                                - generic "Split To Right (⌘\\)" [ref=e311] [cursor=pointer]: 
+                                - generic [ref=e312] [cursor=pointer]: 
+                        - generic [ref=e313]:
+                            - generic [ref=e314]: editor.js
+                            - code [ref=e321]:
+                                - generic [ref=e322]:
+                                    - textbox "现在无法访问编辑器。"
+                                    - textbox [ref=e323]
+                                    - generic [ref=e324]: '1'
+                    - generic [ref=e342]:
+                        - generic [ref=e345]:
+                            - listitem [ref=e346]:
+                                - generic [ref=e347]: PROBLEMS
+                            - listitem [ref=e349]:
+                                - generic [ref=e350]: OUTPUT
+                            - listitem [ref=e352]:
+                                - generic [ref=e353]: DEBUG CONSOLE
+                            - listitem [ref=e355]:
+                                - generic [ref=e356]: TERMINAL
+                        - generic [ref=e358]:
+                            - text:            
+                            - generic [ref=e361]:
+                                - heading "TERMINAL" [level=1] [ref=e362]
+                                - generic [ref=e372]:
+                                    - 'generic "Create Terminal(⌃⇧`)" [ref=e373] [cursor=pointer]': 
+                                    - generic "Create terminal by type" [ref=e374] [cursor=pointer]: 
+                                - generic [ref=e377]:
+                                    - generic [ref=e378]:
+                                        - generic "Search (⌘F)" [ref=e379] [cursor=pointer]: 
+                                        - generic "Clear (⌘K)" [ref=e380] [cursor=pointer]: 
+                                        - generic "Split Terminal (⌘\\)" [ref=e381] [cursor=pointer]: 
+                                        - generic "Kill terminal" [ref=e382] [cursor=pointer]: 
+                                    - generic [ref=e383]:
+                                        - generic [ref=e384] [cursor=pointer]: 
+                                        - generic "Maximize Tab Panel (⇧⌘J)" [ref=e385] [cursor=pointer]: 
+                                        - generic "Toggle Panel (⌘J)" [ref=e386] [cursor=pointer]: 
+                            - text:   
+                - generic [ref=e396]:
+                    - generic [ref=e398]:
+                        - generic [ref=e400]:
+                            - listitem [ref=e401]:
+                                - generic "Explorer (⇧+⌘+E)" [ref=e403] [cursor=pointer]: 
+                            - listitem [ref=e404]:
+                                - generic "Source Control (⇧+⌘+G)" [ref=e406]: 
+                        - button "Open Preference Panel" [ref=e408] [cursor=pointer]:
+                            - generic [ref=e409]: 
+                    - generic [ref=e410]:
+                        - generic [ref=e412]:
+                            - heading "Explorer" [level=1] [ref=e415]
+                            - generic [ref=e417]:
+                                - generic [ref=e419]:
+                                    - generic [ref=e421] [cursor=pointer]:
+                                        - generic [ref=e422]: 
+                                        - generic [ref=e423]: OPENED EDITORS
+                                    - text: 
+                                - generic [ref=e426]:
+                                    - generic [ref=e427] [cursor=pointer]:
+                                        - generic [ref=e428]:
+                                            - generic [ref=e429]: 
+                                            - generic [ref=e430]: default
+                                        - text:     
+                                    - generic [ref=e437]:
+                                        - treeitem "test" [expanded] [level=1] [ref=e438]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/test" [ref=e439] [cursor=pointer]:
+                                                - generic [ref=e440]:
+                                                    - generic [ref=e441]: 
+                                                    - generic [ref=e443]: test
+                                        - treeitem "test.js" [level=2] [ref=e444]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/test/test.js" [ref=e445] [cursor=pointer]: test.js
+                                        - treeitem "editor-undo-redo.text" [level=1] [ref=e449]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor-undo-redo.text" [ref=e450] [cursor=pointer]: editor-undo-redo.text
+                                        - treeitem "editor.js" [level=1] [ref=e454]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor.js" [ref=e455] [cursor=pointer]: editor.js
+                                        - treeitem "editor2.js" [level=1] [ref=e459]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor2.js" [ref=e460] [cursor=pointer]: editor2.js
+                                        - treeitem "editor3.js" [level=1] [ref=e464]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor3.js" [ref=e465] [cursor=pointer]: editor3.js
+                                - generic [ref=e475] [cursor=pointer]:
+                                    - generic [ref=e476]: 
+                                    - generic [ref=e477]: OutLine
+                        - text:       
+        - generic [ref=e143]:
+            - generic [ref=e144]:
+                - generic [ref=e147]:
+                    - button "MultiDiff" [ref=e148]
+                    - button "Test" [ref=e149]
+                - generic [ref=e152]:
+                    - generic [ref=e153] [cursor=pointer]: 
+                    - button "0" [ref=e154]
+                    - generic [ref=e155] [cursor=pointer]: 
+                    - button "0" [ref=e156]
+            - generic [ref=e157]:
+                - button "Ln1，Col1" [ref=e481]
+                - generic [ref=e483]:
+                    - button "Spaces:" [ref=e484]
+                    - button "2" [ref=e485]
+                - button "LF" [ref=e489]
+                - button "UTF8" [ref=e493]
+                - button "JavaScript" [ref=e497]
+                - generic [ref=e498]: 
+    - generic [ref=e502]:
+        - alert
+        - alert

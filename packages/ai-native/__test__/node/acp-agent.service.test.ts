@@ -2549,6 +2549,45 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect((service as any).sessions.size).toBe(0);
       expect((service as any).reservedThreads.has(thread)).toBe(false);
     });
+
+    it('显式配置列会话时应忽略不兼容的活跃线程并查询匹配配置', async () => {
+      const { service, mockFactory, thread: activeThread } = createServiceWithAutoEvents();
+
+      setTimeout(() => {
+        activeThread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'new-session-1',
+            update: { sessionUpdate: 'available_commands_update', availableCommands: [] },
+          },
+        });
+      }, 10);
+      await service.createSession(mockAgentProcessConfig);
+
+      const requestedConfig = {
+        ...mockAgentProcessConfig,
+        agentId: 'history-agent',
+        args: ['test/bdd/fixtures/acp-agent/mock-acp-agent.mjs', '--fixture=history'],
+      };
+      const requestedThread = createMockThread({
+        listSessions: jest.fn().mockResolvedValue({
+          sessions: [{ sessionId: 'history-session', cwd: requestedConfig.cwd, title: 'History Session' }],
+          nextCursor: 'history-cursor',
+        }),
+      });
+      mockFactory.mockReturnValueOnce(requestedThread);
+
+      const result = await service.listSessions({ cwd: requestedConfig.cwd }, requestedConfig);
+
+      expect(activeThread.listSessions).not.toHaveBeenCalled();
+      expect(requestedThread.initialize).toHaveBeenCalledWith(expect.objectContaining(requestedConfig));
+      expect(requestedThread.listSessions).toHaveBeenCalledWith({ cwd: requestedConfig.cwd });
+      expect(result).toEqual({
+        sessions: [{ sessionId: 'history-session', cwd: requestedConfig.cwd, title: 'History Session' }],
+        nextCursor: 'history-cursor',
+      });
+      expect((service as any).reservedThreads.has(requestedThread)).toBe(false);
+    });
   });
 
   // -----------------------------------------------------------------------

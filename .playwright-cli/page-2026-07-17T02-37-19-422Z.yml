@@ -1,0 +1,107 @@
+- generic [ref=e3]:
+    - generic [ref=e14]:
+        - generic [ref=e15]: File
+        - generic [ref=e16]: Edit
+        - generic [ref=e17]: Selection
+        - generic [ref=e18]: View
+        - generic [ref=e19]: Go
+        - generic [ref=e20]: Terminal
+        - generic [ref=e21]: Help
+    - generic [ref=e22]:
+        - listitem [ref=e24]:
+            - generic "AI Assistant" [ref=e26]: 
+        - generic [ref=e31]:
+            - complementary "Task List" [ref=e35]:
+                - separator "Resize Task List" [ref=e36]
+                - generic [ref=e37]:
+                    - heading "Task List" [level=2] [ref=e38]
+                    - button "Add Project" [ref=e39] [cursor=pointer]:
+                        - generic [ref=e40]: 
+                - generic [ref=e41]:
+                    - generic [ref=e42]: 
+                    - searchbox [ref=e43]
+                - generic [ref=e45]:
+                    - generic [ref=e46]:
+                        - button "Collapse test" [expanded] [ref=e47] [cursor=pointer]:
+                            - generic [ref=e48]: 
+                            - generic "/Users/lujunsheng/ant/github/opensumi/core/tools/workspace" [ref=e49]: test
+                            - generic [ref=e50]: '5'
+                        - button "New Task for test" [ref=e52] [cursor=pointer]:
+                            - generic [ref=e53]: 
+                        - button "Manage test" [ref=e54] [cursor=pointer]:
+                            - generic [ref=e55]: 
+                    - generic [ref=e56]:
+                        - button "1+ stopped" [ref=e57] [cursor=pointer]:
+                            - generic [ref=e58]: 1+
+                            - generic "stopped" [ref=e59]
+                        - button "Archive 1+":
+                            - generic: 
+                    - generic [ref=e60]:
+                        - button "你好 stopped" [ref=e61] [cursor=pointer]:
+                            - generic [ref=e62]: 你好
+                            - generic "stopped" [ref=e63]
+                        - button "Archive 你好":
+                            - generic: 
+                    - generic [ref=e64]:
+                        - button "hi stopped" [ref=e65] [cursor=pointer]:
+                            - generic [ref=e66]: hi
+                            - generic "stopped" [ref=e67]
+                        - button "Archive hi":
+                            - generic: 
+                    - generic [ref=e68]:
+                        - button "hi ready" [active] [ref=e69] [cursor=pointer]:
+                            - generic [ref=e70]: hi
+                            - generic "ready" [ref=e71]
+                        - button "Archive hi" [ref=e150] [cursor=pointer]:
+                            - generic [ref=e151]: 
+                    - generic [ref=e72]:
+                        - button "hi ready" [ref=e73] [cursor=pointer]:
+                            - generic [ref=e74]: hi
+                            - generic "ready" [ref=e75]
+                        - button "Archive hi":
+                            - generic: 
+                - button "Archived Tasks" [ref=e77] [cursor=pointer]:
+                    - generic [ref=e78]: 
+            - generic [ref=e81]:
+                - generic [ref=e82]:
+                    - generic "AI Assistant" [ref=e83]
+                    - generic [ref=e84]:
+                        - button "New Task" [ref=e86] [cursor=pointer]:
+                            - generic [ref=e87]: 
+                        - button "unfullscreen" [pressed] [ref=e90] [cursor=pointer]:
+                            - generic [ref=e91]: 
+                - generic [ref=e93]:
+                    - heading "AI Assistant" [level=2] [ref=e95]
+                    - generic [ref=e96]:
+                        - generic [ref=e97] [cursor=pointer]:
+                            - generic [ref=e98]: 
+                            - generic [ref=e99]: Explain my code
+                        - generic [ref=e100] [cursor=pointer]: Optimize my code
+                        - generic [ref=e102] [cursor=pointer]:
+                            - generic [ref=e103]: 
+                            - generic [ref=e104]: Generate unit tests
+                        - generic [ref=e105] [cursor=pointer]: Find and fix bugs
+                - generic [ref=e108]:
+                    - generic [ref=e109]: 
+                    - generic [ref=e113]:
+                        - generic [ref=e114]: Message @ to include context, / for command
+                        - generic [ref=e116]:
+                            - generic [ref=e117]:
+                                - generic [ref=e118]: /
+                                - generic [ref=e120]: '@ Add Context'
+                            - button "Send" [ref=e124] [cursor=pointer]:
+                                - generic [ref=e125]: 
+    - generic [ref=e126]:
+        - generic [ref=e127]:
+            - generic [ref=e130]:
+                - generic [ref=e131] [cursor=pointer]: 
+                - button "main*" [ref=e132]
+            - generic [ref=e135]:
+                - button "MultiDiff" [ref=e136]
+                - button "Test" [ref=e137]
+            - generic [ref=e140]:
+                - generic [ref=e141] [cursor=pointer]: 
+                - button "0" [ref=e142]
+                - generic [ref=e143] [cursor=pointer]: 
+                - button "0" [ref=e144]
+        - generic [ref=e145]: 

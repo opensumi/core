@@ -549,6 +549,41 @@ describe('AcpChatManagerService', () => {
     expect(localCreateSession).not.toHaveBeenCalled();
   });
 
+  it('后端就绪失败切换到本地提供方后，新建会话不应自动切回 ACP', async () => {
+    const service = createService();
+    const acpCreateSession = jest.fn().mockResolvedValue({
+      sessionId: 'acp:agent-session',
+      history: { additional: {}, messages: [] },
+      requests: [],
+    });
+    const localProvider = {
+      canHandle: (mode: string) => mode === 'local',
+      loadSessions: jest.fn().mockResolvedValue([]),
+    };
+    const acpProvider = {
+      canHandle: (mode: string) => mode === 'acp',
+      createSession: acpCreateSession,
+      loadSessions: jest.fn().mockResolvedValue([]),
+    };
+
+    Object.defineProperty(service, 'mainProvider', {
+      value: acpProvider,
+      writable: true,
+    });
+    Object.defineProperty(service, 'sessionProviderRegistry', {
+      value: {
+        getProvider: (mode: string) => (mode === 'local' ? localProvider : undefined),
+        getAllProviders: () => [localProvider, acpProvider],
+      },
+    });
+
+    service.fallbackToLocal();
+    const session = await service.startSession();
+
+    expect(session.sessionId).not.toMatch(/^acp:/);
+    expect(acpCreateSession).not.toHaveBeenCalled();
+  });
+
   it('uses the first agent message timestamp as loaded ACP session creation time', () => {
     const provider = createSessionProvider();
 

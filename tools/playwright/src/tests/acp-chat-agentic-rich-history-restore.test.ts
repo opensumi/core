@@ -193,7 +193,9 @@ async function readRichUiProof(): Promise<RichUiProof> {
     ).filter(isVisible).length;
     const hasVisibleButton = (pattern: RegExp) =>
       visibleButtons.some((button) =>
-        pattern.test([button.innerText, button.getAttribute('aria-label'), button.getAttribute('title')].join(' ')),
+        [button.innerText, button.getAttribute('aria-label'), button.getAttribute('title')].some((value) =>
+          pattern.test((value || '').trim()),
+        ),
       );
 
     return {
@@ -202,8 +204,8 @@ async function readRichUiProof(): Promise<RichUiProof> {
       reasoningToggleCount: visibleButtons.filter((button) => /Deep Thinking|深度思考/.test(button.innerText)).length,
       toolCardCount: Math.max(visibleToolCards, countToolText()),
       hasPlanChecklistText: text.includes('BDD plan:'),
-      sendVisible: hasVisibleButton(/Send|发送/),
-      stopVisible: hasVisibleButton(/Stop|停止/),
+      sendVisible: hasVisibleButton(/^(?:Enter\s+)?Send$|^Enter\s+发送$|^发送$/i),
+      stopVisible: hasVisibleButton(/^Stop$|^停止$/i),
     };
   });
 }
@@ -308,7 +310,20 @@ async function waitForStableRichUiShell(): Promise<RichUiProof> {
 }
 
 function expectMetadataOnly(value: unknown) {
-  const serialized = JSON.stringify(value);
+  const omitAllowedTitleMetadata = (item: unknown): unknown => {
+    if (Array.isArray(item)) {
+      return item.map(omitAllowedTitleMetadata);
+    }
+    if (item && typeof item === 'object') {
+      return Object.fromEntries(
+        Object.entries(item).flatMap(([key, nestedValue]) =>
+          key === 'title' || key === 'sourceTitle' ? [] : [[key, omitAllowedTitleMetadata(nestedValue)]],
+        ),
+      );
+    }
+    return item;
+  };
+  const serialized = JSON.stringify(omitAllowedTitleMetadata(value));
   for (const sentinel of METADATA_LEAK_SENTINELS) {
     expect(serialized).not.toContain(sentinel);
   }

@@ -380,6 +380,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
 
     const warmingThread = await this.reserveWarmingThread(config);
+
     if (warmingThread) {
       this.bindSession(sessionId, warmingThread);
       return warmingThread;
@@ -859,6 +860,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
 
     const warmingThread = await this.reserveWarmingThread(config);
+
     if (warmingThread) {
       return warmingThread;
     }
@@ -1216,6 +1218,22 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
 
     const warmingThread = await this.reserveWarmingThread(config);
+
+    // Another request for the same session may have crossed the await above
+    // and started its load first. Join that request instead of creating a
+    // second thread and overwriting its retained-reference count.
+    const concurrentPendingLoad = this.pendingSessionLoads.get(sessionId);
+    if (concurrentPendingLoad) {
+      if (warmingThread) {
+        this.reservedThreads.delete(warmingThread);
+      }
+      concurrentPendingLoad.refCount += 1;
+      this.logger.log(
+        `[AcpAgentService] loadSession() — joining concurrent load after warmup wait, sessionId=${sessionId}, refs=${concurrentPendingLoad.refCount}`,
+      );
+      return concurrentPendingLoad.promise;
+    }
+
     if (warmingThread) {
       this.logger.log(
         `[AcpAgentService] loadSession() — waiting for prewarmed thread ${warmingThread.threadId}, cwd=${warmingThread.cwd}`,
@@ -1678,22 +1696,23 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     let activeThreadCount = 0;
 
     for (const [sessionId, thread] of this.sessions) {
-      if (thread.getStatus() !== 'disconnected') {
-        activeThreadCount++;
-        try {
-          const result = await thread.listSessions(params);
-          if (result?.sessions) {
-            for (const info of result.sessions) {
-              sessionsMap.set(info.sessionId, info);
-            }
+      if (thread.getStatus() === 'disconnected' || (config && !this.canReuseThreadForConfig(thread, config))) {
+        continue;
+      }
+      activeThreadCount++;
+      try {
+        const result = await thread.listSessions(params);
+        if (result?.sessions) {
+          for (const info of result.sessions) {
+            sessionsMap.set(info.sessionId, info);
           }
-          // nextCursor/_meta are thread-specific; only meaningful for single-thread results
-          if (result?.nextCursor) {
-            lastNextCursor = result.nextCursor;
-          }
-        } catch (error) {
-          this.logger?.warn(`[AcpAgentService] listSessions error for thread ${sessionId}, cwd=${thread.cwd}:`, error);
         }
+        // nextCursor/_meta are thread-specific; only meaningful for single-thread results
+        if (result?.nextCursor) {
+          lastNextCursor = result.nextCursor;
+        }
+      } catch (error) {
+        this.logger?.warn(`[AcpAgentService] listSessions error for thread ${sessionId}, cwd=${thread.cwd}:`, error);
       }
     }
 

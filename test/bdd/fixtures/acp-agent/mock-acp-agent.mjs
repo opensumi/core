@@ -251,6 +251,7 @@ function createAgent(conn) {
   const sessions = new Map();
   const pendingPrompts = new Map();
   let nextSessionNumber = 1;
+  let historySeedCwd;
 
   if (options.fixture === 'history' || options.fixture === 'load-failure') {
     const seeds = [
@@ -629,6 +630,14 @@ test/test.js
     },
 
     async listSessions(params = {}) {
+      if ((options.fixture === 'history' || options.fixture === 'load-failure') && params.cwd && !historySeedCwd) {
+        historySeedCwd = params.cwd;
+        for (const session of sessions.values()) {
+          if (session.historySeed === 'alpha' || session.historySeed === 'beta') {
+            session.cwd = historySeedCwd;
+          }
+        }
+      }
       const allSessions = [...sessions.values()]
         .filter((session) => !params.cwd || session.cwd === params.cwd)
         .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));

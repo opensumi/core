@@ -1,0 +1,139 @@
+- generic [active] [ref=f3e1]:
+    - generic [ref=f3e4]:
+        - generic [ref=f3e8]:
+            - generic [ref=f3e9]:
+                - generic [ref=f3e10] [cursor=pointer]: 
+                - generic [ref=f3e13]: 
+            - generic [ref=f3e20]:
+                - generic [ref=f3e21] [cursor=pointer]: 
+                - button "Open Agent layout" [ref=f3e25] [cursor=pointer]
+        - generic [ref=f3e27]:
+            - generic [ref=f3e29]:
+                - generic [ref=f3e32]:
+                    - generic [ref=f3e33]:
+                        - generic [ref=f3e35]:
+                            - listitem [ref=f3e36]:
+                                - generic "Explorer (⇧+⌘+E)" [ref=f3e38]: 
+                            - listitem [ref=f3e39]:
+                                - generic "(⇧+⌘+F)" [ref=f3e41]: 
+                            - listitem [ref=f3e42]:
+                                - generic "Source Control (⇧+⌘+G)" [ref=f3e44]: 
+                            - listitem [ref=f3e45]:
+                                - generic "Debug (⇧+⌘+D)" [ref=f3e47]: 
+                            - listitem [ref=f3e48]:
+                                - generic "Extensions (⇧+⌘+X)" [ref=f3e50]: 
+                            - listitem [ref=f3e51]:
+                                - generic "undefined (⇧+⌘+K)" [ref=f3e53]
+                        - button "Open Preference Panel" [ref=f3e55] [cursor=pointer]:
+                            - generic [ref=f3e56]: 
+                    - generic [ref=f3e57]:
+                        - generic [ref=f3e59]:
+                            - heading "Explorer" [level=1] [ref=f3e62]
+                            - generic [ref=f3e64]:
+                                - generic [ref=f3e66]:
+                                    - generic [ref=f3e68] [cursor=pointer]:
+                                        - generic [ref=f3e69]: 
+                                        - generic [ref=f3e70]: OPENED EDITORS
+                                    - text: 
+                                - generic [ref=f3e73]:
+                                    - generic [ref=f3e74] [cursor=pointer]:
+                                        - generic [ref=f3e75]:
+                                            - generic [ref=f3e76]: 
+                                            - generic [ref=f3e77]: default
+                                        - text:     
+                                    - generic [ref=f3e84]:
+                                        - treeitem "test" [expanded] [level=1] [ref=f3e85]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/test" [ref=f3e86] [cursor=pointer]:
+                                                - generic [ref=f3e87]:
+                                                    - generic [ref=f3e88]: 
+                                                    - generic [ref=f3e90]: test
+                                        - treeitem "test.js" [level=2] [ref=f3e91]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/test/test.js" [ref=f3e92] [cursor=pointer]: test.js
+                                        - treeitem "editor-undo-redo.text" [level=1] [ref=f3e96]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor-undo-redo.text" [ref=f3e97] [cursor=pointer]: editor-undo-redo.text
+                                        - treeitem "editor.js" [level=1] [ref=f3e101]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor.js" [ref=f3e102] [cursor=pointer]: editor.js
+                                        - treeitem "editor2.js" [level=1] [ref=f3e106]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor2.js" [ref=f3e107] [cursor=pointer]: editor2.js
+                                        - treeitem "editor3.js" [level=1] [ref=f3e111]:
+                                            - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor3.js" [ref=f3e112] [cursor=pointer]: editor3.js
+                                - generic [ref=f3e120] [cursor=pointer]:
+                                    - generic [ref=f3e121]: 
+                                    - generic [ref=f3e122]: OutLine
+                        - text:         
+                - generic [ref=f3e125]:
+                    - generic [ref=f3e132]:
+                        - generic [ref=f3e134]:
+                            - tablist [ref=f3e138]:
+                                - generic "~/ant/github/opensumi/core/tools/playwright/src/tests/workspaces/default/editor.js" [ref=f3e388] [cursor=pointer]:
+                                    - generic [ref=f3e389]:
+                                        - tab "editor.js" [selected] [ref=f3e391]
+                                        - button "Unpin editor.js" [ref=f3e393]
+                            - generic [ref=f3e151]:
+                                - generic "Split To Right (⌘\\)" [ref=f3e152] [cursor=pointer]: 
+                                - generic [ref=f3e153] [cursor=pointer]: 
+                        - generic [ref=f3e154]:
+                            - generic [ref=f3e155]: editor.js
+                            - code [ref=f3e162]:
+                                - generic [ref=f3e163]:
+                                    - textbox "The editor is not accessible at this time."
+                                    - textbox [ref=f3e164]
+                                    - generic [ref=f3e165]: '1'
+                    - generic [ref=f3e183]:
+                        - generic [ref=f3e186]:
+                            - listitem [ref=f3e187]:
+                                - generic [ref=f3e188]: PROBLEMS
+                            - listitem [ref=f3e190]:
+                                - generic [ref=f3e191]: OUTPUT
+                            - listitem [ref=f3e193]:
+                                - generic [ref=f3e194]: DEBUG CONSOLE
+                            - listitem [ref=f3e196]:
+                                - generic [ref=f3e197]: TERMINAL
+                        - generic [ref=f3e199]:
+                            - text:            
+                            - generic [ref=f3e201]:
+                                - generic [ref=f3e202]:
+                                    - heading "TERMINAL" [level=1] [ref=f3e203]
+                                    - generic [ref=f3e211]:
+                                        - generic [ref=f3e212] [cursor=pointer]:
+                                            - generic "fish" [ref=f3e213]: 
+                                            - generic [ref=f3e216]: 
+                                        - generic [ref=f3e218]:
+                                            - 'generic "Create Terminal(⌃⇧`)" [ref=f3e219] [cursor=pointer]': 
+                                            - generic "Create terminal by type" [ref=f3e220] [cursor=pointer]: 
+                                    - generic [ref=f3e221]:
+                                        - generic [ref=f3e222]:
+                                            - generic "Search (⌘F)" [ref=f3e223] [cursor=pointer]: 
+                                            - generic "Clear (⌘K)" [ref=f3e224] [cursor=pointer]: 
+                                            - generic "Split Terminal (⌘\\)" [ref=f3e225] [cursor=pointer]: 
+                                            - generic "Kill terminal" [ref=f3e226] [cursor=pointer]: 
+                                        - generic [ref=f3e227]:
+                                            - generic [ref=f3e228] [cursor=pointer]: 
+                                            - generic "Maximize Tab Panel (⇧⌘J)" [ref=f3e229] [cursor=pointer]: 
+                                            - generic "Toggle Panel (⌘J)" [ref=f3e230] [cursor=pointer]: 
+                                - textbox "Terminal input" [ref=f3e248]
+                            - text:   
+                - generic [ref=f3e251]: 
+            - text:        message claude-agent-acp @to include context, / for command @ 
+        - generic [ref=f3e256]:
+            - generic [ref=f3e257]:
+                - generic [ref=f3e260]:
+                    - button "MultiDiff" [ref=f3e261]
+                    - button "Test" [ref=f3e262]
+                - generic [ref=f3e265]:
+                    - generic [ref=f3e266] [cursor=pointer]: 
+                    - button "0" [ref=f3e267]
+                    - generic [ref=f3e268] [cursor=pointer]: 
+                    - button "0" [ref=f3e269]
+            - generic [ref=f3e270]:
+                - button "Ln1，Col1" [ref=f3e274]
+                - generic [ref=f3e276]:
+                    - button "Spaces:" [ref=f3e277]
+                    - button "2" [ref=f3e278]
+                - button "LF" [ref=f3e282]
+                - button "UTF8" [ref=f3e286]
+                - button "JavaScript" [ref=f3e290]
+                - generic [ref=f3e291]: 
+    - generic [ref=f3e295]:
+        - alert
+        - alert

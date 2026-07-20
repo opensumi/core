@@ -1,0 +1,115 @@
+- generic [ref=e4]:
+    - generic [ref=e9]:
+        - button "Open IDE layout" [ref=e13] [cursor=pointer]
+        - generic [ref=e14]: 
+        - generic [ref=e19] [cursor=pointer]: 
+    - generic [ref=e25]:
+        - listitem [ref=e27]:
+            - generic "AI Assistant" [ref=e29]: 
+        - generic [ref=e34]:
+            - complementary "Agent Tasks" [ref=e38]:
+                - separator "Resize Agent Tasks" [ref=e39]
+                - generic [ref=e40]:
+                    - heading "Agent Tasks" [level=2] [ref=e41]
+                    - button "Add Project" [ref=e42] [cursor=pointer]:
+                        - generic [ref=e43]: 
+                - generic [ref=e44]:
+                    - generic [ref=e45]: 
+                    - searchbox [ref=e46]
+                - generic [ref=e48]:
+                    - generic [ref=e49]:
+                        - button "Collapse test" [expanded] [ref=e50] [cursor=pointer]:
+                            - generic [ref=e51]: 
+                            - generic "/Users/lujunsheng/ant/github/opensumi/core/tools/workspace" [ref=e52]: test
+                            - generic [ref=e53]: '7'
+                        - button "New Task for test" [ref=e55] [cursor=pointer]:
+                            - generic [ref=e56]: 
+                        - button "Manage test" [ref=e57] [cursor=pointer]:
+                            - generic [ref=e58]: 
+                    - generic [ref=e59]:
+                        - 'button "hia1. Agent: Qwen CLI Agent (qwen)." [ref=e61] [cursor=pointer]':
+                            - generic [ref=e62]: hia1
+                        - button "Archive hia1":
+                            - generic: 
+                    - generic [ref=e64]:
+                        - 'button "hi. Agent: Default_Chat_Agent. Status: Agent unavailable." [disabled] [ref=e66]':
+                            - generic [ref=e67]: hi
+                            - generic [ref=e68]: 
+                        - button "Archive hi":
+                            - generic: 
+                    - generic [ref=e71]:
+                        - 'button "1+. Agent: OpenCode." [ref=e73] [cursor=pointer]':
+                            - generic [ref=e74]: 1+
+                        - button "Archive 1+":
+                            - generic: 
+                    - generic [ref=e76]:
+                        - 'button "你好. Agent: OpenCode. Status: Last known status: Stopped." [ref=e78] [cursor=pointer]':
+                            - generic [ref=e79]: 你好
+                            - generic [ref=e80]: 
+                        - button "Archive 你好" [ref=e182] [cursor=pointer]:
+                            - generic [ref=e183]: 
+                    - generic [ref=e83]:
+                        - 'button "hi. Agent: OpenCode." [ref=e85] [cursor=pointer]':
+                            - generic [ref=e86]: hi
+                        - button "Archive hi":
+                            - generic: 
+                    - generic [ref=e88]:
+                        - 'button "hi. Agent: Default_Chat_Agent. Status: Agent unavailable." [disabled] [ref=e90]':
+                            - generic [ref=e91]: hi
+                            - generic [ref=e92]: 
+                        - button "Archive hi":
+                            - generic: 
+                    - generic [ref=e95]:
+                        - 'button "hi. Agent: Default_Chat_Agent. Status: Agent unavailable." [disabled] [ref=e97]':
+                            - generic [ref=e98]: hi
+                            - generic [ref=e99]: 
+                        - button "Archive hi":
+                            - generic: 
+                - button "Archived Tasks" [ref=e103] [cursor=pointer]:
+                    - generic [ref=e104]: 
+            - generic [ref=e107]:
+                - generic [ref=e108]:
+                    - generic "AI Assistant" [ref=e109]
+                    - generic [ref=e110]:
+                        - generic [ref=e111]:
+                            - button "New Task with Claude Code ACP Agent (⌥⌘N)" [ref=e112] [cursor=pointer]:
+                                - generic [ref=e113]: 
+                            - button "Choose Agent" [ref=e114] [cursor=pointer]:
+                                - generic [ref=e115]: 
+                        - button "Restore editor and Explorer" [pressed] [ref=e118] [cursor=pointer]:
+                            - generic [ref=e119]: 
+                - generic [ref=e123]:
+                    - heading "AI Assistant" [level=2] [ref=e125]
+                    - generic [ref=e126]:
+                        - generic [ref=e127] [cursor=pointer]:
+                            - generic [ref=e128]: 
+                            - generic [ref=e129]: Explain my code
+                        - generic [ref=e130] [cursor=pointer]: Optimize my code
+                        - generic [ref=e132] [cursor=pointer]:
+                            - generic [ref=e133]: 
+                            - generic [ref=e134]: Generate unit tests
+                        - generic [ref=e135] [cursor=pointer]: Find and fix bugs
+                - generic [ref=e138]:
+                    - generic [ref=e139]: 
+                    - generic [ref=e143]:
+                        - textbox "Agentic chat input" [ref=e145]: Message @ to include context, / for command
+                        - generic [ref=e146]:
+                            - generic [ref=e147]:
+                                - generic [ref=e148]: /
+                                - generic [ref=e150]: '@ Add Context'
+                            - button "Send" [ref=e154] [cursor=pointer]:
+                                - generic [ref=e155]: 
+    - generic [ref=e158]:
+        - generic [ref=e159]:
+            - generic [ref=e162]:
+                - generic [ref=e163] [cursor=pointer]: 
+                - button "main*" [ref=e164]
+            - generic [ref=e167]:
+                - button "MultiDiff" [ref=e168]
+                - button "Test" [ref=e169]
+            - generic [ref=e172]:
+                - generic [ref=e173] [cursor=pointer]: 
+                - button "0" [ref=e174]
+                - generic [ref=e175] [cursor=pointer]: 
+                - button "0" [ref=e176]
+        - generic [ref=e177]: 

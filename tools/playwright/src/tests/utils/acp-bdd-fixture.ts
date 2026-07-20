@@ -42,6 +42,7 @@ export interface AcpBddFixtureOptions {
   ensureAgenticLayout?: boolean;
   forceAcpBackendReadyFailure?: boolean;
   waitForModelContext?: boolean;
+  writePanelLayoutPreference?: boolean;
   viewport?: {
     width: number;
     height: number;
@@ -375,9 +376,12 @@ export function aiNativeWorkbenchUrl(
   workspaceDir: string,
   profile: WebMcpProfile = 'default',
   panelLayout: AiNativePanelLayout = 'agentic',
-  options: { forceAcpBackendReadyFailure?: boolean } = {},
+  options: { forceAcpBackendReadyFailure?: boolean; userPreferenceDirName?: string } = {},
 ): string {
   const params = new URLSearchParams({ workspaceDir, aiNative: 'true', aiPanelLayout: panelLayout });
+  if (options.userPreferenceDirName) {
+    params.set('userPreferenceDirName', options.userPreferenceDirName);
+  }
   if (profile !== 'default') {
     params.set('webMcpProfile', profile);
   }
@@ -411,11 +415,14 @@ export async function loadAcpBddFixtureWorkbench(
     await workspace.initWorksapce();
     const workspaceDir = workspace.workspace.codeUri.fsPath;
     await writeMockAcpAgentSettings(workspaceDir, runtimeOptions);
-    await writeAiNativePanelLayoutSettings(workspaceDir, panelLayout);
+    if (runtimeOptions.writePanelLayoutPreference !== false) {
+      await writeAiNativePanelLayoutSettings(workspaceDir, panelLayout);
+    }
 
     app = new OpenSumiApp(page);
     const url = aiNativeWorkbenchUrl(workspaceDir, profile, panelLayout, {
       forceAcpBackendReadyFailure: runtimeOptions.forceAcpBackendReadyFailure,
+      userPreferenceDirName: workspace.userPreferenceDirName,
     });
     await page.goto(url);
     await waitForWorkbenchReady(page);

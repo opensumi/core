@@ -34,7 +34,7 @@ const ACTIVE_TASK_SESSION_STORAGE_KEY = 'agentic.active-task-session.v1';
 
 interface SessionState {
   active: boolean;
-  session: { sessionId: string; title: string } | null;
+  session: { sessionId: string; title: string; threadStatus?: string } | null;
 }
 
 let currentWorkspace: OpenSumiWorkspace;
@@ -198,7 +198,7 @@ function getTaskDraftComposer() {
 }
 
 async function submitTaskDraft(title: string, agentLabel = 'Agent A'): Promise<string> {
-  await page.waitForTimeout(250);
+  await expect.poll(async () => (await getSessionState()).active, { timeout: 30_000 }).toBe(false);
   const draftState = await getSessionState();
   if (draftState.active) {
     throw new Error(`New Task did not enter a draft: ${JSON.stringify({ agentLabel, draftState })}`);
@@ -217,6 +217,9 @@ async function submitTaskDraft(title: string, agentLabel = 'Agent A'): Promise<s
   const taskRow = page.getByTestId(`agentic-task-row-${sessionId}`);
   await expect(taskRow).toBeVisible({ timeout: 30_000 });
   await expect(taskRow).toHaveAttribute('aria-current', 'true');
+  await expect
+    .poll(async () => (await getSessionState()).session?.threadStatus, { timeout: 30_000 })
+    .toBe('awaiting_prompt');
   return sessionId;
 }
 
@@ -263,7 +266,7 @@ async function expectNoDirtyEditorSwitchDialog(): Promise<void> {
   await expect(dialog).toHaveCount(0);
 }
 
-test.describe('ACP Chat Agentic Task Workbench', () => {
+test.describe('ACP Chat Agentic 任务工作台', () => {
   test.setTimeout(180_000);
 
   test.beforeAll(async ({ browser }) => {
@@ -331,7 +334,7 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
     );
   });
 
-  test('runs the contextual Task Workbench BDD contract with safe restore', async ({ browser: _browser }, testInfo) => {
+  test('上下文任务工作台应安全创建、切换并恢复任务', async ({ browser: _browser }, testInfo) => {
     void _browser;
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-cross-project-session-activation', {
       sourceScenario: 'test/bdd/acp-chat-agentic-cross-project-session-activation.scenario.md',
@@ -393,7 +396,7 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
     await expect(currentNewerRow).toHaveCSS('height', '22px');
     await expect(currentNewerTitle).toHaveCSS('font-size', '13px');
     await expectTruncatedText(currentNewerTitle);
-    await expect(currentNewerStatus).toHaveCSS('font-size', '12px');
+    await expect(currentNewerStatus).toHaveCount(0);
     await expect(archivedToggle).toHaveCSS('height', '22px');
     await Promise.all(
       [addProjectButton, currentProjectLaunchButton, currentProjectManageButton, archiveCurrentNewer].map(

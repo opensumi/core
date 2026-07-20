@@ -38,7 +38,7 @@ function chatInput() {
 }
 
 function chatButton(name: string) {
-  return chatSlot().getByRole('button', { name });
+  return chatSlot().getByRole('button', { name, exact: true });
 }
 
 async function sendPrompt(prompt: string) {

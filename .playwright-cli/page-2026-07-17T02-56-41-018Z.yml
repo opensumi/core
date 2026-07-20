@@ -1,0 +1,293 @@
+- generic [active] [ref=f7e1]:
+    - generic [ref=f7e3]:
+        - generic [ref=f7e8]:
+            - generic [ref=f7e9]: File
+            - generic [ref=f7e10]: Edit
+            - generic [ref=f7e11]: Selection
+            - generic [ref=f7e12]: View
+            - generic [ref=f7e13]: Go
+            - generic [ref=f7e14]: Terminal
+            - generic [ref=f7e15]: Help
+        - generic [ref=f7e17]:
+            - generic [ref=f7e20]:
+                - listitem [ref=f7e786]:
+                    - generic "AI Assistant" [ref=f7e788]: 
+                - generic [ref=f7e793]:
+                    - complementary "Task List" [ref=f7e797]:
+                        - separator "Resize Task List" [ref=f7e798]
+                        - generic [ref=f7e799]:
+                            - heading "Task List" [level=2] [ref=f7e800]
+                            - button "Add Project" [ref=f7e801] [cursor=pointer]:
+                                - generic [ref=f7e802]: 
+                        - generic [ref=f7e803]:
+                            - generic [ref=f7e804]: 
+                            - searchbox [ref=f7e805]
+                        - generic [ref=f7e807]:
+                            - generic [ref=f7e808]:
+                                - button "Collapse test" [expanded] [ref=f7e809] [cursor=pointer]:
+                                    - generic [ref=f7e810]: 
+                                    - generic "/Users/lujunsheng/ant/github/opensumi/core/tools/workspace" [ref=f7e811]: test
+                                    - generic [ref=f7e812]: '5'
+                                - button "New Task for test" [ref=f7e814] [cursor=pointer]:
+                                    - generic [ref=f7e815]: 
+                                - button "Manage test" [ref=f7e816] [cursor=pointer]:
+                                    - generic [ref=f7e817]: 
+                            - generic [ref=f7e818]:
+                                - button "1+ ready" [ref=f7e819] [cursor=pointer]:
+                                    - generic [ref=f7e820]: 1+
+                                    - generic "ready" [ref=f7e821]
+                                - button "Archive 1+":
+                                    - generic: 
+                            - generic [ref=f7e822]:
+                                - button "你好 ready" [ref=f7e823] [cursor=pointer]:
+                                    - generic [ref=f7e824]: 你好
+                                    - generic "ready" [ref=f7e825]
+                                - button "Archive 你好":
+                                    - generic: 
+                            - generic [ref=f7e826]:
+                                - button "hi ready" [ref=f7e827] [cursor=pointer]:
+                                    - generic [ref=f7e828]: hi
+                                    - generic "ready" [ref=f7e829]
+                                - button "Archive hi":
+                                    - generic: 
+                            - generic [ref=f7e830]:
+                                - button "hi ready" [ref=f7e831] [cursor=pointer]:
+                                    - generic [ref=f7e832]: hi
+                                    - generic "ready" [ref=f7e833]
+                                - button "Archive hi":
+                                    - generic: 
+                            - generic [ref=f7e834]:
+                                - button "hi ready" [ref=f7e835] [cursor=pointer]:
+                                    - generic [ref=f7e836]: hi
+                                    - generic "ready" [ref=f7e837]
+                                - button "Archive hi":
+                                    - generic: 
+                        - button "Archived Tasks" [ref=f7e839] [cursor=pointer]:
+                            - generic [ref=f7e840]: 
+                    - generic [ref=f7e843]:
+                        - generic [ref=f7e844]:
+                            - generic "1+" [ref=f7e845]
+                            - generic [ref=f7e846]:
+                                - button "New Task" [ref=f7e848] [cursor=pointer]:
+                                    - generic [ref=f7e849]: 
+                                - button "fullescreen" [ref=f7e852] [cursor=pointer]:
+                                    - generic [ref=f7e853]: 
+                        - generic [ref=f7e856]:
+                            - generic [ref=f7e861]:
+                                - generic [ref=f7e862]: Hello, I am your dedicated AI assistant, here to answer questions about code and help you think. You can ask me some questions about code.
+                                - generic [ref=f7e866]: Generate a Java Quicksort Algorithm
+                            - generic [ref=f7e868]: <opensumi_mcp_usage_hint priority="low"> Use the opensumi-ide MCP catalog tools to discover and enable IDE capability groups before invoking non-default OpenSumi tools. </opensumi_mcp_usage_hint> 1+
+                            - generic [ref=f7e877]:
+                                - generic [ref=f7e878]: 'The user is asking a simple math question: 1+1. This is just basic arithmetic. 2'
+                                - generic [ref=f7e883]:
+                                    - button "Thumbs up" [ref=f7e885] [cursor=pointer]:
+                                        - generic [ref=f7e886]: 
+                                    - button "Thumbs down" [ref=f7e888] [cursor=pointer]:
+                                        - generic [ref=f7e889]: 
+                        - generic [ref=f7e891]:
+                            - generic [ref=f7e892]: 
+                            - generic [ref=f7e896]:
+                                - generic [ref=f7e897]: Message @ to include context, / for command
+                                - generic [ref=f7e899]:
+                                    - generic [ref=f7e900]:
+                                        - generic [ref=f7e901]: /
+                                        - generic [ref=f7e903]: '@ Add Context'
+                                    - generic [ref=f7e905]:
+                                        - generic [ref=f7e906]:
+                                            - combobox [ref=f7e908]:
+                                                - generic [ref=f7e909] [cursor=pointer]:
+                                                    - generic [ref=f7e910]: theta/MiniMax-M2.7
+                                                    - generic [ref=f7e913]: 
+                                            - combobox [ref=f7e915]:
+                                                - generic [ref=f7e916] [cursor=pointer]:
+                                                    - generic [ref=f7e917]: build
+                                                    - generic [ref=f7e920]: 
+                                        - button "Send" [ref=f7e922] [cursor=pointer]:
+                                            - generic [ref=f7e923]: 
+            - generic [ref=f7e926]:
+                - generic [ref=f7e928]:
+                    - generic [ref=f7e357]:
+                        - generic [ref=f7e359]:
+                            - tablist [ref=f7e363]:
+                                - generic "~/ant/github/opensumi/core/tools/workspace/.sumi/settings.json" [ref=f7e365] [cursor=pointer]:
+                                    - generic [ref=f7e366]:
+                                        - tab "settings.json" [selected] [ref=f7e368]
+                                        - button "Unpin settings.json" [ref=f7e370]
+                            - generic [ref=f7e374]:
+                                - generic "Settings (⌘,)" [ref=f7e375] [cursor=pointer]: 
+                                - generic "Split To Right (⌘\\)" [ref=f7e376] [cursor=pointer]: 
+                                - generic [ref=f7e377] [cursor=pointer]: 
+                        - generic [ref=f7e378]:
+                            - generic [ref=f7e379]:
+                                - generic [ref=f7e380] [cursor=pointer]: .sumi
+                                - generic [ref=f7e383] [cursor=pointer]: 
+                                - generic [ref=f7e384] [cursor=pointer]: settings.json
+                            - code [ref=f7e390]:
+                                - generic [ref=f7e391]:
+                                    - textbox "The editor is not accessible at this time."
+                                    - textbox [ref=f7e392]
+                                    - generic [ref=f7e393]: '1'
+                    - generic [ref=f7e937]:
+                        - generic [ref=f7e940]:
+                            - listitem [ref=f7e941]:
+                                - generic [ref=f7e942]: PROBLEMS
+                            - listitem [ref=f7e944]:
+                                - generic [ref=f7e945]: OUTPUT
+                            - listitem [ref=f7e947]:
+                                - generic [ref=f7e948]: DEBUG CONSOLE
+                            - listitem [ref=f7e950]:
+                                - generic [ref=f7e951]: TERMINAL
+                        - generic [ref=f7e953]:
+                            - text:            
+                            - generic [ref=f7e956]:
+                                - heading "TERMINAL" [level=1] [ref=f7e957]
+                                - generic [ref=f7e967]:
+                                    - 'generic "Create Terminal(⌃⇧`)" [ref=f7e968] [cursor=pointer]': 
+                                    - generic "Create terminal by type" [ref=f7e969] [cursor=pointer]: 
+                                - generic [ref=f7e970]:
+                                    - generic [ref=f7e971]:
+                                        - generic "Search (⌘F)" [ref=f7e972] [cursor=pointer]: 
+                                        - generic "Clear (⌘K)" [ref=f7e973] [cursor=pointer]: 
+                                        - generic "Split Terminal (⌘\\)" [ref=f7e974] [cursor=pointer]: 
+                                        - generic "Kill terminal" [ref=f7e975] [cursor=pointer]: 
+                                    - generic [ref=f7e976]:
+                                        - generic [ref=f7e977] [cursor=pointer]: 
+                                        - generic "Maximize Tab Panel (⇧⌘J)" [ref=f7e978] [cursor=pointer]: 
+                                        - generic "Toggle Panel (⌘J)" [ref=f7e979] [cursor=pointer]: 
+                            - text:   
+                - generic [ref=f7e989]:
+                    - generic [ref=f7e991]:
+                        - generic [ref=f7e993]:
+                            - listitem [ref=f7e994]:
+                                - generic "Explorer (⇧+⌘+E)" [ref=f7e996] [cursor=pointer]: 
+                            - listitem [ref=f7e997]:
+                                - generic "Source Control (⇧+⌘+G)" [ref=f7e999]: 
+                        - button "Open Preference Panel" [ref=f7e1001] [cursor=pointer]:
+                            - generic [ref=f7e1002]: 
+                    - generic [ref=f7e1003]:
+                        - generic [ref=f7e1005]:
+                            - heading "Explorer" [level=1] [ref=f7e1008]
+                            - generic [ref=f7e1010]:
+                                - generic [ref=f7e1012]:
+                                    - generic [ref=f7e1014] [cursor=pointer]:
+                                        - generic [ref=f7e1015]: 
+                                        - generic [ref=f7e1016]: OPENED EDITORS
+                                    - text: 
+                                - generic [ref=f7e1019]:
+                                    - generic [ref=f7e1020] [cursor=pointer]:
+                                        - generic [ref=f7e1021]:
+                                            - generic [ref=f7e1022]: 
+                                            - generic [ref=f7e1023]: workspace
+                                        - text:     
+                                    - generic [ref=f7e1030]:
+                                        - treeitem ".claude" [level=1] [ref=f7e1031]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/.claude" [ref=f7e1032] [cursor=pointer]:
+                                                - generic [ref=f7e1033]:
+                                                    - generic [ref=f7e1034]: 
+                                                    - generic [ref=f7e1036]: .claude
+                                        - treeitem ".sumi" [expanded] [level=1] [ref=f7e1037]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/.sumi • Contains emphasized items" [ref=f7e1038] [cursor=pointer]:
+                                                - generic [ref=f7e1039]:
+                                                    - generic [ref=f7e1040]: 
+                                                    - generic [ref=f7e1042]: .sumi
+                                                    - generic [ref=f7e1043]: •
+                                        - treeitem "rules" [level=2] [ref=f7e1045]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/.sumi/rules • Contains emphasized items" [ref=f7e1046] [cursor=pointer]:
+                                                - generic [ref=f7e1047]:
+                                                    - generic [ref=f7e1048]: 
+                                                    - generic [ref=f7e1050]: rules
+                                                    - generic [ref=f7e1051]: •
+                                        - treeitem "launch.json" [level=2] [ref=f7e1053]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/.sumi/launch.json • Untracked" [ref=f7e1054] [cursor=pointer]:
+                                                - generic [ref=f7e1055]:
+                                                    - generic [ref=f7e1057]: launch.json
+                                                    - generic [ref=f7e1058]: U
+                                        - treeitem "mcp.json" [level=2] [ref=f7e1060]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/.sumi/mcp.json • Untracked" [ref=f7e1061] [cursor=pointer]:
+                                                - generic [ref=f7e1062]:
+                                                    - generic [ref=f7e1064]: mcp.json
+                                                    - generic [ref=f7e1065]: U
+                                        - treeitem "settings.json" [level=2] [ref=f7e1067]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/.sumi/settings.json • Untracked" [ref=f7e1068] [cursor=pointer]:
+                                                - generic [ref=f7e1069]:
+                                                    - generic [ref=f7e1071]: settings.json
+                                                    - generic [ref=f7e1072]: U
+                                        - treeitem "tasks.json" [level=2] [ref=f7e1074]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/.sumi/tasks.json • Untracked" [ref=f7e1075] [cursor=pointer]:
+                                                - generic [ref=f7e1076]:
+                                                    - generic [ref=f7e1078]: tasks.json
+                                                    - generic [ref=f7e1079]: U
+                                        - treeitem ".vscode" [level=1] [ref=f7e1081]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/.vscode • Contains emphasized items" [ref=f7e1082] [cursor=pointer]:
+                                                - generic [ref=f7e1083]:
+                                                    - generic [ref=f7e1084]: 
+                                                    - generic [ref=f7e1086]: .vscode
+                                                    - generic [ref=f7e1087]: •
+                                        - treeitem "floder" [level=1] [ref=f7e1089]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/floder • Contains emphasized items" [ref=f7e1090] [cursor=pointer]:
+                                                - generic [ref=f7e1091]:
+                                                    - generic [ref=f7e1092]: 
+                                                    - generic [ref=f7e1094]: floder
+                                                    - generic [ref=f7e1095]: •
+                                        - treeitem "test" [level=1] [ref=f7e1097]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/test" [ref=f7e1098] [cursor=pointer]:
+                                                - generic [ref=f7e1099]:
+                                                    - generic [ref=f7e1100]: 
+                                                    - generic [ref=f7e1102]: test
+                                        - treeitem "1.png" [level=1] [ref=f7e1103]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/1.png • Untracked" [ref=f7e1104] [cursor=pointer]:
+                                                - generic [ref=f7e1105]:
+                                                    - generic [ref=f7e1107]: 1.png
+                                                    - generic [ref=f7e1108]: U
+                                        - treeitem "b" [level=1] [ref=f7e1110]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/b • Untracked" [ref=f7e1111] [cursor=pointer]:
+                                                - generic [ref=f7e1112]:
+                                                    - generic [ref=f7e1114]: b
+                                                    - generic [ref=f7e1115]: U
+                                        - treeitem "QuickSort.java" [level=1] [ref=f7e1117]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/QuickSort.java • Untracked" [ref=f7e1118] [cursor=pointer]:
+                                                - generic [ref=f7e1119]:
+                                                    - generic [ref=f7e1121]: QuickSort.java
+                                                    - generic [ref=f7e1122]: U
+                                        - treeitem "quickSort.js" [level=1] [ref=f7e1124]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/quickSort.js • Untracked" [ref=f7e1125] [cursor=pointer]:
+                                                - generic [ref=f7e1126]:
+                                                    - generic [ref=f7e1128]: quickSort.js
+                                                    - generic [ref=f7e1129]: U
+                                        - treeitem "test_t2i.png" [level=1] [ref=f7e1131]:
+                                            - generic "~/ant/github/opensumi/core/tools/workspace/test_t2i.png • Untracked" [ref=f7e1132] [cursor=pointer]:
+                                                - generic [ref=f7e1133]:
+                                                    - generic [ref=f7e1135]: test_t2i.png
+                                                    - generic [ref=f7e1136]: U
+                                - generic [ref=f7e1142] [cursor=pointer]:
+                                    - generic [ref=f7e1143]: 
+                                    - generic [ref=f7e1144]: OutLine
+                        - text:                                                                
+        - generic [ref=f7e162]:
+            - generic [ref=f7e163]:
+                - generic [ref=f7e166]:
+                    - generic [ref=f7e167] [cursor=pointer]: 
+                    - button "main*" [ref=f7e168]
+                - generic [ref=f7e171]:
+                    - button "MultiDiff" [ref=f7e172]
+                    - button "Test" [ref=f7e173]
+                - generic [ref=f7e176]:
+                    - generic [ref=f7e177] [cursor=pointer]: 
+                    - button "0" [ref=f7e178]
+                    - generic [ref=f7e179] [cursor=pointer]: 
+                    - button "0" [ref=f7e180]
+            - generic [ref=f7e181]:
+                - button "Ln1，Col1" [ref=f7e622]
+                - generic [ref=f7e624]:
+                    - button "Spaces:" [ref=f7e625]
+                    - button "2" [ref=f7e626]
+                - button "LF" [ref=f7e630]
+                - button "UTF8" [ref=f7e634]
+                - generic [ref=f7e637]:
+                    - button "JSON" [ref=f7e638]
+                    - button "with" [ref=f7e639]
+                    - button "Comments" [ref=f7e640]
+                - generic [ref=f7e641]: 
+    - generic [ref=f7e645]:
+        - alert
+        - alert

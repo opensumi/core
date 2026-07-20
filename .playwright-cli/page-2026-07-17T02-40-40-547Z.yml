@@ -1,0 +1,133 @@
+- generic [active] [ref=e1]:
+    - generic [ref=e3]:
+        - generic [ref=e14]:
+            - generic [ref=e15]: File
+            - generic [ref=e16]: Edit
+            - generic [ref=e17]: Selection
+            - generic [ref=e18]: View
+            - generic [ref=e19]: Go
+            - generic [ref=e20]: Terminal
+            - generic [ref=e21]: Help
+        - generic [ref=e22]:
+            - listitem [ref=e679]:
+                - generic "AI Assistant" [ref=e681]: 
+            - generic [ref=e686]:
+                - complementary "Task List" [ref=e690]:
+                    - separator "Resize Task List" [ref=e691]
+                    - generic [ref=e692]:
+                        - heading "Task List" [level=2] [ref=e693]
+                        - button "Add Project" [ref=e694] [cursor=pointer]:
+                            - generic [ref=e695]: 
+                    - generic [ref=e696]:
+                        - generic [ref=e697]: 
+                        - searchbox [ref=e698]
+                    - generic [ref=e700]:
+                        - generic [ref=e701]:
+                            - button "Collapse test" [expanded] [ref=e702] [cursor=pointer]:
+                                - generic [ref=e703]: 
+                                - generic "/Users/lujunsheng/ant/github/opensumi/core/tools/workspace" [ref=e704]: test
+                                - generic [ref=e705]: '5'
+                            - button "New Task for test" [ref=e707] [cursor=pointer]:
+                                - generic [ref=e708]: 
+                            - button "Manage test" [ref=e709] [cursor=pointer]:
+                                - generic [ref=e710]: 
+                        - generic [ref=e711]:
+                            - button "1+ ready" [ref=e712] [cursor=pointer]:
+                                - generic [ref=e713]: 1+
+                                - generic "ready" [ref=e714]
+                            - button "Archive 1+":
+                                - generic: 
+                        - generic [ref=e715]:
+                            - button "你好 stopped" [ref=e716] [cursor=pointer]:
+                                - generic [ref=e717]: 你好
+                                - generic "stopped" [ref=e718]
+                            - button "Archive 你好":
+                                - generic: 
+                        - generic [ref=e719]:
+                            - button "hi stopped" [ref=e720] [cursor=pointer]:
+                                - generic [ref=e721]: hi
+                                - generic "stopped" [ref=e722]
+                            - button "Archive hi":
+                                - generic: 
+                        - generic [ref=e723]:
+                            - button "hi ready" [ref=e724] [cursor=pointer]:
+                                - generic [ref=e725]: hi
+                                - generic "ready" [ref=e726]
+                            - button "Archive hi":
+                                - generic: 
+                        - generic [ref=e727]:
+                            - button "hi ready" [ref=e728] [cursor=pointer]:
+                                - generic [ref=e729]: hi
+                                - generic "ready" [ref=e730]
+                            - button "Archive hi":
+                                - generic: 
+                    - button "Archived Tasks" [ref=e732] [cursor=pointer]:
+                        - generic [ref=e733]: 
+                - generic [ref=e736]:
+                    - generic [ref=e737]:
+                        - generic "1+" [ref=e738]
+                        - generic [ref=e739]:
+                            - button "New Task" [ref=e741] [cursor=pointer]:
+                                - generic [ref=e742]: 
+                            - button "unfullscreen" [pressed] [ref=e745] [cursor=pointer]:
+                                - generic [ref=e746]: 
+                    - generic [ref=e749]:
+                        - generic [ref=e754]:
+                            - generic [ref=e755]: Hello, I am your dedicated AI assistant, here to answer questions about code and help you think. You can ask me some questions about code.
+                            - generic [ref=e759]: Generate a Java Quicksort Algorithm
+                        - generic [ref=e761]: <opensumi_mcp_usage_hint priority="low"> Use the opensumi-ide MCP catalog tools to discover and enable IDE capability groups before invoking non-default OpenSumi tools. </opensumi_mcp_usage_hint> 1+
+                        - generic [ref=e770]:
+                            - generic [ref=e771]: 'The user is asking a simple math question: 1+1. This is just basic arithmetic. 2'
+                            - generic [ref=e776]:
+                                - button "Thumbs up" [ref=e778] [cursor=pointer]:
+                                    - generic [ref=e779]: 
+                                - button "Thumbs down" [ref=e781] [cursor=pointer]:
+                                    - generic [ref=e782]: 
+                    - generic [ref=e784]:
+                        - generic [ref=e785]: 
+                        - generic [ref=e789]:
+                            - generic [ref=e790]: Message @ to include context, / for command
+                            - generic [ref=e792]:
+                                - generic [ref=e793]:
+                                    - generic [ref=e794]: /
+                                    - generic [ref=e796]: '@ Add Context'
+                                - generic [ref=e798]:
+                                    - generic [ref=e799]:
+                                        - combobox [ref=e801]:
+                                            - generic [ref=e802] [cursor=pointer]:
+                                                - generic [ref=e803]: theta/MiniMax-M2.7
+                                                - generic [ref=e806]: 
+                                        - combobox [ref=e808]:
+                                            - generic [ref=e809] [cursor=pointer]:
+                                                - generic [ref=e810]: build
+                                                - generic [ref=e813]: 
+                                    - button "Send" [ref=e815] [cursor=pointer]:
+                                        - generic [ref=e816]: 
+        - generic [ref=e126]:
+            - generic [ref=e127]:
+                - generic [ref=e130]:
+                    - generic [ref=e131] [cursor=pointer]: 
+                    - button "main*" [ref=e132]
+                - generic [ref=e135]:
+                    - button "MultiDiff" [ref=e136]
+                    - button "Test" [ref=e137]
+                - generic [ref=e140]:
+                    - generic [ref=e141] [cursor=pointer]: 
+                    - button "0" [ref=e142]
+                    - generic [ref=e143] [cursor=pointer]: 
+                    - button "0" [ref=e144]
+            - generic [ref=e145]:
+                - button "Ln1，Col1" [ref=e654]
+                - generic [ref=e656]:
+                    - button "Spaces:" [ref=e657]
+                    - button "2" [ref=e658]
+                - button "LF" [ref=e662]
+                - button "UTF8" [ref=e666]
+                - generic [ref=e669]:
+                    - button "JSON" [ref=e670]
+                    - button "with" [ref=e671]
+                    - button "Comments" [ref=e672]
+                - generic [ref=e673]: 
+    - generic [ref=e677]:
+        - alert
+        - alert

@@ -339,12 +339,15 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
             <Loading />
           </div>
         ) : (
-          <EnhanceIcon
-            ariaLabel={newChatLabel}
+          <button
+            aria-label={newChatLabel}
             className={styles.chat_history_header_actions_new}
-            iconClass='codicon codicon-add'
             onClick={handleNewChat}
-          />
+            onMouseDown={(event) => event.preventDefault()}
+            type='button'
+          >
+            <Icon iconClass='codicon codicon-add' />
+          </button>
         )}
       </Popover>
     );

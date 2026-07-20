@@ -1,0 +1,125 @@
+- generic [active] [ref=e1]:
+    - generic [ref=e3]:
+        - generic [ref=e8]:
+            - generic [ref=e9]: File
+            - generic [ref=e10]: Edit
+            - generic [ref=e11]: Selection
+            - generic [ref=e12]: View
+            - generic [ref=e13]: Go
+            - generic [ref=e14]: Terminal
+            - generic [ref=e15]: Help
+        - generic [ref=e20]:
+            - listitem [ref=e399]:
+                - generic "AI Assistant" [ref=e401]: 
+            - generic [ref=e406]:
+                - complementary "Task List" [ref=e410]:
+                    - separator "Resize Task List" [ref=e411]
+                    - generic [ref=e412]:
+                        - heading "Task List" [level=2] [ref=e413]
+                        - button "Add Project" [ref=e414] [cursor=pointer]:
+                            - generic [ref=e415]: 
+                    - generic [ref=e416]:
+                        - generic [ref=e417]: 
+                        - searchbox [ref=e418]
+                    - generic [ref=e419]:
+                        - generic [ref=e420]:
+                            - generic [ref=e421]:
+                                - button "Collapse workspace-one" [expanded] [ref=e422] [cursor=pointer]:
+                                    - generic [ref=e423]: 
+                                    - generic "/tmp/opensumi-agent-layout-Nw0VoI/workspace-one" [ref=e424]: workspace-one
+                                    - generic [ref=e425]: '1'
+                                - button "New Task for workspace-one" [ref=e427] [cursor=pointer]:
+                                    - generic [ref=e428]: 
+                                - button "Manage workspace-one" [ref=e429] [cursor=pointer]:
+                                    - generic [ref=e430]: 
+                            - generic [ref=e431]:
+                                - button "UX validation task for Agent Layout ready" [ref=e432] [cursor=pointer]:
+                                    - generic [ref=e433]: UX validation task for Agent Layout
+                                    - generic "ready" [ref=e434]
+                                - button "Archive UX validation task for Agent Layout":
+                                    - generic: 
+                        - generic [ref=e435]:
+                            - generic [ref=e436]:
+                                - button "Collapse test" [expanded] [ref=e437] [cursor=pointer]:
+                                    - generic [ref=e438]: 
+                                    - generic "/Users/lujunsheng/ant/github/opensumi/core/tools/workspace" [ref=e439]: test
+                                    - generic [ref=e440]: '5'
+                                - button "New Task for test" [ref=e442] [cursor=pointer]:
+                                    - generic [ref=e443]: 
+                                - button "Manage test" [ref=e444] [cursor=pointer]:
+                                    - generic [ref=e445]: 
+                            - generic [ref=e446]:
+                                - button "1+ stopped" [ref=e447] [cursor=pointer]:
+                                    - generic [ref=e448]: 1+
+                                    - generic "stopped" [ref=e449]
+                                - button "Archive 1+":
+                                    - generic: 
+                            - generic [ref=e450]:
+                                - button "你好 stopped" [ref=e451] [cursor=pointer]:
+                                    - generic [ref=e452]: 你好
+                                    - generic "stopped" [ref=e453]
+                                - button "Archive 你好":
+                                    - generic: 
+                            - generic [ref=e454]:
+                                - button "hi stopped" [ref=e455] [cursor=pointer]:
+                                    - generic [ref=e456]: hi
+                                    - generic "stopped" [ref=e457]
+                                - button "Archive hi":
+                                    - generic: 
+                            - generic [ref=e458]:
+                                - button "hi ready" [ref=e459] [cursor=pointer]:
+                                    - generic [ref=e460]: hi
+                                    - generic "ready" [ref=e461]
+                                - button "Archive hi":
+                                    - generic: 
+                            - generic [ref=e462]:
+                                - button "hi ready" [ref=e463] [cursor=pointer]:
+                                    - generic [ref=e464]: hi
+                                    - generic "ready" [ref=e465]
+                                - button "Archive hi":
+                                    - generic: 
+                    - button "Archived Tasks" [ref=e467] [cursor=pointer]:
+                        - generic [ref=e468]: 
+                - generic [ref=e471]:
+                    - generic [ref=e472]:
+                        - generic "AI Assistant" [ref=e473]
+                        - generic [ref=e474]:
+                            - button "New Task" [ref=e476] [cursor=pointer]:
+                                - generic [ref=e477]: 
+                            - button "unfullscreen" [pressed] [ref=e480] [cursor=pointer]:
+                                - generic [ref=e481]: 
+                    - generic [ref=e483]:
+                        - heading "AI Assistant" [level=2] [ref=e485]
+                        - generic [ref=e486]:
+                            - generic [ref=e487] [cursor=pointer]:
+                                - generic [ref=e488]: 
+                                - generic [ref=e489]: Explain my code
+                            - generic [ref=e490] [cursor=pointer]: Optimize my code
+                            - generic [ref=e492] [cursor=pointer]:
+                                - generic [ref=e493]: 
+                                - generic [ref=e494]: Generate unit tests
+                            - generic [ref=e495] [cursor=pointer]: Find and fix bugs
+                    - generic [ref=e498]:
+                        - generic [ref=e499]: 
+                        - generic [ref=e503]:
+                            - generic [ref=e504]: Message @ to include context, / for command
+                            - generic [ref=e506]:
+                                - generic [ref=e507]:
+                                    - generic [ref=e508]: /
+                                    - generic [ref=e510]: '@ Add Context'
+                                - button "Send" [ref=e514] [cursor=pointer]:
+                                    - generic [ref=e515]: 
+        - generic [ref=e141]:
+            - generic [ref=e142]:
+                - generic [ref=e145]:
+                    - button "MultiDiff" [ref=e146]
+                    - button "Test" [ref=e147]
+                - generic [ref=e150]:
+                    - generic [ref=e151] [cursor=pointer]: 
+                    - button "0" [ref=e152]
+                    - generic [ref=e153] [cursor=pointer]: 
+                    - button "0" [ref=e154]
+            - generic [ref=e155]: 
+    - generic [ref=e397]:
+        - alert
+        - alert
