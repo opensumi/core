@@ -1,4 +1,4 @@
-// Source: test/bdd/acp-chat-agentic-history.scenario.md
+// Source: test/bdd/acp-chat-agentic-task-archive-status-and-restore.scenario.md
 
 import { type Frame, expect } from '@playwright/test';
 
@@ -240,8 +240,8 @@ test.describe('ACP Chat Agentic History', () => {
   test('Task List keeps the Agentic workbench visible, filters ordered Tasks, and restores selection safely', async ({
     browser: _browser,
   }, testInfo) => {
-    const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-history', {
-      sourceScenario: 'test/bdd/acp-chat-agentic-history.scenario.md',
+    const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-task-archive-status-and-restore', {
+      sourceScenario: 'test/bdd/acp-chat-agentic-task-archive-status-and-restore.scenario.md',
       profile: 'interactive',
       executionMode: 'deterministic-fixture',
       hardeningVerdict: 'CONVERT',

@@ -16,14 +16,15 @@
 2. Open chat history and activate the newer seeded session.
 3. Record the visible chat header title and compare it with the active session title returned by `acp_chat_get_session_state({})`.
 4. Click the chat header maximize action.
-5. Record AI Chat, workbench/editor, Explorer geometry, and the header action icon after the click.
+5. Record AI Chat, workbench/editor, Explorer geometry, and the header action accessible name and icon after the click.
 6. Click the same chat header action again.
 7. Record restored AI Chat, workbench/editor, Explorer geometry, and the header action icon.
 
 ## Then
 
 - The chat header displays the active session title from ACP session metadata.
-- The maximize action is visible in Agentic layout and switches to the shrink/restore icon after the workbench is collapsed.
+- With the workbench visible, the action is explicitly named `Focus AI Chat`.
+- After the workbench is collapsed, the same action is explicitly named `Restore editor and Explorer` and switches to the shrink/restore icon.
 - Clicking maximize calls the Agentic workbench collapse path: AI Chat remains visible and expands to occupy the main body.
 - The main editor/workbench area and Explorer/file tree are no longer visibly rendered after maximize.
 - Clicking the shrink/restore action restores the main editor/workbench area and Explorer/file tree.

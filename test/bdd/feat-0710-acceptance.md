@@ -41,7 +41,7 @@ lsof -nP -iTCP:8000 -sTCP:LISTEN || true
 ## `.scenario.md` 覆盖映射
 
 - A-01 ～ A-10：`editor-pinned-tabs.scenario.md`；A-02、A-09、A-10 的模型边界以及 A-11：`editor-pinned-tabs-contract.scenario.md`。
-- B-01 ～ B-15：`acp-chat-agentic-history.scenario.md`；B-07、B-14 的跨布局新草稿行为：`acp-chat-layout-aware-new-draft.scenario.md`；B-16：`acp-chat-agentic-header-maximize.scenario.md`；B-17：`acp-chat-agentic-layout-stress.scenario.md`。
+- B-01 ～ B-15：`acp-chat-agentic-task-list-presentation-and-resize.scenario.md`、`acp-chat-agentic-project-management-and-disclosure.scenario.md`、`acp-chat-agentic-task-launch-and-activation.scenario.md`、`acp-chat-agentic-cross-project-session-activation.scenario.md`、`acp-chat-agentic-task-archive-status-and-restore.scenario.md`；B-07、B-14 的跨布局新草稿行为：`acp-chat-layout-aware-new-draft.scenario.md`；B-16：`acp-chat-agentic-header-maximize.scenario.md`；B-17：`acp-chat-agentic-layout-stress.scenario.md`。
 - C-01 ～ C-05、C-07、C-09、C-10、C-12：`acp-chat-agentic-queued-turns.scenario.md`；C-09 的可访问加载态和禁用控件：`acp-chat-agentic-session-isolation.scenario.md`。
 - C-03、C-06、C-08、C-10 ～ C-14：`acp-chat-interaction-contract.scenario.md`。
 - C-13 ～ C-16：`acp-chat-agentic-input-send.scenario.md`；C-11 ～ C-13 的键盘可见行为：`acp-chat-agentic-keyboard-a11y.scenario.md`。
@@ -710,7 +710,7 @@ Runtime 场景负责真实 IDE 可见行为；`node-contract` 场景负责扩展
 
 - 编辑器固定标签：`test/bdd/editor-pinned-tabs.scenario.md`、`tools/playwright/src/tests/editor.test.ts`。
 - 编辑器固定标签契约：`test/bdd/editor-pinned-tabs-contract.scenario.md`，以及 Editor Group 和 Extension Tab API 聚焦 Jest 测试。
-- Agentic 任务工作台：`test/bdd/acp-chat-agentic-history.scenario.md`、`tools/playwright/src/tests/acp-chat-agentic-task-workbench.test.ts`。
+- Agentic 任务工作台：`test/bdd/acp-chat-agentic-task-list-presentation-and-resize.scenario.md`、`test/bdd/acp-chat-agentic-project-management-and-disclosure.scenario.md`、`test/bdd/acp-chat-agentic-task-launch-and-activation.scenario.md`、`test/bdd/acp-chat-agentic-cross-project-session-activation.scenario.md`、`test/bdd/acp-chat-agentic-task-archive-status-and-restore.scenario.md`，以及现有的 History/Task Workbench Playwright 覆盖。
 - Agentic 新草稿、最大化、响应式与会话切换：`test/bdd/acp-chat-layout-aware-new-draft.scenario.md`、`test/bdd/acp-chat-agentic-header-maximize.scenario.md`、`test/bdd/acp-chat-agentic-layout-stress.scenario.md`、`test/bdd/acp-chat-agentic-session-isolation.scenario.md` 及其对应 Playwright/Jest。
 - ACP 排队任务：`test/bdd/acp-chat-agentic-queued-turns.scenario.md`，以及 `packages/ai-native/__test__/browser/chat/acp-chat-queued-turns.test.ts` 等聚焦测试。
 - 输入与工具卡片：`packages/ai-native/__test__/browser/acp-mention-input-behavior.test.tsx`、`packages/ai-native/__test__/browser/chat-tool-render.test.tsx`。

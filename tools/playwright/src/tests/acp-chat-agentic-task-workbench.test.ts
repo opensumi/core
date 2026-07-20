@@ -1,4 +1,4 @@
-// Source: test/bdd/acp-chat-agentic-history.scenario.md
+// Source: test/bdd/acp-chat-agentic-cross-project-session-activation.scenario.md
 
 import { promises as fs } from 'fs';
 import os from 'os';
@@ -11,7 +11,7 @@ import { OpenSumiExplorerView } from '../explorer-view';
 import { OpenSumiTextEditor } from '../text-editor';
 import { OpenSumiWorkspace } from '../workspace';
 
-import test, { page } from './hooks';
+import test, { page, resetPage } from './hooks';
 import {
   ACP_BDD_DEFAULT_WORKSPACE,
   ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS,
@@ -266,8 +266,9 @@ async function expectNoDirtyEditorSwitchDialog(): Promise<void> {
 test.describe('ACP Chat Agentic Task Workbench', () => {
   test.setTimeout(180_000);
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({ browser }) => {
     test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
+    await resetPage(browser);
     await page.setViewportSize({ width: 1600, height: 900 });
     currentWorkspace = new OpenSumiWorkspace([ACP_BDD_DEFAULT_WORKSPACE]);
     otherWorkspace = new OpenSumiWorkspace([ACP_BDD_DEFAULT_WORKSPACE]);
@@ -332,8 +333,8 @@ test.describe('ACP Chat Agentic Task Workbench', () => {
 
   test('runs the contextual Task Workbench BDD contract with safe restore', async ({ browser: _browser }, testInfo) => {
     void _browser;
-    const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-history', {
-      sourceScenario: 'test/bdd/acp-chat-agentic-history.scenario.md',
+    const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-cross-project-session-activation', {
+      sourceScenario: 'test/bdd/acp-chat-agentic-cross-project-session-activation.scenario.md',
       profile: 'interactive',
       executionMode: 'deterministic-fixture',
       hardeningVerdict: 'CONVERT',

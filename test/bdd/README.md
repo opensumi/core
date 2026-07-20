@@ -269,8 +269,10 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-input-send.scenario.md` | `runtime-ui` | `interactive` | Draft input, first send, commands, mentions, attachments, partial-failure paste, queued-editor shortcuts, focus, expansion, scroll, and recovery. |
 | `acp-chat-agentic-queued-turns.scenario.md` | `runtime-ui` | `interactive` | Queued-turn FIFO, head/non-head editing, Stop/Resume, Immediate Send, one-shot start failure, Clear/Take Back/fast-track, Active Session clearing, and focus. |
 | `acp-chat-agentic-draft-footer.scenario.md` | `runtime-ui` | `interactive` | Lazy Agentic Task Draft footer config/command continuity before first accepted prompt. |
+| `acp-chat-agentic-bootstrap-footer.scenario.md` | `runtime-ui` | `interactive` | Cold-start bootstrap session metadata and footer controls before the first prompt. |
 | `acp-chat-layout-aware-new-draft.scenario.md` | `runtime-ui` | `interactive` | Layout-aware direct New Task/New Chat header and shortcut routing with draft/focus preservation and lazy Session creation. |
 | `acp-chat-agentic-stream-rendering.scenario.md` | `runtime-ui` | `interactive` | Deterministic ACP Agent stream rendering for content, reasoning, plan, tool calls, session state, completion, and recovery. |
+| `acp-chat-agentic-minimal-safe-progress.scenario.md` | `runtime-ui` | `default` | Minimal delivery mode shows transient safe progress without raw intermediate output or persisted leakage. |
 | `acp-chat-agentic-deep-thinking-collapse.scenario.md` | `runtime-ui` | `interactive` | Deep Thinking default collapse, streaming expansion, explicit toggle state, and metadata-only state checks. |
 | `acp-chat-agentic-cancel-stop.scenario.md` | `runtime-ui` | `interactive` | Long-stream stop/cancel behavior, input recovery, and follow-up send. |
 | `acp-chat-agentic-rich-history-restore.scenario.md` | `runtime-ui` | `interactive` | Complex content, reasoning, plan, and tool-call history restore across switching and reload. |
@@ -282,11 +284,17 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-reload-during-stream.scenario.md` | `runtime-ui` | `interactive` | Page reload while streaming, same-session continuation, and explicit Stop after reattachment. |
 | `acp-chat-agentic-error-taxonomy.scenario.md` | `runtime-ui` | `interactive` | Create, load, send, auth, disconnected, and config failure visibility and retry. |
 | `acp-chat-agentic-layout-stress.scenario.md` | `runtime-ui` | `interactive` | Long content, tool results, scrolling, resizing, and layout round-trip stability. |
+| `acp-chat-agentic-editor-target-reveal.scenario.md` | `runtime-ui` | `default` | Foreground editor targets restore a hidden Agentic workbench before revealing Settings. |
+| `acp-chat-agentic-file-link-open.scenario.md` | `runtime-ui` | `interactive` | Agentic file links restore workbench/editor/Explorer and open the workspace target safely. |
 | `acp-chat-agentic-keyboard-a11y.scenario.md` | `runtime-ui` | `interactive` | Keyboard-only input, commands, history, dialogs, queued actions, and tool-card disclosure/accessibility isolation. |
 | `acp-chat-agentic-debug-log-from-chat.scenario.md` | `runtime-ui` | `full` | Debug log viewer correlation and controls after a chat stream; redaction audit is blocked until product support exists. |
 | `acp-chat-agentic-theme-persistence.scenario.md` | `runtime-ui` | `default` | Theme, Agentic layout preference, geometry, and visual usability persistence. |
 | `acp-chat-agentic-header-maximize.scenario.md` | `runtime-ui` | `interactive` | Chat header active-session title and maximize action collapsing workbench/editor/Explorer while keeping AI Chat visible. |
-| `acp-chat-agentic-history.scenario.md` | `runtime-ui` | `interactive` | Agentic Task Workbench presentation, resizing, Project naming/launch, session-first activation, failure/race safety, status/attention, archive, and layout boundaries. |
+| `acp-chat-agentic-task-list-presentation-and-resize.scenario.md` | `runtime-ui` | `interactive` | Workbench-native Agent Tasks presentation, accessibility, resize bounds, and width persistence. |
+| `acp-chat-agentic-project-management-and-disclosure.scenario.md` | `runtime-ui` | `interactive` | Project labels, search, disclosure state, rename, add/remove, and unavailable filtering. |
+| `acp-chat-agentic-task-launch-and-activation.scenario.md` | `runtime-ui` | `interactive` | Contextual Task launch, Agent recall, registration, activation, failure, and last-selection-wins safety. |
+| `acp-chat-agentic-cross-project-session-activation.scenario.md` | `runtime-ui` | `interactive` | Cross-Project sessions and drafts activate in place without navigating or disturbing dirty editors. |
+| `acp-chat-agentic-task-archive-status-and-restore.scenario.md` | `runtime-ui` | `interactive` | Task status/attention, archive eligibility, selection persistence, rich restore, and Classic boundaries. |
 | `acp-chat-agentic-layout-interop.scenario.md` | `runtime-ui` | `interactive` | Explorer/editor interop, resize, reload, and Agentic/Classic round trip. |
 | `available-commands.scenario.md` | `mcp-contract` | `interactive/full` | Command metadata through profile-granted `acp_chat`. |
 | `webmcp-capability-surface.scenario.md` | `mcp-contract` | `interactive/full` | Browser and MCP surfaces expose the same canonical tool names. |
