@@ -483,15 +483,19 @@
 
 .task_row_wrap {
   position: relative;
-  margin: 0 5px;
+  margin: 0 3px;
+
+  > :global(.kt-popover-trigger) {
+    width: 100%;
+  }
 }
 
 .task_row {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-columns: minmax(32px, 1fr) minmax(0, 48px) minmax(0, 60px) 6px 22px;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
   width: 100%;
   height: 22px;
   min-height: 22px;
@@ -502,6 +506,7 @@
   color: var(--foreground);
   cursor: pointer;
   font-size: @base-font-size;
+  overflow: hidden;
   text-align: left;
 
   &::before {
@@ -516,7 +521,7 @@
     content: '';
   }
 
-  &:hover:not(:disabled) {
+  &:hover:not([aria-disabled='true']) {
     background: var(--kt-tree-hoverBackground, var(--list-hoverBackground));
     color: var(--kt-tree-hoverForeground, var(--foreground));
   }
@@ -528,7 +533,7 @@
     color: var(--kt-tree-hoverForeground, var(--foreground));
   }
 
-  &:disabled {
+  &[aria-disabled='true'] {
     cursor: default;
     opacity: 0.55;
   }
@@ -538,7 +543,7 @@
   background: var(--list-activeSelectionBackground, var(--kt-tree-inactiveSelectionBackground));
   color: var(--list-activeSelectionForeground, var(--kt-tree-inactiveSelectionForeground));
 
-  &:hover:not(:disabled),
+  &:hover:not([aria-disabled='true']),
   &:focus-visible {
     background: var(--list-activeSelectionBackground, var(--kt-tree-inactiveSelectionBackground));
     color: var(--list-activeSelectionForeground, var(--kt-tree-inactiveSelectionForeground));
@@ -563,12 +568,13 @@
 }
 
 .task_agent {
-  max-width: 64px;
+  grid-column: 2;
   color: var(--descriptionForeground);
   font-size: 11px;
 }
 
 .task_title {
+  grid-column: 1;
   color: inherit;
   font-size: @base-font-size;
   line-height: 22px;
@@ -576,10 +582,10 @@
 
 .task_meta {
   display: flex;
+  grid-column: 3;
   align-items: center;
   gap: 4px;
-  max-width: 92px;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 22px;
 
   > :global(.codicon) {
@@ -615,13 +621,47 @@
   .task_meta_information > :global(.codicon-modifier-spin) {
     animation: none;
   }
+
+  .task_tooltip_overlay {
+    animation: none !important;
+  }
 }
 
 .unread {
+  grid-column: 4;
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--focusBorder);
+}
+
+.task_action_space {
+  grid-column: 5;
+  width: 22px;
+  height: 22px;
+}
+
+.task_tooltip_overlay {
+  max-width: 320px;
+  pointer-events: none;
+
+  :global(.kt-popover-content) {
+    max-width: 320px;
+  }
+}
+
+.task_tooltip_content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 296px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.task_tooltip_title {
+  color: inherit;
+  font-weight: 600;
 }
 
 .archive_button {
@@ -664,9 +704,9 @@
   }
 }
 
-.task_row_selected ~ .archive_button,
-.task_row_selected ~ .archive_button:hover,
-.task_row_selected ~ .archive_button:focus-visible {
+.task_row_wrap_selected .archive_button,
+.task_row_wrap_selected .archive_button:hover,
+.task_row_wrap_selected .archive_button:focus-visible {
   background: var(--list-activeSelectionBackground, var(--kt-tree-inactiveSelectionBackground));
   color: var(--list-activeSelectionForeground, var(--kt-tree-inactiveSelectionForeground));
 }

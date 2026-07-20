@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { Modal } from '@opensumi/ide-components/lib/modal';
+import { Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components/lib/popover';
 import { PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
@@ -186,47 +187,53 @@ type BaseTaskRowMetaKind = AgenticTaskStatus | 'permission' | 'input';
 type TaskRowMetaKind = BaseTaskRowMetaKind | 'agent-unavailable' | 'conversation-unavailable';
 
 interface TaskRowPresentation {
+  compactLabel: string;
+  fullLabel: string;
   icon: string;
   kind: TaskRowMetaKind;
-  label: string;
   testIdPrefix: 'agentic-task-attention' | 'agentic-task-status' | 'agentic-task-availability';
   tone: 'error' | 'information' | 'secondary' | 'warning';
 }
 
 const TASK_ROW_PRESENTATIONS: Readonly<Record<BaseTaskRowMetaKind, TaskRowPresentation | undefined>> = {
   running: {
+    compactLabel: 'Running',
+    fullLabel: 'Running',
     icon: 'codicon-loading codicon-modifier-spin',
     kind: 'running',
-    label: 'Running',
     testIdPrefix: 'agentic-task-status',
     tone: 'information',
   },
   stopped: {
+    compactLabel: 'Stopped',
+    fullLabel: 'Stopped',
     icon: 'codicon-circle-slash',
     kind: 'stopped',
-    label: 'Stopped',
     testIdPrefix: 'agentic-task-status',
     tone: 'secondary',
   },
   error: {
+    compactLabel: 'Error',
+    fullLabel: 'Error',
     icon: 'codicon-error',
     kind: 'error',
-    label: 'Error',
     testIdPrefix: 'agentic-task-status',
     tone: 'error',
   },
   ready: undefined,
   permission: {
+    compactLabel: 'Permission',
+    fullLabel: 'Permission required',
     icon: 'codicon-warning',
     kind: 'permission',
-    label: 'Permission',
     testIdPrefix: 'agentic-task-attention',
     tone: 'warning',
   },
   input: {
+    compactLabel: 'Input',
+    fullLabel: 'Input needed',
     icon: 'codicon-warning',
     kind: 'input',
-    label: 'Input needed',
     testIdPrefix: 'agentic-task-attention',
     tone: 'warning',
   },
@@ -238,18 +245,20 @@ function getTaskRowPresentation(
 ): TaskRowPresentation | undefined {
   if (!options.agentAvailable) {
     return {
+      compactLabel: 'No agent',
+      fullLabel: 'Agent unavailable',
       icon: 'codicon-warning',
       kind: 'agent-unavailable',
-      label: 'Agent unavailable',
       testIdPrefix: 'agentic-task-availability',
       tone: 'warning',
     };
   }
   if (options.conversationUnavailable) {
     return {
+      compactLabel: 'No history',
+      fullLabel: 'History unavailable',
       icon: 'codicon-error',
       kind: 'conversation-unavailable',
-      label: 'History unavailable',
       testIdPrefix: 'agentic-task-availability',
       tone: 'error',
     };
@@ -259,7 +268,11 @@ function getTaskRowPresentation(
   if (!presentation || task.attention || options.statusLive) {
     return presentation;
   }
-  return { ...presentation, label: `Last known: ${presentation.label}` };
+  return {
+    ...presentation,
+    compactLabel: `Last: ${presentation.compactLabel}`,
+    fullLabel: `Last known status: ${presentation.fullLabel}`,
+  };
 }
 
 function ProjectRenameModal({
@@ -317,6 +330,7 @@ function ProjectRenameModal({
 
 function TaskRow({
   active,
+  agentLabel,
   onArchive,
   onActivate,
   onUnarchive,
@@ -328,6 +342,7 @@ function TaskRow({
 }: {
   active: boolean;
   agentAvailable: boolean;
+  agentLabel: string;
   conversationUnavailable: boolean;
   onArchive: (task: AgenticTaskRecord) => void;
   onActivate: (task: AgenticTaskRecord) => void;
@@ -336,54 +351,93 @@ function TaskRow({
   statusLive: boolean;
   task: AgenticTaskRecord;
 }) {
+  const [tooltipVisible, setTooltipVisible] = React.useState(false);
   const archiveEligible =
     !task.archived &&
     (!agentAvailable || conversationUnavailable || !statusLive || isAgenticTaskStatusArchivable(task.status));
   const actionAvailable = archiveEligible || (task.archived && !!onUnarchive);
   const presentation = getTaskRowPresentation(task, { agentAvailable, conversationUnavailable, statusLive });
   const activationAvailable = projectAvailable && agentAvailable;
-  const title = !projectAvailable
-    ? `${task.title} (Project unavailable)`
-    : !agentAvailable
-    ? `${task.title} (Agent unavailable)`
+  const agentDescription = agentLabel === task.agentId ? agentLabel : `${agentLabel} (${task.agentId})`;
+  const guidance = !projectAvailable
+    ? 'Project unavailable.'
     : conversationUnavailable
-    ? `${task.title} (History unavailable; click to retry)`
-    : task.title;
+    ? 'Select the task to retry loading its history.'
+    : undefined;
+  const accessibleLabel = [
+    `${task.title}.`,
+    `Agent: ${agentDescription}.`,
+    presentation ? `Status: ${presentation.fullLabel}.` : undefined,
+    guidance,
+    task.unread ? 'Unread.' : undefined,
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const tooltip = (
+    <div className={styles.task_tooltip_content} data-testid={`agentic-task-tooltip-content-${task.sessionId}`}>
+      <div className={styles.task_tooltip_title}>{task.title}</div>
+      <div>Agent: {agentDescription}</div>
+      {presentation && <div>Status: {presentation.fullLabel}</div>}
+      {guidance && <div>{guidance}</div>}
+      {task.unread && <div>Unread</div>}
+    </div>
+  );
 
   return (
-    <div className={`${styles.task_row_wrap} ${actionAvailable ? styles.task_row_wrap_actionable : ''}`}>
-      <button
-        aria-current={active ? 'true' : undefined}
-        className={`${styles.task_row} ${active ? styles.task_row_selected : ''}`}
-        data-testid={`agentic-task-row-${task.sessionId}`}
-        disabled={!activationAvailable}
-        onClick={() => onActivate(task)}
-        title={title}
-        type='button'
+    <div
+      className={`${styles.task_row_wrap} ${actionAvailable ? styles.task_row_wrap_actionable : ''} ${
+        active ? styles.task_row_wrap_selected : ''
+      }`}
+    >
+      <Popover
+        delay={400}
+        id={`agentic-task-tooltip-${task.sessionId}`}
+        onVisibleChange={setTooltipVisible}
+        overlay={tooltip}
+        overlayClassName={styles.task_tooltip_overlay}
+        overlayStyle={{ maxWidth: 320 }}
+        position={PopoverPosition.right}
+        trigger={[PopoverTriggerType.hover, PopoverTriggerType.focus]}
+        visible={tooltipVisible}
       >
-        <span className={styles.task_title}>{task.title}</span>
-        <span
-          className={styles.task_agent}
-          data-testid={`agentic-task-agent-${task.sessionId}`}
-          title={`Agent: ${task.agentId}`}
+        <button
+          aria-label={accessibleLabel}
+          aria-current={active ? 'true' : undefined}
+          aria-disabled={!activationAvailable}
+          className={`${styles.task_row} ${active ? styles.task_row_selected : ''}`}
+          data-testid={`agentic-task-row-${task.sessionId}`}
+          onClick={() => {
+            if (activationAvailable) {
+              onActivate(task);
+            }
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              setTooltipVisible(false);
+            }
+          }}
+          type='button'
         >
-          {task.agentId}
-        </span>
-        {presentation && (
-          <span
-            className={`${styles.task_meta} ${styles[`task_meta_${presentation.tone}`]}`}
-            data-agentic-task-meta-kind={presentation.kind}
-            data-testid={`${presentation.testIdPrefix}-${task.sessionId}`}
-            title={presentation.label}
-          >
-            <span aria-hidden='true' className={`codicon ${presentation.icon}`} />
-            <span>{presentation.label}</span>
+          <span className={styles.task_title}>{task.title}</span>
+          <span className={styles.task_agent} data-testid={`agentic-task-agent-${task.sessionId}`}>
+            {agentLabel}
           </span>
-        )}
-        {task.unread && (
-          <span aria-label='Unread' className={styles.unread} data-testid={`agentic-task-unread-${task.sessionId}`} />
-        )}
-      </button>
+          {presentation && (
+            <span
+              className={`${styles.task_meta} ${styles[`task_meta_${presentation.tone}`]}`}
+              data-agentic-task-meta-kind={presentation.kind}
+              data-testid={`${presentation.testIdPrefix}-${task.sessionId}`}
+            >
+              <span aria-hidden='true' className={`codicon ${presentation.icon}`} />
+              <span>{presentation.compactLabel}</span>
+            </span>
+          )}
+          {task.unread && (
+            <span aria-label='Unread' className={styles.unread} data-testid={`agentic-task-unread-${task.sessionId}`} />
+          )}
+          <span aria-hidden='true' className={styles.task_action_space} />
+        </button>
+      </Popover>
       {archiveEligible && (
         <button
           aria-label={`Archive ${task.title}`}
@@ -414,6 +468,7 @@ function TaskRow({
 
 function ProjectGroup({
   activeSessionId,
+  agentLabels,
   availableAgentIds,
   collapseDisabled,
   conversationUnavailableSessionIds,
@@ -429,6 +484,7 @@ function ProjectGroup({
   isTaskSessionObserved,
 }: {
   activeSessionId: string | undefined;
+  agentLabels: ReadonlyMap<string, string>;
   availableAgentIds: ReadonlySet<string>;
   collapseDisabled: boolean;
   conversationUnavailableSessionIds: ReadonlySet<string>;
@@ -529,6 +585,7 @@ function ProjectGroup({
           <TaskRow
             active={task.sessionId === activeSessionId}
             agentAvailable={availableAgentIds.has(task.agentId)}
+            agentLabel={agentLabels.get(task.agentId) || task.agentId}
             conversationUnavailable={conversationUnavailableSessionIds.has(task.sessionId)}
             key={task.sessionId}
             onActivate={onTaskActivate}
@@ -545,6 +602,7 @@ function ProjectGroup({
 function ArchivedTaskGroups({
   projectRevision,
   projectLabels,
+  agentLabels,
   availableAgentIds,
   query,
   refreshProjectCatalog,
@@ -553,6 +611,7 @@ function ArchivedTaskGroups({
   workspaceSwitch,
   isTaskSessionObserved,
 }: {
+  agentLabels: ReadonlyMap<string, string>;
   availableAgentIds: ReadonlySet<string>;
   projectRevision: number;
   projectLabels: ReadonlyMap<string, string>;
@@ -628,6 +687,7 @@ function ArchivedTaskGroups({
               <TaskRow
                 active={false}
                 agentAvailable={availableAgentIds.has(task.agentId)}
+                agentLabel={agentLabels.get(task.agentId) || task.agentId}
                 conversationUnavailable={false}
                 key={task.sessionId}
                 onActivate={(archivedTask) => {
@@ -661,8 +721,8 @@ export function AgenticTaskList() {
   const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
   const [activeSessionId, setActiveSessionId] = React.useState<string>();
   const [activeAgentId, setActiveAgentId] = React.useState<string>();
-  const [availableAgentIds, setAvailableAgentIds] = React.useState<Set<string>>(
-    () => new Set(Object.keys(getAvailableAgentConfigs(preferenceService))),
+  const [availableAgentConfigs, setAvailableAgentConfigs] = React.useState(() =>
+    getAvailableAgentConfigs(preferenceService),
   );
   const [conversationUnavailableSessionIds, setConversationUnavailableSessionIds] = React.useState<Set<string>>(
     () => new Set(),
@@ -674,18 +734,28 @@ export function AgenticTaskList() {
   const taskActivationVersionRef = React.useRef(0);
   const activeTaskContextVersionRef = React.useRef(0);
   const projectLabels = React.useMemo(() => getAgenticProjectDisplayLabels(projects), [projects]);
+  const availableAgentIds = React.useMemo(() => new Set(Object.keys(availableAgentConfigs)), [availableAgentConfigs]);
+  const agentLabels = React.useMemo(
+    () =>
+      new Map(
+        Object.entries(availableAgentConfigs).map(([agentId, config]) => [
+          agentId,
+          config.description?.trim() || agentId,
+        ]),
+      ),
+    [availableAgentConfigs],
+  );
   const isTaskSessionObserved = React.useCallback(
     (sessionId: string) => aiChatService.isAgenticTaskSessionObserved?.(sessionId) ?? false,
     [aiChatService],
   );
 
   React.useEffect(() => {
-    const refreshAvailableAgentIds = () =>
-      setAvailableAgentIds(new Set(Object.keys(getAvailableAgentConfigs(preferenceService))));
-    refreshAvailableAgentIds();
+    const refreshAvailableAgentConfigs = () => setAvailableAgentConfigs(getAvailableAgentConfigs(preferenceService));
+    refreshAvailableAgentConfigs();
     const disposable = preferenceService.onSpecificPreferenceChange?.(
       AINativeSettingSectionsId.AgentConfigs,
-      refreshAvailableAgentIds,
+      refreshAvailableAgentConfigs,
     );
     return () => disposable?.dispose();
   }, [preferenceService]);
@@ -944,6 +1014,7 @@ export function AgenticTaskList() {
         {groups.map((group) => (
           <ProjectGroup
             activeSessionId={activeSessionId}
+            agentLabels={agentLabels}
             availableAgentIds={availableAgentIds}
             collapseDisabled={collapseDisabled}
             conversationUnavailableSessionIds={conversationUnavailableSessionIds}
@@ -962,6 +1033,7 @@ export function AgenticTaskList() {
         ))}
       </div>
       <ArchivedTaskGroups
+        agentLabels={agentLabels}
         availableAgentIds={availableAgentIds}
         query={query}
         refreshProjectCatalog={refreshProjectCatalog}

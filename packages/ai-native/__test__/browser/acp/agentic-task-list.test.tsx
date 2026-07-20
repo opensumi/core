@@ -40,6 +40,27 @@ jest.mock('@opensumi/ide-components/lib/modal', () => ({
   },
 }));
 
+jest.mock('@opensumi/ide-components/lib/popover', () => ({
+  Popover: ({ children, id, onVisibleChange, overlay, visible }: any) => {
+    const React = require('react');
+    const content = typeof overlay === 'function' ? overlay() : overlay;
+    return React.createElement(
+      'div',
+      {
+        'data-popover-id': id,
+        onBlur: () => onVisibleChange?.(false),
+        onFocus: () => onVisibleChange?.(true),
+        onMouseEnter: () => onVisibleChange?.(true),
+        onMouseLeave: () => onVisibleChange?.(false),
+      },
+      children,
+      visible ? React.createElement('div', { role: 'tooltip' }, content) : null,
+    );
+  },
+  PopoverPosition: { right: 'right' },
+  PopoverTriggerType: { focus: 'focus', hover: 'hover' },
+}));
+
 import { KeybindingRegistry } from '@opensumi/ide-core-browser';
 import { URI } from '@opensumi/ide-core-common';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
@@ -737,6 +758,62 @@ describe('AgenticTaskList', () => {
     expect(container.querySelector('[data-testid="agentic-task-archive-acp:layout"]')).toBeNull();
   });
 
+  it('keeps a live Task Row compact while revealing full metadata through hover and keyboard focus', async () => {
+    const services = createServices();
+    services.registry.listActiveGroups.mockResolvedValue([
+      {
+        project: projectA,
+        tasks: [
+          {
+            sessionId: 'acp:compact',
+            projectId: projectA.id,
+            agentId: 'agent-b',
+            title: 'A deliberately long Task Title for compact presentation',
+            createdAt: 1,
+            archived: false,
+            unread: false,
+            status: 'running' as const,
+          },
+        ],
+      },
+    ]);
+
+    await renderTaskList(services);
+
+    const row = container.querySelector('[data-testid="agentic-task-row-acp:compact"]') as HTMLButtonElement;
+    const agent = container.querySelector('[data-testid="agentic-task-agent-acp:compact"]');
+    expect(row.getAttribute('title')).toBeNull();
+    expect(agent?.textContent).toBe('Agent B');
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:compact"]')?.textContent).toBe('Running');
+    expect(row.getAttribute('aria-label')).toBe(
+      'A deliberately long Task Title for compact presentation. Agent: Agent B (agent-b). Status: Running.',
+    );
+    expect(container.querySelector('[role="tooltip"]')).toBeNull();
+
+    const popover = container.querySelector('[data-popover-id="agentic-task-tooltip-acp:compact"]') as HTMLElement;
+    await act(async () => {
+      popover.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      await flushPromises();
+    });
+    expect(container.querySelector('[role="tooltip"]')?.textContent).toContain(
+      'A deliberately long Task Title for compact presentation',
+    );
+    expect(container.querySelector('[role="tooltip"]')?.textContent).toContain('Agent: Agent B (agent-b)');
+    expect(container.querySelector('[role="tooltip"]')?.textContent).toContain('Status: Running');
+
+    await act(async () => {
+      row.focus();
+      await flushPromises();
+    });
+    expect(container.querySelector('[role="tooltip"]')).not.toBeNull();
+
+    await act(async () => {
+      row.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
+      await flushPromises();
+    });
+    expect(container.querySelector('[role="tooltip"]')).toBeNull();
+  });
+
   it('renders exceptional Task metadata, keeps ready rows silent and archive-eligible, and filters unavailable Projects', async () => {
     const services = createServices();
     services.registry.listActiveGroups.mockResolvedValue([
@@ -851,7 +928,7 @@ describe('AgenticTaskList', () => {
       'codicon-warning',
       'task_meta_warning',
     );
-    expectMetadata('agentic-task-attention-acp:input', 'input', 'Input needed', 'codicon-warning', 'task_meta_warning');
+    expectMetadata('agentic-task-attention-acp:input', 'input', 'Input', 'codicon-warning', 'task_meta_warning');
     expectMetadata('agentic-task-status-acp:running', 'running', 'Running', 'codicon-loading', 'task_meta_information');
     expect(
       container
@@ -868,12 +945,18 @@ describe('AgenticTaskList', () => {
     expectMetadata('agentic-task-status-acp:error', 'error', 'Error', 'codicon-error', 'task_meta_error');
     expect(container.querySelector('[data-testid="agentic-task-status-acp:permission"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-unread-acp:permission"]')).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:permission"]')?.getAttribute('aria-label'),
+    ).toContain('Status: Permission required.');
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:input"]')?.getAttribute('aria-label')).toContain(
+      'Status: Input needed.',
+    );
     expect(container.querySelector('.task_state')).toBeNull();
 
     const readyRow = container.querySelector('[data-testid="agentic-task-row-acp:ready"]');
     expect(readyRow?.textContent).toContain('Ready task');
     expect(readyRow?.textContent).not.toContain('ready');
-    expect(readyRow?.textContent).toContain('agent-a');
+    expect(readyRow?.textContent).toContain('Agent A');
     expect(container.querySelector('[data-testid="agentic-task-status-acp:ready"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-status-acp:unknown"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-archive-acp:unknown"]')).toBeNull();
@@ -954,8 +1037,11 @@ describe('AgenticTaskList', () => {
       container.querySelector('[data-testid="agentic-task-row-acp:failed"]')?.getAttribute('aria-current'),
     ).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-availability-acp:failed"]')?.textContent).toBe(
-      'History unavailable',
+      'No history',
     );
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:failed"]')?.getAttribute('aria-label'),
+    ).toContain('Status: History unavailable. Select the task to retry loading its history.');
 
     await act(async () => {
       (container.querySelector('[data-testid="agentic-task-row-acp:failed"]') as HTMLButtonElement).click();
@@ -1052,10 +1138,13 @@ describe('AgenticTaskList', () => {
 
     await renderTaskList(services);
 
-    expect(container.querySelector('[data-testid="agentic-task-agent-acp:last-known"]')?.textContent).toBe('agent-b');
+    expect(container.querySelector('[data-testid="agentic-task-agent-acp:last-known"]')?.textContent).toBe('Agent B');
     expect(container.querySelector('[data-testid="agentic-task-status-acp:last-known"]')?.textContent).toBe(
-      'Last known: Running',
+      'Last: Running',
     );
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:last-known"]')?.getAttribute('aria-label'),
+    ).toContain('Status: Last known status: Running.');
   });
 
   it('validates Last-known status before archive and archives a missing Task Conversation without rewriting status', async () => {
@@ -1135,10 +1224,22 @@ describe('AgenticTaskList', () => {
     await renderTaskList(services);
 
     const row = container.querySelector('[data-testid="agentic-task-row-acp:missing-agent"]') as HTMLButtonElement;
-    expect(row.disabled).toBe(true);
+    expect(row.disabled).toBe(false);
+    expect(row.getAttribute('aria-disabled')).toBe('true');
     expect(container.querySelector('[data-testid="agentic-task-availability-acp:missing-agent"]')?.textContent).toBe(
-      'Agent unavailable',
+      'No agent',
     );
+    expect(container.querySelector('[data-testid="agentic-task-agent-acp:missing-agent"]')?.textContent).toBe(
+      'agent-b',
+    );
+    expect(row.getAttribute('aria-label')).toContain('Status: Agent unavailable.');
+    await act(async () => {
+      row.focus();
+      row.click();
+      await flushPromises();
+    });
+    expect(document.activeElement).toBe(row);
+    expect(container.querySelector('[role="tooltip"]')).not.toBeNull();
 
     await act(async () => {
       (container.querySelector('[data-testid="agentic-task-archive-acp:missing-agent"]') as HTMLButtonElement).click();
@@ -1149,6 +1250,50 @@ describe('AgenticTaskList', () => {
       { conversationUnavailable: false },
     );
     expect(services.workspaceSwitch.activateTask).not.toHaveBeenCalled();
+  });
+
+  it('keeps unread visible and dismisses the Task metadata Tooltip when the Archive action receives focus', async () => {
+    const services = createServices();
+    services.registry.listActiveGroups.mockResolvedValue([
+      {
+        project: projectA,
+        tasks: [
+          {
+            sessionId: 'acp:action-disclosure',
+            projectId: projectA.id,
+            agentId: 'agent-a',
+            title: 'Unread archive candidate',
+            createdAt: 1,
+            archived: false,
+            unread: true,
+            status: 'ready' as const,
+          },
+        ],
+      },
+    ]);
+
+    await renderTaskList(services);
+
+    const row = container.querySelector('[data-testid="agentic-task-row-acp:action-disclosure"]') as HTMLButtonElement;
+    const archive = container.querySelector(
+      '[data-testid="agentic-task-archive-acp:action-disclosure"]',
+    ) as HTMLButtonElement;
+    const unread = container.querySelector('[data-testid="agentic-task-unread-acp:action-disclosure"]');
+
+    await act(async () => {
+      row.focus();
+      await flushPromises();
+    });
+    expect(container.querySelector('[role="tooltip"]')).not.toBeNull();
+
+    await act(async () => {
+      archive.focus();
+      await flushPromises();
+    });
+    expect(document.activeElement).toBe(archive);
+    expect(container.querySelector('[role="tooltip"]')).toBeNull();
+    expect(unread).not.toBeNull();
+    expect(row.querySelector('.task_action_space')).not.toBeNull();
   });
 
   it('refreshes archived-only Projects and filters unavailable archived Task rows', async () => {
