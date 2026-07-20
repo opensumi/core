@@ -1,8 +1,8 @@
 import { Injector } from '@opensumi/di';
 
-import { IChatInternalService } from '../../../src/common';
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
 import { AcpChatInternalService } from '../../../src/browser/chat/chat.internal.service.acp';
+import { IChatInternalService } from '../../../src/common';
 
 describe('AgenticWorkspaceSwitchService injection', () => {
   it('uses the chat service exposed to the active chat view for task drafts', () => {
