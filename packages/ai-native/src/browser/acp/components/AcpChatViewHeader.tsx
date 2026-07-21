@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { CommandService, QuickPickService, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
@@ -16,6 +16,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../../common';
 import { cleanAttachedTextWrapper } from '../../../common/utils';
+import { AI_CHAT_NEW_CHAT } from '../../chat/acp-new-draft.commands';
 import { ChatModel } from '../../chat/chat-model';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import styles from '../../chat/chat.module.less';
@@ -54,6 +55,7 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
   const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
   const workspaceSwitch = useInjectable<AgenticWorkspaceSwitchService>(AgenticWorkspaceSwitchService);
+  const commandService = useInjectable<CommandService>(CommandService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
@@ -117,8 +119,8 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
   }, [panelLayoutService]);
 
   const handleNewChat = React.useCallback(() => {
-    enterDraftSession();
-  }, [enterDraftSession]);
+    void commandService.executeCommand(AI_CHAT_NEW_CHAT.id);
+  }, [commandService]);
 
   const handleHistoryItemSelect = React.useCallback(
     (item: IChatHistoryItem) => {

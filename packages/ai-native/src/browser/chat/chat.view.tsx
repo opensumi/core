@@ -565,7 +565,7 @@ export const AIChatView = () => {
             }}
             onRegenerate={() => {
               if (request) {
-                aiChatService.sendRequest(request, true);
+                void aiChatService.sendRequest(request, true);
               }
             }}
             msgId={msgId}

@@ -133,7 +133,10 @@ async function waitForPendingPermission(): Promise<PermissionStateResult> {
   const attention = activeSessionPermissionAttention(pendingState.result.activeSessionId!);
   await expect(attention).toBeVisible({ timeout: 10_000 });
   await expect(attention).toHaveAttribute('data-agentic-task-meta-kind', 'permission');
-  await expect(attention).toContainText('Permission');
+  await expect(attention.locator('xpath=ancestor::button')).toHaveAttribute(
+    'aria-label',
+    /Status: Permission required/,
+  );
 
   return pendingState;
 }

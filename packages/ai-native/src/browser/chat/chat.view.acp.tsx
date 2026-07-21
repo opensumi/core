@@ -326,17 +326,17 @@ export const AIChatViewACPContent = () => {
         if (!active) {
           throw new Error('ACP queued turn runtime is inactive.');
         }
-        if (queuedTurnPortCallbacksRef.current.getStatus(sessionId) === 'idle') {
+        const activeTurn = sessionId ? activeTurns.get(sessionId) : undefined;
+        if (queuedTurnPortCallbacksRef.current.getStatus(sessionId) === 'idle' && !activeTurn) {
           return;
         }
-        const activeTurn = sessionId ? activeTurns.get(sessionId) : undefined;
         try {
           await queuedTurnPortCallbacksRef.current.requestCancellation(sessionId);
         } catch (error) {
           if (!active) {
             throw new Error('ACP queued turn runtime is inactive.');
           }
-          if (queuedTurnPortCallbacksRef.current.getStatus(sessionId) === 'idle') {
+          if (queuedTurnPortCallbacksRef.current.getStatus(sessionId) === 'idle' && !activeTurn) {
             return;
           }
           throw error;
@@ -932,7 +932,7 @@ export const AIChatViewACPContent = () => {
             history={history}
             onRegenerate={() => {
               if (request) {
-                aiChatService.sendRequest(request, true);
+                void aiChatService.sendRequest(request, true);
               }
             }}
             msgId={msgId}

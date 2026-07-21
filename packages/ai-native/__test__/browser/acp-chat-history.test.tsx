@@ -58,12 +58,19 @@ jest.mock('@opensumi/ide-core-browser', () => ({
 }));
 
 jest.mock('@opensumi/ide-core-browser/lib/components/ai-native', () => ({
-  EnhanceIcon: ({ className, onClick, ariaLabel }: any) =>
-    require('react').createElement('span', {
-      'aria-label': ariaLabel,
-      className,
-      onClick,
-    }),
+  EnhanceIcon: ({ className, onClick, onKeyDown, onMouseDown, tabIndex, role, ariaLabel }: any) =>
+    require('react').createElement(
+      'div',
+      {
+        'aria-label': ariaLabel,
+        onClick,
+        onKeyDown,
+        onMouseDown,
+        role,
+        tabIndex,
+      },
+      require('react').createElement('span', { className }),
+    ),
 }));
 
 jest.mock('../../src/browser/components/acp/chat-history.module.less', () => ({
@@ -250,6 +257,27 @@ describe('AcpChatHistory BDD', () => {
     expect(container.querySelector('[data-popover-id="ai-chat-header-new"]')?.getAttribute('title')).toBe(
       'New Chat (Ctrl+Alt+N)',
     );
+  });
+
+  it('Given popover history, when New Chat renders, then it has an accessible label', () => {
+    renderHistory();
+
+    expect(container.querySelector('[aria-label="New Chat"]')).not.toBeNull();
+  });
+
+  it.each(['Enter', ' '])('Given New Chat is focused, when %p is pressed, then it opens a new chat', (key) => {
+    const onNewChat = jest.fn();
+    renderHistory({ onNewChat });
+    const newChat = container.querySelector('[aria-label="New Chat"]') as HTMLElement;
+
+    expect(newChat.getAttribute('role')).toBe('button');
+    expect(newChat.tabIndex).toBe(0);
+
+    act(() => {
+      newChat.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key }));
+    });
+
+    expect(onNewChat).toHaveBeenCalledTimes(1);
   });
 
   it('Given inline variant has an MCP config action, when the header renders, then it appears after collapse and opens MCP config', () => {

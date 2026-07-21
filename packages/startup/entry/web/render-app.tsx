@@ -25,7 +25,7 @@ import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/b
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 
-import { AI_CHAT_LOGO_AVATAR_ID } from '@opensumi/ide-ai-native';
+import { AI_CHAT_LOGO_AVATAR_ID, IChatInternalService } from '@opensumi/ide-ai-native';
 import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
 import { CommonBrowserModules } from '../../src/browser/common-modules';
@@ -79,6 +79,11 @@ export async function renderApp(opts: IClientAppOpts) {
     (window as any).__OPENSUMI_E2E__ = {
       executeCommand: (commandId: string, ...args: any[]) =>
         app.injector.get<CommandService>(CommandService).executeCommand(commandId, ...args),
+      disposeAcpSessions: async () => {
+        const aiChatService = app.injector.get<any>(IChatInternalService);
+        const sessions = [...aiChatService.getSessions()];
+        await Promise.allSettled(sessions.map((session) => aiChatService.clearSessionModel(session.sessionId)));
+      },
     };
   }
 

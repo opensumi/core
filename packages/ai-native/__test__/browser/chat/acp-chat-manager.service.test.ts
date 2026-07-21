@@ -41,6 +41,18 @@ describe('AcpChatManagerService', () => {
     Object.defineProperty(service, 'sessionModels', {
       value: new Map(),
     });
+    Object.defineProperty(service, 'ownedBackendSessions', {
+      value: new Set(),
+    });
+    Object.defineProperty(service, 'sessionDisposeRequests', {
+      value: new Map(),
+    });
+    Object.defineProperty(service, 'sessionLoadGenerations', {
+      value: new Map(),
+    });
+    Object.defineProperty(service, 'sessionLifecycleOperations', {
+      value: new Map(),
+    });
     Object.defineProperty(service, 'acpSessionDisplayTitleOverrides', {
       value: {},
       writable: true,
@@ -195,6 +207,215 @@ describe('AcpChatManagerService', () => {
       agentId: 'claude-agent-acp',
       cwd: '/workspace',
     });
+  });
+
+  it('disposes an ACP provider session using its raw backend session id', async () => {
+    const provider = createSessionProvider();
+    const disposeSession = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(provider, 'aiBackService', {
+      value: { disposeSession },
+    });
+
+    await provider.disposeSession('acp:s1');
+
+    expect(disposeSession).toHaveBeenCalledWith('s1');
+  });
+
+  it('releases the backend session before clearing the browser session model', async () => {
+    const service = createService() as any;
+    service.ownedBackendSessions.add('acp:s1');
+    const calls: string[] = [];
+    service.mainProvider = {
+      disposeSession: jest.fn(async () => {
+        calls.push('backend');
+      }),
+    };
+    service.clearSession = jest.fn(() => {
+      calls.push('browser');
+    });
+    service.getSession = jest.fn(() => (calls.includes('browser') ? undefined : {}));
+
+    await service.disposeSession('acp:s1');
+
+    expect(calls).toEqual(['backend', 'browser']);
+  });
+
+  it('deduplicates overlapping backend session disposal and clears the browser model once', async () => {
+    const service = createService() as any;
+    service.ownedBackendSessions.add('acp:s1');
+    let releaseBackend!: () => void;
+    let notifyBackendStarted!: () => void;
+    const backendStarted = new Promise<void>((resolve) => {
+      notifyBackendStarted = resolve;
+    });
+    service.mainProvider = {
+      disposeSession: jest.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            releaseBackend = resolve;
+            notifyBackendStarted();
+          }),
+      ),
+    };
+    service.getSession = jest.fn(() => (service.clearSession.mock.calls.length === 0 ? {} : undefined));
+    service.clearSession = jest.fn();
+
+    const first = service.disposeSession('acp:s1');
+    const second = service.disposeSession('acp:s1');
+    await backendStarted;
+    releaseBackend();
+    await Promise.all([first, second]);
+
+    expect(service.mainProvider.disposeSession).toHaveBeenCalledTimes(1);
+    expect(service.clearSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps successful session disposal idempotent across sequential calls', async () => {
+    const service = createService() as any;
+    service.ownedBackendSessions.add('acp:s1');
+    service.mainProvider = {
+      disposeSession: jest.fn().mockResolvedValue(undefined),
+    };
+    service.getSession = jest.fn(() => (service.clearSession.mock.calls.length === 0 ? {} : undefined));
+    service.clearSession = jest.fn();
+
+    await service.disposeSession('acp:s1');
+    await service.disposeSession('acp:s1');
+
+    expect(service.mainProvider.disposeSession).toHaveBeenCalledTimes(1);
+    expect(service.clearSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('shares an overlapping failed disposal and retries only after it settles', async () => {
+    const service = createService() as any;
+    const error = new Error('ambiguous backend disposal failure');
+    service.ownedBackendSessions.add('acp:s1');
+    service.mainProvider = {
+      disposeSession: jest.fn().mockRejectedValueOnce(error).mockResolvedValueOnce(undefined),
+    };
+    service.getSession = jest.fn(() => undefined);
+    service.clearSession = jest.fn();
+
+    const first = service.disposeSession('acp:s1');
+    const second = service.disposeSession('acp:s1');
+    await expect(Promise.all([first, second])).rejects.toThrow(error);
+
+    expect(service.mainProvider.disposeSession).toHaveBeenCalledTimes(1);
+
+    await expect(service.disposeSession('acp:s1')).resolves.toBeUndefined();
+    expect(service.mainProvider.disposeSession).toHaveBeenCalledTimes(2);
+  });
+
+  it('disposes a session again after the same historical session is reloaded', async () => {
+    const service = createService() as any;
+    service.ownedBackendSessions.add('acp:s1');
+    let browserOwnsSession = true;
+    service.getSession = jest.fn(() => (browserOwnsSession ? {} : undefined));
+    service.clearSession = jest.fn(() => {
+      browserOwnsSession = false;
+    });
+    service.mainProvider = {
+      disposeSession: jest.fn().mockResolvedValue(undefined),
+      loadSession: jest.fn(async () => {
+        browserOwnsSession = true;
+        return {
+          sessionId: 'acp:s1',
+          history: { additional: {}, messages: [] },
+          requests: [],
+        };
+      }),
+    };
+
+    await service.disposeSession('acp:s1');
+    await service.loadSession('acp:s1');
+    await service.disposeSession('acp:s1');
+
+    expect(service.mainProvider.disposeSession).toHaveBeenCalledTimes(2);
+    expect(service.clearSession).toHaveBeenCalledTimes(2);
+  });
+
+  it('serializes a pending historical reload before disposing its reacquired session', async () => {
+    const service = createService() as any;
+    let browserOwnsSession = false;
+    let resolveLoad!: (session: any) => void;
+    const loadPending = new Promise<any>((resolve) => {
+      resolveLoad = resolve;
+    });
+    service.getSession = jest.fn(() => (browserOwnsSession ? {} : undefined));
+    service.clearSession = jest.fn(() => {
+      browserOwnsSession = false;
+    });
+    service.mainProvider = {
+      disposeSession: jest.fn().mockResolvedValue(undefined),
+      loadSession: jest.fn(() => loadPending),
+    };
+
+    await service.disposeSession('acp:s1');
+    const reload = service.loadSession('acp:s1');
+    const disposeReloaded = service.disposeSession('acp:s1');
+    browserOwnsSession = true;
+    resolveLoad({
+      sessionId: 'acp:s1',
+      history: { additional: {}, messages: [] },
+      requests: [],
+    });
+    await Promise.all([reload, disposeReloaded]);
+
+    expect(service.mainProvider.disposeSession).toHaveBeenCalledTimes(1);
+    expect(service.clearSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('queues a second disposal after a reload requested during the first disposal', async () => {
+    const service = createService() as any;
+    service.ownedBackendSessions.add('acp:s1');
+    let releaseFirstDisposal!: () => void;
+    let notifyFirstDisposalStarted!: () => void;
+    const firstDisposalStarted = new Promise<void>((resolve) => {
+      notifyFirstDisposalStarted = resolve;
+    });
+    let releaseLoad!: (session: any) => void;
+    let notifyLoadStarted!: () => void;
+    const loadStarted = new Promise<void>((resolve) => {
+      notifyLoadStarted = resolve;
+    });
+    service.getSession = jest.fn(() => undefined);
+    service.clearSession = jest.fn();
+    service.mainProvider = {
+      disposeSession: jest
+        .fn()
+        .mockImplementationOnce(
+          () =>
+            new Promise<void>((resolve) => {
+              releaseFirstDisposal = resolve;
+              notifyFirstDisposalStarted();
+            }),
+        )
+        .mockResolvedValueOnce(undefined),
+      loadSession: jest.fn(
+        () =>
+          new Promise<any>((resolve) => {
+            releaseLoad = resolve;
+            notifyLoadStarted();
+          }),
+      ),
+    };
+
+    const firstDisposal = service.disposeSession('acp:s1');
+    await firstDisposalStarted;
+    const reload = service.loadSession('acp:s1');
+    const secondDisposal = service.disposeSession('acp:s1');
+
+    releaseFirstDisposal();
+    await firstDisposal;
+    await loadStarted;
+    releaseLoad({
+      sessionId: 'acp:s1',
+      history: { additional: {}, messages: [] },
+      requests: [],
+    });
+    await Promise.all([reload, secondDisposal]);
+
+    expect(service.mainProvider.disposeSession).toHaveBeenCalledTimes(2);
   });
 
   it('maps a named ACP thread-pool saturation error to an actionable message without notifying directly', async () => {

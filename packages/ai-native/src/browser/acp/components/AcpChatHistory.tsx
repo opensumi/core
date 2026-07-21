@@ -144,6 +144,16 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
       onNewChat();
     }, [onNewChat, disabled]);
 
+    const handleNewChatKeyDown = useCallback(
+      (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleNewChat();
+        }
+      },
+      [handleNewChat],
+    );
+
     useEffect(() => {
       if (historyTitleEditable) {
         inputRef.current?.focus({ cursor: 'end' });
@@ -340,10 +350,14 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
           </div>
         ) : (
           <EnhanceIcon
-            aria-label={newChatLabel}
+            ariaLabel={newChatLabel}
             className={styles.chat_history_header_actions_new}
             iconClass='codicon codicon-add'
             onClick={handleNewChat}
+            onKeyDown={handleNewChatKeyDown}
+            onMouseDown={(event) => event.preventDefault()}
+            role='button'
+            tabIndex={0}
           />
         )}
       </Popover>

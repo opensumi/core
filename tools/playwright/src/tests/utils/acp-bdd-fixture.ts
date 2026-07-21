@@ -450,9 +450,32 @@ export async function loadAcpBddFixtureWorkbench(
       workspaceDir,
       url: page.url(),
       async dispose() {
-        app?.dispose();
-        workspace?.dispose();
-        await releaseLock();
+        try {
+          try {
+            await page.evaluate(async () => {
+              await (window as any).__OPENSUMI_E2E__?.disposeAcpSessions?.();
+            });
+          } catch {
+            // Best-effort: navigation below still terminates WebMCP and RPC.
+          }
+          try {
+            await clearAcpBddTransientSessionState(page);
+          } catch {
+            // Best-effort: stale sessionStorage must not retain the runtime lock.
+          } finally {
+            await page.goto('about:blank');
+          }
+        } finally {
+          try {
+            app?.dispose();
+          } finally {
+            try {
+              workspace?.dispose();
+            } finally {
+              await releaseLock();
+            }
+          }
+        }
       },
     };
   } catch (error) {

@@ -164,6 +164,8 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private bootstrapSessionAttempted = false;
 
+  private lifecycleGeneration = 0;
+
   /**
    * Guards all asynchronous session activations. A later user selection must
    * always win, regardless of whether it came from the regular history or
@@ -177,6 +179,8 @@ export class AcpChatInternalService extends ChatInternalService {
     string,
     { model: ChatModel; disposable: DisposableCollection }
   >();
+  private readonly agenticTaskRegistrationBarriers = new Map<string, Promise<void>>();
+  private readonly requestCancellationGenerations = new Map<string, number>();
   private beginSessionLoading(): void {
     this.sessionLoadingCount += 1;
     if (this.sessionLoadingCount === 1) {
@@ -269,9 +273,12 @@ export class AcpChatInternalService extends ChatInternalService {
     return request;
   }
 
-  override sendRequest(request: ChatRequestModel, regenerate = false) {
+  override async sendRequest(request: ChatRequestModel, regenerate = false): Promise<void> {
+    const lifecycleGeneration = this.lifecycleGeneration;
     const sessionId = this._sessionModel?.sessionId;
-    if (sessionId && this.isAgenticLayout()) {
+    const cancellationGeneration = sessionId ? this.requestCancellationGenerations.get(sessionId) || 0 : 0;
+    const shouldRegisterAgenticTask = Boolean(sessionId && this.isAgenticLayout());
+    if (shouldRegisterAgenticTask && sessionId) {
       this.agenticTaskRegistry.rememberActiveTaskSession(sessionId);
     }
     this.logger.log(
@@ -295,32 +302,46 @@ export class AcpChatInternalService extends ChatInternalService {
       );
     };
 
-    const taskRegistration = this.registerFirstAgenticPrompt(request, sessionId).catch((error) => {
-      this.logger.error(
-        `[ACP Chat][Frontend] register Agentic task failed — sessionId=${sessionId ?? '(empty)'}, requestId=${
-          request.requestId
-        }, error=${error instanceof Error ? error.message : String(error)}`,
-      );
-    });
+    if (!sessionId) {
+      handleError(new Error('Cannot send an ACP chat request without an active session.'));
+      return;
+    }
 
-    let result: ReturnType<ChatInternalService['sendRequest']>;
+    const registrationBarrier =
+      this.agenticTaskRegistrationBarriers.get(sessionId) ||
+      (shouldRegisterAgenticTask ? this.getAgenticTaskRegistrationBarrier(request, sessionId) : undefined);
+    if (registrationBarrier) {
+      await registrationBarrier;
+    }
+    if (lifecycleGeneration !== this.lifecycleGeneration) {
+      handleError(new Error('ACP chat service was disposed before request kickoff.'));
+      return;
+    }
+    if ((this.requestCancellationGenerations.get(sessionId) || 0) !== cancellationGeneration) {
+      if (!request.response.isComplete) {
+        request.response.complete();
+      }
+      return;
+    }
+
     try {
-      result = super.sendRequest(request, regenerate);
+      const result = this.chatManagerService.sendRequest(sessionId, request, regenerate);
+      if (regenerate) {
+        this._onRegenerateRequest.fire();
+      }
+      await result;
+      this.logger.log(`[ACP Chat][Frontend] sendRequest done — sessionId=${sessionId}, requestId=${request.requestId}`);
     } catch (error) {
       handleError(error);
-      throw error;
     }
-    return Promise.resolve(result).then(
-      async () => {
-        await taskRegistration;
-        this.logger.log(
-          `[ACP Chat][Frontend] sendRequest done — sessionId=${sessionId ?? '(empty)'}, requestId=${request.requestId}`,
-        );
-      },
-      (error) => {
-        handleError(error);
-      },
-    );
+  }
+
+  override cancelRequest(): void {
+    const sessionId = this._sessionModel?.sessionId;
+    if (sessionId) {
+      this.requestCancellationGenerations.set(sessionId, (this.requestCancellationGenerations.get(sessionId) || 0) + 1);
+    }
+    super.cancelRequest();
   }
 
   override init() {
@@ -473,6 +494,29 @@ export class AcpChatInternalService extends ChatInternalService {
 
   private isAgenticLayout(): boolean {
     return this.panelLayoutService?.getLayoutMode() === 'agentic';
+  }
+
+  private getAgenticTaskRegistrationBarrier(request: ChatRequestModel, sessionId: string): Promise<void> {
+    const existingBarrier = this.agenticTaskRegistrationBarriers.get(sessionId);
+    if (existingBarrier) {
+      return existingBarrier;
+    }
+
+    const barrier = this.registerFirstAgenticPrompt(request, sessionId)
+      .catch((error) => {
+        this.logger.error(
+          `[ACP Chat][Frontend] register Agentic task failed — sessionId=${sessionId}, requestId=${
+            request.requestId
+          }, error=${error instanceof Error ? error.message : String(error)}`,
+        );
+      })
+      .finally(() => {
+        if (this.agenticTaskRegistrationBarriers.get(sessionId) === barrier) {
+          this.agenticTaskRegistrationBarriers.delete(sessionId);
+        }
+      });
+    this.agenticTaskRegistrationBarriers.set(sessionId, barrier);
+    return barrier;
   }
 
   private async registerFirstAgenticPrompt(request: ChatRequestModel, sessionId: string | undefined): Promise<void> {
@@ -822,14 +866,22 @@ export class AcpChatInternalService extends ChatInternalService {
     this._onWillClearSession.fire(sessionId);
     const clearedSessionId =
       this._sessionModel && sessionId === this._sessionModel.sessionId ? this.stripAcpPrefix(sessionId) : undefined;
-    this.chatManagerService.clearSession(sessionId);
-    if (clearedSessionId) {
-      this.permissionBridgeService.clearSessionDialogs(clearedSessionId);
-    }
-    if (this._sessionModel && sessionId === this._sessionModel.sessionId) {
-      this.enterDraftSession({ force: true });
-    } else if (this._sessionModel) {
-      this._onChangeSession.fire(this._sessionModel.sessionId);
+    try {
+      const acpManager = this.chatManagerService as AcpChatManagerService;
+      if (acpManager.disposeSession) {
+        await acpManager.disposeSession(sessionId);
+      } else {
+        this.chatManagerService.clearSession(sessionId);
+      }
+    } finally {
+      if (clearedSessionId) {
+        this.permissionBridgeService.clearSessionDialogs(clearedSessionId);
+      }
+      if (this._sessionModel && sessionId === this._sessionModel.sessionId) {
+        this.enterDraftSession({ force: true });
+      } else if (this._sessionModel) {
+        this._onChangeSession.fire(this._sessionModel.sessionId);
+      }
     }
   }
 
@@ -979,7 +1031,10 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   override dispose(): void {
+    this.lifecycleGeneration += 1;
     this.permissionBridgeService.setActiveSession(undefined);
+    this.agenticTaskRegistrationBarriers.clear();
+    this.requestCancellationGenerations.clear();
     this.taskObservationDisposables.forEach(({ disposable }) => disposable.dispose());
     this.taskObservationDisposables.clear();
     this._onModeChange.dispose();

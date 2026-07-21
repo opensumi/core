@@ -212,6 +212,7 @@ describe('AcpChatInternalService', () => {
       });
       const stateEmitter = new Emitter<any>();
       const chatManagerService = {
+        cancelRequest: jest.fn(),
         clearSession: jest.fn(),
         getAvailableCommands: jest.fn(() => [{ name: 'help', description: 'Help' }]),
         getSession: jest.fn(() => model),
@@ -596,8 +597,9 @@ describe('AcpChatInternalService', () => {
       expect(request.response.isComplete).toBe(true);
     });
 
-    it('completes an unfinished response before rethrowing a synchronous sendRequest failure', () => {
+    it('completes and resolves synchronous sendRequest failures when Agentic Task registration is not required', async () => {
       const { chatManagerService, model, service } = createService();
+      service.panelLayoutService.getLayoutMode.mockReturnValue('classic');
       service._sessionModel = model;
       const error = new Error('request kickoff threw');
       chatManagerService.sendRequest.mockImplementationOnce(() => {
@@ -610,9 +612,281 @@ describe('AcpChatInternalService', () => {
         images: [],
       });
 
-      expect(() => service.sendRequest(request)).toThrow(error);
+      await expect(service.sendRequest(request)).resolves.toBeUndefined();
       expect(request.response.errorDetails).toEqual({ message: error.message });
       expect(request.response.isComplete).toBe(true);
+    });
+
+    it('completes and resolves a synchronous ACP request failure after Agentic Task persistence', async () => {
+      const { chatManagerService, model, registry, service } = createService();
+      service._sessionModel = model;
+      const error = new Error('request kickoff threw');
+      chatManagerService.sendRequest.mockImplementationOnce(() => {
+        throw error;
+      });
+      const request = model.addRequest({
+        prompt: 'Fix list',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      await expect(service.sendRequest(request)).resolves.toBeUndefined();
+
+      expect(registry.registerFirstPrompt).toHaveBeenCalledTimes(1);
+      expect(request.response.errorDetails).toEqual({ message: error.message });
+      expect(request.response.isComplete).toBe(true);
+    });
+
+    it('shares first Agentic Task persistence and preserves concurrent send kickoff order', async () => {
+      const { chatManagerService, model, registry, service } = createService();
+      let resolveRegistration!: () => void;
+      let notifyRegistrationStarted!: () => void;
+      const registrationStarted = new Promise<void>((resolve) => {
+        notifyRegistrationStarted = resolve;
+      });
+      registry.registerFirstPrompt.mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            if (!resolveRegistration) {
+              resolveRegistration = resolve;
+              notifyRegistrationStarted();
+              return;
+            }
+            resolve();
+          }),
+      );
+      service._sessionModel = model;
+      const firstRequest = model.addRequest({
+        prompt: 'First queued send',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+      const secondRequest = model.addRequest({
+        prompt: 'Second queued send',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      const firstSend = service.sendRequest(firstRequest);
+      await registrationStarted;
+      const secondSend = service.sendRequest(secondRequest);
+
+      expect(registry.registerFirstPrompt).toHaveBeenCalledTimes(1);
+      expect(chatManagerService.sendRequest).not.toHaveBeenCalled();
+
+      resolveRegistration();
+      await Promise.all([firstSend, secondSend]);
+
+      expect(registry.registerFirstPrompt).toHaveBeenCalledTimes(1);
+      expect(chatManagerService.sendRequest.mock.calls.map(([, request]) => request.requestId)).toEqual([
+        firstRequest.requestId,
+        secondRequest.requestId,
+      ]);
+    });
+
+    it('does not start a request after disposal while first Agentic Task persistence is pending', async () => {
+      const { chatManagerService, model, registry, service } = createService();
+      let resolveRegistration!: () => void;
+      let notifyRegistrationStarted!: () => void;
+      const registrationStarted = new Promise<void>((resolve) => {
+        notifyRegistrationStarted = resolve;
+      });
+      registry.registerFirstPrompt.mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveRegistration = resolve;
+            notifyRegistrationStarted();
+          }),
+      );
+      service._sessionModel = model;
+      const request = model.addRequest({
+        prompt: 'Do not send after disposal',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      const send = service.sendRequest(request);
+      await registrationStarted;
+      service.dispose();
+      resolveRegistration();
+
+      await expect(send).resolves.toBeUndefined();
+
+      expect(chatManagerService.sendRequest).not.toHaveBeenCalled();
+      expect(request.response.errorDetails).toEqual({
+        message: 'ACP chat service was disposed before request kickoff.',
+      });
+      expect(request.response.isComplete).toBe(true);
+    });
+
+    it('does not start a request canceled while first Agentic Task persistence is pending', async () => {
+      const { chatManagerService, model, registry, service } = createService();
+      let resolveRegistration!: () => void;
+      let notifyRegistrationStarted!: () => void;
+      const registrationStarted = new Promise<void>((resolve) => {
+        notifyRegistrationStarted = resolve;
+      });
+      registry.registerFirstPrompt.mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveRegistration = resolve;
+            notifyRegistrationStarted();
+          }),
+      );
+      service._sessionModel = model;
+      const request = model.addRequest({
+        prompt: 'Cancel before request kickoff',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      const send = service.sendRequest(request);
+      await registrationStarted;
+      service.cancelRequest();
+      resolveRegistration();
+
+      await expect(send).resolves.toBeUndefined();
+
+      expect(chatManagerService.cancelRequest).toHaveBeenCalledWith(model.sessionId);
+      expect(chatManagerService.sendRequest).not.toHaveBeenCalled();
+      expect(request.response.isComplete).toBe(true);
+    });
+
+    it('keeps an existing Agentic persistence barrier after switching to Classic layout', async () => {
+      const { chatManagerService, model, registry, service } = createService();
+      let resolveRegistration!: () => void;
+      let notifyRegistrationStarted!: () => void;
+      const registrationStarted = new Promise<void>((resolve) => {
+        notifyRegistrationStarted = resolve;
+      });
+      registry.registerFirstPrompt.mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveRegistration = resolve;
+            notifyRegistrationStarted();
+          }),
+      );
+      service._sessionModel = model;
+      const firstRequest = model.addRequest({
+        prompt: 'Agentic send before layout switch',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+      const secondRequest = model.addRequest({
+        prompt: 'Classic send after layout switch',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      const firstSend = service.sendRequest(firstRequest);
+      await registrationStarted;
+      service.panelLayoutService.getLayoutMode.mockReturnValue('classic');
+      const secondSend = service.sendRequest(secondRequest);
+
+      expect(chatManagerService.sendRequest).not.toHaveBeenCalled();
+
+      resolveRegistration();
+      await Promise.all([firstSend, secondSend]);
+
+      expect(chatManagerService.sendRequest.mock.calls.map(([, request]) => request.requestId)).toEqual([
+        firstRequest.requestId,
+        secondRequest.requestId,
+      ]);
+    });
+
+    it('delivers a request through its captured session when the active session changes during persistence', async () => {
+      const { chatManagerService, model, registry, service } = createService();
+      let resolveRegistration!: () => void;
+      let notifyRegistrationStarted!: () => void;
+      const registrationStarted = new Promise<void>((resolve) => {
+        notifyRegistrationStarted = resolve;
+      });
+      registry.registerFirstPrompt.mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveRegistration = resolve;
+            notifyRegistrationStarted();
+          }),
+      );
+      service._sessionModel = model;
+      const request = model.addRequest({
+        prompt: 'Stay with the original session',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+      const send = service.sendRequest(request);
+      await registrationStarted;
+      service._sessionModel = new ChatModel(new ChatFeatureRegistry(), {
+        sessionId: 'acp:sess-2',
+        acpTarget: { agentId: 'agent-b', cwd: '/work/a' },
+      });
+
+      resolveRegistration();
+      await send;
+
+      expect(chatManagerService.sendRequest).toHaveBeenCalledWith(model.sessionId, request, false);
+    });
+
+    it('waits for the first Agentic Task persistence before starting the ACP request stream', async () => {
+      const { chatManagerService, model, registry, service } = createService();
+      let resolveRegistration!: () => void;
+      let notifyRegistrationStarted!: () => void;
+      const registrationStarted = new Promise<void>((resolve) => {
+        notifyRegistrationStarted = resolve;
+      });
+      registry.registerFirstPrompt.mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveRegistration = resolve;
+            notifyRegistrationStarted();
+          }),
+      );
+      service._sessionModel = model;
+      const request = model.addRequest({
+        prompt: 'Persist before streaming',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      const send = service.sendRequest(request);
+      await registrationStarted;
+
+      expect(chatManagerService.sendRequest).not.toHaveBeenCalled();
+
+      resolveRegistration();
+      await send;
+
+      expect(chatManagerService.sendRequest).toHaveBeenCalledTimes(1);
+    });
+
+    it('logs first Agentic Task persistence failures and still starts the ACP request stream', async () => {
+      const { chatManagerService, model, registry, service } = createService();
+      const error = new Error('task persistence failed');
+      registry.registerFirstPrompt.mockRejectedValueOnce(error);
+      service._sessionModel = model;
+      const request = model.addRequest({
+        prompt: 'Continue despite persistence failure',
+        agentId: 'agent-b',
+        command: '',
+        images: [],
+      });
+
+      await expect(service.sendRequest(request)).resolves.toBeUndefined();
+
+      expect(service.logger.error).toHaveBeenCalledWith(
+        expect.stringContaining(`register Agentic task failed — sessionId=${model.sessionId}`),
+      );
+      expect(service.logger.error).toHaveBeenCalledWith(expect.stringContaining(`error=${error.message}`));
+      expect(chatManagerService.sendRequest).toHaveBeenCalledTimes(1);
     });
 
     it('seeds the registered Task status from the model current ACP thread status', async () => {
@@ -657,11 +931,16 @@ describe('AcpChatInternalService', () => {
     it('首个 Agentic 请求等待权限时应先注册任务并显示权限关注状态', async () => {
       const { chatManagerService, model, permissionRequestEmitter, registry, service } = createService();
       let resolveSend!: () => void;
-      chatManagerService.sendRequest.mockReturnValue(
-        new Promise<void>((resolve) => {
+      let notifySendStarted!: () => void;
+      const sendStarted = new Promise<void>((resolve) => {
+        notifySendStarted = resolve;
+      });
+      chatManagerService.sendRequest.mockImplementationOnce(() => {
+        notifySendStarted();
+        return new Promise<void>((resolve) => {
           resolveSend = resolve;
-        }),
-      );
+        });
+      });
       service._sessionModel = model;
       const request = model.addRequest({
         prompt: 'Permission task',
@@ -671,7 +950,7 @@ describe('AcpChatInternalService', () => {
       });
 
       const send = service.sendRequest(request);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await sendStarted;
 
       expect(registry.registerFirstPrompt).toHaveBeenCalledWith(
         expect.objectContaining({ sessionId: model.sessionId, firstPrompt: 'Permission task' }),
@@ -872,6 +1151,18 @@ describe('AcpChatInternalService', () => {
 
       expect(chatManagerService.clearSession).toHaveBeenCalledWith('acp:sess-1');
       expect(chatManagerService.startSession).not.toHaveBeenCalled();
+      expect(permissionBridgeService.clearSessionDialogs).toHaveBeenCalledWith('sess-1');
+      expect(service.sessionModel).toBeUndefined();
+    });
+
+    it('clears local active state even when backend ACP session disposal fails', async () => {
+      const { chatManagerService, model, permissionBridgeService, service } = createService();
+      const error = new Error('backend dispose failed');
+      chatManagerService.disposeSession = jest.fn().mockRejectedValue(error);
+      service._sessionModel = model;
+
+      await expect(service.clearSessionModel()).rejects.toThrow(error);
+
       expect(permissionBridgeService.clearSessionDialogs).toHaveBeenCalledWith('sess-1');
       expect(service.sessionModel).toBeUndefined();
     });

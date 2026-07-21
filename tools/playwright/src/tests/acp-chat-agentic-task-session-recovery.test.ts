@@ -66,7 +66,7 @@ test.describe('ACP Chat Agentic Task Session Recovery', () => {
 
       const retainedRow = page.getByTestId(`agentic-task-row-${sessionId}`);
       await expect(retainedRow).toBeVisible({ timeout: 30_000 });
-      await expect(page.getByTestId(`agentic-task-agent-${sessionId}`)).toContainText('claude-agent-acp');
+      await expect(retainedRow).toHaveAttribute('aria-label', /Agent: .*claude-agent-acp/);
 
       await chatInput().click();
       await page.keyboard.type(PREVIOUS_ACTIVE_PROMPT);
@@ -81,13 +81,17 @@ test.describe('ACP Chat Agentic Task Session Recovery', () => {
 
       await retainedRow.click();
       const unavailable = page.getByTestId(`agentic-task-availability-${sessionId}`);
-      await expect(unavailable).toHaveText('History unavailable', { timeout: 30_000 });
+      await expect(unavailable).toBeVisible({ timeout: 30_000 });
+      await expect(unavailable).toHaveAttribute('data-agentic-task-meta-kind', 'conversation-unavailable');
+      await expect(retainedRow).toHaveAttribute('aria-label', /Status: History unavailable/);
       await expect(retainedRow).not.toHaveAttribute('aria-current', 'true');
       await expect(previousActiveRow).toHaveAttribute('aria-current', 'true');
       await expect.poll(() => missingLoadAttempts).toBeGreaterThanOrEqual(1);
 
       await retainedRow.click();
-      await expect(unavailable).toHaveText('History unavailable');
+      await expect(unavailable).toBeVisible();
+      await expect(unavailable).toHaveAttribute('data-agentic-task-meta-kind', 'conversation-unavailable');
+      await expect(retainedRow).toHaveAttribute('aria-label', /Status: History unavailable/);
       await expect.poll(() => missingLoadAttempts).toBeGreaterThanOrEqual(2);
       await expect(previousActiveRow).toHaveAttribute('aria-current', 'true');
 

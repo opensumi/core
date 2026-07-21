@@ -77,6 +77,10 @@ export class AcpChatManagerService extends ChatManagerService {
   private sessionAttachments:
     | Map<string, { stream: SumiReadableStream<IChatProgress>; disposables: IDisposable[] }>
     | undefined;
+  private readonly ownedBackendSessions = new Set<string>();
+  private readonly sessionDisposeRequests = new Map<string, { generation: number; promise: Promise<void> }>();
+  private readonly sessionLoadGenerations = new Map<string, number>();
+  private readonly sessionLifecycleOperations = new Map<string, Promise<void>>();
 
   private readonly onDidApplySessionStateEmitter = this.registerDispose(new Emitter<AcpSessionStateChangeEvent>());
   public readonly onDidApplySessionState = this.onDidApplySessionStateEmitter.event;
@@ -339,6 +343,7 @@ export class AcpChatManagerService extends ChatManagerService {
       const models = this.fromAcpJSON([sessionData]);
       if (models.length > 0) {
         const model = models[0];
+        this.ownedBackendSessions.add(model.sessionId);
         this.sessionModels.set(model.sessionId, model);
         this.listenSession(model);
         return model;
@@ -352,25 +357,50 @@ export class AcpChatManagerService extends ChatManagerService {
   }
 
   async loadSession(sessionId: string) {
-    this.useAcpProviderWhenAvailable();
-    if (this.aiNativeConfig.capabilities.supportsAgentMode) {
-      const existingSession = this.peekSession(sessionId);
-      const hasLoadedHistory = Boolean(existingSession?.history?.getMessages()?.length);
+    this.sessionLoadGenerations.set(sessionId, (this.sessionLoadGenerations.get(sessionId) || 0) + 1);
+    return this.enqueueSessionLifecycle(sessionId, async () => {
+      this.useAcpProviderWhenAvailable();
+      if (this.aiNativeConfig.capabilities.supportsAgentMode) {
+        const existingSession = this.peekSession(sessionId);
+        const hasLoadedHistory = Boolean(existingSession?.history?.getMessages()?.length);
 
-      if (this.mainProvider && sessionId) {
-        const attachmentPromise = this.mainProvider.attachSession?.(sessionId);
-        if (!hasLoadedHistory && this.mainProvider.loadSession) {
-          const sessionData = await this.mainProvider.loadSession(sessionId);
-          if (sessionData) {
-            this.restoreLoadedSession(sessionId, sessionData, existingSession);
+        if (this.mainProvider && sessionId) {
+          let loaded = false;
+          const attachmentPromise = this.mainProvider.attachSession?.(sessionId);
+          if (!hasLoadedHistory && this.mainProvider.loadSession) {
+            const sessionData = await this.mainProvider.loadSession(sessionId);
+            if (sessionData) {
+              loaded = true;
+              this.ownedBackendSessions.add(sessionId);
+              this.restoreLoadedSession(sessionId, sessionData, existingSession);
+            }
+          }
+          const attachment = await attachmentPromise;
+          if (attachment) {
+            this.observeSessionAttachment(sessionId, attachment);
+          }
+          if (loaded) {
+            this.ownedBackendSessions.add(sessionId);
           }
         }
-        const attachment = await attachmentPromise;
-        if (attachment) {
-          this.observeSessionAttachment(sessionId, attachment);
-        }
       }
-    }
+    });
+  }
+
+  private enqueueSessionLifecycle<T>(sessionId: string, operation: () => Promise<T>): Promise<T> {
+    const previousOperation = this.sessionLifecycleOperations.get(sessionId) || Promise.resolve();
+    const currentOperation = previousOperation.catch(() => undefined).then(operation);
+    const settledOperation = currentOperation.then(
+      () => undefined,
+      () => undefined,
+    );
+    this.sessionLifecycleOperations.set(sessionId, settledOperation);
+    void settledOperation.then(() => {
+      if (this.sessionLifecycleOperations.get(sessionId) === settledOperation) {
+        this.sessionLifecycleOperations.delete(sessionId);
+      }
+    });
+    return currentOperation;
   }
 
   private restoreLoadedSession(sessionId: string, sessionData: ISessionModel, existingSession?: ChatModel): void {
@@ -557,6 +587,39 @@ export class AcpChatManagerService extends ChatManagerService {
   override clearSession(sessionId: string): void {
     super.clearSession(sessionId);
     this.removeDisplayTitleOverride(sessionId);
+  }
+
+  async disposeSession(sessionId: string): Promise<void> {
+    const generation = this.sessionLoadGenerations.get(sessionId) || 0;
+    const existingRequest = this.sessionDisposeRequests.get(sessionId);
+    if (existingRequest?.generation === generation) {
+      return existingRequest.promise;
+    }
+
+    const disposal = this.enqueueSessionLifecycle(sessionId, async () => {
+      if (!this.ownedBackendSessions.has(sessionId)) {
+        if (this.getSession(sessionId)) {
+          this.clearSession(sessionId);
+        }
+        return;
+      }
+
+      try {
+        await this.mainProvider?.disposeSession?.(sessionId);
+        this.ownedBackendSessions.delete(sessionId);
+      } finally {
+        if (this.getSession(sessionId)) {
+          this.clearSession(sessionId);
+        }
+      }
+    });
+    const trackedDisposal = disposal.finally(() => {
+      if (this.sessionDisposeRequests.get(sessionId)?.promise === trackedDisposal) {
+        this.sessionDisposeRequests.delete(sessionId);
+      }
+    });
+    this.sessionDisposeRequests.set(sessionId, { generation, promise: trackedDisposal });
+    return trackedDisposal;
   }
 
   applySessionStateUpdate(sessionId: string, state: Partial<Omit<IChatSessionState, 'kind' | 'sessionId'>>): void {
