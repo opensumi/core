@@ -28,6 +28,8 @@ export type AiNativePanelLayout = 'classic' | 'agentic';
 
 export const ACP_BDD_BACKEND_READY_FAILURE_QUERY_PARAM = 'acpBddBackendReadyFailure';
 export const ACP_BDD_BACKEND_READY_FAILURE_QUERY_VALUE = 'reject';
+export const ACP_BDD_ATTACHMENT_FAILURE_QUERY_PARAM = 'acpBddAttachmentFailure';
+export const ACP_BDD_ATTACHMENT_FAILURE_QUERY_VALUE = 'reject-once';
 
 export interface AcpBddFixtureOptions {
   fixture: AcpBddFixture;
@@ -41,6 +43,7 @@ export interface AcpBddFixtureOptions {
   showChatView?: boolean;
   ensureAgenticLayout?: boolean;
   forceAcpBackendReadyFailure?: boolean;
+  forceAcpAttachmentFailure?: boolean;
   waitForModelContext?: boolean;
   writePanelLayoutPreference?: boolean;
   viewport?: {
@@ -376,7 +379,11 @@ export function aiNativeWorkbenchUrl(
   workspaceDir: string,
   profile: WebMcpProfile = 'default',
   panelLayout: AiNativePanelLayout = 'agentic',
-  options: { forceAcpBackendReadyFailure?: boolean; userPreferenceDirName?: string } = {},
+  options: {
+    forceAcpBackendReadyFailure?: boolean;
+    forceAcpAttachmentFailure?: boolean;
+    userPreferenceDirName?: string;
+  } = {},
 ): string {
   const params = new URLSearchParams({ workspaceDir, aiNative: 'true', aiPanelLayout: panelLayout });
   if (options.userPreferenceDirName) {
@@ -387,6 +394,9 @@ export function aiNativeWorkbenchUrl(
   }
   if (options.forceAcpBackendReadyFailure) {
     params.set(ACP_BDD_BACKEND_READY_FAILURE_QUERY_PARAM, ACP_BDD_BACKEND_READY_FAILURE_QUERY_VALUE);
+  }
+  if (options.forceAcpAttachmentFailure) {
+    params.set(ACP_BDD_ATTACHMENT_FAILURE_QUERY_PARAM, ACP_BDD_ATTACHMENT_FAILURE_QUERY_VALUE);
   }
   return `/?${params.toString()}`;
 }
@@ -422,6 +432,7 @@ export async function loadAcpBddFixtureWorkbench(
     app = new OpenSumiApp(page);
     const url = aiNativeWorkbenchUrl(workspaceDir, profile, panelLayout, {
       forceAcpBackendReadyFailure: runtimeOptions.forceAcpBackendReadyFailure,
+      forceAcpAttachmentFailure: runtimeOptions.forceAcpAttachmentFailure,
       userPreferenceDirName: workspace.userPreferenceDirName,
     });
     await page.goto(url);

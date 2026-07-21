@@ -16,6 +16,7 @@ import { IDisposable } from '@opensumi/ide-utils';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { cleanAttachedTextWrapper } from '../../common/utils';
+import { createAcpAttachmentFailureFixture } from '../acp/acp-bdd-runtime-fixtures';
 import { MsgHistoryManager } from '../model/msg-history-manager';
 
 import { ChatManagerService } from './chat-manager.service';
@@ -81,6 +82,7 @@ export class AcpChatManagerService extends ChatManagerService {
   private readonly sessionDisposeRequests = new Map<string, { generation: number; promise: Promise<void> }>();
   private readonly sessionLoadGenerations = new Map<string, number>();
   private readonly sessionLifecycleOperations = new Map<string, Promise<void>>();
+  private readonly shouldFailBddAttachment = createAcpAttachmentFailureFixture();
 
   private readonly onDidApplySessionStateEmitter = this.registerDispose(new Emitter<AcpSessionStateChangeEvent>());
   public readonly onDidApplySessionState = this.onDidApplySessionStateEmitter.event;
@@ -366,7 +368,6 @@ export class AcpChatManagerService extends ChatManagerService {
 
         if (this.mainProvider && sessionId) {
           let loaded = false;
-          const attachmentPromise = this.mainProvider.attachSession?.(sessionId);
           if (!hasLoadedHistory && this.mainProvider.loadSession) {
             const sessionData = await this.mainProvider.loadSession(sessionId);
             if (sessionData) {
@@ -375,7 +376,19 @@ export class AcpChatManagerService extends ChatManagerService {
               this.restoreLoadedSession(sessionId, sessionData, existingSession);
             }
           }
-          const attachment = await attachmentPromise;
+          let attachment: SumiReadableStream<IChatProgress> | undefined;
+          try {
+            if (this.shouldFailBddAttachment()) {
+              throw new Error('BDD attachment transport unavailable');
+            }
+            attachment = await this.mainProvider.attachSession?.(sessionId);
+          } catch (error) {
+            this.logger.error(
+              `[ACP Chat][Manager] attach session failed after restoring history — errorType=${
+                error instanceof Error ? error.name : typeof error
+              }`,
+            );
+          }
           if (attachment) {
             this.observeSessionAttachment(sessionId, attachment);
           }

@@ -53,6 +53,9 @@ describe('AcpChatManagerService', () => {
     Object.defineProperty(service, 'sessionLifecycleOperations', {
       value: new Map(),
     });
+    Object.defineProperty(service, 'shouldFailBddAttachment', {
+      value: () => false,
+    });
     Object.defineProperty(service, 'acpSessionDisplayTitleOverrides', {
       value: {},
       writable: true,
@@ -1004,6 +1007,93 @@ describe('AcpChatManagerService', () => {
     expect(model.threadStatus).toBe('working');
     expect(model.getRequest('request-1')?.response.responseText).toBe('continued output');
     attachment.end();
+  });
+
+  it('keeps restored ACP history when attachment fails and retries attachment on a later selection', async () => {
+    const service = createService();
+    const sessionId = 'acp:s-attach-failure';
+    const loadSession = jest.fn().mockResolvedValue({
+      sessionId,
+      history: {
+        additional: {},
+        messages: [
+          {
+            id: `${sessionId}-user`,
+            role: ChatMessageRole.User,
+            content: 'restore this history once',
+            order: 0,
+          },
+        ],
+      },
+      requests: [],
+    });
+    const attachSession = jest
+      .fn()
+      .mockImplementationOnce(() => {
+        expect(service.getSession(sessionId)?.history.getMessages()).toEqual([
+          expect.objectContaining({ content: 'restore this history once' }),
+        ]);
+        return Promise.reject(new Error('attachment transport unavailable'));
+      })
+      .mockResolvedValueOnce(undefined);
+    Object.defineProperty(service, 'mainProvider', {
+      value: { loadSession, attachSession },
+    });
+
+    await expect(service.loadSession(sessionId)).resolves.toBeUndefined();
+
+    const restoredModel = service.getSession(sessionId);
+    expect(restoredModel).toBeDefined();
+    expect(restoredModel?.history.getMessages()).toEqual([
+      expect.objectContaining({ content: 'restore this history once' }),
+    ]);
+    expect(restoredModel?.requests).toHaveLength(0);
+    expect(loadSession).toHaveBeenCalledTimes(1);
+    expect(attachSession).toHaveBeenCalledTimes(1);
+    expect((service as any).logger.error).toHaveBeenCalledWith(
+      '[ACP Chat][Manager] attach session failed after restoring history — errorType=Error',
+    );
+
+    await service.loadSession(sessionId);
+
+    expect(loadSession).toHaveBeenCalledTimes(1);
+    expect(attachSession).toHaveBeenCalledTimes(2);
+    expect(service.getSession(sessionId)?.history.getMessages()).toEqual([
+      expect.objectContaining({ content: 'restore this history once' }),
+    ]);
+    expect(service.getSession(sessionId)?.requests).toHaveLength(0);
+  });
+
+  it('propagates queued attachment snapshot restoration failures', async () => {
+    const service = createService();
+    const sessionId = 'acp:s-snapshot-failure';
+    const restoreError = new Error('snapshot conversion failed');
+    const queuedSnapshot = {
+      kind: 'sessionSnapshot',
+      sessionId: 's-snapshot-failure',
+      threadStatus: 'working',
+      historyUpdates: [],
+    };
+    const attachment = {
+      onData: jest.fn((listener) => {
+        listener(queuedSnapshot);
+        return { dispose: jest.fn() };
+      }),
+      onEnd: jest.fn(() => ({ dispose: jest.fn() })),
+      onError: jest.fn(() => ({ dispose: jest.fn() })),
+      end: jest.fn(),
+    };
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        attachSession: jest.fn().mockResolvedValue(attachment),
+        restoreSessionSnapshot: jest.fn(() => {
+          throw restoreError;
+        }),
+      },
+    });
+
+    await expect(service.loadSession(sessionId)).rejects.toBe(restoreError);
+    expect((service as any).logger.error).not.toHaveBeenCalled();
   });
 
   it('reattaches an already populated ACP session without reloading or resending its prompt', async () => {

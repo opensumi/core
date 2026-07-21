@@ -117,6 +117,14 @@ http://localhost:8080/?workspaceDir=<absolute>&aiNative=true&acpBddQueuedTurnSta
 
 The fixture is ignored unless the page is on a loopback host, `aiNative=true` is present, and the query value is exactly `reject-once`. The code-level fixture integration guarantees that the first queued-turn production-port start rejects before a handle is returned. Runtime BDD asserts only the visible contract: no user row or active loading/Stop state appears, the same queue head is restored, and `Resume Queue` retries it through the real ACP path.
 
+Cold Task history recovery can reject the first live attachment attempt after the retained history is loaded:
+
+```text
+http://localhost:8080/?workspaceDir=<absolute>&aiNative=true&acpBddAttachmentFailure=reject-once
+```
+
+The fixture is loopback-only and one-shot. It verifies that restored history remains usable and the Task becomes active even when the first post-restore attachment transport attempt fails.
+
 Configure the ACP agent command with `test/bdd/fixtures/acp-agent/mock-acp-agent.mjs`:
 
 ```json
@@ -277,6 +285,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-deep-thinking-collapse.scenario.md` | `runtime-ui` | `interactive` | Deep Thinking default collapse, streaming expansion, explicit toggle state, and metadata-only state checks. |
 | `acp-chat-agentic-cancel-stop.scenario.md` | `runtime-ui` | `interactive` | Long-stream stop/cancel behavior, input recovery, and follow-up send. |
 | `acp-chat-agentic-rich-history-restore.scenario.md` | `runtime-ui` | `interactive` | Complex content, reasoning, plan, and tool-call history restore across switching and reload. |
+| `acp-chat-agentic-history-restore-after-session-release.scenario.md` | `runtime-ui` | `interactive` | Retained Task history restores before live attachment after Browser-owned ACP sessions are released. |
 | `acp-chat-agentic-permission-during-send.scenario.md` | `runtime-ui` | `full` | Permission dialog, badge, dismissal, and recovery during an active Agentic send. |
 | `acp-chat-agentic-session-isolation.scenario.md` | `runtime-ui` | `interactive` | Concurrent session status, stream updates, and history selection isolation. |
 | `acp-chat-agentic-config-controls.scenario.md` | `runtime-ui` | `full` | Footer `configOptions` controls with deterministic ACP `stream-rich` fixture coverage for mode, model, thought level, boolean values, returned-state refresh, send-time snapshots, and safe state-summary checks. |
