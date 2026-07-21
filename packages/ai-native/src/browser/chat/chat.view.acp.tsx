@@ -282,6 +282,7 @@ export const AIChatViewACPContent = () => {
       {
         started: StartedAcpTurn;
         observer: ReturnType<typeof observeTurnOutcome>;
+        sessionModel: ChatModel | undefined;
       }
     >();
     let active = false;
@@ -306,7 +307,7 @@ export const AIChatViewACPContent = () => {
         const started = await queuedTurnPortCallbacksRef.current.start(sessionId, draft, assertStartActive);
         assertStartActive();
         const observer = observeTurnOutcome(started.response);
-        activeTurns.set(started.sessionId, { started, observer });
+        activeTurns.set(started.sessionId, { started, observer, sessionModel: aiChatService.sessionModel });
         void observer.outcome.then(() => {
           const isCurrentRequest = activeTurns.get(started.sessionId)?.started.requestId === started.requestId;
           if (isCurrentRequest) {
@@ -327,7 +328,8 @@ export const AIChatViewACPContent = () => {
           throw new Error('ACP queued turn runtime is inactive.');
         }
         const activeTurn = sessionId ? activeTurns.get(sessionId) : undefined;
-        if (queuedTurnPortCallbacksRef.current.getStatus(sessionId) === 'idle' && !activeTurn) {
+        const activeTurnBelongsToCurrentSession = activeTurn?.sessionModel === aiChatService.sessionModel;
+        if (queuedTurnPortCallbacksRef.current.getStatus(sessionId) === 'idle' && !activeTurnBelongsToCurrentSession) {
           return;
         }
         try {
@@ -336,7 +338,10 @@ export const AIChatViewACPContent = () => {
           if (!active) {
             throw new Error('ACP queued turn runtime is inactive.');
           }
-          if (queuedTurnPortCallbacksRef.current.getStatus(sessionId) === 'idle' && !activeTurn) {
+          // A tracked response may outlive the session's active status briefly.
+          // Once the session is idle, a cancellation rejection means the response
+          // was already retired and should not block the retained queue.
+          if (queuedTurnPortCallbacksRef.current.getStatus(sessionId) === 'idle') {
             return;
           }
           throw error;
@@ -344,7 +349,7 @@ export const AIChatViewACPContent = () => {
         if (!active) {
           throw new Error('ACP queued turn runtime is inactive.');
         }
-        if (activeTurn) {
+        if (activeTurnBelongsToCurrentSession && activeTurn) {
           await activeTurn.observer.outcome;
         }
       },
