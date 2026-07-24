@@ -52,6 +52,7 @@ describe('AcpCliBackService', () => {
 
     mockAgentService = {
       createSession: jest.fn(),
+      cancelSessionCreation: jest.fn(),
       initializeAgent: jest.fn(),
       sendMessage: jest.fn(),
       attachSession: jest.fn(),
@@ -224,6 +225,16 @@ describe('AcpCliBackService', () => {
 
       expect(result).toEqual(expected);
       expect(mockAgentService.createSession).toHaveBeenCalledWith(mockAgentSessionConfig);
+    });
+
+    it('forwards cancellable session creation operation ids', async () => {
+      mockAgentService.createSession.mockResolvedValue({ sessionId: 'new-session', availableCommands: [] });
+
+      await service.createSession(mockAgentSessionConfig, 'launch-1');
+      await service.cancelSessionCreation('launch-1');
+
+      expect(mockAgentService.createSession).toHaveBeenCalledWith(mockAgentSessionConfig, 'launch-1');
+      expect(mockAgentService.cancelSessionCreation).toHaveBeenCalledWith('launch-1');
     });
   });
 
@@ -890,10 +901,10 @@ describe('AcpCliBackService', () => {
   });
 
   describe('disposeSession()', () => {
-    it('should cancel request then dispose session', async () => {
+    it('should release the session without cancelling running Agent work', async () => {
       await service.disposeSession('sess-1');
 
-      expect(mockAgentService.cancelRequest).toHaveBeenCalledWith('sess-1');
+      expect(mockAgentService.cancelRequest).not.toHaveBeenCalled();
       expect(mockAgentService.disposeSession).toHaveBeenCalledWith('sess-1');
     });
 
@@ -902,7 +913,7 @@ describe('AcpCliBackService', () => {
 
       await service.disposeSession('sess-1');
 
-      expect(mockAgentService.cancelRequest).toHaveBeenCalledWith('sess-1');
+      expect(mockAgentService.cancelRequest).not.toHaveBeenCalled();
       expect(mockLogger.error).toHaveBeenCalled();
     });
   });

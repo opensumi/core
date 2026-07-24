@@ -480,10 +480,10 @@ describe('AcpChatManagerService', () => {
       value: { createSession },
     });
 
-    await provider.createSession({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' } });
+    await provider.createSession({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' }, operationId: 'launch-1' });
 
     expect(resolveConfigForTarget).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
-    expect(createSession).toHaveBeenCalledWith(config);
+    expect(createSession).toHaveBeenCalledWith(config, 'launch-1');
   });
 
   it('keeps ACP target metadata on a newly created browser session', async () => {

@@ -453,7 +453,10 @@ function createMockServices({
       sessionLoadingListeners.add(listener);
       return { dispose: jest.fn(() => sessionLoadingListeners.delete(listener)) };
     }),
-    sendRequest: sendRequest || jest.fn(),
+    sendRequest: jest.fn((request, regenerate, onRequestAccepted) => {
+      onRequestAccepted?.();
+      return sendRequest ? sendRequest(request, regenerate, onRequestAccepted) : Promise.resolve();
+    }),
     setLatestRequestId: jest.fn(),
     updateInputDraft: jest.fn(),
   };
@@ -1583,7 +1586,7 @@ describe('ACP chat view headers', () => {
         requestId: 'request-1',
       }),
     );
-    expect(sendRequest).toHaveBeenCalledWith(createRequest.mock.results[0].value);
+    expect(sendRequest).toHaveBeenCalledWith(createRequest.mock.results[0].value, false, expect.any(Function));
     expect(services.mcpServerRegistry).toEqual({
       activeMessageInfo: {
         messageId: 'assistant-message',
@@ -3423,6 +3426,6 @@ describe('ACP chat view headers', () => {
 
     expect(ensureSessionModel).toHaveBeenCalledTimes(1);
     expect(createRequest).toHaveBeenCalledWith('   ', 'default-agent', undefined, 'generate');
-    expect(sendRequest).toHaveBeenCalledWith(createRequest.mock.results[0].value);
+    expect(sendRequest).toHaveBeenCalledWith(createRequest.mock.results[0].value, false, expect.any(Function));
   });
 });

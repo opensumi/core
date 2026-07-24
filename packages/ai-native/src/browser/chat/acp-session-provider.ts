@@ -58,6 +58,9 @@ function createAcpThreadPoolSaturatedError(error: { message?: unknown }): Error 
       );
   const mappedError = new Error(message);
   mappedError.name = ACP_THREAD_POOL_SATURATED_ERROR_NAME;
+  if (limit) {
+    (mappedError as Error & { limit?: number }).limit = Number(limit);
+  }
   return mappedError;
 }
 
@@ -104,7 +107,9 @@ export class ACPSessionProvider implements ISessionProvider {
         options?.acpTarget && this.configProvider.resolveConfigForTarget
           ? await this.configProvider.resolveConfigForTarget(options.acpTarget)
           : await this.configProvider.resolveConfig();
-      const result = (await this.aiBackService.createSession(config)) as any;
+      const result = (await (options?.operationId
+        ? this.aiBackService.createSession(config, options.operationId)
+        : this.aiBackService.createSession(config))) as any;
 
       if (!result?.sessionId) {
         throw new Error('createSession did not return a valid sessionId');

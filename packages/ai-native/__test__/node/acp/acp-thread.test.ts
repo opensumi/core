@@ -139,6 +139,16 @@ function createTestConfig(): AgentProcessConfig {
   };
 }
 
+function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
 /** Helper: extract UserMessageEntry from AgentThreadEntry */
 function getUserData(entry: AgentThreadEntry) {
   return entry.type === 'user_message' ? entry.data : null;
@@ -635,6 +645,63 @@ describe('AcpThread', () => {
 
       expect(mockInitialize).toHaveBeenCalled();
       expect(thread.initialized).toBe(true);
+    });
+
+    it('does not revive a thread when disposal wins the process-start race', async () => {
+      jest.useFakeTimers();
+
+      const initialization = thread.initialize(createTestConfig());
+      const initializationCancelled = expect(initialization).rejects.toMatchObject({
+        name: 'AcpThreadInitializationCancelledError',
+      });
+      await Promise.resolve();
+
+      const disposal = thread.dispose();
+      await jest.runAllTimersAsync();
+      await disposal;
+
+      await initializationCancelled;
+      expect(thread.initialized).toBe(false);
+      expect(thread.isProcessRunning).toBe(false);
+      expect(thread.isConnected).toBe(false);
+    });
+
+    it('force-kills a starting process that does not exit after SIGTERM', async () => {
+      jest.useFakeTimers();
+      const initialization = thread.initialize(createTestConfig());
+      const initializationCancelled = expect(initialization).rejects.toMatchObject({
+        name: 'AcpThreadInitializationCancelledError',
+      });
+      await Promise.resolve();
+
+      const disposal = thread.dispose();
+      await jest.advanceTimersByTimeAsync(5000);
+      await disposal;
+      await initializationCancelled;
+
+      expect(process.kill).toHaveBeenCalledWith(-mockChildProcess.pid, 'SIGTERM');
+      expect(process.kill).toHaveBeenCalledWith(-mockChildProcess.pid, 'SIGKILL');
+      expect(thread.isProcessRunning).toBe(false);
+    });
+
+    it('ignores an ACP initialize response that arrives after disposal', async () => {
+      const initializeResult = createDeferred<any>();
+      (thread as any)._connected = true;
+      (thread as any)._connection = {
+        initialize: jest.fn(() => initializeResult.promise),
+      };
+
+      const initialization = thread.initialize(createTestConfig());
+      const initializationCancelled = expect(initialization).rejects.toMatchObject({
+        name: 'AcpThreadInitializationCancelledError',
+      });
+      await Promise.resolve();
+      await thread.dispose();
+      initializeResult.resolve({ protocolVersion: 1, agentCapabilities: {} });
+
+      await initializationCancelled;
+      expect(thread.initialized).toBe(false);
+      expect(thread.isConnected).toBe(false);
     });
   });
 

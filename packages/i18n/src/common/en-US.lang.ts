@@ -1560,6 +1560,18 @@ export const localizationBundle = {
       'ACP concurrent tasks have reached the configured limit. Switch to or stop an active task, then try again.',
     'aiNative.chat.acp.threadPoolSaturated.withLimit':
       'ACP concurrent tasks have reached the configured limit of {0}. Switch to or stop an active task, then try again.',
+    'aiNative.chat.acp.preparingTask': 'Preparing task…',
+    'aiNative.chat.acp.startingTask': 'Starting task…',
+    'aiNative.chat.acp.slowTaskStart': 'Task startup is taking longer than usual. You can continue waiting or cancel.',
+    'aiNative.chat.acp.cancelTaskStart': 'Cancel',
+    'aiNative.chat.acp.capacityFull':
+      'The Agent task capacity limit has been reached, and no reusable Agent is currently available. Your task draft and unsent content have been preserved. Wait for a running task to finish and try again, or increase the ACP process limit in Settings.',
+    'aiNative.chat.acp.capacityFull.withLimit':
+      'The Agent task capacity limit ({0}) has been reached, and no reusable Agent is currently available. Your task draft and unsent content have been preserved. Wait for a running task to finish and try again, or increase the ACP process limit in Settings.',
+    'aiNative.chat.acp.capacityRetry': 'Retry',
+    'aiNative.chat.acp.capacityOpenSettings': 'Open Settings',
+    'preference.ai-native.acp.threadPoolSize.description':
+      'Maximum total ACP Agent processes shared by active tasks, restoring sessions, warmups, and the standby process. A standby may remain while Agentic Layout is hidden; increasing this limit uses more system resources.',
     'aiNative.acp.permissionPending': 'Permission pending',
     'aiNative.chat.ai.assistant.limit.message': '{0} earliest messages are dropped due to the input token limit',
     'aiNative.inlineDiff.acceptAll': 'Accept All',

@@ -30,6 +30,8 @@ export interface AcpQueuedTurnsProps {
   onDelete(id: string): void;
   onImmediateSend(id: string): void;
   onEditorReady(handle: ChatInputHandle | null): void;
+  onOpenCapacitySettings?(): void;
+  onCancelInitialStart?(): void;
 }
 
 export function getAcpQueuedTurnPreview(message: string): string {
@@ -77,7 +79,46 @@ export const AcpQueuedTurns = ({
   onDelete,
   onImmediateSend,
   onEditorReady,
+  onOpenCapacitySettings,
+  onCancelInitialStart,
 }: AcpQueuedTurnsProps) => {
+  const [initialStartStage, setInitialStartStage] = React.useState<0 | 1 | 2>(0);
+
+  React.useEffect(() => {
+    if (!snapshot.initialStartPending) {
+      setInitialStartStage(0);
+      return undefined;
+    }
+    const startingTimer = setTimeout(() => setInitialStartStage(1), 300);
+    const slowTimer = setTimeout(() => setInitialStartStage(2), 8000);
+    return () => {
+      clearTimeout(startingTimer);
+      clearTimeout(slowTimer);
+    };
+  }, [snapshot.initialStartPending]);
+
+  if (snapshot.initialStartPending) {
+    return (
+      <div className={styles.queued_turns_status} data-testid='acp-task-launch-status' role='status'>
+        <span>
+          {initialStartStage === 0
+            ? localize('aiNative.chat.acp.preparingTask', 'Preparing task…')
+            : initialStartStage === 1
+            ? localize('aiNative.chat.acp.startingTask', 'Starting task…')
+            : localize(
+                'aiNative.chat.acp.slowTaskStart',
+                'Task startup is taking longer than usual. You can continue waiting or cancel.',
+              )}
+        </span>
+        {onCancelInitialStart && (
+          <button data-testid='acp-task-launch-cancel' onClick={onCancelInitialStart} type='button'>
+            {localize('aiNative.chat.acp.cancelTaskStart', 'Cancel')}
+          </button>
+        )}
+      </div>
+    );
+  }
+
   if (snapshot.entries.length === 0 && snapshot.phase !== 'paused') {
     return null;
   }
@@ -89,6 +130,8 @@ export const AcpQueuedTurns = ({
       ? localize('aiNative.chat.queue.one', '1 Queued Turn')
       : strings.format(localize('aiNative.chat.queue.many', '{0} Queued Turns'), snapshot.entries.length);
   const pauseReason = getPauseReasonLabel(snapshot.pauseReason);
+  const capacityExhausted = snapshot.pauseError?.name === 'ACP_THREAD_POOL_SATURATED';
+  const capacityLimit = snapshot.pauseError?.limit;
 
   return (
     <section className={styles.queued_turns} aria-label={localize('aiNative.chat.queue.ariaLabel', 'Queued turns')}>
@@ -114,7 +157,7 @@ export const AcpQueuedTurns = ({
           <span>{title}</span>
         </button>
         <div className={styles.queued_turns_header_actions}>
-          {snapshot.phase === 'paused' && (
+          {snapshot.phase === 'paused' && !capacityExhausted && (
             <div className={styles.queued_turns_status} data-testid='acp-queued-turn-status' role='status'>
               <span>{localize('aiNative.chat.queue.paused', 'Paused')}</span>
               {pauseReason && <span className={styles.queued_turns_pause_reason}>{pauseReason}</span>}
@@ -145,6 +188,37 @@ export const AcpQueuedTurns = ({
           )}
         </div>
       </div>
+      {snapshot.phase === 'paused' && capacityExhausted && (
+        <div className={styles.queued_turns_status} data-testid='acp-capacity-error' role='alert'>
+          <span>
+            {capacityLimit
+              ? strings.format(
+                  localize(
+                    'aiNative.chat.acp.capacityFull.withLimit',
+                    'The Agent task capacity limit ({0}) has been reached, and no reusable Agent is currently available. Your task draft and unsent content have been preserved. Wait for a running task to finish and try again, or increase the ACP process limit in Settings.',
+                  ),
+                  capacityLimit,
+                )
+              : localize(
+                  'aiNative.chat.acp.capacityFull',
+                  'The Agent task capacity limit has been reached, and no reusable Agent is currently available. Your task draft and unsent content have been preserved. Wait for a running task to finish and try again, or increase the ACP process limit in Settings.',
+                )}
+          </span>
+          <button data-testid='acp-capacity-retry' disabled={disabled} onClick={onResume} type='button'>
+            {localize('aiNative.chat.acp.capacityRetry', 'Retry')}
+          </button>
+          {onOpenCapacitySettings && (
+            <button
+              data-testid='acp-capacity-open-settings'
+              disabled={disabled}
+              onClick={onOpenCapacitySettings}
+              type='button'
+            >
+              {localize('aiNative.chat.acp.capacityOpenSettings', 'Open Settings')}
+            </button>
+          )}
+        </div>
+      )}
       {expanded && (
         <div className={styles.queued_turns_list}>
           {snapshot.entries.map((turn, index) => {

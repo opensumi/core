@@ -161,6 +161,13 @@ const PROCESS_CONFIG = {
 const ACP_PROTOCOL_VERSION = 1;
 const ACP_AGENT_CONNECTION_CLOSED_DURING_PROMPT = 'ACP agent connection closed while waiting for prompt response.';
 
+export class AcpThreadInitializationCancelledError extends Error {
+  constructor() {
+    super('ACP thread initialization was cancelled.');
+    this.name = 'AcpThreadInitializationCancelledError';
+  }
+}
+
 function isConnectionClosedDuringPromptError(error: unknown): boolean {
   return error instanceof Error && error.message === ACP_AGENT_CONNECTION_CLOSED_DURING_PROMPT;
 }
@@ -436,12 +443,15 @@ export class AcpThread extends Disposable implements IAcpThread {
 
   // Process
   private _childProcess: ChildProcess | null = null;
+  private _startingChildProcess: ChildProcess | null = null;
   private _processRunning = false;
   private _debugLogRecorders = new Map<AcpDebugLogDirection, (chunk: Uint8Array | Buffer | string) => void>();
 
   // SDK
   private _connection: any = null; // ClientSideConnection instance
   private _connected = false;
+  private _disposed = false;
+  private _initializationCancellationRejectors = new Set<(error: Error) => void>();
 
   // Permission request tracking
   private _pendingPermissionRequests = new Map<
@@ -541,6 +551,7 @@ export class AcpThread extends Disposable implements IAcpThread {
   // Process lifecycle
   // -----------------------------------------------------------------------
   private async startProcess(): Promise<void> {
+    this.throwIfInitializationCancelled();
     if (this._childProcess && this.isProcessAlive()) {
       return;
     }
@@ -572,9 +583,13 @@ export class AcpThread extends Disposable implements IAcpThread {
         shell: false,
         env: resolved.env,
       });
+      this._startingChildProcess = childProcess;
 
       childProcess.on('error', (err: Error) => {
         startupError = err;
+        if (this._startingChildProcess === childProcess) {
+          this._startingChildProcess = null;
+        }
         this.logger?.error(`[AcpThread:${this.threadId}] Failed to start process: ${err.message}`);
         reject(this.wrapError(err, this.options.command));
       });
@@ -586,6 +601,12 @@ export class AcpThread extends Disposable implements IAcpThread {
 
       childProcess.on('exit', (code: number | null, signal: string | null) => {
         this.logger?.log(`[AcpThread:${this.threadId}] Process exited: code=${code}, signal=${signal}`);
+        if (this._startingChildProcess === childProcess) {
+          this._startingChildProcess = null;
+        }
+        if (this._childProcess !== childProcess || this._disposed) {
+          return;
+        }
         this._processRunning = false;
         this._connected = false;
         this.setStatus('disconnected');
@@ -596,10 +617,16 @@ export class AcpThread extends Disposable implements IAcpThread {
         if (startupError) {
           return;
         }
+        if (this._disposed || this._startingChildProcess !== childProcess) {
+          reject(new AcpThreadInitializationCancelledError());
+          return;
+        }
         if (!childProcess.pid) {
+          this._startingChildProcess = null;
           reject(new Error(`Failed to get PID for agent process: ${this.options.command}`));
           return;
         }
+        this._startingChildProcess = null;
         this._childProcess = childProcess;
         this._processRunning = true;
         this.recordDebugLog('system', `process started: ${resolved.command} ${resolved.args.join(' ')}`);
@@ -628,14 +655,24 @@ export class AcpThread extends Disposable implements IAcpThread {
   }
 
   private async killProcess(): Promise<void> {
-    if (!this._childProcess || !this._childProcess.pid) {
-      this._childProcess = null;
-      this._processRunning = false;
-      return;
+    const startingChildProcess = this._startingChildProcess;
+    this._startingChildProcess = null;
+    const childProcess = this._childProcess;
+    this._childProcess = null;
+    this._processRunning = false;
+    const children = [startingChildProcess, childProcess].filter(
+      (candidate, index, all): candidate is ChildProcess => Boolean(candidate) && all.indexOf(candidate) === index,
+    );
+    await Promise.all(children.map((candidate) => this.terminateChildProcess(candidate)));
+  }
+
+  private terminateChildProcess(childProcess: ChildProcess): Promise<void> {
+    if (!childProcess.pid || childProcess.exitCode !== null) {
+      return Promise.resolve();
     }
 
-    const pid = this._childProcess.pid;
-    (this._childProcess as any).killed = true;
+    const pid = childProcess.pid;
+    (childProcess as any).killed = true;
 
     // Try SIGTERM first
     try {
@@ -660,15 +697,11 @@ export class AcpThread extends Disposable implements IAcpThread {
             // ignore
           }
         }
-        this._childProcess = null;
-        this._processRunning = false;
         resolve();
       }, PROCESS_CONFIG.GRACEFUL_SHUTDOWN_TIMEOUT_MS);
 
-      this._childProcess!.once('exit', () => {
+      childProcess.once('exit', () => {
         clearTimeout(timeout);
-        this._childProcess = null;
-        this._processRunning = false;
         resolve();
       });
     });
@@ -678,13 +711,16 @@ export class AcpThread extends Disposable implements IAcpThread {
   // SDK connection
   // -----------------------------------------------------------------------
   private async ensureSdkConnection(): Promise<void> {
+    this.throwIfInitializationCancelled();
     if (this._connection) {
       return;
     }
 
     await this.startProcess();
+    this.throwIfInitializationCancelled();
 
     const sdk = await loadSdk();
+    this.throwIfInitializationCancelled();
     const { ClientSideConnection, ndJsonStream } = sdk;
 
     const stdout = this._childProcess!.stdio[1] as NodeJS.ReadableStream;
@@ -698,7 +734,29 @@ export class AcpThread extends Disposable implements IAcpThread {
     const clientImpl = this.createClientImpl();
     this._connection = new ClientSideConnection((_agent: any) => clientImpl, stream);
 
+    this.throwIfInitializationCancelled();
     this._connected = true;
+  }
+
+  private throwIfInitializationCancelled(): void {
+    if (this._disposed) {
+      throw new AcpThreadInitializationCancelledError();
+    }
+  }
+
+  private async rejectInitializationOnDispose<T>(operation: Promise<T>): Promise<T> {
+    this.throwIfInitializationCancelled();
+    let rejectOnDispose!: (error: Error) => void;
+    const disposed = new Promise<never>((_resolve, reject) => {
+      rejectOnDispose = reject;
+      this._initializationCancellationRejectors.add(reject);
+    });
+
+    try {
+      return await Promise.race([operation, disposed]);
+    } finally {
+      this._initializationCancellationRejectors.delete(rejectOnDispose);
+    }
   }
 
   private async rejectOnConnectionClosed<T>(operation: Promise<T>, message: string): Promise<T> {
@@ -822,7 +880,8 @@ export class AcpThread extends Disposable implements IAcpThread {
     this.logger?.log(
       `[AcpThread:${this.threadId}] initialize() — agent=${config.command || this.options.command}, cwd=${config.cwd}`,
     );
-    await this.ensureSdkConnection();
+    await this.rejectInitializationOnDispose(this.ensureSdkConnection());
+    this.throwIfInitializationCancelled();
 
     const initParams: InitializeRequest = {
       protocolVersion: ACP_PROTOCOL_VERSION,
@@ -848,7 +907,10 @@ export class AcpThread extends Disposable implements IAcpThread {
       };
     }
 
-    const response: InitializeResponse = await this._connection.initialize(initParams);
+    const response: InitializeResponse = await this.rejectInitializationOnDispose(
+      this._connection.initialize(initParams),
+    );
+    this.throwIfInitializationCancelled();
 
     if (response.protocolVersion !== initParams.protocolVersion) {
       if (response.protocolVersion > ACP_PROTOCOL_VERSION) {
@@ -1135,6 +1197,15 @@ export class AcpThread extends Disposable implements IAcpThread {
     this.logger?.log(
       `[AcpThread:${this.threadId}] dispose() — status=${this._status}, entries=${this._entries.length}`,
     );
+    if (this._disposed) {
+      return;
+    }
+    this._disposed = true;
+    const cancellationError = new AcpThreadInitializationCancelledError();
+    for (const reject of this._initializationCancellationRejectors) {
+      reject(cancellationError);
+    }
+    this._initializationCancellationRejectors.clear();
     this.resolvePendingPermissionRequestsAsCancelled();
     this._eventEmitter.dispose();
     await this.killProcess();

@@ -66,6 +66,7 @@ export type AcpSessionConfigOption = Record<string, any>;
 
 export interface SessionCreationOptions {
   acpTarget?: AcpTargetConfigRequest;
+  operationId?: string;
 }
 
 /**
