@@ -57,6 +57,7 @@ export class AIPanelLayoutService {
   private initialized = false;
   private isSettingLayoutMode = false;
   private agenticWorkbenchVisible = false;
+  private agenticWorkbenchWidthConstrained = false;
 
   initialize(): void {
     if (this.initialized) {
@@ -166,7 +167,7 @@ export class AIPanelLayoutService {
       return undefined;
     }
 
-    return this.agenticWorkbenchVisible;
+    return this.getEffectiveAgenticWorkbenchVisibility();
   }
 
   toggleAgenticWorkbenchVisibility(visible?: boolean): boolean | undefined {
@@ -176,7 +177,21 @@ export class AIPanelLayoutService {
 
     const nextVisible = visible ?? !this.agenticWorkbenchVisible;
     this.setAgenticWorkbenchVisibility(nextVisible);
-    return this.agenticWorkbenchVisible;
+    return this.getEffectiveAgenticWorkbenchVisibility();
+  }
+
+  setAgenticWorkbenchWidthConstrained(constrained: boolean): boolean | undefined {
+    if (this.getLayoutMode() !== 'agentic') {
+      return undefined;
+    }
+
+    const previousVisible = this.getEffectiveAgenticWorkbenchVisibility();
+    this.agenticWorkbenchWidthConstrained = constrained;
+    const nextVisible = this.getEffectiveAgenticWorkbenchVisibility();
+    if (previousVisible !== nextVisible) {
+      this.onDidChangeAgenticWorkbenchVisibilityEmitter.fire(nextVisible);
+    }
+    return nextVisible;
   }
 
   revealAgenticWorkbench(): boolean | undefined {
@@ -197,12 +212,20 @@ export class AIPanelLayoutService {
   }
 
   private setAgenticWorkbenchVisibility(visible: boolean): void {
+    const previousVisible = this.getEffectiveAgenticWorkbenchVisibility();
     if (this.agenticWorkbenchVisible === visible) {
       return;
     }
 
     this.agenticWorkbenchVisible = visible;
-    this.onDidChangeAgenticWorkbenchVisibilityEmitter.fire(visible);
+    const nextVisible = this.getEffectiveAgenticWorkbenchVisibility();
+    if (previousVisible !== nextVisible) {
+      this.onDidChangeAgenticWorkbenchVisibilityEmitter.fire(nextVisible);
+    }
+  }
+
+  private getEffectiveAgenticWorkbenchVisibility(): boolean {
+    return this.agenticWorkbenchVisible && !this.agenticWorkbenchWidthConstrained;
   }
 
   private getDefaultAgenticWorkbenchVisibility(mode: PanelLayoutMode): boolean {
@@ -210,6 +233,7 @@ export class AIPanelLayoutService {
   }
 
   private activateLayoutMode(mode: PanelLayoutMode, restoreAIChat = false): void {
+    this.agenticWorkbenchWidthConstrained = false;
     this.setAgenticWorkbenchVisibility(this.getDefaultAgenticWorkbenchVisibility(mode));
     this.applyLayoutMode(mode);
     if (restoreAIChat) {

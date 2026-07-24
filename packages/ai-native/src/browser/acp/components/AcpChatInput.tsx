@@ -35,6 +35,9 @@ import { MCPServerProxyService } from '../../mcp/mcp-server-proxy.service';
 import { MCPToolsDialog } from '../../mcp/mcp-tools-dialog.view';
 import { IChatSlashCommandItem } from '../../types';
 
+import type { AcpTurnDraft } from '../../chat/acp-chat-queued-turns';
+import type { ChatInputHandle } from '../../chat/chat.input.registry';
+
 const INSTRUCTION_BOTTOM = 8;
 const EXPAND_CRITICAL_HEIGHT = 68;
 
@@ -180,6 +183,7 @@ export interface IAcpChatInputProps {
   defaultAgentId?: string;
   command: string;
   setCommand: (command: string) => void;
+  onInputHandleReady?: (handle: ChatInputHandle | null) => void;
 }
 
 export const AcpChatInput = React.forwardRef((props: IAcpChatInputProps, ref) => {
@@ -212,6 +216,8 @@ export const AcpChatInput = React.forwardRef((props: IAcpChatInputProps, ref) =>
   const [showExpand, setShowExpand] = useState(false);
   const [isExpand, setIsExpand] = useState(false);
   const [placeholder, setPlaceHolder] = useState(localize('aiNative.chat.input.placeholder.default'));
+  const propsRef = useRef(props);
+  propsRef.current = props;
   const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
@@ -222,6 +228,37 @@ export const AcpChatInput = React.forwardRef((props: IAcpChatInputProps, ref) =>
   const commandService = useInjectable<CommandService>(CommandService);
 
   const currentAgentIdRef = useLatest(agentId);
+
+  const inputHandle = useMemo<ChatInputHandle>(
+    () => ({
+      restoreDraft: (draft: AcpTurnDraft) => {
+        setValue(draft.message);
+        propsRef.current.onValueChange?.(draft.message);
+        propsRef.current.setAgentId(draft.agentId || '');
+        propsRef.current.setCommand(draft.command || '');
+      },
+      focus: () => textareaRef.current?.focus(),
+      setExpanded: (expanded: boolean) => {
+        setIsExpand(expanded);
+        propsRef.current.onExpand?.(expanded);
+        if (expanded) {
+          const inputContainer = document.querySelector('#ai_chat_left_container');
+          if (inputContainer) {
+            setInputHeight((inputContainer as HTMLElement).clientHeight - 68 - (propsRef.current.theme ? 32 : 0) - 16);
+          }
+        } else {
+          setInputHeight(propsRef.current.defaultHeight || 32);
+          setShowExpand(false);
+        }
+      },
+    }),
+    [],
+  );
+
+  useEffect(() => {
+    props.onInputHandleReady?.(inputHandle);
+    return () => props.onInputHandleReady?.(null);
+  }, [inputHandle, props.onInputHandleReady]);
 
   const handleShowMCPConfig = React.useCallback(() => {
     commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);

@@ -187,6 +187,7 @@ export class EditorHistoryService extends WithEventBus {
     if (uri) {
       this.editorService.open(uri, {
         focus: true,
+        preview: false,
       });
       this.closedStack = this.closedStack.filter((u) => !uri.isEqual(u));
     }

@@ -6,14 +6,51 @@ import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 import { LLMContextService } from '../../common/llm-context';
 
+import type { AcpTurnDraft, QueuedTurn, TurnActionResult } from './acp-chat-queued-turns';
 import type { AcpSessionConfigOption, AcpSessionModelOption } from './session-provider';
+
+export type ChatInputCapability =
+  | 'restore-draft'
+  | 'focus'
+  | 'expand'
+  | 'images'
+  | 'mentions'
+  | 'paste'
+  | 'rich-queued-edit';
+
+export interface ChatInputHandle {
+  getDraft?(): AcpTurnDraft;
+  restoreDraft?(draft: AcpTurnDraft): void;
+  focus?(): void;
+  setExpanded?(expanded: boolean): void;
+  toggleExpanded?(): void;
+  closeTransientUi?(): boolean;
+}
+
+export interface ChatInputTurnActions {
+  submit(draft: AcpTurnDraft, intent: 'normal' | 'immediate'): Promise<TurnActionResult>;
+  stop(): Promise<TurnActionResult>;
+  fastTrack(): Promise<TurnActionResult>;
+  invalidateFastTrack(): void;
+  takeBackLastQueuedTurn(): QueuedTurn | undefined;
+}
+
+export interface QueuedTurnEditorProps {
+  turn: QueuedTurn;
+  onSave(draft: AcpTurnDraft): Promise<TurnActionResult | void> | TurnActionResult | void;
+  onCancel(): void;
+  onImmediateSend(draft: AcpTurnDraft): Promise<TurnActionResult | void> | TurnActionResult | void;
+  onReady?(handle: ChatInputHandle | null): void;
+  disabled?: boolean;
+  immediateSendDisabled?: boolean;
+}
 
 /**
  * Props interface for chat input components.
  * Based on AcpChatMentionInput's prop surface — all registered inputs must satisfy this contract.
  */
 export interface IChatInputProps {
-  onSend: (
+  onSend?: (
     value: string,
     images?: string[],
     agentId?: string,
@@ -21,6 +58,7 @@ export interface IChatInputProps {
     option?: { model: string; [key: string]: any },
   ) => void;
   onValueChange?: (value: string) => void;
+  onDraftChange?: (draft: AcpTurnDraft) => void;
   onExpand?: (value: boolean) => void;
   placeholder?: string;
   enableOptions?: boolean;
@@ -29,6 +67,7 @@ export interface IChatInputProps {
   sendBtnClassName?: string;
   defaultHeight?: number;
   value?: string;
+  initialDraft?: AcpTurnDraft;
   images?: Array<DataContent | URL>;
   autoFocus?: boolean;
   theme?: string | null;
@@ -39,6 +78,7 @@ export interface IChatInputProps {
   command: string;
   setCommand: (command: string) => void;
   disableModelSelector?: boolean;
+  activeSessionId?: string;
   sessionModelId?: string;
   contextService?: LLMContextService;
   agentModes?: Array<{ id: string; name: string; description?: string }>;
@@ -47,15 +87,25 @@ export interface IChatInputProps {
   currentModelId?: string;
   configOptions?: AcpSessionConfigOption[];
   agentCwd?: string;
+  turnActions?: ChatInputTurnActions;
+  onInputHandleReady?: (handle: ChatInputHandle | null) => void;
 }
+
+export interface LegacyChatInputProps extends Omit<IChatInputProps, 'onSend'> {
+  onSend: NonNullable<IChatInputProps['onSend']>;
+}
+
+export type ChatInputComponent = React.ComponentType<IChatInputProps> | React.ComponentType<LegacyChatInputProps>;
 
 export interface ChatInputContribution {
   id: string;
-  component: React.ComponentType<IChatInputProps>;
+  component: ChatInputComponent;
   /** Higher value = higher priority. Default 0. */
   priority?: number;
   /** Optional condition. Input is selected only when this returns true. */
   when?: () => boolean;
+  capabilities?: ChatInputCapability[];
+  queuedTurnEditor?: React.ComponentType<QueuedTurnEditorProps>;
 }
 
 export interface IChatInputRegistry {
@@ -63,24 +113,39 @@ export interface IChatInputRegistry {
   getChatInputContributions(): ChatInputContribution[];
   /** Get the highest-priority input whose `when()` condition passes, or null. */
   getActiveChatInput(): ChatInputContribution | null;
+  setActiveInputHandle(handle: ChatInputHandle | null, ownerId?: string): void;
+  getActiveInputHandle(): ChatInputHandle | null;
+  preserveActiveDraft(): AcpTurnDraft | undefined;
+  restoreActiveDraft(draft: AcpTurnDraft | undefined): void;
+  focusActiveInput(): void;
 }
 
 @Injectable()
 export class ChatInputRegistry extends Disposable implements IChatInputRegistry {
   private contributions: ChatInputContribution[] = [];
+  private activeInputHandle: ChatInputHandle | null = null;
+  private activeInputHandleOwnerId: string | undefined;
+  private activeContribution: ChatInputContribution | null = null;
+  private activeInputFocusPending = false;
 
   registerChatInput(contribution: ChatInputContribution): IDisposable {
+    if (this.contributions.some(({ id }) => id === contribution.id)) {
+      throw new Error(`Chat input contribution id "${contribution.id}" is already registered.`);
+    }
     const entry: ChatInputContribution = {
       ...contribution,
       priority: contribution.priority ?? 0,
+      capabilities: [...(contribution.capabilities || [])],
     };
     this.contributions.push(entry);
     this.contributions.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+    this.updateActiveContribution();
 
     const disposable = Disposable.create(() => {
       const idx = this.contributions.indexOf(entry);
       if (idx !== -1) {
         this.contributions.splice(idx, 1);
+        this.updateActiveContribution();
       }
     });
     this.addDispose(disposable);
@@ -88,15 +153,83 @@ export class ChatInputRegistry extends Disposable implements IChatInputRegistry 
   }
 
   getChatInputContributions(): ChatInputContribution[] {
-    return [...this.contributions];
+    return this.contributions.map((contribution) => ({
+      ...contribution,
+      capabilities: [...(contribution.capabilities || [])],
+    }));
   }
 
   getActiveChatInput(): ChatInputContribution | null {
-    for (const c of this.contributions) {
-      if (!c.when || c.when()) {
-        return c;
-      }
+    const contribution = this.updateActiveContribution();
+    if (contribution) {
+      return {
+        ...contribution,
+        capabilities: [...(contribution.capabilities || [])],
+      };
     }
     return null;
+  }
+
+  setActiveInputHandle(handle: ChatInputHandle | null, ownerId?: string): void {
+    const activeContribution = this.updateActiveContribution();
+    if (ownerId !== undefined) {
+      if (handle && activeContribution?.id !== ownerId) {
+        return;
+      }
+      if (!handle && this.activeInputHandleOwnerId !== ownerId) {
+        return;
+      }
+    }
+    this.activeInputHandle = handle;
+    this.activeInputHandleOwnerId = handle ? ownerId : undefined;
+    if (handle && this.activeInputFocusPending) {
+      this.focusActiveInput();
+    }
+  }
+
+  getActiveInputHandle(): ChatInputHandle | null {
+    this.updateActiveContribution();
+    return this.activeInputHandle;
+  }
+
+  preserveActiveDraft(): AcpTurnDraft | undefined {
+    try {
+      return this.activeInputHandle?.getDraft?.();
+    } catch {
+      return undefined;
+    }
+  }
+
+  restoreActiveDraft(draft: AcpTurnDraft | undefined): void {
+    if (!draft) {
+      return;
+    }
+    this.activeInputHandle?.restoreDraft?.(draft);
+  }
+
+  focusActiveInput(): void {
+    const handle = this.getActiveInputHandle();
+    if (!handle?.focus) {
+      this.activeInputFocusPending = true;
+      return;
+    }
+    this.activeInputFocusPending = false;
+    handle.focus();
+  }
+
+  private updateActiveContribution(): ChatInputContribution | null {
+    let activeContribution: ChatInputContribution | null = null;
+    for (const contribution of this.contributions) {
+      if (!contribution.when || contribution.when()) {
+        activeContribution = contribution;
+        break;
+      }
+    }
+    if (activeContribution !== this.activeContribution) {
+      this.activeContribution = activeContribution;
+      this.activeInputHandle = null;
+      this.activeInputHandleOwnerId = undefined;
+    }
+    return activeContribution;
   }
 }

@@ -2,7 +2,7 @@
 
 **Trigger:** `packages/ai-native/src/node/acp/acp-debug-log.ts`, `packages/ai-native/src/browser/acp/debug-log/acp-debug-log.contribution.ts`, or `packages/ai-native/src/browser/acp/debug-log/acp-debug-log.view.tsx`
 
-**Layer:** `runtime-ui` **Required profile:** `full` with ACP debug logging enabled. **Fixtures:** ACP debug log store, one thread driven by `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=stream-rich` or synthetic store records that emit protocol lines, optionally a real LLM-backed ACP agent for live raw-log viewer smoke coverage, and the browser debug-log contribution. **Workspace mutation:** None. **Automation status:** Automated with store-level assertions and Chrome DevTools MCP viewer checks. Live-agent raw-log evidence must be redacted and must not include real secrets. Sensitive-data redaction checks are blocked until the product exposes a redacted render/copy contract.
+**Layer:** `runtime-ui` **Required profile:** `full` with ACP debug logging enabled. **Fixtures:** ACP debug log store, one thread driven by `node test/bdd/fixtures/acp-agent/mock-acp-agent.mjs --fixture=stream-rich` or synthetic store records that emit protocol lines, optionally a real LLM-backed ACP agent for live redacted-log viewer smoke coverage, and the browser debug-log contribution. **Workspace mutation:** None. **Automation status:** Automated with store-level Jest assertions plus Playwright/Chrome DevTools MCP viewer, copy, clear, and redaction checks.
 
 ## Given
 
@@ -39,7 +39,7 @@
 
 ### Part D - Sensitive Transport Data Audit
 
-16. Run this part only when a redacted debug-log render/copy contract is implemented.
+16. Use the product redacted debug-log render/copy contract.
 17. Create a session where the built-in `opensumi-ide` MCP server is injected.
 18. Open the debug log viewer and copy all entries.
 19. Search the copied log text for:
@@ -61,8 +61,8 @@
 - Clear calls `IAIBackService.clearAcpDebugLog` and updates the UI to the empty state.
 - Copy All is disabled when there are no entries and writes the rendered log when entries exist.
 - Auto-refresh does not duplicate existing entries or reset scroll/focus unexpectedly.
-- Current debug-log rendering is raw. Tests must use synthetic protocol lines and must not inject real secrets.
-- When a redacted render/copy contract exists, Part D must verify that debug log UI does not expose unredacted MCP bridge tokens, API keys, full relay digests, or permission prompt contents.
+- The node store retains raw local diagnostics, while the browser viewer and Copy All redact MCP bridge tokens, API keys, prompts/content/text, tool arguments/results, full relay digests, and permission content.
+- Part D verifies that the debug log UI does not expose unredacted MCP bridge tokens, API keys, full relay digests, permission prompt contents, or deterministic prompt/assistant/tool sentinels.
 
 ## Live Agent Execution
 
@@ -71,6 +71,6 @@
 
 ## Pass / Fail Judgment
 
-- **PASS** - ACP debug logging captures useful protocol traces, keeps the newest 2000 entries, preserves session/thread metadata, and presents a usable raw viewer for synthetic test data.
-- **BLOCKED** - the run schedules Part D before the product exposes redacted debug-log rendering/copying.
+- **PASS** - ACP debug logging captures useful raw store traces, keeps the newest 2000 entries, preserves session/thread metadata, and presents a usable redacted viewer/copy surface.
+- **BLOCKED** - the run lacks full profile, debug logging, viewer command, deterministic entries, or clipboard observability.
 - **FAIL** - entry counts grow unbounded, partial lines become corrupt entries, session ids are not backfilled, the viewer cannot refresh/clear/copy correctly, or the redaction audit runs and copied logs contain unredacted MCP tokens or sensitive content.

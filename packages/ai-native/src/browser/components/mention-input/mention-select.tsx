@@ -105,7 +105,7 @@ export const MentionSelect: React.FC<MentionSelectProps> = ({
   };
 
   const handleSelect = (option: ExtendedModelOption) => {
-    if (!option.disabled) {
+    if (!disabled && !option.disabled) {
       onChange?.(option.value);
       setIsOpen(false);
       setActiveIndex(-1);
@@ -153,6 +153,13 @@ export const MentionSelect: React.FC<MentionSelectProps> = ({
     setIsOpen(false);
     setActiveIndex(-1);
   };
+
+  useEffect(() => {
+    if (disabled) {
+      setIsOpen(false);
+      setActiveIndex(-1);
+    }
+  }, [disabled]);
 
   useEffect(() => {
     if (isOpen && selectRef.current) {
@@ -248,7 +255,7 @@ export const MentionSelect: React.FC<MentionSelectProps> = ({
             role='listbox'
             style={dropdownMaxWidth ? { maxWidth: dropdownMaxWidth } : undefined}
           >
-            {showThinking && onThinkingChange && (
+            {!disabled && showThinking && onThinkingChange && (
               <div className={styles.thinking_section}>
                 <ThinkingToggle enabled={thinkingEnabled} onChange={onThinkingChange} />
                 <div className={styles.divider} />

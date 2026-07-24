@@ -323,7 +323,11 @@ full Profile 期望覆盖以下 IDE capability groups：
 | `acp-chat-agentic-stream-rendering.scenario.md` | `runtime-ui` | `interactive` | 确定性 stream 中的正文、推理、计划、工具卡片和恢复。 |
 | `acp-chat-agentic-cancel-stop.scenario.md` | `runtime-ui` | `interactive` | 长响应停止/取消、输入恢复和后续发送。 |
 | `acp-chat-agentic-reload-during-stream.scenario.md` | `runtime-ui` | `interactive` | 流式过程中刷新页面后的可用恢复。 |
-| `acp-chat-agentic-history.scenario.md` | `runtime-ui` | `interactive` | New Chat、历史列表、会话切换和权限 badge。 |
+| `acp-chat-agentic-task-list-presentation-and-resize.scenario.md` | `runtime-ui` | `interactive` | Agent Tasks 列表样式、可访问性、resize 边界和宽度持久化。 |
+| `acp-chat-agentic-project-management-and-disclosure.scenario.md` | `runtime-ui` | `interactive` | Project 标签、搜索、折叠、重命名、添加/移除和不可用过滤。 |
+| `acp-chat-agentic-task-launch-and-activation.scenario.md` | `runtime-ui` | `interactive` | Task 创建、Agent recall、当前 Project 激活、失败与竞态安全。 |
+| `acp-chat-agentic-cross-project-session-activation.scenario.md` | `runtime-ui` | `interactive` | 跨 Project 会话原地激活，不切换工作区或干扰脏编辑器。 |
+| `acp-chat-agentic-task-archive-status-and-restore.scenario.md` | `runtime-ui` | `interactive` | Task 状态/注意力、归档、刷新恢复和 Classic 边界。 |
 | `acp-chat-agentic-session-isolation.scenario.md` | `runtime-ui` | `interactive` | 多会话并发状态和 stream 更新隔离。 |
 | `acp-chat-agentic-rich-history-restore.scenario.md` | `runtime-ui` | `interactive` | 复杂响应在切换/刷新后不丢不重。 |
 | `acp-chat-agentic-context-attachments.scenario.md` | `runtime-ui` | `interactive` | 文件、文件夹、代码、规则上下文 chip 和附件清理。 |

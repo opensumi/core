@@ -9,7 +9,7 @@
 - Agentic AI Chat is visible and the input footer has already rendered ACP session-provided `configOptions`.
 - The slash/skill command footer entry point is visible or the `/` command surface can be opened from the input.
 - `acp_chat_get_available_commands` returns safe command metadata for the active fixture session.
-- The check starts from an active session created by a deterministic send, then uses the visible New Chat action to enter a fresh draft.
+- The check starts from an active Task created by a deterministic send, then uses the Agentic header primary New Task action to enter a fresh Task Draft.
 
 ## When
 
@@ -17,7 +17,7 @@
 2. `mcp`: `acp_chat_get_available_commands({})` directly or through the fallback broker -> record `COMMANDS_ACTIVE`.
 3. Record the active footer config controls: count, order, selected values, disabled state, and whether legacy duplicate mode/model controls are absent when `configOptions` are present.
 4. Record the slash/skill command entry point and open the command surface once to capture visible command names, focus state, and dismiss behavior.
-5. Click the Agentic chat header New Chat action.
+5. Click the Agentic chat header primary New Task action without opening the adjacent Agent menu.
 6. `mcp`: `acp_chat_get_session_state({})` -> record `STATE_DRAFT`.
 7. `mcp`: `acp_chat_list_sessions({})` directly or through the fallback broker -> record `SESSIONS_AFTER_NEW_CHAT`.
 8. Before typing any valid prompt, record the draft footer config controls and slash/skill command entry point again.
@@ -28,7 +28,7 @@
 
 ## Then
 
-- New Chat enters a draft/inactive state and does not eagerly create or persist a new ACP session.
+- New Task enters a draft/inactive state for the resolved Project and Agent and does not eagerly create or persist a new ACP session.
 - `STATE_DRAFT` is inactive or has no active session id before the valid send, and `SESSIONS_AFTER_NEW_CHAT` has no additional empty draft row.
 - The draft footer still shows the same normalized ACP config option controls that were visible on the active session, including selected values and ordering.
 - The draft footer still exposes the slash/skill command entry point, and the command surface remains aligned with safe `COMMANDS_ACTIVE` metadata.
@@ -44,6 +44,6 @@
 
 ## Pass / Fail Judgment
 
-- **PASS** - New Chat keeps the Agentic draft footer usable without creating a session, whitespace-only input stays inert, and the first valid send creates the ACP session while preserving footer config and command access.
-- **BLOCKED** - the run lacks interactive profile, deterministic `stream-rich` config/command metadata, a stable New Chat action, or stable footer/command selectors.
-- **FAIL** - draft footer config options or slash/skill commands disappear before first send, New Chat eagerly creates an empty session, whitespace creates a session, first valid send fails from draft, duplicate controls render, or safe tools leak content.
+- **PASS** - New Task keeps the Agentic draft footer usable without creating a session, whitespace-only input stays inert, and the first valid send creates the ACP session while preserving footer config and command access.
+- **BLOCKED** - the run lacks interactive profile, deterministic `stream-rich` config/command metadata, a stable primary New Task action, or stable footer/command selectors.
+- **FAIL** - draft footer config options or slash/skill commands disappear before first send, New Task opens the Agent menu or eagerly creates an empty session, whitespace creates a session, first valid send fails from draft, duplicate controls render, or safe tools leak content.

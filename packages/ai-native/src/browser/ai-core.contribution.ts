@@ -6,6 +6,7 @@ import {
   AINativeSettingSectionsId,
   AI_NATIVE_SETTING_GROUP_ID,
   AppConfig,
+  COMMON_COMMANDS,
   ClientAppContribution,
   CommandContribution,
   CommandRegistry,
@@ -56,6 +57,7 @@ import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/consta
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
+  AIBackSerivcePath,
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
   ChatInputRegistryToken,
@@ -63,7 +65,10 @@ import {
   ChatServiceToken,
   ChatViewRegistryToken,
   CommandService,
+  IACPConfigProvider,
+  IAIBackService,
   IDisposable,
+  ILogger,
   InlineChatFeatureRegistryToken,
   IntelligentCompletionsRegistryToken,
   MCPConfigServiceToken,
@@ -91,6 +96,7 @@ import {
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IMultiDiffSourceResolverService } from '@opensumi/ide-editor/lib/common/multi-diff';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { HideInlineCompletion } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/commands';
@@ -115,8 +121,10 @@ import { LLMContextService, LLMContextServiceToken } from '../common/llm-context
 import { MCPServerDescription, MCPServersDisabledKey } from '../common/mcp-server-manager';
 import { MCP_SERVER_TYPE } from '../common/types';
 
+import { AgenticWorkspaceSwitchService } from './acp/agentic-workspace-switch.service';
 import { AcpChatInput } from './acp/components/AcpChatInput';
 import { AcpChatMentionInput } from './acp/components/AcpChatMentionInput';
+import { AcpQueuedTurnEditor } from './acp/components/AcpQueuedTurnEditor';
 import { WebMcpGroupRegistry } from './acp/webmcp-group-registry';
 import { createAcpChatGroup } from './acp/webmcp-groups/acp-chat.webmcp-group';
 import { createDiagnosticsGroup } from './acp/webmcp-groups/diagnostics.webmcp-group';
@@ -127,6 +135,8 @@ import { createSearchGroup } from './acp/webmcp-groups/search.webmcp-group';
 import { createTerminalGroup } from './acp/webmcp-groups/terminal.webmcp-group';
 import { createWorkspaceGroup } from './acp/webmcp-groups/workspace.webmcp-group';
 import { registerWebMcpModelContextTools } from './acp/webmcp-model-context-adapter';
+import { AI_CHAT_INPUT_TOGGLE_EXPANDED } from './chat/acp-chat-input.commands';
+import { AI_CHAT_NEW_CHAT, AI_CHAT_NEW_TASK } from './chat/acp-new-draft.commands';
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
@@ -134,9 +144,11 @@ import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatService } from './chat/chat.api.service';
 import { IChatInputRegistry } from './chat/chat.input.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
+import { AcpChatInternalService } from './chat/chat.internal.service.acp';
 import { AIChatView } from './chat/chat.view';
 import { AIChatViewACP } from './chat/chat.view.acp';
 import { IChatViewRegistry } from './chat/chat.view.registry';
+import { getAvailableAgentConfigs } from './chat/get-default-agent-type';
 import { ChatInput } from './components/ChatInput';
 import { ChatMentionInput } from './components/ChatMentionInput';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
@@ -248,6 +260,9 @@ export class AINativeBrowserContribution
   @Autowired(ChatInputRegistryToken)
   private readonly chatInputRegistry: IChatInputRegistry;
 
+  @Autowired(IChatInternalService)
+  private readonly aiChatService: AcpChatInternalService;
+
   @Autowired(ChatViewRegistryToken)
   private readonly chatViewRegistry: IChatViewRegistry;
 
@@ -269,11 +284,26 @@ export class AINativeBrowserContribution
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
 
+  @Autowired(AIBackSerivcePath)
+  private readonly aiBackService: IAIBackService;
+
+  @Autowired(IACPConfigProvider)
+  private readonly acpConfigProvider: IACPConfigProvider;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
   @Autowired(DesignLayoutConfig)
   private readonly designLayoutConfig: DesignLayoutConfig;
 
   @Autowired(AIPanelLayoutService)
   private readonly panelLayoutService: AIPanelLayoutService;
+
+  @Autowired(AgenticWorkspaceSwitchService)
+  private readonly agenticWorkspaceSwitchService: AgenticWorkspaceSwitchService;
+
+  @Autowired(IMessageService)
+  private readonly messageService: IMessageService;
 
   @Autowired(AICompletionsService)
   private readonly aiCompletionsService: AICompletionsService;
@@ -446,8 +476,13 @@ export class AINativeBrowserContribution
     this.registerWebMcpSurface();
 
     runWhenIdle(() => {
-      const { supportsRenameSuggestions, supportsInlineChat, supportsMCP, supportsCustomLLMSettings } =
-        this.aiNativeConfigService.capabilities;
+      const {
+        supportsAgentMode,
+        supportsRenameSuggestions,
+        supportsInlineChat,
+        supportsMCP,
+        supportsCustomLLMSettings,
+      } = this.aiNativeConfigService.capabilities;
       const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
@@ -514,11 +549,40 @@ export class AINativeBrowserContribution
       if (supportsMCP) {
         this.initMCPServers();
       }
+
+      if (supportsAgentMode) {
+        this.warmUpDefaultAcpPool();
+      }
     });
   }
 
   onStop() {
     this.webMcpModelContextDisposable?.dispose();
+  }
+
+  private warmUpDefaultAcpPool(): void {
+    const warmUpAgentPool = this.aiBackService.warmUpAgentPool;
+    const resolvePrewarmConfig = this.acpConfigProvider.resolvePrewarmConfig;
+    if (!warmUpAgentPool || !resolvePrewarmConfig) {
+      return;
+    }
+
+    void resolvePrewarmConfig
+      .call(this.acpConfigProvider)
+      .then(
+        async (config) => {
+          if (!config) {
+            return;
+          }
+          await warmUpAgentPool.call(this.aiBackService, config);
+        },
+        (error) => {
+          this.logger.warn('[AINative] Failed to resolve ACP pool warmup config', error);
+        },
+      )
+      .catch((error) => {
+        this.logger.warn('[AINative] Failed to warm up ACP agent pool', error);
+      });
   }
 
   private registerWebMcpSurface() {
@@ -677,6 +741,8 @@ export class AINativeBrowserContribution
     this.chatInputRegistry.registerChatInput({
       id: 'acp-mention-input',
       component: AcpChatMentionInput,
+      capabilities: ['restore-draft', 'focus', 'expand', 'images', 'mentions', 'paste', 'rich-queued-edit'],
+      queuedTurnEditor: AcpQueuedTurnEditor,
       priority: 200,
       when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
     });
@@ -684,6 +750,7 @@ export class AINativeBrowserContribution
     this.chatInputRegistry.registerChatInput({
       id: 'acp-chat-input',
       component: AcpChatInput,
+      capabilities: ['restore-draft', 'focus', 'expand'],
       priority: 150,
       when: () => this.aiNativeConfigService.capabilities.supportsAgentMode,
     });
@@ -936,6 +1003,70 @@ export class AINativeBrowserContribution
   registerCommands(commands: CommandRegistry): void {
     registerAgenticWorkbenchRevealCommandInterceptors(commands, this.panelLayoutService, this.mainLayoutService);
 
+    commands.registerCommand(AI_CHAT_INPUT_TOGGLE_EXPANDED, {
+      execute: () => this.chatInputRegistry.getActiveInputHandle()?.toggleExpanded?.(),
+    });
+
+    commands.registerCommand(
+      { ...AI_CHAT_NEW_CHAT, enablement: `${AI_PANEL_LAYOUT_CONTEXT} == classic` },
+      {
+        execute: () => {
+          const draft = this.chatInputRegistry.preserveActiveDraft() || this.aiChatService.getInputDraft();
+          this.aiChatService.updateInputDraft(draft);
+          this.panelLayoutService.showAIChatView('classic');
+          this.aiChatService.enterDraftSession();
+          this.chatInputRegistry.restoreActiveDraft(draft);
+          this.focusChatInputAfterReveal();
+        },
+      },
+    );
+
+    commands.registerCommand(
+      { ...AI_CHAT_NEW_TASK, enablement: `${AI_PANEL_LAYOUT_CONTEXT} == agentic` },
+      {
+        execute: async (agentId?: string) => {
+          const draft = this.chatInputRegistry.preserveActiveDraft() || this.aiChatService.getInputDraft();
+          this.aiChatService.updateInputDraft(draft);
+          this.panelLayoutService.showAIChatView('agentic');
+          const result = await this.agenticWorkspaceSwitchService.launchHeaderTask(agentId);
+          if (result.status === 'launched') {
+            this.chatInputRegistry.restoreActiveDraft(draft);
+            this.focusChatInputAfterReveal();
+            return;
+          }
+          if (result.status === 'no-agent') {
+            const configureLabel = localize('aiNative.chat.agentSelector.configureAgents', 'Agent Configurations');
+            const selected = await this.messageService.warning(
+              localize('aiNative.chat.newTask.noAgent', 'No ACP Agent available'),
+              [configureLabel],
+              true,
+            );
+            if (selected === configureLabel) {
+              await this.preferenceService.set(
+                AINativeSettingSectionsId.AgentConfigs,
+                getAvailableAgentConfigs(this.preferenceService),
+                PreferenceScope.User,
+              );
+              await this.commandService.executeCommand(
+                COMMON_COMMANDS.OPEN_PREFERENCES.id,
+                AINativeSettingSectionsId.AgentConfigs,
+              );
+            }
+            return;
+          }
+          if (result.status === 'project-unavailable' || result.status === 'no-project') {
+            await this.messageService.warning(
+              localize('aiNative.chat.newTask.workspaceUnavailable', 'Workspace Target unavailable'),
+            );
+            return;
+          }
+          if (result.status === 'failed') {
+            await this.messageService.warning(localize('aiNative.chat.newTask.failed', 'Failed to create a new Task'));
+          }
+        },
+      },
+    );
+
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
         this.aiInlineChatService._onInlineChatVisible.fire(value);
@@ -1048,6 +1179,11 @@ export class AINativeBrowserContribution
     });
   }
 
+  private focusChatInputAfterReveal(): void {
+    this.chatInputRegistry.focusActiveInput();
+    runWhenIdle(() => this.chatInputRegistry.focusActiveInput());
+  }
+
   registerMenus(menus: IMenuRegistry): void {
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       submenu: AI_PANEL_LAYOUT_MENU,
@@ -1114,6 +1250,25 @@ export class AINativeBrowserContribution
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
+    if (this.aiNativeConfigService.capabilities.supportsAgentMode) {
+      keybindings.registerKeybinding(
+        {
+          command: AI_CHAT_NEW_CHAT.id,
+          keybinding: 'ctrlcmd+alt+n',
+          when: `${AI_PANEL_LAYOUT_CONTEXT} == classic`,
+        },
+        KeybindingScope.USER,
+      );
+      keybindings.registerKeybinding(
+        {
+          command: AI_CHAT_NEW_TASK.id,
+          keybinding: 'ctrlcmd+alt+n',
+          when: `${AI_PANEL_LAYOUT_CONTEXT} == agentic`,
+        },
+        KeybindingScope.USER,
+      );
+    }
+
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       // 通过 CMD + i 唤起 Inline Chat （浮动组件）
       keybindings.registerKeybinding(

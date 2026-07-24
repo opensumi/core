@@ -3,14 +3,17 @@ import { Deferred, Disposable, IEventBus, URI, createContributionProvider } from
 import {
   BrowserEditorContribution,
   CodeEditorDidVisibleEvent,
+  DragOverPosition,
   EditorComponentRegistry,
   EditorGroupChangeEvent,
+  EditorGroupCloseEvent,
   EditorOpenType,
   EmptyDocCacheImpl,
   IEditorDecorationCollectionService,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
   IEditorFeatureRegistry,
+  ResourceDecorationNeedChangeEvent,
   ResourceOpenTypeChangedEvent,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
@@ -23,6 +26,7 @@ import {
 import { EditorCollectionServiceImpl } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { EditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser/editor.decoration.service';
 import { EditorFeatureRegistryImpl } from '@opensumi/ide-editor/lib/browser/feature';
+import { SplitDirection } from '@opensumi/ide-editor/lib/browser/grid/grid.service';
 import { LanguageService } from '@opensumi/ide-editor/lib/browser/language/language.service';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
 import { EditorGroup, WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
@@ -181,6 +185,15 @@ describe('workbench editor service tests', () => {
   const editorDocModelRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
   const eventBus: IEventBus = injector.get(IEventBus);
 
+  const closeAllEditorGroups = async () => {
+    for (const group of [...editorService.editorGroups] as EditorGroup[]) {
+      while (group.pinnedTabCount > 0 && group.resources.length > 0) {
+        group.unpinTab(group.resources[0].uri);
+      }
+    }
+    await editorService.closeAll();
+  };
+
   const disposer = new Disposable();
   beforeAll(() => {
     injector.mockCommand('explorer.location');
@@ -316,20 +329,132 @@ describe('workbench editor service tests', () => {
 
     await editorService.closeAll();
 
-    await editorService.open(testComponentUri, { preview: false, forceOpenType: { type: EditorOpenType.code } });
-    expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
-    expect(editorService.editorGroups[0].currentOpenType!.type).toBe(EditorOpenType.code);
+    try {
+      await editorService.open(testComponentUri, { preview: false, forceOpenType: { type: EditorOpenType.code } });
+      expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
+      expect(editorService.editorGroups[0].currentOpenType!.type).toBe(EditorOpenType.code);
 
-    // 测试 getState 方法
-    expect(editorService.editorGroups[0].getState()).toEqual({
-      uris: ['test://component'],
-      current: 'test://component',
-      previewIndex: -1,
+      // 测试 getState 方法
+      expect(editorService.editorGroups[0].getState()).toEqual({
+        uris: ['test://component'],
+        current: 'test://component',
+        previewIndex: -1,
+        pinnedUris: [],
+      });
+    } finally {
+      await editorService.closeAll();
+      disposer.dispose();
+    }
+  });
+
+  it('should persist pinned uris and restore only the successfully revived pinned prefix', async () => {
+    const pinned = new URI('test://pin/state-pinned');
+    const missingPinned = new URI('test://pin/missing-pinned');
+    const ordinary = new URI('test://pin/state-ordinary');
+    const getResource = resourceService.getResource.bind(resourceService);
+    const getResourceSpy = jest.spyOn(resourceService, 'getResource').mockImplementation(async (uri) => {
+      if (uri.isEqual(missingPinned)) {
+        return {
+          uri,
+          name: uri.path.toString(),
+          icon: `iconTest ${uri.toString()}`,
+          supportsRevive: true,
+          deleted: true,
+        };
+      }
+      return getResource(uri);
     });
+    const group = editorService.currentEditorGroup as EditorGroup;
 
-    await editorService.closeAll();
+    try {
+      await editorService.open(pinned, { preview: false });
+      await editorService.open(ordinary, { preview: false });
+      group.pinTab(pinned);
 
-    disposer.dispose();
+      expect(group.getState()).toEqual({
+        uris: [pinned.toString(), ordinary.toString()],
+        current: ordinary.toString(),
+        previewIndex: -1,
+        pinnedUris: [pinned.toString()],
+      });
+
+      await group.closeAll({ closePinned: true, force: true });
+      await group.restoreState({
+        uris: [pinned.toString(), missingPinned.toString(), ordinary.toString()],
+        current: ordinary.toString(),
+        previewIndex: -1,
+        pinnedUris: [pinned.toString(), missingPinned.toString()],
+      });
+
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([
+        pinned.toString(),
+        ordinary.toString(),
+      ]);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.isPinned(ordinary)).toBe(false);
+    } finally {
+      getResourceSpy.mockRestore();
+      await group.closeAll({ closePinned: true, force: true });
+    }
+  });
+
+  it('should restore legacy editor group state without pinned tabs', async () => {
+    const uri = new URI('test://pin/legacy-state');
+    const group = editorService.currentEditorGroup as EditorGroup;
+
+    try {
+      await group.restoreState({ uris: [uri.toString()], current: uri.toString(), previewIndex: -1 });
+      expect(group.pinnedTabCount).toBe(0);
+      expect(group.isPinned(uri)).toBe(false);
+    } finally {
+      await group.closeAll({ closePinned: true, force: true });
+    }
+  });
+
+  it('should keep the same uri independently pinned in different editor groups', async () => {
+    const uri = new URI('test://pin/group-local');
+    await editorService.open(uri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    source.pinTab(uri);
+    const existingGroups = new Set(editorService.editorGroups);
+    let target: EditorGroup | undefined;
+
+    try {
+      await source.split(EditorGroupSplitAction.Right, uri, { focus: true });
+      target = editorService.editorGroups.find((group) => !existingGroups.has(group)) as EditorGroup;
+      expect(target).toBeDefined();
+      if (!target) {
+        throw new Error('Expected split to create an editor group');
+      }
+      target.unpinTab(uri);
+
+      expect(source.isPinned(uri)).toBe(true);
+      expect(target.isPinned(uri)).toBe(false);
+      expect(source.getState().pinnedUris).toEqual([uri.toString()]);
+      expect(target.getState().pinnedUris).toEqual([]);
+    } finally {
+      await target?.closeAll({ closePinned: true, force: true });
+      await source.closeAll({ closePinned: true, force: true });
+    }
+  });
+
+  it('should let pinned state win over malformed preview state during restoration', async () => {
+    const uri = new URI('test://pin/malformed-state');
+    const group = editorService.currentEditorGroup as EditorGroup;
+
+    try {
+      await group.restoreState({
+        uris: [uri.toString()],
+        current: uri.toString(),
+        previewIndex: 0,
+        pinnedUris: [uri.toString()],
+      });
+
+      expect(group.isPinned(uri)).toBe(true);
+      expect(group.previewURI).toBeNull();
+    } finally {
+      await group.closeAll({ closePinned: true, force: true });
+    }
   });
 
   it('should be able to split', async () => {
@@ -389,6 +514,590 @@ describe('workbench editor service tests', () => {
     expect(editorService.editorGroups[0].resources.length).toBe(1);
 
     await editorService.closeAll();
+  });
+
+  it('should keep pinned tabs as a leading prefix without changing the active resource', async () => {
+    const a = new URI('test://pin/a');
+    const b = new URI('test://pin/b');
+    const c = new URI('test://pin/c');
+    await editorService.open(a, { preview: false });
+    await editorService.open(b, { preview: false });
+    await editorService.open(c, { preview: false });
+
+    const group = editorService.currentEditorGroup as EditorGroup;
+    expect(group.pinTab(b)).toBe(true);
+    expect(group.resources.map((resource) => resource.uri.toString())).toEqual([b, a, c].map(String));
+    expect(group.pinnedTabCount).toBe(1);
+    expect(group.currentResource?.uri.toString()).toBe(c.toString());
+
+    expect(group.pinTab(c)).toBe(true);
+    expect(group.resources.map((resource) => resource.uri.toString())).toEqual([b, c, a].map(String));
+    expect(group.pinnedTabCount).toBe(2);
+
+    expect(group.unpinTab(b)).toBe(true);
+    expect(group.resources.map((resource) => resource.uri.toString())).toEqual([c, b, a].map(String));
+    expect(group.isPinned(c)).toBe(true);
+    expect(group.isPinned(b)).toBe(false);
+
+    while (group.pinnedTabCount > 0) {
+      group.unpinTab(group.resources[0].uri);
+    }
+    await group.closeAll();
+  });
+
+  it('should keep open a preview when it becomes pinned and never restore preview on unpin', async () => {
+    const uri = new URI('test://pin/preview');
+    await editorService.open(uri, { preview: true });
+    const group = editorService.currentEditorGroup as EditorGroup;
+
+    expect(group.previewURI?.toString()).toBe(uri.toString());
+    expect(group.pinTab(uri)).toBe(true);
+    expect(group.previewURI).toBeNull();
+    expect(group.isPinned(uri)).toBe(true);
+
+    expect(group.unpinTab(uri)).toBe(true);
+    expect(group.previewURI).toBeNull();
+    expect(group.isPinned(uri)).toBe(false);
+    expect(group.pinTab(new URI('test://pin/not-open'))).toBe(false);
+
+    await group.close(uri, { force: true });
+  });
+
+  it('should not notify when moveTab clamps to the existing index', async () => {
+    const pinned = new URI('test://pin/clamped-move-pinned');
+    const ordinary = new URI('test://pin/clamped-move-ordinary');
+    await editorService.open(pinned, { preview: false });
+    await editorService.open(ordinary, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+    const resourcesBefore = [...group.resources];
+    const tabChanged = jest.fn();
+    const tabOperation = jest.fn();
+    const changedDisposer = group.onDidEditorGroupTabChanged(tabChanged);
+    const operationDisposer = group.onDidEditorGroupTabOperation(tabOperation);
+
+    try {
+      expect(group.moveTab(pinned, -100, true)).toBe(false);
+      expect(group.resources).toEqual(resourcesBefore);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(tabChanged).not.toHaveBeenCalled();
+      expect(tabOperation).not.toHaveBeenCalled();
+    } finally {
+      changedDisposer.dispose();
+      operationDisposer.dispose();
+      await closeAllEditorGroups();
+    }
+  });
+
+  it.each(['file', 'untitled', 'diff', 'mergeEditor', 'custom-editor', 'webview'])(
+    'should keep pinned state independent of the %s tab input type',
+    (scheme) => {
+      const group = editorService.currentEditorGroup as EditorGroup;
+      const uri = new URI(`${scheme}://pin/type`);
+      group.resources = [{ uri, name: `${scheme}-tab` } as any];
+
+      expect(group.pinTab(uri)).toBe(true);
+      expect(group.isPinned(uri)).toBe(true);
+      expect(group.unpinTab(uri)).toBe(true);
+      expect(group.isPinned(uri)).toBe(false);
+
+      group.resources = [];
+    },
+  );
+
+  it('should insert an ordinary tab after the pinned prefix when a pinned tab is active', async () => {
+    const firstPinned = new URI('test://pin/open-pinned-first');
+    const secondPinned = new URI('test://pin/open-pinned-second');
+    const ordinary = new URI('test://pin/open-ordinary');
+    await editorService.open(firstPinned, { preview: false });
+    await editorService.open(secondPinned, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(firstPinned);
+    group.pinTab(secondPinned);
+    await group.open(firstPinned, { preview: false });
+
+    try {
+      await group.open(ordinary, { preview: false });
+
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual(
+        [firstPinned, secondPinned, ordinary].map(String),
+      );
+      expect(group.pinnedTabCount).toBe(2);
+      expect(group.isPinned(firstPinned)).toBe(true);
+      expect(group.isPinned(secondPinned)).toBe(true);
+      expect(group.isPinned(ordinary)).toBe(false);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should preserve pin state when splitting a pinned tab', async () => {
+    const uri = new URI('test://pin/split');
+    await editorService.open(uri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    source.pinTab(uri);
+
+    try {
+      await source.split(EditorGroupSplitAction.Right, uri, { focus: true });
+      const target = editorService.editorGroups.find((group) => group !== source) as EditorGroup;
+      expect(source.isPinned(uri)).toBe(true);
+      expect(target.isPinned(uri)).toBe(true);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should change pin state when a same-group drag crosses the pinned boundary', async () => {
+    const a = new URI('test://pin/drag-a');
+    const b = new URI('test://pin/drag-b');
+    const c = new URI('test://pin/drag-c');
+    await editorService.open(a, { preview: false });
+    await editorService.open(b, { preview: false });
+    await editorService.open(c, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(a);
+
+    try {
+      await group.dropUri(c, DragOverPosition.CENTER, group, group.resources[0]);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([c, a, b].map(String));
+      expect(group.pinnedTabCount).toBe(2);
+      expect(group.isPinned(a)).toBe(true);
+      expect(group.isPinned(c)).toBe(true);
+
+      const firstOrdinary = group.resources[group.pinnedTabCount];
+      await group.dropUri(c, DragOverPosition.CENTER, group, firstOrdinary);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([a, b, c].map(String));
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.isPinned(a)).toBe(true);
+      expect(group.isPinned(c)).toBe(false);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should derive pin state from the target region during a cross-group drop', async () => {
+    const sourceUri = new URI('test://pin/cross-source');
+    const targetUri = new URI('test://pin/cross-target');
+    await editorService.open(sourceUri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    await source.split(EditorGroupSplitAction.Right, targetUri, { focus: true });
+    const target = editorService.editorGroups.find((group) => group !== source) as EditorGroup;
+    target.pinTab(targetUri);
+
+    try {
+      await target.dropUri(sourceUri, DragOverPosition.CENTER, source, target.resources[0]);
+      expect(target.resources.map((resource) => resource.uri.toString())).toEqual([sourceUri, targetUri].map(String));
+      expect(target.pinnedTabCount).toBe(2);
+      expect(target.isPinned(sourceUri)).toBe(true);
+      expect(target.isPinned(targetUri)).toBe(true);
+      expect(source.resources.some((resource) => resource.uri.isEqual(sourceUri))).toBe(false);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should decrement the pinned boundary when explicitly closing a pinned tab', async () => {
+    const a = new URI('test://pin/close-a');
+    const b = new URI('test://pin/close-b');
+    const ordinary = new URI('test://pin/close-ordinary');
+    await editorService.open(a, { preview: false });
+    await editorService.open(b, { preview: false });
+    await editorService.open(ordinary, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(a);
+    group.pinTab(b);
+
+    try {
+      await group.close(a, { force: true });
+
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([b, ordinary].map(String));
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.isPinned(b)).toBe(true);
+      expect(group.isPinned(ordinary)).toBe(false);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should protect pinned tabs from bulk close operations', async () => {
+    const pinned = new URI('test://pin/protected');
+    const target = new URI('test://pin/target');
+    const other = new URI('test://pin/other');
+    await editorService.open(pinned, { preview: false });
+    await editorService.open(target, { preview: false });
+    await editorService.open(other, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+
+    try {
+      await group.closeOthers(target);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned, target].map(String));
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.currentResource?.uri.toString()).toBe(target.toString());
+
+      await group.open(other, { preview: false });
+      await group.closeToRight(pinned);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.currentResource?.uri.toString()).toBe(pinned.toString());
+
+      await group.open(target, { preview: false });
+      await group.closeSaved();
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.currentResource?.uri.toString()).toBe(pinned.toString());
+
+      await group.open(target, { preview: false });
+      await group.closeAll();
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.isPinned(pinned)).toBe(true);
+      expect(group.currentResource?.uri.toString()).toBe(pinned.toString());
+
+      await group.closeAll({ closePinned: true, force: true });
+      expect(group.resources).toHaveLength(0);
+      expect(group.pinnedTabCount).toBe(0);
+      expect(group.currentResource).toBeNull();
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should activate an inactive close-to-right target after closing tabs', async () => {
+    const pinned = new URI('test://close-right/pinned');
+    const activeLeft = new URI('test://close-right/active-left');
+    const target = new URI('test://close-right/target');
+    const right = new URI('test://close-right/right');
+    await editorService.open(pinned, { preview: false });
+    await editorService.open(activeLeft, { preview: false });
+    await editorService.open(target, { preview: false });
+    await editorService.open(right, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+    await group.open(activeLeft, { focus: true });
+
+    try {
+      expect(await group.closeToRight(target)).toBe(true);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual(
+        [pinned, activeLeft, target].map(String),
+      );
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.isPinned(pinned)).toBe(true);
+      expect(group.currentResource?.uri.toString()).toBe(target.toString());
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should cancel close-to-right without partially mutating the group', async () => {
+    const pinned = new URI('test://close-right-cancel/pinned');
+    const activeLeft = new URI('test://close-right-cancel/active-left');
+    const target = new URI('test://close-right-cancel/target');
+    const refusing = new URI('test://close-right-cancel/refusing');
+    const right = new URI('test://close-right-cancel/right');
+    await editorService.open(pinned, { preview: false });
+    await editorService.open(activeLeft, { preview: false });
+    await editorService.open(target, { preview: false });
+    await editorService.open(refusing, { preview: false });
+    await editorService.open(right, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+    await group.open(activeLeft, { focus: true });
+    const orderBefore = group.resources.map((resource) => resource.uri.toString());
+    const activeBefore = group.currentResource;
+    const pinnedTabCountBefore = group.pinnedTabCount;
+    const tabChanged = jest.fn();
+    const tabOperation = jest.fn();
+    const changedDisposer = group.onDidEditorGroupTabChanged(tabChanged);
+    const operationDisposer = group.onDidEditorGroupTabOperation(tabOperation);
+    doNotClose.push(refusing.toString());
+
+    try {
+      expect(await group.closeToRight(target)).toBe(false);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual(orderBefore);
+      expect(group.currentResource).toBe(activeBefore);
+      expect(group.pinnedTabCount).toBe(pinnedTabCountBefore);
+      expect(tabChanged).not.toHaveBeenCalled();
+      expect(tabOperation).not.toHaveBeenCalled();
+    } finally {
+      const refusingIndex = doNotClose.indexOf(refusing.toString());
+      if (refusingIndex >= 0) {
+        doNotClose.splice(refusingIndex, 1);
+      }
+      changedDisposer.dispose();
+      operationDisposer.dispose();
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should preserve closeSaved fallback and close-event order', async () => {
+    const savedBefore = new URI('test://close-saved/before');
+    const activeSaved = new URI('test://close-saved/active');
+    const dirtyAfter = new URI('test://close-saved/dirty-after');
+    const dirtyLast = new URI('test://close-saved/dirty-last');
+    await editorService.open(savedBefore, { preview: false });
+    await editorService.open(activeSaved, { preview: false });
+    await editorService.open(dirtyLast, { backend: true, preview: false });
+    await editorService.open(dirtyAfter, { backend: true, preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    eventBus.fire(new ResourceDecorationNeedChangeEvent({ uri: dirtyAfter, decoration: { dirty: true } }));
+    eventBus.fire(new ResourceDecorationNeedChangeEvent({ uri: dirtyLast, decoration: { dirty: true } }));
+    const closed: string[] = [];
+    const tabOperations: Array<{ uri: string; index: number }> = [];
+    const disposer = eventBus.on(EditorGroupCloseEvent, (event) => {
+      if (event.payload.group === group) {
+        closed.push(event.payload.resource.uri.toString());
+      }
+    });
+    const tabDisposer = group.onDidEditorGroupTabOperation((operation) => {
+      if (operation.type === 'close') {
+        tabOperations.push({ uri: operation.resource.uri.toString(), index: operation.index });
+      }
+    });
+
+    try {
+      await group.closeSaved();
+
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([dirtyAfter, dirtyLast].map(String));
+      expect(group.currentResource?.uri.toString()).toBe(dirtyAfter.toString());
+      expect(closed).toEqual([savedBefore, activeSaved].map(String));
+      expect(tabOperations).toEqual([
+        { uri: savedBefore.toString(), index: 0 },
+        { uri: activeSaved.toString(), index: 0 },
+      ]);
+    } finally {
+      disposer.dispose();
+      tabDisposer.dispose();
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should not notify tab changes when a protected bulk close removes nothing', async () => {
+    const pinned = new URI('test://pin/no-op-close');
+    await editorService.open(pinned, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+    const listener = jest.fn();
+    const disposer = group.onDidEditorGroupTabChanged(listener);
+
+    try {
+      await group.closeAll();
+
+      expect(listener).not.toHaveBeenCalled();
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+    } finally {
+      disposer.dispose();
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should map forced workbench cleanup to closing pinned tabs', async () => {
+    const pinned = new URI('test://pin/workbench-force');
+    await editorService.open(pinned, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+
+    try {
+      await editorService.closeAll();
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+      expect(group.isPinned(pinned)).toBe(true);
+
+      await editorService.closeAll(undefined, true);
+      expect(group.resources).toHaveLength(0);
+      expect(group.pinnedTabCount).toBe(0);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should activate the first ordinary tab instead of closing an active pinned tab', async () => {
+    const pinned = new URI('test://pin/active');
+    const ordinary = new URI('test://pin/fallback');
+    await editorService.open(pinned, { preview: false });
+    await editorService.open(ordinary, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinned);
+    await group.open(pinned, { focus: true });
+
+    try {
+      expect(typeof group.activateFirstUnpinned).toBe('function');
+      expect(await group.activateFirstUnpinned()).toBe(true);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned, ordinary].map(String));
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.currentResource?.uri.toString()).toBe(ordinary.toString());
+
+      await group.open(pinned, { focus: true });
+      await group.close(ordinary, { force: true });
+      expect(await group.activateFirstUnpinned()).toBe(false);
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([pinned.toString()]);
+      expect(group.pinnedTabCount).toBe(1);
+      expect(group.currentResource?.uri.toString()).toBe(pinned.toString());
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should preserve source pin state when dropping into an empty group', async () => {
+    const uri = new URI('test://pin/drop-empty');
+    await editorService.open(uri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    source.pinTab(uri);
+    const target = (editorService as WorkbenchEditorServiceImpl).createEditorGroup();
+    source.grid.split(SplitDirection.Horizontal, target);
+
+    try {
+      await target.dropUri(uri, DragOverPosition.CENTER, source);
+
+      expect(target.resources.map((resource) => resource.uri.toString())).toEqual([uri.toString()]);
+      expect(target.pinnedTabCount).toBe(1);
+      expect(target.isPinned(uri)).toBe(true);
+      expect(source.resources.some((resource) => resource.uri.isEqual(uri))).toBe(false);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should retain the source tab when the target open fails', async () => {
+    const sourceUri = new URI('test://pin/drop-failed-source');
+    const targetUri = new URI('test://pin/drop-failed-target');
+    await editorService.open(sourceUri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    await source.split(EditorGroupSplitAction.Right, targetUri, { focus: true });
+    const target = editorService.editorGroups.find((group) => group !== source) as EditorGroup;
+    const openSpy = jest.spyOn(target, 'open').mockResolvedValue(false);
+
+    try {
+      await target.dropUri(sourceUri, DragOverPosition.CENTER, source, target.resources[0]);
+
+      expect(source.resources.some((resource) => resource.uri.isEqual(sourceUri))).toBe(true);
+      expect(target.resources.some((resource) => resource.uri.isEqual(sourceUri))).toBe(false);
+    } finally {
+      openSpy.mockRestore();
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should preserve source pin state when dropping into a new split', async () => {
+    const sourceUri = new URI('test://pin/drop-split-source');
+    const targetUri = new URI('test://pin/drop-split-target');
+    await editorService.open(sourceUri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    source.pinTab(sourceUri);
+    await source.split(EditorGroupSplitAction.Right, targetUri, { focus: true });
+    const target = editorService.editorGroups.find((group) => group !== source) as EditorGroup;
+
+    try {
+      await target.dropUri(sourceUri, DragOverPosition.RIGHT, source);
+      const splitTarget = editorService.editorGroups.find(
+        (group) =>
+          group !== source && group !== target && group.resources.some((resource) => resource.uri.isEqual(sourceUri)),
+      ) as EditorGroup;
+
+      expect(splitTarget).toBeDefined();
+      expect(splitTarget.isPinned(sourceUri)).toBe(true);
+      expect(source.resources.some((resource) => resource.uri.isEqual(sourceUri))).toBe(false);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should keep an ordinary source ordinary when edge-dropping from a group with the same URI pinned', async () => {
+    const uri = new URI('test://pin/drop-split-duplicate');
+    await editorService.open(uri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    await source.split(EditorGroupSplitAction.Right, uri, { focus: true });
+    const receiving = editorService.editorGroups.find((group) => group !== source) as EditorGroup;
+    receiving.pinTab(uri);
+
+    try {
+      expect(source.isPinned(uri)).toBe(false);
+      expect(receiving.isPinned(uri)).toBe(true);
+
+      await receiving.dropUri(uri, DragOverPosition.RIGHT, source);
+      const splitTarget = editorService.editorGroups.find(
+        (group) =>
+          group !== source && group !== receiving && group.resources.some((resource) => resource.uri.isEqual(uri)),
+      ) as EditorGroup;
+
+      expect(splitTarget).toBeDefined();
+      expect(splitTarget.pinnedTabCount).toBe(0);
+      expect(splitTarget.isPinned(uri)).toBe(false);
+      expect(source.resources.some((resource) => resource.uri.isEqual(uri))).toBe(false);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should unpin a cross-group drop when targeting the ordinary region', async () => {
+    const sourceUri = new URI('test://pin/cross-unpin-source');
+    const targetPinnedUri = new URI('test://pin/cross-unpin-target-pinned');
+    const targetOrdinaryUri = new URI('test://pin/cross-unpin-target-ordinary');
+    await editorService.open(sourceUri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    source.pinTab(sourceUri);
+    await source.split(EditorGroupSplitAction.Right, targetPinnedUri, { focus: true });
+    const target = editorService.editorGroups.find((group) => group !== source) as EditorGroup;
+    target.pinTab(targetPinnedUri);
+    await target.open(targetOrdinaryUri, { preview: false });
+
+    try {
+      const targetOrdinary = target.resources.find((resource) => resource.uri.isEqual(targetOrdinaryUri));
+      await target.dropUri(sourceUri, DragOverPosition.CENTER, source, targetOrdinary);
+
+      expect(target.resources.map((resource) => resource.uri.toString())).toEqual(
+        [targetPinnedUri, sourceUri, targetOrdinaryUri].map(String),
+      );
+      expect(target.pinnedTabCount).toBe(1);
+      expect(target.isPinned(targetPinnedUri)).toBe(true);
+      expect(target.isPinned(sourceUri)).toBe(false);
+      expect(target.isPinned(targetOrdinaryUri)).toBe(false);
+      expect(source.resources.some((resource) => resource.uri.isEqual(sourceUri))).toBe(false);
+    } finally {
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should retain the source tab when an edge split fails', async () => {
+    const sourceUri = new URI('test://pin/drop-failed-split-source');
+    const targetUri = new URI('test://pin/drop-failed-split-target');
+    await editorService.open(sourceUri, { preview: false });
+    const source = editorService.currentEditorGroup as EditorGroup;
+    await source.split(EditorGroupSplitAction.Right, targetUri, { focus: true });
+    const target = editorService.editorGroups.find((group) => group !== source) as EditorGroup;
+    const splitSpy = jest.spyOn(target, 'split').mockResolvedValue(false);
+
+    try {
+      await target.dropUri(sourceUri, DragOverPosition.RIGHT, source);
+
+      expect(source.resources.some((resource) => resource.uri.isEqual(sourceUri))).toBe(true);
+      expect(target.resources.some((resource) => resource.uri.isEqual(sourceUri))).toBe(false);
+    } finally {
+      splitSpy.mockRestore();
+      await closeAllEditorGroups();
+    }
+  });
+
+  it('should keep open a preview tab dragged into the pinned region', async () => {
+    const pinnedUri = new URI('test://pin/drag-preview-pinned');
+    const previewUri = new URI('test://pin/drag-preview');
+    await editorService.open(pinnedUri, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+    group.pinTab(pinnedUri);
+    await group.open(previewUri, { preview: true });
+
+    try {
+      expect(group.previewURI?.toString()).toBe(previewUri.toString());
+
+      await group.dropUri(previewUri, DragOverPosition.CENTER, group, group.resources[0]);
+
+      expect(group.resources.map((resource) => resource.uri.toString())).toEqual([previewUri, pinnedUri].map(String));
+      expect(group.previewURI).toBeNull();
+      expect(group.pinnedTabCount).toBe(2);
+      expect(group.isPinned(previewUri)).toBe(true);
+      expect(group.isPinned(pinnedUri)).toBe(true);
+    } finally {
+      await closeAllEditorGroups();
+    }
   });
 
   it('replace should work properly', async () => {

@@ -1,9 +1,19 @@
-import { AgentProcessConfig, CancellationToken, Emitter } from '@opensumi/ide-core-common';
+import {
+  ACP_SESSION_NOT_FOUND_ERROR_NAME,
+  AgentProcessConfig,
+  CancellationToken,
+  Emitter,
+} from '@opensumi/ide-core-common';
 import { ChatReadableStream, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { toAgentUpdate } from '../../src/node/acp/acp-agent-update-adapter';
-import { AgentSessionInfo, AgentUpdate, IAcpAgentService } from '../../src/node/acp/acp-agent.service';
+import {
+  AgentSessionAttachmentUpdate,
+  AgentSessionInfo,
+  AgentUpdate,
+  IAcpAgentService,
+} from '../../src/node/acp/acp-agent.service';
 import { AcpCliBackService } from '../../src/node/acp/acp-cli-back.service';
 import { AcpThreadStatusCallerService } from '../../src/node/acp/acp-thread-status-caller.service';
 import { OpenAICompatibleModel } from '../../src/node/openai-compatible/openai-compatible-language-model';
@@ -44,6 +54,7 @@ describe('AcpCliBackService', () => {
       createSession: jest.fn(),
       initializeAgent: jest.fn(),
       sendMessage: jest.fn(),
+      attachSession: jest.fn(),
       cancelRequest: jest.fn(),
       disposeSession: jest.fn(),
       closeSession: jest.fn(),
@@ -230,6 +241,66 @@ describe('AcpCliBackService', () => {
 
       expect(result.sessionId).toBe('actual-session-id');
       expect(mockAgentService.loadSessionOrNew).toHaveBeenCalledWith('requested-session-id', mockAgentSessionConfig);
+    });
+  });
+
+  describe('attachSession()', () => {
+    it('should emit a session snapshot before forwarding live progress without sending a prompt', async () => {
+      const agentStream = new SumiReadableStream<AgentSessionAttachmentUpdate>();
+      mockAgentService.attachSession.mockReturnValue(agentStream);
+
+      const stream = await service.attachSession('sess-1');
+      const progress: any[] = [];
+      stream.onData((update) => progress.push(update));
+
+      agentStream.emitData({
+        type: 'snapshot',
+        snapshot: {
+          sessionId: 'sess-1',
+          processId: 'thread-1',
+          modes: [],
+          status: 'running',
+          historyUpdates: [],
+          threadStatus: 'working',
+        },
+      });
+      agentStream.emitData({
+        type: 'update',
+        update: {
+          type: 'message',
+          content: 'continued output',
+          sessionId: 'sess-1',
+          threadStatus: 'working',
+        },
+      });
+
+      expect(progress[0]).toEqual(
+        expect.objectContaining({
+          kind: 'sessionSnapshot',
+          sessionId: 'sess-1',
+          threadStatus: 'working',
+          historyUpdates: [],
+        }),
+      );
+      expect(progress).toContainEqual({ kind: 'content', content: 'continued output' });
+      expect(mockAgentService.sendMessage).not.toHaveBeenCalled();
+      stream.end();
+    });
+
+    it('should clean up attachment listeners when the upstream stream already contains an error', async () => {
+      const agentStream = new SumiReadableStream<AgentSessionAttachmentUpdate>();
+      agentStream.emitError(new Error('session unavailable'));
+      mockAgentService.attachSession.mockReturnValue(agentStream);
+
+      const stream = await service.attachSession('missing-session');
+      const errors: Error[] = [];
+      stream.onError((error) => errors.push(error));
+
+      expect(errors).toEqual([expect.objectContaining({ message: 'session unavailable' })]);
+      expect((service as any).attachmentStreams.size).toBe(0);
+      expect((agentStream as any).dataQueue._listeners.size).toBe(0);
+      expect((agentStream as any).endQueue._listeners.size).toBe(0);
+      expect((agentStream as any).errorQueue._listeners.size).toBe(0);
     });
   });
 
@@ -785,6 +856,17 @@ describe('AcpCliBackService', () => {
       expect(mockLogger.error).toHaveBeenCalled();
     });
 
+    it('should preserve the stable missing-session error name across the backend RPC boundary', async () => {
+      const missingSessionError = new Error('Resource not found: sess-1');
+      missingSessionError.name = ACP_SESSION_NOT_FOUND_ERROR_NAME;
+      mockAgentService.loadSession.mockRejectedValue(missingSessionError);
+
+      await expect(service.loadAgentSession(mockAgentSessionConfig, 'sess-1')).rejects.toMatchObject({
+        name: ACP_SESSION_NOT_FOUND_ERROR_NAME,
+        message: 'Failed to load session sess-1: Resource not found: sess-1',
+      });
+    });
+
     it('should handle non-Error throw', async () => {
       mockAgentService.loadSession.mockRejectedValue('string error');
 
@@ -878,16 +960,107 @@ describe('AcpCliBackService', () => {
   });
 
   describe('dispose()', () => {
-    it('should call agentService.dispose', async () => {
+    it('should detach without disposing the container-scoped agent service', async () => {
       await service.dispose();
-      expect(mockAgentService.dispose).toHaveBeenCalled();
+      expect(mockAgentService.dispose).not.toHaveBeenCalled();
     });
 
     it('should not dispose twice when called multiple times', async () => {
       await service.dispose();
       await service.dispose();
 
-      expect(mockAgentService.dispose).toHaveBeenCalledTimes(1);
+      expect(mockAgentService.dispose).not.toHaveBeenCalled();
+    });
+
+    it('should release connection-owned attachment listeners', async () => {
+      const agentStream = new SumiReadableStream<AgentSessionAttachmentUpdate>();
+      mockAgentService.attachSession.mockReturnValue(agentStream);
+
+      await service.attachSession('sess-1');
+      await service.dispose();
+
+      expect((agentStream as any).dataQueue._listeners.size).toBe(0);
+      expect((agentStream as any).endQueue._listeners.size).toBe(0);
+      expect((agentStream as any).errorQueue._listeners.size).toBe(0);
+      expect(mockAgentService.dispose).not.toHaveBeenCalled();
+    });
+
+    it('should detach prompt output and cancellation listeners without cancelling the running agent', async () => {
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      const cancelEmitter = new Emitter<void>();
+      const cancelToken = {
+        isCancellationRequested: false,
+        onCancellationRequested: cancelEmitter.event,
+      } as CancellationToken;
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      await service.requestStream(
+        'keep working',
+        { agentSessionConfig: mockAgentSessionConfig, sessionId: 'sess-1' },
+        cancelToken,
+      );
+      await service.dispose();
+      cancelEmitter.fire();
+
+      expect((agentStream as any).dataQueue._listeners.size).toBe(0);
+      expect((agentStream as any).endQueue._listeners.size).toBe(0);
+      expect((agentStream as any).errorQueue._listeners.size).toBe(0);
+      expect(mockAgentService.cancelRequest).not.toHaveBeenCalled();
+      expect(mockAgentService.dispose).not.toHaveBeenCalled();
+      cancelEmitter.dispose();
+    });
+
+    it('should let a replacement browser connection attach to the same running session without resending', async () => {
+      const runningPromptStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(runningPromptStream);
+
+      await service.requestStream('long-running task', {
+        agentSessionConfig: mockAgentSessionConfig,
+        sessionId: 'sess-running',
+      });
+      await service.dispose();
+
+      const replacement = new AcpCliBackService();
+      Object.defineProperty(replacement, 'agentService', { value: mockAgentService, writable: true });
+      Object.defineProperty(replacement, 'logger', { value: mockLogger, writable: true });
+      Object.defineProperty(replacement, 'threadStatusCaller', {
+        value: { notifyThreadStatusChange: jest.fn() },
+        writable: true,
+      });
+      const attachmentStream = new SumiReadableStream<AgentSessionAttachmentUpdate>();
+      mockAgentService.attachSession.mockReturnValue(attachmentStream);
+
+      const replacementOutput = await replacement.attachSession('sess-running');
+      const progress: any[] = [];
+      replacementOutput.onData((update) => progress.push(update));
+      attachmentStream.emitData({
+        type: 'snapshot',
+        snapshot: {
+          sessionId: 'sess-running',
+          processId: 'thread-1',
+          modes: [],
+          status: 'running',
+          historyUpdates: [],
+          threadStatus: 'working',
+        },
+      });
+      attachmentStream.emitData({
+        type: 'update',
+        update: {
+          type: 'message',
+          content: 'continued after reload',
+          sessionId: 'sess-running',
+          threadStatus: 'working',
+        },
+      });
+
+      expect(mockAgentService.sendMessage).toHaveBeenCalledTimes(1);
+      expect(mockAgentService.attachSession).toHaveBeenCalledWith('sess-running');
+      expect(progress[0]).toEqual(expect.objectContaining({ kind: 'sessionSnapshot', threadStatus: 'working' }));
+      expect(progress).toContainEqual({ kind: 'content', content: 'continued after reload' });
+      expect(mockAgentService.cancelRequest).not.toHaveBeenCalled();
+      expect(mockAgentService.dispose).not.toHaveBeenCalled();
+      await replacement.dispose();
     });
   });
 
@@ -1109,6 +1282,22 @@ describe('AcpCliBackService', () => {
       mockOnThreadStatusChange.fire({ sessionId: 'sess-1', status: 'working' });
 
       expect(mockThreadStatusCaller.notifyThreadStatusChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('should release the thread status subscription when the browser connection is disposed', async () => {
+      const agentStream = new SumiReadableStream<AgentUpdate>();
+      mockAgentService.sendMessage.mockReturnValue(agentStream);
+
+      await service.requestStream('hello', {
+        agentSessionConfig: mockAgentSessionConfig,
+        sessionId: 'sess-1',
+      });
+      mockThreadStatusCaller.notifyThreadStatusChange.mockClear();
+
+      await service.dispose();
+      mockOnThreadStatusChange.fire({ sessionId: 'sess-1', status: 'working' });
+
+      expect(mockThreadStatusCaller.notifyThreadStatusChange).not.toHaveBeenCalled();
     });
 
     it('should silently skip if threadStatusCaller is unavailable', async () => {

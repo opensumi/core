@@ -1,7 +1,11 @@
 import {
+  ACP_BDD_ATTACHMENT_FAILURE_QUERY_PARAM,
+  ACP_BDD_ATTACHMENT_FAILURE_QUERY_VALUE,
   ACP_BDD_BACKEND_READY_FAILURE_QUERY_PARAM,
   ACP_BDD_BACKEND_READY_FAILURE_QUERY_VALUE,
   canUseAcpBddRuntimeFixture,
+  createAcpAttachmentFailureFixture,
+  createAcpQueuedTurnStartFailureFixture,
   shouldForceAcpBackendReadinessFailure,
 } from '../../src/browser/acp/acp-bdd-runtime-fixtures';
 
@@ -29,5 +33,25 @@ describe('ACP BDD runtime fixtures', () => {
         'localhost',
       ),
     ).toBe(false);
+  });
+
+  it('enables queued-turn start failure once on local aiNative runs', () => {
+    const search = '?aiNative=true&acpBddQueuedTurnStartFailure=reject-once';
+    const shouldFail = createAcpQueuedTurnStartFailureFixture(search, 'localhost');
+    expect(shouldFail()).toBe(true);
+    expect(shouldFail()).toBe(false);
+    expect(createAcpQueuedTurnStartFailureFixture(search, 'example.com')()).toBe(false);
+    expect(createAcpQueuedTurnStartFailureFixture('?acpBddQueuedTurnStartFailure=reject-once', 'localhost')()).toBe(
+      false,
+    );
+  });
+
+  it('enables attachment failure once on local aiNative runs', () => {
+    const search = `?aiNative=true&${ACP_BDD_ATTACHMENT_FAILURE_QUERY_PARAM}=${ACP_BDD_ATTACHMENT_FAILURE_QUERY_VALUE}`;
+    const shouldFail = createAcpAttachmentFailureFixture(search, 'localhost');
+    expect(shouldFail()).toBe(true);
+    expect(shouldFail()).toBe(false);
+    expect(createAcpAttachmentFailureFixture(search, 'example.com')()).toBe(false);
+    expect(createAcpAttachmentFailureFixture('?acpBddAttachmentFailure=reject-once', 'localhost')()).toBe(false);
   });
 });

@@ -407,6 +407,11 @@ export class DidChangeEditorGroupUriEvent extends BasicEvent<URI[][]> {}
  */
 export class DidApplyEditorDecorationFromProvider extends BasicEvent<{ key?: string; uri: URI }> {}
 
+export interface IEditorGroupCloseOptions {
+  closePinned?: boolean;
+  force?: boolean;
+}
+
 /**
  * 编辑器组
  * 是一组tab和一个展示编辑器或者编辑器富组件的单元，主要用来管理 tab 的生命周期，以及控制编辑器主体的展示。
@@ -455,6 +460,16 @@ export interface IEditorGroup {
    */
   resources: IResource[];
 
+  readonly pinnedTabCount: number;
+
+  isPinned(uri: URI): boolean;
+
+  pinTab(uri: URI): boolean;
+
+  unpinTab(uri: URI): boolean;
+
+  togglePinTab(uri: URI): boolean;
+
   /**
    * 当前的 tab 对应的资源
    */
@@ -501,7 +516,7 @@ export interface IEditorGroup {
    * 关闭指定所有的 tab
    * @return 是否成功关闭
    */
-  closeAll(): Promise<boolean>;
+  closeAll(options?: IEditorGroupCloseOptions): Promise<boolean>;
 
   /**
    * 保存当前的 tab 的文件 (如果它能被保存的话)
@@ -962,6 +977,8 @@ export interface IEditorGroupState {
   current?: string;
 
   previewIndex: number;
+
+  pinnedUris?: string[];
 }
 
 export enum Direction {

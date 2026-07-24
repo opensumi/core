@@ -173,7 +173,7 @@ describe('ACP MentionInput context cleanup', () => {
     });
 
     expect(onSend).toHaveBeenCalledTimes(1);
-    expect(editor.innerHTML).toBe('');
+    expect(editor.innerHTML).toContain('BDD context attachment chip send');
     expect(contextService.cleanFileContext).not.toHaveBeenCalled();
     expect(container.querySelector('.context_preview_item[data-type="file"]')?.textContent).toContain('editor.js');
 
@@ -183,6 +183,7 @@ describe('ACP MentionInput context cleanup', () => {
       await Promise.resolve();
     });
 
+    expect(editor.innerHTML).toBe('');
     expect(contextService.cleanFileContext).toHaveBeenCalledTimes(1);
     expect(container.querySelector('.context_preview_item[data-type="file"]')).toBeNull();
   });

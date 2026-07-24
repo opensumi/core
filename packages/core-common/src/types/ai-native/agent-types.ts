@@ -11,6 +11,18 @@ export type ACPAgentType = string;
 // Default agent type (fallback when no preference is set)
 export const DEFAULT_AGENT_TYPE: ACPAgentType = 'claude-agent-acp';
 
+/**
+ * Stable error name exposed when all ACP thread-pool capacity is owned by
+ * active foreground work.
+ */
+export const ACP_THREAD_POOL_SATURATED_ERROR_NAME = 'ACP_THREAD_POOL_SATURATED';
+
+/**
+ * Stable error name exposed when ACP session/load reports that its target
+ * session resource does not exist.
+ */
+export const ACP_SESSION_NOT_FOUND_ERROR_NAME = 'ACP_SESSION_NOT_FOUND';
+
 // Supported agent types
 export enum ACPAgentTypeEnum {
   Qwen = 'qwen',
@@ -116,6 +128,14 @@ export interface AgentProcessConfig {
 }
 
 /**
+ * Explicit ACP Agent and working-directory target for a session.
+ */
+export interface AcpTargetConfigRequest {
+  agentId: string;
+  cwd: string;
+}
+
+/**
  * DI Token for ACP config provider.
  * Allows downstream projects to customize AgentProcessConfig construction
  * (e.g., inject custom env vars, override command paths, add validation).
@@ -132,4 +152,16 @@ export interface IACPConfigProvider {
    * Should throw if prerequisites are not met (e.g., missing API key).
    */
   resolveConfig(): Promise<AgentProcessConfig>;
+
+  /**
+   * Build an AgentProcessConfig suitable for background pool warmup.
+   * Implementations must not prompt the user; return undefined when no safe
+   * working directory is available yet.
+   */
+  resolvePrewarmConfig?(): Promise<AgentProcessConfig | undefined>;
+
+  /**
+   * Build an AgentProcessConfig for an explicit ACP Agent and working directory.
+   */
+  resolveConfigForTarget?(request: AcpTargetConfigRequest): Promise<AgentProcessConfig>;
 }

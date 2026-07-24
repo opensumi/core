@@ -11,6 +11,19 @@ export { AcpPermissionBridgeService, ShowPermissionDialogParams } from './permis
 export { AcpPermissionTitleIndicatorService } from './permission-title-indicator.service';
 export { AcpPermissionRpcService } from './acp-permission-rpc.service';
 export { AcpThreadStatusRpcService } from './acp-thread-status-rpc.service';
+export { AgenticTaskRegistryService } from './agentic-task-registry.service';
+export { AgenticWorkspaceSwitchService } from './agentic-workspace-switch.service';
+export type {
+  AgenticPendingTaskActivation,
+  AgenticPendingTaskLaunch,
+  AgenticProjectRecord,
+  AgenticProjectRegistration,
+  AgenticTaskGroup,
+  AgenticTaskRecord,
+  AgenticTaskRegistryState,
+  AgenticTaskStatus,
+  RegisterFirstPromptOptions,
+} from './agentic-task-registry.service';
 export { PermissionDialog, PermissionDialogProps } from './permission-dialog.view';
 export { default as PermissionDialogStyles } from './permission-dialog.module.less';
 export { WebMcpGroupRegistry, WebMcpGroupRegistration, WebMcpToolExecute } from './webmcp-group-registry';

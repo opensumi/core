@@ -130,6 +130,49 @@ describe('DefaultACPConfigProvider', () => {
     expect(config.args).toEqual([]);
   });
 
+  it('builds a config for the stored Agent and project path', async () => {
+    const provider = await createProvider({
+      agentConfigs: {
+        'agent-b': {
+          command: 'agent-b-command',
+          args: ['--acp'],
+          description: 'Agent B',
+        },
+      },
+    });
+
+    await expect(provider.resolveConfigForTarget({ agentId: 'agent-b', cwd: '/work/b' })).resolves.toMatchObject({
+      agentId: 'agent-b',
+      command: 'agent-b-command',
+      args: ['--acp'],
+      cwd: '/work/b',
+    });
+    expect((provider as any).quickPick.show).not.toHaveBeenCalled();
+  });
+
+  it('does not fall back to the default Agent for an unavailable explicit Task target', async () => {
+    const provider = await createProvider();
+
+    await expect(provider.resolveConfigForTarget({ agentId: 'removed-agent', cwd: '/work/b' })).rejects.toThrow(
+      'ACP Agent unavailable: removed-agent',
+    );
+  });
+
+  it('resolves a background warmup config for a single-root workspace without prompting', async () => {
+    const provider = await createProvider();
+
+    await expect(provider.resolvePrewarmConfig()).resolves.toMatchObject({ cwd: rootA });
+    expect((provider as any).quickPick.show).not.toHaveBeenCalled();
+  });
+
+  it('skips background warmup config resolution for an unselected multi-root workspace', async () => {
+    const provider = await createProvider({ isMultiRoot: true });
+
+    await expect(provider.resolvePrewarmConfig()).resolves.toBeUndefined();
+    expect((provider as any).quickPick.show).not.toHaveBeenCalled();
+    expect((provider as any).mcpConfigService.getACPServers).not.toHaveBeenCalled();
+  });
+
   it('falls back to the built-in Claude ACP agent when the selected custom agent is missing', async () => {
     const provider = await createProvider({ defaultAgentType: 'missing-agent' });
 

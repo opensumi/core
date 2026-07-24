@@ -134,7 +134,7 @@ describe('AcpChatViewWrapper', () => {
     });
   }
 
-  it('initializes ACP without creating a bootstrap session before rendering children', async () => {
+  it('loads ACP metadata for the persistent Task List without creating a bootstrap Task', async () => {
     const services = createServices();
 
     await renderWrapper(services.aiChatService);
@@ -144,6 +144,7 @@ describe('AcpChatViewWrapper', () => {
     expect(services.aiChatService.createSessionModel).not.toHaveBeenCalled();
     expect(services.aiChatService.ensureBootstrapSessionModel).not.toHaveBeenCalled();
     expect(services.chatManagerService.loadSessionList).toHaveBeenCalledTimes(1);
+    expect(services.chatManagerService.fallbackToLocal).not.toHaveBeenCalled();
     expect(container.querySelector('[data-testid="child"]')).not.toBeNull();
   });
 

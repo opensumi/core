@@ -5,6 +5,7 @@ import ExclamationCircleOutlined from '@ant-design/icons/ExclamationCircleOutlin
 import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined';
 import Notification from 'rc-notification';
 import React from 'react';
+import { createRoot } from 'react-dom/client';
 
 import { isUndefined } from '@opensumi/ide-utils';
 
@@ -118,18 +119,34 @@ function getNotificationInstance(
     </span>
   );
 
-  (Notification as any).newInstance(
-    {
-      prefixCls,
-      className: `${prefixCls}-${placement}`,
-      style: getPlacementStyle(placement, top, bottom),
-      getContainer,
-      closeIcon: closeIconToRender,
-    },
-    (notification: any) => {
-      notificationInstance[cacheKey] = notification;
-      callback(notification);
-    },
+  const container = document.createElement('div');
+  (getContainer?.() || document.body).appendChild(container);
+  const root = createRoot(container);
+  let initialized = false;
+  root.render(
+    <Notification
+      className={`${prefixCls}-${placement}`}
+      closeIcon={closeIconToRender}
+      prefixCls={prefixCls}
+      ref={(component: any) => {
+        if (!component || initialized) {
+          return;
+        }
+        initialized = true;
+        const instance = {
+          notice: (noticeProps: any) => component.add(noticeProps),
+          removeNotice: (key: string) => component.remove(key),
+          component,
+          destroy: () => {
+            root.unmount();
+            container.remove();
+          },
+        };
+        notificationInstance[cacheKey] = instance;
+        callback(instance);
+      }}
+      style={getPlacementStyle(placement, top, bottom)}
+    />,
   );
 }
 

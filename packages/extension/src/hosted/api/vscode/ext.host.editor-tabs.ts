@@ -217,6 +217,7 @@ class ExtHostEditorTabGroup {
       if (!tab) {
         throw new Error(`Tab move updated received for index ${operation.oldIndex} which does not exist`);
       }
+      tab.acceptDtoUpdate(operation.tabDto);
       this._tabs.splice(operation.index, 0, tab);
       return tab;
     }

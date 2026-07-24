@@ -148,7 +148,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
    * 如果这个值在被用到的时候还是 undefined，那说明视图渲染出了问题。
    * 请排查 terminal.view 视图层为什么没有把这个 contextKey 注入进来。
    */
-  private terminalContextKey: TerminalContextKey;
+  private terminalContextKey?: TerminalContextKey;
 
   private _onThemeBackgroundChangeEmitter = new Emitter<string>();
   onThemeBackgroundChange = this._onThemeBackgroundChangeEmitter.event;
@@ -399,6 +399,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   initContextKey(dom: HTMLDivElement) {
+    this.terminalContextKey?.dispose();
     this.terminalContextKey = this.injector.get(TerminalContextKey, [dom]);
     this.terminalContextKey.isTerminalFocused.set(this._focus);
     this.terminalContextKey.isTerminalViewInitialized.set(true);
@@ -516,7 +517,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       }
     }
 
-    this.terminalContextKey.isTerminalViewInitialized.set(true);
+    this.terminalContextKey?.isTerminalViewInitialized.set(true);
     this._ready.resolve();
   }
 
@@ -535,12 +536,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   focus() {
     this._focus = true;
-    this.terminalContextKey.isTerminalFocused.set(true);
+    this.terminalContextKey?.isTerminalFocused.set(true);
   }
 
   blur() {
     this._focus = false;
-    this.terminalContextKey.isTerminalFocused.set(false);
+    this.terminalContextKey?.isTerminalFocused.set(false);
   }
 
   onContextMenu(e: React.MouseEvent<HTMLElement>): void {

@@ -14,6 +14,8 @@ interface IEnhanceIconProps {
   wrapperStyle?: React.CSSProperties;
   wrapperClassName?: string;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
+  onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
+  onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
   className?: string;
   icon?: string;
   iconClass?: string;
@@ -30,6 +32,8 @@ export const EnhanceIcon = React.forwardRef<HTMLDivElement | null, IEnhanceIconP
       className={cls(props.wrapperClassName, styles.ai_enhance_icon)}
       style={props.wrapperStyle}
       onClick={props.onClick}
+      onKeyDown={props.onKeyDown}
+      onMouseDown={props.onMouseDown}
       ref={ref}
       tabIndex={props.tabIndex}
       role={props.role}

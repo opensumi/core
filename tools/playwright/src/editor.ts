@@ -29,6 +29,45 @@ export class OpenSumiEditor extends OpenSumiView {
     }
   }
 
+  async isPinned() {
+    return (await (await this.getTab())?.getAttribute('data-pinned')) === 'true';
+  }
+
+  async isEditorTabVisible() {
+    return !!(await this.getTab());
+  }
+
+  async hasPinAction() {
+    return !!(await (await this.getTab())?.$("[class*='pin_tab___']"));
+  }
+
+  async hasCloseAction() {
+    return !!(await (await this.getTab())?.$("[class*='close_tab___']"));
+  }
+
+  async hasVisibleDirtyIndicator() {
+    const dirtyIndicator = await (await this.getTab())?.$("[class*='dirty___']");
+    return (await dirtyIndicator?.isVisible()) ?? false;
+  }
+
+  async isCurrentTab() {
+    return (await (await this.getTab())?.getAttribute('class'))?.includes('kt_editor_tab_current___') ?? false;
+  }
+
+  async clickPinAction() {
+    const action = await (await this.getTab())?.$("[class*='pin_tab___']");
+    await action?.click();
+  }
+
+  async focusPinAction() {
+    const action = await (await this.getTab())?.$("[class*='pin_tab___']");
+    await action?.focus();
+  }
+
+  async middleClickTab() {
+    await (await this.getTab())?.click({ button: 'middle' });
+  }
+
   async getContainer(selector?: string) {
     if (!selector) {
       return;

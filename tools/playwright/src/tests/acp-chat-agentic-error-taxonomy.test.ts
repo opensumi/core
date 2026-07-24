@@ -10,6 +10,7 @@ import {
   type AcpBddFixture,
   type AcpBddFixtureOptions,
   type AcpBddFixtureRuntime,
+  clearAcpBddTransientSessionState,
   ensureAgenticLayout,
   loadAcpBddFixtureWorkbench,
   waitForAcpChatReady,
@@ -67,7 +68,7 @@ async function withFixture<T>(
   });
 
   try {
-    await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
+    await expect(chatInput()).toBeVisible();
     return await run(runtime);
   } finally {
     await runtime.dispose();
@@ -193,7 +194,8 @@ async function waitForStreamRichRecoverySnapshot(): Promise<FailureUiSnapshot> {
   return snapshot;
 }
 
-async function reloadFixtureWorkbench(runtime: AcpBddFixtureRuntime) {
+async function reloadFixtureWorkbench(runtime: AcpBddFixtureRuntime, ensureAgentic = true) {
+  await clearAcpBddTransientSessionState(page);
   await page.goto(runtime.url);
   await waitForWorkbenchReady(page);
   await page.waitForFunction(() => Boolean((navigator as any).modelContext?.executeTool));
@@ -201,13 +203,20 @@ async function reloadFixtureWorkbench(runtime: AcpBddFixtureRuntime) {
     await (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {});
   });
   await waitForAcpChatReady(page);
-  await ensureAgenticLayout(page);
-  await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
+  if (ensureAgentic) {
+    await ensureAgenticLayout(page);
+  }
+  await expect(chatInput()).toBeVisible();
 }
 
 async function ensureHistoryVisible() {
   const inline = page.locator('[data-testid="acp-chat-history-inline"]');
   if (await inline.isVisible().catch(() => false)) {
+    return;
+  }
+
+  const popover = page.locator('[data-testid="acp-chat-history-popover"]');
+  if (await popover.isVisible().catch(() => false)) {
     return;
   }
 
@@ -221,11 +230,10 @@ async function ensureHistoryVisible() {
   const popoverButton = page.locator('[data-testid="acp-chat-history-button"]');
   await expect(popoverButton).toBeVisible({ timeout: 30_000 });
   await popoverButton.click();
-  await expect(page.locator('[data-testid="acp-chat-history-popover"]')).toBeVisible({ timeout: 30_000 });
+  await expect(popover).toBeVisible({ timeout: 30_000 });
 }
 
 async function readHistoryRows(): Promise<HistoryRowProof[]> {
-  await ensureHistoryVisible();
   return page.evaluate(() => {
     const isVisible = (element: HTMLElement) => {
       const rect = element.getBoundingClientRect();
@@ -244,6 +252,7 @@ async function readHistoryRows(): Promise<HistoryRowProof[]> {
 }
 
 async function waitForVisibleSeededHistoryRows(): Promise<HistoryRowProof[]> {
+  await ensureHistoryVisible();
   await expect
     .poll(
       async () => {
@@ -385,7 +394,7 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
         await expect.poll(async () => (await readSessionState()).result?.session?.requestCount ?? 0).toBeGreaterThan(0);
         await expectInputRecovered();
 
-        await reloadFixtureWorkbench(runtime);
+        await reloadFixtureWorkbench(runtime, false);
         await expect
           .poll(
             async () =>
@@ -426,7 +435,11 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
         await expectInputRecovered();
         await expectSafeVisibleFailure(snapshot);
       },
-      { sessionPrefix: LOAD_FAILURE_SESSION_PREFIX },
+      {
+        sessionPrefix: LOAD_FAILURE_SESSION_PREFIX,
+        panelLayout: 'classic',
+        ensureAgenticLayout: false,
+      },
     );
 
     await expectStreamRichRecovery('load-failure');

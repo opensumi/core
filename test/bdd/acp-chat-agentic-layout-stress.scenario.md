@@ -16,15 +16,19 @@
 2. Wait for long text, reasoning, plan, and tool result to render.
 3. Record AI Chat, workbench, Explorer, input, history, and status bar geometry.
 4. Resize the Agentic AI Chat/workbench splitter smaller and larger within allowed bounds.
-5. Resize the browser viewport to a narrow desktop size and then a wide desktop size.
-6. Expand and collapse the long tool result and reasoning sections.
-7. Scroll up and down in the message list.
-8. Switch Agentic to Classic and back to Agentic.
+5. With the workbench visible, resize the browser through `979px`, `980px`, `1000px`, `1200px`, `1280px`, and `1366px`, recording the responsive state and usable content widths at every point.
+6. Explicitly hide/maximize the workbench, repeat the `979px -> 1366px` viewport round trip, and record that the workbench remains hidden.
+7. Expand and collapse the long tool result and reasoning sections.
+8. Scroll up and down in the message list.
+9. Switch Agentic to Classic and back to Agentic.
 
 ## Then
 
 - Long content wraps or scrolls inside the chat surface without overlapping the input, history, Explorer, or status bar.
 - AI Chat width remains within Agentic bounds and workbench remains usable.
+- Through `1280px`, the workbench temporarily collapses and AI Chat remains usable without horizontal page overflow; at `1366px`, the user's previously requested workbench visibility returns.
+- The Main Conversation Area remains at least `360px` wide, the Agent Tasks rail and task titles remain readable, and the restored Explorer and visible file labels are not compressed into illegible fragments.
+- A workbench that was explicitly hidden before the responsive round trip remains hidden after the viewport grows again.
 - Tool result expansion does not resize the page into an unusable layout.
 - Message list scroll remains usable and bottom-scroll behavior does not jump unexpectedly after manual upward scroll.
 - Layout switching preserves visible chat content or restores it safely without duplicate rows.
@@ -38,7 +42,7 @@
 ## Deterministic Playwright Coverage
 
 - `tools/playwright/src/tests/acp-chat-agentic-layout-stress.test.ts` runs `loadAcpBddFixtureWorkbench({ fixture: 'long-stream', profile: 'interactive' })`.
-- Covered: visible long-stream sentinel content, scoped Stop affordance during active streaming, Agentic chat bounds, workbench visibility, message row horizontal containment, page horizontal overflow absence, message viewport scrollability, and message viewport/input separation across wide and narrow desktop viewports.
+- Covered: visible long-stream sentinel content, scoped Stop affordance during active streaming, Agentic chat bounds, the `979 / 980 / 1000 / 1200 / 1280 / 1366px` responsive matrix, the explicitly-hidden `979px -> 1366px` path, usable conversation/task/Explorer widths, message row horizontal containment, page horizontal overflow absence, message viewport scrollability, and message viewport/input separation.
 - Remaining blocked for this scenario: long reasoning, long plan, long tool result expansion/collapse, splitter drag bounds, manual scroll-position behavior, Agentic/Classic round trip content preservation, and no-fatal-text checks for the long-rich path.
 
 ## Pass / Fail Judgment

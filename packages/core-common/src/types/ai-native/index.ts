@@ -5,7 +5,13 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
 
-import { AcpDebugLogEntry, AvailableCommand, ListSessionsResponse, OpenSumiMcpServerConnectionInfo } from './acp-types';
+import {
+  AcpDebugLogEntry,
+  AvailableCommand,
+  ListSessionsResponse,
+  OpenSumiMcpServerConnectionInfo,
+  SessionNotification,
+} from './acp-types';
 import { AgentProcessConfig } from './agent-types';
 import { IAIReportCompletionOption } from './reporter';
 
@@ -235,6 +241,8 @@ export interface AgentSessionCreateResult extends AgentSessionStateResult {
 
 export interface AgentSessionLoadResult extends AgentSessionStateResult {
   sessionId: string;
+  threadStatus?: ThreadStatus;
+  historyUpdates?: SessionNotification[];
   messages: Array<{
     role: 'user' | 'assistant';
     content: string;
@@ -302,9 +310,21 @@ export interface IAIBackService<
 
   loadAgentSession?(config: AgentProcessConfig, agentSessionId: string): Promise<AgentSessionLoadResult>;
 
+  attachSession?(sessionId: string): Promise<StreamResponse>;
+
+  cancelSession?(sessionId: string): Promise<void>;
+
+  disposeSession?(sessionId: string): Promise<void>;
+
   listSessions?(config: AgentProcessConfig): Promise<ListSessionsResponse>;
 
   createSession?(config: AgentProcessConfig): Promise<AgentSessionCreateResult>;
+
+  /**
+   * Start and initialize idle ACP agent processes for the supplied runtime configuration.
+   * This does not create an ACP session.
+   */
+  warmUpAgentPool?(config: AgentProcessConfig): Promise<void>;
 
   setSessionMode?(sessionId: string, modeId: string): Promise<void>;
   setSessionConfigOption?(sessionId: string, configId: string, value: boolean | string): Promise<void>;
@@ -527,6 +547,13 @@ export interface IChatSessionState {
   availableCommands?: AvailableCommand[];
 }
 
+export interface IChatSessionSnapshot extends AgentSessionStateResult {
+  kind: 'sessionSnapshot';
+  sessionId: string;
+  threadStatus: ThreadStatus;
+  historyUpdates: SessionNotification[];
+}
+
 export type IChatProgress =
   | IChatContent
   | IChatMarkdownContent
@@ -537,7 +564,8 @@ export type IChatProgress =
   | IChatReasoning
   | IChatSafeProgress
   | IChatThreadStatus
-  | IChatSessionState;
+  | IChatSessionState
+  | IChatSessionSnapshot;
 
 export interface IChatMessage {
   role: ChatMessageRole;

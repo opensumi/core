@@ -1,0 +1,1318 @@
+import { DataContent } from 'ai';
+import cls from 'classnames';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { Image } from '@opensumi/ide-components/lib/image';
+import {
+  AINativeConfigService,
+  LabelService,
+  PreferenceService,
+  getSymbolIcon,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
+import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import {
+  AINativeSettingSectionsId,
+  ChatFeatureRegistryToken,
+  ChatRenderRegistryToken,
+  RulesServiceToken,
+  URI,
+  localize,
+} from '@opensumi/ide-core-common';
+import { CommandService } from '@opensumi/ide-core-common/lib/command';
+import { defaultFilesWatcherExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
+import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { OutlineCompositeTreeNode, OutlineTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
+import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { IconType } from '@opensumi/ide-theme';
+import { IconService } from '@opensumi/ide-theme/lib/browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
+import { IChatInternalService } from '../../../common';
+import { LLMContextService } from '../../../common/llm-context';
+import { AI_CHAT_INPUT_TOGGLE_EXPANDED } from '../../chat/acp-chat-input.commands';
+import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
+import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
+import { ChatRenderRegistry } from '../../chat/chat.render.registry';
+import { hasAcpChatSendPayload } from '../../components/acp/chat-input-validation';
+import { MentionInput } from '../../components/acp/MentionInput';
+import { ModeOption } from '../../components/acp/types';
+import styles from '../../components/components.module.less';
+import {
+  FooterButtonPosition,
+  FooterConfig,
+  MentionInputHandle,
+  MentionItem,
+  MentionType,
+} from '../../components/mention-input/types';
+import { MCPConfigCommands } from '../../mcp/config/mcp-config.constants';
+import { RulesCommands } from '../../rules/rules.contribution';
+import { RulesService } from '../../rules/rules.service';
+
+import type { AcpTurnDraft, TurnActionResult } from '../../chat/acp-chat-queued-turns';
+import type { ChatInputHandle, ChatInputTurnActions } from '../../chat/chat.input.registry';
+import type { AcpSessionConfigOption, AcpSessionModelOption } from '../../chat/session-provider';
+
+export interface IChatMentionInputProps {
+  onSend: (
+    value: string,
+    images?: string[],
+    agentId?: string,
+    command?: string,
+    option?: { model: string; [key: string]: any },
+  ) => TurnActionResult | void | Promise<TurnActionResult | void>;
+  onValueChange?: (value: string) => void;
+  onDraftChange?: (draft: AcpTurnDraft) => void;
+  onExpand?: (value: boolean) => void;
+  placeholder?: string;
+  enableOptions?: boolean;
+  disabled?: boolean;
+  loading?: boolean;
+  sendBtnClassName?: string;
+  defaultHeight?: number;
+  value?: string;
+  images?: Array<DataContent | URL>;
+  autoFocus?: boolean;
+  theme?: string | null;
+  setTheme: (theme: string | null) => void;
+  agentId: string;
+  setAgentId: (id: string) => void;
+  defaultAgentId?: string;
+  command: string;
+  setCommand: (command: string) => void;
+  disableModelSelector?: boolean;
+  activeSessionId?: string;
+  sessionModelId?: string;
+  currentModeId?: string;
+  agentModels?: AcpSessionModelOption[];
+  currentModelId?: string;
+  configOptions?: AcpSessionConfigOption[];
+  contextService?: LLMContextService;
+  agentModes?: Array<{ id: string; name: string; description?: string }>;
+  agentCwd?: string;
+  turnActions?: ChatInputTurnActions;
+  onInputHandleReady?: (handle: ChatInputHandle | null) => void;
+}
+
+export type AcpTurnEditorVariant = 'main' | 'queued';
+
+export interface AcpTurnEditorHandle extends ChatInputHandle {
+  getDraft(): AcpTurnDraft;
+  setInputValue(value: string): void;
+}
+
+export interface AcpTurnEditorProps extends IChatMentionInputProps {
+  variant?: AcpTurnEditorVariant;
+  initialDraft?: AcpTurnDraft;
+  onCancelEdit?: () => void;
+  onImmediateSend?: (draft: AcpTurnDraft) => TurnActionResult | void | Promise<TurnActionResult | void>;
+  immediateSendDisabled?: boolean;
+}
+
+function isAcceptedTurnActionResult(result: TurnActionResult | void): boolean {
+  return result === undefined || result.accepted || result.draftDisposition === 'queued';
+}
+
+/**
+ * ACP 专属的 ChatMentionInput 组件
+ * 与原版区别：
+ * - 文件选择器：无搜索词时递归加载工作区文件（限制 50 个）
+ * - 文件夹选择器：无搜索词时加载工作区根目录下的文件夹
+ */
+export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditorProps>((props, ref) => {
+  const { onSend, disabled = false, loading = disabled, contextService, agentCwd } = props;
+  const isQueued = props.variant === 'queued';
+
+  const [value, setValue] = useState(props.initialDraft?.message || props.value || '');
+  const [images, setImages] = useState<Array<DataContent | URL>>(
+    props.initialDraft?.images ? [...props.initialDraft.images] : props.images || [],
+  );
+  const [currentMode, setCurrentMode] = useState<string>(props.currentModeId || props.agentModes?.[0]?.id || 'default');
+  const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const commandService = useInjectable<CommandService>(CommandService);
+  const searchService = useInjectable<IFileSearchService>(FileSearchServicePath);
+  const fileServiceClient = useInjectable<IFileServiceClient>(IFileServiceClient);
+  const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
+  const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
+  const labelService = useInjectable<LabelService>(LabelService);
+  const iconService = useInjectable<IconService>(IconService);
+  const messageService = useInjectable<IMessageService>(IMessageService);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
+  const outlineTreeService = useInjectable<OutlineTreeService>(OutlineTreeService);
+  const prevOutlineItems = useRef<MentionItem[]>([]);
+  const [placeholder, setPlaceholder] = useState(
+    props.placeholder || localize('aiNative.chat.input.placeholder.default'),
+  );
+  const [defaultInput, setDefaultInput] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
+  const mentionInputRef = useRef<MentionInputHandle>(null);
+  const propsRef = useRef(props);
+  const valueRef = useRef(value);
+  const imagesRef = useRef(images);
+  const agentIdRef = useRef(props.initialDraft?.agentId ?? props.agentId);
+  const commandRef = useRef(props.initialDraft?.command ?? props.command);
+  const previousAgentIdPropRef = useRef(props.agentId);
+  const previousCommandPropRef = useRef(props.command);
+  const initialDraftRestoredRef = useRef(false);
+  const mountedRef = useRef(false);
+  const draftGenerationRef = useRef(0);
+  const uploadGenerationRef = useRef(0);
+  const submitInFlightRef = useRef(false);
+  const previousActiveSessionIdRef = useRef(props.activeSessionId);
+  propsRef.current = props;
+  valueRef.current = value;
+  imagesRef.current = images;
+  if (previousAgentIdPropRef.current !== props.agentId) {
+    previousAgentIdPropRef.current = props.agentId;
+    agentIdRef.current = props.agentId;
+    draftGenerationRef.current += 1;
+  }
+  if (previousCommandPropRef.current !== props.command) {
+    previousCommandPropRef.current = props.command;
+    commandRef.current = props.command;
+    draftGenerationRef.current += 1;
+  }
+  if (previousActiveSessionIdRef.current !== props.activeSessionId) {
+    previousActiveSessionIdRef.current = props.activeSessionId;
+    draftGenerationRef.current += 1;
+    uploadGenerationRef.current += 1;
+  }
+  const preferenceService = useInjectable<PreferenceService>(PreferenceService);
+  const rulesService = useInjectable<RulesService>(RulesServiceToken);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      draftGenerationRef.current += 1;
+      uploadGenerationRef.current += 1;
+    };
+  }, []);
+
+  const handleShowMCPConfig = React.useCallback(() => {
+    commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
+  }, [commandService]);
+
+  const handleShowRules = React.useCallback(() => {
+    commandService.executeCommand(RulesCommands.OPEN_RULES_FILE.id);
+  }, [commandService]);
+
+  // 监听 ACP Agent 模式切换成功事件，同步更新 UI
+  useEffect(() => {
+    const disposable = aiChatService.onModeChange((modeId) => {
+      setCurrentMode(modeId);
+    });
+    return () => disposable.dispose();
+  }, [aiChatService]);
+
+  // 当 agentModes 变化时，更新 currentMode 为第一个 mode
+  useEffect(() => {
+    if (props.currentModeId) {
+      setCurrentMode(props.currentModeId);
+      return;
+    }
+    if (props.agentModes?.length && !props.agentModes.find((m) => m.id === currentMode)) {
+      setCurrentMode(props.agentModes[0].id);
+    }
+  }, [props.agentModes, props.currentModeId]);
+
+  // 当 slash command 变化时，更新 placeholder 和 defaultInput
+  useEffect(() => {
+    const defaultPlaceholder = props.placeholder || localize('aiNative.chat.input.placeholder.default');
+    const findCommandHandler = chatFeatureRegistry.getSlashCommandHandler(props.command);
+    if (findCommandHandler && findCommandHandler.providerInputPlaceholder) {
+      const editor = monacoCommandRegistry.getActiveCodeEditor();
+      const customPlaceholder = findCommandHandler.providerInputPlaceholder(value, editor);
+      setPlaceholder(customPlaceholder || defaultPlaceholder);
+    } else {
+      setPlaceholder(defaultPlaceholder);
+    }
+
+    if (findCommandHandler?.providerDefaultInput) {
+      const editor = monacoCommandRegistry.getActiveCodeEditor();
+      Promise.resolve(findCommandHandler.providerDefaultInput(value, editor)).then((input) => {
+        if (input) {
+          setDefaultInput(input);
+        }
+      });
+    }
+  }, [chatFeatureRegistry, props.command]);
+
+  useEffect(() => {
+    if (props.value !== value) {
+      setValue(props.value || '');
+    }
+  }, [props.value]);
+
+  const inputHandle = useMemo<AcpTurnEditorHandle>(
+    () => ({
+      getDraft: () => ({
+        message: mentionInputRef.current ? mentionInputRef.current.getSerializedContent() : valueRef.current,
+        images: imagesRef.current.map((image) => image.toString()),
+        agentId: agentIdRef.current,
+        command: commandRef.current,
+      }),
+      restoreDraft: (draft) => {
+        draftGenerationRef.current += 1;
+        uploadGenerationRef.current += 1;
+        valueRef.current = draft.message;
+        setValue(draft.message);
+        if (mentionInputRef.current) {
+          mentionInputRef.current.restoreSerializedContent(draft.message);
+        } else {
+          setDefaultInput(draft.message);
+        }
+        const restoredImages = [...(draft.images || [])];
+        imagesRef.current = restoredImages;
+        setImages(restoredImages);
+        agentIdRef.current = draft.agentId || '';
+        commandRef.current = draft.command || '';
+        propsRef.current.setAgentId(agentIdRef.current);
+        propsRef.current.setCommand(commandRef.current);
+        propsRef.current.onValueChange?.(draft.message);
+        propsRef.current.onDraftChange?.({ ...draft, images: draft.images ? [...draft.images] : undefined });
+      },
+      setInputValue: (inputValue) => {
+        draftGenerationRef.current += 1;
+        uploadGenerationRef.current += 1;
+        valueRef.current = inputValue;
+        setValue(inputValue);
+        if (mentionInputRef.current) {
+          mentionInputRef.current.restoreSerializedContent(inputValue);
+          mentionInputRef.current.focus();
+        } else {
+          setDefaultInput(inputValue);
+        }
+        propsRef.current.onValueChange?.(inputValue);
+        propsRef.current.onDraftChange?.({
+          message: inputValue,
+          images: imagesRef.current.map((image) => image.toString()),
+          agentId: agentIdRef.current,
+          command: commandRef.current,
+        });
+      },
+      focus: () => mentionInputRef.current?.focus(),
+      setExpanded: (expanded) => {
+        setIsExpanded((current) => {
+          if (current !== expanded) {
+            propsRef.current.onExpand?.(expanded);
+          }
+          return expanded;
+        });
+      },
+      toggleExpanded: () => {
+        setIsExpanded((expanded) => {
+          const nextExpanded = !expanded;
+          propsRef.current.onExpand?.(nextExpanded);
+          return nextExpanded;
+        });
+      },
+      closeTransientUi: () => mentionInputRef.current?.closeTransientUi() || false,
+    }),
+    [],
+  );
+
+  React.useImperativeHandle(ref, () => inputHandle, [inputHandle]);
+
+  useEffect(() => {
+    props.onInputHandleReady?.(inputHandle);
+    return () => props.onInputHandleReady?.(null);
+  }, [inputHandle, props.onInputHandleReady]);
+
+  useEffect(() => {
+    if (initialDraftRestoredRef.current) {
+      return;
+    }
+    initialDraftRestoredRef.current = true;
+    if (props.initialDraft) {
+      inputHandle.restoreDraft?.(props.initialDraft);
+    }
+  }, []);
+
+  const resolveSymbols = useCallback(
+    async (parent?: OutlineCompositeTreeNode, symbols: (OutlineTreeNode | OutlineCompositeTreeNode)[] = []) => {
+      if (!parent) {
+        parent = (await outlineTreeService.resolveChildren())[0] as OutlineCompositeTreeNode;
+      }
+      const children = (await outlineTreeService.resolveChildren(parent)) as (
+        | OutlineTreeNode
+        | OutlineCompositeTreeNode
+      )[];
+      for (const child of children) {
+        symbols.push(child);
+        if (OutlineCompositeTreeNode.is(child)) {
+          await resolveSymbols(child, symbols);
+        }
+      }
+      return symbols;
+    },
+    [outlineTreeService],
+  );
+
+  // 拆分目录路径为多个层级的辅助函数
+  const expandFolderPaths = useCallback(
+    async (folderPaths: string[], workspaceRootPath: string): Promise<MentionItem[]> => {
+      const expandedPaths = new Set<string>();
+      const workspaceUri = new URI(workspaceRootPath);
+
+      // 将所有路径展开为多层级
+      for (const folderPath of folderPaths) {
+        const uri = new URI(folderPath);
+        const relativePath = await workspaceService.asRelativePath(uri);
+
+        if (relativePath?.path) {
+          const pathSegments = relativePath.path.split('/').filter(Boolean);
+
+          // 为每个层级创建路径
+          for (let i = 0; i < pathSegments.length; i++) {
+            const segmentPath = pathSegments.slice(0, i + 1).join('/');
+            const fullPath = workspaceUri.resolve(segmentPath).codeUri.fsPath;
+
+            // 避免添加工作区本身或其上级目录
+            if (fullPath !== workspaceRootPath && !workspaceRootPath.startsWith(fullPath)) {
+              expandedPaths.add(fullPath);
+            }
+          }
+        } else {
+          // 如果无法获取相对路径，直接添加（但仍要过滤工作区路径）
+          if (folderPath !== workspaceRootPath && !workspaceRootPath.startsWith(folderPath)) {
+            expandedPaths.add(folderPath);
+          }
+        }
+      }
+
+      // 转换为 MentionItem 格式
+      return Promise.all(
+        Array.from(expandedPaths).map(async (folderPath) => {
+          const uri = new URI(folderPath);
+          const relativePath = await workspaceService.asRelativePath(uri);
+          return {
+            id: uri.codeUri.fsPath,
+            type: MentionType.FOLDER,
+            text: uri.displayName,
+            value: uri.codeUri.fsPath,
+            description: relativePath?.root ? relativePath.path : '',
+            contextId: uri.codeUri.fsPath,
+            icon: getIcon('folder'),
+          };
+        }),
+      );
+    },
+    [workspaceService],
+  );
+
+  // ACP 专属：递归加载工作区文件
+  const loadWorkspaceFiles = useCallback(async (): Promise<MentionItem[]> => {
+    const files: MentionItem[] = [];
+    const collectFiles = async (dirUri: string, limit: number) => {
+      if (files.length >= limit) {
+        return;
+      }
+      const stat = await fileServiceClient.getFileStat(dirUri, true);
+      if (!stat?.children) {
+        return;
+      }
+      for (const child of stat.children) {
+        if (files.length >= limit) {
+          break;
+        }
+        if (child.isDirectory) {
+          await collectFiles(child.uri, limit);
+        } else {
+          const uri = new URI(child.uri);
+          const relativePath = (await workspaceService.asRelativePath(uri.parent))?.path;
+          files.push({
+            id: uri.codeUri.fsPath,
+            type: MentionType.FILE,
+            text: uri.displayName,
+            value: uri.codeUri.fsPath,
+            description: relativePath || '',
+            contextId: uri.codeUri.fsPath,
+            icon: labelService.getIcon(uri),
+          });
+        }
+      }
+    };
+    const rootUri = agentCwd ? URI.file(agentCwd).toString() : workspaceService.workspace?.uri;
+    if (rootUri) {
+      await collectFiles(rootUri, 50);
+    }
+    return files;
+  }, [fileServiceClient, workspaceService, labelService, agentCwd]);
+
+  // ACP 专属：加载工作区根目录下的文件夹
+  const loadWorkspaceFolders = async (): Promise<MentionItem[]> => {
+    const rootUri = agentCwd ? URI.file(agentCwd).toString() : workspaceService.workspace?.uri;
+    if (!rootUri) {
+      return [];
+    }
+    const stat = await fileServiceClient.getFileStat(rootUri, true);
+    if (!stat?.children) {
+      return [];
+    }
+    return Promise.all(
+      stat.children
+        .filter((child) => child.isDirectory)
+        .map(async (child) => {
+          const uri = new URI(child.uri);
+          const relativePath = await workspaceService.asRelativePath(uri);
+          return {
+            id: uri.codeUri.fsPath,
+            type: MentionType.FOLDER,
+            text: uri.displayName,
+            value: uri.codeUri.fsPath,
+            description: relativePath?.root ? relativePath.path : '',
+            contextId: uri.codeUri.fsPath,
+            icon: getIcon('folder'),
+          };
+        }),
+    );
+  };
+
+  // 默认菜单项（ACP 专属版本）
+  const defaultMenuItems: MentionItem[] = [
+    {
+      id: MentionType.FILE,
+      type: MentionType.FILE,
+      text: 'File',
+      icon: getIcon('file'),
+      getHighestLevelItems: () => {
+        const currentEditor = editorService.currentEditor;
+        const currentUri = currentEditor?.currentUri;
+        if (!currentUri) {
+          return [];
+        }
+        return [
+          {
+            id: currentUri.codeUri.fsPath,
+            type: MentionType.FILE,
+            text: currentUri.displayName,
+            value: currentUri.codeUri.fsPath,
+            description: `(${localize('aiNative.chat.defaultContextFile')})`,
+            contextId: currentUri.codeUri.fsPath,
+            icon: labelService.getIcon(currentUri),
+          },
+        ];
+      },
+      getItems: async (searchText: string) => {
+        if (!searchText) {
+          // ACP 专属：无搜索词时递归加载工作区文件
+          try {
+            return await loadWorkspaceFiles();
+          } catch (_e) {
+            return [];
+          }
+        } else {
+          const rootUris = agentCwd
+            ? [agentCwd]
+            : (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
+          const results = await searchService.find(searchText, {
+            rootUris,
+            useGitIgnore: true,
+            noIgnoreParent: true,
+            fuzzyMatch: true,
+            limit: 10,
+          });
+          return Promise.all(
+            results.map(async (file) => {
+              const uri = new URI(file);
+              const relatveParentPath = (await workspaceService.asRelativePath(uri.parent))?.path;
+              return {
+                id: uri.codeUri.fsPath,
+                type: MentionType.FILE,
+                text: uri.displayName,
+                value: uri.codeUri.fsPath,
+                description: relatveParentPath || '',
+                contextId: uri.codeUri.fsPath,
+                icon: labelService.getIcon(uri),
+              };
+            }),
+          );
+        }
+      },
+    },
+    {
+      id: MentionType.FOLDER,
+      type: MentionType.FOLDER,
+      text: 'Folder',
+      icon: getIcon('folder'),
+      getHighestLevelItems: () => {
+        const currentEditor = editorService.currentEditor;
+        const currentFolderUri = currentEditor?.currentUri?.parent;
+        if (!currentFolderUri) {
+          return [];
+        }
+        const rootUri = agentCwd ? URI.file(agentCwd).toString() : workspaceService.workspace?.uri;
+        if (currentFolderUri.toString() === rootUri) {
+          return [];
+        }
+        return [
+          {
+            id: currentFolderUri.codeUri.fsPath,
+            type: MentionType.FOLDER,
+            text: currentFolderUri.displayName,
+            value: currentFolderUri.codeUri.fsPath,
+            description: `(${localize('aiNative.chat.defaultContextFolder')})`,
+            contextId: currentFolderUri.codeUri.fsPath,
+            icon: getIcon('folder'),
+          },
+        ];
+      },
+      getItems: async (searchText: string) => {
+        if (!searchText) {
+          // ACP 专属：无搜索词时加载工作区根目录下的文件夹
+          try {
+            return await loadWorkspaceFolders();
+          } catch (_e) {
+            return [];
+          }
+        } else {
+          const rootUris = agentCwd
+            ? [agentCwd]
+            : (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
+          const files = await searchService.find(searchText, {
+            rootUris,
+            useGitIgnore: true,
+            noIgnoreParent: true,
+            fuzzyMatch: true,
+            excludePatterns: Object.keys(defaultFilesWatcherExcludes),
+            limit: 10,
+          });
+          const rootWorkspaceUri = agentCwd
+            ? URI.file(agentCwd).toString()
+            : workspaceService.workspace?.uri?.toString() || '';
+          const folders = Array.from(
+            new Set(
+              files.map((file) => new URI(file).parent.toString()).filter((folder) => folder !== rootWorkspaceUri),
+            ),
+          );
+          return await expandFolderPaths(folders, rootWorkspaceUri);
+        }
+      },
+    },
+    {
+      id: 'code',
+      type: 'code',
+      text: 'Code',
+      icon: getIcon('codebraces'),
+      getHighestLevelItems: () => [],
+      getItems: async (searchText: string) => {
+        if (!searchText || prevOutlineItems.current.length === 0) {
+          const uri = outlineTreeService.currentUri;
+          if (!uri) {
+            return [];
+          }
+          const treeNodes = await resolveSymbols();
+          prevOutlineItems.current = await Promise.all(
+            treeNodes.map(async (treeNode) => {
+              const relativePath = await workspaceService.asRelativePath(uri);
+              return {
+                id: treeNode.raw.id,
+                type: MentionType.CODE,
+                text: treeNode.raw.name,
+                symbol: treeNode.raw,
+                value: treeNode.raw.id,
+                description: `${relativePath?.root ? relativePath.path : ''}:L${treeNode.raw.range.startLineNumber}-${
+                  treeNode.raw.range.endLineNumber
+                }`,
+                kind: treeNode.raw.kind,
+                contextId: `${outlineTreeService.currentUri?.codeUri.fsPath}:L${treeNode.raw.range.startLineNumber}-${treeNode.raw.range.endLineNumber}`,
+                icon: getSymbolIcon(treeNode.raw.kind) + ' outline-icon',
+              };
+            }),
+          );
+          return prevOutlineItems.current;
+        } else {
+          searchText = searchText.toLocaleLowerCase();
+          return prevOutlineItems.current.sort((a, b) => {
+            if (a.text.toLocaleLowerCase().includes(searchText) && b.text.toLocaleLowerCase().includes(searchText)) {
+              return 0;
+            }
+            if (a.text.toLocaleLowerCase().includes(searchText)) {
+              return -1;
+            } else if (b.text.toLocaleLowerCase().includes(searchText)) {
+              return 1;
+            }
+            return 0;
+          });
+        }
+      },
+    },
+    {
+      id: MentionType.RULE,
+      type: MentionType.RULE,
+      text: 'Rule',
+      icon: getIcon('rules'),
+      getHighestLevelItems: () => [],
+      getItems: async (searchText: string) => {
+        const rules = await rulesService.projectRules;
+        const mappedRules = rules.map((rule) => {
+          const uri = new URI(rule.path);
+          return {
+            id: uri.codeUri.fsPath,
+            type: MentionType.RULE,
+            text: uri.displayName,
+            value: uri.codeUri.fsPath,
+            contextId: uri.codeUri.fsPath,
+            description: rule.description,
+            icon: getIcon('rules'),
+          };
+        });
+
+        if (!searchText) {
+          return mappedRules.slice(0, 10);
+        }
+
+        const lowerSearchText = searchText.toLocaleLowerCase();
+        return mappedRules
+          .filter((rule) => rule.text.toLocaleLowerCase().includes(lowerSearchText))
+          .sort((a, b) => {
+            const aTextLower = a.text.toLocaleLowerCase();
+            const bTextLower = b.text.toLocaleLowerCase();
+            const aDescLower = a.description?.toLocaleLowerCase() || '';
+            const bDescLower = b.description?.toLocaleLowerCase() || '';
+
+            const aTextMatch = aTextLower.includes(lowerSearchText);
+            const bTextMatch = bTextLower.includes(lowerSearchText);
+            const aDescMatch = aDescLower.includes(lowerSearchText);
+            const bDescMatch = bDescLower.includes(lowerSearchText);
+
+            if (aTextMatch && bTextMatch) {
+              return aTextLower.localeCompare(bTextLower);
+            }
+            if (aTextMatch && !bTextMatch) {
+              return -1;
+            }
+            if (!aTextMatch && bTextMatch) {
+              return 1;
+            }
+
+            if (aDescMatch && bDescMatch) {
+              return aTextLower.localeCompare(bTextLower);
+            }
+            if (aDescMatch && !bDescMatch) {
+              return -1;
+            }
+            if (!aDescMatch && bDescMatch) {
+              return 1;
+            }
+
+            return aTextLower.localeCompare(bTextLower);
+          })
+          .slice(0, 10);
+      },
+    },
+  ];
+
+  const hasConfigOptions = (props.configOptions?.length || 0) > 0;
+
+  // Mode 选项
+  const modeOptions: ModeOption[] = useMemo(
+    () => (hasConfigOptions ? [] : props.agentModes || []),
+    [hasConfigOptions, props.agentModes],
+  );
+
+  const modelOptions = useMemo(
+    () =>
+      hasConfigOptions
+        ? []
+        : props.agentModels?.map((model) => ({
+            value: model.modelId,
+            label: model.name || model.modelId,
+            description: model.description || undefined,
+          })) || [],
+    [hasConfigOptions, props.agentModels],
+  );
+
+  const slashCommands = useMemo(
+    () =>
+      chatFeatureRegistry.getAllSlashCommand().map((cmd) => ({
+        nameWithSlash: cmd.nameWithSlash,
+        icon: cmd.icon,
+        name: cmd.name,
+        description: cmd.description,
+      })),
+    [chatFeatureRegistry],
+  );
+
+  const [acpSlashCommands, setAcpSlashCommands] = useState<
+    Array<{ nameWithSlash: string; icon?: string; name?: string; description?: string }>
+  >(() =>
+    aiChatService.getAvailableCommands().map((cmd) => ({
+      nameWithSlash: `/${cmd.name}`,
+      icon: undefined,
+      name: cmd.name,
+      description: cmd.description || '',
+    })),
+  );
+
+  useEffect(() => {
+    const disposable = aiChatService.onAvailableCommandsChange((commands) => {
+      setAcpSlashCommands(
+        commands.map((cmd) => ({
+          nameWithSlash: `/${cmd.name}`,
+          icon: undefined,
+          name: cmd.name,
+          description: cmd.description || '',
+        })),
+      );
+    });
+    return () => disposable.dispose();
+  }, [aiChatService]);
+
+  const defaultMentionInputFooterOptions: FooterConfig = useMemo(() => {
+    const uploadImageButton = {
+      id: 'upload-image',
+      icon: 'image',
+      title: localize('aiNative.chat.imageUpload'),
+      onClick: () => {
+        if (disabled) {
+          return;
+        }
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+          const files = (e.target as HTMLInputElement).files;
+          if (files?.length) {
+            handleImageUpload(Array.from(files));
+          }
+        };
+        input.click();
+      },
+      position: FooterButtonPosition.LEFT,
+    };
+
+    if (isQueued) {
+      return {
+        modeOptions: [],
+        defaultMode: 'default',
+        currentMode: 'default',
+        showModeSelector: false,
+        modelOptions: [],
+        buttons: [uploadImageButton],
+        showModelSelector: false,
+        disableModelSelector: true,
+        configOptions: [],
+      };
+    }
+
+    return {
+      modeOptions,
+      defaultMode: modeOptions[0]?.id || 'default',
+      currentMode,
+      showModeSelector: modeOptions.length > 1,
+      modelOptions: aiNativeConfigService.capabilities.supportsAgentMode
+        ? modelOptions
+        : [
+            {
+              value: 'qwen-plus-latest',
+              label: 'Qwen 3',
+              iconClass: iconService.fromIcon(
+                '',
+                'https://img.alicdn.com/imgextra/i3/O1CN01LFMrZj28YrnrzeebY_!!6000000007945-55-tps-16-16.svg',
+                IconType.Background,
+              ),
+              tags: ['思考链', '擅长代码'],
+              description: '高性能代码模型，支持思考链',
+            },
+            {
+              label: 'Claude 4 Sonnet',
+              value: 'claude_sonnet4',
+              iconClass: iconService.fromIcon(
+                '',
+                'https://img.alicdn.com/imgextra/i3/O1CN01p0mziz1Nsl40lp1HO_!!6000000001626-55-tps-92-65.svg',
+                IconType.Background,
+              ),
+              tags: ['多模态', '长上下文理解', '思考模式'],
+              description: '高性能模型，支持多模态输入',
+            },
+            {
+              label: 'DeepSeek R1',
+              value: 'DeepSeek-R1-0528',
+              iconClass: iconService.fromIcon(
+                '',
+                'https://img.alicdn.com/imgextra/i3/O1CN01ClcK2w1JwdxcbAB3a_!!6000000001093-55-tps-30-30.svg',
+                IconType.Background,
+              ),
+              tags: ['思考模式', '长上下文理解'],
+              description: '专业创作，支持多模态输入',
+            },
+          ],
+      defaultModel:
+        props.currentModelId ||
+        props.sessionModelId ||
+        preferenceService.get<string>(AINativeSettingSectionsId.ModelID) ||
+        'deepseek-r1',
+      buttons: aiNativeConfigService.capabilities.supportsAgentMode
+        ? []
+        : [
+            {
+              id: 'mcp-server',
+              icon: 'mcp',
+              title: 'MCP Server',
+              onClick: handleShowMCPConfig,
+              position: FooterButtonPosition.LEFT,
+            },
+            {
+              id: 'rules',
+              icon: 'rules',
+              title: 'Rules',
+              onClick: handleShowRules,
+              position: FooterButtonPosition.LEFT,
+            },
+            uploadImageButton,
+          ],
+      showModelSelector: aiNativeConfigService.capabilities.supportsAgentMode ? modelOptions.length > 0 : true,
+      disableModelSelector: props.disableModelSelector,
+      configOptions: props.configOptions,
+    };
+  }, [
+    iconService,
+    handleShowMCPConfig,
+    handleShowRules,
+    props.disableModelSelector,
+    props.sessionModelId,
+    props.currentModelId,
+    props.configOptions,
+    currentMode,
+    modeOptions,
+    modelOptions,
+    aiNativeConfigService.capabilities.supportsAgentMode,
+    disabled,
+    isQueued,
+    preferenceService,
+  ]);
+
+  const handleStop = useCallback(() => {
+    if (disabled) {
+      return;
+    }
+    if (props.turnActions) {
+      return props.turnActions.stop();
+    }
+    return aiChatService.cancelRequest();
+  }, [aiChatService, disabled, props.turnActions]);
+
+  const handleSend = useCallback(
+    async (content: string, option?: { model: string; [key: string]: any }) => {
+      if (disabled) {
+        return;
+      }
+
+      const currentCommand = props.command;
+      const currentAgentId = props.agentId;
+
+      const doSend = async (newValue: string = content) => {
+        const imagePayload = images.map((image) => image.toString());
+        if (!hasAcpChatSendPayload({ message: newValue, images: imagePayload, command: currentCommand })) {
+          return;
+        }
+        const sendResult = await onSend(newValue, imagePayload, currentAgentId, currentCommand, option);
+        return sendResult;
+      };
+
+      // 如果有 slash command，调用其 execute handler
+      if (currentCommand) {
+        const chatCommandHandler = chatFeatureRegistry.getSlashCommandHandler(currentCommand);
+        if (chatCommandHandler && chatCommandHandler.execute) {
+          const editor = monacoCommandRegistry.getActiveCodeEditor();
+          let commandSendResult: Promise<TurnActionResult | void> | undefined;
+          await chatCommandHandler.execute(
+            content,
+            (newValue: string) => {
+              commandSendResult ??= doSend(newValue);
+            },
+            editor,
+          );
+          return commandSendResult;
+        }
+      }
+
+      return doSend();
+    },
+    [onSend, images, disabled, props.agentId, props.command, chatFeatureRegistry, monacoCommandRegistry],
+  );
+
+  const submitDraft = useCallback(
+    async (
+      content: string,
+      option: { model: string; [key: string]: any } | undefined,
+      intent: 'normal' | 'immediate',
+    ) => {
+      if (disabled) {
+        return false;
+      }
+
+      const draft: AcpTurnDraft = {
+        message: content,
+        images: imagesRef.current.map((image) => image.toString()),
+        agentId: props.agentId,
+        command: props.command,
+      };
+      if (!hasAcpChatSendPayload(draft)) {
+        return false;
+      }
+      if (submitInFlightRef.current) {
+        return false;
+      }
+
+      const submissionGeneration = draftGenerationRef.current;
+      submitInFlightRef.current = true;
+
+      try {
+        let result: TurnActionResult | void;
+
+        if (isQueued) {
+          if (intent === 'immediate') {
+            if (props.immediateSendDisabled) {
+              return false;
+            }
+            result = await props.onImmediateSend?.(draft);
+          } else {
+            result = await handleSend(content, option);
+          }
+        } else if (props.turnActions) {
+          result = await props.turnActions.submit(draft, intent);
+        } else if (intent === 'normal') {
+          result = await handleSend(content, option);
+        } else {
+          return false;
+        }
+
+        if (!isAcceptedTurnActionResult(result)) {
+          return result;
+        }
+        if (!mountedRef.current || draftGenerationRef.current !== submissionGeneration) {
+          return false;
+        }
+
+        draftGenerationRef.current += 1;
+        uploadGenerationRef.current += 1;
+        props.setTheme(null);
+        props.setAgentId('');
+        props.setCommand('');
+        imagesRef.current = props.images ? [...props.images] : [];
+        setImages(imagesRef.current);
+        propsRef.current.onDraftChange?.({ message: '', images: [], agentId: '', command: '' });
+        return result ?? true;
+      } finally {
+        submitInFlightRef.current = false;
+      }
+    },
+    [
+      disabled,
+      handleSend,
+      isQueued,
+      props.agentId,
+      props.command,
+      props.images,
+      props.immediateSendDisabled,
+      props.onImmediateSend,
+      props.setAgentId,
+      props.setCommand,
+      props.setTheme,
+      props.turnActions,
+    ],
+  );
+
+  const handleImageUpload = useCallback(
+    async (files: File[]) => {
+      if (disabled) {
+        return;
+      }
+      const uploadGeneration = uploadGenerationRef.current;
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+
+      const invalidFiles = files.filter((file) => !allowedTypes.includes(file.type));
+      if (invalidFiles.length > 0) {
+        messageService.error('Only JPG, PNG, WebP and GIF images are supported');
+        return;
+      }
+
+      const imageUploadProvider = chatFeatureRegistry.getImageUploadProvider();
+      if (!imageUploadProvider) {
+        messageService.error('No image upload provider found');
+        return;
+      }
+
+      const settled = await Promise.allSettled(files.map((file) => imageUploadProvider.imageUpload(file)));
+      const uploadedData = settled.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : []));
+      const failedCount = settled.length - uploadedData.length;
+
+      if (!mountedRef.current || uploadGeneration !== uploadGenerationRef.current) {
+        return;
+      }
+      if (uploadedData.length > 0) {
+        draftGenerationRef.current += 1;
+      }
+
+      setImages((currentImages) => {
+        if (!mountedRef.current || uploadGeneration !== uploadGenerationRef.current) {
+          return currentImages;
+        }
+        const nextImages = [...currentImages, ...uploadedData];
+        imagesRef.current = nextImages;
+        propsRef.current.onDraftChange?.({
+          ...inputHandle.getDraft(),
+          images: nextImages.map((image) => image.toString()),
+        });
+        return nextImages;
+      });
+
+      if (failedCount > 0) {
+        messageService.error(
+          localize(
+            'aiNative.chat.queue.imageUpload.partialFailure',
+            '{0} image(s) failed to upload',
+            String(failedCount),
+          ),
+        );
+      }
+    },
+    [chatFeatureRegistry, disabled, inputHandle, messageService],
+  );
+
+  const handleModeChange = useCallback(
+    async (modeId: string) => {
+      if (disabled) {
+        return;
+      }
+      try {
+        await aiChatService.setSessionMode(modeId);
+      } catch (error) {
+        messageService.error('Failed to switch mode: ' + (error instanceof Error ? error.message : String(error)));
+      }
+    },
+    [aiChatService, disabled, messageService],
+  );
+
+  const handleModelChange = useCallback(
+    async (modelId: string) => {
+      if (disabled) {
+        return;
+      }
+      try {
+        await aiChatService.setSessionModel(modelId);
+      } catch (error) {
+        messageService.error('Failed to switch model: ' + (error instanceof Error ? error.message : String(error)));
+      }
+    },
+    [aiChatService, disabled, messageService],
+  );
+
+  const handleConfigOptionChange = useCallback(
+    async (configId: string, value: boolean | string) => {
+      if (disabled) {
+        return;
+      }
+      try {
+        await aiChatService.setSessionConfigOption(configId, value);
+      } catch (error) {
+        messageService.error(
+          'Failed to update ACP config: ' + (error instanceof Error ? error.message : String(error)),
+        );
+      }
+    },
+    [aiChatService, disabled, messageService],
+  );
+
+  const handleDeleteImage = useCallback(
+    (index: number) => {
+      if (disabled) {
+        return;
+      }
+      draftGenerationRef.current += 1;
+      setImages((currentImages) => {
+        const nextImages = currentImages.filter((_, i) => i !== index);
+        imagesRef.current = nextImages;
+        propsRef.current.onDraftChange?.({
+          ...inputHandle.getDraft(),
+          images: nextImages.map((image) => image.toString()),
+        });
+        return nextImages;
+      });
+    },
+    [disabled, inputHandle],
+  );
+
+  const handleSlashSelect = useCallback(
+    (nameWithSlash: string) => {
+      if (disabled) {
+        return;
+      }
+      if (!nameWithSlash) {
+        props.setTheme(null);
+        props.setAgentId('');
+        props.setCommand('');
+        return;
+      }
+      const commandModel = chatFeatureRegistry.getSlashCommandBySlashName(nameWithSlash);
+      if (commandModel) {
+        props.setTheme(nameWithSlash);
+        props.setAgentId(commandModel.agentId!);
+        props.setCommand(commandModel.command!);
+      }
+    },
+    [chatFeatureRegistry, disabled, props.setAgentId, props.setCommand, props.setTheme],
+  );
+
+  const handleUserInput = useCallback(() => {
+    if (disabled) {
+      return;
+    }
+    draftGenerationRef.current += 1;
+    if (!isQueued) {
+      props.turnActions?.invalidateFastTrack();
+    }
+    propsRef.current.onDraftChange?.(inputHandle.getDraft());
+  }, [disabled, inputHandle, isQueued, props.turnActions]);
+
+  const toggleExpanded = useCallback(() => {
+    if (!disabled) {
+      return commandService.executeCommand(AI_CHAT_INPUT_TOGGLE_EXPANDED.id);
+    }
+  }, [commandService, disabled]);
+
+  const handleImmediateSend = useCallback(() => {
+    const draft = inputHandle.getDraft();
+    if (disabled || props.immediateSendDisabled || !props.onImmediateSend || !hasAcpChatSendPayload(draft)) {
+      return;
+    }
+    return submitDraft(draft.message, undefined, 'immediate');
+  }, [disabled, inputHandle, props.immediateSendDisabled, props.onImmediateSend, submitDraft]);
+
+  const handleEscape = useCallback(() => {
+    if (disabled) {
+      return;
+    }
+    if (isQueued) {
+      return props.onCancelEdit?.();
+    }
+    if (loading) {
+      return handleStop();
+    }
+  }, [disabled, handleStop, isQueued, loading, props.onCancelEdit]);
+
+  const handleEmptyArrowUp = useCallback(() => {
+    if (disabled || isQueued || hasAcpChatSendPayload(inputHandle.getDraft())) {
+      return false;
+    }
+    const turn = props.turnActions?.takeBackLastQueuedTurn();
+    if (!turn) {
+      return false;
+    }
+    inputHandle.restoreDraft?.(turn);
+    inputHandle.focus?.();
+    return true;
+  }, [disabled, inputHandle, isQueued, props.turnActions]);
+
+  const handleEmptySubmit = useCallback(() => {
+    if (disabled || hasAcpChatSendPayload(inputHandle.getDraft())) {
+      return;
+    }
+    void props.turnActions?.fastTrack();
+  }, [disabled, inputHandle, props.turnActions]);
+
+  return (
+    <div
+      className={cls(
+        styles.chat_input_container,
+        isExpanded && styles.chat_input_container_expanded,
+        isQueued && 'acp-queued-turn-editor-input',
+      )}
+    >
+      {!isQueued && (
+        <div className={styles.expand_icon} onClick={disabled ? undefined : toggleExpanded}>
+          <Popover
+            id={'ai_chat_input_expand'}
+            title={localize(isExpanded ? 'aiNative.chat.expand.unfullscreen' : 'aiNative.chat.expand.fullescreen')}
+            position={PopoverPosition.top}
+          >
+            <Icon className={cls(isExpanded ? getIcon('unfullscreen') : getIcon('fullescreen'))} />
+          </Popover>
+        </div>
+      )}
+      {images.length > 0 && <ImagePreviewer disabled={disabled} images={images} onDelete={handleDeleteImage} />}
+      <div className={styles.chat_input_body}>
+        <MentionInput
+          ref={mentionInputRef}
+          mentionItems={
+            chatRenderRegistry.enabledMentionTypes
+              ? defaultMenuItems.filter((item) => chatRenderRegistry.enabledMentionTypes!.includes(item.id))
+              : defaultMenuItems
+          }
+          slashCommands={[...slashCommands, ...acpSlashCommands]}
+          onSend={(message, option) => submitDraft(message, option, 'normal')}
+          onSendImmediately={(message, option) => submitDraft(message, option, 'immediate')}
+          onStop={handleStop}
+          onEscape={handleEscape}
+          onEmptyArrowUp={isQueued ? undefined : handleEmptyArrowUp}
+          onEmptySubmit={isQueued ? undefined : handleEmptySubmit}
+          hasSendPayload={() => hasAcpChatSendPayload(inputHandle.getDraft())}
+          onToggleExpanded={isQueued ? undefined : toggleExpanded}
+          onUserInput={handleUserInput}
+          disabled={disabled}
+          loading={loading}
+          labelService={labelService}
+          workspaceService={workspaceService}
+          placeholder={placeholder}
+          footerConfig={defaultMentionInputFooterOptions}
+          onImageUpload={handleImageUpload}
+          modeOptions={isQueued ? [] : modeOptions}
+          currentMode={currentMode}
+          configOptions={isQueued ? undefined : props.configOptions}
+          onSelectionChange={handleModelChange}
+          contextService={contextService}
+          onModeChange={handleModeChange}
+          onConfigOptionChange={handleConfigOptionChange}
+          defaultInput={defaultInput}
+          onDefaultInputConsumed={() => setDefaultInput('')}
+          onSlashSelect={handleSlashSelect}
+          expanded={isExpanded}
+          allowEmptySubmit={isQueued}
+        />
+      </div>
+      {isQueued && (
+        <div className='acp-queued-editor-actions' data-testid='acp-queued-editor-actions'>
+          <button disabled={disabled} onClick={props.onCancelEdit} type='button'>
+            {localize('aiNative.chat.queue.cancelEdit', 'Cancel')}
+          </button>
+          <button disabled={disabled || props.immediateSendDisabled} onClick={handleImmediateSend} type='button'>
+            {localize('aiNative.chat.queue.immediate', 'Immediate Send')}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+});
+
+const ImagePreviewer = ({
+  disabled,
+  images,
+  onDelete,
+}: {
+  disabled?: boolean;
+  images: Array<DataContent | URL>;
+  onDelete: (index: number) => void;
+}) => (
+  <div>
+    <div className={styles.thumbnail_container}>
+      {images.map((image, index) => (
+        <div key={index} className={styles.thumbnail}>
+          <Image src={image.toString()} />
+          <button disabled={disabled} onClick={() => onDelete(index)} className={styles.delete_button}>
+            <Icon iconClass='codicon codicon-close' />
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+);

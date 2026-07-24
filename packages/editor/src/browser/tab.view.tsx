@@ -148,13 +148,6 @@ export const Tabs = ({ group }: ITabsProps) => {
         );
       }),
     );
-    disposer.addDispose(
-      group.onDidEditorGroupTabChanged(() => {
-        if (!wrapMode) {
-          scrollToCurrent();
-        }
-      }),
-    );
     return () => {
       disposer.dispose();
     };
@@ -187,13 +180,53 @@ export const Tabs = ({ group }: ITabsProps) => {
     fastdom.measure(() => {
       try {
         if (tabContainer.current && group.currentResource) {
-          const currentTab = tabContainer.current.querySelector(
+          const container =
+            (tabContainer.current.querySelector('.' + styles.kt_editor_tabs_scroll) as HTMLElement | null) ||
+            tabContainer.current;
+          const currentTab = container.querySelector(
             '.' + styles.kt_editor_tab + "[data-uri='" + group.currentResource.uri.toString() + "']",
-          );
+          ) as HTMLElement | null;
           if (currentTab) {
-            currentTab.scrollIntoView({
-              block: 'nearest',
-              inline: 'nearest',
+            const pinnedTabs = container.querySelector('.' + styles.pinned_tabs) as HTMLElement | null;
+            const currentIsPinned = currentTab.dataset.pinned === 'true';
+            const viewportWidth = container.clientWidth;
+            const currentTabWidth = currentTab.offsetWidth;
+            const pinnedTabsWidth = pinnedTabs?.scrollWidth || 0;
+            const combinedWidth = pinnedTabsWidth + currentTabWidth;
+            let maximumVisiblePinnedWidth: number | undefined;
+            if (pinnedTabs && viewportWidth > 0) {
+              if (currentIsPinned && pinnedTabsWidth > viewportWidth) {
+                maximumVisiblePinnedWidth = viewportWidth;
+              } else if (!currentIsPinned && combinedWidth > viewportWidth) {
+                maximumVisiblePinnedWidth = (viewportWidth * pinnedTabsWidth) / combinedWidth;
+              }
+            }
+
+            fastdom.mutate(() => {
+              if (pinnedTabs) {
+                pinnedTabs.style.maxWidth =
+                  maximumVisiblePinnedWidth === undefined ? '' : `${maximumVisiblePinnedWidth}px`;
+              }
+              currentTab.scrollIntoView({
+                block: 'nearest',
+                inline: 'nearest',
+              });
+
+              if (!pinnedTabs || currentIsPinned) {
+                return;
+              }
+              fastdom.measure(() => {
+                const containerRect = container.getBoundingClientRect();
+                const pinnedTabsRect = pinnedTabs.getBoundingClientRect();
+                const currentTabRect = currentTab.getBoundingClientRect();
+                const visiblePinnedRight = Math.min(pinnedTabsRect.right, containerRect.right);
+                const overlap = visiblePinnedRight - currentTabRect.left;
+                if (overlap > 0) {
+                  fastdom.mutate(() => {
+                    container.scrollLeft = Math.max(0, container.scrollLeft - overlap);
+                  });
+                }
+              });
             });
           }
         }
@@ -201,7 +234,18 @@ export const Tabs = ({ group }: ITabsProps) => {
         // noop
       }
     });
-  }, [group, tabContainer.current]);
+  }, [group]);
+
+  useEffect(() => {
+    const disposer = group.onDidEditorGroupTabChanged(() => {
+      if (!wrapMode) {
+        scrollToCurrent();
+      }
+    });
+    return () => {
+      disposer.dispose();
+    };
+  }, [group, scrollToCurrent, wrapMode]);
 
   const updateTabMarginRight = useCallback(() => {
     if (editorActionUpdateTimer.current) {
@@ -223,13 +267,21 @@ export const Tabs = ({ group }: ITabsProps) => {
         scrollToCurrent();
       });
     }
-  }, [wrapMode, tabContainer.current]);
+  }, [scrollToCurrent, wrapMode]);
 
   useEffect(() => {
     if (!wrapMode) {
       const disposer = new Disposable();
       if (tabContainer.current) {
         disposer.addDispose(new DomListener(tabContainer.current, 'mousewheel', preventNavigation));
+      }
+      const scrollContainer =
+        (tabContainer.current?.querySelector('.' + styles.kt_editor_tabs_scroll) as HTMLElement | null) ||
+        tabContainer.current;
+      let resizeObserver: ResizeObserver | undefined;
+      if (scrollContainer) {
+        resizeObserver = new ResizeObserver(scrollToCurrent);
+        resizeObserver.observe(scrollContainer);
       }
       disposer.addDispose(
         eventBus.onDirective(ResizeEvent.createDirective(slotLocation), () => {
@@ -242,10 +294,11 @@ export const Tabs = ({ group }: ITabsProps) => {
         }),
       );
       return () => {
+        resizeObserver?.disconnect();
         disposer.dispose();
       };
     }
-  }, [wrapMode]);
+  }, [eventBus, group.grid.uid, scrollToCurrent, slotLocation, wrapMode]);
 
   const layoutLastInRow = useCallback(() => {
     fastdom.measureAtNextFrame(() => {
@@ -337,14 +390,11 @@ export const Tabs = ({ group }: ITabsProps) => {
     [tabWrapperRef.current],
   );
 
-  const handleWrapperDragLeave = useCallback(
-    (e: DragEvent) => {
-      if (tabWrapperRef.current) {
-        tabWrapperRef.current.classList.remove(styles.kt_on_drag_over);
-      }
-    },
-    [tabWrapperRef.current],
-  );
+  const handleWrapperDragLeave = useCallback(() => {
+    if (tabWrapperRef.current) {
+      tabWrapperRef.current.classList.remove(styles.kt_on_drag_over);
+    }
+  }, [tabWrapperRef.current]);
 
   const handleWrapperDrag = useCallback(
     (e: DragEvent) => {
@@ -368,7 +418,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   );
 
   const renderEditorTab = React.useCallback(
-    (resource: IResource, isCurrent: boolean) => {
+    (resource: IResource, isCurrent: boolean, isPinned: boolean) => {
       const decoration = resourceService.getResourceDecoration(resource.uri);
       const subname = resourceService.getResourceSubname(resource, group.resources);
 
@@ -382,40 +432,125 @@ export const Tabs = ({ group }: ITabsProps) => {
           {decoration.readOnly ? (
             <span className={cls(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
           ) : null}
-          <div className={styles_tab_right}>
+          <div className={cls(styles_tab_right, { [styles.pinned_tab_right]: isPinned })}>
             <div
               className={cls({
                 [styles.kt_hidden]: !decoration.dirty,
                 [styles.dirty]: true,
               })}
             ></div>
-            <div
-              className={styles_close_tab}
-              onMouseDown={(e) => {
-                e.stopPropagation();
-                group.close(resource.uri);
-              }}
-            >
-              {editorTabService.renderTabCloseComponent(
-                <div
-                  className={cls(getIcon('close'), styles_kt_editor_close_icon)}
-                  tabIndex={0}
-                  role='button'
-                  aria-label={formatLocalize('editor.closeTab.title', resource.name)}
-                />,
-              )}
-            </div>
+            {isPinned ? (
+              <button
+                type='button'
+                className={styles.pin_tab}
+                onMouseDown={(event) => {
+                  event.stopPropagation();
+                }}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  group.unpinTab(resource.uri);
+                }}
+                title={formatLocalize('editor.unpinTab.title', resource.name)}
+                aria-label={formatLocalize('editor.unpinTab.title', resource.name)}
+              >
+                <div className={getIcon('pinned')} />
+              </button>
+            ) : (
+              <div
+                className={styles_close_tab}
+                onMouseDown={(event) => {
+                  event.stopPropagation();
+                  group.close(resource.uri);
+                }}
+              >
+                {editorTabService.renderTabCloseComponent(
+                  <div
+                    className={cls(getIcon('close'), styles_kt_editor_close_icon)}
+                    tabIndex={0}
+                    role='button'
+                    aria-label={formatLocalize('editor.closeTab.title', resource.name)}
+                  />,
+                )}
+              </div>
+            )}
           </div>
         </>,
         isCurrent,
       );
     },
-    [editorTabService],
+    [editorTabService, group, resourceService, tabsLoadingMap],
   );
 
   const renderTabContent = () => {
     const noTab = group.resources.length === 0;
     const curTabIndex = group.resources.findIndex((resource) => group.currentResource === resource);
+    const renderTabs = (resources: IResource[], indexOffset: number) =>
+      resources.map((resource, localIndex) => {
+        let ref: HTMLDivElement | null;
+        const i = indexOffset + localIndex;
+        const decoration = resourceService.getResourceDecoration(resource.uri);
+        const isPinned = group.isPinned(resource.uri);
+        return (
+          <div
+            draggable={true}
+            title={resource.title}
+            className={cls({
+              [styles_kt_editor_tab]: true,
+              [styles.last_in_row]: tabMap.get(i),
+              [styles_kt_editor_tab_current_prev]: curTabIndex - 1 === i,
+              [styles_kt_editor_tab_current_next]: curTabIndex + 1 === i,
+              [styles_kt_editor_tab_current]: group.currentResource === resource,
+              [styles.kt_editor_tab_preview]: group.previewURI?.isEqual(resource.uri),
+              [styles_kt_editor_tab_dirty]: decoration.dirty,
+              [styles.pinned_tab_boundary]:
+                wrapMode && isPinned && i === group.pinnedTabCount - 1 && group.pinnedTabCount < group.resources.length,
+            })}
+            style={
+              wrapMode && i === group.resources.length - 1
+                ? { marginRight: lastMarginRight, height: layoutViewSize.editorTabsHeight }
+                : { height: layoutViewSize.editorTabsHeight }
+            }
+            onContextMenu={(event) => {
+              tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource.uri, group);
+              event.preventDefault();
+            }}
+            key={resource.uri.toString()}
+            onMouseUp={(event) => {
+              if (event.nativeEvent.button === MouseEventButton.Middle && !isPinned) {
+                event.preventDefault();
+                event.stopPropagation();
+                group.close(resource.uri);
+              }
+            }}
+            onMouseDown={(event) => {
+              if (event.nativeEvent.button === MouseEventButton.Left) {
+                group.open(resource.uri, { focus: true });
+              }
+            }}
+            data-uri={resource.uri.toString()}
+            data-pinned={isPinned ? 'true' : 'false'}
+            onDragOver={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              ref?.classList.add(styles.kt_on_drag_over);
+            }}
+            onDragLeave={() => ref?.classList.remove(styles.kt_on_drag_over)}
+            onDrop={(event) => {
+              ref?.classList.remove(styles.kt_on_drag_over);
+              onDrop(event, i, resource);
+            }}
+            onDoubleClick={() => group.pinPreviewed(resource.uri)}
+            ref={(element) => (ref = element)}
+            onDragStart={(event) => {
+              event.dataTransfer.setData('uri', resource.uri.toString());
+              event.dataTransfer.setData('uri-source-group', group.name);
+            }}
+          >
+            {renderEditorTab(resource, group.currentResource === resource, isPinned)}
+          </div>
+        );
+      });
+
     return (
       <div
         draggable={false}
@@ -427,78 +562,18 @@ export const Tabs = ({ group }: ITabsProps) => {
         ref={contentRef as any}
         role='tablist'
       >
-        {group.resources.map((resource, i) => {
-          let ref: HTMLDivElement | null;
-          const decoration = resourceService.getResourceDecoration(resource.uri);
-          return (
-            <div
-              draggable={true}
-              title={resource.title}
-              className={cls({
-                [styles_kt_editor_tab]: true,
-                [styles.last_in_row]: tabMap.get(i),
-                [styles_kt_editor_tab_current_prev]: curTabIndex - 1 === i,
-                [styles_kt_editor_tab_current_next]: curTabIndex + 1 === i,
-                [styles_kt_editor_tab_current]: group.currentResource === resource,
-                [styles.kt_editor_tab_preview]: group.previewURI && group.previewURI.isEqual(resource.uri),
-                [styles_kt_editor_tab_dirty]: decoration.dirty,
-              })}
-              style={
-                wrapMode && i === group.resources.length - 1
-                  ? { marginRight: lastMarginRight, height: layoutViewSize.editorTabsHeight }
-                  : { height: layoutViewSize.editorTabsHeight }
-              }
-              onContextMenu={(event) => {
-                tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
-                event.preventDefault();
-              }}
-              key={resource.uri.toString()}
-              onMouseUp={(e) => {
-                if (e.nativeEvent.button === MouseEventButton.Middle) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  group.close(resource.uri);
-                }
-              }}
-              onMouseDown={(e) => {
-                if (e.nativeEvent.button === MouseEventButton.Left) {
-                  group.open(resource.uri, { focus: true });
-                }
-              }}
-              data-uri={resource.uri.toString()}
-              onDragOver={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (ref) {
-                  ref.classList.add(styles.kt_on_drag_over);
-                }
-              }}
-              onDragLeave={(e) => {
-                if (ref) {
-                  ref.classList.remove(styles.kt_on_drag_over);
-                }
-              }}
-              onDrop={(e) => {
-                if (ref) {
-                  ref.classList.remove(styles.kt_on_drag_over);
-                }
-                if (onDrop) {
-                  onDrop(e, i, resource);
-                }
-              }}
-              onDoubleClick={(e) => {
-                group.pinPreviewed(resource.uri);
-              }}
-              ref={(el) => (ref = el)}
-              onDragStart={(e) => {
-                e.dataTransfer.setData('uri', resource.uri.toString());
-                e.dataTransfer.setData('uri-source-group', group.name);
-              }}
-            >
-              {renderEditorTab(resource, group.currentResource === resource)}
-            </div>
-          );
-        })}
+        {!wrapMode && group.pinnedTabCount > 0 ? (
+          <div
+            className={cls(styles.pinned_tabs, {
+              [styles.pinned_tabs_with_ordinary]: group.pinnedTabCount < group.resources.length,
+            })}
+          >
+            {renderTabs(group.resources.slice(0, group.pinnedTabCount), 0)}
+          </div>
+        ) : null}
+        {wrapMode
+          ? renderTabs(group.resources, 0)
+          : renderTabs(group.resources.slice(group.pinnedTabCount), group.pinnedTabCount)}
       </div>
     );
   };

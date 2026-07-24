@@ -17,9 +17,19 @@ import {
 } from '../../chat/chat-input-footer.registry';
 import { MentionPanel } from '../mention-input/mention-panel';
 import { ExtendedModelOption, MentionSelect } from '../mention-input/mention-select';
-import { MENTION_KEYWORD, MentionInputProps, MentionItem, MentionState, MentionType } from '../mention-input/types';
+import {
+  MENTION_KEYWORD,
+  MentionInputHandle,
+  MentionInputProps,
+  MentionInputSubmitHandler,
+  MentionInputSubmitResult,
+  MentionItem,
+  MentionState,
+  MentionType,
+} from '../mention-input/types';
 import { PermissionDialogWidget } from '../permission-dialog-widget';
 
+import { hasChatInputTextPayload } from './chat-input-validation';
 import styles from './mention-input.module.less';
 import { ModeOption } from './types';
 
@@ -126,47 +136,208 @@ function normalizeConfigOptions(configOptions?: AcpSessionConfigOption[]): Norma
     .filter(Boolean) as NormalizedConfigOption[];
 }
 
-export const MentionInput: React.FC<
-  MentionInputProps & {
-    defaultInput?: string;
-    onDefaultInputConsumed?: () => void;
-    onModeChange?: (modeId: string) => void;
-    onConfigOptionChange?: (configId: string, value: boolean | string) => void;
-    onAgentChange?: (agentId: string) => void;
-    modeOptions?: ModeOption[];
-    currentMode?: string;
-    configOptions?: AcpSessionConfigOption[];
-    slashCommands?: Array<{ nameWithSlash: string; icon?: string; name?: string; description?: string }>;
+const SERIALIZABLE_MENTION_TYPES = new Set<string>([
+  MentionType.FILE,
+  MentionType.FOLDER,
+  MentionType.CODE,
+  MentionType.RULE,
+]);
+
+const BLOCK_ELEMENT_NAMES = new Set([
+  'ADDRESS',
+  'ARTICLE',
+  'ASIDE',
+  'BLOCKQUOTE',
+  'DIV',
+  'DL',
+  'FIELDSET',
+  'FIGCAPTION',
+  'FIGURE',
+  'FOOTER',
+  'FORM',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+  'HEADER',
+  'HR',
+  'LI',
+  'MAIN',
+  'NAV',
+  'OL',
+  'P',
+  'PRE',
+  'SECTION',
+  'TABLE',
+  'TR',
+  'UL',
+]);
+
+type AcpMentionInputProps = MentionInputProps & {
+  defaultInput?: string;
+  onDefaultInputConsumed?: () => void;
+  onModeChange?: (modeId: string) => void;
+  onConfigOptionChange?: (configId: string, value: boolean | string) => void;
+  onAgentChange?: (agentId: string) => void;
+  modeOptions?: ModeOption[];
+  currentMode?: string;
+  configOptions?: AcpSessionConfigOption[];
+  slashCommands?: Array<{ nameWithSlash: string; icon?: string; name?: string; description?: string }>;
+};
+
+function serializeEditorChildren(element: Element): string {
+  let serialized = '';
+  const children = Array.from(element.childNodes);
+
+  children.forEach((child, index) => {
+    const isBlockElement = child instanceof HTMLElement && BLOCK_ELEMENT_NAMES.has(child.tagName);
+    if (isBlockElement && serialized && !serialized.endsWith('\n')) {
+      serialized += '\n';
+    }
+
+    serialized += serializeEditorNode(child);
+
+    if (isBlockElement && index < children.length - 1 && !serialized.endsWith('\n')) {
+      serialized += '\n';
+    }
+  });
+
+  return serialized;
+}
+
+function serializeEditorNode(node: Node): string {
+  if (node instanceof Text) {
+    return node.data.replace(/\u00a0/g, ' ');
   }
-> = ({
-  mentionItems = [],
-  onSend,
-  onStop,
-  loading = false,
-  mentionKeyword = MENTION_KEYWORD,
-  onSelectionChange,
-  onImageUpload,
-  onSlashSelect,
-  labelService,
-  workspaceService,
-  placeholder = 'Ask anything, @ to mention',
-  footerConfig = {
-    buttons: [],
-    showModelSelector: false,
-  },
-  contextService,
-  expanded = false,
-  defaultInput,
-  onDefaultInputConsumed,
-  onModeChange,
-  onConfigOptionChange,
-  modeOptions,
-  currentMode,
-  configOptions,
-  slashCommands = [],
-}) => {
+
+  if (!(node instanceof HTMLElement)) {
+    return '';
+  }
+
+  if (node.matches(`.${styles.mention_tag}`)) {
+    const contextId = node.dataset.contextId;
+    const type = node.dataset.type;
+    if (contextId && type && SERIALIZABLE_MENTION_TYPES.has(type)) {
+      return `{{@${type}:${contextId}}}`;
+    }
+  }
+
+  if (node.tagName === 'BR') {
+    return '\n';
+  }
+
+  return serializeEditorChildren(node);
+}
+
+function serializeEditorContent(editor: HTMLDivElement): string {
+  return serializeEditorChildren(editor);
+}
+
+function appendPlainText(fragment: DocumentFragment, text: string): void {
+  text.split('\n').forEach((line, index) => {
+    if (index > 0) {
+      fragment.appendChild(document.createElement('br'));
+    }
+    if (line) {
+      fragment.appendChild(document.createTextNode(line));
+    }
+  });
+}
+
+function restoreEditorContent(editor: HTMLDivElement, content: string): void {
+  const fragment = document.createDocumentFragment();
+  const mentionPattern = /{{@(file|folder|code|rule):([^{}]+)}}/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = mentionPattern.exec(content))) {
+    if (match.index > lastIndex) {
+      appendPlainText(fragment, content.slice(lastIndex, match.index));
+    }
+
+    const [, type, contextId] = match;
+    const mentionTag = document.createElement('span');
+    mentionTag.className = styles.mention_tag;
+    mentionTag.dataset.id = contextId;
+    mentionTag.dataset.type = type;
+    mentionTag.dataset.contextId = contextId;
+    mentionTag.contentEditable = 'false';
+    mentionTag.textContent = contextId;
+    fragment.appendChild(mentionTag);
+    lastIndex = mentionPattern.lastIndex;
+  }
+
+  if (lastIndex < content.length) {
+    appendPlainText(fragment, content.slice(lastIndex));
+  }
+
+  editor.replaceChildren(fragment);
+}
+
+function focusEditorAtEnd(editor: HTMLDivElement | null): void {
+  if (!editor) {
+    return;
+  }
+
+  editor.focus();
+  const selection = window.getSelection();
+  if (!selection) {
+    return;
+  }
+
+  const range = document.createRange();
+  range.selectNodeContents(editor);
+  range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+const MentionInputImpl = (
+  {
+    mentionItems = [],
+    onSend,
+    onSendImmediately,
+    onStop,
+    onEscape,
+    onEmptyArrowUp,
+    onEmptySubmit,
+    hasSendPayload,
+    onToggleExpanded,
+    onUserInput,
+    disabled = false,
+    loading = false,
+    mentionKeyword = MENTION_KEYWORD,
+    onSelectionChange,
+    onImageUpload,
+    onSlashSelect,
+    labelService,
+    workspaceService,
+    placeholder = 'Ask anything, @ to mention',
+    footerConfig = {
+      buttons: [],
+      showModelSelector: false,
+    },
+    contextService,
+    expanded = false,
+    allowEmptySubmit = false,
+    defaultInput,
+    onDefaultInputConsumed,
+    onModeChange,
+    onConfigOptionChange,
+    modeOptions,
+    currentMode,
+    configOptions,
+    slashCommands = [],
+  }: AcpMentionInputProps,
+  ref: React.ForwardedRef<MentionInputHandle>,
+) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
   const mentionPanelContainerRef = React.useRef<HTMLDivElement>(null);
+  const mountedRef = React.useRef(false);
+  const editorGenerationRef = React.useRef(0);
+  const submitInFlightRef = React.useRef(false);
   const [mentionState, setMentionState] = React.useState<MentionState>({
     active: false,
     startPos: null,
@@ -181,6 +352,34 @@ export const MentionInput: React.FC<
     loading: false, // 添加加载状态
     trigger: '@',
   });
+  const mentionStateRef = React.useRef(mentionState);
+  mentionStateRef.current = mentionState;
+
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      editorGenerationRef.current += 1;
+    };
+  }, []);
+
+  const closeTransientUi = React.useCallback(() => {
+    const wasOpen = mentionStateRef.current.active || mentionStateRef.current.inlineSearchActive;
+    if (wasOpen) {
+      setMentionState((state) => ({
+        ...state,
+        active: false,
+        inlineSearchActive: false,
+      }));
+    }
+    return wasOpen;
+  }, []);
+
+  React.useEffect(() => {
+    if (disabled) {
+      closeTransientUi();
+    }
+  }, [closeTransientUi, disabled]);
 
   // 添加模型选择状态
   const [selectedModel, setSelectedModel] = React.useState<string>(footerConfig.defaultModel || '');
@@ -222,6 +421,33 @@ export const MentionInput: React.FC<
       contextId: string;
     }>
   >([]);
+
+  const restoreSerializedContent = React.useCallback((content: string) => {
+    if (!editorRef.current) {
+      return;
+    }
+
+    restoreEditorContent(editorRef.current, content);
+    editorGenerationRef.current += 1;
+    prevMentionTagsRef.current = Array.from(editorRef.current.querySelectorAll(`.${styles.mention_tag}`)).map(
+      (tag) => ({
+        id: tag.getAttribute('data-id') || '',
+        type: tag.getAttribute('data-type') || '',
+        contextId: tag.getAttribute('data-context-id') || '',
+      }),
+    );
+  }, []);
+
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      getSerializedContent: () => (editorRef.current ? serializeEditorContent(editorRef.current) : ''),
+      restoreSerializedContent,
+      focus: () => focusEditorAtEnd(editorRef.current),
+      closeTransientUi,
+    }),
+    [closeTransientUi, restoreSerializedContent],
+  );
 
   const getCurrentItems = (): MentionItem[] => {
     if (mentionState.level === 0) {
@@ -293,6 +519,7 @@ export const MentionInput: React.FC<
   React.useEffect(() => {
     if (defaultInput && editorRef.current) {
       editorRef.current.textContent = defaultInput;
+      editorGenerationRef.current += 1;
       // 将光标放到末尾
       const range = document.createRange();
       const selection = window.getSelection();
@@ -395,7 +622,7 @@ export const MentionInput: React.FC<
   React.useEffect(() => {
     const handleInsertSlash = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (!editorRef.current || !detail?.nameWithSlash) {
+      if (disabled || !editorRef.current || !detail?.nameWithSlash) {
         return;
       }
 
@@ -433,12 +660,12 @@ export const MentionInput: React.FC<
     return () => {
       window.removeEventListener('opensumi-chat-input-insert-slash', handleInsertSlash);
     };
-  }, []);
+  }, [disabled]);
 
   // 监听外部打开 slash panel 的事件（如 footer "/" 按钮点击）
   React.useEffect(() => {
     const handleOpenSlashPanel = () => {
-      if (!editorRef.current) {
+      if (disabled || !editorRef.current) {
         return;
       }
 
@@ -484,7 +711,7 @@ export const MentionInput: React.FC<
     return () => {
       window.removeEventListener('opensumi-chat-input-open-slash-panel', handleOpenSlashPanel);
     };
-  }, []);
+  }, [disabled]);
 
   // 获取光标位置
   const getCursorPosition = (element: HTMLElement): number => {
@@ -501,6 +728,10 @@ export const MentionInput: React.FC<
   };
 
   const handleInput = () => {
+    if (disabled) {
+      return;
+    }
+    editorGenerationRef.current += 1;
     // 如果用户开始输入，退出历史导航模式
     if (isNavigatingHistory) {
       setIsNavigatingHistory(false);
@@ -548,6 +779,7 @@ export const MentionInput: React.FC<
 
     const selection = window.getSelection();
     if (!selection || !selection.rangeCount || !editorRef.current) {
+      onUserInput?.();
       return;
     }
 
@@ -616,6 +848,7 @@ export const MentionInput: React.FC<
       // 获取父级类型
       const parentItem = mentionItems.find((i) => i.id === mentionState.parentType);
       if (!parentItem) {
+        onUserInput?.();
         return;
       }
 
@@ -665,39 +898,41 @@ export const MentionInput: React.FC<
         editorRef.current.innerHTML = '';
       }
     }
+
+    onUserInput?.();
   };
 
   // 处理键盘事件
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    // 如果按下ESC键且提及面板处于活动状态或内联搜索处于活动状态
-    if (e.key === 'Escape' && (mentionState.active || mentionState.inlineSearchActive)) {
-      // 如果是 slash command 面板，直接关闭
-      if (mentionState.trigger === '/') {
-        setMentionState((prev) => ({
-          ...prev,
-          active: false,
-        }));
-        e.preventDefault();
+    if (disabled) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (e.key === 'Enter' && e.nativeEvent.isComposing) {
+      return;
+    }
+
+    if (e.key === 'Escape' && e.shiftKey && e.altKey) {
+      e.preventDefault();
+      onToggleExpanded?.();
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (closeTransientUi()) {
         return;
       }
-      // 如果在二级菜单，返回一级菜单
-      if (mentionState.level > 0) {
-        setMentionState((prev) => ({
-          ...prev,
-          level: 0,
-          activeIndex: 0,
-          secondLevelFilter: '',
-          inlineSearchActive: false,
-        }));
-      } else {
-        // 如果在一级菜单，完全关闭面板
-        setMentionState((prev) => ({
-          ...prev,
-          active: false,
-          inlineSearchActive: false,
-        }));
+      const selectedSlashCommand = editorRef.current?.querySelector('[data-command]');
+      if (selectedSlashCommand) {
+        selectedSlashCommand.remove();
+        onSlashSelect?.('');
+        handleInput();
+        editorRef.current?.focus();
+        return;
       }
-      e.preventDefault();
+      onEscape?.();
       return;
     }
 
@@ -764,6 +999,24 @@ export const MentionInput: React.FC<
       });
     }
 
+    const editorHasTextPayload = hasChatInputTextPayload(editorRef.current?.innerHTML);
+    const editorIsEmpty = !editorHasTextPayload && !hasSendPayload?.();
+
+    if (
+      e.key === 'ArrowUp' &&
+      !e.shiftKey &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.altKey &&
+      !mentionState.active &&
+      !mentionState.inlineSearchActive &&
+      editorIsEmpty &&
+      onEmptyArrowUp?.()
+    ) {
+      e.preventDefault();
+      return;
+    }
+
     // 处理上下方向键导航历史记录
     if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
       // 只有在非提及面板激活状态下才处理历史导航
@@ -773,8 +1026,7 @@ export const MentionInput: React.FC<
         // 检查是否应该触发历史导航
         const shouldTriggerHistory =
           // 当前内容为空
-          !currentContent ||
-          currentContent === '<br>' ||
+          (!hasChatInputTextPayload(currentContent) && !hasSendPayload?.()) ||
           // 或者当前内容与历史记录中的某一项匹配（正在浏览历史）
           (isNavigatingHistory && historyIndex >= 0 && history[history.length - 1 - historyIndex] === currentContent);
 
@@ -829,14 +1081,19 @@ export const MentionInput: React.FC<
 
     // 添加对 Enter 键的处理，只有在按下 Shift+Enter 时才允许换行
     if (e.key === 'Enter') {
-      // 检查是否是输入法的回车键
-      if (e.nativeEvent.isComposing) {
-        return; // 如果是输入法组合输入过程中的回车，不做任何处理
+      if (e.shiftKey && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleSendImmediately();
+        return;
       }
 
       if (!e.shiftKey) {
         e.preventDefault();
         if (!mentionState.active) {
+          if (editorIsEmpty && onEmptySubmit) {
+            onEmptySubmit();
+            return;
+          }
           handleSend();
           return;
         }
@@ -896,7 +1153,22 @@ export const MentionInput: React.FC<
   };
 
   const handlePaste = async (e: React.ClipboardEvent<HTMLDivElement>) => {
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
     const items = e.clipboardData.items;
+    const text = e.clipboardData.getData('text/plain');
+    const editor = editorRef.current;
+    const selection = window.getSelection();
+    const selectedRange = selection?.rangeCount ? selection.getRangeAt(0) : undefined;
+    const pasteRange =
+      editor &&
+      selectedRange &&
+      editor.contains(selectedRange.startContainer) &&
+      editor.contains(selectedRange.endContainer)
+        ? selectedRange.cloneRange()
+        : undefined;
 
     // 先收集所有图片文件
     const imageFiles: File[] = [];
@@ -912,69 +1184,53 @@ export const MentionInput: React.FC<
 
     e.preventDefault();
 
-    // 处理所有收集到的图片
-    if (imageFiles.length > 0 && onImageUpload) {
-      await onImageUpload(imageFiles);
-      return;
-    }
-
-    const text = e.clipboardData.getData('text/plain');
-
     // 处理文本，保留换行和缩进
     const processedText = text
       .replace(/\t/g, '    ')
       .replace(/\n\s*\n/g, '\n\n')
       .replace(/[ \t]+$/gm, '');
 
-    const selection = window.getSelection();
-    if (!selection || !selection.rangeCount) {
-      return;
-    }
+    if (pasteRange && selection) {
+      pasteRange.deleteContents();
 
-    const range = selection.getRangeAt(0);
-    range.deleteContents();
+      // 将处理后的文本按行分割
+      const lines = processedText.split('\n');
+      const fragment = document.createDocumentFragment();
 
-    // 将处理后的文本按行分割
-    const lines = processedText.split('\n');
-    const fragment = document.createDocumentFragment();
+      lines.forEach((line, index) => {
+        const leadingSpaces = line.match(/^ +/)?.[0].length || 0;
+        const literalLine = `${'\u00a0'.repeat(leadingSpaces)}${line.slice(leadingSpaces)}`;
+        if (literalLine) {
+          fragment.appendChild(document.createTextNode(literalLine));
+        }
 
-    lines.forEach((line, index) => {
-      // 处理行首空格，将每个空格转换为 &nbsp;
-      const processedLine = line.replace(/^[ ]+/g, (match) => {
-        const span = document.createElement('span');
-        span.innerHTML = ' '.repeat(match.length);
-        return span.innerHTML;
+        // 如果不是最后一行，添加换行符
+        if (index < lines.length - 1) {
+          fragment.appendChild(document.createElement('br'));
+        }
       });
 
-      // 创建一个临时容器来保持 HTML 内容
-      const container = document.createElement('span');
-      container.innerHTML = processedLine;
+      // 插入处理后的内容
+      const lastNode = fragment.lastChild;
+      pasteRange.insertNode(fragment);
 
-      // 将容器的内容添加到文档片段
-      while (container.firstChild) {
-        fragment.appendChild(container.firstChild);
+      // 将光标移动到插入内容的末尾
+      if (lastNode && lastNode.parentNode) {
+        const newRange = document.createRange();
+        newRange.setStartAfter(lastNode);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
       }
 
-      // 如果不是最后一行，添加换行符
-      if (index < lines.length - 1) {
-        fragment.appendChild(document.createElement('br'));
-      }
-    });
-
-    // 插入处理后的内容
-    const lastNode = fragment.lastChild;
-    range.insertNode(fragment);
-
-    // 将光标移动到插入内容的末尾
-    if (lastNode && lastNode.parentNode) {
-      const newRange = document.createRange();
-      newRange.setStartAfter(lastNode);
-      selection.removeAllRanges();
-      selection.addRange(newRange);
+      // 触发 input 事件以更新状态
+      handleInput();
     }
 
-    // 触发 input 事件以更新状态
-    handleInput();
+    // 图片上传独立于同步文本插入，避免异步完成后使用已经漂移的 selection。
+    if (imageFiles.length > 0 && onImageUpload) {
+      await onImageUpload(imageFiles);
+    }
   };
 
   // 初始化编辑器
@@ -1018,7 +1274,7 @@ export const MentionInput: React.FC<
 
   // 选择提及项目
   const handleSelectItem = (item: MentionItem, isTriggerByClick = true) => {
-    if (!editorRef.current) {
+    if (disabled || !editorRef.current) {
       return;
     }
 
@@ -1394,19 +1650,25 @@ export const MentionInput: React.FC<
   // 处理模型选择变更
   const handleModelChange = React.useCallback(
     (value: string) => {
+      if (disabled) {
+        return;
+      }
       setSelectedModel(value);
       onSelectionChange?.(value);
     },
-    [selectedModel, onSelectionChange],
+    [disabled, selectedModel, onSelectionChange],
   );
 
   // 处理 Mode 选择变更
   const handleModeChange = React.useCallback(
     (value: string) => {
+      if (disabled) {
+        return;
+      }
       setSelectedMode(value);
       onModeChange?.(value);
     },
-    [onModeChange],
+    [disabled, onModeChange],
   );
 
   const normalizedConfigOptions = React.useMemo(
@@ -1416,87 +1678,112 @@ export const MentionInput: React.FC<
 
   const handleConfigOptionChange = React.useCallback(
     (config: NormalizedConfigOption, value: string) => {
+      if (disabled) {
+        return;
+      }
       onConfigOptionChange?.(config.id, config.isBoolean ? value === 'true' : value);
     },
-    [onConfigOptionChange],
+    [disabled, onConfigOptionChange],
   );
 
-  // 修改 handleSend 函数
-  const handleSend = () => {
-    if (!editorRef.current) {
+  const handleSendWith = (send?: MentionInputSubmitHandler) => {
+    if (disabled || !editorRef.current) {
       return;
     }
 
     // 获取原始HTML内容
     const rawContent = editorRef.current.innerHTML;
-    if (!rawContent) {
+    if (!rawContent && !allowEmptySubmit && !hasSendPayload?.()) {
       return;
     }
 
-    // 创建一个临时元素来处理内容
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = rawContent;
-
-    // 查找所有提及标签并替换为对应的contextId
-    const mentionTags = tempDiv.querySelectorAll(`.${styles.mention_tag}`);
-    mentionTags.forEach((tag) => {
-      const contextId = tag.getAttribute('data-context-id');
-      if (contextId) {
-        // 替换为contextId
-        const replacement = document.createTextNode(
-          `{{${mentionKeyword}${tag.getAttribute('data-type')}:${contextId}}}`,
-        );
-        // 替换内容
-        tag.parentNode?.replaceChild(replacement, tag);
-      }
-    });
-
-    // 查找所有 slash 命令标签并替换为纯文本
-    const slashTags = tempDiv.querySelectorAll('span[data-command]');
-    slashTags.forEach((tag) => {
-      const replacement = document.createTextNode(tag.getAttribute('data-command') || tag.textContent || '');
-      tag.parentNode?.replaceChild(replacement, tag);
-    });
-
-    // 获取处理后的内容
-    let processedContent = tempDiv.innerHTML;
-    processedContent = processedContent.trim().replaceAll(WHITE_SPACE_TEXT, ' ');
-    // 添加到历史记录
-    if (rawContent) {
-      setHistory((prev) => [...prev, rawContent]);
-      // 重置历史导航状态
-      setHistoryIndex(-1);
-      setIsNavigatingHistory(false);
+    const processedContent = serializeEditorContent(editorRef.current);
+    if (!send) {
+      return;
     }
-    let sendResult: unknown;
-    if (onSend) {
-      // 传递当前选择的模型和其他配置信息
-      sendResult = onSend(processedContent, {
+    if (submitInFlightRef.current) {
+      return false;
+    }
+
+    const submittedEditor = editorRef.current;
+    const submissionGeneration = editorGenerationRef.current;
+    submitInFlightRef.current = true;
+
+    const finishAcceptedSend = (sendResult: MentionInputSubmitResult) => {
+      const accepted =
+        sendResult !== false &&
+        !(
+          typeof sendResult === 'object' &&
+          sendResult !== null &&
+          sendResult.accepted === false &&
+          sendResult.draftDisposition !== 'queued'
+        );
+      if (!accepted) {
+        return sendResult;
+      }
+      if (
+        !mountedRef.current ||
+        editorRef.current !== submittedEditor ||
+        editorGenerationRef.current !== submissionGeneration
+      ) {
+        return false;
+      }
+
+      if (rawContent) {
+        setHistory((prev) => [...prev, rawContent]);
+        setHistoryIndex(-1);
+        setIsNavigatingHistory(false);
+      }
+
+      editorRef.current.innerHTML = '';
+      prevMentionTagsRef.current = [];
+      contextService?.cleanFileContext();
+
+      editorRef.current.style.overflowY = 'hidden';
+      editorRef.current.style.height = 'auto';
+      editorGenerationRef.current += 1;
+      return sendResult;
+    };
+
+    let sendResult: ReturnType<MentionInputSubmitHandler>;
+    try {
+      sendResult = send(processedContent, {
         model: selectedModel,
         ...footerConfig,
       });
+    } catch (error) {
+      submitInFlightRef.current = false;
+      throw error;
+    }
+    if (sendResult && typeof (sendResult as PromiseLike<MentionInputSubmitResult>).then === 'function') {
+      return Promise.resolve(sendResult).then(
+        (result) => {
+          submitInFlightRef.current = false;
+          return finishAcceptedSend(result);
+        },
+        () => {
+          submitInFlightRef.current = false;
+          return false;
+        },
+      );
     }
 
-    editorRef.current.innerHTML = '';
-    prevMentionTagsRef.current = [];
-    void Promise.resolve(sendResult).then(
-      () => contextService?.cleanFileContext(),
-      () => contextService?.cleanFileContext(),
-    );
-
-    // 重置编辑器高度和滚动条
-    if (editorRef.current) {
-      editorRef.current.style.overflowY = 'hidden';
-      editorRef.current.style.height = 'auto';
-    }
+    submitInFlightRef.current = false;
+    return finishAcceptedSend(sendResult as MentionInputSubmitResult);
   };
 
+  const handleSend = () => handleSendWith(onSend);
+  const handleSendImmediately = () => handleSendWith(onSendImmediately);
+
   const handleClearContext = React.useCallback(() => {
+    if (disabled) {
+      return;
+    }
     contextService?.cleanFileContext();
-  }, [contextService]);
+  }, [contextService, disabled]);
 
   const handleTitleClick = React.useCallback(() => {
-    if (!editorRef.current) {
+    if (disabled || !editorRef.current) {
       return;
     }
 
@@ -1553,13 +1840,13 @@ export const MentionInput: React.FC<
       loading: false,
       trigger: '@',
     });
-  }, []);
+  }, [disabled]);
 
   const handleStop = React.useCallback(() => {
-    if (onStop) {
+    if (!disabled && onStop) {
       onStop();
     }
-  }, [onStop]);
+  }, [disabled, onStop]);
 
   // 渲染自定义按钮
   const renderButtons = React.useCallback(
@@ -1579,10 +1866,10 @@ export const MentionInput: React.FC<
               >
                 <EnhanceIcon
                   className={cls(getIcon('at-sign'), styles.mention_trigger_logo)}
-                  tabIndex={0}
+                  tabIndex={disabled ? -1 : 0}
                   role='button'
                   ariaLabel={button.title}
-                  onClick={handleTitleClick}
+                  onClick={disabled ? undefined : handleTitleClick}
                 />
               </Popover>
             );
@@ -1597,15 +1884,15 @@ export const MentionInput: React.FC<
             >
               <EnhanceIcon
                 className={cls(button.icon ? getIcon(button.icon) : button.iconClass, styles[`${button.id}_logo`])}
-                tabIndex={0}
+                tabIndex={disabled ? -1 : 0}
                 role='button'
                 ariaLabel={button.title}
-                onClick={button.onClick}
+                onClick={disabled ? undefined : button.onClick}
               />
             </Popover>
           );
         }),
-    [footerConfig.buttons, handleTitleClick],
+    [disabled, footerConfig.buttons, handleTitleClick],
   );
 
   const hasContext = React.useMemo(
@@ -1656,6 +1943,9 @@ export const MentionInput: React.FC<
 
   const removeContext = React.useCallback(
     (type: MentionType, uri: URI) => {
+      if (disabled) {
+        return;
+      }
       if (type === MentionType.FILE) {
         contextService?.removeFileFromContext(uri, true);
       } else if (type === MentionType.FOLDER) {
@@ -1664,7 +1954,7 @@ export const MentionInput: React.FC<
         contextService?.removeRuleFromContext(uri);
       }
     },
-    [contextService],
+    [contextService, disabled],
   );
 
   const getFileNameFromPath = (path: string) => decodeURIComponent(path.split('/').pop() || 'Unknown Rule');
@@ -1689,7 +1979,16 @@ export const MentionInput: React.FC<
             />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
+              role='button'
+              tabIndex={disabled ? -1 : 0}
+              aria-label={`Remove file context ${new URI(file.uri.toString()).displayName}`}
               onClick={() => removeContext(MentionType.FILE, file.uri)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  removeContext(MentionType.FILE, file.uri);
+                }
+              }}
             />
             <span className={styles.context_preview_item_text}>{new URI(file.uri.toString()).displayName}</span>
           </div>
@@ -1700,7 +1999,16 @@ export const MentionInput: React.FC<
             <Icon iconClass={cls(getIcon('folder'), styles.context_preview_item_icon, styles.icon)} />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
+              role='button'
+              tabIndex={disabled ? -1 : 0}
+              aria-label={`Remove folder context ${new URI(folder.uri.toString()).displayName}`}
               onClick={() => removeContext(MentionType.FOLDER, folder.uri)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  removeContext(MentionType.FOLDER, folder.uri);
+                }
+              }}
             />
             <span className={styles.context_preview_item_text}>{new URI(folder.uri.toString()).displayName}</span>
           </div>
@@ -1711,7 +2019,16 @@ export const MentionInput: React.FC<
             <Icon iconClass={cls(getIcon('rules'), styles.context_preview_item_icon, styles.icon)} />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
+              role='button'
+              tabIndex={disabled ? -1 : 0}
+              aria-label={`Remove rule context ${getFileNameFromPath(rule.path).replace('.mdc', '')}`}
               onClick={() => removeContext(MentionType.RULE, new URI(rule.path))}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  removeContext(MentionType.RULE, new URI(rule.path));
+                }
+              }}
             />
             <span className={styles.context_preview_item_text}>
               {getFileNameFromPath(rule.path).replace('.mdc', '')}
@@ -1724,9 +2041,28 @@ export const MentionInput: React.FC<
   );
 
   return (
-    <div className={cls(styles.input_container, expanded && styles.input_container_expanded)}>
+    <div
+      aria-disabled={disabled}
+      className={cls(styles.input_container, expanded && styles.input_container_expanded)}
+      onClickCapture={
+        disabled
+          ? (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          : undefined
+      }
+      onKeyDownCapture={
+        disabled
+          ? (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          : undefined
+      }
+    >
       <PermissionDialogWidget dialogManager={permissionDialogManager} bottom={optionsBottomPosition} />
-      {mentionState.active && (
+      {!disabled && mentionState.active && (
         <div ref={mentionPanelContainerRef} className={styles.mention_panel_container}>
           <MentionPanel
             items={mentionState.trigger === '/' ? getSlashItems() : getCurrentItems()}
@@ -1737,6 +2073,9 @@ export const MentionInput: React.FC<
             visible={true}
             level={mentionState.level}
             loading={mentionState.loading}
+            listId='agentic-chat-suggestion-list'
+            ariaLabel={mentionState.trigger === '/' ? 'Available commands' : 'Context suggestions'}
+            optionIdPrefix='agentic-chat-suggestion-option'
           />
         </div>
       )}
@@ -1744,7 +2083,17 @@ export const MentionInput: React.FC<
         <div
           ref={editorRef}
           className={styles.editor}
-          contentEditable={true}
+          role='textbox'
+          aria-label='Agentic chat input'
+          aria-disabled={disabled}
+          aria-multiline='true'
+          aria-autocomplete='list'
+          aria-expanded={!disabled && mentionState.active}
+          aria-controls={!disabled && mentionState.active ? 'agentic-chat-suggestion-list' : undefined}
+          aria-activedescendant={
+            !disabled && mentionState.active ? `agentic-chat-suggestion-option-${mentionState.activeIndex}` : undefined
+          }
+          contentEditable={!disabled}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
@@ -1772,7 +2121,7 @@ export const MentionInput: React.FC<
                 onChange={handleModelChange}
                 className={styles.model_selector}
                 size='small'
-                disabled={footerConfig.disableModelSelector}
+                disabled={disabled || footerConfig.disableModelSelector}
                 showThinking={footerConfig.showThinking}
                 thinkingEnabled={footerConfig.thinkingEnabled}
                 onThinkingChange={footerConfig.onThinkingChange}
@@ -1793,22 +2142,25 @@ export const MentionInput: React.FC<
                 onChange={handleModeChange}
                 className={styles.mode_selector}
                 size='small'
+                disabled={disabled}
               />,
             )}
 
           <div className={styles.config_controls}>
-            {normalizedConfigOptions.map((config) =>
-              renderModelSelectorTip(
-                <MentionSelect
-                  key={config.id}
-                  options={config.options}
-                  value={config.currentValue}
-                  onChange={(value) => handleConfigOptionChange(config, value)}
-                  className={styles.config_selector}
-                  size='small'
-                />,
-              ),
-            )}
+            {normalizedConfigOptions.map((config) => (
+              <React.Fragment key={config.id}>
+                {renderModelSelectorTip(
+                  <MentionSelect
+                    options={config.options}
+                    value={config.currentValue}
+                    onChange={(value) => handleConfigOptionChange(config, value)}
+                    className={styles.config_selector}
+                    size='small'
+                    disabled={disabled}
+                  />,
+                )}
+              </React.Fragment>
+            ))}
           </div>
 
           {footerItems
@@ -1828,17 +2180,17 @@ export const MentionInput: React.FC<
               <EnhanceIcon
                 wrapperClassName={styles.send_logo}
                 className={cls(getIcon('send-outlined'), styles.send_logo_icon)}
-                tabIndex={0}
+                tabIndex={disabled ? -1 : 0}
                 role='button'
-                onClick={handleSend}
+                onClick={disabled ? undefined : handleSend}
                 ariaLabel={'Send'}
               />
             ) : (
               <EnhanceIcon
                 wrapperClassName={styles.stop_logo}
                 className={cls(getIcon('close'), styles.stop_logo_icon)}
-                onClick={handleStop}
-                tabIndex={0}
+                onClick={disabled ? undefined : handleStop}
+                tabIndex={disabled ? -1 : 0}
                 role='button'
                 ariaLabel={'Stop'}
               />
@@ -1849,3 +2201,5 @@ export const MentionInput: React.FC<
     </div>
   );
 };
+
+export const MentionInput = React.forwardRef<MentionInputHandle, AcpMentionInputProps>(MentionInputImpl);

@@ -13,7 +13,7 @@ import {
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const SESSION_PREFIX = 'bdd-header-maximize';
-const ACTIVE_SESSION_ID = `acp:${SESSION_PREFIX}-beta`;
+const ACTIVE_TASK_TITLE = 'Agentic maximize task';
 
 let runtime: AcpBddFixtureRuntime;
 
@@ -69,30 +69,21 @@ async function getSessionState() {
   return result.result;
 }
 
-async function ensureHistoryVisible() {
-  const inline = page.locator('[data-testid="acp-chat-history-inline"]');
-  if (await inline.isVisible().catch(() => false)) {
-    return;
-  }
+async function createActiveTask(): Promise<string> {
+  const header = page.getByTestId('agentic-chat-panel-header');
+  const launcher = header.getByTestId('agentic-task-launch-button');
+  await expect(launcher).toHaveCount(1);
+  await launcher.click();
+  await expect(header.getByTestId('agentic-task-agent-menu')).toHaveCount(0);
 
-  const collapsed = page.locator('[data-testid="acp-chat-history-collapsed"]');
-  if (await collapsed.isVisible().catch(() => false)) {
-    await page.getByLabel(/Expand Chat History|展开聊天历史/).click();
-    await expect(inline).toBeVisible({ timeout: 30_000 });
-    return;
-  }
+  const input = page.locator('.AI-Chat-slot [contenteditable="true"]');
+  await expect(input).toHaveCount(1);
+  await input.click();
+  await page.keyboard.insertText(ACTIVE_TASK_TITLE);
 
-  const popoverButton = page.locator('[data-testid="acp-chat-history-button"]');
-  await expect(popoverButton).toBeVisible({ timeout: 30_000 });
-  await popoverButton.click();
-  await expect(page.locator('[data-testid="acp-chat-history-popover"]')).toBeVisible({ timeout: 30_000 });
-}
-
-async function activateSeededSession(sessionId: string) {
-  await ensureHistoryVisible();
-  const row = page.locator(`[data-testid="chat-history-item-${sessionId}"]`).first();
-  await expect(row).toBeVisible({ timeout: 30_000 });
-  await row.click();
+  const send = page.locator('.AI-Chat-slot').getByRole('button', { name: 'Send', exact: true });
+  await expect(send).toHaveCount(1);
+  await send.click();
 
   await expect
     .poll(
@@ -102,7 +93,11 @@ async function activateSeededSession(sessionId: string) {
       },
       { timeout: 30_000 },
     )
-    .toBe(sessionId);
+    .toBeTruthy();
+
+  const sessionId = (await getSessionState()).session!.sessionId;
+  await expect(page.getByTestId(`agentic-task-row-${sessionId}`)).toBeVisible({ timeout: 30_000 });
+  return sessionId;
 }
 
 async function readHeaderLayoutProof(): Promise<HeaderLayoutProof> {
@@ -217,14 +212,15 @@ test.describe('ACP Chat Agentic Header Maximize', () => {
       hardeningVerdict: 'CONVERT',
     });
 
-    await activateSeededSession(ACTIVE_SESSION_ID);
+    const activeSessionId = await createActiveTask();
     await ensureAgenticLayout(page);
 
     const before = await readHeaderLayoutProof();
-    expect(before.activeSessionTitle).toBe('BDD History beta');
-    expect(before.headerTitle).toContain('BDD History beta');
+    expect(before.activeSessionId).toBe(activeSessionId);
+    expect(before.headerTitle).toBe(ACTIVE_TASK_TITLE);
     expect(before.maximizeVisible).toBe(true);
     expect(before.maximizeWorkbenchVisibleState).toBe('true');
+    expect(before.maximizeLabel).toBe('Focus AI Chat');
     expect(before.maximizeIconClass || '').toContain('kticon-fullescreen');
     expect(before.workbenchVisible).toBe(true);
     expect(before.explorerVisible).toBe(true);
@@ -235,15 +231,19 @@ test.describe('ACP Chat Agentic Header Maximize', () => {
       'Agentic chat header title and workbench geometry before maximize',
     );
 
-    const maximizeAction = page.locator('#agentic-chat-panel-header-maximize [role="button"]').first();
+    const maximizeAction = page.locator('#agentic-chat-panel-header-maximize [role="button"]');
+    await expect(maximizeAction).toHaveCount(1);
+    await expect(maximizeAction).toHaveAttribute('aria-label', 'Focus AI Chat');
     await maximizeAction.click();
+    await expect(maximizeAction).toHaveAttribute('aria-label', 'Restore editor and Explorer');
+    await expect(page.getByTestId('agentic-chat-panel-header-title')).toHaveText(ACTIVE_TASK_TITLE);
 
     const after = await readHeaderLayoutProof();
-    expect(after.activeSessionId).toBe(ACTIVE_SESSION_ID);
-    expect(after.activeSessionTitle).toBe('BDD History beta');
-    expect(after.headerTitle).toContain('BDD History beta');
+    expect(after.activeSessionId).toBe(activeSessionId);
+    expect(after.headerTitle).toBe(ACTIVE_TASK_TITLE);
     expect(after.maximizeVisible).toBe(true);
     expect(after.maximizeWorkbenchVisibleState).toBe('false');
+    expect(after.maximizeLabel).toBe('Restore editor and Explorer');
     expect(after.maximizeIconClass || '').toContain('kticon-unfullscreen');
     expect(after.workbenchVisible).toBe(false);
     expect(after.editorVisible).toBe(false);
@@ -258,13 +258,16 @@ test.describe('ACP Chat Agentic Header Maximize', () => {
     );
 
     await maximizeAction.click();
+    await expect(maximizeAction).toHaveAttribute('aria-label', 'Focus AI Chat');
     await ensureAgenticLayout(page);
+    await expect(page.getByTestId('agentic-chat-panel-header-title')).toHaveText(ACTIVE_TASK_TITLE);
 
     const restored = await readHeaderLayoutProof();
-    expect(restored.activeSessionId).toBe(ACTIVE_SESSION_ID);
-    expect(restored.headerTitle).toContain('BDD History beta');
+    expect(restored.activeSessionId).toBe(activeSessionId);
+    expect(restored.headerTitle).toBe(ACTIVE_TASK_TITLE);
     expect(restored.maximizeVisible).toBe(true);
     expect(restored.maximizeWorkbenchVisibleState).toBe('true');
+    expect(restored.maximizeLabel).toBe('Focus AI Chat');
     expect(restored.maximizeIconClass || '').toContain('kticon-fullescreen');
     expect(restored.workbenchVisible).toBe(true);
     expect(restored.editorVisible).toBe(true);

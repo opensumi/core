@@ -202,7 +202,8 @@ export class ExampleEditorContribution implements BrowserEditorContribution {
 - `editor.revertAndClose`: 还原当前 tab 的文档，并关闭当前 tab
 - `editor.goForward`: 前进到下一个编辑器光标的历史位置
 - `editor.goBack`: 回到上一个编辑器光标的历史位置
-- `editor.pinCurrent`: 将当前 tab 固定（取消 preview 模式）
+- `editor.pinCurrent`: 保留当前 Preview Tab（取消 Preview 模式）
+- `editor.togglePinnedTab`: 固定或取消固定当前 tab
 - `editor.copyCurrentPath`: 复制当前 tab 的路径 （文件路径）
 - `editor.moveGroup`: 将当前的 tab 移到另外一个编辑器组
 - `editor.reopenClosed`: 重新打开刚刚关闭的 tab

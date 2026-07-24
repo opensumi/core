@@ -14,6 +14,7 @@ export const ACP_BDD_FIXTURES = [
   'send-failure',
   'create-failure',
   'load-failure',
+  'task-session-missing',
   'auth-required',
   'config-failure',
   'process-exit',
@@ -27,6 +28,8 @@ export type AiNativePanelLayout = 'classic' | 'agentic';
 
 export const ACP_BDD_BACKEND_READY_FAILURE_QUERY_PARAM = 'acpBddBackendReadyFailure';
 export const ACP_BDD_BACKEND_READY_FAILURE_QUERY_VALUE = 'reject';
+export const ACP_BDD_ATTACHMENT_FAILURE_QUERY_PARAM = 'acpBddAttachmentFailure';
+export const ACP_BDD_ATTACHMENT_FAILURE_QUERY_VALUE = 'reject-once';
 
 export interface AcpBddFixtureOptions {
   fixture: AcpBddFixture;
@@ -40,7 +43,9 @@ export interface AcpBddFixtureOptions {
   showChatView?: boolean;
   ensureAgenticLayout?: boolean;
   forceAcpBackendReadyFailure?: boolean;
+  forceAcpAttachmentFailure?: boolean;
   waitForModelContext?: boolean;
+  writePanelLayoutPreference?: boolean;
   viewport?: {
     width: number;
     height: number;
@@ -76,6 +81,11 @@ const AGENTIC_LAYOUT_TIMEOUT_MS = 30 * 1000;
 const AGENTIC_WORKBENCH_TOGGLE_SELECTOR = '#agentic-chat-panel-header-maximize';
 const AI_NATIVE_PANEL_LAYOUT_SETTING_ID = 'ai.native.panelLayout';
 const ACP_DELIVERY_MODE_SETTING_ID = 'ai-native.acp.deliveryMode';
+const ACP_BDD_TRANSIENT_SESSION_STORAGE_KEYS = [
+  'agentic.active-task-session.v1',
+  'agentic.pending-task-activation.v2',
+  'agentic.pending-task-launch.v2',
+] as const;
 let nextRuntimeId = 1;
 
 function assertSupportedFixture(fixture: string): asserts fixture is AcpBddFixture {
@@ -97,6 +107,18 @@ function withRuntimeDefaults(options: AcpBddFixtureOptions): AcpBddFixtureOption
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function clearAcpBddTransientSessionState(page: Page): Promise<void> {
+  if (!/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\//.test(page.url())) {
+    return;
+  }
+
+  await page.evaluate((keys) => {
+    for (const key of keys) {
+      window.sessionStorage.removeItem(key);
+    }
+  }, ACP_BDD_TRANSIENT_SESSION_STORAGE_KEYS);
 }
 
 async function acquireRuntimeLock(): Promise<() => Promise<void>> {
@@ -357,14 +379,24 @@ export function aiNativeWorkbenchUrl(
   workspaceDir: string,
   profile: WebMcpProfile = 'default',
   panelLayout: AiNativePanelLayout = 'agentic',
-  options: { forceAcpBackendReadyFailure?: boolean } = {},
+  options: {
+    forceAcpBackendReadyFailure?: boolean;
+    forceAcpAttachmentFailure?: boolean;
+    userPreferenceDirName?: string;
+  } = {},
 ): string {
   const params = new URLSearchParams({ workspaceDir, aiNative: 'true', aiPanelLayout: panelLayout });
+  if (options.userPreferenceDirName) {
+    params.set('userPreferenceDirName', options.userPreferenceDirName);
+  }
   if (profile !== 'default') {
     params.set('webMcpProfile', profile);
   }
   if (options.forceAcpBackendReadyFailure) {
     params.set(ACP_BDD_BACKEND_READY_FAILURE_QUERY_PARAM, ACP_BDD_BACKEND_READY_FAILURE_QUERY_VALUE);
+  }
+  if (options.forceAcpAttachmentFailure) {
+    params.set(ACP_BDD_ATTACHMENT_FAILURE_QUERY_PARAM, ACP_BDD_ATTACHMENT_FAILURE_QUERY_VALUE);
   }
   return `/?${params.toString()}`;
 }
@@ -385,17 +417,23 @@ export async function loadAcpBddFixtureWorkbench(
       await page.setViewportSize(runtimeOptions.viewport);
     }
 
+    await clearAcpBddTransientSessionState(page);
+
     const profile = runtimeOptions.profile || 'default';
     const panelLayout = runtimeOptions.panelLayout || 'agentic';
     workspace = new OpenSumiWorkspace(runtimeOptions.workspaceFiles || [ACP_BDD_DEFAULT_WORKSPACE]);
     await workspace.initWorksapce();
     const workspaceDir = workspace.workspace.codeUri.fsPath;
     await writeMockAcpAgentSettings(workspaceDir, runtimeOptions);
-    await writeAiNativePanelLayoutSettings(workspaceDir, panelLayout);
+    if (runtimeOptions.writePanelLayoutPreference !== false) {
+      await writeAiNativePanelLayoutSettings(workspaceDir, panelLayout);
+    }
 
     app = new OpenSumiApp(page);
     const url = aiNativeWorkbenchUrl(workspaceDir, profile, panelLayout, {
       forceAcpBackendReadyFailure: runtimeOptions.forceAcpBackendReadyFailure,
+      forceAcpAttachmentFailure: runtimeOptions.forceAcpAttachmentFailure,
+      userPreferenceDirName: workspace.userPreferenceDirName,
     });
     await page.goto(url);
     await waitForWorkbenchReady(page);
@@ -423,9 +461,32 @@ export async function loadAcpBddFixtureWorkbench(
       workspaceDir,
       url: page.url(),
       async dispose() {
-        app?.dispose();
-        workspace?.dispose();
-        await releaseLock();
+        try {
+          try {
+            await page.evaluate(async () => {
+              await (window as any).__OPENSUMI_E2E__?.disposeAcpSessions?.();
+            });
+          } catch {
+            // Best-effort: navigation below still terminates WebMCP and RPC.
+          }
+          try {
+            await clearAcpBddTransientSessionState(page);
+          } catch {
+            // Best-effort: stale sessionStorage must not retain the runtime lock.
+          } finally {
+            await page.goto('about:blank');
+          }
+        } finally {
+          try {
+            app?.dispose();
+          } finally {
+            try {
+              workspace?.dispose();
+            } finally {
+              await releaseLock();
+            }
+          }
+        }
       },
     };
   } catch (error) {

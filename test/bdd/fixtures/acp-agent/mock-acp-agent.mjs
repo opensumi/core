@@ -6,6 +6,7 @@ import { Readable, Writable } from 'node:stream';
 const DEFAULT_DELAY_MS = 40;
 const DEFAULT_LONG_STREAM_TICKS = 80;
 const PROCESS_EXIT_FIXTURE_CODE = 17;
+const TASK_SESSION_MISSING_EXIT_CODE = 18;
 
 function parseArgs(argv) {
   const options = {
@@ -74,6 +75,7 @@ Fixtures:
   send-failure      Fails deterministically during session/prompt.
   create-failure    Fails deterministically during session/new.
   load-failure      Fails deterministically during session/load.
+  task-session-missing Completes a Task, exits, then reports its Session missing after restart.
   auth-required     Raises an ACP auth-required error during session/prompt.
   config-failure    Fails deterministic session/set_config_option calls.
   process-exit      Emits prompt updates, then exits the ACP agent process.
@@ -249,6 +251,7 @@ function createAgent(conn) {
   const sessions = new Map();
   const pendingPrompts = new Map();
   let nextSessionNumber = 1;
+  let historySeedCwd;
 
   if (options.fixture === 'history' || options.fixture === 'load-failure') {
     const seeds = [
@@ -394,14 +397,25 @@ function createAgent(conn) {
     const seed = String(session.historySeed);
     const upperSeed = seed.toUpperCase();
     const toolCallId = `bdd-history-${seed}-tool`;
+    const restoredDynamicSession = seed === 'restored';
+    const userContent = restoredDynamicSession ? 'Restored Task context' : `BDD_HISTORY_USER_${upperSeed}`;
+    const thoughtContent = restoredDynamicSession
+      ? 'Restored deterministic reasoning.'
+      : `BDD_HISTORY_THOUGHT_${upperSeed}: deterministic replay.`;
+    const assistantPartOne = restoredDynamicSession
+      ? 'Restored Task response, part one.'
+      : `BDD_HISTORY_ASSISTANT_${upperSeed}_PART_1.`;
+    const assistantPartTwo = restoredDynamicSession
+      ? ' Restored Task response, part two.'
+      : ` BDD_HISTORY_ASSISTANT_${upperSeed}_PART_2.`;
 
     await emit(session.sessionId, {
       sessionUpdate: 'user_message_chunk',
-      content: text(`BDD_HISTORY_USER_${upperSeed}`),
+      content: text(userContent),
     });
     await emit(session.sessionId, {
       sessionUpdate: 'agent_thought_chunk',
-      content: text(`BDD_HISTORY_THOUGHT_${upperSeed}: deterministic replay.`),
+      content: text(thoughtContent),
     });
     await emit(session.sessionId, {
       sessionUpdate: 'plan',
@@ -412,7 +426,7 @@ function createAgent(conn) {
     });
     await emit(session.sessionId, {
       sessionUpdate: 'agent_message_chunk',
-      content: text(`BDD_HISTORY_ASSISTANT_${upperSeed}_PART_1.`),
+      content: text(assistantPartOne),
     });
     await emit(session.sessionId, {
       sessionUpdate: 'tool_call',
@@ -438,7 +452,7 @@ function createAgent(conn) {
     });
     await emit(session.sessionId, {
       sessionUpdate: 'agent_message_chunk',
-      content: text(` BDD_HISTORY_ASSISTANT_${upperSeed}_PART_2.`),
+      content: text(assistantPartTwo),
     });
     await emit(session.sessionId, {
       sessionUpdate: 'usage_update',
@@ -583,7 +597,10 @@ test/test.js
         throw RequestError.internalError({ fixture: options.fixture }, 'BDD create-session failure');
       }
 
-      const sessionId = `${options.sessionPrefix}-${nextSessionNumber++}`;
+      // The test harness may create several ACP threads for one workspace.
+      // Each thread starts a fresh mock process, so the local counter alone
+      // would otherwise return the same id from every process.
+      const sessionId = `${options.sessionPrefix}-${process.pid}-${nextSessionNumber++}`;
       const session = createSessionRecord(sessionId, params.cwd);
       sessions.set(sessionId, session);
       await emitInitialSessionUpdates(session);
@@ -592,11 +609,19 @@ test/test.js
     },
 
     async loadSession(params) {
-      if (options.fixture === 'load-failure') {
+      if (options.fixture === 'load-failure' || options.fixture === 'task-session-missing') {
         throw RequestError.resourceNotFound(params.sessionId);
       }
 
       const session = getOrCreateSession(params.sessionId, params.cwd);
+      // A real ACP Agent reloads persisted history after the browser reconnects.
+      // Dynamic fixture sessions live only in a mock process, so give an unknown
+      // history session a bounded replay payload when it is reloaded on a new
+      // process.
+      if (options.fixture === 'history' && !session.historySeed) {
+        session.historySeed = 'restored';
+        session.promptCount = 1;
+      }
       session.updatedAt = nowIso();
       await emitInitialSessionUpdates(session);
       await emitHistoryReplay(session);
@@ -605,6 +630,14 @@ test/test.js
     },
 
     async listSessions(params = {}) {
+      if ((options.fixture === 'history' || options.fixture === 'load-failure') && params.cwd && !historySeedCwd) {
+        historySeedCwd = params.cwd;
+        for (const session of sessions.values()) {
+          if (session.historySeed === 'alpha' || session.historySeed === 'beta') {
+            session.cwd = historySeedCwd;
+          }
+        }
+      }
       const allSessions = [...sessions.values()]
         .filter((session) => !params.cwd || session.cwd === params.cwd)
         .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
@@ -701,7 +734,7 @@ test/test.js
       }
 
       await runRichStream(session, promptText);
-      return {
+      const response = {
         stopReason: 'end_turn',
         usage: {
           inputTokens: Math.max(1, promptText.length),
@@ -710,6 +743,10 @@ test/test.js
           thoughtTokens: 4,
         },
       };
+      if (options.fixture === 'task-session-missing') {
+        setTimeout(() => process.exit(TASK_SESSION_MISSING_EXIT_CODE), 50);
+      }
+      return response;
     },
 
     async cancel(params) {

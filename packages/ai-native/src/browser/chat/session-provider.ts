@@ -1,4 +1,12 @@
-import { AvailableCommand, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import {
+  AcpTargetConfigRequest,
+  AvailableCommand,
+  IChatProgress,
+  IChatSessionSnapshot,
+  IHistoryChatMessage,
+  ThreadStatus,
+} from '@opensumi/ide-core-common/lib/types/ai-native';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatFollowup, IChatRequestMessage, IChatResponseErrorDetails } from '../../common';
 
@@ -21,6 +29,7 @@ export interface ISessionModel {
     message: IChatRequestMessage;
     response: {
       isCanceled: boolean;
+      isComplete?: boolean;
       responseText: string;
       responseContents: IChatProgressResponseContent[];
       responseParts: IChatProgressResponseContent[];
@@ -37,6 +46,8 @@ export interface ISessionModel {
  */
 export interface ISessionModelExtension {
   availableCommands: AvailableCommand[];
+  /** Resolved ACP process identity for a newly created session. Never persisted. */
+  acpTarget?: AcpTargetConfigRequest;
 }
 
 export interface AcpSessionModeOption {
@@ -52,6 +63,10 @@ export interface AcpSessionModelOption {
 }
 
 export type AcpSessionConfigOption = Record<string, any>;
+
+export interface SessionCreationOptions {
+  acpTarget?: AcpTargetConfigRequest;
+}
 
 /**
  * Session Provider 接口
@@ -69,10 +84,10 @@ export interface ISessionProvider {
 
   /**
    * 创建新会话
-   * @param title 可选的会话标题
+   * @param options Optional ACP session creation options
    * @returns 创建的 Session 数据
    */
-  createSession?(): Promise<ISessionModel & { extension?: ISessionModelExtension }>;
+  createSession?(options?: SessionCreationOptions): Promise<ISessionModel & { extension?: ISessionModelExtension }>;
 
   /**
    * 加载所有可用会话
@@ -87,11 +102,27 @@ export interface ISessionProvider {
    */
   loadSession(sessionId: string): Promise<ISessionModel | undefined>;
 
+  /** Observe an already loaded ACP session without starting another prompt. */
+  attachSession?(sessionId: string): Promise<SumiReadableStream<IChatProgress> | undefined>;
+
+  /** Cancel an existing ACP session, including one restored after browser reload. */
+  cancelSession?(sessionId: string): Promise<void>;
+
+  /** Release an ACP session and return its process to the reusable pool. */
+  disposeSession?(sessionId: string): Promise<void>;
+
+  /** Convert the first attachment snapshot into the browser session model. */
+  restoreSessionSnapshot?(sessionId: string, snapshot: IChatSessionSnapshot): ISessionModel | undefined;
+
   /**
    * 保存会话（可选实现）
    * @param sessions Session 数据列表
    */
   saveSessions?(sessions: ISessionModel[]): Promise<void>;
+}
+
+export function isAcpResponsePending(status: ThreadStatus | undefined): boolean {
+  return status === 'working' || status === 'auth_required';
 }
 
 /**

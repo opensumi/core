@@ -26,4 +26,8 @@ export class TerminalContextKey {
   get service() {
     return this._contextKeyService;
   }
+
+  dispose(): void {
+    this._contextKeyService.dispose();
+  }
 }

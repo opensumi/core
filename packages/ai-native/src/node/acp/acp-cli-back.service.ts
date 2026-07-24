@@ -1,5 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
+  ACP_SESSION_NOT_FOUND_ERROR_NAME,
   AvailableCommand,
   CLIENT_ID_TOKEN,
   CancellationToken,
@@ -10,6 +11,7 @@ import {
   IChatProgress,
   IChatReasoning,
   IChatSafeProgress,
+  IChatSessionSnapshot,
   IChatSessionState,
   IChatThreadStatus,
   IChatToolCall,
@@ -27,7 +29,15 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { BaseLanguageModel } from '../base-language-model';
 import { OpenAICompatibleModel } from '../openai-compatible/openai-compatible-language-model';
 
-import { AcpAgentServiceToken, AgentRequest, AgentUpdate, IAcpAgentService, SimpleMessage } from './acp-agent.service';
+import { toAgentUpdate } from './acp-agent-update-adapter';
+import {
+  AcpAgentServiceToken,
+  AgentRequest,
+  AgentSessionAttachmentUpdate,
+  AgentUpdate,
+  IAcpAgentService,
+  SimpleMessage,
+} from './acp-agent.service';
 import { getAcpErrorMessage, normalizeAcpError } from './acp-error';
 import { AcpThreadStatusCallerServiceToken } from './acp-thread-status-caller.service';
 
@@ -121,6 +131,10 @@ export class AcpCliBackService implements IAIBackService {
   private isDisposing = false;
 
   private threadStatusDisposable: any;
+
+  private requestStreams = new Set<SumiReadableStream<IChatProgress>>();
+
+  private attachmentStreams = new Set<SumiReadableStream<IChatProgress>>();
 
   async getOpenSumiMcpServerConnection() {
     return this.agentService.getOpenSumiMcpServerConnection(this.clientId);
@@ -406,6 +420,8 @@ ${input}`;
     );
     this.ensureThreadStatusSubscription();
     const stream = new SumiReadableStream<IChatProgress>();
+    this.requestStreams.add(stream);
+    stream.onEnd(() => this.requestStreams.delete(stream));
     this.setupAgentStream(options.agentSessionConfig!, input, options, stream, cancelToken);
     return stream;
   }
@@ -450,7 +466,29 @@ ${input}`;
       );
 
       const agentStream = this.agentService.sendMessage(request, config);
+      if (!this.requestStreams.has(stream)) {
+        agentStream.end();
+        return;
+      }
       const toolCallCache = new Map<string, IChatToolCall>();
+      const connectionDisposables: Array<{ dispose(): void }> = [];
+      let connectionCleanedUp = false;
+      const cleanupConnection = () => {
+        if (connectionCleanedUp) {
+          return;
+        }
+        connectionCleanedUp = true;
+        connectionDisposables.splice(0).forEach((disposable) => disposable.dispose());
+        this.requestStreams.delete(stream);
+        agentStream.end();
+      };
+      const registerConnectionDisposable = (disposable: { dispose(): void }) => {
+        if (connectionCleanedUp) {
+          disposable.dispose();
+        } else {
+          connectionDisposables.push(disposable);
+        }
+      };
       const deliveryMode = this.getAcpDeliveryMode(options);
       const lastThreadStatusRef: { current?: ThreadStatus } = {};
       let agentUpdateCount = 0;
@@ -462,18 +500,23 @@ ${input}`;
         lastEmittedAt: 0,
       };
 
-      cancelToken?.onCancellationRequested(async () => {
-        this.logger.warn(
-          `[ACP Back] setupAgentStream: cancellation requested, sessionId=${sessionId}, requestId=${
-            options.requestId ?? '(empty)'
-          }`,
+      if (cancelToken) {
+        registerConnectionDisposable(
+          cancelToken.onCancellationRequested(async () => {
+            this.logger.warn(
+              `[ACP Back] setupAgentStream: cancellation requested, sessionId=${sessionId}, requestId=${
+                options.requestId ?? '(empty)'
+              }`,
+            );
+            discardedByCancellation = true;
+            await this.agentService.cancelRequest(sessionId);
+            stream.end();
+          }),
         );
-        discardedByCancellation = true;
-        await this.agentService.cancelRequest(sessionId);
-        stream.end();
-      });
+      }
 
-      agentStream.onData((update: AgentUpdate) => {
+      registerConnectionDisposable(stream.onEnd(cleanupConnection));
+      const agentDataDisposable = agentStream.onData((update: AgentUpdate) => {
         agentUpdateCount += 1;
         const shouldLogUpdate =
           !hasLoggedFirstContent || (update.type !== 'message' && update.type !== 'thought' && update.type !== 'done');
@@ -537,17 +580,23 @@ ${input}`;
           stream.end();
         }
       });
+      registerConnectionDisposable(agentDataDisposable);
 
-      agentStream.onError((error) => {
-        this.logger.error(
-          `[ACP Back] agentStream onError: sessionId=${request.sessionId}, requestId=${
-            options.requestId ?? '(empty)'
-          }, updates=${agentUpdateCount}`,
-          error,
-        );
-        stream.emitError(normalizeAcpError(error));
-      });
+      registerConnectionDisposable(
+        agentStream.onError((error) => {
+          this.logger.error(
+            `[ACP Back] agentStream onError: sessionId=${request.sessionId}, requestId=${
+              options.requestId ?? '(empty)'
+            }, updates=${agentUpdateCount}`,
+            error,
+          );
+          cleanupConnection();
+          stream.emitError(normalizeAcpError(error));
+        }),
+      );
+      registerConnectionDisposable(agentStream.onEnd(cleanupConnection));
     } catch (error) {
+      this.requestStreams.delete(stream);
       this.logger.error(
         `[ACP Back] setupAgentStream catch: sessionId=${options.sessionId ?? '(empty)'}, requestId=${
           options.requestId ?? '(empty)'
@@ -748,6 +797,94 @@ ${input}`;
     }
   }
 
+  async attachSession(sessionId: string): Promise<SumiReadableStream<IChatProgress>> {
+    const output = new SumiReadableStream<IChatProgress>();
+    const attachment = this.agentService.attachSession(sessionId);
+    const toolCallCache = new Map<string, IChatToolCall>();
+    const disposables: Array<{ dispose(): void }> = [];
+    let cleanedUp = false;
+
+    const cleanup = (endAttachment: boolean) => {
+      if (cleanedUp) {
+        return;
+      }
+      cleanedUp = true;
+      disposables.splice(0).forEach((disposable) => disposable.dispose());
+      this.attachmentStreams.delete(output);
+      if (endAttachment) {
+        attachment.end();
+      }
+    };
+
+    const register = (factory: () => { dispose(): void }) => {
+      const disposable = factory();
+      if (cleanedUp) {
+        disposable.dispose();
+      } else {
+        disposables.push(disposable);
+      }
+    };
+
+    const primeToolCallCache = (snapshot: AgentSessionAttachmentUpdate & { type: 'snapshot' }) => {
+      for (const notification of snapshot.snapshot.historyUpdates) {
+        const updates = toAgentUpdate(notification);
+        const normalizedUpdates = Array.isArray(updates) ? updates : updates ? [updates] : [];
+        normalizedUpdates.forEach((update) => this.convertAgentUpdateToChatProgress(update, toolCallCache));
+      }
+    };
+
+    this.attachmentStreams.add(output);
+    register(() => output.onEnd(() => cleanup(true)));
+    register(() =>
+      attachment.onData((attachmentUpdate) => {
+        if (attachmentUpdate.type === 'snapshot') {
+          primeToolCallCache(attachmentUpdate);
+          const snapshot: IChatSessionSnapshot = {
+            kind: 'sessionSnapshot',
+            sessionId: attachmentUpdate.snapshot.sessionId,
+            threadStatus: attachmentUpdate.snapshot.threadStatus,
+            historyUpdates: attachmentUpdate.snapshot.historyUpdates,
+            modes: attachmentUpdate.snapshot.modes,
+            currentModeId: attachmentUpdate.snapshot.currentModeId,
+            models: attachmentUpdate.snapshot.models,
+            currentModelId: attachmentUpdate.snapshot.currentModelId,
+            configOptions: attachmentUpdate.snapshot.configOptions,
+          };
+          output.emitData(snapshot);
+          return;
+        }
+
+        const update = attachmentUpdate.update;
+        if (update.type === 'thread_status' && update.threadStatus) {
+          output.emitData({
+            kind: 'threadStatus',
+            threadStatus: update.threadStatus,
+            sessionId: update.sessionId || sessionId,
+          });
+          return;
+        }
+
+        const progress = this.convertAgentUpdateToChatProgress(update, toolCallCache);
+        if (progress) {
+          output.emitData(progress);
+        }
+      }),
+    );
+    register(() =>
+      attachment.onEnd(() => {
+        cleanup(false);
+        output.end();
+      }),
+    );
+    register(() =>
+      attachment.onError((error) => {
+        cleanup(false);
+        output.emitError(error);
+      }),
+    );
+    return output;
+  }
+
   async loadAgentSession(config: AgentProcessConfig, sessionId: string) {
     try {
       const result = await this.agentService.loadSession(sessionId, config);
@@ -760,13 +897,23 @@ ${input}`;
         models: result.models,
         currentModelId: result.currentModelId,
         configOptions: result.configOptions,
+        threadStatus: result.threadStatus,
+        historyUpdates: result.historyUpdates,
       };
     } catch (error) {
       const errorMessage = getAcpErrorMessage(error);
       this.logger.error(`Failed to load session ${sessionId}:`, errorMessage);
 
       // 抛出错误，让调用方感知实际错误
-      throw new Error(`Failed to load session ${sessionId}: ${errorMessage}`);
+      const wrappedError = new Error(`Failed to load session ${sessionId}: ${errorMessage}`);
+      if (
+        error &&
+        typeof error === 'object' &&
+        (error as { name?: unknown }).name === ACP_SESSION_NOT_FOUND_ERROR_NAME
+      ) {
+        wrappedError.name = ACP_SESSION_NOT_FOUND_ERROR_NAME;
+      }
+      throw wrappedError;
     }
   }
 
@@ -841,6 +988,11 @@ ${input}`;
     return this.agentService.createSession(config);
   }
 
+  async warmUpAgentPool(config: AgentProcessConfig): Promise<void> {
+    this.logger.log(`[ACP Back] warmUpAgentPool called, cwd=${config?.cwd}`);
+    await this.agentService.warmUpAgentPool(config);
+  }
+
   async listSessions(config: AgentProcessConfig): Promise<ListSessionsResponse> {
     this.logger.log(`[ACP Back] listSessions called, cwd=${config?.cwd}`);
     return this.agentService.listSessions(config?.cwd ? { cwd: config.cwd } : undefined, config);
@@ -851,7 +1003,12 @@ ${input}`;
       return;
     }
     this.isDisposing = true;
-    await this.agentService.dispose();
+    Array.from(this.requestStreams).forEach((stream) => stream.end());
+    this.requestStreams.clear();
+    Array.from(this.attachmentStreams).forEach((stream) => stream.end());
+    this.attachmentStreams.clear();
+    this.threadStatusDisposable?.dispose();
+    this.threadStatusDisposable = undefined;
   }
 
   /**

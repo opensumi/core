@@ -9,6 +9,7 @@ const mockToggleSlot = jest.fn();
 const mockPreferenceServiceToken = Symbol('PreferenceService');
 let panelLayoutChangeListener: ((mode: 'classic' | 'agentic') => void) | undefined;
 let agenticWorkbenchVisible = true;
+let agenticWorkbenchWidthConstrained = false;
 const agenticWorkbenchVisibilityListeners = new Set<(visible: boolean) => void>();
 
 jest.mock('@opensumi/ide-core-browser', () => {
@@ -62,10 +63,20 @@ jest.mock('@opensumi/ide-core-browser', () => {
             panelLayoutChangeListener = listener;
             return { dispose: jest.fn() };
           },
-          isAgenticWorkbenchVisible: () => (panelLayoutMode === 'agentic' ? agenticWorkbenchVisible : undefined),
+          isAgenticWorkbenchVisible: () =>
+            panelLayoutMode === 'agentic' ? agenticWorkbenchVisible && !agenticWorkbenchWidthConstrained : undefined,
           onDidChangeAgenticWorkbenchVisibility: (listener: (visible: boolean) => void) => {
             agenticWorkbenchVisibilityListeners.add(listener);
             return { dispose: () => agenticWorkbenchVisibilityListeners.delete(listener) };
+          },
+          setAgenticWorkbenchWidthConstrained: (constrained: boolean) => {
+            const previousVisible = agenticWorkbenchVisible && !agenticWorkbenchWidthConstrained;
+            agenticWorkbenchWidthConstrained = constrained;
+            const nextVisible = agenticWorkbenchVisible && !agenticWorkbenchWidthConstrained;
+            if (previousVisible !== nextVisible) {
+              agenticWorkbenchVisibilityListeners.forEach((listener) => listener(nextVisible));
+            }
+            return nextVisible;
           },
         };
       }
@@ -191,6 +202,8 @@ describe('AILayout BDD', () => {
     storedLayouts = {};
     panelLayoutChangeListener = undefined;
     agenticWorkbenchVisible = false;
+    agenticWorkbenchWidthConstrained = false;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1366, writable: true });
     agenticWorkbenchVisibilityListeners.clear();
     mockToggleSlot.mockClear();
     container = document.createElement('div');
@@ -343,6 +356,28 @@ describe('AILayout BDD', () => {
 
     expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat', 'main-horizontal-agentic']);
     expect(getSplitChildIds('main-horizontal-agentic')).toEqual(['main-vertical-agentic', 'view']);
+  });
+
+  it('在窄桌面视口渲染 Agentic Layout 时，应临时折叠工作台并在宽度恢复后重新显示', async () => {
+    panelLayoutMode = 'agentic';
+    agenticWorkbenchVisible = true;
+    window.innerWidth = 1280;
+    const { AILayout } = await import('../../src/browser/layout/ai-layout');
+
+    await act(async () => {
+      root.render(<AILayout />);
+      await Promise.resolve();
+    });
+
+    expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat']);
+
+    await act(async () => {
+      window.innerWidth = 1366;
+      window.dispatchEvent(new Event('resize'));
+      await Promise.resolve();
+    });
+
+    expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat', 'main-horizontal-agentic']);
   });
 
   it('Given agentic layout, when dragging the AI split handle, then the workbench is the flex-grow resize target', async () => {

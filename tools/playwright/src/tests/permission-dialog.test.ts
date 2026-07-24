@@ -1,6 +1,7 @@
 // Source: test/bdd/permission-dialog.scenario.md
 // Source: test/bdd/acp-chat-agentic-permission-during-send.scenario.md
 // Source: test/bdd/acp-permission-routing.scenario.md
+// Source: test/bdd/acp-chat-agentic-keyboard-a11y.scenario.md
 
 import { expect } from '@playwright/test';
 
@@ -104,6 +105,10 @@ async function sendPermissionPrompt(prompt: string) {
   await page.getByRole('button', { name: 'Send' }).click();
 }
 
+function activeSessionPermissionAttention(sessionId: string) {
+  return page.locator(`[data-testid="agentic-task-attention-acp:${sessionId}"]`);
+}
+
 async function waitForPendingPermission(): Promise<PermissionStateResult> {
   await expect(permissionDialog()).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(PERMISSION_TITLE_SELECTOR)).toBeVisible();
@@ -125,14 +130,18 @@ async function waitForPendingPermission(): Promise<PermissionStateResult> {
   const titleText = (await page.locator(PERMISSION_TITLE_SELECTOR).textContent()) || '';
   expect(titleText.trim().length).toBeGreaterThan(0);
 
-  await expect(
-    page.locator(`[data-testid="acp-permission-pending-acp:${pendingState.result.activeSessionId}"]`),
-  ).toBeVisible({ timeout: 10_000 });
+  const attention = activeSessionPermissionAttention(pendingState.result.activeSessionId!);
+  await expect(attention).toBeVisible({ timeout: 10_000 });
+  await expect(attention).toHaveAttribute('data-agentic-task-meta-kind', 'permission');
+  await expect(attention.locator('xpath=ancestor::button')).toHaveAttribute(
+    'aria-label',
+    /Status: Permission required/,
+  );
 
   return pendingState;
 }
 
-async function waitForPermissionDismissed() {
+async function waitForPermissionDismissed(sessionId: string) {
   await expect(permissionDialog()).toBeHidden({ timeout: 30_000 });
   await expect.poll(async () => (await readPermissionState()).result.activeDialogCount, { timeout: 30_000 }).toBe(0);
   await expect
@@ -142,6 +151,7 @@ async function waitForPermissionDismissed() {
   await expect(chatInput()).toBeEditable({ timeout: 30_000 });
   await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
   await expect.poll(async () => page.title(), { timeout: 10_000 }).not.toMatch(PERMISSION_TAB_TITLE_PREFIX);
+  await expect(activeSessionPermissionAttention(sessionId)).toBeHidden({ timeout: 10_000 });
 }
 
 async function readVisiblePermissionProof() {
@@ -162,13 +172,13 @@ async function readVisiblePermissionProof() {
     tabTitle,
     tabTitlePermissionCount: tabTitleMatch ? Number(tabTitleMatch[1]) : null,
     tabTitleHasPermissionPrefix: Boolean(tabTitleMatch),
-    activeSessionBadgeVisible: state.result.activeSessionId
-      ? await page.locator(`[data-testid="acp-permission-pending-acp:${state.result.activeSessionId}"]`).isVisible()
+    activeSessionPermissionAttentionVisible: state.result.activeSessionId
+      ? await activeSessionPermissionAttention(state.result.activeSessionId).isVisible()
       : false,
   };
 }
 
-test.describe('Permission dialog deterministic observability', () => {
+test.describe('权限对话框确定性可观测性', () => {
   test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
 
   test.beforeEach(async () => {
@@ -181,9 +191,7 @@ test.describe('Permission dialog deterministic observability', () => {
     runtime = undefined;
   });
 
-  test('Permission dialog closes through the visible close control without ACP decision tools', async ({
-    browser: _browser,
-  }, testInfo) => {
+  test('不暴露 ACP 决策工具时，可通过可见关闭按钮关闭权限对话框', async ({ browser: _browser }, testInfo) => {
     const evidence = createBddEvidence(testInfo, 'permission-dialog-close', {
       sourceScenario: PERMISSION_SOURCE_SCENARIOS.join(', '),
       profile: 'full',
@@ -204,13 +212,13 @@ test.describe('Permission dialog deterministic observability', () => {
       dialogVisible: true,
       titleHasVisibleText: true,
       closeVisible: true,
-      activeSessionBadgeVisible: true,
+      activeSessionPermissionAttentionVisible: true,
       tabTitleHasPermissionPrefix: true,
       tabTitlePermissionCount: pendingState.result.activeDialogCount,
     });
 
     await page.locator(PERMISSION_CLOSE_SELECTOR).click();
-    await waitForPermissionDismissed();
+    await waitForPermissionDismissed(pendingState.result.activeSessionId!);
     const afterDismiss = await readPermissionState();
     expectPermissionStateMetadataOnly(afterDismiss);
     expect(afterDismiss.result.activeDialogCount).toBe(baseline.result.activeDialogCount);
@@ -269,9 +277,7 @@ test.describe('Permission dialog deterministic observability', () => {
     });
   });
 
-  test('Permission dialog rejects through the visible reject control without ACP decision tools', async ({
-    browser: _browser,
-  }, testInfo) => {
+  test('不暴露 ACP 决策工具时，可通过可见拒绝按钮拒绝权限请求', async ({ browser: _browser }, testInfo) => {
     const evidence = createBddEvidence(testInfo, 'permission-dialog-reject', {
       sourceScenario: PERMISSION_SOURCE_SCENARIOS.join(', '),
       profile: 'full',
@@ -292,14 +298,14 @@ test.describe('Permission dialog deterministic observability', () => {
       dialogVisible: true,
       titleHasVisibleText: true,
       rejectVisible: true,
-      activeSessionBadgeVisible: true,
+      activeSessionPermissionAttentionVisible: true,
       tabTitleHasPermissionPrefix: true,
       tabTitlePermissionCount: pendingState.result.activeDialogCount,
     });
     expect(pendingProof.rejectOptionCount).toBeGreaterThanOrEqual(1);
 
     await page.locator(PERMISSION_REJECT_SELECTOR).first().click();
-    await waitForPermissionDismissed();
+    await waitForPermissionDismissed(pendingState.result.activeSessionId!);
     const afterDismiss = await readPermissionState();
     expectPermissionStateMetadataOnly(afterDismiss);
     expect(afterDismiss.result.activeDialogCount).toBe(baseline.result.activeDialogCount);

@@ -13,6 +13,9 @@ interface MentionPanelProps {
   visible: boolean;
   level: number;
   loading?: boolean;
+  listId?: string;
+  ariaLabel?: string;
+  optionIdPrefix?: string;
 }
 
 export const MentionPanel: React.FC<MentionPanelProps> = ({
@@ -24,6 +27,9 @@ export const MentionPanel: React.FC<MentionPanelProps> = ({
   visible,
   level,
   loading = false,
+  listId = 'chat-suggestion-list',
+  ariaLabel = 'Chat suggestions',
+  optionIdPrefix = 'chat-suggestion-option',
 }) => {
   const panelRef = React.useRef<HTMLDivElement>(null);
 
@@ -70,13 +76,14 @@ export const MentionPanel: React.FC<MentionPanelProps> = ({
   return (
     <div ref={panelRef} className={styles.mention_panel} style={{ top: position.top, left: position.left }}>
       {loading && <div className={styles.loading_bar}></div>}
-      {items.length > 0 ? (
-        <ul className={styles.mention_list}>
-          {items.map((item, index) => (
+      {filteredItems.length > 0 ? (
+        <ul id={listId} aria-label={ariaLabel} className={styles.mention_list} role='listbox'>
+          {filteredItems.map((item, index) => (
             <MentionItem
               key={item.id}
               item={item}
               isActive={index === activeIndex}
+              optionId={`${optionIdPrefix}-${index}`}
               onClick={() => onSelectItem(item, true)}
             />
           ))}

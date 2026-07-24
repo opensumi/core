@@ -290,6 +290,22 @@ describe('AIPanelLayoutService', () => {
     expect(service.isAgenticWorkbenchVisible()).toBe(true);
   });
 
+  it('should temporarily hide a requested Agentic workbench while viewport width is constrained', () => {
+    const { service } = createService({ inspectValue: { globalValue: 'agentic' } });
+    const listener = jest.fn();
+    service.onDidChangeAgenticWorkbenchVisibility(listener);
+    service.toggleAgenticWorkbenchVisibility(true);
+    listener.mockClear();
+
+    expect(service.setAgenticWorkbenchWidthConstrained(true)).toBe(false);
+    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+    expect(listener).toHaveBeenCalledWith(false);
+
+    expect(service.setAgenticWorkbenchWidthConstrained(false)).toBe(true);
+    expect(service.isAgenticWorkbenchVisible()).toBe(true);
+    expect(listener).toHaveBeenLastCalledWith(true);
+  });
+
   it('should reveal hidden agentic workbench when a foreground editor target opens', async () => {
     const { service, workbenchEditorService } = createService({ inspectValue: { globalValue: 'agentic' } });
 
