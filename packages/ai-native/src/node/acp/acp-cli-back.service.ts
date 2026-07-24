@@ -958,7 +958,6 @@ ${input}`;
   }
 
   async disposeSession(sessionId: string): Promise<void> {
-    await this.cancelSession(sessionId);
     try {
       await this.agentService.disposeSession(sessionId);
     } catch (error) {
@@ -983,14 +982,23 @@ ${input}`;
     }
   }
 
-  async createSession(config: AgentProcessConfig) {
+  async createSession(config: AgentProcessConfig, operationId?: string) {
     this.logger.log('[ACP Back] createSession called');
-    return this.agentService.createSession(config);
+    return operationId ? this.agentService.createSession(config, operationId) : this.agentService.createSession(config);
+  }
+
+  async cancelSessionCreation(operationId: string): Promise<void> {
+    await this.agentService.cancelSessionCreation(operationId);
   }
 
   async warmUpAgentPool(config: AgentProcessConfig): Promise<void> {
     this.logger.log(`[ACP Back] warmUpAgentPool called, cwd=${config?.cwd}`);
     await this.agentService.warmUpAgentPool(config);
+  }
+
+  async setAcpStandbyTarget(config?: AgentProcessConfig): Promise<void> {
+    this.logger.log(`[ACP Back] setAcpStandbyTarget called, cwd=${config?.cwd ?? '(cleared)'}`);
+    await this.agentService.setStandbyTarget(config);
   }
 
   async listSessions(config: AgentProcessConfig): Promise<ListSessionsResponse> {

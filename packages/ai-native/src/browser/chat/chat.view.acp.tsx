@@ -5,6 +5,7 @@ import { MessageList } from 'react-chat-elements';
 import {
   AINativeConfigService,
   AppConfig,
+  COMMON_COMMANDS,
   LabelService,
   getIcon,
   localize,
@@ -14,6 +15,7 @@ import {
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
+  ACP_THREAD_POOL_SATURATED_ERROR_NAME,
   AIServiceType,
   ActionSourceEnum,
   ActionTypeEnum,
@@ -35,6 +37,7 @@ import {
   path,
   uuid,
 } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMessageService } from '@opensumi/ide-overlay';
 import 'react-chat-elements/dist/main.css';
@@ -106,6 +109,7 @@ interface AcpQueuedTurnPortCallbacks {
   getStatus(sessionId: string | undefined): 'idle' | 'generating';
   start(sessionId: string | undefined, draft: AcpTurnDraft, assertRuntimeActive: () => void): Promise<StartedAcpTurn>;
   requestCancellation(sessionId: string | undefined): Promise<void>;
+  cancelPendingStart(sessionId: string | undefined): Promise<void>;
   didFinish(started: StartedAcpTurn): void;
 }
 
@@ -274,6 +278,7 @@ export const AIChatViewACPContent = () => {
       throw new Error('ACP queued turn port is not ready.');
     },
     requestCancellation: async () => undefined,
+    cancelPendingStart: async () => undefined,
     didFinish: () => undefined,
   });
   const queuedTurnRuntime = React.useMemo(() => {
@@ -353,6 +358,12 @@ export const AIChatViewACPContent = () => {
           await activeTurn.observer.outcome;
         }
       },
+      cancelPendingStart: async (sessionId) => {
+        if (!active || sessionId !== undefined) {
+          throw new Error('ACP first-launch cancellation is no longer available.');
+        }
+        await queuedTurnPortCallbacksRef.current.cancelPendingStart(sessionId);
+      },
     };
     queuedTurns = new AcpQueuedTurnModule(port);
     return {
@@ -362,6 +373,9 @@ export const AIChatViewACPContent = () => {
         active = true;
       },
       teardown: () => {
+        if (queuedTurns.snapshot.initialStartPending) {
+          void queuedTurns.cancelInitialStart();
+        }
         active = false;
         generation += 1;
         queuedTurns.deactivate();
@@ -1003,8 +1017,11 @@ export const AIChatViewACPContent = () => {
       try {
         sessionModel = await aiChatService.ensureSessionModel();
       } catch (error) {
-        messageService.error(`Failed to create session. (${getErrorMessage(error)})`);
-        return undefined;
+        const errorName = error instanceof Error ? error.name : undefined;
+        if (errorName !== ACP_THREAD_POOL_SATURATED_ERROR_NAME && errorName !== 'ACP_SESSION_CREATION_CANCELLED') {
+          messageService.error(`Failed to create session. (${getErrorMessage(error)})`);
+        }
+        throw error;
       }
       sessionGuard?.(sessionModel.sessionId);
 
@@ -1057,13 +1074,36 @@ export const AIChatViewACPContent = () => {
       });
 
       sessionGuard?.();
+      let requestAccepted = false;
+      let resolveRequestAccepted!: () => void;
+      const requestAcceptance = new Promise<void>((resolve) => {
+        resolveRequestAccepted = resolve;
+      });
+      let sendResult: Promise<void>;
       try {
-        void Promise.resolve(aiChatService.sendRequest(request)).catch((error) => {
+        sendResult = Promise.resolve(
+          aiChatService.sendRequest(request, false, () => {
+            requestAccepted = true;
+            resolveRequestAccepted();
+          }),
+        );
+        void sendResult.catch((error) => {
           completeResponseWithError(request.response, error);
         });
       } catch (error) {
+        sendResult = Promise.reject(error);
+        void sendResult.catch(() => undefined);
         completeResponseWithError(request.response, error);
       }
+
+      await Promise.race([
+        requestAcceptance,
+        sendResult.then(() => {
+          if (!requestAccepted) {
+            throw new Error(request.response.errorDetails?.message || 'ACP request ended before it was accepted.');
+          }
+        }),
+      ]);
 
       sessionGuard?.();
       const msgId = activeHistory.addAssistantMessage({
@@ -1252,6 +1292,9 @@ export const AIChatViewACPContent = () => {
       }
       await aiChatService.cancelRequest();
     },
+    cancelPendingStart: async () => {
+      await aiChatService.cancelPendingSessionCreation();
+    },
     didFinish: (started) => {
       const activeSessionId = aiChatService.sessionModel?.sessionId;
       if (activeSessionId === undefined || activeSessionId === started.sessionId) {
@@ -1396,7 +1439,21 @@ export const AIChatViewACPContent = () => {
   }, []);
 
   const handleQueuedTurnsResume = React.useCallback(() => {
+    if (queuedTurns.snapshot.pauseError?.name === 'ACP_THREAD_POOL_SATURATED') {
+      const latestDraft = mainInputHandleRef.current?.getDraft?.() || aiChatService.getInputDraft();
+      if (latestDraft) {
+        queuedTurns.replaceFailedStartDraft(latestDraft);
+      }
+    }
     void queuedTurns.resume();
+  }, [aiChatService, queuedTurns]);
+
+  const handleCancelInitialStart = React.useCallback(() => {
+    void queuedTurns.cancelInitialStart().then((result) => {
+      if (result.accepted) {
+        mainInputHandleRef.current?.focus?.();
+      }
+    });
   }, [queuedTurns]);
 
   const handleCloseChatView = React.useCallback(() => {
@@ -1577,6 +1634,13 @@ export const AIChatViewACPContent = () => {
               onDelete={(id) => void handleQueuedTurnDelete(id)}
               onImmediateSend={(id) => void handleQueuedTurnImmediate(id)}
               onEditorReady={handleQueuedEditorReady}
+              onOpenCapacitySettings={() =>
+                void commandService.executeCommand(
+                  COMMON_COMMANDS.OPEN_PREFERENCES.id,
+                  AINativeSettingSectionsId.AcpThreadPoolSize,
+                )
+              }
+              onCancelInitialStart={handleCancelInitialStart}
             />
             <div className={styles.header_operate}>
               {/* 定制需求。不需要透出shortcut*/}

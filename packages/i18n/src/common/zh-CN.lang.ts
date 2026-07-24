@@ -1327,6 +1327,18 @@ export const localizationBundle = {
     'aiNative.chat.acp.threadPoolSaturated': 'ACP 并发任务已达到配置上限。请切换到或停止一个活动任务，然后重试。',
     'aiNative.chat.acp.threadPoolSaturated.withLimit':
       'ACP 并发任务已达到配置上限（{0}）。请切换到或停止一个活动任务，然后重试。',
+    'aiNative.chat.acp.preparingTask': '正在准备任务…',
+    'aiNative.chat.acp.startingTask': '正在启动任务…',
+    'aiNative.chat.acp.slowTaskStart': '任务启动时间比平时更长。你可以继续等待，也可以取消。',
+    'aiNative.chat.acp.cancelTaskStart': '取消',
+    'aiNative.chat.acp.capacityFull':
+      '暂时无法启动任务：可同时运行的 Agent 任务已达到上限，当前没有可复用的 Agent。你的任务草稿和未发送内容已保留。请等待正在运行的任务结束后重试，或在设置中提高 ACP 进程上限。',
+    'aiNative.chat.acp.capacityFull.withLimit':
+      '暂时无法启动任务：可同时运行的 Agent 任务已达到上限（{0}），当前没有可复用的 Agent。你的任务草稿和未发送内容已保留。请等待正在运行的任务结束后重试，或在设置中提高 ACP 进程上限。',
+    'aiNative.chat.acp.capacityRetry': '重试',
+    'aiNative.chat.acp.capacityOpenSettings': '打开设置',
+    'preference.ai-native.acp.threadPoolSize.description':
+      'ACP Agent 进程总上限，由活动任务、历史会话恢复、预热和空闲热进程共同使用。即使 Agentic Layout 隐藏，空闲热进程仍可能保留；提高上限会占用更多系统资源。',
     'aiNative.acp.permissionPending': '权限请求等待中',
     'aiNative.chat.ai.assistant.limit.message': '{0} 条最早的消息因输入 Tokens 限制而被丢弃',
     'aiNative.inlineDiff.acceptAll': '接受全部',

@@ -318,13 +318,21 @@ export interface IAIBackService<
 
   listSessions?(config: AgentProcessConfig): Promise<ListSessionsResponse>;
 
-  createSession?(config: AgentProcessConfig): Promise<AgentSessionCreateResult>;
+  createSession?(config: AgentProcessConfig, operationId?: string): Promise<AgentSessionCreateResult>;
+
+  cancelSessionCreation?(operationId: string): Promise<void>;
 
   /**
    * Start and initialize idle ACP agent processes for the supplied runtime configuration.
    * This does not create an ACP session.
    */
   warmUpAgentPool?(config: AgentProcessConfig): Promise<void>;
+
+  /**
+   * Declare the latest ACP standby target. Passing undefined clears it.
+   * The Node service owns reconciliation and process-pool capacity.
+   */
+  setAcpStandbyTarget?(config?: AgentProcessConfig): Promise<void>;
 
   setSessionMode?(sessionId: string, modeId: string): Promise<void>;
   setSessionConfigOption?(sessionId: string, configId: string, value: boolean | string): Promise<void>;
@@ -526,6 +534,11 @@ export interface IChatSafeProgress {
   kind: 'safeProgress';
 }
 
+export interface IChatRequestAccepted {
+  kind: 'requestAccepted';
+  sessionId: string;
+}
+
 /**
  * Thread status for ACP agent sessions.
  * Mirrors the server-side AcpThread ThreadStatus type.
@@ -563,6 +576,7 @@ export type IChatProgress =
   | IChatToolContent
   | IChatReasoning
   | IChatSafeProgress
+  | IChatRequestAccepted
   | IChatThreadStatus
   | IChatSessionState
   | IChatSessionSnapshot;

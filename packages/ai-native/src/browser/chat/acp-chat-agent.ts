@@ -211,6 +211,7 @@ export class AcpChatAgent implements IChatAgent {
       this.logger.log(
         `[ACP Chat] requestStream opened — sessionId=${sessionId}, requestId=${request.requestId}, historyMessages=${requestOptions.history.length}`,
       );
+      progress({ kind: 'requestAccepted', sessionId });
       let streamDataCount = 0;
       let hasLoggedFirstContent = false;
 

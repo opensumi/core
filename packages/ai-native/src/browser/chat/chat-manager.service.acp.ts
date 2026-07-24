@@ -553,7 +553,12 @@ export class AcpChatManagerService extends ChatManagerService {
     return request;
   }
 
-  override async sendRequest(sessionId: string, request: ChatRequestModel, regenerate: boolean): Promise<void> {
+  override async sendRequest(
+    sessionId: string,
+    request: ChatRequestModel,
+    regenerate: boolean,
+    onRequestAccepted?: () => void,
+  ): Promise<void> {
     this.logger.log(
       `[ACP Chat][Manager] sendRequest start — sessionId=${sessionId}, requestId=${
         request.requestId
@@ -562,7 +567,7 @@ export class AcpChatManagerService extends ChatManagerService {
       }, messageChars=${request.message.prompt.length}, images=${request.message.images?.length ?? 0}`,
     );
     try {
-      await super.sendRequest(sessionId, request, regenerate);
+      await super.sendRequest(sessionId, request, regenerate, onRequestAccepted);
       this.logger.log(`[ACP Chat][Manager] sendRequest done — sessionId=${sessionId}, requestId=${request.requestId}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -610,6 +615,12 @@ export class AcpChatManagerService extends ChatManagerService {
     }
 
     const disposal = this.enqueueSessionLifecycle(sessionId, async () => {
+      const attachment = this.sessionAttachments?.get(sessionId);
+      if (attachment) {
+        this.sessionAttachments?.delete(sessionId);
+        attachment.disposables.forEach((disposable) => disposable.dispose());
+        attachment.stream.end();
+      }
       if (!this.ownedBackendSessions.has(sessionId)) {
         if (this.getSession(sessionId)) {
           this.clearSession(sessionId);
