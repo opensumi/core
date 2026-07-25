@@ -33,6 +33,21 @@ export class DialogContribution implements CommandContribution, KeybindingContri
         },
       },
     );
+
+    registry.registerCommand(
+      {
+        id: DIALOG_COMMANDS.OPEN.id,
+      },
+      {
+        execute: (args: { message: string; type: number; buttons?: string[]; closable?: boolean }) =>
+          this.dialogService.open<string>({
+            message: args.message,
+            type: args.type,
+            buttons: args.buttons,
+            closable: args.closable,
+          }),
+      },
+    );
   }
 
   registerKeybindings(bindings: KeybindingRegistry) {

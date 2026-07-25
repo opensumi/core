@@ -52,6 +52,7 @@ import {
   IdentifiableInlineCompletions,
   IdentifiableInlineEdit,
   MonacoModelIdentifier,
+  RangeSuggestDataDto,
   testGlob,
 } from '../../../common/vscode';
 import { IDocumentFilterDto, fromLanguageSelector } from '../../../common/vscode/converter';
@@ -270,6 +271,22 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
     const dtoRange = data[ISuggestDataDtoField.range];
 
+    let targetRange: IRange | { insert: IRange; replace: IRange } = defaultRange;
+
+    if (dtoRange) {
+      if (Array.isArray(dtoRange)) {
+        targetRange = MonacoRange.lift({
+          startLineNumber: dtoRange[0],
+          startColumn: dtoRange[1],
+          endLineNumber: dtoRange[2],
+          endColumn: dtoRange[3],
+        })
+      } else {
+        targetRange = dtoRange;
+      }
+    }
+    
+
     return {
       label,
       kind: data[ISuggestDataDtoField.kind] ?? modes.CompletionItemKind.Property,
@@ -280,15 +297,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       filterText: data[ISuggestDataDtoField.filterText],
       preselect: data[ISuggestDataDtoField.preselect],
       insertText: data[ISuggestDataDtoField.insertText] ?? (typeof label === 'string' ? label : label.label),
-      range:
-        Array.isArray(dtoRange) && dtoRange.length === 4
-          ? MonacoRange.lift({
-              startLineNumber: dtoRange[0],
-              startColumn: dtoRange[1],
-              endLineNumber: dtoRange[2],
-              endColumn: dtoRange[3],
-            })
-          : defaultRange,
+      range: targetRange,
       insertTextRules: data[ISuggestDataDtoField.insertTextRules],
       commitCharacters: data[ISuggestDataDtoField.commitCharacters],
       additionalTextEdits: data[ISuggestDataDtoField.additionalTextEdits],

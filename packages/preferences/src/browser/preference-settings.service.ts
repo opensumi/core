@@ -449,7 +449,11 @@ export class PreferenceSettingsService extends Disposable implements IPreference
           sec.subSections = subSections;
         }
 
-        if ((sec.preferences && sec.preferences.length > 0) || (sec.subSections && sec.subSections.length > 0)) {
+        if (
+          sec.component ||
+          (sec.preferences && sec.preferences.length > 0) ||
+          (sec.subSections && sec.subSections.length > 0)
+        ) {
           result.push(sec);
         }
       });

@@ -1,5 +1,5 @@
 import { Injectable, Provider } from '@opensumi/di';
-import { BrowserModule } from '@opensumi/ide-core-browser';
+import { BrowserModule, createContributionProvider } from '@opensumi/ide-core-browser';
 import { DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
 import { IDebugServer } from '@opensumi/ide-debug/lib/common';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';
@@ -26,6 +26,7 @@ import {
 } from '../common/main.thread.extender';
 
 import { ActivationEventServiceImpl } from './activation.service';
+import { AllowedExtensionService, AllowedExtensionsContribution } from './allowed-extension.service';
 import { ExtCommandManagementImpl as ExtCommandManagementImpl } from './extension-command-management';
 import { ExtInstanceManagementService } from './extension-instance-management';
 import { ExtensionManagementService } from './extension-management.service';
@@ -42,8 +43,16 @@ import { VSCodeContributesService, VSCodeContributesServiceToken } from './vscod
 
 @Injectable()
 export class ExtensionModule extends BrowserModule {
-  contributionProvider = [RequireInterceptorContribution, MainThreadExtenderContribution];
+  contributionProvider = [
+    RequireInterceptorContribution,
+    MainThreadExtenderContribution,
+    AllowedExtensionsContribution,
+  ];
   providers: Provider[] = [
+    {
+      token: AllowedExtensionService,
+      useClass: AllowedExtensionService,
+    },
     {
       token: ExtensionService,
       useClass: ExtensionServiceImpl,
@@ -120,3 +129,10 @@ export class ExtensionModule extends BrowserModule {
     },
   ];
 }
+
+export {
+  AllowedExtensionService,
+  AllowedExtensionsContribution,
+  IAllowedExtensionsContribution,
+  DEFAULT_ALLOWED_EXTENSION_IDS,
+} from './allowed-extension.service';
