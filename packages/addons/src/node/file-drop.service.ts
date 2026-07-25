@@ -10,13 +10,13 @@ export class FileDropService implements IFileDropBackendService {
   private writeableStreams: Map<string, fs.WriteStream> = new Map();
 
   async $ensureFileExist(fileName: string, targetDir: string): Promise<boolean> {
-    const targetPath = Uri.file(path.join(targetDir, fileName)).path;
+    const targetPath = Uri.file(path.join(targetDir, fileName)).fsPath;
     this.writeableStreams.set(targetPath, fs.createWriteStream(targetPath));
     return true;
   }
 
   $writeStream(chunk: string | ArrayBuffer, fileName: string, targetDir: string, done: boolean): Promise<void> {
-    const targetPath = Uri.file(path.join(targetDir, fileName)).path;
+    const targetPath = Uri.file(path.join(targetDir, fileName)).fsPath;
     const stream = this.writeableStreams.get(targetPath);
     return new Promise((resolve, reject) => {
       stream?.write(chunk, 'binary', (err) => {
