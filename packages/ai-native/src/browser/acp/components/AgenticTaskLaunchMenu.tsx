@@ -124,16 +124,21 @@ export function AgenticTaskLaunchMenu({
   }, [commandService, preferenceService]);
 
   if (!isChatHeader) {
-    const targetLabel = projectLabel || project?.label || project?.workspacePath || 'Project';
+    const targetLabel =
+      projectLabel ||
+      project?.label ||
+      project?.workspacePath ||
+      localize('aiNative.agentic.project.fallbackName', 'Project');
+    const launchTitle = strings.format(localize('aiNative.agentic.project.newTask', 'New Task for {0}'), targetLabel);
     return (
       <div className={styles.launch_menu_group}>
         <button
-          aria-label={`New Task for ${targetLabel}`}
+          aria-label={launchTitle}
           className={styles.project_new_task}
           data-testid='agentic-task-launch-button'
           disabled={!available || launching}
           onClick={() => void launch()}
-          title={available ? `New Task for ${targetLabel}` : 'No ACP Agent available'}
+          title={available ? launchTitle : localize('aiNative.chat.newTask.noAgent', 'No ACP Agent available')}
           type='button'
         >
           <span aria-hidden='true' className='codicon codicon-add' />
@@ -148,10 +153,9 @@ export function AgenticTaskLaunchMenu({
     ? localize('aiNative.chat.newTask.workspaceUnavailable', 'Workspace Target unavailable')
     : !selectedAgent
     ? localize('aiNative.chat.newTask.noAgent', 'No ACP Agent available')
-    : `${strings.format(
-        localize('aiNative.chat.newTask.withAgent', 'New Task with {0}'),
-        selectedAgent.label,
-      )}${newTaskKeybinding ? ` (${newTaskKeybinding})` : ''}`;
+    : `${strings.format(localize('aiNative.chat.newTask.withAgent', 'New Task with {0}'), selectedAgent.label)}${
+        newTaskKeybinding ? ` (${newTaskKeybinding})` : ''
+      }`;
 
   return (
     <div className={chatStyles.agentic_task_launch_menu_group}>

@@ -436,8 +436,13 @@
   font-size: 12px;
   text-align: left;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: var(--list-hoverBackground);
+  }
+
+  &:disabled {
+    color: var(--disabledForeground);
+    cursor: default;
   }
 
   &:focus-visible {
@@ -445,6 +450,14 @@
     outline-offset: -1px;
     background: var(--list-hoverBackground);
   }
+}
+
+.project_management_menu_reason {
+  max-width: 220px;
+  padding: 2px 7px 5px;
+  color: var(--descriptionForeground);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .project_rename_form {
