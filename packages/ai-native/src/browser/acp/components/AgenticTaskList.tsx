@@ -2,9 +2,10 @@ import React from 'react';
 
 import { Modal } from '@opensumi/ide-components/lib/modal';
 import { Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components/lib/popover';
-import { PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
+import { PreferenceService, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
-import { IWindowDialogService } from '@opensumi/ide-overlay';
+import { IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
+import { strings } from '@opensumi/ide-utils';
 
 import { IChatInternalService } from '../../../common';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
@@ -28,6 +29,10 @@ const MIN_TASK_LIST_WIDTH = 208;
 const MAX_TASK_LIST_WIDTH = 280;
 const MIN_CONVERSATION_WIDTH = 360;
 const TASK_LIST_WIDTH_STORAGE_KEY = 'agentic.task-list-width.v1';
+
+function formatAgenticMessage(key: string, fallback: string, ...args: Array<string | number>): string {
+  return strings.format(localize(key, fallback), ...args);
+}
 
 function clampTaskListWidth(width: number, maximumWidth = MAX_TASK_LIST_WIDTH): number {
   return Math.max(MIN_TASK_LIST_WIDTH, Math.min(maximumWidth, width));
@@ -153,7 +158,7 @@ function TaskListResizeHandle({
 
   return (
     <div
-      aria-label='Resize Agent Tasks'
+      aria-label={localize('aiNative.agentic.taskList.resize', 'Resize Agent Tasks')}
       aria-orientation='vertical'
       aria-valuemax={maximumWidth}
       aria-valuemin={MIN_TASK_LIST_WIDTH}
@@ -197,21 +202,21 @@ interface TaskRowPresentation {
 
 const TASK_ROW_PRESENTATIONS: Readonly<Record<BaseTaskRowMetaKind, TaskRowPresentation | undefined>> = {
   running: {
-    fullLabel: 'Running',
+    fullLabel: localize('aiNative.agentic.task.status.running', 'Running'),
     icon: 'codicon-loading codicon-modifier-spin',
     kind: 'running',
     testIdPrefix: 'agentic-task-status',
     tone: 'information',
   },
   stopped: {
-    fullLabel: 'Stopped',
+    fullLabel: localize('aiNative.agentic.task.status.stopped', 'Stopped'),
     icon: 'codicon-circle-slash',
     kind: 'stopped',
     testIdPrefix: 'agentic-task-status',
     tone: 'secondary',
   },
   error: {
-    fullLabel: 'Error',
+    fullLabel: localize('aiNative.agentic.task.status.error', 'Error'),
     icon: 'codicon-error',
     kind: 'error',
     testIdPrefix: 'agentic-task-status',
@@ -219,14 +224,14 @@ const TASK_ROW_PRESENTATIONS: Readonly<Record<BaseTaskRowMetaKind, TaskRowPresen
   },
   ready: undefined,
   permission: {
-    fullLabel: 'Permission required',
+    fullLabel: localize('aiNative.agentic.task.status.permissionRequired', 'Permission required'),
     icon: 'codicon-shield',
     kind: 'permission',
     testIdPrefix: 'agentic-task-attention',
     tone: 'warning',
   },
   input: {
-    fullLabel: 'Input needed',
+    fullLabel: localize('aiNative.agentic.task.status.inputNeeded', 'Input needed'),
     icon: 'codicon-edit',
     kind: 'input',
     testIdPrefix: 'agentic-task-attention',
@@ -240,7 +245,7 @@ function getTaskRowPresentation(
 ): TaskRowPresentation | undefined {
   if (!options.agentAvailable) {
     return {
-      fullLabel: 'Agent unavailable',
+      fullLabel: localize('aiNative.agentic.task.status.agentUnavailable', 'Agent unavailable'),
       icon: 'codicon-debug-disconnect',
       kind: 'agent-unavailable',
       testIdPrefix: 'agentic-task-availability',
@@ -249,7 +254,7 @@ function getTaskRowPresentation(
   }
   if (options.conversationUnavailable) {
     return {
-      fullLabel: 'History unavailable',
+      fullLabel: localize('aiNative.agentic.task.status.historyUnavailable', 'History unavailable'),
       icon: 'codicon-history',
       kind: 'conversation-unavailable',
       testIdPrefix: 'agentic-task-availability',
@@ -263,9 +268,17 @@ function getTaskRowPresentation(
   }
   return {
     ...presentation,
-    fullLabel: `Last known status: ${presentation.fullLabel}`,
+    fullLabel: formatAgenticMessage(
+      'aiNative.agentic.task.status.lastKnown',
+      'Last known status: {0}',
+      presentation.fullLabel,
+    ),
     icon: presentation.icon.replace(' codicon-modifier-spin', ''),
-    tooltipLabel: `Last known · ${presentation.fullLabel}`,
+    tooltipLabel: formatAgenticMessage(
+      'aiNative.agentic.task.status.lastKnownShort',
+      'Last known · {0}',
+      presentation.fullLabel,
+    ),
   };
 }
 
@@ -296,27 +309,37 @@ function ProjectRenameModal({
 
   return (
     <Modal
-      cancelText='Cancel'
+      cancelText={localize('aiNative.agentic.project.rename.cancel', 'Cancel')}
       centered
-      okText='Save'
+      okText={localize('aiNative.agentic.project.rename.save', 'Save')}
       onCancel={onClose}
       onOk={() => void save()}
-      title={`Rename ${projectLabel || 'Project'}`}
+      title={formatAgenticMessage(
+        'aiNative.agentic.project.rename.title',
+        'Rename {0}',
+        projectLabel || localize('aiNative.agentic.project.fallbackName', 'Project'),
+      )}
       visible={!!project}
       width={360}
     >
       <label className={styles.project_rename_form}>
-        <span>Project name</span>
+        <span>{localize('aiNative.agentic.project.name', 'Project name')}</span>
         <input
-          aria-label='Project name'
+          aria-label={localize('aiNative.agentic.project.name', 'Project name')}
           autoFocus
           onChange={(event) => setLabel(event.target.value)}
           placeholder={projectLabel}
           type='text'
           value={label}
         />
-        {project && <span className={styles.project_rename_path}>Workspace: {project.workspacePath}</span>}
-        <span className={styles.project_rename_hint}>Clear the name to use the default project name.</span>
+        {project && (
+          <span className={styles.project_rename_path}>
+            {formatAgenticMessage('aiNative.agentic.project.workspace', 'Workspace: {0}', project.workspacePath)}
+          </span>
+        )}
+        <span className={styles.project_rename_hint}>
+          {localize('aiNative.agentic.project.rename.clearHint', 'Clear the name to use the default project name.')}
+        </span>
       </label>
     </Modal>
   );
@@ -353,16 +376,18 @@ function TaskRow({
   const activationAvailable = projectAvailable && agentAvailable;
   const agentDescription = agentLabel === task.agentId ? agentLabel : `${agentLabel} (${task.agentId})`;
   const guidance = !projectAvailable
-    ? 'Project unavailable.'
+    ? localize('aiNative.agentic.project.unavailable', 'Project unavailable.')
     : conversationUnavailable
-    ? 'Select the task to retry loading its history.'
+    ? localize('aiNative.agentic.task.retryHistory', 'Select the task to retry loading its history.')
     : undefined;
   const accessibleLabel = [
     `${task.title}.`,
-    `Agent: ${agentDescription}.`,
-    presentation ? `Status: ${presentation.fullLabel}.` : undefined,
+    `${formatAgenticMessage('aiNative.agentic.task.agent', 'Agent: {0}', agentDescription)}.`,
+    presentation
+      ? `${formatAgenticMessage('aiNative.agentic.task.status', 'Status: {0}', presentation.fullLabel)}.`
+      : undefined,
     guidance,
-    task.unread ? 'Unread.' : undefined,
+    task.unread ? localize('aiNative.agentic.task.unreadSentence', 'Unread.') : undefined,
   ]
     .filter(Boolean)
     .join(' ');
@@ -371,18 +396,22 @@ function TaskRow({
       <div className={styles.task_tooltip_title}>{task.title}</div>
       <dl className={styles.task_tooltip_details}>
         <div className={styles.task_tooltip_row}>
-          <dt>Agent</dt>
+          <dt>{localize('aiNative.agentic.task.agentLabel', 'Agent')}</dt>
           <dd>{agentDescription}</dd>
         </div>
         {presentation && (
           <div className={styles.task_tooltip_row}>
-            <dt>Status</dt>
+            <dt>{localize('aiNative.agentic.task.statusLabel', 'Status')}</dt>
             <dd>{presentation.tooltipLabel || presentation.fullLabel}</dd>
           </div>
         )}
       </dl>
       {guidance && <div className={styles.task_tooltip_hint}>{guidance}</div>}
-      {task.unread && <div className={styles.task_tooltip_hint}>Unread activity</div>}
+      {task.unread && (
+        <div className={styles.task_tooltip_hint}>
+          {localize('aiNative.agentic.task.unreadActivity', 'Unread activity')}
+        </div>
+      )}
     </div>
   );
 
@@ -428,18 +457,22 @@ function TaskRow({
             </span>
           )}
           {task.unread && (
-            <span aria-label='Unread' className={styles.unread} data-testid={`agentic-task-unread-${task.sessionId}`} />
+            <span
+              aria-label={localize('aiNative.agentic.task.unread', 'Unread')}
+              className={styles.unread}
+              data-testid={`agentic-task-unread-${task.sessionId}`}
+            />
           )}
           <span aria-hidden='true' className={styles.task_action_space} />
         </button>
       </Popover>
       {archiveEligible && (
         <button
-          aria-label={`Archive ${task.title}`}
+          aria-label={formatAgenticMessage('aiNative.agentic.task.archive', 'Archive {0}', task.title)}
           className={styles.archive_button}
           data-testid={`agentic-task-archive-${task.sessionId}`}
           onClick={() => onArchive(task)}
-          title={`Archive ${task.title}`}
+          title={formatAgenticMessage('aiNative.agentic.task.archive', 'Archive {0}', task.title)}
           type='button'
         >
           <span aria-hidden='true' className='codicon codicon-archive' />
@@ -447,11 +480,11 @@ function TaskRow({
       )}
       {task.archived && onUnarchive && (
         <button
-          aria-label={`Unarchive ${task.title}`}
+          aria-label={formatAgenticMessage('aiNative.agentic.task.unarchive', 'Unarchive {0}', task.title)}
           className={styles.archive_button}
           data-testid={`agentic-task-unarchive-${task.sessionId}`}
           onClick={() => onUnarchive(task)}
-          title={`Unarchive ${task.title}`}
+          title={formatAgenticMessage('aiNative.agentic.task.unarchive', 'Unarchive {0}', task.title)}
           type='button'
         >
           <span aria-hidden='true' className='codicon codicon-archive' />
@@ -497,6 +530,12 @@ function ProjectGroup({
   const projectAvailable = group.project.availability === 'available';
   const hasTasks = group.tasks.length > 0;
   const [managementMenuOpen, setManagementMenuOpen] = React.useState(false);
+  const removalBlockedReason = !group.project.managed
+    ? localize('aiNative.agentic.project.removeOnlyManaged', 'Only manually added Projects can be removed.')
+    : hasTasks
+    ? localize('aiNative.agentic.project.removeHasTasks', 'Projects with active or archived Tasks cannot be removed.')
+    : undefined;
+  const removalReasonId = `agentic-project-remove-reason-${encodeURIComponent(group.project.id)}`;
 
   return (
     <section className={styles.project_group} data-testid='agentic-task-project-group'>
@@ -504,7 +543,11 @@ function ProjectGroup({
         {hasTasks ? (
           <button
             aria-expanded={expanded}
-            aria-label={`${expanded ? 'Collapse' : 'Expand'} ${projectLabel}`}
+            aria-label={formatAgenticMessage(
+              expanded ? 'aiNative.agentic.project.collapse' : 'aiNative.agentic.project.expand',
+              expanded ? 'Collapse {0}' : 'Expand {0}',
+              projectLabel,
+            )}
             className={styles.project_toggle}
             data-testid={`agentic-task-project-toggle-${group.project.id}`}
             disabled={collapseDisabled}
@@ -538,10 +581,10 @@ function ProjectGroup({
         />
         <button
           aria-expanded={managementMenuOpen}
-          aria-label={`Manage ${projectLabel}`}
+          aria-label={formatAgenticMessage('aiNative.agentic.project.manage', 'Manage {0}', projectLabel)}
           className={`${styles.project_manage} ${managementMenuOpen ? styles.project_manage_open : ''}`}
           onClick={() => setManagementMenuOpen((open) => !open)}
-          title={`Manage ${projectLabel}`}
+          title={formatAgenticMessage('aiNative.agentic.project.manage', 'Manage {0}', projectLabel)}
           type='button'
         >
           <span aria-hidden='true' className='codicon codicon-ellipsis' />
@@ -549,7 +592,7 @@ function ProjectGroup({
         {managementMenuOpen && (
           <div className={styles.project_management_menu}>
             <button
-              aria-label={`Rename ${projectLabel}`}
+              aria-label={formatAgenticMessage('aiNative.agentic.project.rename.title', 'Rename {0}', projectLabel)}
               className={styles.project_management_menu_item}
               onClick={() => {
                 setManagementMenuOpen(false);
@@ -557,20 +600,26 @@ function ProjectGroup({
               }}
               type='button'
             >
-              Rename
+              {localize('aiNative.agentic.project.rename.action', 'Rename')}
             </button>
-            {group.project.managed && group.tasks.length === 0 && (
-              <button
-                aria-label={`Remove ${projectLabel}`}
-                className={styles.project_management_menu_item}
-                onClick={() => {
-                  setManagementMenuOpen(false);
-                  onRemove(group.project);
-                }}
-                type='button'
-              >
-                Remove Project
-              </button>
+            <button
+              aria-describedby={removalBlockedReason ? removalReasonId : undefined}
+              aria-label={formatAgenticMessage('aiNative.agentic.project.remove', 'Remove {0}', projectLabel)}
+              className={styles.project_management_menu_item}
+              disabled={!!removalBlockedReason}
+              onClick={() => {
+                setManagementMenuOpen(false);
+                onRemove(group.project);
+              }}
+              title={removalBlockedReason}
+              type='button'
+            >
+              {localize('aiNative.agentic.project.removeAction', 'Remove Project')}
+            </button>
+            {removalBlockedReason && (
+              <div className={styles.project_management_menu_reason} id={removalReasonId} role='note'>
+                {removalBlockedReason}
+              </div>
             )}
           </div>
         )}
@@ -667,7 +716,7 @@ function ArchivedTaskGroups({
         type='button'
       >
         <span aria-hidden='true' className={`codicon ${expanded ? 'codicon-chevron-down' : 'codicon-chevron-right'}`} />
-        <span>Archived Tasks</span>
+        <span>{localize('aiNative.agentic.taskList.archived', 'Archived Tasks')}</span>
       </button>
       {expanded &&
         groups.map((group) => (
@@ -709,6 +758,7 @@ export function AgenticTaskList() {
   const aiChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const windowDialogService = useInjectable<IWindowDialogService>(IWindowDialogService);
+  const messageService = useInjectable<IMessageService>(IMessageService);
   const taskListRef = React.useRef<HTMLElement>(null);
   const [query, setQuery] = React.useState('');
   const [groups, setGroups] = React.useState<AgenticTaskGroup[]>([]);
@@ -943,9 +993,16 @@ export function AgenticTaskList() {
     async (project: AgenticProjectRecord) => {
       if (await registry.removeManagedProject(project.id)) {
         await refresh();
+        return;
       }
+      messageService.info(
+        localize(
+          'aiNative.agentic.project.removeHasTasks',
+          'Projects with active or archived Tasks cannot be removed.',
+        ),
+      );
     },
-    [refresh, registry],
+    [messageService, refresh, registry],
   );
 
   const addProject = React.useCallback(async () => {
@@ -953,7 +1010,7 @@ export function AgenticTaskList() {
       canSelectFiles: false,
       canSelectFolders: true,
       canSelectMany: false,
-      title: 'Add Project',
+      title: localize('aiNative.agentic.project.add', 'Add Project'),
     });
     if (directories?.[0]) {
       await workspaceSwitch.addProject(directories[0]);
@@ -975,7 +1032,12 @@ export function AgenticTaskList() {
   const collapseDisabled = query.trim().length > 0;
 
   return (
-    <aside aria-label='Agent Tasks' className={styles.task_list} data-testid='agentic-task-list' ref={taskListRef}>
+    <aside
+      aria-label={localize('aiNative.agentic.taskList.title', 'Agent Tasks')}
+      className={styles.task_list}
+      data-testid='agentic-task-list'
+      ref={taskListRef}
+    >
       <TaskListResizeHandle
         getConfiguredWidth={getConfiguredWidth}
         maximumWidth={maximumTaskListWidth}
@@ -983,14 +1045,14 @@ export function AgenticTaskList() {
         refreshMaximumWidth={refreshMaximumTaskListWidth}
       />
       <header className={styles.task_list_header}>
-        <h2>Agent Tasks</h2>
+        <h2>{localize('aiNative.agentic.taskList.title', 'Agent Tasks')}</h2>
         {attentionCount > 0 && <span className={styles.attention_count}>{attentionCount}</span>}
         <button
-          aria-label='Add Project'
+          aria-label={localize('aiNative.agentic.project.add', 'Add Project')}
           className={styles.project_add}
           data-testid='agentic-project-add-button'
           onClick={() => void addProject()}
-          title='Add Project'
+          title={localize('aiNative.agentic.project.add', 'Add Project')}
           type='button'
         >
           <span aria-hidden='true' className='codicon codicon-new-folder' />
@@ -1000,7 +1062,7 @@ export function AgenticTaskList() {
         <span aria-hidden='true' className='codicon codicon-search' />
         <input
           onChange={(event) => setQuery(event.target.value)}
-          placeholder='Search tasks'
+          placeholder={localize('aiNative.agentic.taskList.search', 'Search tasks')}
           type='search'
           value={query}
         />
