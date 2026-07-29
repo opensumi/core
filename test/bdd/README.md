@@ -149,6 +149,8 @@ The fixture can be selected either with `--fixture=<name>` or `OPENSUMI_ACP_BDD_
 | `long-stream` | Stop/cancel, reload-during-stream, active-stream layout, and active-session isolation checks. |
 | `permission` | Permission dialog, active permission badge/count, browser-only dismissal, and permission routing observability. |
 | `send-failure` | Send failure recovery after a user row exists. |
+| `service-failure` | Generic OpenCode service failure mapping with bounded service/error diagnostics and retry guidance. |
+| `model-not-found` | Invalid selected-model mapping with explicit model-switch guidance. |
 | `create-failure` | Create-session failure UI and service recovery. |
 | `load-failure` | History/session reload failure and `loadSessionOrNew` recovery. |
 | `task-session-missing` | Agentic Task creation followed by process restart and a deterministic missing Session on `session/load`. |
@@ -292,7 +294,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-context-attachments.scenario.md` | `runtime-ui` | `interactive` | File, folder, code, and rule context chips, attachment cleanup, and metadata safety. |
 | `acp-chat-agentic-command-surface.scenario.md` | `runtime-ui` | `interactive` | Slash command discovery, selection, cancellation, send, and metadata parity. |
 | `acp-chat-agentic-reload-during-stream.scenario.md` | `runtime-ui` | `interactive` | Page reload while streaming, same-session continuation, and explicit Stop after reattachment. |
-| `acp-chat-agentic-error-taxonomy.scenario.md` | `runtime-ui` | `interactive` | Create, load, send, auth, disconnected, and config failure visibility and retry. |
+| `acp-chat-agentic-error-taxonomy.scenario.md` | `runtime-ui` | `interactive` | Create, load, send, OpenCode service, unavailable-model, auth, disconnected, and config failure visibility and retry. |
 | `acp-chat-agentic-layout-stress.scenario.md` | `runtime-ui` | `interactive` | Long content, tool results, scrolling, resizing, and layout round-trip stability. |
 | `acp-chat-agentic-editor-target-reveal.scenario.md` | `runtime-ui` | `default` | Foreground editor targets restore a hidden Agentic workbench before revealing Settings. |
 | `acp-chat-agentic-file-link-open.scenario.md` | `runtime-ui` | `interactive` | Agentic file links restore workbench/editor/Explorer and open the workspace target safely. |

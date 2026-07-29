@@ -358,6 +358,68 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
     await expectStreamRichRecovery('send-failure');
   });
 
+  test('Error Guidance: OpenCode service failure is actionable and keeps bounded diagnostics', async () => {
+    await withFixture('service-failure', async () => {
+      await sendPrompt('BDD OpenCode service failure guidance');
+
+      await expect
+        .poll(
+          async () => {
+            const snapshot = await readFailureUiSnapshot();
+            return {
+              hasGuidance:
+                /OpenCode couldn't complete the request/i.test(snapshot.chatText) &&
+                /Retry the request/i.test(snapshot.chatText) &&
+                /start a new session/i.test(snapshot.chatText),
+              hasBoundedDiagnostics:
+                /service: session/i.test(snapshot.chatText) && /error: DatabaseError/i.test(snapshot.chatText),
+              exposesRawMessage: /Internal error: OpenCode service failure/i.test(snapshot.chatText),
+            };
+          },
+          { timeout: 30_000 },
+        )
+        .toEqual({ hasGuidance: true, hasBoundedDiagnostics: true, exposesRawMessage: false });
+
+      const snapshot = await readFailureUiSnapshot();
+      expect(snapshot.chatErrorCount).toBeGreaterThan(0);
+      expect(snapshot.userRowCount).toBeGreaterThan(0);
+      await expect(recoveryButton()).toBeVisible();
+      await expectInputRecovered();
+      await expectSafeVisibleFailure(snapshot);
+    });
+
+    await expectStreamRichRecovery('service-failure');
+  });
+
+  test('Error Guidance: unavailable model identifies the model and next action', async () => {
+    await withFixture('model-not-found', async () => {
+      await sendPrompt('BDD unavailable model guidance');
+
+      await expect
+        .poll(
+          async () => {
+            const snapshot = await readFailureUiSnapshot();
+            return {
+              identifiesModel: /selected model "cfuse\/GLM-5\.2" is unavailable/i.test(snapshot.chatText),
+              suggestsModelChange: /Choose another model and try again/i.test(snapshot.chatText),
+              exposesRawMessage: /Invalid params: model not found/i.test(snapshot.chatText),
+            };
+          },
+          { timeout: 30_000 },
+        )
+        .toEqual({ identifiesModel: true, suggestsModelChange: true, exposesRawMessage: false });
+
+      const snapshot = await readFailureUiSnapshot();
+      expect(snapshot.chatErrorCount).toBeGreaterThan(0);
+      expect(snapshot.userRowCount).toBeGreaterThan(0);
+      await expect(recoveryButton()).toBeVisible();
+      await expectInputRecovered();
+      await expectSafeVisibleFailure(snapshot);
+    });
+
+    await expectStreamRichRecovery('model-not-found');
+  });
+
   test('Error Taxonomy: create failure leaves the draft input recoverable', async () => {
     await withFixture('create-failure', async () => {
       await sendPrompt('BDD visible recovery case B');

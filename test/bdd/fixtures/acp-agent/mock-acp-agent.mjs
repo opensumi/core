@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-import { AgentSideConnection, RequestError, ndJsonStream } from '@agentclientprotocol/sdk';
 import { Readable, Writable } from 'node:stream';
+
+import { AgentSideConnection, RequestError, ndJsonStream } from '@agentclientprotocol/sdk';
 
 const DEFAULT_DELAY_MS = 40;
 const DEFAULT_LONG_STREAM_TICKS = 80;
@@ -73,6 +74,8 @@ Fixtures:
   long-stream       Repeated content chunks until session/cancel or tick limit.
   permission        Requests visible client permission during prompt.
   send-failure      Fails deterministically during session/prompt.
+  service-failure   Returns the generic OpenCode service failure shape.
+  model-not-found   Returns an invalid-model JSON-RPC error with model metadata.
   create-failure    Fails deterministically during session/new.
   load-failure      Fails deterministically during session/load.
   task-session-missing Completes a Task, exits, then reports its Session missing after restart.
@@ -689,6 +692,18 @@ test/test.js
     async prompt(params) {
       if (options.fixture === 'send-failure') {
         throw RequestError.internalError({ fixture: options.fixture }, 'BDD send failure');
+      }
+      if (options.fixture === 'service-failure') {
+        throw RequestError.internalError(
+          { fixture: options.fixture, service: 'session', errorName: 'DatabaseError' },
+          'OpenCode service failure',
+        );
+      }
+      if (options.fixture === 'model-not-found') {
+        throw RequestError.invalidParams(
+          { fixture: options.fixture, providerId: 'cfuse', modelId: 'cfuse/GLM-5.2' },
+          'model not found: cfuse/GLM-5.2',
+        );
       }
       if (options.fixture === 'auth-required') {
         throw RequestError.authRequired({ fixture: options.fixture }, 'BDD auth required');

@@ -12,6 +12,8 @@ export const ACP_BDD_FIXTURES = [
   'long-stream',
   'permission',
   'send-failure',
+  'service-failure',
+  'model-not-found',
   'create-failure',
   'load-failure',
   'task-session-missing',
