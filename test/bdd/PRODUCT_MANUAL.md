@@ -335,7 +335,7 @@ full Profile 期望覆盖以下 IDE capability groups：
 | `acp-chat-agentic-layout-interop.scenario.md` | `runtime-ui` | `interactive` | Agentic Chat 与 Explorer/editor 的常规互操作。 |
 | `acp-chat-agentic-layout-stress.scenario.md` | `runtime-ui` | `interactive` | 长内容、工具结果、scroll、resize 和布局往返稳定。 |
 | `acp-chat-agentic-keyboard-a11y.scenario.md` | `runtime-ui` | `interactive` | 键盘无鼠标路径、focus、Escape 和工具卡片操作。 |
-| `acp-chat-agentic-error-taxonomy.scenario.md` | `runtime-ui` | `interactive` | create/load/send/auth/disconnected/config 失败分类与重试。 |
+| `acp-chat-agentic-error-taxonomy.scenario.md` | `runtime-ui` | `interactive` | create/load/send/OpenCode service/模型不可用/auth/disconnected/config 失败分类与重试。 |
 | `acp-chat-agentic-config-controls.scenario.md` | `runtime-ui` | `full` | Mode、Model、Config 控件和 stream 中安全 gating。 |
 | `acp-chat-agentic-permission-during-send.scenario.md` | `runtime-ui` | `full` | 发送中权限弹窗、badge、dismiss 和恢复。 |
 | `acp-chat-agentic-debug-log-from-chat.scenario.md` | `runtime-ui` | `full` | Chat stream 后打开 Debug Log 并关联日志。 |

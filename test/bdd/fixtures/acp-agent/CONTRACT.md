@@ -17,6 +17,8 @@ This contract summarizes the deterministic fixture modes consumed by BDD hardeni
 | `long-stream` | Bounded repeated assistant chunks with cancellable pending prompt state and deterministic cancel sentinel. |
 | `permission` | Bounded pending tool call plus ACP permission request with allow/reject outcomes reflected as tool-call update and assistant sentinel. |
 | `send-failure` | Deterministic `session/prompt` failure. |
+| `service-failure` | Deterministic `-32603` OpenCode service failure with `service` and `errorName` metadata. |
+| `model-not-found` | Deterministic `-32602` invalid-model failure with `providerId` and `modelId` metadata. |
 | `create-failure` | Deterministic `session/new` failure. |
 | `load-failure` | Deterministic `session/load` not-found failure. |
 | `auth-required` | Deterministic ACP auth-required prompt failure. |
@@ -40,7 +42,7 @@ This contract summarizes the deterministic fixture modes consumed by BDD hardeni
 | `acp-chat-agentic-context-attachments` | `stream-rich` | Normal deterministic send shell exists without prompt leakage. | Scenario owner needs stable context picker/attachment selectors and optional rule fixture. |
 | `acp-chat-agentic-command-surface` | `stream-rich` | Available command metadata and rich send fixture exist. | Scenario owner needs stable slash picker selection/cancel/send selectors. |
 | `acp-chat-agentic-reload-during-stream` | `long-stream`, `stream-rich` | Reloadable active stream and post-reload success fixtures exist. | Scenario owner needs scheduled reload-during-stream pass and stable recovery assertions. |
-| `acp-chat-agentic-error-taxonomy` | `create-failure`, `load-failure`, `send-failure`, `auth-required`, `config-failure`, `process-exit`, `stream-rich` | Named failure, retry, process-exit, and recovery fixtures exist. Hardened Playwright coverage exists in `tools/playwright/src/tests/acp-chat-agentic-error-taxonomy.test.ts` for all scheduled deterministic failure fixtures. | No shared mock-agent fixture gap for the scheduled error taxonomy pass. |
+| `acp-chat-agentic-error-taxonomy` | `create-failure`, `load-failure`, `send-failure`, `service-failure`, `model-not-found`, `auth-required`, `config-failure`, `process-exit`, `stream-rich` | Named failure, actionable error guidance, retry, process-exit, and recovery fixtures exist. Hardened Playwright coverage exists in `tools/playwright/src/tests/acp-chat-agentic-error-taxonomy.test.ts` for all scheduled deterministic failure fixtures. | No shared mock-agent fixture gap for the scheduled error taxonomy pass. |
 | `acp-chat-agentic-layout-stress` | `long-stream`, `stream-rich` | Long content and rich layout subcases exist as separate bounded passes. | Scenario owner should decide whether separate passes are enough; a single combined long-rich fixture remains scenario-specific. |
 | `acp-chat-agentic-keyboard-a11y` | `stream-rich`, `history`, `permission` | Tool-card, seeded history, permission fixture, and stable permission dialog dismissal selectors exist. | Scenario owner still needs stable keyboard focus selectors and scheduled keyboard-specific fixture passes. |
 | `acp-chat-agentic-debug-log-from-chat` | `stream-rich` | Rich deterministic ACP traffic exists for log correlation. | Product/scenario owner needs debug-log viewer/store pass and redacted render/copy contract. |
@@ -57,7 +59,7 @@ This contract summarizes the deterministic fixture modes consumed by BDD hardeni
 | `permission-dialog` | `history`, `permission` | Seeded sessions, deterministic live permission request fixture, stable close/reject selectors, metadata-only permission state checks, and full-profile Playwright coverage exist in `tools/playwright/src/tests/permission-dialog.test.ts`. | No shared mock-agent fixture gap for the direct permission-dialog pass. |
 | `webmcp-ide-capability-groups` | none | Not an ACP mock-agent contract. | Scenario owner needs temporary workspace setup and reversible workspace/search/diagnostics/editor mutation matrix. |
 | `acp-debug-log` | `stream-rich` | Rich deterministic ACP protocol traffic exists. | Product/scenario owner needs debug-log store/viewer fixture pass and redaction audit support. |
-| `acp-error-and-recovery` | `create-failure`, `load-failure`, `send-failure`, `auth-required`, `config-failure`, `process-exit` | Node/service failure fixtures and process-exit coverage exist; visible browser recovery for the deterministic fixture matrix is covered in `tools/playwright/src/tests/acp-chat-agentic-error-taxonomy.test.ts`. | No shared mock-agent fixture gap for the deterministic recovery pass. |
+| `acp-error-and-recovery` | `create-failure`, `load-failure`, `send-failure`, `service-failure`, `model-not-found`, `auth-required`, `config-failure`, `process-exit` | Node/service failure fixtures, actionable generic/model error guidance, and process-exit coverage exist; visible browser recovery for the deterministic fixture matrix is covered in `tools/playwright/src/tests/acp-chat-agentic-error-taxonomy.test.ts`. | No shared mock-agent fixture gap for the deterministic recovery pass. |
 
 ## Scenario-Specific Requests Not Implemented Here
 
