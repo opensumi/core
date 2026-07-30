@@ -607,7 +607,7 @@ export class AcpChatManagerService extends ChatManagerService {
     this.removeDisplayTitleOverride(sessionId);
   }
 
-  async disposeSession(sessionId: string): Promise<void> {
+  async disposeSession(sessionId: string, force = false): Promise<void> {
     const generation = this.sessionLoadGenerations.get(sessionId) || 0;
     const existingRequest = this.sessionDisposeRequests.get(sessionId);
     if (existingRequest?.generation === generation) {
@@ -621,7 +621,7 @@ export class AcpChatManagerService extends ChatManagerService {
         attachment.disposables.forEach((disposable) => disposable.dispose());
         attachment.stream.end();
       }
-      if (!this.ownedBackendSessions.has(sessionId)) {
+      if (!force && !this.ownedBackendSessions.has(sessionId)) {
         if (this.getSession(sessionId)) {
           this.clearSession(sessionId);
         }
@@ -629,7 +629,11 @@ export class AcpChatManagerService extends ChatManagerService {
       }
 
       try {
-        await this.mainProvider?.disposeSession?.(sessionId);
+        if (force) {
+          await this.mainProvider?.disposeSession?.(sessionId, true);
+        } else {
+          await this.mainProvider?.disposeSession?.(sessionId);
+        }
         this.ownedBackendSessions.delete(sessionId);
       } finally {
         if (this.getSession(sessionId)) {

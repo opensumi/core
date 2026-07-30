@@ -64,7 +64,10 @@ async function launchAndCompleteTask(prompt: string): Promise<string> {
   await expect(row).toBeVisible({ timeout: 30_000 });
   const testId = await row.getAttribute('data-testid');
   expect(testId).toBeTruthy();
-  return testId!.replace('agentic-task-row-', '');
+  const sessionId = testId!.replace('agentic-task-row-', '');
+  await expect.poll(getActiveSessionId, { timeout: 30_000 }).toBe(sessionId);
+  await expect(row).toHaveAttribute('aria-current', 'true');
+  return sessionId;
 }
 
 test.describe('ACP Chat Agentic history restore after backend session release', () => {

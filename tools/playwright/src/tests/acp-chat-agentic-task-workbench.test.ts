@@ -46,6 +46,8 @@ let missingWorkspaceDir: string;
 let currentOlderSessionId: string;
 let currentNewerSessionId: string;
 let otherReadySessionId: string;
+let missingReadySessionId: string;
+const createdSessionIds = new Set<string>();
 
 async function writeNamedHistoryAgents(
   workspaceDir: string,
@@ -194,7 +196,7 @@ async function pressNewDraftShortcut(): Promise<void> {
 }
 
 function getTaskDraftComposer() {
-  return page.locator('.AI-Chat-slot [contenteditable="true"]').last();
+  return page.locator('.AI-Chat-slot:visible [contenteditable="true"]').last();
 }
 
 async function submitTaskDraft(title: string, agentLabel = 'Agent A'): Promise<string> {
@@ -207,13 +209,17 @@ async function submitTaskDraft(title: string, agentLabel = 'Agent A'): Promise<s
   const input = getTaskDraftComposer();
   await input.click();
   await page.keyboard.insertText(title);
+  await expect
+    .poll(() => page.evaluate(() => (window as any).__OPENSUMI_E2E__?.getAcpInputDraft?.()?.message))
+    .toBe(title);
   await page
-    .locator('.AI-Chat-slot')
+    .locator('.AI-Chat-slot:visible')
     .getByRole('button', { name: /^(Enter\s+)?Send$|^Enter\s+发送$|^发送$/i })
     .last()
     .click();
   await expect.poll(async () => (await getSessionState()).session?.sessionId, { timeout: 30_000 }).toBeTruthy();
   const sessionId = (await getSessionState()).session!.sessionId;
+  createdSessionIds.add(sessionId);
   const taskRow = page.getByTestId(`agentic-task-row-${sessionId}`);
   await expect(taskRow).toBeVisible({ timeout: 30_000 });
   await expect(taskRow).toHaveAttribute('aria-current', 'true');
@@ -228,7 +234,9 @@ async function renameProjectForTask(sessionId: string, label: string): Promise<v
     has: page.getByTestId(`agentic-task-row-${sessionId}`),
   });
   await group.getByRole('button', { name: /^Manage / }).click();
-  await page.locator('button[aria-label^="Rename "]').click();
+  const renameButton = group.locator('button[aria-label^="Rename "]');
+  await expect(renameButton).toBeVisible();
+  await renameButton.click();
   const input = page.getByLabel('Project name');
   await expect(input).toBeVisible();
   await input.fill(label);
@@ -271,6 +279,7 @@ test.describe('ACP Chat Agentic 任务工作台', () => {
 
   test.beforeAll(async ({ browser }) => {
     test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
+    createdSessionIds.clear();
     await resetPage(browser);
     await page.setViewportSize({ width: 1600, height: 900 });
     currentWorkspace = new OpenSumiWorkspace([ACP_BDD_DEFAULT_WORKSPACE]);
@@ -308,7 +317,7 @@ test.describe('ACP Chat Agentic 任务工作台', () => {
 
     await clearRememberedActiveTask();
     await openWorkspace(missingWorkspaceDir);
-    const missingReadySessionId = await createTask('Missing ready');
+    missingReadySessionId = await createTask('Missing ready');
     await renameProjectForTask(missingReadySessionId, 'Project Missing');
     await fs.rm(missingWorkspaceDir, { recursive: true, force: true });
 
@@ -322,6 +331,21 @@ test.describe('ACP Chat Agentic 任务工作台', () => {
   });
 
   test.afterAll(async () => {
+    try {
+      await page.evaluate(
+        async (sessionIds) => {
+          await (window as any).__OPENSUMI_E2E__?.disposeAcpSessions?.(sessionIds);
+        },
+        [...createdSessionIds],
+      );
+    } catch {
+      // Best-effort cleanup when setup or navigation failed.
+    }
+    try {
+      await page.goto('about:blank');
+    } catch {
+      // Best-effort cleanup when the page already closed.
+    }
     currentWorkspace?.dispose();
     otherWorkspace?.dispose();
     missingWorkspace?.dispose();

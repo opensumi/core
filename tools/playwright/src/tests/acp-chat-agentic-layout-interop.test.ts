@@ -22,15 +22,26 @@ async function openWorkspaceFile(path: string) {
   await waitForExplorerViewVisible(page);
   const explorer = await runtime.app.open(OpenSumiExplorerView);
   explorer.initFileTreeView(runtime.workspace.workspace.displayName);
+  const waitForNode = async (nodePath: string) => {
+    let node: Awaited<ReturnType<typeof explorer.getFileStatTreeNodeByPath>>;
+    await expect
+      .poll(
+        async () => {
+          node = await explorer.getFileStatTreeNodeByPath(nodePath);
+          return Boolean(node);
+        },
+        { message: `Explorer 中缺少 ${nodePath}`, timeout: 30_000 },
+      )
+      .toBe(true);
+    return node!;
+  };
   if (path.includes('/')) {
     const parentPath = path.slice(0, path.lastIndexOf('/'));
-    const parent = await explorer.getFileStatTreeNodeByPath(parentPath);
-    expect(parent, `Explorer 中缺少 ${parentPath}`).toBeDefined();
-    await parent!.expand();
+    const parent = await waitForNode(parentPath);
+    await parent.expand();
   }
-  const node = await explorer.getFileStatTreeNodeByPath(path);
-  expect(node, `Explorer 中缺少 ${path}`).toBeDefined();
-  await node!.open();
+  const node = await waitForNode(path);
+  await node.open();
   await expect(page.getByText(path.split('/').pop()!, { exact: true }).last()).toBeVisible();
 }
 

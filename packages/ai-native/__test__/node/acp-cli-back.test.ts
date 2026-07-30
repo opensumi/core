@@ -908,6 +908,12 @@ describe('AcpCliBackService', () => {
       expect(mockAgentService.disposeSession).toHaveBeenCalledWith('sess-1');
     });
 
+    it('should force dispose the session when requested by E2E cleanup', async () => {
+      await service.disposeSession('sess-1', true);
+
+      expect(mockAgentService.disposeSession).toHaveBeenCalledWith('sess-1', true);
+    });
+
     it('should still complete even if disposeSession fails', async () => {
       mockAgentService.disposeSession.mockRejectedValue(new Error('dispose failed'));
 

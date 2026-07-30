@@ -265,12 +265,16 @@ export class ACPSessionProvider implements ISessionProvider {
     await this.aiBackService.cancelSession(agentSessionId);
   }
 
-  async disposeSession(sessionId: string): Promise<void> {
+  async disposeSession(sessionId: string, force = false): Promise<void> {
     if (!sessionId || !this.aiBackService?.disposeSession) {
       return;
     }
     const agentSessionId = sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
-    await this.aiBackService.disposeSession(agentSessionId);
+    if (force) {
+      await this.aiBackService.disposeSession(agentSessionId, true);
+    } else {
+      await this.aiBackService.disposeSession(agentSessionId);
+    }
   }
 
   restoreSessionSnapshot(sessionId: string, snapshot: IChatSessionSnapshot): ISessionModel | undefined {

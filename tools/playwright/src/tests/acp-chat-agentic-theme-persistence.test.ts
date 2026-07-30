@@ -52,10 +52,18 @@ async function visualState() {
       const style = window.getComputedStyle(element);
       return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
     };
-    const chat = document.querySelector('.AI-Chat-slot');
-    const workbench = document.querySelector('#workbench-editor');
-    const input = document.querySelector('.AI-Chat-slot [role="textbox"]');
-    const header = document.querySelector('.AI-Chat-slot [data-testid="agentic-chat-panel-header"]');
+    const findVisible = (selector: string) =>
+      Array.from(document.querySelectorAll(selector)).find((element) => visible(element)) || null;
+    const chat = findVisible('.AI-Chat-slot');
+    const workbench = findVisible('#workbench-editor');
+    const input = chat
+      ? Array.from(chat.querySelectorAll('[role="textbox"]')).find((element) => visible(element)) || null
+      : null;
+    const header = chat
+      ? Array.from(chat.querySelectorAll('[data-testid="agentic-chat-panel-header"]')).find((element) =>
+          visible(element),
+        ) || null
+      : null;
     const chatRect = chat?.getBoundingClientRect();
     const workbenchRect = workbench?.getBoundingClientRect();
     const bodyStyle = window.getComputedStyle(document.body);
@@ -110,6 +118,8 @@ async function showChatAfterReload() {
   await page.evaluate(async () => (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {}));
   await waitForAcpChatReady(page);
   await ensureAgenticLayout(page);
+  await expect(page.locator('[data-testid="agentic-chat-panel-header"]:visible')).toBeVisible();
+  await expect(page.locator('.AI-Chat-slot:visible [role="textbox"]')).toBeVisible();
 }
 
 test.describe('ACP Chat Agentic 主题与布局持久化', () => {
@@ -172,6 +182,8 @@ test.describe('ACP Chat Agentic 主题与布局持久化', () => {
     await switchLayoutByMenu('Agent');
     await page.waitForSelector('#main-horizontal-ai-agentic');
     await ensureAgenticLayout(page);
+    await expect(page.locator('[data-testid="agentic-chat-panel-header"]:visible')).toBeVisible();
+    await expect(page.locator('.AI-Chat-slot:visible [role="textbox"]')).toBeVisible();
     const roundTrip = await visualState();
     expect(roundTrip.bodyClass).toContain('design-light');
     expect(roundTrip.chat?.x).toBeLessThan(roundTrip.workbench?.x ?? Number.POSITIVE_INFINITY);

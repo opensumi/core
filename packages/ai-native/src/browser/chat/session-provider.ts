@@ -109,8 +109,8 @@ export interface ISessionProvider {
   /** Cancel an existing ACP session, including one restored after browser reload. */
   cancelSession?(sessionId: string): Promise<void>;
 
-  /** Release an ACP session and return its process to the reusable pool. */
-  disposeSession?(sessionId: string): Promise<void>;
+  /** Release an ACP session; force disposal bypasses the reusable process pool. */
+  disposeSession?(sessionId: string, force?: boolean): Promise<void>;
 
   /** Convert the first attachment snapshot into the browser session model. */
   restoreSessionSnapshot?(sessionId: string, snapshot: IChatSessionSnapshot): ISessionModel | undefined;

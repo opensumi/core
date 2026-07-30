@@ -10,10 +10,12 @@ import {
   loadAcpBddFixtureWorkbench,
   waitForWorkbenchReady,
 } from './utils/acp-bdd-fixture';
+import { launchTaskInCurrentProject } from './utils/acp-task-list';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const LONG_STREAM_PROMPT = 'BDD reload during long stream';
 const ACTIVE_STREAM_SENTINEL = 'BDD_LONG_STREAM_CHUNK_02';
+const ACTIVE_TASK_SESSION_STORAGE_KEY = 'agentic.active-task-session.v1';
 
 let runtime: AcpBddFixtureRuntime;
 
@@ -99,10 +101,26 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
       hardeningVerdict: 'CONVERT',
     });
 
+    await launchTaskInCurrentProject(page);
     await sendPrompt(LONG_STREAM_PROMPT);
     await expect(chatSlot().getByText(ACTIVE_STREAM_SENTINEL)).toBeVisible({ timeout: 30_000 });
     await expect(chatButton('Stop')).toBeVisible();
     const beforeReloadState = await getSessionState();
+    const activeSessionId = beforeReloadState.session?.sessionId;
+    expect(activeSessionId).toBeTruthy();
+    const activeTaskRow = page.getByTestId(`agentic-task-row-${activeSessionId}`);
+    await expect(activeTaskRow).toBeVisible({ timeout: 30_000 });
+    await expect(activeTaskRow).toHaveAttribute('aria-current', 'true');
+    await expect
+      .poll(
+        () =>
+          page.evaluate((key) => {
+            const value = window.sessionStorage.getItem(key);
+            return value ? JSON.parse(value).sessionId : undefined;
+          }, ACTIVE_TASK_SESSION_STORAGE_KEY),
+        { timeout: 30_000 },
+      )
+      .toBe(activeSessionId);
 
     const beforeReloadProof = await evidence.saveJson(
       '01-active-before-reload',

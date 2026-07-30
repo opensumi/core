@@ -5,19 +5,30 @@ import { ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS, loadAcpBddFixtureWorkbench } from './u
 import { launchTaskInCurrentProject } from './utils/acp-task-list';
 
 const TASK_TITLE = 'A deliberately long Agent Task title for compact row presentation';
-const THEME_LABELS = [
-  'OpenSumi Design Dark+ (default dark)',
-  'OpenSumi Design Light+ (default light)',
-  'Dark High Contrast',
-  'Light High Contrast',
+const THEMES = [
+  { label: 'OpenSumi Design Dark+ (default dark)', root: 'body', className: 'design-dark' },
+  { label: 'OpenSumi Design Light+ (default light)', root: 'body', className: 'design-light' },
+  { label: 'Dark High Contrast', root: 'html', className: 'hc-black' },
+  { label: 'Light High Contrast', root: 'html', className: 'hc-light' },
 ] as const;
 
 function chatSlot() {
-  return page.locator('.AI-Chat-slot');
+  return page.locator('.AI-Chat-slot:visible');
 }
 
 function chatInput() {
   return chatSlot().locator('[contenteditable="true"]').last();
+}
+
+async function activeSessionId(): Promise<string | undefined> {
+  const state = await page.evaluate(async () =>
+    (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
+  );
+  return state?.result?.session?.sessionId;
+}
+
+async function inputDraftMessage(): Promise<string | undefined> {
+  return page.evaluate(() => (window as any).__OPENSUMI_E2E__?.getAcpInputDraft?.()?.message);
 }
 
 async function resizeTaskListTo(targetWidth: number): Promise<void> {
@@ -38,54 +49,24 @@ async function resizeTaskListTo(targetWidth: number): Promise<void> {
   await expect(taskList).toHaveCSS('width', `${targetWidth}px`);
 }
 
-async function chooseTheme(label: string): Promise<void> {
-  const isMac = await page.evaluate(() => /Mac/.test(navigator.platform));
-  await page.keyboard.press(`${isMac ? 'Meta' : 'Control'}+Shift+P`);
-  const input = page.locator('#opensumi-quickpick-input');
-  await expect(input).toBeVisible();
-  await input.fill('Color Theme');
+async function chooseTheme(theme: (typeof THEMES)[number]): Promise<void> {
+  const command = page.evaluate(() =>
+    (window as any).__OPENSUMI_E2E__?.executeCommand?.('workbench.action.selectTheme'),
+  );
+  const { label, root, className } = theme;
+  const option = page.getByText(label, { exact: true }).last();
+  await expect(option).toBeVisible({ timeout: 15_000 });
+  await option.click();
+  await command;
+  await expect(option).toBeHidden();
   await expect
     .poll(() =>
-      page.evaluate(() => {
-        const command = document.querySelector<HTMLElement>('#opensumi-quickpick-item[aria-label="Color Theme"]');
-        return !!command && command.getBoundingClientRect().height > 0;
+      page.evaluate(({ root, className }) => document.querySelector(root)?.classList.contains(className), {
+        root,
+        className,
       }),
     )
     .toBe(true);
-  await page.evaluate(() => {
-    document
-      .querySelector<HTMLElement>('#opensumi-quickpick-item[aria-label="Color Theme"] [class*="item_label_container"]')
-      ?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
-  });
-  await expect
-    .poll(() =>
-      page.evaluate(() =>
-        Array.from(document.querySelectorAll<HTMLElement>('#opensumi-quickpick-item')).some(
-          (element) =>
-            /High Contrast|default light|default dark/.test(element.textContent || '') &&
-            element.getBoundingClientRect().height > 0,
-        ),
-      ),
-    )
-    .toBe(true);
-  await input.fill(label);
-  await expect
-    .poll(() =>
-      page.evaluate((themeLabel) => {
-        const option = Array.from(document.querySelectorAll<HTMLElement>('#opensumi-quickpick-item')).find(
-          (element) => element.textContent?.includes(themeLabel) && element.getBoundingClientRect().height > 0,
-        );
-        return !!option;
-      }, label),
-    )
-    .toBe(true);
-  await page.evaluate((themeLabel) => {
-    Array.from(document.querySelectorAll<HTMLElement>('#opensumi-quickpick-item'))
-      .find((element) => element.textContent?.includes(themeLabel) && element.getBoundingClientRect().height > 0)
-      ?.querySelector<HTMLElement>('[class*="item_label_container"]')
-      ?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
-  }, label);
-  await expect(input).toBeHidden();
 }
 
 test.describe('ACP Chat Agentic Task Row presentation', () => {
@@ -106,21 +87,23 @@ test.describe('ACP Chat Agentic Task Row presentation', () => {
       await launchTaskInCurrentProject(page);
       await chatInput().click();
       await page.keyboard.insertText(TASK_TITLE);
+      await expect(chatInput()).toContainText(TASK_TITLE);
+      await expect.poll(inputDraftMessage).toBe(TASK_TITLE);
       await chatSlot()
         .getByRole('button', { name: /^(Enter\s+)?Send$|^Enter\s+发送$|^发送$/i })
         .last()
         .click();
 
-      const row = page.locator('[data-testid^="agentic-task-row-"]').filter({ hasText: TASK_TITLE }).first();
+      await expect.poll(activeSessionId, { timeout: 30_000 }).toBeTruthy();
+      const sessionId = (await activeSessionId())!;
+      const row = page.getByTestId(`agentic-task-row-${sessionId}`);
       await expect(row).toBeVisible({ timeout: 30_000 });
-      const rowTestId = await row.getAttribute('data-testid');
-      expect(rowTestId).toBeTruthy();
-      const sessionId = rowTestId!.replace('agentic-task-row-', '');
       const title = row.getByText(TASK_TITLE, { exact: true });
       const archive = page.getByTestId(`agentic-task-archive-${sessionId}`);
       const tooltipContent = page.getByTestId(`agentic-task-tooltip-content-${sessionId}`);
 
       await expect(row).toHaveAttribute('aria-current', 'true');
+      await expect(title).toBeVisible({ timeout: 30_000 });
       await expect(row).toHaveCSS('height', '22px');
       await expect(row).toHaveCSS('overflow', 'hidden');
       await expect(title).toHaveCSS('white-space', 'nowrap');
@@ -159,8 +142,8 @@ test.describe('ACP Chat Agentic Task Row presentation', () => {
       expect(tooltipBounds.bottom).toBeLessThanOrEqual(900);
 
       const themeSurfaces: string[] = [];
-      for (const themeLabel of THEME_LABELS) {
-        await chooseTheme(themeLabel);
+      for (const theme of THEMES) {
+        await chooseTheme(theme);
         await row.focus();
         await expect(tooltipContent).toBeVisible();
         await expect(row).toHaveCSS('height', '22px');
