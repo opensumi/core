@@ -444,6 +444,7 @@ const MentionInputImpl = (
       getSerializedContent: () => (editorRef.current ? serializeEditorContent(editorRef.current) : ''),
       restoreSerializedContent,
       focus: () => focusEditorAtEnd(editorRef.current),
+      isFocused: () => document.activeElement === editorRef.current,
       closeTransientUi,
     }),
     [closeTransientUi, restoreSerializedContent],

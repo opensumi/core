@@ -314,7 +314,7 @@ export interface IAIBackService<
 
   cancelSession?(sessionId: string): Promise<void>;
 
-  disposeSession?(sessionId: string): Promise<void>;
+  disposeSession?(sessionId: string, force?: boolean): Promise<void>;
 
   listSessions?(config: AgentProcessConfig): Promise<ListSessionsResponse>;
 

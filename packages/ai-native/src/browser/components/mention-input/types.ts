@@ -144,6 +144,7 @@ export interface MentionInputHandle {
   getSerializedContent(): string;
   restoreSerializedContent(content: string): void;
   focus(): void;
+  isFocused(): boolean;
   closeTransientUi(): boolean;
 }
 

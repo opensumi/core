@@ -974,7 +974,7 @@ export class AcpChatInternalService extends ChatInternalService {
     }
   }
 
-  override async clearSessionModel(sessionId?: string) {
+  override async clearSessionModel(sessionId?: string, force = false) {
     sessionId = sessionId || this._sessionModel?.sessionId;
     if (!sessionId) {
       this.enterDraftSession({ force: true });
@@ -986,7 +986,11 @@ export class AcpChatInternalService extends ChatInternalService {
     try {
       const acpManager = this.chatManagerService as AcpChatManagerService;
       if (acpManager.disposeSession) {
-        await acpManager.disposeSession(sessionId);
+        if (force) {
+          await acpManager.disposeSession(sessionId, true);
+        } else {
+          await acpManager.disposeSession(sessionId);
+        }
       } else {
         this.chatManagerService.clearSession(sessionId);
       }

@@ -957,9 +957,13 @@ ${input}`;
     return messages;
   }
 
-  async disposeSession(sessionId: string): Promise<void> {
+  async disposeSession(sessionId: string, force = false): Promise<void> {
     try {
-      await this.agentService.disposeSession(sessionId);
+      if (force) {
+        await this.agentService.disposeSession(sessionId, true);
+      } else {
+        await this.agentService.disposeSession(sessionId);
+      }
     } catch (error) {
       this.logger.error(`Failed to release terminals for session ${sessionId}:`, error);
     }

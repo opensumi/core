@@ -224,6 +224,18 @@ describe('AcpChatManagerService', () => {
     expect(disposeSession).toHaveBeenCalledWith('s1');
   });
 
+  it('force disposes an ACP provider session using its raw backend session id', async () => {
+    const provider = createSessionProvider();
+    const disposeSession = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(provider, 'aiBackService', {
+      value: { disposeSession },
+    });
+
+    await provider.disposeSession('acp:s1', true);
+
+    expect(disposeSession).toHaveBeenCalledWith('s1', true);
+  });
+
   it('releases the backend session before clearing the browser session model', async () => {
     const service = createService() as any;
     service.ownedBackendSessions.add('acp:s1');
@@ -241,6 +253,20 @@ describe('AcpChatManagerService', () => {
     await service.disposeSession('acp:s1');
 
     expect(calls).toEqual(['backend', 'browser']);
+  });
+
+  it('force releases a restored backend session that is not browser-owned', async () => {
+    const service = createService() as any;
+    service.mainProvider = {
+      disposeSession: jest.fn().mockResolvedValue(undefined),
+    };
+    service.clearSession = jest.fn();
+    service.getSession = jest.fn(() => ({}));
+
+    await service.disposeSession('acp:restored', true);
+
+    expect(service.mainProvider.disposeSession).toHaveBeenCalledWith('acp:restored', true);
+    expect(service.clearSession).toHaveBeenCalledWith('acp:restored');
   });
 
   it('deduplicates overlapping backend session disposal and clears the browser model once', async () => {

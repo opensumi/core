@@ -1380,6 +1380,64 @@ describe('AcpChatMentionInput ref contract', () => {
     });
   });
 
+  it('clears an accepted first-task draft after it is promoted to an active session', async () => {
+    mockUseActualMentionInput = true;
+    jest.requireMock('@opensumi/ide-core-browser').useInjectable.mockReturnValue(createMockService());
+    const ref = React.createRef<AcpTurnEditorHandle>();
+    const submission = deferred<TurnActionResult>();
+    const submit = jest.fn(() => submission.promise);
+    const onDraftChange = jest.fn();
+    let promoteSession!: (sessionId: string) => void;
+
+    const Harness = () => {
+      const [activeSessionId, setActiveSessionId] = React.useState<string>();
+      promoteSession = setActiveSessionId;
+      return React.createElement(AcpTurnEditor, {
+        ref,
+        variant: 'main',
+        activeSessionId,
+        initialDraft: { message: 'first task draft' },
+        onDraftChange,
+        onSend: jest.fn(),
+        setTheme: jest.fn(),
+        agentId: '',
+        setAgentId: jest.fn(),
+        command: '',
+        setCommand: jest.fn(),
+        turnActions: {
+          submit,
+          stop: jest.fn(),
+          fastTrack: jest.fn(),
+          invalidateFastTrack: jest.fn(),
+          takeBackLastQueuedTurn: jest.fn(),
+        },
+      });
+    };
+
+    act(() => {
+      render(React.createElement(Harness), container);
+    });
+
+    const editor = container.querySelector('[contenteditable="true"]') as HTMLDivElement;
+    act(() => {
+      dispatchEditorKey(editor, { key: 'Enter' });
+      promoteSession('promoted-session');
+    });
+
+    await act(async () => {
+      submission.resolve({ accepted: true, outcome: 'started' });
+      await submission.promise;
+      await Promise.resolve();
+    });
+
+    expect(submit).toHaveBeenCalledWith(
+      { message: 'first task draft', images: [], agentId: '', command: '' },
+      'normal',
+    );
+    expect(ref.current!.getDraft()).toEqual({ message: '', images: [], agentId: '', command: '' });
+    expect(onDraftChange).toHaveBeenLastCalledWith({ message: '', images: [], agentId: '', command: '' });
+  });
+
   it('preserves text, pasted attachment, agent, and command changes made while submission is pending', async () => {
     mockUseActualMentionInput = true;
     const upload = jest.fn(async () => 'data:image/png;base64,new');
