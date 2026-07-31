@@ -744,7 +744,13 @@
         }
 
         .chat_container {
-          height: auto;
+          flex: 1 1 0;
+          height: 0;
+          overflow: hidden;
+
+          .message_list {
+            height: 100%;
+          }
         }
 
         .agentic_task_empty_layout {

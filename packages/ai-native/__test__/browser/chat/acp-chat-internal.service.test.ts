@@ -588,6 +588,43 @@ describe('AcpChatInternalService', () => {
       expect(registry.rememberActiveTaskSession).toHaveBeenCalledWith(model.sessionId);
     });
 
+    it('commits an Agentic transcript before Live Ready and keeps submission loading active', async () => {
+      const { chatManagerService, model, service } = createService();
+      const loadingChanges: boolean[] = [];
+      let resolveLiveReady!: (status: 'ready') => void;
+      const liveReady = new Promise<'ready'>((resolve) => {
+        resolveLiveReady = resolve;
+      });
+      chatManagerService.loadSession.mockResolvedValue({ liveReady });
+      service.onSessionLoadingChange((loading) => loadingChanges.push(loading));
+
+      await expect(service.activateAgenticTaskSession(model.sessionId)).resolves.toEqual({ status: 'activated' });
+
+      expect(service.sessionModel).toBe(model);
+      expect(service.isSessionLoading).toBe(true);
+      expect(service.getAgenticSessionLiveReadyStatus(model.sessionId)).toBe('pending');
+      expect(loadingChanges).toEqual([true]);
+
+      resolveLiveReady('ready');
+      await liveReady;
+      await Promise.resolve();
+
+      expect(service.isSessionLoading).toBe(false);
+      expect(service.getAgenticSessionLiveReadyStatus(model.sessionId)).toBe('ready');
+      expect(loadingChanges).toEqual([true, false]);
+    });
+
+    it('keeps a Transcript Ready Agentic session unsendable when Live Ready fails', async () => {
+      const { chatManagerService, model, service } = createService();
+      chatManagerService.loadSession.mockResolvedValue({ liveReady: Promise.resolve('failed') });
+
+      await expect(service.activateAgenticTaskSession(model.sessionId)).resolves.toEqual({ status: 'activated' });
+      await Promise.resolve();
+
+      expect(service.isSessionLoading).toBe(false);
+      expect(service.getAgenticSessionLiveReadyStatus(model.sessionId)).toBe('failed');
+    });
+
     it('uses pending Project and Agent metadata when the active chat service creates the Task session', async () => {
       const { chatManagerService, registry, service } = createService();
       registry.consumePendingLaunch.mockReturnValue({ projectId: 'project-b', agentId: 'agent-b' });

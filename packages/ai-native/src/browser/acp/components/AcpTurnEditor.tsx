@@ -71,6 +71,7 @@ export interface IChatMentionInputProps {
   placeholder?: string;
   enableOptions?: boolean;
   disabled?: boolean;
+  submitDisabled?: boolean;
   loading?: boolean;
   sendBtnClassName?: string;
   defaultHeight?: number;
@@ -1274,6 +1275,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           onToggleExpanded={isQueued ? undefined : toggleExpanded}
           onUserInput={handleUserInput}
           disabled={disabled}
+          submitDisabled={props.submitDisabled}
           loading={loading}
           labelService={labelService}
           workspaceService={workspaceService}

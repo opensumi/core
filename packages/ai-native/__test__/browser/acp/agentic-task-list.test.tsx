@@ -1154,6 +1154,59 @@ describe('AgenticTaskList', () => {
     expect(services.workspaceSwitch.activateTask).toHaveBeenCalledTimes(3);
   });
 
+  it('keeps the Active Task selected and shows only one Pending Task Selection', async () => {
+    const services = createServices();
+    let resolvePendingActivation: (result: { status: 'activated' }) => void;
+    const pendingActivation = new Promise<{ status: 'activated' }>((resolve) => {
+      resolvePendingActivation = resolve;
+    });
+    services.workspaceSwitch.activateTask
+      .mockResolvedValueOnce({ status: 'activated' })
+      .mockReturnValueOnce(pendingActivation);
+    services.registry.listActiveGroups.mockResolvedValue([
+      {
+        project: projectA,
+        tasks: [createTask(projectA, 'acp:active', 'Active task'), createTask(projectA, 'acp:pending', 'Pending task')],
+      },
+    ]);
+    await renderTaskList(services);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-row-acp:active"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-row-acp:pending"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:active"]')?.getAttribute('aria-current')).toBe(
+      'true',
+    );
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:pending"]')?.getAttribute('aria-current'),
+    ).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:pending"]')?.getAttribute('aria-busy')).toBe(
+      'true',
+    );
+    expect(container.querySelector('[data-testid="agentic-task-pending-acp:pending"]')).not.toBeNull();
+
+    act(() => {
+      (container.querySelector('[data-testid="agentic-task-row-acp:pending"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="agentic-task-row-acp:active"]') as HTMLButtonElement).click();
+    });
+    expect(services.workspaceSwitch.activateTask).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      resolvePendingActivation!({ status: 'activated' });
+      await flushPromises();
+    });
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:pending"]')?.getAttribute('aria-current')).toBe(
+      'true',
+    );
+    expect(container.querySelector('[data-testid="agentic-task-pending-acp:pending"]')).toBeNull();
+  });
+
   it('selects only the most recent Task Row after rapid successful activation requests', async () => {
     const services = createServices();
     let resolveFirstActivation: (result: { status: 'activated' }) => void;

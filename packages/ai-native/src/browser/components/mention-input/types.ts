@@ -127,6 +127,7 @@ export interface MentionInputProps {
   onUserInput?: () => void;
   placeholder?: string;
   disabled?: boolean;
+  submitDisabled?: boolean;
   loading?: boolean;
   onSelectionChange?: (value: string) => void;
   onImageUpload?: (files: File[]) => Promise<void>;

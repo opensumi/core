@@ -40,6 +40,7 @@ export interface AcpBddFixtureOptions {
   workspaceFiles?: string[];
   delayMs?: number;
   longStreamTicks?: number;
+  historyMessageCount?: number;
   sessionPrefix?: string;
   agentType?: string;
   showChatView?: boolean;
@@ -192,6 +193,10 @@ export function getMockAcpAgentCommand(options: AcpBddFixtureOptions) {
   if (options.longStreamTicks !== undefined) {
     args.push(`--long-stream-ticks=${options.longStreamTicks}`);
     env.OPENSUMI_ACP_BDD_LONG_STREAM_TICKS = String(options.longStreamTicks);
+  }
+  if (options.historyMessageCount !== undefined) {
+    args.push(`--history-message-count=${options.historyMessageCount}`);
+    env.OPENSUMI_ACP_BDD_HISTORY_MESSAGE_COUNT = String(options.historyMessageCount);
   }
   if (options.sessionPrefix) {
     args.push(`--session-prefix=${options.sessionPrefix}`);

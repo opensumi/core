@@ -347,6 +347,7 @@ function ProjectRenameModal({
 
 function TaskRow({
   active,
+  pending,
   agentLabel,
   onArchive,
   onActivate,
@@ -358,6 +359,7 @@ function TaskRow({
   task,
 }: {
   active: boolean;
+  pending: boolean;
   agentAvailable: boolean;
   agentLabel: string;
   conversationUnavailable: boolean;
@@ -430,6 +432,7 @@ function TaskRow({
       >
         <button
           aria-label={accessibleLabel}
+          aria-busy={pending || undefined}
           aria-current={active ? 'true' : undefined}
           aria-disabled={!activationAvailable}
           className={`${styles.task_row} ${active ? styles.task_row_selected : ''}`}
@@ -447,7 +450,15 @@ function TaskRow({
           type='button'
         >
           <span className={styles.task_title}>{task.title}</span>
-          {presentation && (
+          {pending ? (
+            <span
+              aria-hidden='true'
+              className={`${styles.task_meta} ${styles.task_meta_information}`}
+              data-testid={`agentic-task-pending-${task.sessionId}`}
+            >
+              <span className='codicon codicon-loading codicon-modifier-spin' />
+            </span>
+          ) : presentation ? (
             <span
               className={`${styles.task_meta} ${styles[`task_meta_${presentation.tone}`]}`}
               data-agentic-task-meta-kind={presentation.kind}
@@ -455,7 +466,7 @@ function TaskRow({
             >
               <span aria-hidden='true' className={`codicon ${presentation.icon}`} />
             </span>
-          )}
+          ) : null}
           {task.unread && (
             <span
               aria-label={localize('aiNative.agentic.task.unread', 'Unread')}
@@ -496,6 +507,7 @@ function TaskRow({
 
 function ProjectGroup({
   activeSessionId,
+  pendingSessionId,
   agentLabels,
   availableAgentIds,
   collapseDisabled,
@@ -512,6 +524,7 @@ function ProjectGroup({
   isTaskSessionObserved,
 }: {
   activeSessionId: string | undefined;
+  pendingSessionId: string | undefined;
   agentLabels: ReadonlyMap<string, string>;
   availableAgentIds: ReadonlySet<string>;
   collapseDisabled: boolean;
@@ -628,6 +641,7 @@ function ProjectGroup({
         group.tasks.map((task) => (
           <TaskRow
             active={task.sessionId === activeSessionId}
+            pending={task.sessionId === pendingSessionId}
             agentAvailable={availableAgentIds.has(task.agentId)}
             agentLabel={agentLabels.get(task.agentId) || task.agentId}
             conversationUnavailable={conversationUnavailableSessionIds.has(task.sessionId)}
@@ -730,6 +744,7 @@ function ArchivedTaskGroups({
             {group.tasks.map((task) => (
               <TaskRow
                 active={false}
+                pending={false}
                 agentAvailable={availableAgentIds.has(task.agentId)}
                 agentLabel={agentLabels.get(task.agentId) || task.agentId}
                 conversationUnavailable={false}
@@ -765,6 +780,7 @@ export function AgenticTaskList() {
   const [collapsedProjectIds, setCollapsedProjectIds] = React.useState<Set<string>>(() => new Set());
   const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
   const [activeSessionId, setActiveSessionId] = React.useState<string>();
+  const [pendingSessionId, setPendingSessionId] = React.useState<string>();
   const [activeAgentId, setActiveAgentId] = React.useState<string>();
   const [availableAgentConfigs, setAvailableAgentConfigs] = React.useState(() =>
     getAvailableAgentConfigs(preferenceService),
@@ -956,15 +972,20 @@ export function AgenticTaskList() {
 
   const activate = React.useCallback(
     async (task: AgenticTaskRecord) => {
+      if (task.sessionId === activeSessionId || task.sessionId === pendingSessionId) {
+        return;
+      }
       const group = groups.find((candidate) => candidate.project.id === task.projectId);
       if (!group || group.project.availability === 'unavailable') {
         return;
       }
       const activationVersion = ++taskActivationVersionRef.current;
+      setPendingSessionId(task.sessionId);
       const result = await workspaceSwitch.activateTask(task);
       if (activationVersion !== taskActivationVersionRef.current) {
         return;
       }
+      setPendingSessionId(undefined);
       if (result.status === 'activated') {
         setConversationUnavailableSessionIds((currentIds) => {
           if (!currentIds.has(task.sessionId)) {
@@ -979,7 +1000,7 @@ export function AgenticTaskList() {
         setConversationUnavailableSessionIds((currentIds) => new Set(currentIds).add(task.sessionId));
       }
     },
-    [groups, workspaceSwitch],
+    [activeSessionId, groups, pendingSessionId, workspaceSwitch],
   );
 
   const rename = React.useCallback(
@@ -1071,6 +1092,7 @@ export function AgenticTaskList() {
         {groups.map((group) => (
           <ProjectGroup
             activeSessionId={activeSessionId}
+            pendingSessionId={pendingSessionId}
             agentLabels={agentLabels}
             availableAgentIds={availableAgentIds}
             collapseDisabled={collapseDisabled}
