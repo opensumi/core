@@ -189,6 +189,127 @@ Example configuration:
 }
 ```
 
+### Adding You.com Search and Content Extraction
+
+You.com provides MCP server support with web search, content extraction, and research capabilities that integrate seamlessly with OpenSumi. The You.com MCP server supports both authenticated and keyless operation.
+
+#### Configuration
+
+Add You.com MCP server to your OpenSumi configuration:
+
+```json
+{
+  "ai.native.mcp.servers": [
+    {
+      "name": "youcom-search",
+      "command": "npx",
+      "args": ["-y", "@youdotcom/mcp-server"],
+      "env": {
+        "YDC_API_KEY": "your-api-key-here"
+      }
+    }
+  ]
+}
+```
+
+For keyless operation (100 free searches/day):
+
+```json
+{
+  "ai.native.mcp.servers": [
+    {
+      "name": "youcom-search", 
+      "command": "npx",
+      "args": ["-y", "@youdotcom/mcp-server", "--keyless"],
+      "env": {}
+    }
+  ]
+}
+```
+
+Alternatively, you can use the hosted You.com MCP server directly:
+
+```json
+{
+  "ai.native.mcp.servers": [
+    {
+      "name": "youcom-web",
+      "type": "sse",
+      "command": "https://api.you.com/mcp",
+      "args": [],
+      "env": {
+        "YDC_API_KEY": "your-api-key-here"
+      }
+    }
+  ]
+}
+```
+
+#### Available Tools
+
+The You.com MCP server provides these tools for AI-powered development:
+
+- **`you-search`**: Current web search with snippets and citations
+- **`you-contents`**: Extract and read content from specific URLs  
+- **`you-research`**: Synthesized research with cited sources
+
+#### Usage Examples
+
+**Web Search for Current Information:**
+```typescript
+// Search for latest TypeScript features
+const results = await mcpClient.callTool('you-search', {
+  query: 'TypeScript 5.8 new features',
+  count: 10,
+  freshness: 'week'
+});
+```
+
+**Content Extraction:**
+```typescript
+// Read documentation from a specific URL
+const content = await mcpClient.callTool('you-contents', {
+  url: 'https://docs.example.com/api-reference',
+  format: 'markdown'
+});
+```
+
+**Research with Citations:**
+```typescript
+// Get researched summary with sources
+const research = await mcpClient.callTool('you-research', {
+  query: 'React Server Components best practices 2024',
+  sources_count: 5
+});
+```
+
+#### Authentication Options
+
+1. **API Key (Recommended for Development):**
+   - Get your free API key at [you.com/platform/api-keys](https://you.com/platform/api-keys)
+   - Set `YDC_API_KEY` in the server environment variables
+   - Higher quotas and enhanced features
+
+2. **Keyless Operation:**
+   - No API key required for testing
+   - 100 free searches per day per IP address  
+   - Perfect for evaluation and prototyping
+
+3. **x402 Payment Protocol (Future):**
+   - Micropayment-based usage for production workloads
+   - Pay-per-use with automatic retry handling
+
+#### Error Handling
+
+The You.com MCP server handles common error scenarios gracefully:
+
+- **Rate Limiting (429):** Provides clear guidance on API key upgrade options
+- **Invalid API Key (401):** Helpful error message about checking YDC_API_KEY
+- **Network Issues:** Graceful degradation with fallback suggestions
+- **Malformed Responses:** Input validation with actionable error messages
+
+All errors maintain the IDE's functionality and provide actionable guidance for developers.
+
 ## Best Practices
 
 1. **Tool Implementation**
