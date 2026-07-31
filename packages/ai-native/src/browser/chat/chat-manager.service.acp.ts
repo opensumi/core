@@ -49,6 +49,12 @@ export interface AcpSessionStateChangeEvent {
   availableCommands?: AvailableCommand[];
 }
 
+export type AcpSessionLiveReadyStatus = 'ready' | 'failed';
+
+export interface AcpSessionLoadResult {
+  liveReady: Promise<AcpSessionLiveReadyStatus>;
+}
+
 type AcpSessionModelData = ISessionModel & { extension?: ISessionModelExtension };
 
 @Injectable()
@@ -358,9 +364,11 @@ export class AcpChatManagerService extends ChatManagerService {
     return model;
   }
 
-  async loadSession(sessionId: string) {
-    this.sessionLoadGenerations.set(sessionId, (this.sessionLoadGenerations.get(sessionId) || 0) + 1);
-    return this.enqueueSessionLifecycle(sessionId, async () => {
+  async loadSession(sessionId: string): Promise<AcpSessionLoadResult> {
+    const loadGeneration = (this.sessionLoadGenerations.get(sessionId) || 0) + 1;
+    this.sessionLoadGenerations.set(sessionId, loadGeneration);
+    let liveReady: Promise<AcpSessionLiveReadyStatus> = Promise.resolve('ready');
+    await this.enqueueSessionLifecycle(sessionId, async () => {
       this.useAcpProviderWhenAvailable();
       if (this.aiNativeConfig.capabilities.supportsAgentMode) {
         const existingSession = this.peekSession(sessionId);
@@ -376,28 +384,34 @@ export class AcpChatManagerService extends ChatManagerService {
               this.restoreLoadedSession(sessionId, sessionData, existingSession);
             }
           }
-          let attachment: SumiReadableStream<IChatProgress> | undefined;
-          try {
+          liveReady = (async () => {
             if (this.shouldFailBddAttachment()) {
               throw new Error('BDD attachment transport unavailable');
             }
-            attachment = await this.mainProvider.attachSession?.(sessionId);
-          } catch (error) {
+            const attachment = await this.mainProvider?.attachSession?.(sessionId);
+            if (this.sessionLoadGenerations.get(sessionId) !== loadGeneration || !this.peekSession(sessionId)) {
+              attachment?.end();
+              return 'failed' as const;
+            }
+            if (attachment) {
+              this.observeSessionAttachment(sessionId, attachment);
+            }
+            if (loaded) {
+              this.ownedBackendSessions.add(sessionId);
+            }
+            return 'ready' as const;
+          })().catch((error) => {
             this.logger.error(
               `[ACP Chat][Manager] attach session failed after restoring history — errorType=${
                 error instanceof Error ? error.name : typeof error
               }`,
             );
-          }
-          if (attachment) {
-            this.observeSessionAttachment(sessionId, attachment);
-          }
-          if (loaded) {
-            this.ownedBackendSessions.add(sessionId);
-          }
+            return 'failed' as const;
+          });
         }
       }
     });
+    return { liveReady };
   }
 
   private enqueueSessionLifecycle<T>(sessionId: string, operation: () => Promise<T>): Promise<T> {

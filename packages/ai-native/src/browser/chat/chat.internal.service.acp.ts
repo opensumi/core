@@ -149,9 +149,19 @@ export class AcpChatInternalService extends ChatInternalService {
   private readonly _onSessionLoadingChange = new Emitter<boolean>();
   public readonly onSessionLoadingChange: Event<boolean> = this._onSessionLoadingChange.event;
   private sessionLoadingCount = 0;
+  private readonly agenticSessionLiveReadyStatuses = new Map<string, 'pending' | 'ready' | 'failed'>();
+  private pendingAgenticSessionId: string | undefined;
 
   public get isSessionLoading(): boolean {
     return this.sessionLoadingCount > 0;
+  }
+
+  public getAgenticSessionLiveReadyStatus(sessionId: string | undefined): 'pending' | 'ready' | 'failed' {
+    return sessionId ? this.agenticSessionLiveReadyStatuses.get(sessionId) || 'ready' : 'ready';
+  }
+
+  public getPendingAgenticSessionId(): string | undefined {
+    return this.pendingAgenticSessionId;
   }
 
   private readonly _onSessionModelChange = new Emitter<ChatModel | undefined>();
@@ -212,6 +222,12 @@ export class AcpChatInternalService extends ChatInternalService {
     this.sessionLoadingCount -= 1;
     if (this.sessionLoadingCount === 0) {
       this._onSessionLoadingChange.fire(false);
+    }
+  }
+
+  private clearPendingAgenticSession(sessionId: string): void {
+    if (this.pendingAgenticSessionId === sessionId) {
+      this.pendingAgenticSessionId = undefined;
     }
   }
 
@@ -1012,7 +1028,8 @@ export class AcpChatInternalService extends ChatInternalService {
 
   async loadSessionModel(sessionId: string) {
     const acpManager = this.chatManagerService as AcpChatManagerService;
-    await acpManager.loadSession(sessionId);
+    const loadResult = await acpManager.loadSession(sessionId);
+    await loadResult?.liveReady;
     return this.chatManagerService.getSession(sessionId);
   }
 
@@ -1057,16 +1074,23 @@ export class AcpChatInternalService extends ChatInternalService {
     shouldApply: () => boolean = () => true,
   ): Promise<AgenticTaskSessionActivationResult> {
     const selectionVersion = ++this.sessionSelectionVersion;
+    let releaseLoadingOnReturn = true;
     this.beginSessionLoading();
+    this.pendingAgenticSessionId = sessionId;
+    this.agenticSessionLiveReadyStatuses.set(sessionId, 'pending');
     try {
       const acpManager = this.chatManagerService as AcpChatManagerService;
-      await acpManager.loadSession(sessionId);
+      const loadResult = await acpManager.loadSession(sessionId);
       const session = this.chatManagerService.getSession(sessionId);
       if (selectionVersion !== this.sessionSelectionVersion || !shouldApply()) {
+        this.agenticSessionLiveReadyStatuses.delete(sessionId);
+        this.clearPendingAgenticSession(sessionId);
         await acpManager.disposeSession(sessionId);
         return { status: 'superseded' };
       }
       if (!session) {
+        this.agenticSessionLiveReadyStatuses.delete(sessionId);
+        this.clearPendingAgenticSession(sessionId);
         this.messageService.info(ACP_LOAD_TASK_FALLBACK_MESSAGE);
         return { status: 'failed' };
       }
@@ -1076,17 +1100,41 @@ export class AcpChatInternalService extends ChatInternalService {
         () => selectionVersion === this.sessionSelectionVersion && shouldApply(),
       );
       if (!activated) {
+        this.agenticSessionLiveReadyStatuses.delete(sessionId);
         await acpManager.disposeSession(sessionId);
+      } else if (loadResult?.liveReady) {
+        releaseLoadingOnReturn = false;
+        void loadResult.liveReady.then(
+          (status) => {
+            if (selectionVersion === this.sessionSelectionVersion) {
+              this.agenticSessionLiveReadyStatuses.set(sessionId, status);
+            }
+            this.endSessionLoading();
+          },
+          () => {
+            if (selectionVersion === this.sessionSelectionVersion) {
+              this.agenticSessionLiveReadyStatuses.set(sessionId, 'failed');
+            }
+            this.endSessionLoading();
+          },
+        );
+      } else {
+        this.agenticSessionLiveReadyStatuses.set(sessionId, 'ready');
       }
+      this.clearPendingAgenticSession(sessionId);
       return { status: activated ? 'activated' : 'superseded' };
     } catch (error) {
+      this.agenticSessionLiveReadyStatuses.delete(sessionId);
+      this.clearPendingAgenticSession(sessionId);
       if (selectionVersion === this.sessionSelectionVersion && shouldApply()) {
         this.messageService.info(formatAcpLoadTaskFallbackMessage(error));
         return { status: isAcpSessionNotFoundError(error) ? 'conversation-unavailable' : 'failed' };
       }
       return { status: 'superseded' };
     } finally {
-      this.endSessionLoading();
+      if (releaseLoadingOnReturn) {
+        this.endSessionLoading();
+      }
     }
   }
 
@@ -1097,7 +1145,8 @@ export class AcpChatInternalService extends ChatInternalService {
     this.beginSessionLoading();
     try {
       const acpManager = this.chatManagerService as AcpChatManagerService;
-      await acpManager.loadSession(sessionId);
+      const loadResult = await acpManager.loadSession(sessionId);
+      await loadResult?.liveReady;
       if (!shouldApply()) {
         await acpManager.disposeSession(sessionId);
         return { status: 'superseded' };
@@ -1134,7 +1183,8 @@ export class AcpChatInternalService extends ChatInternalService {
       if (selectionVersion !== this.sessionSelectionVersion) {
         return;
       }
-      await acpManager.loadSession(sessionId);
+      const loadResult = await acpManager.loadSession(sessionId);
+      await loadResult?.liveReady;
       if (selectionVersion !== this.sessionSelectionVersion) {
         await acpManager.disposeSession(sessionId);
         return;

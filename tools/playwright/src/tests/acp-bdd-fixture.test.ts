@@ -28,6 +28,7 @@ test.describe('ACP BDD fixture scheduling', () => {
       await writeMockAcpAgentSettings(workspaceDir, {
         fixture: 'stream-rich',
         delayMs: 5,
+        historyMessageCount: 1000,
         sessionPrefix: 'bdd-rich',
       });
 
@@ -35,10 +36,13 @@ test.describe('ACP BDD fixture scheduling', () => {
       let agent = readDefaultAgent(settings);
       expect(settings['ai.native.agent.defaultType']).toBe('claude-agent-acp');
       expect(settings['ai-native.acp.deliveryMode']).toBe('stream');
-      expect(agent.args).toEqual(expect.arrayContaining(['--fixture=stream-rich', '--delay-ms=5']));
+      expect(agent.args).toEqual(
+        expect.arrayContaining(['--fixture=stream-rich', '--delay-ms=5', '--history-message-count=1000']),
+      );
       expect(agent.env).toMatchObject({
         OPENSUMI_ACP_BDD_FIXTURE: 'stream-rich',
         OPENSUMI_ACP_BDD_DELAY_MS: '5',
+        OPENSUMI_ACP_BDD_HISTORY_MESSAGE_COUNT: '1000',
         OPENSUMI_ACP_BDD_SESSION_PREFIX: 'bdd-rich',
       });
 

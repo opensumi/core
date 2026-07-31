@@ -1066,7 +1066,8 @@ describe('AcpChatManagerService', () => {
       value: { loadSession, attachSession },
     });
 
-    await expect(service.loadSession(sessionId)).resolves.toBeUndefined();
+    const firstLoad = await service.loadSession(sessionId);
+    await expect(firstLoad.liveReady).resolves.toBe('failed');
 
     const restoredModel = service.getSession(sessionId);
     expect(restoredModel).toBeDefined();
@@ -1080,7 +1081,8 @@ describe('AcpChatManagerService', () => {
       '[ACP Chat][Manager] attach session failed after restoring history — errorType=Error',
     );
 
-    await service.loadSession(sessionId);
+    const secondLoad = await service.loadSession(sessionId);
+    await expect(secondLoad.liveReady).resolves.toBe('ready');
 
     expect(loadSession).toHaveBeenCalledTimes(1);
     expect(attachSession).toHaveBeenCalledTimes(2);
@@ -1090,7 +1092,101 @@ describe('AcpChatManagerService', () => {
     expect(service.getSession(sessionId)?.requests).toHaveLength(0);
   });
 
-  it('propagates queued attachment snapshot restoration failures', async () => {
+  it('makes a restored transcript available without waiting for Live Ready attachment', async () => {
+    const service = createService();
+    const sessionId = 'acp:transcript-ready';
+    let resolveAttachment: (stream: undefined) => void;
+    const attachment = new Promise<undefined>((resolve) => {
+      resolveAttachment = resolve;
+    });
+    const attachSession = jest.fn(() => attachment);
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue({
+          sessionId,
+          history: {
+            additional: {},
+            messages: [
+              {
+                id: `${sessionId}-user`,
+                role: ChatMessageRole.User,
+                content: 'Transcript Ready content',
+                order: 0,
+              },
+            ],
+          },
+          requests: [],
+        }),
+        attachSession,
+      },
+    });
+
+    const loading = service.loadSession(sessionId);
+    const outcome = await Promise.race([
+      loading.then(() => 'transcript-ready' as const),
+      new Promise<'blocked'>((resolve) => setTimeout(() => resolve('blocked'), 0)),
+    ]);
+
+    expect(outcome).toBe('transcript-ready');
+    expect(service.getSession(sessionId)?.history.getMessages()).toEqual([
+      expect.objectContaining({ content: 'Transcript Ready content' }),
+    ]);
+    expect(attachSession).toHaveBeenCalledWith(sessionId);
+
+    resolveAttachment!(undefined);
+    const result = await loading;
+    await expect(result.liveReady).resolves.toBe('ready');
+  });
+
+  it('does not attach a stale Live Ready stream after the transcript session was disposed', async () => {
+    const service = createService();
+    const sessionModels = (service as any).sessionModels;
+    jest.spyOn(service, 'clearSession').mockImplementation((key: string) => {
+      sessionModels.delete(key);
+    });
+    const sessionId = 'acp:disposed-before-live-ready';
+    let resolveAttachment!: (stream: any) => void;
+    const pendingAttachment = new Promise<any>((resolve) => {
+      resolveAttachment = resolve;
+    });
+    const attachment = {
+      onData: jest.fn(() => ({ dispose: jest.fn() })),
+      onEnd: jest.fn(() => ({ dispose: jest.fn() })),
+      onError: jest.fn(() => ({ dispose: jest.fn() })),
+      end: jest.fn(),
+    };
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue({
+          sessionId,
+          history: {
+            additional: {},
+            messages: [
+              {
+                id: `${sessionId}-user`,
+                role: ChatMessageRole.User,
+                content: 'dispose after Transcript Ready',
+                order: 0,
+              },
+            ],
+          },
+          requests: [],
+        }),
+        attachSession: jest.fn(() => pendingAttachment),
+        disposeSession: jest.fn().mockResolvedValue(undefined),
+      },
+    });
+
+    const result = await service.loadSession(sessionId);
+    await service.disposeSession(sessionId);
+    resolveAttachment(attachment);
+
+    await expect(result.liveReady).resolves.toBe('failed');
+    expect(attachment.end).toHaveBeenCalledTimes(1);
+    expect(service.getSession(sessionId)).toBeUndefined();
+  });
+
+  it('reports queued attachment snapshot restoration failures through Live Ready', async () => {
     const service = createService();
     const sessionId = 'acp:s-snapshot-failure';
     const restoreError = new Error('snapshot conversion failed');
@@ -1111,6 +1207,21 @@ describe('AcpChatManagerService', () => {
     };
     Object.defineProperty(service, 'mainProvider', {
       value: {
+        loadSession: jest.fn().mockResolvedValue({
+          sessionId,
+          history: {
+            additional: {},
+            messages: [
+              {
+                id: `${sessionId}-user`,
+                role: ChatMessageRole.User,
+                content: 'restore before applying queued snapshot',
+                order: 0,
+              },
+            ],
+          },
+          requests: [],
+        }),
         attachSession: jest.fn().mockResolvedValue(attachment),
         restoreSessionSnapshot: jest.fn(() => {
           throw restoreError;
@@ -1118,8 +1229,12 @@ describe('AcpChatManagerService', () => {
       },
     });
 
-    await expect(service.loadSession(sessionId)).rejects.toBe(restoreError);
-    expect((service as any).logger.error).not.toHaveBeenCalled();
+    const result = await service.loadSession(sessionId);
+
+    await expect(result.liveReady).resolves.toBe('failed');
+    expect((service as any).logger.error).toHaveBeenCalledWith(
+      '[ACP Chat][Manager] attach session failed after restoring history — errorType=Error',
+    );
   });
 
   it('reattaches an already populated ACP session without reloading or resending its prompt', async () => {

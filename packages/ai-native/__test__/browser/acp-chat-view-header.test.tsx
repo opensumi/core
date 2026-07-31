@@ -3,7 +3,24 @@ import { Root, createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
 jest.mock('react-chat-elements', () => ({
-  MessageList: () => null,
+  MessageBox: ({ id, text }: any) =>
+    require('react').createElement('div', { 'data-message-box-id': id }, require('react').Children.toArray(text)),
+  MessageList: () => require('react').createElement('div', { 'data-testid': 'community-message-list' }),
+}));
+
+jest.mock('react-virtuoso', () => ({
+  Virtuoso: require('react').forwardRef(({ data, itemContent }: any, ref: unknown) => {
+    void ref;
+    return require('react').createElement(
+      'div',
+      { 'data-testid': 'agentic-virtuoso' },
+      data
+        .slice(0, 20)
+        .map((item: any, index: number) =>
+          require('react').createElement('div', { key: item.id ?? index }, itemContent(index, item)),
+        ),
+    );
+  }),
 }));
 
 jest.mock('@opensumi/ide-core-browser', () => ({
@@ -425,6 +442,8 @@ function createMockServices({
     createSessionModel: createSessionModel || jest.fn(),
     enterDraftSession: enterDraftSession || jest.fn(),
     getDraftSessionState: jest.fn(() => ({ isDraft: false })),
+    getAgenticSessionLiveReadyStatus: jest.fn(() => 'ready'),
+    getPendingAgenticSessionId: jest.fn(() => undefined),
     getInputDraft: jest.fn(() => undefined),
     getActiveAgenticTaskAgentId: jest.fn(() => undefined),
     ensureSessionModel: jest.fn(async () => {
@@ -1172,7 +1191,7 @@ describe('ACP chat view headers', () => {
     expect(getAction()?.className).toBe('icon-fullescreen');
   });
 
-  it('replaces the ACP message area with an accessible loading state while switching sessions', async () => {
+  it('keeps the Agentic transcript visible while Live Ready is pending', async () => {
     const services = createMockServices({ panelLayout: 'agentic' });
     installInjectableMocks(services);
 
@@ -1182,13 +1201,17 @@ describe('ACP chat view headers', () => {
       services.setSessionLoadingForTest(true);
     });
 
-    const loadingState = container.querySelector('[data-testid="acp-session-loading"]');
-    expect(loadingState?.getAttribute('role')).toBe('status');
-    expect(loadingState?.textContent).toBe('Loading chat…');
+    expect(container.querySelector('[data-testid="agentic-virtual-message-list"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="community-message-list"]')).toBeNull();
+    expect(container.querySelector('[data-testid="acp-session-loading"]')).toBeNull();
     expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
+    const connectingState = container.querySelector('[data-testid="acp-live-connecting"]');
+    expect(connectingState?.getAttribute('role')).toBe('status');
+    expect(connectingState?.textContent).toBe('Restoring connection…');
     expect(services.getLatestChatInputProps()).toEqual(
       expect.objectContaining({
-        disabled: true,
+        disabled: false,
+        submitDisabled: true,
         loading: false,
         disableModelSelector: true,
       }),
@@ -1198,11 +1221,31 @@ describe('ACP chat view headers', () => {
       services.setSessionLoadingForTest(false);
     });
 
-    expect(container.querySelector('[data-testid="acp-session-loading"]')).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-virtual-message-list"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-live-connecting"]')).toBeNull();
     expect(services.getLatestChatInputProps()).toEqual(
       expect.objectContaining({
         disabled: false,
+        submitDisabled: false,
         loading: false,
+      }),
+    );
+  });
+
+  it('keeps Send disabled and reports the connection when Live Ready fails', async () => {
+    const services = createMockServices({ panelLayout: 'agentic' });
+    services.aiChatService.getAgenticSessionLiveReadyStatus.mockReturnValue('failed');
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    expect(container.querySelector('[data-testid="agentic-virtual-message-list"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-session-loading"]')).toBeNull();
+    expect(container.querySelector('[data-testid="acp-live-connecting"]')?.textContent).toBe('Connection unavailable');
+    expect(services.getLatestChatInputProps()).toEqual(
+      expect.objectContaining({
+        disabled: false,
+        submitDisabled: true,
       }),
     );
   });

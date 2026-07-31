@@ -19,7 +19,7 @@ type UserMessageData = Omit<MessageData, 'role' | 'position' | 'title'>;
 
 const createMessage = (message: MessageData) => ({
   ...message,
-  type: 'text',
+  type: 'text' as const,
   className: `${message.position === 'left' ? 'rce-ai-msg' : 'rce-user-msg'} ${
     message.className ? message.className : ''
   }`,

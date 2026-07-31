@@ -14,6 +14,7 @@ function parseArgs(argv) {
     fixture: process.env.OPENSUMI_ACP_BDD_FIXTURE || 'stream-rich',
     delayMs: Number(process.env.OPENSUMI_ACP_BDD_DELAY_MS || DEFAULT_DELAY_MS),
     longStreamTicks: Number(process.env.OPENSUMI_ACP_BDD_LONG_STREAM_TICKS || DEFAULT_LONG_STREAM_TICKS),
+    historyMessageCount: Number(process.env.OPENSUMI_ACP_BDD_HISTORY_MESSAGE_COUNT || 0),
     sessionPrefix: process.env.OPENSUMI_ACP_BDD_SESSION_PREFIX || 'bdd-session',
     verbose: process.env.OPENSUMI_ACP_BDD_VERBOSE === '1',
     help: false,
@@ -35,6 +36,10 @@ function parseArgs(argv) {
       options.longStreamTicks = Number(argv[++i] || options.longStreamTicks);
     } else if (arg.startsWith('--long-stream-ticks=')) {
       options.longStreamTicks = Number(arg.slice('--long-stream-ticks='.length));
+    } else if (arg === '--history-message-count') {
+      options.historyMessageCount = Number(argv[++i] || options.historyMessageCount);
+    } else if (arg.startsWith('--history-message-count=')) {
+      options.historyMessageCount = Number(arg.slice('--history-message-count='.length));
     } else if (arg === '--session-prefix') {
       options.sessionPrefix = argv[++i] || options.sessionPrefix;
     } else if (arg.startsWith('--session-prefix=')) {
@@ -49,6 +54,9 @@ function parseArgs(argv) {
   }
   if (!Number.isFinite(options.longStreamTicks) || options.longStreamTicks < 1) {
     options.longStreamTicks = DEFAULT_LONG_STREAM_TICKS;
+  }
+  if (!Number.isInteger(options.historyMessageCount) || options.historyMessageCount < 0) {
+    options.historyMessageCount = 0;
   }
 
   return options;
@@ -66,6 +74,7 @@ Options:
   --fixture <name>          Fixture mode. Also accepts OPENSUMI_ACP_BDD_FIXTURE.
   --delay-ms <ms>          Delay between streamed updates.
   --long-stream-ticks <n>  Number of long-stream chunks before natural completion.
+  --history-message-count <n> Number of visible messages seeded for each history session.
   --session-prefix <text>  Prefix for generated session ids.
   --verbose                Write diagnostics to stderr.
 
@@ -412,6 +421,51 @@ function createAgent(conn) {
       ? ' Restored Task response, part two.'
       : ` BDD_HISTORY_ASSISTANT_${upperSeed}_PART_2.`;
 
+    if (options.historyMessageCount > 0) {
+      for (let index = 0; index < options.historyMessageCount; index++) {
+        const turn = Math.floor(index / 2);
+        if (index % 2 === 0) {
+          await emit(session.sessionId, {
+            sessionUpdate: 'user_message_chunk',
+            content: text(`BDD_LONG_HISTORY_${upperSeed}_USER_${turn}`),
+          });
+          continue;
+        }
+        if (turn % 25 === 0) {
+          const longToolCallId = `bdd-long-history-${seed}-${turn}`;
+          await emit(session.sessionId, {
+            sessionUpdate: 'agent_thought_chunk',
+            content: text(`BDD_LONG_HISTORY_${upperSeed}_THOUGHT_${turn}: inspect the retained context.`),
+          });
+          await emit(session.sessionId, {
+            sessionUpdate: 'plan',
+            entries: [
+              { content: `Review long-history turn ${turn}`, status: 'completed', priority: 'medium' },
+              { content: `Render long-history turn ${turn}`, status: 'in_progress', priority: 'high' },
+            ],
+          });
+          await emit(session.sessionId, {
+            sessionUpdate: 'tool_call',
+            toolCallId: longToolCallId,
+            title: `BDD long-history tool ${turn}`,
+            kind: 'read',
+            status: 'completed',
+            rawInput: { fixture: 'history', seed, turn },
+            rawOutput: { ok: true, sentinel: `BDD_LONG_HISTORY_${upperSeed}_TOOL_${turn}` },
+          });
+        }
+        await emit(session.sessionId, {
+          sessionUpdate: 'agent_message_chunk',
+          content: text(
+            turn % 20 === 0
+              ? `BDD_LONG_HISTORY_${upperSeed}_ASSISTANT_${turn}\n\n- mixed Markdown row\n- stable message identity`
+              : `BDD_LONG_HISTORY_${upperSeed}_ASSISTANT_${turn}`,
+          ),
+        });
+      }
+      return;
+    }
+
     await emit(session.sessionId, {
       sessionUpdate: 'user_message_chunk',
       content: text(userContent),
@@ -622,7 +676,10 @@ test/test.js
       // history session a bounded replay payload when it is reloaded on a new
       // process.
       if (options.fixture === 'history' && !session.historySeed) {
-        session.historySeed = 'restored';
+        session.historySeed =
+          options.historyMessageCount > 0
+            ? `long-${params.sessionId.replace(/[^a-z0-9]+/gi, '-').slice(-12)}`
+            : 'restored';
         session.promptCount = 1;
       }
       session.updatedAt = nowIso();
