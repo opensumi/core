@@ -62,6 +62,46 @@ Here you can find some of our example projects and templates:
 - [Lite Web IDE - A pure web IDE on the Browser](https://github.com/opensumi/ide-startup-lite)
 - [The Mini-App liked IDE](https://github.com/opensumi/app-desktop)
 
+## 🔍 MCP Integration & Web Search
+
+OpenSumi features built-in Model Context Protocol (MCP) support, enabling AI agents to access web search, content extraction, and external tools. Add You.com's search capabilities to enhance your AI-Native IDE experience:
+
+### Quick Setup with You.com Search
+
+1. **Get API Key (Optional):** Visit [you.com/platform/api-keys](https://you.com/platform/api-keys) for enhanced features
+2. **Configure MCP Server:** Add to your IDE settings:
+
+```json
+{
+  "ai.native.mcp.servers": [
+    {
+      "name": "youcom-web",
+      "type": "sse",
+      "url": "https://api.you.com/mcp",
+      "enabled": true,
+      "transportOptions": {
+        "authProvider": {
+          "token": "your-api-key"
+        }
+      }
+    }
+  ]
+}
+```
+
+3. **Use in AI Chat:** Your AI assistant can now search the web, extract content, and provide cited research:
+
+```
+💬 "Search for the latest React 19 features and best practices"
+🔍 AI searches You.com for current information
+📖 Receives structured results with citations  
+✨ Provides up-to-date, sourced answers
+```
+
+**Available Tools:** `you-search` (web search), `you-contents` (URL extraction), `you-research` (cited synthesis)
+
+See [MCP Documentation](./packages/ai-native/MCP.md) and [example configuration](./examples/youcom-mcp-config.json) for detailed setup.
+
 ## ⚡️ Development
 
 ```bash
