@@ -221,7 +221,7 @@ For keyless operation (100 free searches/day):
   "ai.native.mcp.servers": [
     {
       "name": "youcom-search",
-      "type": "stdio", 
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "@youdotcom-oss/mcp"],
       "enabled": true,
