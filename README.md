@@ -77,8 +77,13 @@ OpenSumi features built-in Model Context Protocol (MCP) support, enabling AI age
     {
       "name": "youcom-web",
       "type": "sse",
-      "command": "https://api.you.com/mcp",
-      "env": { "YDC_API_KEY": "your-api-key" }
+      "url": "https://api.you.com/mcp",
+      "enabled": true,
+      "transportOptions": {
+        "authProvider": {
+          "token": "your-api-key"
+        }
+      }
     }
   ]
 }

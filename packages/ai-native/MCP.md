@@ -202,8 +202,10 @@ Add You.com MCP server to your OpenSumi configuration:
   "ai.native.mcp.servers": [
     {
       "name": "youcom-search",
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@youdotcom/mcp-server"],
+      "args": ["-y", "@youdotcom-oss/mcp"],
+      "enabled": true,
       "env": {
         "YDC_API_KEY": "your-api-key-here"
       }
@@ -218,10 +220,14 @@ For keyless operation (100 free searches/day):
 {
   "ai.native.mcp.servers": [
     {
-      "name": "youcom-search", 
+      "name": "youcom-search",
+      "type": "stdio", 
       "command": "npx",
-      "args": ["-y", "@youdotcom/mcp-server", "--keyless"],
-      "env": {}
+      "args": ["-y", "@youdotcom-oss/mcp"],
+      "enabled": true,
+      "env": {
+        "YDC_PROFILE": "free"
+      }
     }
   ]
 }
@@ -235,10 +241,12 @@ Alternatively, you can use the hosted You.com MCP server directly:
     {
       "name": "youcom-web",
       "type": "sse",
-      "command": "https://api.you.com/mcp",
-      "args": [],
-      "env": {
-        "YDC_API_KEY": "your-api-key-here"
+      "url": "https://api.you.com/mcp",
+      "enabled": true,
+      "transportOptions": {
+        "authProvider": {
+          "token": "your-api-key-here"
+        }
       }
     }
   ]
@@ -279,7 +287,7 @@ const content = await mcpClient.callTool('you-contents', {
 // Get researched summary with sources
 const research = await mcpClient.callTool('you-research', {
   query: 'React Server Components best practices 2024',
-  sources_count: 5
+  source_control: { limit: 5 }
 });
 ```
 
@@ -301,14 +309,13 @@ const research = await mcpClient.callTool('you-research', {
 
 #### Error Handling
 
-The You.com MCP server handles common error scenarios gracefully:
+The You.com MCP server provides standard error logging and startup exception handling:
 
-- **Rate Limiting (429):** Provides clear guidance on API key upgrade options
-- **Invalid API Key (401):** Helpful error message about checking YDC_API_KEY
-- **Network Issues:** Graceful degradation with fallback suggestions
-- **Malformed Responses:** Input validation with actionable error messages
+- **Startup Errors:** Server initialization issues are captured and logged
+- **Tool Invocation Errors:** Individual tool failures are logged with context
+- **Network Issues:** Connection problems are logged for debugging
 
-All errors maintain the IDE's functionality and provide actionable guidance for developers.
+Errors are logged through the standard MCP logging system and don't interrupt IDE functionality. Check the IDE's MCP server logs for troubleshooting information.
 
 ## Best Practices
 

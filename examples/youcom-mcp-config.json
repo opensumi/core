@@ -2,18 +2,21 @@
   "ai.native.mcp.servers": [
     {
       "name": "youcom-search",
-      "type": "sse", 
-      "command": "https://api.you.com/mcp",
-      "args": [],
+      "type": "sse",
+      "url": "https://api.you.com/mcp",
       "enabled": true,
-      "env": {
-        "YDC_API_KEY": "${env:YDC_API_KEY}"
+      "transportOptions": {
+        "authProvider": {
+          "token": "${env:YDC_API_KEY}"
+        }
       }
     },
     {
       "name": "filesystem",
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "${workspaceFolder}"],
+      "enabled": true,
       "env": {}
     }
   ]
