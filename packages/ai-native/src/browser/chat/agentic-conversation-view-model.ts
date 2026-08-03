@@ -29,6 +29,9 @@ export function updateAgenticConversationViewModel(
   messages: readonly IHistoryChatMessage[],
   previous?: AgenticConversationViewModel,
 ): AgenticConversationViewModel {
+  if (previous?.sessionId === sessionId && isAgenticConversationViewModelCurrent(previous, messages)) {
+    return previous;
+  }
   const previousMessages =
     previous?.sessionId === sessionId
       ? new Map(previous.messages.map((message) => [message.id, message] as const))

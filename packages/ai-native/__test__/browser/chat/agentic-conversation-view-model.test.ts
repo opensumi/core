@@ -83,4 +83,18 @@ describe('Agentic Conversation View Model', () => {
     expect(updated.messages[1]).not.toBe(initial.messages[1]);
     expect(updated.messages[1].content).toBe('streamed update');
   });
+
+  it('reuses the whole view model when canonical history is unchanged', () => {
+    const messages = [message('m1'), message('m2')];
+    const initial = createAgenticConversationViewModel('acp:task', messages);
+
+    const updated = updateAgenticConversationViewModel(
+      'acp:task',
+      messages.map((item) => ({ ...item })),
+      initial,
+    );
+
+    expect(updated).toBe(initial);
+    expect(updated.messages).toBe(initial.messages);
+  });
 });
