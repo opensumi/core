@@ -56,7 +56,7 @@ describe('AgenticVirtualMessageList', () => {
     const messages = Array.from({ length: 1000 }, (_, index) => ({ id: `message-${index}` }));
     const renderMessage = jest.fn((message: { id: string }) => ({
       id: message.id,
-      position: 'left' as const,
+      position: message.id === 'message-1' ? ('right' as const) : ('left' as const),
       type: 'text' as const,
       text: message.id,
     }));
@@ -68,6 +68,10 @@ describe('AgenticVirtualMessageList', () => {
     });
 
     expect(container.querySelectorAll('[data-message-box-id]')).toHaveLength(20);
+    expect(container.querySelector('[data-message-id="message-0"]')?.getAttribute('data-message-role')).toBe(
+      'assistant',
+    );
+    expect(container.querySelector('[data-message-id="message-1"]')?.getAttribute('data-message-role')).toBe('user');
     expect(renderMessage).toHaveBeenCalledTimes(20);
     expect(container.querySelector('[data-item-key="message-0"]')).not.toBeNull();
     expect(container.querySelector('[data-item-key="message-19"]')).not.toBeNull();

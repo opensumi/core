@@ -27,12 +27,26 @@ async function executeTool<T>(name: string, args: Record<string, unknown> = {}) 
 }
 
 async function sendAndWait(prompt: string) {
+  const stateBefore = await executeTool<{
+    session: { historyMessageCount: number } | null;
+  }>('acp_chat_get_session_state');
+  const historyMessageCountBefore = stateBefore.result.session?.historyMessageCount ?? 0;
   const completion = page.locator('.AI-Chat-slot').getByText(COMPLETION);
-  const completionCount = await completion.count();
   await chatInput().click();
   await page.keyboard.insertText(prompt);
   await page.getByRole('button', { name: 'Send' }).click();
-  await expect(completion).toHaveCount(completionCount + 1, { timeout: 30_000 });
+  await expect
+    .poll(
+      async () => {
+        const state = await executeTool<{ session: { historyMessageCount: number } | null }>(
+          'acp_chat_get_session_state',
+        );
+        return state.result.session?.historyMessageCount ?? 0;
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(historyMessageCountBefore + 2);
+  await expect(completion.last()).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
 }
 

@@ -145,11 +145,11 @@ async function readFailureUiSnapshot(): Promise<FailureUiSnapshot> {
       notificationText,
       errorNotificationCount: Array.from(document.querySelectorAll('.kt-notification-error')).filter(isVisible).length,
       infoNotificationCount: Array.from(document.querySelectorAll('.kt-notification-info')).filter(isVisible).length,
-      chatErrorCount: Array.from(document.querySelectorAll('.AI-Chat-slot .rce-ai-msg [class*="error"]')).filter(
-        isVisible,
-      ).length,
-      userRowCount: Array.from(document.querySelectorAll('.AI-Chat-slot .rce-user-msg')).filter(isVisible).length,
-      assistantRowCount: Array.from(document.querySelectorAll('.AI-Chat-slot .rce-ai-msg')).filter(isVisible).length,
+      chatErrorCount: Array.from(
+        document.querySelectorAll('.AI-Chat-slot [data-message-role="assistant"] [class*="error"]'),
+      ).filter(isVisible).length,
+      userRowCount: Array.from(document.querySelectorAll('.AI-Chat-slot [data-message-role="user"]')).length,
+      assistantRowCount: Array.from(document.querySelectorAll('.AI-Chat-slot [data-message-role="assistant"]')).length,
       hasStackTrace: /\n\s*at\s+\S+\s+\(|\bat\s+\S+:\d+:\d+/.test(visibleTextToScan),
       hasRawRpcPayload: /"jsonrpc"|rawInput|rawOutput|session\/prompt|session\/new|session\/load/i.test(
         visibleTextToScan,
