@@ -3463,6 +3463,7 @@ __metadata:
     rc-collapse: "npm:^4.0.0"
     react-chat-elements: "npm:^12.0.10"
     react-highlight: "npm:^0.15.0"
+    react-virtuoso: "npm:^3.1.5"
     tiktoken: "npm:1.0.12"
     web-tree-sitter: "npm:0.22.6"
     zod: "npm:^3.25.0 || ^4.0.0"
