@@ -76,7 +76,12 @@ describe('AgenticVirtualMessageList', () => {
     expect(container.querySelector('[data-item-key="message-0"]')).not.toBeNull();
     expect(container.querySelector('[data-item-key="message-19"]')).not.toBeNull();
     expect(virtuosoProps.at(-1)).toEqual(
-      expect.objectContaining({ data: messages, followOutput: expect.any(Function), overscan: expect.any(Object) }),
+      expect.objectContaining({
+        data: messages,
+        followOutput: expect.any(Function),
+        increaseViewportBy: { bottom: 480, top: 480 },
+        overscan: expect.any(Object),
+      }),
     );
   });
 
@@ -102,5 +107,44 @@ describe('AgenticVirtualMessageList', () => {
     act(() => ref.current?.scrollToBottom('smooth'));
 
     expect(scrollToIndex).toHaveBeenCalledWith({ align: 'end', behavior: 'smooth', index: 1 });
+  });
+
+  it('does not restore the initial reading position again when messages update in the same session', () => {
+    const animationFrame = jest.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      callback(0);
+      return 1;
+    });
+    const renderMessage = (message: { id: string; text: string }) => ({
+      id: message.id,
+      position: 'left',
+      type: 'text',
+      text: message.text,
+    });
+
+    act(() => {
+      root.render(
+        <AgenticVirtualMessageList
+          messages={[{ id: 'message-0', text: 'initial' }]}
+          renderMessage={renderMessage}
+          sessionId='acp:stable-stream'
+        />,
+      );
+    });
+    const initialRestoreCount = scrollToIndex.mock.calls.length;
+    const initialItemContent = virtuosoProps.at(-1).itemContent;
+
+    act(() => {
+      root.render(
+        <AgenticVirtualMessageList
+          messages={[{ id: 'message-0', text: 'updated stream content' }]}
+          renderMessage={renderMessage}
+          sessionId='acp:stable-stream'
+        />,
+      );
+    });
+
+    expect(scrollToIndex).toHaveBeenCalledTimes(initialRestoreCount);
+    expect(virtuosoProps.at(-1).itemContent).toBe(initialItemContent);
+    animationFrame.mockRestore();
   });
 });

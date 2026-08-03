@@ -83,14 +83,6 @@ async function sendPrompt(prompt: string) {
   await chatButton('Send').click();
 }
 
-async function stopStreamIfActive() {
-  const stopButton = chatButton('Stop');
-  if (await stopButton.isVisible().catch(() => false)) {
-    await stopButton.click();
-    await expect(chatButton('Send')).toBeVisible({ timeout: 30_000 });
-  }
-}
-
 async function readLayoutBounds(): Promise<LayoutBoundsProof> {
   return page.evaluate(() => {
     const toRect = (rect: DOMRect): RectProof => ({
@@ -121,7 +113,8 @@ async function readLayoutBounds(): Promise<LayoutBoundsProof> {
     const messageViewport = leftContainer?.querySelector('[class*="chat_container"]');
     const messageList = leftContainer?.querySelector('.rce-mlist');
     const input = leftContainer?.querySelector('[contenteditable="true"]');
-    const messageRows = Array.from(leftContainer?.querySelectorAll('.rce-container-mbox') || []).filter(isVisible);
+    const agenticMessageRows = Array.from(leftContainer?.querySelectorAll('[data-testid="agentic-message-row"]') || []);
+    const messageRows = Array.from(leftContainer?.querySelectorAll('.rce-mbox') || []).filter(isVisible);
     const chatRect = chatSlot?.getBoundingClientRect();
     const inputRect = input?.getBoundingClientRect();
 
@@ -147,13 +140,10 @@ async function readLayoutBounds(): Promise<LayoutBoundsProof> {
       messageViewport: messageViewport ? toRect(messageViewport.getBoundingClientRect()) : undefined,
       messageList: messageList ? toRect(messageList.getBoundingClientRect()) : undefined,
       input: inputRect ? toRect(inputRect) : undefined,
-      messageCount: messageRows.length,
+      messageCount: agenticMessageRows.length,
       overflowingMessageCount,
       pageHasHorizontalOverflow: document.documentElement.scrollWidth > window.innerWidth + 2,
-      messageListScrollable: messageViewport
-        ? messageViewport.scrollHeight > messageViewport.clientHeight + 8 ||
-          messageViewport.classList.contains('chat_scroll')
-        : false,
+      messageListScrollable: messageList ? messageList.scrollHeight > messageList.clientHeight + 8 : false,
     };
   });
 }
@@ -198,7 +188,6 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
   });
 
   test.afterAll(async () => {
-    await stopStreamIfActive();
     await runtime?.dispose();
   });
 
@@ -273,8 +262,6 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
       hiddenPreferenceBounds,
       'an explicitly hidden workbench remains hidden after a responsive viewport round trip',
     );
-
-    await stopStreamIfActive();
 
     evidence.recordCriticalPoint({
       id: 'CP1',

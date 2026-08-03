@@ -32,6 +32,7 @@ type ReadingAnchor =
     };
 
 const readingAnchors = new Map<string, ReadingAnchor>();
+const interactiveViewportBuffer = { bottom: 480, top: 480 } as const;
 
 function getInitialLocation<T extends AgenticVirtualMessage>(sessionId: string, messages: readonly T[]) {
   const anchor = readingAnchors.get(sessionId);
@@ -46,6 +47,8 @@ function shouldRestoreBottom(sessionId: string): boolean {
   const anchor = readingAnchors.get(sessionId);
   return !anchor || anchor.kind === 'bottom';
 }
+
+type InitialLocation = ReturnType<typeof getInitialLocation>;
 
 function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
   { className, messages, renderMessage, sessionId }: AgenticVirtualMessageListProps<T>,
@@ -127,10 +130,17 @@ function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
     [],
   );
 
-  const initialTopMostItemIndex = React.useMemo(() => getInitialLocation(sessionId, messages), [messages, sessionId]);
+  const initialLocationRef = React.useRef<{ location: InitialLocation; sessionId: string }>();
+  if (!initialLocationRef.current || initialLocationRef.current.sessionId !== sessionId) {
+    initialLocationRef.current = {
+      location: getInitialLocation(sessionId, messages),
+      sessionId,
+    };
+  }
+  const initialTopMostItemIndex = initialLocationRef.current.location;
 
   React.useEffect(() => {
-    if (messages.length === 0) {
+    if (messagesRef.current.length === 0) {
       return;
     }
     restoringBottomRef.current = shouldRestoreBottom(sessionId);
@@ -147,7 +157,23 @@ function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
         restorationFrameRef.current = undefined;
       }
     };
-  }, [initialTopMostItemIndex, messages.length, restoreBottom, sessionId]);
+  }, [initialTopMostItemIndex, restoreBottom, sessionId]);
+
+  const renderItem = React.useCallback(
+    (_index: number, message: T) => {
+      const data = renderMessage(message);
+      return (
+        <div
+          data-message-id={message.id}
+          data-message-role={data?.position === 'right' ? 'user' : 'assistant'}
+          data-testid='agentic-message-row'
+        >
+          <MessageBox {...(data as unknown as MessageBoxType)} />
+        </div>
+      );
+    },
+    [renderMessage],
+  );
 
   return (
     <div className={`rce-container-mlist ${className || ''}`} data-testid='agentic-virtual-message-list'>
@@ -158,6 +184,7 @@ function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
         data={messages}
         computeItemKey={(_index, message) => message.id}
         defaultItemHeight={96}
+        increaseViewportBy={interactiveViewportBuffer}
         initialTopMostItemIndex={0}
         overscan={{ main: 160, reverse: 160 }}
         followOutput={(isAtBottom) => (isAtBottom ? 'auto' : false)}
@@ -187,18 +214,7 @@ function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
         scrollerRef={(element) => {
           scrollerRef.current = element instanceof HTMLElement ? element : null;
         }}
-        itemContent={(_index, message) => {
-          const data = renderMessage(message);
-          return (
-            <div
-              data-message-id={message.id}
-              data-message-role={data?.position === 'right' ? 'user' : 'assistant'}
-              data-testid='agentic-message-row'
-            >
-              <MessageBox {...(data as unknown as MessageBoxType)} />
-            </div>
-          );
-        }}
+        itemContent={renderItem}
       />
     </div>
   );
