@@ -14,7 +14,12 @@ export interface AgenticVirtualMessageListHandle {
 export interface AgenticVirtualMessageListProps<T extends AgenticVirtualMessage> {
   className?: string;
   messages: readonly T[];
-  renderMessage(message: T): { id: string | number; text: React.ReactNode; [key: string]: unknown };
+  renderMessage(message: T): {
+    id: string | number;
+    position?: string;
+    text: React.ReactNode;
+    [key: string]: unknown;
+  };
   sessionId: string;
 }
 
@@ -185,7 +190,11 @@ function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
         itemContent={(_index, message) => {
           const data = renderMessage(message);
           return (
-            <div data-message-id={message.id} data-testid='agentic-message-row'>
+            <div
+              data-message-id={message.id}
+              data-message-role={data?.position === 'right' ? 'user' : 'assistant'}
+              data-testid='agentic-message-row'
+            >
               <MessageBox {...(data as unknown as MessageBoxType)} />
             </div>
           );
