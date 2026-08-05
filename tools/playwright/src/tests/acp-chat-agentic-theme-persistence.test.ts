@@ -25,10 +25,11 @@ async function chooseTheme(label: string) {
   await input.fill('Color Theme');
   const command = page.locator('#opensumi-quickpick-item[aria-label="Color Theme"]');
   await expect(command).toBeVisible({ timeout: 15_000 });
-  await command.locator("[class*='item_label_container']").first().click();
+  await input.press('Enter');
+  await input.fill(label);
   const option = page.getByText(label, { exact: true }).last();
   await expect(option).toBeVisible({ timeout: 15_000 });
-  await option.click();
+  await input.press('Enter');
 }
 
 async function switchLayoutByMenu(target: 'Agent' | 'Classic') {
@@ -142,6 +143,7 @@ test.describe('ACP Chat Agentic 主题与布局持久化', () => {
   });
 
   test('切换浅色主题并调整宽度后，重载和布局往返仍保持可读与可用', async ({ browser: _browser }, testInfo) => {
+    void _browser;
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-theme-persistence', {
       sourceScenario: 'test/bdd/acp-chat-agentic-theme-persistence.scenario.md',
       profile: 'default',

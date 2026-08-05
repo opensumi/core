@@ -142,13 +142,14 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
 
     await expect(chatSlot()).toBeVisible({ timeout: 30_000 });
     await expect(chatSlot().getByText(ACTIVE_STREAM_SENTINEL)).toBeVisible({ timeout: 30_000 });
+    await expect(chatButton('Stop')).toBeVisible({ timeout: 30_000 });
     const afterReloadState = await getSessionState();
     const restoredHighestChunk = await getHighestVisibleStreamChunk();
     expect(restoredHighestChunk).toBeGreaterThan(beforeReloadHighestChunk);
 
     expect(afterReloadState.active).toBe(true);
     expect(afterReloadState.session?.sessionId).toBe(beforeReloadState.session?.sessionId);
-    expect(['idle', 'working']).toContain(afterReloadState.session?.threadStatus);
+    expect(afterReloadState.session?.threadStatus).toBe('working');
     expect(afterReloadState.session?.requestCount).toBe(1);
 
     const afterReloadProof = await evidence.saveJson(
@@ -166,6 +167,26 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
       'browser reload restores the same running Agentic session and continued output',
     );
 
+    await chatButton('Stop').click();
+    await expect(chatButton('Send')).toBeVisible({ timeout: 30_000 });
+    await expect(chatButton('Stop')).toBeHidden();
+    const stoppedState = await getSessionState();
+    expect(stoppedState.active).toBe(true);
+    expect(stoppedState.session?.sessionId).toBe(beforeReloadState.session?.sessionId);
+    expect(stoppedState.session?.requestCount).toBe(1);
+
+    const stoppedProof = await evidence.saveJson(
+      '03-stopped-after-reattach',
+      {
+        sendVisible: await chatButton('Send').isVisible(),
+        stopVisible: await chatButton('Stop')
+          .isVisible()
+          .catch(() => false),
+        session: stoppedState.session,
+      },
+      'the replacement browser connection can explicitly stop the restored running task',
+    );
+
     evidence.recordCriticalPoint({
       id: 'CP1',
       requirement: 'The deterministic long-stream fixture is visibly active before reload.',
@@ -174,9 +195,15 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
     });
     evidence.recordCriticalPoint({
       id: 'CP2',
-      requirement: 'Reload restores the same session, prior output, and newer output without resending.',
+      requirement: 'Reload restores the same running session, prior output, and newer output without resending.',
       status: 'pass',
       evidence: [afterReloadProof].filter(Boolean) as string[],
+    });
+    evidence.recordCriticalPoint({
+      id: 'CP3',
+      requirement: 'The restored Stop control cancels the same task through the replacement browser connection.',
+      status: 'pass',
+      evidence: [stoppedProof].filter(Boolean) as string[],
     });
     await evidence.finalize({
       scenarioVerdict: 'PASS',

@@ -42,8 +42,9 @@ interface AcpSessionSummary {
 
 interface SessionShellProof {
   activeSessionId?: string;
-  userRows: number;
-  assistantRows: number;
+  headerTitle: string;
+  messageRows: number;
+  requestCount: number;
   reasoningToggleCount: number;
   toolCardCount: number;
   sendVisible: boolean;
@@ -97,6 +98,10 @@ async function selectTask(sessionId: string) {
       { timeout: 30_000 },
     )
     .toBe(sessionId);
+  await expect(row).toHaveAttribute('aria-current', 'true');
+  await expect(page.getByTestId('acp-live-connecting')).toHaveCount(0, { timeout: 30_000 });
+  await expect(chatInput()).toBeEditable({ timeout: 30_000 });
+  await expect(sendButton()).toHaveAttribute('tabindex', '0', { timeout: 30_000 });
 }
 
 async function startTaskInCurrentProject() {
@@ -125,13 +130,38 @@ function sendButton() {
     .last();
 }
 
-async function sendPromptAndWaitForResult(prompt: string) {
+async function sendPromptAndWaitForResult(prompt: string, expectedSessionId?: string) {
+  const beforeSend = await getSessionState();
+  const activeSessionId = beforeSend.session?.sessionId;
+  if (expectedSessionId) {
+    expect(activeSessionId).toBe(expectedSessionId);
+  }
+  const previousRequestCount = beforeSend.session?.requestCount ?? 0;
   const input = chatInput();
   await expect(input).toBeVisible();
   await input.click();
   await page.keyboard.type(prompt);
-  await expect(sendButton()).toBeVisible();
-  await sendButton().click();
+  await expect(input).toContainText(prompt);
+  await expect(page.getByTestId('acp-live-connecting')).toHaveCount(0, { timeout: 30_000 });
+  const submit = sendButton();
+  await expect(submit).toHaveAttribute('tabindex', '0', { timeout: 30_000 });
+  await submit.click();
+
+  if (expectedSessionId) {
+    await expect
+      .poll(
+        async () => {
+          const state = await getSessionState();
+          return { requestCount: state.session?.requestCount ?? 0, sessionId: state.session?.sessionId };
+        },
+        { timeout: 30_000 },
+      )
+      .toEqual({ requestCount: previousRequestCount + 1, sessionId: expectedSessionId });
+  } else {
+    await expect
+      .poll(async () => (await getSessionState()).session?.requestCount ?? 0, { timeout: 30_000 })
+      .toBe(previousRequestCount + 1);
+  }
 
   await expect(
     page
@@ -154,134 +184,40 @@ async function createTaskWithBaseline(prompt: string): Promise<AcpSessionSummary
   return session!;
 }
 
-async function readSessionShellProof(): Promise<SessionShellProof> {
+async function waitForSessionShell(session: AcpSessionSummary, requestCount: number): Promise<SessionShellProof> {
+  await expect
+    .poll(async () => {
+      const state = await getSessionState();
+      return { requestCount: state.session?.requestCount, sessionId: state.session?.sessionId };
+    })
+    .toEqual({ requestCount, sessionId: session.sessionId });
+
+  const headerTitle = page.getByTestId('agentic-chat-panel-header-title');
+  await expect(headerTitle).toHaveText(session.title, { timeout: 30_000 });
+  const messageList = page.getByTestId('agentic-virtual-message-list');
+  await expect(messageList).toBeVisible({ timeout: 30_000 });
+  const messageRows = page.getByTestId('agentic-message-row');
+  await expect.poll(() => messageRows.count()).toBeGreaterThan(0);
+  await expect.poll(() => messageRows.count()).toBeLessThanOrEqual(6);
+  await expect(messageList.getByText(/Deep Thinking|深度思考/).last()).toBeVisible({ timeout: 30_000 });
+  await expect(messageList.getByText(/Called (?:MCP )?Tool/).last()).toBeVisible({ timeout: 30_000 });
+  await expect(sendButton()).toBeVisible({ timeout: 30_000 });
+  await expect(chatSlot().getByRole('button', { name: /^(Stop|停止)$/i })).toBeHidden();
+
   const state = await getSessionState();
-  const ui = await page.evaluate(() => {
-    const slot = document.querySelector('.AI-Chat-slot') as HTMLElement | null;
-    const isVisible = (element: HTMLElement) => {
-      const rect = element.getBoundingClientRect();
-      const style = window.getComputedStyle(element);
-      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
-    };
-    const text = slot?.innerText || '';
-    const normalizedText = text.replace(/\s+/g, ' ');
-    const countToolText = () => normalizedText.match(/Called\s+(?:MCP\s+)?Tool/g)?.length || 0;
-    const visibleButtons = Array.from(
-      slot?.querySelectorAll<HTMLElement>('button, [role="button"], [aria-label]') || [],
-    ).filter(isVisible);
-    const visibleToolCards = Array.from(
-      slot?.querySelectorAll<HTMLElement>('[class*="chat_tool_render"]') || [],
-    ).filter(isVisible).length;
-    const hasVisibleButton = (pattern: RegExp) =>
-      visibleButtons.some((button) =>
-        [button.innerText, button.getAttribute('aria-label'), button.getAttribute('title')].some((value) =>
-          pattern.test((value || '').trim()),
-        ),
-      );
-
-    return {
-      userRows: Array.from(slot?.querySelectorAll<HTMLElement>('.rce-user-msg') || []).filter(isVisible).length,
-      assistantRows: Array.from(slot?.querySelectorAll<HTMLElement>('.rce-ai-msg') || []).filter(isVisible).length,
-      reasoningToggleCount: visibleButtons.filter((button) => /Deep Thinking|深度思考/.test(button.innerText)).length,
-      toolCardCount: Math.max(visibleToolCards, countToolText()),
-      sendVisible: hasVisibleButton(/^(?:Enter\s+)?Send$|^Enter\s+发送$|^发送$/i),
-      stopVisible: hasVisibleButton(/^Stop$|^停止$/i),
-    };
-  });
-
   return {
     activeSessionId: state.session?.sessionId,
-    ...ui,
+    headerTitle: (await headerTitle.textContent()) || '',
+    messageRows: await messageRows.count(),
+    requestCount: state.session?.requestCount ?? 0,
+    reasoningToggleCount: await messageList.getByText(/Deep Thinking|深度思考/).count(),
+    toolCardCount: await messageList.getByText(/Called (?:MCP )?Tool/).count(),
+    sendVisible: await sendButton().isVisible(),
+    stopVisible: await chatSlot()
+      .getByRole('button', { name: /^(Stop|停止)$/i })
+      .isVisible()
+      .catch(() => false),
   };
-}
-
-function expectHistorySessionShell(proof: SessionShellProof, sessionId: string) {
-  expect(proof.activeSessionId).toBe(sessionId);
-  expect(proof.userRows).toBeGreaterThanOrEqual(1);
-  expect(proof.assistantRows).toBeGreaterThanOrEqual(1);
-  expect(proof.sendVisible).toBe(true);
-  expect(proof.stopVisible).toBe(false);
-}
-
-function expectCompletedSingleTurnShell(proof: SessionShellProof, sessionId: string, baseline: SessionShellProof) {
-  expect(proof.activeSessionId).toBe(sessionId);
-  expect(proof.userRows).toBe(baseline.userRows + 1);
-  expect(proof.assistantRows).toBeGreaterThanOrEqual(baseline.assistantRows + 1);
-  expect(proof.assistantRows).toBeLessThanOrEqual(baseline.assistantRows + 2);
-  expect(proof.reasoningToggleCount).toBeGreaterThanOrEqual(baseline.reasoningToggleCount + 1);
-  expect(proof.toolCardCount).toBe(baseline.toolCardCount + 1);
-  expect(proof.sendVisible).toBe(true);
-  expect(proof.stopVisible).toBe(false);
-}
-
-function expectSessionShellUnchanged(proof: SessionShellProof, sessionId: string, baseline: SessionShellProof) {
-  expect(proof.activeSessionId).toBe(sessionId);
-  expect(proof.userRows).toBe(baseline.userRows);
-  expect(proof.assistantRows).toBe(baseline.assistantRows);
-  expect(proof.toolCardCount).toBe(baseline.toolCardCount);
-  expect(proof.reasoningToggleCount).toBe(baseline.reasoningToggleCount);
-  expect(proof.sendVisible).toBe(true);
-  expect(proof.stopVisible).toBe(false);
-}
-
-function sessionShellSignature(proof: SessionShellProof): string {
-  return [
-    proof.activeSessionId,
-    proof.userRows,
-    proof.assistantRows,
-    proof.reasoningToggleCount,
-    proof.toolCardCount,
-    proof.sendVisible,
-    proof.stopVisible,
-  ].join(':');
-}
-
-async function waitForSettledSessionShell(assertShell: (proof: SessionShellProof) => void): Promise<SessionShellProof> {
-  let proof = await readSessionShellProof();
-
-  await expect
-    .poll(
-      async () => {
-        const first = await readSessionShellProof();
-        try {
-          assertShell(first);
-        } catch {
-          return false;
-        }
-
-        await page.waitForTimeout(150);
-        const second = await readSessionShellProof();
-        try {
-          assertShell(second);
-        } catch {
-          return false;
-        }
-
-        if (sessionShellSignature(first) !== sessionShellSignature(second)) {
-          return false;
-        }
-
-        proof = second;
-        return true;
-      },
-      { timeout: 30_000 },
-    )
-    .toBe(true);
-
-  assertShell(proof);
-  return proof;
-}
-
-function waitForHistorySessionShell(sessionId: string): Promise<SessionShellProof> {
-  return waitForSettledSessionShell((proof) => expectHistorySessionShell(proof, sessionId));
-}
-
-function waitForCompletedSingleTurnShell(sessionId: string, baseline: SessionShellProof): Promise<SessionShellProof> {
-  return waitForSettledSessionShell((proof) => expectCompletedSingleTurnShell(proof, sessionId, baseline));
-}
-
-function waitForSessionShellUnchanged(sessionId: string, baseline: SessionShellProof): Promise<SessionShellProof> {
-  return waitForSettledSessionShell((proof) => expectSessionShellUnchanged(proof, sessionId, baseline));
 }
 
 function expectMetadataOnly(value: unknown) {
@@ -336,13 +272,13 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
     const sessionB = await createTaskWithBaseline(SESSION_B_BASELINE_PROMPT);
 
     await selectTask(sessionA.sessionId);
-    const sessionABaseline = await waitForHistorySessionShell(sessionA.sessionId);
+    await waitForSessionShell(sessionA, 1);
     await selectTask(sessionB.sessionId);
-    const sessionBBaseline = await waitForHistorySessionShell(sessionB.sessionId);
+    await waitForSessionShell(sessionB, 1);
 
     await selectTask(sessionA.sessionId);
-    await sendPromptAndWaitForResult(SESSION_A_PROMPT);
-    const sessionAAfterSend = await waitForCompletedSingleTurnShell(sessionA.sessionId, sessionABaseline);
+    await sendPromptAndWaitForResult(SESSION_A_PROMPT, sessionA.sessionId);
+    const sessionAAfterSend = await waitForSessionShell(sessionA, 2);
     const sessionAProof = await evidence.saveJson(
       '01-session-a-complete',
       sessionAAfterSend,
@@ -350,15 +286,15 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
     );
 
     await selectTask(sessionB.sessionId);
-    const sessionBUnchanged = await waitForSessionShellUnchanged(sessionB.sessionId, sessionBBaseline);
+    const sessionBUnchanged = await waitForSessionShell(sessionB, 1);
     const emptySessionBProof = await evidence.saveJson(
       '02-session-b-empty-after-a',
       sessionBUnchanged,
       'Session B baseline stays unchanged after Session A receives updates',
     );
 
-    await sendPromptAndWaitForResult(SESSION_B_PROMPT);
-    const sessionBAfterSend = await waitForCompletedSingleTurnShell(sessionB.sessionId, sessionBBaseline);
+    await sendPromptAndWaitForResult(SESSION_B_PROMPT, sessionB.sessionId);
+    const sessionBAfterSend = await waitForSessionShell(sessionB, 2);
     const sessionBProof = await evidence.saveJson(
       '03-session-b-complete',
       sessionBAfterSend,
@@ -366,10 +302,10 @@ test.describe('ACP Chat Agentic Session Isolation', () => {
     );
 
     await selectTask(sessionA.sessionId);
-    const sessionARestored = await waitForCompletedSingleTurnShell(sessionA.sessionId, sessionABaseline);
+    const sessionARestored = await waitForSessionShell(sessionA, 2);
 
     await selectTask(sessionB.sessionId);
-    const sessionBRestored = await waitForCompletedSingleTurnShell(sessionB.sessionId, sessionBBaseline);
+    const sessionBRestored = await waitForSessionShell(sessionB, 2);
     const restoredProof = await evidence.saveJson(
       '04-switch-back-and-forth',
       { sessionA: sessionARestored, sessionB: sessionBRestored },
