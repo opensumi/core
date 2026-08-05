@@ -130,9 +130,20 @@ function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
     [],
   );
 
-  const initialLocationRef = React.useRef<{ location: InitialLocation; sessionId: string }>();
-  if (!initialLocationRef.current || initialLocationRef.current.sessionId !== sessionId) {
+  const hasMessages = messages.length > 0;
+  const firstMessageId = messages[0]?.id;
+  const initialLocationRef = React.useRef<{
+    firstMessageId?: string;
+    location: InitialLocation;
+    sessionId: string;
+  }>();
+  if (
+    !initialLocationRef.current ||
+    initialLocationRef.current.sessionId !== sessionId ||
+    initialLocationRef.current.firstMessageId !== firstMessageId
+  ) {
     initialLocationRef.current = {
+      firstMessageId,
       location: getInitialLocation(sessionId, messages),
       sessionId,
     };
@@ -140,10 +151,13 @@ function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
   const initialTopMostItemIndex = initialLocationRef.current.location;
 
   React.useEffect(() => {
-    if (messagesRef.current.length === 0) {
+    if (!hasMessages) {
       return;
     }
     restoringBottomRef.current = shouldRestoreBottom(sessionId);
+    if (restoringBottomRef.current) {
+      atBottomRef.current = false;
+    }
     const animationFrame = requestAnimationFrame(() => {
       virtuosoRef.current?.scrollToIndex(initialTopMostItemIndex);
       if (restoringBottomRef.current) {
@@ -157,7 +171,7 @@ function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
         restorationFrameRef.current = undefined;
       }
     };
-  }, [initialTopMostItemIndex, restoreBottom, sessionId]);
+  }, [firstMessageId, hasMessages, initialTopMostItemIndex, restoreBottom, sessionId]);
 
   const renderItem = React.useCallback(
     (_index: number, message: T) => {
@@ -176,21 +190,27 @@ function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
   );
 
   return (
-    <div className={`rce-container-mlist ${className || ''}`} data-testid='agentic-virtual-message-list'>
+    <div
+      className={`rce-container-mlist ${className || ''}`}
+      data-testid='agentic-virtual-message-list'
+      style={{ height: '100%', minHeight: 0, overflow: 'hidden' }}
+    >
       <Virtuoso
+        key={`${sessionId}:${firstMessageId || 'empty'}`}
         ref={virtuosoRef}
         className='rce-mlist'
-        style={{ height: '100%' }}
+        style={{ display: 'block', height: '100%', minHeight: 0, overflow: 'auto', position: 'relative' }}
         data={messages}
         computeItemKey={(_index, message) => message.id}
         defaultItemHeight={96}
         increaseViewportBy={interactiveViewportBuffer}
-        initialTopMostItemIndex={0}
+        initialTopMostItemIndex={initialTopMostItemIndex}
         overscan={{ main: 160, reverse: 160 }}
         followOutput={(isAtBottom) => (isAtBottom ? 'auto' : false)}
         atBottomStateChange={(atBottom) => {
           atBottomRef.current = atBottom;
           if (atBottom) {
+            restoringBottomRef.current = false;
             readingAnchors.set(sessionId, { kind: 'bottom' });
           }
         }}
@@ -198,17 +218,12 @@ function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
           rangeStartRef.current = range.startIndex;
           bottomRangeReachedRef.current = range.endIndex >= messagesRef.current.length - 1;
           if (restoringBottomRef.current) {
-            if (bottomRangeReachedRef.current) {
-              restoringBottomRef.current = false;
-            } else if (restorationFrameRef.current === undefined) {
+            if (!atBottomRef.current && restorationFrameRef.current === undefined) {
               restorationFrameRef.current = requestAnimationFrame(() => {
                 restorationFrameRef.current = undefined;
                 restoreBottom();
               });
             }
-          }
-          if (!atBottomRef.current) {
-            captureReadingAnchor();
           }
         }}
         scrollerRef={(element) => {

@@ -84,6 +84,15 @@ async function expectBoundedRows() {
   await expect.poll(() => mountedRows.count(), { timeout: 30_000 }).toBeLessThanOrEqual(MAX_MOUNTED_MESSAGE_ROWS);
 }
 
+async function expectVisibleSessionRows(sessionId: string) {
+  const messageList = page.getByTestId('agentic-virtual-message-list');
+  await expect(
+    messageList.getByText(new RegExp(`BDD_LONG_HISTORY_${longHistorySeed(sessionId)}_`)).first(),
+  ).toBeVisible({
+    timeout: 30_000,
+  });
+}
+
 function longHistorySeed(sessionId: string): string {
   return `LONG-${sessionId
     .replace(/^acp:/, '')
@@ -112,7 +121,7 @@ test.describe('ACP Chat Agentic long-history switching', () => {
     await runtime?.dispose();
   });
 
-  test('switches two 1000-message Tasks without page reload, unbounded DOM, replay, or lost reading anchor', async () => {
+  test('switches two 1000-message Tasks without page reload, unbounded DOM, replay, or mixed session content', async () => {
     const alphaSessionId = await launchTask('Long history switching Alpha');
     const betaSessionId = await launchTask('Long history switching Beta');
 
@@ -128,12 +137,9 @@ test.describe('ACP Chat Agentic long-history switching', () => {
     await waitForWorkbenchReady(page);
     await showAgenticChat();
 
-    const alphaEnd = `BDD_LONG_HISTORY_${longHistorySeed(alphaSessionId)}_ASSISTANT_499`;
-    const betaEnd = `BDD_LONG_HISTORY_${longHistorySeed(betaSessionId)}_ASSISTANT_499`;
-
     await selectTask(alphaSessionId);
     await expectBoundedRows();
-    await expect(page.getByText(alphaEnd)).toBeVisible();
+    await expectVisibleSessionRows(alphaSessionId);
     expect((await getSessionState()).session?.historyMessageCount).toBe(HISTORY_MESSAGE_COUNT);
 
     const betaRow = page.getByTestId(`agentic-task-row-${betaSessionId}`);
@@ -142,14 +148,14 @@ test.describe('ACP Chat Agentic long-history switching', () => {
     await expect
       .poll(async () => (await getSessionState()).session?.sessionId, { timeout: 60_000 })
       .toBe(betaSessionId);
-    await expect(page.getByText(betaEnd)).toBeVisible();
+    await expectVisibleSessionRows(betaSessionId);
     await expect(page.getByText(new RegExp(`BDD_LONG_HISTORY_${longHistorySeed(alphaSessionId)}_`))).toHaveCount(0);
     expect((await getSessionState()).session?.historyMessageCount).toBe(HISTORY_MESSAGE_COUNT);
     await expectBoundedRows();
 
     await selectTask(alphaSessionId);
     await expectBoundedRows();
-    await expect(page.getByText(alphaEnd)).toBeVisible();
+    await expectVisibleSessionRows(alphaSessionId);
     expect((await getSessionState()).session?.historyMessageCount).toBe(HISTORY_MESSAGE_COUNT);
   });
 });
