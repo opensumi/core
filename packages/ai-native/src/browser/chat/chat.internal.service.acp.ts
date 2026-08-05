@@ -436,6 +436,13 @@ export class AcpChatInternalService extends ChatInternalService {
         return;
       }
 
+      if (event.modelReplaced && event.model !== this._sessionModel) {
+        const wasObserved = this.taskObservationDisposables.has(event.sessionId);
+        this._sessionModel = event.model;
+        if (wasObserved) {
+          this.observeTaskSession(event.model);
+        }
+      }
       this._onSessionModelChange.fire(this._sessionModel);
       if (event.availableCommands !== undefined) {
         this.setAvailableCommands(event.availableCommands);

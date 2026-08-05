@@ -79,6 +79,36 @@ describe('AcpChatInternalService', () => {
     expect(modeChanges).toEqual(['code']);
   });
 
+  it('rebinds the active session when an attachment snapshot replaces its model', () => {
+    const service = new AcpChatInternalService() as any;
+    const stateEmitter = new Emitter<any>();
+    const originalModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:sess-1' });
+    const restoredModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:sess-1' });
+    const sessionModelChanges: any[] = [];
+
+    Object.defineProperties(service, {
+      aiNativeConfigService: { value: { capabilities: { supportsAgentMode: true } } },
+      chatManagerService: {
+        value: {
+          onDidApplySessionState: stateEmitter.event,
+          onStorageInit: jest.fn(() => disposable()),
+        },
+      },
+    });
+    service._sessionModel = originalModel;
+    service.onSessionModelChange((sessionModel) => sessionModelChanges.push(sessionModel));
+
+    service.init();
+    stateEmitter.fire({
+      sessionId: originalModel.sessionId,
+      model: restoredModel,
+      modelReplaced: true,
+    });
+
+    expect(service.sessionModel).toBe(restoredModel);
+    expect(sessionModelChanges).toEqual([restoredModel]);
+  });
+
   it('does not treat lightweight Agentic session-list models as live observations on storage init', async () => {
     const service = new AcpChatInternalService() as any;
     const model = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:retained' });

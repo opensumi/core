@@ -44,6 +44,7 @@ const ACP_PROMPT_TITLE_PREFIXES = [
 export interface AcpSessionStateChangeEvent {
   sessionId: string;
   model: ChatModel;
+  modelReplaced?: boolean;
   previousModeId?: string;
   currentModeId?: string;
   availableCommands?: AvailableCommand[];
@@ -442,6 +443,13 @@ export class AcpChatManagerService extends ChatManagerService {
     }
     this.setSessionPreservingOrder(sessionId, session);
     this.listenSession(session);
+    if (existingSession && existingSession !== session) {
+      this.onDidApplySessionStateEmitter?.fire({
+        sessionId,
+        model: session,
+        modelReplaced: true,
+      });
+    }
     if (
       !existingSession &&
       session.title &&
