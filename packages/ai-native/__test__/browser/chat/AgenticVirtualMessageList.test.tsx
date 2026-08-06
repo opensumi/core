@@ -83,6 +83,7 @@ describe('AgenticVirtualMessageList', () => {
         overscan: expect.any(Object),
       }),
     );
+    expect((container.querySelector('[data-message-id="message-0"]') as HTMLElement).style.display).toBe('flow-root');
   });
 
   it('exposes bottom scrolling through its public handle', () => {
