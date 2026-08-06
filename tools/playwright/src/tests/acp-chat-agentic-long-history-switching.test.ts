@@ -83,6 +83,9 @@ async function selectTask(sessionId: string) {
   const row = await waitForTaskRow(sessionId);
   await row.click();
   await expect.poll(async () => (await getSessionState()).session?.sessionId, { timeout: 60_000 }).toBe(sessionId);
+  await expect
+    .poll(async () => (await getSessionState()).session?.historyMessageCount, { timeout: 60_000 })
+    .toBe(HISTORY_MESSAGE_COUNT);
   await expect(page.getByTestId('acp-live-connecting')).toHaveCount(0, { timeout: 60_000 });
   await expect(page.getByTestId('agentic-virtual-message-list')).toBeVisible();
 }
@@ -95,11 +98,11 @@ async function expectBoundedRows() {
 
 async function expectVisibleSessionRows(sessionId: string) {
   const messageList = page.getByTestId('agentic-virtual-message-list');
-  await expect(
-    messageList.getByText(new RegExp(`BDD_LONG_HISTORY_${longHistorySeed(sessionId)}_`)).first(),
-  ).toBeVisible({
-    timeout: 30_000,
-  });
+  const visibleSessionRow = messageList
+    .locator('[data-testid="agentic-message-row"]:visible')
+    .filter({ hasText: new RegExp(`BDD_LONG_HISTORY_${longHistorySeed(sessionId)}_`) })
+    .first();
+  await expect(visibleSessionRow).toBeVisible({ timeout: 30_000 });
 }
 
 function longHistorySeed(sessionId: string): string {
@@ -151,12 +154,7 @@ test.describe('ACP Chat Agentic long-history switching', () => {
     await expectVisibleSessionRows(alphaSessionId);
     expect((await getSessionState()).session?.historyMessageCount).toBe(HISTORY_MESSAGE_COUNT);
 
-    const betaRow = await waitForTaskRow(betaSessionId);
-    await betaRow.click();
-    await expect
-      .poll(async () => (await getSessionState()).session?.sessionId, { timeout: 60_000 })
-      .toBe(betaSessionId);
-    await expect(page.getByTestId('acp-live-connecting')).toHaveCount(0, { timeout: 60_000 });
+    await selectTask(betaSessionId);
     await expectVisibleSessionRows(betaSessionId);
     await expect(page.getByText(new RegExp(`BDD_LONG_HISTORY_${longHistorySeed(alphaSessionId)}_`))).toHaveCount(0);
     expect((await getSessionState()).session?.historyMessageCount).toBe(HISTORY_MESSAGE_COUNT);

@@ -18,19 +18,14 @@ const LIGHT_THEME = 'OpenSumi Design Light+ (default light)';
 let runtime: AcpBddFixtureRuntime;
 
 async function chooseTheme(label: string) {
-  const isMac = await page.evaluate(() => /Mac/.test(navigator.platform));
-  await page.keyboard.press(`${isMac ? 'Meta' : 'Control'}+Shift+P`);
-  const input = page.locator('#opensumi-quickpick-input:visible');
-  await expect(input).toBeVisible({ timeout: 15_000 });
-  await input.fill('Color Theme');
-  const command = page.locator('#opensumi-quickpick-item[aria-label="Color Theme"]:visible');
-  await expect(command).toBeVisible({ timeout: 15_000 });
-  await input.press('Enter');
-  await expect(input).toBeVisible({ timeout: 15_000 });
-  await input.fill(label);
-  const option = page.locator(`#opensumi-quickpick-item[aria-label="${label}"]:visible`);
+  const command = page.evaluate(() =>
+    (window as any).__OPENSUMI_E2E__?.executeCommand?.('workbench.action.selectTheme'),
+  );
+  const option = page.locator('#opensumi-quickpick-item:visible').filter({ hasText: label });
   await expect(option).toBeVisible({ timeout: 15_000 });
-  await input.press('Enter');
+  await option.click();
+  await command;
+  await expect(option).toBeHidden();
 }
 
 async function switchLayoutByMenu(target: 'Agent' | 'Classic') {

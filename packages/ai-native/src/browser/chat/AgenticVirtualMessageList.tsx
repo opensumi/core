@@ -181,6 +181,7 @@ function AgenticVirtualMessageListInner<T extends AgenticVirtualMessage>(
           data-message-id={message.id}
           data-message-role={data?.position === 'right' ? 'user' : 'assistant'}
           data-testid='agentic-message-row'
+          style={{ display: 'flow-root' }}
         >
           <MessageBox {...(data as unknown as MessageBoxType)} />
         </div>
