@@ -135,7 +135,7 @@ async function waitForPendingPermission(): Promise<PermissionStateResult> {
   await expect(attention).toHaveAttribute('data-agentic-task-meta-kind', 'permission');
   await expect(attention.locator('xpath=ancestor::button')).toHaveAttribute(
     'aria-label',
-    /Status: Permission required/,
+    /Status: (?:Permission required|需要授权)/,
   );
 
   return pendingState;
