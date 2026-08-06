@@ -95,9 +95,8 @@ test.describe('ACP Chat Agentic Task Session Recovery', () => {
       await expect.poll(() => missingLoadAttempts).toBeGreaterThanOrEqual(2);
       await expect(previousActiveRow).toHaveAttribute('aria-current', 'true');
 
-      const visibleText = `${await chatSlot().innerText()}\n${await page
-        .locator('.kt-notification-wrapper')
-        .innerText()}`;
+      const notificationText = (await page.locator('.kt-notification-wrapper:visible').allInnerTexts()).join('\n');
+      const visibleText = `${await chatSlot().innerText()}\n${notificationText}`;
       expect(visibleText).not.toMatch(
         /\n\s*at\s+\S+\s+\(|"jsonrpc"|session\/load|api[_-]?key|password|\bsk-[a-z0-9]{8,}/i,
       );
