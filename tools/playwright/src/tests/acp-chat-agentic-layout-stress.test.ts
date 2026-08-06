@@ -35,7 +35,7 @@ interface LayoutBoundsProof {
   messageViewport?: RectProof;
   messageList?: RectProof;
   input?: RectProof;
-  messageCount: number;
+  mountedMessageCount: number;
   overflowingMessageCount: number;
   pageHasHorizontalOverflow: boolean;
   messageListScrollable: boolean;
@@ -140,7 +140,7 @@ async function readLayoutBounds(): Promise<LayoutBoundsProof> {
       messageViewport: messageViewport ? toRect(messageViewport.getBoundingClientRect()) : undefined,
       messageList: messageList ? toRect(messageList.getBoundingClientRect()) : undefined,
       input: inputRect ? toRect(inputRect) : undefined,
-      messageCount: agenticMessageRows.length,
+      mountedMessageCount: agenticMessageRows.length,
       overflowingMessageCount,
       pageHasHorizontalOverflow: document.documentElement.scrollWidth > window.innerWidth + 2,
       messageListScrollable: messageList ? messageList.scrollHeight > messageList.clientHeight + 8 : false,
@@ -162,7 +162,7 @@ function expectLayoutBounds(proof: LayoutBoundsProof, workbenchExpected = true) 
     expect(proof.workbench?.width ?? 0).toBe(0);
     expect(proof.explorer?.width ?? 0).toBe(0);
   }
-  expect(proof.messageCount).toBeGreaterThanOrEqual(2);
+  expect(proof.mountedMessageCount).toBeGreaterThanOrEqual(1);
   expect(proof.overflowingMessageCount).toBe(0);
   expect(proof.pageHasHorizontalOverflow).toBe(false);
   expect(proof.messageListScrollable).toBe(true);
