@@ -20,14 +20,15 @@ let runtime: AcpBddFixtureRuntime;
 async function chooseTheme(label: string) {
   const isMac = await page.evaluate(() => /Mac/.test(navigator.platform));
   await page.keyboard.press(`${isMac ? 'Meta' : 'Control'}+Shift+P`);
-  const input = page.locator('#opensumi-quickpick-input');
-  await expect(input).toBeVisible();
+  const input = page.locator('#opensumi-quickpick-input:visible');
+  await expect(input).toBeVisible({ timeout: 15_000 });
   await input.fill('Color Theme');
-  const command = page.locator('#opensumi-quickpick-item[aria-label="Color Theme"]');
+  const command = page.locator('#opensumi-quickpick-item[aria-label="Color Theme"]:visible');
   await expect(command).toBeVisible({ timeout: 15_000 });
   await input.press('Enter');
+  await expect(input).toBeVisible({ timeout: 15_000 });
   await input.fill(label);
-  const option = page.getByText(label, { exact: true }).last();
+  const option = page.locator(`#opensumi-quickpick-item[aria-label="${label}"]:visible`);
   await expect(option).toBeVisible({ timeout: 15_000 });
   await input.press('Enter');
 }
@@ -150,10 +151,17 @@ test.describe('ACP Chat Agentic 主题与布局持久化', () => {
       executionMode: 'deterministic-fixture',
       hardeningVerdict: 'CONVERT',
     });
+    await waitForAcpChatReady(page);
+    await ensureAgenticLayout(page);
+    await expect(page.locator('[data-testid="agentic-chat-panel-header"]:visible')).toBeVisible();
+    await expect(page.locator('.AI-Chat-slot:visible [role="textbox"]')).toBeVisible();
     const initial = await visualState();
 
     await chooseTheme(LIGHT_THEME);
     await expect.poll(() => page.evaluate(() => document.body.classList.contains('design-light'))).toBe(true);
+    await waitForAcpChatReady(page);
+    await expect(page.locator('[data-testid="agentic-chat-panel-header"]:visible')).toBeVisible();
+    await expect(page.locator('.AI-Chat-slot:visible [role="textbox"]')).toBeVisible();
     const light = await visualState();
     expect(light.chatVisible).toBe(true);
     expect(light.headerVisible).toBe(true);

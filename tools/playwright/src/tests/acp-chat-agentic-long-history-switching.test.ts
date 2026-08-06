@@ -37,6 +37,15 @@ function sendButton() {
     .last();
 }
 
+async function waitForTaskRow(sessionId: string) {
+  const search = page.getByPlaceholder('Search tasks');
+  await search.fill('Long history switching');
+  await search.fill('');
+  const row = page.getByTestId(`agentic-task-row-${sessionId}`);
+  await expect(row).toBeVisible({ timeout: 60_000 });
+  return row;
+}
+
 async function getSessionState() {
   const result = await page.evaluate(async () =>
     (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
@@ -57,7 +66,7 @@ async function launchTask(prompt: string): Promise<string> {
   await expect(chatSlot().getByText('BDD_ASSISTANT_PART_2 completed.').last()).toBeVisible({ timeout: 30_000 });
   const sessionId = (await getSessionState()).session?.sessionId;
   expect(sessionId).toBeTruthy();
-  await expect(page.getByTestId(`agentic-task-row-${sessionId}`)).toBeVisible({ timeout: 30_000 });
+  await waitForTaskRow(sessionId!);
   return sessionId!;
 }
 
@@ -71,10 +80,10 @@ async function showAgenticChat() {
 }
 
 async function selectTask(sessionId: string) {
-  const row = page.getByTestId(`agentic-task-row-${sessionId}`);
-  await expect(row).toBeVisible({ timeout: 30_000 });
+  const row = await waitForTaskRow(sessionId);
   await row.click();
   await expect.poll(async () => (await getSessionState()).session?.sessionId, { timeout: 60_000 }).toBe(sessionId);
+  await expect(page.getByTestId('acp-live-connecting')).toHaveCount(0, { timeout: 60_000 });
   await expect(page.getByTestId('agentic-virtual-message-list')).toBeVisible();
 }
 
@@ -142,12 +151,12 @@ test.describe('ACP Chat Agentic long-history switching', () => {
     await expectVisibleSessionRows(alphaSessionId);
     expect((await getSessionState()).session?.historyMessageCount).toBe(HISTORY_MESSAGE_COUNT);
 
-    const betaRow = page.getByTestId(`agentic-task-row-${betaSessionId}`);
+    const betaRow = await waitForTaskRow(betaSessionId);
     await betaRow.click();
-    await expect(page.getByTestId('acp-session-loading')).toHaveCount(0);
     await expect
       .poll(async () => (await getSessionState()).session?.sessionId, { timeout: 60_000 })
       .toBe(betaSessionId);
+    await expect(page.getByTestId('acp-live-connecting')).toHaveCount(0, { timeout: 60_000 });
     await expectVisibleSessionRows(betaSessionId);
     await expect(page.getByText(new RegExp(`BDD_LONG_HISTORY_${longHistorySeed(alphaSessionId)}_`))).toHaveCount(0);
     expect((await getSessionState()).session?.historyMessageCount).toBe(HISTORY_MESSAGE_COUNT);

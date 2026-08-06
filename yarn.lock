@@ -3463,7 +3463,7 @@ __metadata:
     rc-collapse: "npm:^4.0.0"
     react-chat-elements: "npm:^12.0.10"
     react-highlight: "npm:^0.15.0"
-    react-virtuoso: "npm:^3.1.5"
+    react-virtuoso: "npm:^4.18.11"
     tiktoken: "npm:1.0.12"
     web-tree-sitter: "npm:0.22.6"
     zod: "npm:^3.25.0 || ^4.0.0"
@@ -21674,6 +21674,16 @@ __metadata:
     react: ">=16 || >=17 || >= 18"
     react-dom: ">=16 || >=17 || >= 18"
   checksum: 10/f619ac81bbaefced398844305c23d8a0ed7c8845515f16a2b90dc685081b36c1440c9f191cfa9e4902ae4200632406afcd1fd789b55dc4476b9969c55b40e026
+  languageName: node
+  linkType: hard
+
+"react-virtuoso@npm:^4.18.11":
+  version: 4.18.11
+  resolution: "react-virtuoso@npm:4.18.11"
+  peerDependencies:
+    react: ">=16 || >=17 || >= 18 || >= 19"
+    react-dom: ">=16 || >=17 || >= 18 || >=19"
+  checksum: 10/a41bca414daf6747903af9717347182ec109cb85db04654ac14190e407d03795008571dd44e8e3598452871eef16eb0db1a5031379bb75e70dfd6f17136604db
   languageName: node
   linkType: hard
 
