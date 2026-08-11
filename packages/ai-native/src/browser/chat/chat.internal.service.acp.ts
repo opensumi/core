@@ -567,7 +567,10 @@ export class AcpChatInternalService extends ChatInternalService {
       return;
     }
 
-    this.agenticTaskRegistry.clearRememberedActiveTaskSession(this._sessionModel?.sessionId);
+    const sessionId = this._sessionModel?.sessionId;
+    if (sessionId) {
+      this.agenticTaskRegistry.clearRememberedActiveTaskSession(sessionId);
+    }
     this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || this.draftSessionState;
     this._sessionModel = undefined as unknown as ChatModel;
     this.permissionBridgeService.setActiveSession(undefined);

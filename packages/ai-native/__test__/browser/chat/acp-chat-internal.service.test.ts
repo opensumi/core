@@ -1268,6 +1268,14 @@ describe('AcpChatInternalService', () => {
       expect(service.sessionModel).toBeUndefined();
     });
 
+    it('keeps the remembered active Task when entering draft before a Session is established', () => {
+      const { registry, service } = createService();
+
+      service.enterDraftSession({ force: true });
+
+      expect(registry.clearRememberedActiveTaskSession).not.toHaveBeenCalled();
+    });
+
     it('enters draft and preserves ACP footer state for the next input', () => {
       const { model, permissionBridgeService, service } = createService();
       const sessionModelChanges: any[] = [];
