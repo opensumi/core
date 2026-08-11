@@ -1659,6 +1659,26 @@ export const AIChatViewACPContent = () => {
   const pendingAgenticSessionId = aiChatService.getPendingAgenticSessionId();
   const activeAgenticLiveReadyStatus = aiChatService.getAgenticSessionLiveReadyStatus(activeServiceSessionId);
   const showAgenticConnectionStatus = isAgenticLayout && (sessionLoading || activeAgenticLiveReadyStatus !== 'ready');
+  const [showDelayedAgenticConnectionStatus, setShowDelayedAgenticConnectionStatus] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!showAgenticConnectionStatus) {
+      setShowDelayedAgenticConnectionStatus(false);
+      return;
+    }
+    if (activeAgenticLiveReadyStatus === 'failed') {
+      setShowDelayedAgenticConnectionStatus(true);
+      return;
+    }
+    const timer = window.setTimeout(() => setShowDelayedAgenticConnectionStatus(true), 500);
+    return () => window.clearTimeout(timer);
+  }, [activeAgenticLiveReadyStatus, showAgenticConnectionStatus]);
+
+  const handleAgenticConnectionRetry = React.useCallback(() => {
+    if (activeServiceSessionId) {
+      void aiChatService.retryAgenticSessionConnection(activeServiceSessionId);
+    }
+  }, [activeServiceSessionId, aiChatService]);
 
   const syncAgenticConversation = React.useCallback(
     (sessionId: string, messages: IHistoryChatMessage[]) => {
@@ -1851,13 +1871,6 @@ export const AIChatViewACPContent = () => {
             </div>
           ) : null}
           <div className={styles.chat_input_wrap}>
-            {showAgenticConnectionStatus && (
-              <div aria-live='polite' data-testid='acp-live-connecting' role='status'>
-                {activeAgenticLiveReadyStatus === 'failed'
-                  ? localize('aiNative.chat.session.connectionUnavailable', 'Connection unavailable')
-                  : localize('aiNative.chat.session.restoringConnection', 'Restoring connection…')}
-              </div>
-            )}
             <AcpQueuedTurns
               snapshot={queuedTurnSnapshot}
               expanded={queuedTurnsExpanded}
@@ -1946,6 +1959,28 @@ export const AIChatViewACPContent = () => {
               onInputHandleReady={handleActiveInputReady}
               placeholder={localize('aiNative.chat.input.placeholder.acp')}
             />
+            {showDelayedAgenticConnectionStatus && (
+              <div
+                aria-live='polite'
+                className={styles.agentic_connection_status}
+                data-testid='acp-live-connecting'
+                role='status'
+              >
+                <span>
+                  {activeAgenticLiveReadyStatus === 'failed'
+                    ? localize('aiNative.chat.session.connectionUnavailable', 'Unable to restore the session.')
+                    : localize(
+                        'aiNative.chat.session.restoringConnection',
+                        'Restoring session. You can send when it is ready.',
+                      )}
+                </span>
+                {activeAgenticLiveReadyStatus === 'failed' && (
+                  <button data-testid='acp-live-connection-retry' onClick={handleAgenticConnectionRetry} type='button'>
+                    {localize('aiNative.chat.acp.capacityRetry', 'Retry')}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

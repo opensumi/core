@@ -444,6 +444,7 @@ function createMockServices({
     getDraftSessionState: jest.fn(() => ({ isDraft: false })),
     getAgenticSessionLiveReadyStatus: jest.fn(() => 'ready'),
     getPendingAgenticSessionId: jest.fn(() => undefined),
+    retryAgenticSessionConnection: jest.fn(() => Promise.resolve()),
     getInputDraft: jest.fn(() => undefined),
     getActiveAgenticTaskAgentId: jest.fn(() => undefined),
     ensureSessionModel: jest.fn(async () => {
@@ -1192,6 +1193,7 @@ describe('ACP chat view headers', () => {
   });
 
   it('keeps the Agentic transcript visible while Live Ready is pending', async () => {
+    jest.useFakeTimers();
     const services = createMockServices({ panelLayout: 'agentic' });
     installInjectableMocks(services);
 
@@ -1205,9 +1207,11 @@ describe('ACP chat view headers', () => {
     expect(container.querySelector('[data-testid="community-message-list"]')).toBeNull();
     expect(container.querySelector('[data-testid="acp-session-loading"]')).toBeNull();
     expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="acp-live-connecting"]')).toBeNull();
+    act(() => jest.advanceTimersByTime(500));
     const connectingState = container.querySelector('[data-testid="acp-live-connecting"]');
     expect(connectingState?.getAttribute('role')).toBe('status');
-    expect(connectingState?.textContent).toBe('Restoring connection…');
+    expect(connectingState?.textContent).toBe('Restoring session. You can send when it is ready.');
     expect(services.getLatestChatInputProps()).toEqual(
       expect.objectContaining({
         disabled: false,
@@ -1230,6 +1234,7 @@ describe('ACP chat view headers', () => {
         loading: false,
       }),
     );
+    jest.useRealTimers();
   });
 
   it('keeps Send disabled and reports the connection when Live Ready fails', async () => {
@@ -1241,7 +1246,13 @@ describe('ACP chat view headers', () => {
 
     expect(container.querySelector('[data-testid="agentic-virtual-message-list"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="acp-session-loading"]')).toBeNull();
-    expect(container.querySelector('[data-testid="acp-live-connecting"]')?.textContent).toBe('Connection unavailable');
+    expect(container.querySelector('[data-testid="acp-live-connecting"]')?.textContent).toBe(
+      'Unable to restore the session.Retry',
+    );
+    await act(async () => {
+      (container.querySelector('[data-testid="acp-live-connection-retry"]') as HTMLButtonElement).click();
+    });
+    expect(services.aiChatService.retryAgenticSessionConnection).toHaveBeenCalledWith('acp:current');
     expect(services.getLatestChatInputProps()).toEqual(
       expect.objectContaining({
         disabled: false,

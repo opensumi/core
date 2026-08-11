@@ -164,6 +164,30 @@ export class AcpChatInternalService extends ChatInternalService {
     return this.pendingAgenticSessionId;
   }
 
+  /** Reconnect the active task without replaying its prompt or transcript. */
+  async retryAgenticSessionConnection(sessionId: string): Promise<void> {
+    if (this._sessionModel?.sessionId !== sessionId || this.getAgenticSessionLiveReadyStatus(sessionId) !== 'failed') {
+      return;
+    }
+
+    this.agenticSessionLiveReadyStatuses.set(sessionId, 'pending');
+    this.beginSessionLoading();
+    try {
+      const acpManager = this.chatManagerService as AcpChatManagerService;
+      const loadResult = await acpManager.loadSession(sessionId);
+      const status = await loadResult.liveReady;
+      if (this._sessionModel?.sessionId === sessionId) {
+        this.agenticSessionLiveReadyStatuses.set(sessionId, status);
+      }
+    } catch {
+      if (this._sessionModel?.sessionId === sessionId) {
+        this.agenticSessionLiveReadyStatuses.set(sessionId, 'failed');
+      }
+    } finally {
+      this.endSessionLoading();
+    }
+  }
+
   private readonly _onSessionModelChange = new Emitter<ChatModel | undefined>();
   public readonly onSessionModelChange: Event<ChatModel | undefined> = this._onSessionModelChange.event;
 

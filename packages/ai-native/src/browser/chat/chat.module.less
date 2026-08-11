@@ -421,6 +421,27 @@
         background-color: var(--panel-background);
         border-radius: 0 0 0 12px;
 
+        .agentic_connection_status {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 8px;
+          min-height: 20px;
+          margin-top: 6px;
+          color: var(--descriptionForeground);
+          font-size: 12px;
+          line-height: 18px;
+
+          button {
+            padding: 0;
+            border: 0;
+            color: var(--activeLinkForeground);
+            background: transparent;
+            cursor: pointer;
+            font: inherit;
+          }
+        }
+
         .queued_turns {
           display: flex;
           flex-direction: column;
