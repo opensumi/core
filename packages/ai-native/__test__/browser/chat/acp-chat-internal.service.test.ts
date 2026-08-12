@@ -1276,7 +1276,7 @@ describe('AcpChatInternalService', () => {
       expect(registry.clearRememberedActiveTaskSession).not.toHaveBeenCalled();
     });
 
-    it('enters draft and preserves ACP footer state for the next input', () => {
+    it('enters draft without retaining the previous session slash commands', () => {
       const { model, permissionBridgeService, service } = createService();
       const sessionModelChanges: any[] = [];
       const availableCommandsChanges: any[] = [];
@@ -1300,10 +1300,10 @@ describe('AcpChatInternalService', () => {
         modelId: 'model-a',
         configOptions: model.configOptions,
       });
-      expect(service.getAvailableCommands()).toEqual([{ name: 'help', description: 'Help' }]);
+      expect(service.getAvailableCommands()).toEqual([]);
       expect(permissionBridgeService.setActiveSession).toHaveBeenCalledWith(undefined);
       expect(sessionModelChanges).toEqual([undefined]);
-      expect(availableCommandsChanges).toEqual([]);
+      expect(availableCommandsChanges).toEqual([[]]);
       expect(modeChanges).toEqual(['']);
       expect(sessionChanges).toEqual(['']);
     });

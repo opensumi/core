@@ -273,6 +273,7 @@ describe('AcpCliBackService', () => {
           status: 'running',
           historyUpdates: [],
           threadStatus: 'working',
+          availableCommands: [{ name: 'new-skill', description: 'Run the new skill' }],
         },
       });
       agentStream.emitData({
@@ -291,6 +292,7 @@ describe('AcpCliBackService', () => {
           sessionId: 'sess-1',
           threadStatus: 'working',
           historyUpdates: [],
+          availableCommands: [{ name: 'new-skill', description: 'Run the new skill' }],
         }),
       );
       expect(progress).toContainEqual({ kind: 'content', content: 'continued output' });

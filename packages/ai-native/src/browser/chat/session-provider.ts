@@ -39,6 +39,8 @@ export interface ISessionModel {
   }[];
   lastLoadedAt?: number;
   title?: string;
+  /** Non-persistent metadata supplied by the session provider. */
+  extension?: ISessionModelExtension;
 }
 
 /**

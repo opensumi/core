@@ -3,6 +3,7 @@ import {
   ACP_THREAD_POOL_SATURATED_ERROR_NAME,
   AIBackSerivcePath,
   AgentProcessConfig,
+  AvailableCommand,
   ChatMessageRole,
   Domain,
   IACPConfigProvider,
@@ -288,6 +289,7 @@ export class ACPSessionProvider implements ISessionProvider {
       models: snapshot.models,
       currentModelId: snapshot.currentModelId,
       configOptions: snapshot.configOptions,
+      availableCommands: snapshot.availableCommands,
       threadStatus: snapshot.threadStatus,
       historyUpdates: snapshot.historyUpdates,
       messages: [],
@@ -317,6 +319,7 @@ export class ACPSessionProvider implements ISessionProvider {
       models?: ISessionModel['agentModels'];
       currentModelId?: string;
       configOptions?: ISessionModel['configOptions'];
+      availableCommands?: AvailableCommand[];
       threadStatus?: ThreadStatus;
       historyUpdates?: SessionNotification[];
       messages: Array<{
@@ -357,6 +360,7 @@ export class ACPSessionProvider implements ISessionProvider {
       currentModeId: agentSession.currentModeId,
       agentModels: agentSession.models,
       configOptions: agentSession.configOptions,
+      extension: agentSession.availableCommands ? { availableCommands: agentSession.availableCommands } : undefined,
       history: {
         additional: {},
         messages,
@@ -375,6 +379,7 @@ export class ACPSessionProvider implements ISessionProvider {
       models?: ISessionModel['agentModels'];
       currentModelId?: string;
       configOptions?: ISessionModel['configOptions'];
+      availableCommands?: AvailableCommand[];
       threadStatus?: ThreadStatus;
       historyUpdates: SessionNotification[];
     },
@@ -580,6 +585,7 @@ export class ACPSessionProvider implements ISessionProvider {
       currentModeId: agentSession.currentModeId,
       agentModels: agentSession.models,
       configOptions: agentSession.configOptions,
+      extension: agentSession.availableCommands ? { availableCommands: agentSession.availableCommands } : undefined,
       history: { additional: {}, messages },
       requests,
     };
