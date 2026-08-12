@@ -1025,12 +1025,14 @@ describe('AcpChatManagerService', () => {
       sessionId: 's-running',
       threadStatus: 'working',
       historyUpdates: [],
+      availableCommands: [{ name: 'new-skill', description: 'Run the new skill' }],
     });
     attachment.emitData({ kind: 'content', content: 'continued output' });
 
     const model = service.getSession(sessionId)!;
     expect(attachSession).toHaveBeenCalledWith(sessionId);
     expect(model.threadStatus).toBe('working');
+    expect(service.getAvailableCommands(sessionId)).toEqual([{ name: 'new-skill', description: 'Run the new skill' }]);
     expect(model.getRequest('request-1')?.response.responseText).toBe('continued output');
     attachment.end();
   });
@@ -1050,6 +1052,9 @@ describe('AcpChatManagerService', () => {
             order: 0,
           },
         ],
+      },
+      extension: {
+        availableCommands: [{ name: 'restored-skill', description: 'Restored skill' }],
       },
       requests: [],
     });
@@ -1075,6 +1080,9 @@ describe('AcpChatManagerService', () => {
       expect.objectContaining({ content: 'restore this history once' }),
     ]);
     expect(restoredModel?.requests).toHaveLength(0);
+    expect(service.getAvailableCommands(sessionId)).toEqual([
+      { name: 'restored-skill', description: 'Restored skill' },
+    ]);
     expect(loadSession).toHaveBeenCalledTimes(1);
     expect(attachSession).toHaveBeenCalledTimes(1);
     expect((service as any).logger.error).toHaveBeenCalledWith(
@@ -1868,12 +1876,34 @@ describe('AcpChatManagerService', () => {
       availableCommands,
     } as any);
 
-    expect(service.getAvailableCommands()).toEqual(availableCommands);
+    expect(service.getAvailableCommands(model.sessionId)).toEqual(availableCommands);
     expect(changes).toEqual([
       expect.objectContaining({
         sessionId: 'acp:sess-1',
         model,
       }),
+    ]);
+  });
+
+  it('keeps available command catalogs isolated by ACP session', () => {
+    const { service } = createConstructedService();
+    const firstSession = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:first' });
+    const secondSession = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:second' });
+    (service as any).sessionModels.set(firstSession.sessionId, firstSession);
+    (service as any).sessionModels.set(secondSession.sessionId, secondSession);
+
+    service.applySessionStateUpdate('first', {
+      availableCommands: [{ name: 'first-skill', description: 'First session skill' }],
+    } as any);
+    service.applySessionStateUpdate('second', {
+      availableCommands: [{ name: 'second-skill', description: 'Second session skill' }],
+    } as any);
+
+    expect(service.getAvailableCommands(firstSession.sessionId)).toEqual([
+      { name: 'first-skill', description: 'First session skill' },
+    ]);
+    expect(service.getAvailableCommands(secondSession.sessionId)).toEqual([
+      { name: 'second-skill', description: 'Second session skill' },
     ]);
   });
 });

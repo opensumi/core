@@ -718,6 +718,8 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(result.availableCommands[0].name).toBe('ReadFile');
       expect(thread.initialize).toHaveBeenCalled();
       expect(thread.newSession).toHaveBeenCalled();
+      expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('timings={"threadAcquireMs":'));
+      expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('"newSessionRpcMs":'));
     });
 
     it('should create a session with empty commands when available_commands_update times out', async () => {
@@ -732,6 +734,37 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(result.sessionId).toBe('new-session-1');
       expect(result.availableCommands).toEqual([]);
       expect(thread.dispose).not.toHaveBeenCalled();
+    });
+
+    it('should use the latest complete available command update during discovery', async () => {
+      const { service, thread } = createServiceWithAutoEvents();
+
+      setTimeout(() => {
+        thread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'session-1',
+            update: {
+              sessionUpdate: 'available_commands_update',
+              availableCommands: [{ name: 'old-skill', description: 'Removed skill' }],
+            },
+          },
+        });
+        thread._fireEvent({
+          type: 'session_notification',
+          notification: {
+            sessionId: 'session-1',
+            update: {
+              sessionUpdate: 'available_commands_update',
+              availableCommands: [{ name: 'new-skill', description: 'Installed skill' }],
+            },
+          },
+        });
+      }, 10);
+
+      const result = await service.createSession(mockAgentProcessConfig);
+
+      expect(result.availableCommands).toEqual([{ name: 'new-skill', description: 'Installed skill' }]);
     });
 
     it('should preserve working sessions and report diagnostics when the pool is saturated', async () => {
@@ -2223,6 +2256,12 @@ describe('AcpAgentService (Thread Pool)', () => {
       ];
       thread.getSessionNotifications.mockReturnValue(historyUpdates);
       thread.getStatus.mockReturnValue('working');
+      thread.getSessionState.mockReturnValue({
+        notifications: [],
+        entries: [],
+        modes: [],
+        availableCommands: [{ name: 'installed-skill', description: 'Installed skill' }],
+      });
 
       setTimeout(() => {
         thread._fireEvent({
@@ -2259,6 +2298,7 @@ describe('AcpAgentService (Thread Pool)', () => {
             sessionId: createResult.sessionId,
             historyUpdates,
             threadStatus: 'working',
+            availableCommands: [{ name: 'installed-skill', description: 'Installed skill' }],
           }),
         }),
       );

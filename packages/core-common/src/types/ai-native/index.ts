@@ -241,6 +241,7 @@ export interface AgentSessionCreateResult extends AgentSessionStateResult {
 
 export interface AgentSessionLoadResult extends AgentSessionStateResult {
   sessionId: string;
+  availableCommands?: AvailableCommand[];
   threadStatus?: ThreadStatus;
   historyUpdates?: SessionNotification[];
   messages: Array<{
@@ -564,6 +565,7 @@ export interface IChatSessionSnapshot extends AgentSessionStateResult {
   kind: 'sessionSnapshot';
   sessionId: string;
   threadStatus: ThreadStatus;
+  availableCommands?: AvailableCommand[];
   historyUpdates: SessionNotification[];
 }
 

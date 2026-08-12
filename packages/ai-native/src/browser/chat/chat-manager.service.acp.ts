@@ -76,7 +76,7 @@ export class AcpChatManagerService extends ChatManagerService {
 
   private localFallbackActive = false;
 
-  private availableCommands: AvailableCommand[] = [];
+  private availableCommandsBySession: Map<string, AvailableCommand[]> | undefined;
 
   private acpTitleStorage: IStorage | undefined;
 
@@ -338,20 +338,27 @@ export class AcpChatManagerService extends ChatManagerService {
     return Array.from(this.sessionModels.values());
   }
 
-  getAvailableCommands(): AvailableCommand[] {
-    return this.availableCommands;
+  getAvailableCommands(sessionId: string): AvailableCommand[] {
+    return this.availableCommandsBySession?.get(sessionId) || [];
+  }
+
+  private getAvailableCommandsBySession(): Map<string, AvailableCommand[]> {
+    if (!this.availableCommandsBySession) {
+      this.availableCommandsBySession = new Map();
+    }
+    return this.availableCommandsBySession;
   }
 
   override async startSession(options?: SessionCreationOptions): Promise<ChatModel> {
     this.useAcpProviderWhenAvailable();
     if (this.aiNativeConfig.capabilities.supportsAgentMode && this.mainProvider?.createSession) {
       const sessionData = await this.mainProvider.createSession(options);
-      if (sessionData.extension?.availableCommands) {
-        this.availableCommands = sessionData.extension.availableCommands;
-      }
       const models = this.fromAcpJSON([sessionData]);
       if (models.length > 0) {
         const model = models[0];
+        if (sessionData.extension?.availableCommands) {
+          this.getAvailableCommandsBySession().set(model.sessionId, sessionData.extension.availableCommands);
+        }
         this.ownedBackendSessions.add(model.sessionId);
         this.sessionModels.set(model.sessionId, model);
         this.listenSession(model);
@@ -441,6 +448,9 @@ export class AcpChatManagerService extends ChatManagerService {
     if (!session) {
       return;
     }
+    if (sessionData.extension?.availableCommands) {
+      this.getAvailableCommandsBySession().set(sessionId, sessionData.extension.availableCommands);
+    }
     this.setSessionPreservingOrder(sessionId, session);
     this.listenSession(session);
     if (existingSession && existingSession !== session) {
@@ -522,6 +532,7 @@ export class AcpChatManagerService extends ChatManagerService {
             currentModeId: progress.currentModeId,
             currentModelId: progress.currentModelId,
             configOptions: progress.configOptions,
+            availableCommands: progress.availableCommands,
           });
           return;
         }
@@ -626,6 +637,7 @@ export class AcpChatManagerService extends ChatManagerService {
 
   override clearSession(sessionId: string): void {
     super.clearSession(sessionId);
+    this.availableCommandsBySession?.delete(sessionId);
     this.removeDisplayTitleOverride(sessionId);
   }
 
@@ -695,7 +707,7 @@ export class AcpChatManagerService extends ChatManagerService {
       changed = true;
     }
     if (state.availableCommands !== undefined) {
-      this.availableCommands = state.availableCommands;
+      this.getAvailableCommandsBySession().set(lookupKey, state.availableCommands);
       changed = true;
     }
 

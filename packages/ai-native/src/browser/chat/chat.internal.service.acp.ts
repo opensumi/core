@@ -503,7 +503,7 @@ export class AcpChatInternalService extends ChatInternalService {
       throw createSessionCreationCancelledError();
     }
     this._sessionModel = sessionModel;
-    this.setAvailableCommands(acpManager.getAvailableCommands());
+    this.setAvailableCommands(acpManager.getAvailableCommands(this._sessionModel.sessionId));
     this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || {};
     this._onSessionModelChange.fire(this._sessionModel);
     // Notify permission bridge of session change
@@ -597,6 +597,7 @@ export class AcpChatInternalService extends ChatInternalService {
     }
     this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || this.draftSessionState;
     this._sessionModel = undefined as unknown as ChatModel;
+    this.setAvailableCommands([]);
     this.permissionBridgeService.setActiveSession(undefined);
     this._onSessionModelChange.fire(undefined);
     this._onModeChange.fire('');
@@ -1097,7 +1098,7 @@ export class AcpChatInternalService extends ChatInternalService {
     // Notify permission bridge of session change
     const rawSessionId = this.stripAcpPrefix(sessionId);
     this.permissionBridgeService.setActiveSession(rawSessionId);
-    this.setAvailableCommands((this.chatManagerService as AcpChatManagerService).getAvailableCommands());
+    this.setAvailableCommands((this.chatManagerService as AcpChatManagerService).getAvailableCommands(sessionId));
     this._onSessionModelChange.fire(this._sessionModel);
     this._onChangeSession.fire(this._sessionModel.sessionId);
     return true;

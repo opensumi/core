@@ -88,6 +88,16 @@ This context describes enhancements to OpenSumi's existing workspace-local Agent
 
 **ACP Task Action**: An action explicitly made available by ACP for a Task Conversation. Agentic Layout renders and forwards only these advertised actions; it does not add its own stop, retry, or lifecycle controls. _Avoid_: Frontend retry, synthetic task action
 
+**ACP Slash Command Catalog**: The session-scoped set of slash commands advertised by the ACP Agent for a Task Conversation, including Agent-provided skills. The catalog is authoritative only for its originating Task Conversation and is distinct from OpenSumi built-in chat commands. _Avoid_: Global skill list, local SKILL.md scan, built-in slash command registry
+
+**ACP Agent Skill**: A skill whose installation and definition are owned by one ACP Agent. Each Task Conversation exposes only the ACP Slash Command Catalog that this Agent makes available in that conversation's context. _Avoid_: IDE-global skill, Session-owned skill definition
+
+**ACP Slash Command Catalog Update**: A complete replacement ACP Slash Command Catalog sent by the ACP Agent for a Task Conversation when its available commands change. It is also included when the Task Conversation becomes live after restoration. _Avoid_: Client pull, command delta, local skill scan
+
+**Slash Command Freshness**: The user-visible guarantee that opening the slash command menu for a Live Ready Task Conversation reflects the latest ACP Slash Command Catalog delivered or restored by its ACP Agent. _Avoid_: Client pull guarantee, background polling guarantee, installation-complete notification
+
+**Slash Command Execution Validation**: The ACP Agent's final decision whether a submitted slash command is currently executable. A stale or removed command preserves the developer's draft and yields a structured unavailable-command result rather than changing or discarding the draft. _Avoid_: Client-only authorization, silent command removal, draft reset
+
 **ACP Attention Signal**: A structured ACP-originated request that requires developer action, such as a Permission Request or an Agent-provided input request. Agentic Layout renders pending signals and does not infer them from conversation content. _Avoid_: Attention state, notification
 
 **Permission Request**: An Agent-originated request for a user decision before a protected operation proceeds. The Agent supplies the available decisions, while OpenSumi routes the request, applies existing rules, and prevents the Agent from granting itself permission. _Avoid_: Permission prompt, Agent approval

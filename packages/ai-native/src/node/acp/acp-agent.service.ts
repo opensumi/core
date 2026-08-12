@@ -7,6 +7,7 @@ import {
   ListSessionsRequest,
   ListSessionsResponse,
   McpServer,
+  NewSessionResponse,
   OpenSumiMcpServerConnectionInfo,
   SessionInfo,
   SessionNotification,
@@ -111,6 +112,7 @@ export interface SessionLoadResult {
   configOptions?: Record<string, any>[];
   status: AgentSessionStatus;
   threadStatus?: ThreadStatus;
+  availableCommands?: AvailableCommand[];
   historyUpdates: SessionNotification[];
 }
 
@@ -1313,8 +1315,19 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     currentModelId?: string;
     configOptions?: Record<string, any>[];
   }> {
+    const createStartedAt = Date.now();
+    const timings = {
+      threadAcquireMs: 0,
+      initializeMs: 0,
+      mcpSetupMs: 0,
+      newSessionRpcMs: 0,
+      defaultOptionsMs: 0,
+      commandDiscoveryMs: 0,
+    };
     this.logger.log(`[AcpAgentService] createSession() — cwd=${config.cwd}, command=${config.command}`);
+    const threadAcquireStartedAt = Date.now();
     const thread = await this.findOrCreateIdleThread(config, pending);
+    timings.threadAcquireMs = Date.now() - threadAcquireStartedAt;
     if (pending) {
       pending.thread = thread;
       if (pending.cancelled) {
@@ -1325,14 +1338,16 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       }
     }
 
-    const availableCommands: AvailableCommand[] = [];
+    let availableCommands: AvailableCommand[] = [];
     const deferred = new Deferred<void>();
+    let receivedAvailableCommands = false;
 
     const disposable = thread.onEvent((event: AcpThreadEvent) => {
       if (event.type === 'session_notification') {
         const update = (event.notification as any).update;
         if (update?.sessionUpdate === 'available_commands_update' && Array.isArray(update.availableCommands)) {
-          availableCommands.push(...update.availableCommands);
+          receivedAvailableCommands = true;
+          availableCommands = [...update.availableCommands];
           deferred.resolve();
         }
       }
@@ -1343,7 +1358,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     try {
       this.throwIfStopping();
       if (!thread.initialized) {
-        await thread.initialize(config as any);
+        const initializeStartedAt = Date.now();
+        try {
+          await thread.initialize(config as any);
+        } finally {
+          timings.initializeMs = Date.now() - initializeStartedAt;
+        }
         this.throwIfStopping();
       }
       if (pending?.cancelled) {
@@ -1353,21 +1373,43 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         thread.reset();
       }
 
-      const mcpServers = await this.getSessionMcpServers(thread, config);
+      const mcpSetupStartedAt = Date.now();
+      let mcpServers: McpServer[];
+      try {
+        mcpServers = await this.getSessionMcpServers(thread, config);
+      } finally {
+        timings.mcpSetupMs = Date.now() - mcpSetupStartedAt;
+      }
+      this.logger.log(
+        `[AcpAgentService] createSession() — MCP ready, durationMs=${timings.mcpSetupMs}, servers=${JSON.stringify(
+          mcpServers.map((server) => ({ name: server.name, type: (server as { type?: string }).type ?? 'stdio' })),
+        )}`,
+      );
       if (pending?.cancelled) {
         throw new AcpSessionCreationCancelledError();
       }
-      const newSessionResponse = await thread.newSession({
-        cwd: config.cwd,
-        mcpServers,
-      } as any);
+      const newSessionStartedAt = Date.now();
+      let newSessionResponse: NewSessionResponse;
+      try {
+        newSessionResponse = await thread.newSession({
+          cwd: config.cwd,
+          mcpServers,
+        } as any);
+      } finally {
+        timings.newSessionRpcMs = Date.now() - newSessionStartedAt;
+      }
 
       realSessionId = newSessionResponse.sessionId;
       if (pending?.cancelled) {
         throw new AcpSessionCreationCancelledError();
       }
       this.setBuiltInMcpSessionState(realSessionId, this.didAppendBuiltInMcpServer(config, mcpServers));
-      await this.applyDefaultSessionOptions(realSessionId, thread, config);
+      const defaultOptionsStartedAt = Date.now();
+      try {
+        await this.applyDefaultSessionOptions(realSessionId, thread, config);
+      } finally {
+        timings.defaultOptionsMs = Date.now() - defaultOptionsStartedAt;
+      }
       if (pending?.cancelled) {
         throw new AcpSessionCreationCancelledError();
       }
@@ -1376,29 +1418,30 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.permissionRouting.registerSession(realSessionId);
       this.registerThreadStatusListener(realSessionId, thread);
 
-      await Promise.race([
-        deferred.promise,
-        new Promise<void>((resolve) => setTimeout(resolve, 5000)),
-        ...(pending
-          ? [
-              pending.cancellation.promise.then(() => {
-                throw new AcpSessionCreationCancelledError();
-              }),
-            ]
-          : []),
-      ]);
+      const commandDiscoveryStartedAt = Date.now();
+      try {
+        await Promise.race([
+          deferred.promise,
+          new Promise<void>((resolve) => setTimeout(resolve, 5000)),
+          ...(pending
+            ? [
+                pending.cancellation.promise.then(() => {
+                  throw new AcpSessionCreationCancelledError();
+                }),
+              ]
+            : []),
+        ]);
+      } finally {
+        timings.commandDiscoveryMs = Date.now() - commandDiscoveryStartedAt;
+      }
+      this.logger.log(
+        `[AcpAgentService] createSession() — commands ready, outcome=${
+          receivedAvailableCommands ? 'notification' : 'timeout'
+        }, durationMs=${timings.commandDiscoveryMs}, count=${availableCommands.length}`,
+      );
       if (pending?.cancelled) {
         throw new AcpSessionCreationCancelledError();
       }
-
-      const seen = new Set<string>();
-      const deduplicated = availableCommands.filter((cmd) => {
-        if (seen.has(cmd.name)) {
-          return false;
-        }
-        seen.add(cmd.name);
-        return true;
-      });
 
       const sessionState = thread.getSessionState();
       const modes = sessionState.modes
@@ -1407,13 +1450,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.updateLastSessionInfo(realSessionId, thread, modes);
 
       this.logger.log(
-        `[AcpAgentService] createSession() — done, sessionId=${realSessionId}, commands=${deduplicated.length}`,
+        `[AcpAgentService] createSession() — done, sessionId=${realSessionId}, commands=${
+          availableCommands.length
+        }, totalDurationMs=${Date.now() - createStartedAt}, timings=${JSON.stringify(timings)}`,
       );
       this.logPoolStatus('after-createSession');
 
       return {
         sessionId: realSessionId,
-        availableCommands: deduplicated,
+        availableCommands,
         modes,
         currentModeId: sessionState.currentModeId,
         models: sessionState.models ? [...sessionState.models] : undefined,
@@ -1434,7 +1479,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         }
         throw new AcpSessionCreationCancelledError();
       }
-      this.logger.error(`[AcpAgentService] createSession() — failed: ${getAcpErrorMessage(e)}`);
+      this.logger.error(
+        `[AcpAgentService] createSession() — failed, totalDurationMs=${
+          Date.now() - createStartedAt
+        }, timings=${JSON.stringify(timings)}, error=${getAcpErrorMessage(e)}`,
+      );
       await this.cleanupFailedSessionOperation(realSessionId, thread);
       throw e;
     } finally {
@@ -1642,6 +1691,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         : undefined,
       status: 'ready',
       threadStatus: thread.getStatus(),
+      availableCommands: sessionState.availableCommands ? [...sessionState.availableCommands] : undefined,
       historyUpdates,
     };
   }

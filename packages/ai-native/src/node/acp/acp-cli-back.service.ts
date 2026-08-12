@@ -849,6 +849,7 @@ ${input}`;
             models: attachmentUpdate.snapshot.models,
             currentModelId: attachmentUpdate.snapshot.currentModelId,
             configOptions: attachmentUpdate.snapshot.configOptions,
+            availableCommands: attachmentUpdate.snapshot.availableCommands,
           };
           output.emitData(snapshot);
           return;
@@ -897,6 +898,7 @@ ${input}`;
         models: result.models,
         currentModelId: result.currentModelId,
         configOptions: result.configOptions,
+        availableCommands: result.availableCommands,
         threadStatus: result.threadStatus,
         historyUpdates: result.historyUpdates,
       };
