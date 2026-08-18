@@ -832,6 +832,8 @@ export class AcpChatInternalService extends ChatInternalService {
     switch (status) {
       case 'working':
         return 'running';
+      case 'stopping':
+        return 'stopping';
       case 'disconnected':
         return 'stopped';
       case 'errored':

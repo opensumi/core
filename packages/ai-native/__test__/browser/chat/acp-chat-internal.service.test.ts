@@ -1146,9 +1146,11 @@ describe('AcpChatInternalService', () => {
       await service.sendRequest(request);
 
       backgroundModel.setThreadStatus('working');
+      backgroundModel.setThreadStatus('stopping');
       permissionRequestEmitter.fire({ sessionId: 'background' });
 
       expect(registry.updateStatus).toHaveBeenCalledWith('acp:background', 'running');
+      expect(registry.updateStatus).toHaveBeenCalledWith('acp:background', 'stopping');
       expect(registry.updateAttention).toHaveBeenCalledWith('acp:background', 'permission');
       expect(registry.markUnread).toHaveBeenCalledWith('acp:background', true);
     });

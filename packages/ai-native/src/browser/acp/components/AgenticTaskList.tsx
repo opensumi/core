@@ -203,10 +203,17 @@ interface TaskRowPresentation {
 const TASK_ROW_PRESENTATIONS: Readonly<Record<BaseTaskRowMetaKind, TaskRowPresentation | undefined>> = {
   running: {
     fullLabel: localize('aiNative.agentic.task.status.running', 'Running'),
-    icon: 'codicon-loading codicon-modifier-spin',
+    icon: 'codicon-pulse',
     kind: 'running',
     testIdPrefix: 'agentic-task-status',
     tone: 'information',
+  },
+  stopping: {
+    fullLabel: localize('aiNative.agentic.task.status.stopping', 'Stopping'),
+    icon: 'codicon-debug-pause',
+    kind: 'stopping',
+    testIdPrefix: 'agentic-task-status',
+    tone: 'warning',
   },
   stopped: {
     fullLabel: localize('aiNative.agentic.task.status.stopped', 'Stopped'),

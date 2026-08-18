@@ -6,7 +6,9 @@ import test, { page } from './hooks';
 import {
   ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS,
   type AcpBddFixtureRuntime,
+  ensureAgenticLayout,
   loadAcpBddFixtureWorkbench,
+  waitForWorkbenchReady,
 } from './utils/acp-bdd-fixture';
 import { createBddEvidence } from './utils/bdd-evidence';
 
@@ -49,6 +51,27 @@ async function sendPrompt(prompt: string) {
   await chatButton('Send').click();
 }
 
+async function showAcpChatView() {
+  await page.waitForFunction(() => Boolean((navigator as any).modelContext?.executeTool), undefined, {
+    timeout: 60_000,
+  });
+  await page.evaluate(async () => {
+    await (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {});
+  });
+  await ensureAgenticLayout(page);
+}
+
+async function getSessionState() {
+  const result = await page.evaluate(async () =>
+    (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
+  );
+  expect(result.success).toBe(true);
+  return result.result as {
+    active: boolean;
+    session: { sessionId?: string; threadStatus?: string; requestCount?: number } | null;
+  };
+}
+
 test.describe('ACP Chat Agentic Cancel Stop', () => {
   test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
 
@@ -76,6 +99,14 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
     await expect(chatSlot().locator('.rce-user-msg')).toHaveCount(1, { timeout: 30_000 });
     await expect(chatSlot().getByText(ACTIVE_STREAM_SENTINEL)).toBeVisible({ timeout: 30_000 });
     await expect(chatButton('Stop')).toBeVisible();
+    const activeState = await getSessionState();
+    const sessionId = activeState.session?.sessionId;
+    expect(sessionId).toBeTruthy();
+    const taskRow = page.getByTestId(`agentic-task-row-${sessionId}`);
+    await expect(taskRow).toBeVisible({ timeout: 30_000 });
+    await expect(taskRow.locator('[data-agentic-task-meta-kind="running"]')).toBeVisible();
+    await expect(taskRow.locator('[data-agentic-task-meta-kind="running"] .codicon-pulse')).toBeVisible();
+    await expect(taskRow.locator('.codicon-modifier-spin')).toHaveCount(0);
 
     const activeProof = await evidence.saveJson(
       '01-active-stream',
@@ -84,18 +115,45 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
         assistantRows: await chatSlot().locator('.rce-ai-msg').count(),
         hasActiveSentinel: await chatSlot().getByText(ACTIVE_STREAM_SENTINEL).isVisible(),
         stopVisible: await chatButton('Stop').isVisible(),
+        taskRunningIcon: await taskRow.locator('.codicon-pulse').isVisible(),
+        taskSpinnerVisible: await taskRow
+          .locator('.codicon-modifier-spin')
+          .isVisible()
+          .catch(() => false),
       },
-      'long-stream request shows active content and a stop affordance',
+      'long-stream request shows active content, a stop affordance, and a static running indicator',
     );
 
     await chatButton('Stop').click();
     await expect(chatButton('Send')).toBeVisible({ timeout: 30_000 });
     await expect(chatButton('Stop')).toBeHidden();
+    await expect(taskRow.locator('[data-agentic-task-meta-kind="running"]')).toHaveCount(0);
+    await expect(taskRow.locator('.codicon-modifier-spin')).toHaveCount(0);
 
     const input = chatInput();
     await input.click();
     await page.keyboard.type(POST_CANCEL_DRAFT);
     await expect(input).toContainText(POST_CANCEL_DRAFT);
+    await chatButton('Send').click();
+    await expect(chatSlot().locator('.rce-user-msg')).toHaveCount(2, { timeout: 30_000 });
+    await expect(chatButton('Send')).toBeVisible({ timeout: 30_000 });
+    await expect(chatButton('Stop')).toBeHidden();
+
+    const followUpState = await getSessionState();
+    expect(followUpState.session?.sessionId).toBe(sessionId);
+    expect(followUpState.session?.requestCount).toBe(2);
+    expect(followUpState.session?.threadStatus).toBe('awaiting_prompt');
+    await expect(taskRow.locator('[data-agentic-task-meta-kind="running"]')).toHaveCount(0);
+    await expect(taskRow.locator('.codicon-modifier-spin')).toHaveCount(0);
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await waitForWorkbenchReady(page);
+    await showAcpChatView();
+
+    const restoredTaskRow = page.getByTestId(`agentic-task-row-${sessionId}`);
+    await expect(restoredTaskRow).toBeVisible({ timeout: 30_000 });
+    await expect(restoredTaskRow.locator('[data-agentic-task-meta-kind="running"]')).toHaveCount(0);
+    await expect(restoredTaskRow.locator('.codicon-modifier-spin')).toHaveCount(0);
 
     const stoppedProof = await evidence.saveJson(
       '02-stopped-input-usable',
@@ -104,9 +162,17 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
         stopVisible: await chatButton('Stop')
           .isVisible()
           .catch(() => false),
-        inputText: await input.textContent(),
+        followUpSession: followUpState.session,
+        taskRunningAfterReload: await restoredTaskRow
+          .locator('[data-agentic-task-meta-kind="running"]')
+          .isVisible()
+          .catch(() => false),
+        taskSpinnerAfterReload: await restoredTaskRow
+          .locator('.codicon-modifier-spin')
+          .isVisible()
+          .catch(() => false),
       },
-      'stopping the long stream restores the send affordance and editable input',
+      'stopping restores the session, permits a follow-up turn, and leaves no running spinner after reload',
     );
 
     evidence.recordCriticalPoint({
@@ -123,7 +189,7 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
     });
     evidence.recordCriticalPoint({
       id: 'CP3',
-      requirement: 'Stopping the stream returns the Agentic input to a usable state.',
+      requirement: 'Stopping updates the Task Row, permits a follow-up turn, and survives reload without a spinner.',
       status: 'pass',
       evidence: [stoppedProof].filter(Boolean) as string[],
     });

@@ -125,6 +125,10 @@ export interface ISessionProvider {
 }
 
 export function isAcpResponsePending(status: ThreadStatus | undefined): boolean {
+  return status === 'working' || status === 'stopping' || status === 'auth_required';
+}
+
+export function isAcpCancellationAllowed(status: ThreadStatus | undefined): boolean {
   return status === 'working' || status === 'auth_required';
 }
 
