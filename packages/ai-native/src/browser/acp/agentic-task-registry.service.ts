@@ -31,7 +31,7 @@ export interface AgenticTaskRecord {
   attention?: 'permission' | 'input';
 }
 
-export type AgenticTaskStatus = 'ready' | 'running' | 'stopped' | 'error';
+export type AgenticTaskStatus = 'ready' | 'running' | 'stopping' | 'stopped' | 'error';
 
 export interface AgenticTaskGroup {
   project: AgenticProjectRecord;
@@ -590,7 +590,7 @@ export class AgenticTaskRegistryService {
   }
 
   private isAgenticTaskStatus(value: unknown): value is AgenticTaskStatus {
-    return value === 'ready' || value === 'running' || value === 'stopped' || value === 'error';
+    return value === 'ready' || value === 'running' || value === 'stopping' || value === 'stopped' || value === 'error';
   }
 
   private isRecord(value: unknown): value is Record<string, unknown> {

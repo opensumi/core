@@ -292,6 +292,8 @@ export class AcpChatAgent implements IChatAgent {
     switch (status) {
       case 'working':
         return localize('aiNative.chat.safeProgress.agentWorking');
+      case 'stopping':
+        return localize('aiNative.chat.safeProgress.agentStopping');
       case 'auth_required':
         return localize('aiNative.chat.safeProgress.authRequired');
       case 'errored':

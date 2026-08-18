@@ -353,7 +353,7 @@ describe('AgenticTaskRegistryService', () => {
     await expect(registry.archive('acp:loaded')).resolves.toBe(true);
   });
 
-  it.each([undefined, 'running', 'other'])('rejects archiving tasks with %s status', async (status) => {
+  it.each([undefined, 'running', 'stopping', 'other'])('rejects archiving tasks with %s status', async (status) => {
     const task = {
       sessionId: 'acp:loaded',
       projectId: project.id,
@@ -367,6 +367,28 @@ describe('AgenticTaskRegistryService', () => {
     storage.get.mockReturnValue({ version: 2, projects: [project], tasks: [task] });
 
     await expect(registry.archive('acp:loaded')).resolves.toBe(false);
+  });
+
+  it('retains a loaded stopping task as non-archivable last-known state', async () => {
+    storage.get.mockReturnValue({
+      version: 3,
+      projects: [project],
+      tasks: [
+        {
+          sessionId: 'acp:stopping',
+          projectId: project.id,
+          agentId: 'agent-a',
+          title: 'Stopping task',
+          createdAt: 1,
+          archived: false,
+          unread: false,
+          status: 'stopping',
+        },
+      ],
+    });
+
+    await expect(registry.getTask('acp:stopping')).resolves.toMatchObject({ status: 'stopping' });
+    await expect(registry.archive('acp:stopping')).resolves.toBe(false);
   });
 
   it('archives an unavailable Task without changing its last-known ACP status', async () => {

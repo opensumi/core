@@ -641,23 +641,24 @@ describe('AcpChatManagerService', () => {
     expect(session?.history.messages[1]).toEqual(expect.objectContaining({ requestId: expect.any(String) }));
   });
 
-  it('keeps an auth-required restored response open for later progress', () => {
+  it.each(['auth_required', 'stopping'] as const)('keeps a %s restored response open for later progress', (status) => {
     const provider = createSessionProvider();
+    const sessionId = `acp:${status}`;
 
-    const session = provider.restoreSessionSnapshot('acp:auth-required', {
+    const session = provider.restoreSessionSnapshot(sessionId, {
       kind: 'sessionSnapshot',
-      sessionId: 'auth-required',
-      threadStatus: 'auth_required',
+      sessionId: status,
+      threadStatus: status,
       historyUpdates: [
         {
-          sessionId: 'auth-required',
+          sessionId: status,
           update: {
             sessionUpdate: 'user_message_chunk',
-            content: { type: 'text', text: 'continue after auth' },
+            content: { type: 'text', text: 'continue after pending state' },
           },
         },
         {
-          sessionId: 'auth-required',
+          sessionId: status,
           update: {
             sessionUpdate: 'agent_message_chunk',
             content: { type: 'text', text: 'waiting' },
@@ -1338,6 +1339,19 @@ describe('AcpChatManagerService', () => {
 
     expect(service.cancelRequest(sessionId)).toBe(true);
     expect(cancelSession).toHaveBeenCalledWith(sessionId);
+  });
+
+  it('does not send duplicate cancellation for a stopping ACP session', () => {
+    const { service } = createConstructedService();
+    const sessionId = 'acp:s-stopping';
+    const model = new ChatModel(new ChatFeatureRegistry(), { sessionId });
+    const cancelSession = jest.fn().mockResolvedValue(undefined);
+    model.setThreadStatus('stopping');
+    (service as any).sessionModels.set(sessionId, model);
+    (service as any).mainProvider = { cancelSession };
+
+    expect(service.cancelRequest(sessionId)).toBe(false);
+    expect(cancelSession).not.toHaveBeenCalled();
   });
 
   it('normalizes the ACP session id when explicitly cancelling through the back service', async () => {

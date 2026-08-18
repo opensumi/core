@@ -968,6 +968,16 @@ describe('AgenticTaskList', () => {
             status: 'running' as const,
           },
           {
+            sessionId: 'acp:stopping',
+            projectId: projectA.id,
+            agentId: 'agent-a',
+            title: 'Stopping task',
+            createdAt: 3,
+            archived: false,
+            unread: false,
+            status: 'stopping' as const,
+          },
+          {
             sessionId: 'acp:stopped',
             projectId: projectA.id,
             agentId: 'agent-a',
@@ -1038,12 +1048,18 @@ describe('AgenticTaskList', () => {
 
     expectMetadata('agentic-task-attention-acp:permission', 'permission', 'codicon-shield', 'task_meta_warning');
     expectMetadata('agentic-task-attention-acp:input', 'input', 'codicon-edit', 'task_meta_warning');
-    expectMetadata('agentic-task-status-acp:running', 'running', 'codicon-loading', 'task_meta_information');
+    expectMetadata('agentic-task-status-acp:running', 'running', 'codicon-pulse', 'task_meta_information');
     expect(
-      container
-        .querySelector('[data-testid="agentic-task-status-acp:running"] .codicon.codicon-modifier-spin')
-        ?.getAttribute('aria-hidden'),
-    ).toBe('true');
+      container.querySelector('[data-testid="agentic-task-status-acp:running"] .codicon-modifier-spin'),
+    ).toBeNull();
+    expectMetadata('agentic-task-status-acp:stopping', 'stopping', 'codicon-debug-pause', 'task_meta_warning');
+    expect(
+      container.querySelector('[data-testid="agentic-task-status-acp:stopping"] .codicon-modifier-spin'),
+    ).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-archive-acp:stopping"]')).toBeNull();
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:stopping"]')?.getAttribute('aria-label'),
+    ).toContain('Status: Stopping.');
     expectMetadata('agentic-task-status-acp:stopped', 'stopped', 'codicon-circle-slash', 'task_meta_secondary');
     expectMetadata('agentic-task-status-acp:error', 'error', 'codicon-error', 'task_meta_error');
     expect(container.querySelector('[data-testid="agentic-task-status-acp:permission"]')).toBeNull();
@@ -1190,6 +1206,11 @@ describe('AgenticTaskList', () => {
       'true',
     );
     expect(container.querySelector('[data-testid="agentic-task-pending-acp:pending"]')).not.toBeNull();
+    expect(
+      container.querySelector(
+        '[data-testid="agentic-task-pending-acp:pending"] .codicon-loading.codicon-modifier-spin',
+      ),
+    ).not.toBeNull();
 
     act(() => {
       (container.querySelector('[data-testid="agentic-task-row-acp:pending"]') as HTMLButtonElement).click();
@@ -1272,7 +1293,7 @@ describe('AgenticTaskList', () => {
     );
   });
 
-  it('shows the originating Agent and marks persisted ACP status as last known until the session is observed', async () => {
+  it('shows the originating Agent and keeps persisted running/stopping status static until observed', async () => {
     const services = createServices();
     services.aiChatService.isAgenticTaskSessionObserved.mockReturnValue(false);
     services.registry.listActiveGroups.mockResolvedValue([
@@ -1289,6 +1310,16 @@ describe('AgenticTaskList', () => {
             unread: false,
             status: 'running' as const,
           },
+          {
+            sessionId: 'acp:last-known-stopping',
+            projectId: projectA.id,
+            agentId: 'agent-b',
+            title: 'Stopping background task',
+            createdAt: 2,
+            archived: false,
+            unread: false,
+            status: 'stopping' as const,
+          },
         ],
       },
     ]);
@@ -1304,6 +1335,12 @@ describe('AgenticTaskList', () => {
     expect(
       container.querySelector('[data-testid="agentic-task-row-acp:last-known"]')?.getAttribute('aria-label'),
     ).toContain('Status: Last known status: Running.');
+    expect(
+      container.querySelector('[data-testid="agentic-task-status-acp:last-known-stopping"] .codicon-modifier-spin'),
+    ).toBeNull();
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:last-known-stopping"]')?.getAttribute('aria-label'),
+    ).toContain('Status: Last known status: Stopping.');
 
     const popover = container.querySelector('[data-popover-id="agentic-task-tooltip-acp:last-known"]') as HTMLElement;
     await act(async () => {

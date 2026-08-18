@@ -2542,9 +2542,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     switch (status) {
       case 'idle':
       case 'awaiting_prompt':
+      case 'auth_required':
         return 'ready';
       case 'working':
         return 'running';
+      case 'stopping':
+        return 'stopping';
       case 'disconnected':
         return 'stopped';
       case 'errored':

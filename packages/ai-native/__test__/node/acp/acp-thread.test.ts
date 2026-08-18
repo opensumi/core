@@ -280,6 +280,75 @@ describe('AcpThread', () => {
       expect(thread.status).toBe('awaiting_prompt');
     });
 
+    it('should transition from working through stopping to awaiting_prompt when cancellation completes', async () => {
+      const prompt = createDeferred<any>();
+      const cancel = jest.fn().mockResolvedValue(undefined);
+      (thread as any)._connected = true;
+      (thread as any)._connection = {
+        prompt: jest.fn(() => prompt.promise),
+        cancel,
+      };
+      (thread as any)._initialized = true;
+
+      const promptPromise = thread.prompt({ sessionId: 's1' } as any);
+      await Promise.resolve();
+      expect(thread.status).toBe('working');
+
+      await thread.cancel({ sessionId: 's1' } as any);
+      expect(thread.status).toBe('stopping');
+
+      prompt.resolve({ stopReason: 'cancelled' });
+      await expect(promptPromise).resolves.toEqual({ stopReason: 'cancelled' });
+      expect(thread.status).toBe('awaiting_prompt');
+    });
+
+    it('should keep repeated cancellation idempotent while stopping', async () => {
+      const cancel = createDeferred<void>();
+      const cancelRequest = jest.fn(() => cancel.promise);
+      (thread as any)._connected = true;
+      (thread as any)._connection = { cancel: cancelRequest };
+      (thread as any)._initialized = true;
+      thread.setStatus('working');
+
+      const firstCancel = thread.cancel({ sessionId: 's1' } as any);
+      expect(thread.status).toBe('stopping');
+      await expect(thread.cancel({ sessionId: 's1' } as any)).resolves.toBeUndefined();
+      expect(cancelRequest).toHaveBeenCalledTimes(1);
+
+      cancel.resolve();
+      await firstCancel;
+      expect(thread.status).toBe('stopping');
+    });
+
+    it('should restore the previous pending status when sending cancellation fails', async () => {
+      (thread as any)._connected = true;
+      (thread as any)._connection = {
+        cancel: jest.fn().mockRejectedValue(new Error('cancel transport failed')),
+      };
+      (thread as any)._initialized = true;
+      thread.setStatus('working');
+
+      await expect(thread.cancel({ sessionId: 's1' } as any)).rejects.toThrow('cancel transport failed');
+      expect(thread.status).toBe('working');
+    });
+
+    it('should recover to awaiting_prompt when a stopping prompt rejects', async () => {
+      const prompt = createDeferred<any>();
+      (thread as any)._connected = true;
+      (thread as any)._connection = {
+        prompt: jest.fn(() => prompt.promise),
+        cancel: jest.fn().mockResolvedValue(undefined),
+      };
+      (thread as any)._initialized = true;
+
+      const promptPromise = thread.prompt({ sessionId: 's1' } as any);
+      await thread.cancel({ sessionId: 's1' } as any);
+      prompt.reject(new Error('cancelled prompt rejected'));
+
+      await expect(promptPromise).rejects.toThrow('cancelled prompt rejected');
+      expect(thread.status).toBe('awaiting_prompt');
+    });
+
     it('should recover to awaiting_prompt when prompt fails while working', async () => {
       (thread as any)._connected = true;
       (thread as any)._connection = {

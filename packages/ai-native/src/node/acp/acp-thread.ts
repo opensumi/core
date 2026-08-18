@@ -175,7 +175,14 @@ function isConnectionClosedDuringPromptError(error: unknown): boolean {
 // ---------------------------------------------------------------------------
 // Thread status state machine
 // ---------------------------------------------------------------------------
-export type ThreadStatus = 'idle' | 'working' | 'awaiting_prompt' | 'auth_required' | 'errored' | 'disconnected';
+export type ThreadStatus =
+  | 'idle'
+  | 'working'
+  | 'stopping'
+  | 'awaiting_prompt'
+  | 'auth_required'
+  | 'errored'
+  | 'disconnected';
 
 // ---------------------------------------------------------------------------
 // Tool call status state machine
@@ -1010,7 +1017,7 @@ export class AcpThread extends Disposable implements IAcpThread {
         ACP_AGENT_CONNECTION_CLOSED_DURING_PROMPT,
       );
     } catch (error) {
-      if (this._status === 'working') {
+      if (this._status === 'working' || this._status === 'stopping') {
         const nextStatus = isConnectionClosedDuringPromptError(error) ? 'disconnected' : 'awaiting_prompt';
         this.setStatus(nextStatus);
         this.logger?.log(
@@ -1021,7 +1028,7 @@ export class AcpThread extends Disposable implements IAcpThread {
     }
 
     // After prompt completes, transition to awaiting_prompt
-    if (this._status === 'working') {
+    if (this._status === 'working' || this._status === 'stopping') {
       this.setStatus('awaiting_prompt');
       this.logger?.log(
         `[AcpThread:${this.threadId}] prompt() — done, status→awaiting_prompt, entries=${this._entries.length}`,
@@ -1032,9 +1039,26 @@ export class AcpThread extends Disposable implements IAcpThread {
 
   async cancel(params: CancelNotification): Promise<void> {
     this.logger?.log(`[AcpThread:${this.threadId}] cancel() — sessionId=${params.sessionId}`);
-    await this.ensureInitialized();
-    await this._connection.cancel(params);
-    this.logger?.log(`[AcpThread:${this.threadId}] cancel() — done`);
+    if (this._status === 'stopping') {
+      this.logger?.log(`[AcpThread:${this.threadId}] cancel() — already stopping`);
+      return;
+    }
+
+    const previousStatus = this._status;
+    if (previousStatus === 'working' || previousStatus === 'auth_required') {
+      this.setStatus('stopping');
+    }
+
+    try {
+      await this.ensureInitialized();
+      await this._connection.cancel(params);
+      this.logger?.log(`[AcpThread:${this.threadId}] cancel() — done`);
+    } catch (error) {
+      if (this.getStatus() === 'stopping') {
+        this.setStatus(previousStatus);
+      }
+      throw error;
+    }
   }
 
   async listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse> {

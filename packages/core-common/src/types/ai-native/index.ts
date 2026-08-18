@@ -544,7 +544,14 @@ export interface IChatRequestAccepted {
  * Thread status for ACP agent sessions.
  * Mirrors the server-side AcpThread ThreadStatus type.
  */
-export type ThreadStatus = 'idle' | 'working' | 'awaiting_prompt' | 'auth_required' | 'errored' | 'disconnected';
+export type ThreadStatus =
+  | 'idle'
+  | 'working'
+  | 'stopping'
+  | 'awaiting_prompt'
+  | 'auth_required'
+  | 'errored'
+  | 'disconnected';
 
 export interface IChatThreadStatus {
   kind: 'threadStatus';

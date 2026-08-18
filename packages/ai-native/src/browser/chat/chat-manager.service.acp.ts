@@ -26,6 +26,7 @@ import {
   ISessionModelExtension,
   ISessionProvider,
   SessionCreationOptions,
+  isAcpCancellationAllowed,
   isAcpResponsePending,
 } from './session-provider';
 import { ISessionProviderRegistry } from './session-provider-registry';
@@ -618,7 +619,7 @@ export class AcpChatManagerService extends ChatManagerService {
     }
 
     const model = this.getSession(sessionId);
-    if (!model || !isAcpResponsePending(model.threadStatus) || !this.mainProvider?.cancelSession) {
+    if (!model || !isAcpCancellationAllowed(model.threadStatus) || !this.mainProvider?.cancelSession) {
       return false;
     }
 
