@@ -10,6 +10,7 @@
 
 .package-temp-dir
 .tmp/
+/tools/playwright/tmp/
 
 # Logs
 logs
