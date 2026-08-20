@@ -20,6 +20,7 @@
     "prepublishOnly": "yarn run build",
     "build": "node -e \"require('fs').rmSync('./lib', { recursive: true, force: true })\" && tsc --build ../../configs/ts/references/tsconfig.playwright.json --force && yarn playwright install chromium",
     "build:runtime": "cd ../.. && yarn run build:ext-host && yarn run build:worker-host",
+    "cleanup:legacy-temp": "node ./scripts/cleanup-legacy-temp-directories.js",
     "ui-tests": "yarn run build:runtime && yarn run build && playwright test --config=./configs/playwright.config.ts",
     "ui-tests-ci": "yarn run build:runtime && yarn run build && playwright test --config=./configs/playwright.ci.config.ts",
     "ui-tests-concurrent-smoke": "yarn run build:runtime && yarn run build && yarn run ui-tests-concurrent-smoke:run",
