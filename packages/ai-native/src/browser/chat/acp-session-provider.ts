@@ -1,4 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { ILogger, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   ACP_THREAD_POOL_SATURATED_ERROR_NAME,
   AIBackSerivcePath,
@@ -23,7 +24,9 @@ import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/
 import { AgenticTaskRegistryService } from '../acp/agentic-task-registry.service';
 
 import { IChatProgressResponseContent } from './chat-model';
+import { getAvailableAgentConfigs } from './get-default-agent-type';
 import {
+  AcpAgentSessionDescriptor,
   ISessionModel,
   ISessionModelExtension,
   ISessionProvider,
@@ -33,6 +36,10 @@ import {
 } from './session-provider';
 
 const DEFAULT_ACP_CHAT_AGENT_ID = 'Default_Chat_Agent';
+
+function isAbsoluteWorkspacePath(path: string): boolean {
+  return /^(?:[A-Za-z]:[\\/]|[\\/])/.test(path);
+}
 
 function isAcpThreadPoolSaturatedError(error: unknown): error is { name: string; message?: unknown } {
   return (
@@ -83,6 +90,12 @@ export class ACPSessionProvider implements ISessionProvider {
   @Autowired(IMessageService)
   protected messageService: IMessageService;
 
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
+
+  @Autowired(ILogger)
+  private logger: ILogger;
+
   @Autowired(AgenticTaskRegistryService)
   private agenticTaskRegistry: AgenticTaskRegistryService;
 
@@ -93,6 +106,14 @@ export class ACPSessionProvider implements ISessionProvider {
   private loadingSessionsPromise: Promise<ISessionModel[]> | null = null;
 
   private didRetryEmptySessionsResult = false;
+
+  private agentSessionCatalog: AcpAgentSessionDescriptor[] = [];
+
+  private agentSessionTargets = new Map<string, { agentId: string; cwd: string }>();
+
+  private agentSessionRefreshPromise: Promise<AcpAgentSessionDescriptor[]> | undefined;
+
+  private agentSessionRefreshRequested = false;
 
   canHandle(mode: string): boolean {
     return mode.startsWith('acp');
@@ -111,7 +132,6 @@ export class ACPSessionProvider implements ISessionProvider {
       const result = (await (options?.operationId
         ? this.aiBackService.createSession(config, options.operationId)
         : this.aiBackService.createSession(config))) as any;
-
       if (!result?.sessionId) {
         throw new Error('createSession did not return a valid sessionId');
       }
@@ -143,6 +163,7 @@ export class ACPSessionProvider implements ISessionProvider {
 
       // 新创建的 Session 不需要 load，直接加入缓存
       this.loadedSessionMap.set(sessionId, sessionModel);
+      this.agentSessionTargets.set(sessionId, { agentId: config.agentId, cwd: config.cwd });
 
       return sessionModel;
     } catch (error) {
@@ -151,6 +172,132 @@ export class ACPSessionProvider implements ISessionProvider {
       }
       throw error;
     }
+  }
+
+  getAgentSessions(): AcpAgentSessionDescriptor[] {
+    return this.agentSessionCatalog.map((session) => ({ ...session }));
+  }
+
+  refreshAgentSessions(): Promise<AcpAgentSessionDescriptor[]> {
+    this.agentSessionRefreshRequested = true;
+    if (!this.agentSessionRefreshPromise) {
+      this.agentSessionRefreshPromise = this.drainAgentSessionRefreshes().finally(() => {
+        this.agentSessionRefreshPromise = undefined;
+      });
+    }
+    return this.agentSessionRefreshPromise;
+  }
+
+  private async drainAgentSessionRefreshes(): Promise<AcpAgentSessionDescriptor[]> {
+    let catalog: AcpAgentSessionDescriptor[] = [];
+    do {
+      this.agentSessionRefreshRequested = false;
+      catalog = await this.doRefreshAgentSessions();
+    } while (this.agentSessionRefreshRequested);
+    return catalog;
+  }
+
+  private async doRefreshAgentSessions(): Promise<AcpAgentSessionDescriptor[]> {
+    if (!this.aiBackService?.listSessions || !this.configProvider.resolveConfigForTarget) {
+      this.agentSessionCatalog = [];
+      this.agentSessionTargets.clear();
+      return [];
+    }
+
+    const projects = (await this.agenticTaskRegistry.listProjects()).filter(
+      (project) => project.availability === 'available' && isAbsoluteWorkspacePath(project.workspacePath),
+    );
+    const availableWorkspacePaths = new Set(projects.map((project) => project.workspacePath));
+    const agentIds = Object.keys(getAvailableAgentConfigs(this.preferenceService));
+    const nextCatalog: AcpAgentSessionDescriptor[] = [];
+    const nextTargets = new Map<string, { agentId: string; cwd: string }>();
+
+    for (const agentId of agentIds) {
+      const sessionsForAgent = new Map<string, AcpAgentSessionDescriptor>();
+      let agentFailed = false;
+
+      for (const [projectIndex, project] of projects.entries()) {
+        try {
+          const config = await this.configProvider.resolveConfigForTarget({
+            agentId,
+            cwd: project.workspacePath,
+          });
+          const result = await this.aiBackService.listSessions(config);
+          for (const metadata of result?.sessions || []) {
+            if (
+              !metadata?.sessionId ||
+              !isAbsoluteWorkspacePath(metadata.cwd) ||
+              !availableWorkspacePaths.has(metadata.cwd)
+            ) {
+              continue;
+            }
+            const sessionId = `acp:${metadata.sessionId}`;
+            const candidate: AcpAgentSessionDescriptor = {
+              sessionId,
+              agentSessionId: metadata.sessionId,
+              agentId,
+              cwd: metadata.cwd,
+              title: metadata.title || undefined,
+              updatedAt: metadata.updatedAt || undefined,
+            };
+            const existing = sessionsForAgent.get(sessionId);
+            if (!existing || this.toTimestamp(candidate.updatedAt) >= this.toTimestamp(existing.updatedAt)) {
+              sessionsForAgent.set(sessionId, candidate);
+            }
+          }
+        } catch (error) {
+          agentFailed = true;
+          this.logger.warn(
+            `[ACP Chat][Session Catalog] list failed — agentId=${agentId}, projectOrdinal=${projectIndex}, errorType=${
+              error instanceof Error ? error.name : typeof error
+            }`,
+          );
+          break;
+        }
+      }
+
+      if (agentFailed) {
+        continue;
+      }
+      for (const session of sessionsForAgent.values()) {
+        nextCatalog.push(session);
+        nextTargets.set(session.sessionId, { agentId: session.agentId, cwd: session.cwd });
+      }
+    }
+
+    const agentsByRawSessionId = new Map<string, Set<string>>();
+    for (const session of nextCatalog) {
+      const agents = agentsByRawSessionId.get(session.agentSessionId) || new Set<string>();
+      agents.add(session.agentId);
+      agentsByRawSessionId.set(session.agentSessionId, agents);
+    }
+    const collidingSessionIds = new Set(
+      Array.from(agentsByRawSessionId.entries())
+        .filter(([, agentIds]) => agentIds.size > 1)
+        .map(([sessionId]) => sessionId),
+    );
+    if (collidingSessionIds.size > 0) {
+      const agentCount = Math.max(
+        ...Array.from(collidingSessionIds, (sessionId) => agentsByRawSessionId.get(sessionId)?.size || 0),
+      );
+      this.logger.warn(
+        `[ACP Chat][Session Catalog] excluded cross-Agent Session ID collisions — count=${collidingSessionIds.size}, agentCount=${agentCount}`,
+      );
+    }
+    const acceptedCatalog = nextCatalog.filter((session) => !collidingSessionIds.has(session.agentSessionId));
+    for (const sessionId of collidingSessionIds) {
+      nextTargets.delete(`acp:${sessionId}`);
+    }
+
+    acceptedCatalog.sort((a, b) => this.toTimestamp(b.updatedAt) - this.toTimestamp(a.updatedAt));
+    this.agentSessionCatalog = acceptedCatalog;
+    this.agentSessionTargets = nextTargets;
+    return this.getAgentSessions();
+  }
+
+  private toTimestamp(value: string | undefined): number {
+    const timestamp = value ? Date.parse(value) : 0;
+    return Number.isFinite(timestamp) ? timestamp : 0;
   }
 
   async loadSessions(): Promise<ISessionModel[]> {
@@ -239,6 +386,15 @@ export class ACPSessionProvider implements ISessionProvider {
 
       // 将 Agent Session 转换为 ISessionModel 格式
       const sessionModel = this.convertAgentSessionToModel(sessionId, agentSession);
+      const target = this.agentSessionTargets.get(sessionId);
+      if (target) {
+        sessionModel.extension = {
+          ...sessionModel.extension,
+          availableCommands: sessionModel.extension?.availableCommands || [],
+          acpTarget: { ...target },
+          metadataOnly: false,
+        };
+      }
 
       // 缓存加载的 Session
       this.loadedSessionMap.set(sessionId, sessionModel);
@@ -297,17 +453,11 @@ export class ACPSessionProvider implements ISessionProvider {
   }
 
   private async resolveSessionConfig(sessionId: string): Promise<AgentProcessConfig> {
-    const task = await this.agenticTaskRegistry?.getTask(sessionId);
-    if (!task) {
-      return this.configProvider.resolveConfig();
+    const listedTarget = this.agentSessionTargets.get(sessionId);
+    if (listedTarget && this.configProvider.resolveConfigForTarget) {
+      return this.configProvider.resolveConfigForTarget(listedTarget);
     }
-
-    const project = await this.agenticTaskRegistry.getProject(task.projectId);
-    if (!project || !this.configProvider.resolveConfigForTarget) {
-      throw new Error('Agent Task cannot resolve its stored ACP target');
-    }
-
-    return this.configProvider.resolveConfigForTarget({ agentId: task.agentId, cwd: project.workspacePath });
+    return this.configProvider.resolveConfig();
   }
 
   private convertAgentSessionToModel(

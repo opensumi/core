@@ -284,7 +284,7 @@ describe('AgenticTaskList', () => {
     const launchButton = projectGroup?.querySelector('[data-testid="agentic-task-launch-button"]');
     expect(launchButton?.textContent).toBe('');
     expect(launchButton?.querySelector('.codicon.codicon-add')).not.toBeNull();
-    expect(launchButton?.getAttribute('aria-label')).toBe('New Task for a');
+    expect(launchButton?.getAttribute('aria-label')).toBe('New session for a');
     expect(projectGroup?.querySelector('[data-testid="agentic-task-agent-menu-button"]')).toBeNull();
   });
 
@@ -1060,8 +1060,8 @@ describe('AgenticTaskList', () => {
     expect(
       container.querySelector('[data-testid="agentic-task-row-acp:stopping"]')?.getAttribute('aria-label'),
     ).toContain('Status: Stopping.');
-    expectMetadata('agentic-task-status-acp:stopped', 'stopped', 'codicon-circle-slash', 'task_meta_secondary');
-    expectMetadata('agentic-task-status-acp:error', 'error', 'codicon-error', 'task_meta_error');
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:stopped"]')).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:error"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-status-acp:permission"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-unread-acp:permission"]')).not.toBeNull();
     expect(

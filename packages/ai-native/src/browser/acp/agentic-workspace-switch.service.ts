@@ -254,13 +254,6 @@ export class AgenticWorkspaceSwitchService {
       }
     }
 
-    if (registeredProject) {
-      await this.registry.rememberProjectAgent(targetProject.id, agentId);
-      if (!shouldApply()) {
-        return false;
-      }
-      this.registry.preparePendingLaunch({ projectId: targetProject.id, agentId });
-    }
     this.aiChatService.enterAgenticTaskDraft({ agentId, cwd: targetProject.workspacePath });
     return true;
   }
@@ -271,15 +264,17 @@ export class AgenticWorkspaceSwitchService {
     const persistedCurrentProject = currentWorkspaceProject
       ? await this.registry.getProject(currentWorkspaceProject.id)
       : undefined;
-    const activeTask = sessionModel?.sessionId ? await this.registry.getTask(sessionModel.sessionId) : undefined;
-    const activeTaskProject = activeTask?.projectId ? await this.registry.getProject(activeTask.projectId) : undefined;
-    const project = activeTaskProject || persistedCurrentProject || currentWorkspaceProject;
+    const activeTarget = this.aiChatService.getActiveAgenticTaskTarget(sessionModel?.sessionId);
+    const projects = activeTarget ? await this.registry.listProjects() : [];
+    const activeSessionProject = activeTarget
+      ? projects.find((candidate) => candidate.workspacePath === activeTarget.cwd)
+      : undefined;
+    const project = activeSessionProject || persistedCurrentProject || currentWorkspaceProject;
     const agentIds = Object.keys(getConfiguredAgentConfigs(this.preferenceService));
     const latestRequestAgentId = sessionModel?.requests?.at(-1)?.message.agentId;
     const activeDraftAgentId = this.aiChatService.getActiveAgenticTaskAgentId(sessionModel?.sessionId);
     const preferredAgentId = [
-      project?.lastAgentId,
-      activeTask?.agentId,
+      activeTarget?.agentId,
       latestRequestAgentId,
       activeDraftAgentId,
       getDefaultAgentType(this.preferenceService),
@@ -289,8 +284,8 @@ export class AgenticWorkspaceSwitchService {
       project,
       preferredAgentId: preferredAgentId || agentIds[0],
       executionContext:
-        activeTaskProject && activeTaskProject.workspacePath !== currentWorkspaceProject?.workspacePath
-          ? activeTaskProject
+        activeSessionProject && activeSessionProject.workspacePath !== currentWorkspaceProject?.workspacePath
+          ? activeSessionProject
           : undefined,
     };
   }
@@ -323,36 +318,8 @@ export class AgenticWorkspaceSwitchService {
   }
 
   async restorePendingWork(): Promise<void> {
-    const actionGeneration = ++this.taskActionGeneration;
-    const shouldApply = () => actionGeneration === this.taskActionGeneration;
-    const activation = this.registry.consumePendingActivation();
-    if (activation) {
-      const task = await this.registry.getTask(activation.sessionId);
-      if (task && shouldApply()) {
-        await this.activateTask(task);
-      }
-      return;
-    }
-
-    const launch = this.registry.consumePendingLaunch();
-    if (launch) {
-      const project = await this.registry.getProject(launch.projectId);
-      if (!shouldApply() || !project || project.availability === 'unavailable') {
-        return;
-      }
-
-      this.aiChatService.enterAgenticTaskDraft({ agentId: launch.agentId, cwd: project.workspacePath });
-      return;
-    }
-
-    const activeTask = this.registry.getRememberedActiveTaskSession();
-    if (!activeTask) {
-      return;
-    }
-    const task = await this.registry.getTask(activeTask.sessionId);
-    if (task && shouldApply()) {
-      await this.activateTask(task);
-    }
+    // Agent Session selection and drafts are page-local. Legacy Task records
+    // remain retained for compatibility but are not read or mutated here.
   }
 
   async refreshProjectAvailability(project: AgenticProjectRecord): Promise<void> {

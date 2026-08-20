@@ -60,14 +60,13 @@ async function launchAndCompleteTask(prompt: string): Promise<string> {
   await sendButton().click();
   await expect(chatSlot().getByText('BDD_ASSISTANT_PART_2 completed.').last()).toBeVisible({ timeout: 30_000 });
 
-  const row = page.locator('[data-testid^="agentic-task-row-"]').filter({ hasText: prompt }).first();
+  const sessionId = await getActiveSessionId();
+  expect(sessionId).toBeTruthy();
+  const row = page.getByTestId(`agentic-session-row-${sessionId}`);
   await expect(row).toBeVisible({ timeout: 30_000 });
-  const testId = await row.getAttribute('data-testid');
-  expect(testId).toBeTruthy();
-  const sessionId = testId!.replace('agentic-task-row-', '');
   await expect.poll(getActiveSessionId, { timeout: 30_000 }).toBe(sessionId);
   await expect(row).toHaveAttribute('aria-current', 'true');
-  return sessionId;
+  return sessionId!;
 }
 
 test.describe('ACP Chat Agentic history restore after backend session release', () => {
@@ -85,7 +84,7 @@ test.describe('ACP Chat Agentic history restore after backend session release', 
 
     try {
       const releasedSessionId = await launchAndCompleteTask(RELEASED_TASK_PROMPT);
-      const releasedRow = page.getByTestId(`agentic-task-row-${releasedSessionId}`);
+      const releasedRow = page.getByTestId(`agentic-session-row-${releasedSessionId}`);
       await expect(releasedRow).toHaveAttribute('aria-current', 'true');
 
       await page.evaluate(async () => {
@@ -100,11 +99,11 @@ test.describe('ACP Chat Agentic history restore after backend session release', 
       await waitForWorkbenchReady(page);
       await showAgenticChat();
 
-      const retainedRow = page.getByTestId(`agentic-task-row-${releasedSessionId}`);
+      const retainedRow = page.getByTestId(`agentic-session-row-${releasedSessionId}`);
       await expect(retainedRow).toBeVisible({ timeout: 30_000 });
 
       const previousActiveSessionId = await launchAndCompleteTask(PREVIOUS_ACTIVE_PROMPT);
-      const previousActiveRow = page.getByTestId(`agentic-task-row-${previousActiveSessionId}`);
+      const previousActiveRow = page.getByTestId(`agentic-session-row-${previousActiveSessionId}`);
       await expect(previousActiveRow).toHaveAttribute('aria-current', 'true');
 
       await retainedRow.click();

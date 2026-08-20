@@ -33,13 +33,20 @@ jest.mock('stream/web', () => ({
 const mockClientSideConnection = jest.fn().mockImplementation(() => ({
   initialize: jest.fn().mockResolvedValue({
     protocolVersion: 1,
-    agentCapabilities: { fs: { readTextFile: true, writeTextFile: true }, terminal: true },
+    agentCapabilities: {
+      fs: { readTextFile: true, writeTextFile: true },
+      terminal: true,
+      loadSession: true,
+      sessionCapabilities: { list: {} },
+    },
   }),
   newSession: jest.fn().mockResolvedValue({ sessionId: 'new-session-1' }),
   loadSession: jest.fn().mockResolvedValue({ sessionId: 'loaded-session-1' }),
   prompt: jest.fn().mockResolvedValue({ stopReason: 'end_turn' }),
   cancel: jest.fn().mockResolvedValue(undefined),
   listSessions: jest.fn().mockResolvedValue({ sessions: [] }),
+  closeSession: jest.fn().mockResolvedValue({}),
+  deleteSession: jest.fn().mockResolvedValue({}),
 }));
 
 jest.mock('@agentclientprotocol/sdk', () => ({
@@ -253,6 +260,7 @@ describe('AcpThread', () => {
 
       expect(thread.status).toBe('awaiting_prompt');
       expect(thread.sessionId).toBe('s1');
+      expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('rpcDurationMs='));
     });
 
     it('should transition to working during prompt', async () => {
@@ -1130,6 +1138,7 @@ describe('AcpThread', () => {
         }),
       };
       (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = { loadSession: true };
       (thread as any)._connection = connection;
 
       await thread.loadSession({ sessionId: 's1' } as any);
@@ -1342,6 +1351,68 @@ describe('AcpThread', () => {
       (thread as any)._connection = null;
 
       await expect(thread.listSessions()).rejects.toThrow('AcpThread not initialized');
+    });
+
+    it('does not send session/load when the agent did not advertise loadSession', async () => {
+      const connection = { loadSession: jest.fn() };
+      (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = {};
+      (thread as any)._connection = connection;
+
+      await expect(thread.loadSession({ sessionId: 's1' } as any)).rejects.toThrow(
+        'Agent does not support ACP session/load.',
+      );
+      expect(connection.loadSession).not.toHaveBeenCalled();
+    });
+
+    it('does not send session/list when the agent did not advertise sessionCapabilities.list', async () => {
+      const connection = { listSessions: jest.fn() };
+      (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = { loadSession: true, sessionCapabilities: {} };
+      (thread as any)._connection = connection;
+
+      await expect(thread.listSessions()).rejects.toThrow('Agent does not support ACP session/list.');
+      expect(connection.listSessions).not.toHaveBeenCalled();
+    });
+
+    it('does not send session/close when the agent did not advertise sessionCapabilities.close', async () => {
+      const connection = { closeSession: jest.fn() };
+      (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = { sessionCapabilities: {} };
+      (thread as any)._connection = connection;
+
+      await expect(thread.closeSession({ sessionId: 's1' } as any)).rejects.toThrow(
+        'Agent does not support ACP session/close.',
+      );
+      expect(connection.closeSession).not.toHaveBeenCalled();
+    });
+
+    it('does not send session/delete when the agent did not advertise sessionCapabilities.delete', async () => {
+      const connection = { deleteSession: jest.fn() };
+      (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = { sessionCapabilities: {} };
+      (thread as any)._connection = connection;
+
+      await expect(thread.deleteSession({ sessionId: 's1' })).rejects.toThrow(
+        'Agent does not support ACP session/delete.',
+      );
+      expect(connection.deleteSession).not.toHaveBeenCalled();
+    });
+
+    it('uses the standard close and delete methods after capability negotiation', async () => {
+      const connection = {
+        closeSession: jest.fn().mockResolvedValue({}),
+        deleteSession: jest.fn().mockResolvedValue({}),
+      };
+      (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = { sessionCapabilities: { close: {}, delete: {} } };
+      (thread as any)._connection = connection;
+
+      await thread.closeSession({ sessionId: 's1' } as any);
+      await thread.deleteSession({ sessionId: 's1' });
+
+      expect(connection.closeSession).toHaveBeenCalledWith({ sessionId: 's1' });
+      expect(connection.deleteSession).toHaveBeenCalledWith({ sessionId: 's1' });
     });
   });
 

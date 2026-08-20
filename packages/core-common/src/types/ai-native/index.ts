@@ -239,6 +239,12 @@ export interface AgentSessionCreateResult extends AgentSessionStateResult {
   availableCommands: AvailableCommand[];
 }
 
+/** Standard ACP session operations advertised during initialize. */
+export interface AcpSessionCapabilities {
+  close: boolean;
+  delete: boolean;
+}
+
 export interface AgentSessionLoadResult extends AgentSessionStateResult {
   sessionId: string;
   availableCommands?: AvailableCommand[];
@@ -318,6 +324,12 @@ export interface IAIBackService<
   disposeSession?(sessionId: string, force?: boolean): Promise<void>;
 
   listSessions?(config: AgentProcessConfig): Promise<ListSessionsResponse>;
+
+  getSessionCapabilities?(config: AgentProcessConfig): Promise<AcpSessionCapabilities>;
+
+  closeSession?(sessionId: string): Promise<void>;
+
+  deleteSession?(sessionId: string): Promise<void>;
 
   createSession?(config: AgentProcessConfig, operationId?: string): Promise<AgentSessionCreateResult>;
 
@@ -566,6 +578,8 @@ export interface IChatSessionState {
   currentModelId?: string;
   configOptions?: Record<string, any>[];
   availableCommands?: AvailableCommand[];
+  title?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface IChatSessionSnapshot extends AgentSessionStateResult {

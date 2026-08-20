@@ -18,6 +18,7 @@ import {
   IChatToolContent,
   ListSessionsResponse,
   McpServer,
+  SessionInfo,
   SessionNotification,
   SetSessionModeRequest,
   ThreadStatus,
@@ -705,6 +706,8 @@ ${input}`;
           ...(update.currentModelId !== undefined ? { currentModelId: update.currentModelId } : {}),
           ...(update.configOptions !== undefined ? { configOptions: update.configOptions } : {}),
           ...(update.availableCommands !== undefined ? { availableCommands: update.availableCommands } : {}),
+          ...(update.title !== undefined ? { title: update.title } : {}),
+          ...(update.updatedAt !== undefined ? { updatedAt: update.updatedAt } : {}),
         } as IChatSessionState;
       case 'tool_call': {
         const toolCall: IChatToolCall = {
@@ -1008,8 +1011,35 @@ ${input}`;
   }
 
   async listSessions(config: AgentProcessConfig): Promise<ListSessionsResponse> {
-    this.logger.log(`[ACP Back] listSessions called, cwd=${config?.cwd}`);
-    return this.agentService.listSessions(config?.cwd ? { cwd: config.cwd } : undefined, config);
+    this.logger.log('[ACP Back] listSessions called');
+    const sessions = new Map<string, SessionInfo>();
+    const seenCursors = new Set<string>();
+    let cursor: string | undefined;
+
+    do {
+      const result = await this.agentService.listSessions(
+        config?.cwd ? { cwd: config.cwd, ...(cursor ? { cursor } : {}) } : cursor ? { cursor } : undefined,
+        config,
+      );
+      for (const session of result.sessions || []) {
+        sessions.set(session.sessionId, session);
+      }
+      if (!result.nextCursor || seenCursors.has(result.nextCursor)) {
+        break;
+      }
+      seenCursors.add(result.nextCursor);
+      cursor = result.nextCursor;
+    } while (cursor);
+
+    return { sessions: Array.from(sessions.values()) };
+  }
+
+  async getSessionCapabilities(config: AgentProcessConfig): Promise<{ close: boolean; delete: boolean }> {
+    return this.agentService.getSessionCapabilities(config);
+  }
+
+  async deleteSession(sessionId: string): Promise<void> {
+    await this.agentService.deleteSession({ sessionId });
   }
 
   async dispose(): Promise<void> {

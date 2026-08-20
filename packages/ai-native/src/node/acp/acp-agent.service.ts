@@ -238,6 +238,9 @@ export interface IAcpAgentService {
   /** Declare or clear the single compatible standby target. */
   setStandbyTarget(config?: AgentProcessConfig): Promise<void>;
 
+  /** Read standard ACP session capabilities after initialize without creating a session. */
+  getSessionCapabilities(config: AgentProcessConfig): Promise<{ close: boolean; delete: boolean }>;
+
   /**
    * List all ACP Agent sessions
    */
@@ -266,6 +269,9 @@ export interface IAcpAgentService {
 
   /** Close a session without disposing the thread */
   closeSession(params: { sessionId: string }): Promise<void>;
+
+  /** Remove a session from the Agent's session/list history when supported. */
+  deleteSession(params: { sessionId: string }): Promise<void>;
 
   /** Switch the AI model for the session */
   setSessionModel(params: { sessionId: string; model: string }): Promise<void>;
@@ -1198,6 +1204,24 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     await this.setStandbyTarget(config);
   }
 
+  async getSessionCapabilities(config: AgentProcessConfig): Promise<{ close: boolean; delete: boolean }> {
+    const thread = await this.findOrCreateIdleThread(config);
+    try {
+      if (!thread.initialized) {
+        await thread.initialize(config as any);
+        this.throwIfStopping();
+      }
+      const capabilities = thread.agentCapabilities?.sessionCapabilities;
+      return {
+        close: capabilities?.close != null,
+        delete: capabilities?.delete != null,
+      };
+    } finally {
+      this.reservedThreads.delete(thread);
+      this.requestStandbyReconcile();
+    }
+  }
+
   private initializeWarmingThread(thread: AcpThread, config: AgentProcessConfig, swallowFailure = true): Promise<void> {
     // Defer initialize to a microtask so the thread is visible as warming
     // before an implementation can synchronously throw.
@@ -2036,14 +2060,17 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     const sessionsMap = new Map<string, SessionInfo>();
     let lastNextCursor: string | undefined;
     let activeThreadCount = 0;
+    let successfulThreadCount = 0;
+    let lastError: unknown;
 
-    for (const [sessionId, thread] of this.sessions) {
+    for (const thread of this.sessions.values()) {
       if (thread.getStatus() === 'disconnected' || (config && !this.canReuseThreadForConfig(thread, config))) {
         continue;
       }
       activeThreadCount++;
       try {
         const result = await thread.listSessions(params);
+        successfulThreadCount++;
         if (result?.sessions) {
           for (const info of result.sessions) {
             sessionsMap.set(info.sessionId, info);
@@ -2054,7 +2081,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
           lastNextCursor = result.nextCursor;
         }
       } catch (error) {
-        this.logger?.warn(`[AcpAgentService] listSessions error for thread ${sessionId}, cwd=${thread.cwd}:`, error);
+        lastError = error;
+        this.logger?.warn(
+          `[AcpAgentService] listSessions failed — threadId=${thread.threadId}, errorType=${
+            error instanceof Error ? error.name : typeof error
+          }`,
+        );
       }
     }
 
@@ -2069,6 +2101,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
           thread.reset();
         }
         const result = await thread.listSessions(params);
+        successfulThreadCount++;
         if (result?.sessions) {
           for (const info of result.sessions) {
             sessionsMap.set(info.sessionId, info);
@@ -2079,10 +2112,20 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         }
         activeThreadCount = 1;
       } catch (error) {
-        this.logger?.warn(`[AcpAgentService] listSessions error for idle thread, cwd=${thread.cwd}:`, error);
+        lastError = error;
+        activeThreadCount = 1;
+        this.logger?.warn(
+          `[AcpAgentService] listSessions failed for idle thread — threadId=${thread.threadId}, errorType=${
+            error instanceof Error ? error.name : typeof error
+          }`,
+        );
       } finally {
         this.reservedThreads.delete(thread);
       }
+    }
+
+    if (activeThreadCount > 0 && successfulThreadCount === 0 && lastError !== undefined) {
+      throw normalizeAcpError(lastError);
     }
 
     // Single active thread: preserve its cursor for pagination
@@ -2292,11 +2335,19 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
     this.touchSession(params.sessionId);
     try {
-      await thread.unstable_closeSession({ sessionId: params.sessionId } as any);
+      await thread.closeSession({ sessionId: params.sessionId } as any);
     } catch (error) {
       this.logger?.warn(`[AcpAgentService] closeSession error for session ${params.sessionId}:`, error);
       throw error;
     }
+  }
+
+  async deleteSession(params: { sessionId: string }): Promise<void> {
+    const thread = this.sessions.get(params.sessionId);
+    if (!thread) {
+      throw new Error(`No active session for sessionId: ${params.sessionId}`);
+    }
+    await thread.deleteSession({ sessionId: params.sessionId });
   }
 
   // -----------------------------------------------------------------------

@@ -24,6 +24,7 @@
 ## Then
 
 - Switching away and back restores the same active session id and safe title.
+- The Agent Session Browser row uses the Agent-returned title rather than deriving one from the local prompt.
 - The user row and final assistant row are restored once, without duplicate rows.
 - Completed reasoning, plan content, and tool-call result remain associated with the same assistant response.
 - Expanded/collapsed UI state may reset, but the underlying tool-call card and result remain visible after expansion.

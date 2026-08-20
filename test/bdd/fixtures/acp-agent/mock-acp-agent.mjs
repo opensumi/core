@@ -87,6 +87,7 @@ Fixtures:
   model-not-found   Returns an invalid-model JSON-RPC error with model metadata.
   create-failure    Fails deterministically during session/new.
   load-failure      Fails deterministically during session/load.
+  list-failure      Fails deterministically during session/list.
   task-session-missing Completes a Task, exits, then reports its Session missing after restart.
   auth-required     Raises an ACP auth-required error during session/prompt.
   config-failure    Fails deterministic session/set_config_option calls.
@@ -690,6 +691,12 @@ test/test.js
     },
 
     async listSessions(params = {}) {
+      if (options.fixture === 'list-failure') {
+        throw RequestError.internalError(
+          { fixture: options.fixture, service: 'session' },
+          'BDD list-session failure',
+        );
+      }
       if ((options.fixture === 'history' || options.fixture === 'load-failure') && params.cwd && !historySeedCwd) {
         historySeedCwd = params.cwd;
         for (const session of sessions.values()) {

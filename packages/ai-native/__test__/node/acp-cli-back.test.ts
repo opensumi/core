@@ -64,6 +64,8 @@ describe('AcpCliBackService', () => {
       loadSession: jest.fn(),
       loadSessionOrNew: jest.fn(),
       listSessions: jest.fn(),
+      getSessionCapabilities: jest.fn(),
+      deleteSession: jest.fn(),
       setSessionMode: jest.fn(),
       stopAgent: jest.fn(),
       getAvailableModes: jest.fn(),
@@ -588,6 +590,25 @@ describe('AcpCliBackService', () => {
       });
     });
 
+    it('should convert native session_info_update to a session_state update', () => {
+      expect(
+        toAgentUpdate({
+          sessionId: 'sess-1',
+          update: {
+            sessionUpdate: 'session_info_update',
+            title: 'Renamed session',
+            updatedAt: '2026-08-20T01:00:00.000Z',
+          },
+        } as any),
+      ).toEqual({
+        type: 'session_state',
+        content: '',
+        sessionId: 'sess-1',
+        title: 'Renamed session',
+        updatedAt: '2026-08-20T01:00:00.000Z',
+      });
+    });
+
     it('should convert native top-level plan entries to plan update content', () => {
       expect(
         toAgentUpdate({
@@ -662,6 +683,8 @@ describe('AcpCliBackService', () => {
         currentModeId: 'code',
         currentModelId: 'qwen3.6-plus',
         configOptions,
+        title: 'Renamed session',
+        updatedAt: '2026-08-20T01:00:00.000Z',
       });
       agentStream.emitData({ type: 'done', content: '' });
 
@@ -672,6 +695,8 @@ describe('AcpCliBackService', () => {
           currentModeId: 'code',
           currentModelId: 'qwen3.6-plus',
           configOptions,
+          title: 'Renamed session',
+          updatedAt: '2026-08-20T01:00:00.000Z',
         },
       ]);
     });
@@ -953,11 +978,15 @@ describe('AcpCliBackService', () => {
   });
 
   describe('listSessions()', () => {
-    it('should list sessions via agentService', async () => {
-      mockAgentService.listSessions.mockResolvedValue({
-        sessions: [{ sessionId: 's1', cwd: '/test', title: 'Session 1' } as any],
-        nextCursor: 'cursor-2',
-      });
+    it('should list all paginated sessions via agentService', async () => {
+      mockAgentService.listSessions
+        .mockResolvedValueOnce({
+          sessions: [{ sessionId: 's1', cwd: '/test', title: 'Session 1' } as any],
+          nextCursor: 'cursor-2',
+        })
+        .mockResolvedValueOnce({
+          sessions: [{ sessionId: 's2', cwd: '/test', title: 'Session 2' } as any],
+        });
 
       const result = await service.listSessions(mockAgentSessionConfig);
 
@@ -967,14 +996,36 @@ describe('AcpCliBackService', () => {
         },
         mockAgentSessionConfig,
       );
-      expect(result.sessions).toHaveLength(1);
-      expect(result.nextCursor).toBe('cursor-2');
+      expect(mockAgentService.listSessions).toHaveBeenLastCalledWith(
+        {
+          cwd: mockAgentSessionConfig.cwd,
+          cursor: 'cursor-2',
+        },
+        mockAgentSessionConfig,
+      );
+      expect(result.sessions).toHaveLength(2);
+      expect(result.nextCursor).toBeUndefined();
     });
 
     it('should re-throw error from listSessions', async () => {
       mockAgentService.listSessions.mockRejectedValue(new Error('List failed'));
 
       await expect(service.listSessions(mockAgentSessionConfig)).rejects.toThrow('List failed');
+    });
+  });
+
+  describe('draft Session capabilities', () => {
+    it('proxies negotiated capabilities and standard deletion to AcpAgentService', async () => {
+      mockAgentService.getSessionCapabilities.mockResolvedValue({ close: true, delete: false });
+
+      await expect(service.getSessionCapabilities(mockAgentSessionConfig)).resolves.toEqual({
+        close: true,
+        delete: false,
+      });
+      await service.deleteSession('draft-session');
+
+      expect(mockAgentService.getSessionCapabilities).toHaveBeenCalledWith(mockAgentSessionConfig);
+      expect(mockAgentService.deleteSession).toHaveBeenCalledWith({ sessionId: 'draft-session' });
     });
   });
 

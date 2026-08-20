@@ -2,6 +2,7 @@ import debounce from 'lodash/debounce';
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
+import { Modal } from '@opensumi/ide-components/lib/modal';
 import {
   AINativeConfigService,
   AppConfig,
@@ -251,6 +252,7 @@ export const AIChatViewACPContent = () => {
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
   const [sessionModelId, setSessionModelId] = React.useState<string | undefined>(aiChatService.sessionModel?.modelId);
   const [hasUserSentMessage, setHasUserSentMessage] = React.useState(false);
+  const [discardDraftConfirmationVisible, setDiscardDraftConfirmationVisible] = React.useState(false);
 
   const [changeList, setChangeList] = React.useState<FileChange[]>(
     getFileChanges(applyService.getSessionCodeBlocks() || []),
@@ -1472,9 +1474,22 @@ export const AIChatViewACPContent = () => {
   }, [queuedTurns]);
 
   const handleCloseChatView = React.useCallback(() => {
-    aiChatService.updateInputDraft(chatInputRegistry.preserveActiveDraft() || aiChatService.getInputDraft());
+    const draft = chatInputRegistry.preserveActiveDraft() || aiChatService.getInputDraft();
+    aiChatService.updateInputDraft(draft);
+    if (
+      isAgenticLayout &&
+      !aiChatService.sessionModel &&
+      !!aiChatService.getActiveAgenticTaskAgentId() &&
+      hasAcpChatSendPayload(draft || {})
+    ) {
+      setDiscardDraftConfirmationVisible(true);
+      return;
+    }
+    if (isAgenticLayout && !aiChatService.sessionModel && !!aiChatService.getActiveAgenticTaskAgentId()) {
+      void aiChatService.discardAgenticTaskDraft();
+    }
     panelLayoutService.hideAIChatView();
-  }, [aiChatService, chatInputRegistry, panelLayoutService]);
+  }, [aiChatService, chatInputRegistry, isAgenticLayout, panelLayoutService]);
 
   const HeaderRender: ChatViewHeaderRender = chatRenderRegistry.chatViewHeaderRender || DefaultChatViewHeaderACP;
 
@@ -1736,6 +1751,7 @@ export const AIChatViewACPContent = () => {
   React.useEffect(() => {
     if (!isAgenticLayout || !activeServiceSessionId || !msgHistoryManager) {
       setAgenticConversation(undefined);
+      setHasUserSentMessage(false);
       return;
     }
     const cache = agenticConversationCacheRef.current;
@@ -1795,10 +1811,16 @@ export const AIChatViewACPContent = () => {
   }, [aiChatService.sessionModel, setChatLoading]);
 
   const welcomePageRender = chatRenderRegistry.chatWelcomePageRender;
+  const isAgenticTaskDraft =
+    isAgenticLayout && !activeServiceSessionId && !!aiChatService.getActiveAgenticTaskAgentId();
   const visibleMessageCount = isAgenticLayout ? agenticConversation?.messages.length || 0 : messageListData.length;
   const showWelcomePage =
-    !hasUserSentMessage && visibleMessageCount <= (isAgenticLayout ? 0 : 1) && !!welcomePageRender;
-  const showAgenticTaskEmptyState = showWelcomePage && panelLayoutService.getLayoutMode() === 'agentic';
+    !isAgenticTaskDraft &&
+    !hasUserSentMessage &&
+    visibleMessageCount <= (isAgenticLayout ? 0 : 1) &&
+    !!welcomePageRender;
+  const showAgenticTaskEmptyState = (showWelcomePage || isAgenticTaskDraft) && isAgenticLayout;
+  const showAgenticTaskDraftHint = isAgenticTaskDraft;
   const showBlockingSessionLoading = sessionLoading && !isAgenticLayout;
   const welcomePage =
     showWelcomePage && welcomePageRender
@@ -1813,6 +1835,22 @@ export const AIChatViewACPContent = () => {
 
   return (
     <div id={styles.ai_chat_view}>
+      <Modal
+        cancelText={localize('aiNative.chat.agenticTask.draft.keepEditing', 'Keep Editing')}
+        centered
+        okText={localize('aiNative.chat.agenticTask.draft.discard', 'Discard Draft')}
+        onCancel={() => setDiscardDraftConfirmationVisible(false)}
+        onOk={() => {
+          void Promise.resolve(aiChatService.discardAgenticTaskDraft()).then(() => {
+            setDiscardDraftConfirmationVisible(false);
+            panelLayoutService.hideAIChatView();
+          });
+        }}
+        title={localize('aiNative.chat.agenticTask.draft.discardTitle', 'Discard draft?')}
+        visible={discardDraftConfirmationVisible}
+      >
+        {localize('aiNative.chat.agenticTask.draft.discardMessage', 'Your unsent message will be lost.')}
+      </Modal>
       <div className={styles.header_container}>
         <HeaderRender
           handleClear={handleClear}
@@ -1822,8 +1860,20 @@ export const AIChatViewACPContent = () => {
       </div>
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>
-          <AgenticChatPanelHeader preferSessionTitle={true} sessionModel={aiChatService.sessionModel} />
+          <AgenticChatPanelHeader
+            onCloseTaskDraft={handleCloseChatView}
+            preferSessionTitle={true}
+            sessionModel={aiChatService.sessionModel}
+          />
           <div aria-busy={sessionLoading} className={styles.chat_container} ref={containerRef}>
+            {showAgenticTaskDraftHint && (
+              <div className={styles.agentic_task_draft_hint} data-testid='agentic-task-draft-hint'>
+                {localize(
+                  'aiNative.chat.agenticTask.draft.hint',
+                  'Send your first message to create this Agent session.',
+                )}
+              </div>
+            )}
             {showBlockingSessionLoading ? (
               <div
                 aria-live='polite'
@@ -1833,7 +1883,7 @@ export const AIChatViewACPContent = () => {
               >
                 {localize('aiNative.chat.session.loading', 'Loading chat…')}
               </div>
-            ) : showWelcomePage ? (
+            ) : isAgenticTaskDraft || showWelcomePage ? (
               showAgenticTaskEmptyState ? (
                 <div className={styles.agentic_task_empty_layout}>
                   <div className={styles.agentic_task_empty_content}>{welcomePage}</div>

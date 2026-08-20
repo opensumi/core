@@ -74,6 +74,9 @@ interface MockThread {
   prompt: jest.Mock;
   cancel: jest.Mock;
   listSessions: jest.Mock;
+  closeSession: jest.Mock;
+  deleteSession: jest.Mock;
+  agentCapabilities?: any;
   getEntries: jest.Mock;
   getSessionNotifications: jest.Mock;
   getSessionState: jest.Mock;
@@ -127,6 +130,8 @@ function createMockThread(overrides: Record<string, any> = {}): MockThread {
     prompt: jest.fn().mockResolvedValue({ stopReason: 'end_turn' }),
     cancel: jest.fn().mockResolvedValue(undefined),
     listSessions: jest.fn().mockResolvedValue({ sessions: [] }),
+    closeSession: jest.fn().mockResolvedValue(undefined),
+    deleteSession: jest.fn().mockResolvedValue(undefined),
     getEntries: jest.fn().mockReturnValue([]),
     getSessionNotifications: jest.fn().mockReturnValue([]),
     getSessionState: jest.fn().mockReturnValue({
@@ -207,6 +212,36 @@ describe('AcpAgentService (Thread Pool)', () => {
   describe('Token', () => {
     it('should export AcpAgentServiceToken as a symbol', () => {
       expect(typeof AcpAgentServiceToken).toBe('symbol');
+    });
+  });
+
+  describe('draft Session capabilities', () => {
+    it('initializes and releases one compatible idle thread when reading close/delete capabilities', async () => {
+      const thread = createMockThread({
+        agentCapabilities: { sessionCapabilities: { close: {}, delete: {} } },
+      });
+      const service = setupServiceWithMockFactory(jest.fn(() => thread));
+
+      await expect(service.getSessionCapabilities(mockAgentProcessConfig)).resolves.toEqual({
+        close: true,
+        delete: true,
+      });
+
+      expect(thread.initialize).toHaveBeenCalledWith(expect.objectContaining(mockAgentProcessConfig));
+      expect((service as any).reservedThreads.has(thread)).toBe(false);
+      expect((service as any).sessions.size).toBe(0);
+    });
+
+    it('routes standard Session deletion only through the active Session thread', async () => {
+      const { service, thread } = createService();
+      (service as any).sessions.set('draft-session', thread);
+
+      await service.deleteSession({ sessionId: 'draft-session' });
+
+      expect(thread.deleteSession).toHaveBeenCalledWith({ sessionId: 'draft-session' });
+      await expect(service.deleteSession({ sessionId: 'missing-session' })).rejects.toThrow(
+        'No active session for sessionId: missing-session',
+      );
     });
   });
 
@@ -2701,6 +2736,70 @@ describe('AcpAgentService (Thread Pool)', () => {
   // -----------------------------------------------------------------------
 
   describe('listSessions()', () => {
+    it('returns an empty successful result when a compatible thread lists no sessions', async () => {
+      const { service, thread } = createService();
+      (service as any).sessions.set('active-session', thread);
+
+      await expect(service.listSessions()).resolves.toEqual({ sessions: [], nextCursor: undefined });
+      expect(thread.listSessions).toHaveBeenCalledTimes(1);
+    });
+
+    it('merges successful session lists when another compatible thread fails', async () => {
+      const failingThread = createMockThread({
+        threadId: 'failing-thread',
+        listSessions: jest.fn().mockRejectedValue(new Error('first list failed')),
+      });
+      const successfulThread = createMockThread({
+        threadId: 'successful-thread',
+        listSessions: jest.fn().mockResolvedValue({
+          sessions: [{ sessionId: 'history-session', cwd: mockAgentProcessConfig.cwd, title: 'History Session' }],
+        }),
+      });
+      const service = setupServiceWithMockFactory(jest.fn());
+      (service as any).sessions.set('failed-session', failingThread);
+      (service as any).sessions.set('successful-session', successfulThread);
+
+      await expect(service.listSessions()).resolves.toEqual({
+        sessions: [{ sessionId: 'history-session', cwd: mockAgentProcessConfig.cwd, title: 'History Session' }],
+        nextCursor: undefined,
+      });
+    });
+
+    it('throws a normalized error when every compatible thread fails to list sessions', async () => {
+      const agentError = { message: 'session service unavailable', code: -32001, data: { service: 'session' } };
+      const failingThread = createMockThread({
+        listSessions: jest.fn().mockRejectedValue(agentError),
+      });
+      const service = setupServiceWithMockFactory(jest.fn());
+      (service as any).sessions.set('failed-session', failingThread);
+
+      let error: unknown;
+      try {
+        await service.listSessions();
+      } catch (caught) {
+        error = caught;
+      }
+
+      expect(error).toBeInstanceOf(Error);
+      expect(error).toMatchObject({
+        message: 'session service unavailable',
+        code: -32001,
+        data: { service: 'session' },
+        cause: agentError,
+      });
+    });
+
+    it('releases an idle-thread reservation when its only list attempt fails', async () => {
+      const { service, thread } = createService();
+      thread.listSessions.mockRejectedValue(new Error('list failed'));
+
+      await expect(service.listSessions({ cwd: mockAgentProcessConfig.cwd }, mockAgentProcessConfig)).rejects.toThrow(
+        'list failed',
+      );
+      expect((service as any).reservedThreads.has(thread)).toBe(false);
+      expect((service as any).sessions.size).toBe(0);
+    });
+
     it('should return all active sessions', async () => {
       const { service } = createServiceWithAutoEvents();
 
