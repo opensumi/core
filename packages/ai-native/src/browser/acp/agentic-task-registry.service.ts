@@ -127,6 +127,22 @@ export class AgenticTaskRegistryService {
     return true;
   }
 
+  /**
+   * Remove a Project from the Agent session catalog without deleting legacy
+   * Task records. Legacy records are intentionally retained but are no longer
+   * a runtime source for Agentic Layout.
+   */
+  async removeManagedSessionProject(projectId: string): Promise<boolean> {
+    await this.ensureInitialized();
+    const project = this.findProject(projectId);
+    if (!project?.managed) {
+      return false;
+    }
+    this.currentState.projects = this.currentState.projects.filter((candidate) => candidate.id !== projectId);
+    await this.persist();
+    return true;
+  }
+
   async registerFirstPrompt(options: RegisterFirstPromptOptions): Promise<AgenticTaskRecord> {
     await this.ensureInitialized();
     const project = await this.registerProject(options.project);
@@ -343,6 +359,10 @@ export class AgenticTaskRegistryService {
     });
   }
 
+  clearPendingLaunch(): void {
+    this.removeSessionValue(PENDING_TASK_LAUNCH_STORAGE_KEY);
+  }
+
   consumePendingLaunch(): AgenticPendingTaskLaunch | undefined {
     const value = this.consumeSessionValue(PENDING_TASK_LAUNCH_STORAGE_KEY);
     if (!this.isRecord(value) || typeof value.projectId !== 'string' || typeof value.agentId !== 'string') {
@@ -456,10 +476,9 @@ export class AgenticTaskRegistryService {
       }
     });
 
-    const retainedProjectIds = new Set(tasks.map((task) => task.projectId));
     return {
       version: 3,
-      projects: projects.filter((project) => project.managed || retainedProjectIds.has(project.id)),
+      projects,
       tasks,
     };
   }

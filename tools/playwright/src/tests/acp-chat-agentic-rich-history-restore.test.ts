@@ -97,7 +97,7 @@ async function getSessionState() {
 }
 
 async function selectTask(sessionId: string) {
-  const row = page.getByTestId(`agentic-task-row-${sessionId}`);
+  const row = page.getByTestId(`agentic-session-row-${sessionId}`);
   await expect(row).toBeVisible({ timeout: 30_000 });
   await row.click();
   await expect
@@ -135,7 +135,7 @@ async function startTaskInCurrentProject() {
 }
 
 async function refreshTaskList() {
-  const search = page.getByPlaceholder('Search tasks');
+  const search = page.getByPlaceholder('Search sessions');
   await search.fill('BDD');
   await search.fill('');
 }
@@ -178,7 +178,10 @@ async function createTaskWithRichUi(prompt: string): Promise<AcpSessionSummary> 
   const session = (await getSessionState()).session;
   expect(session).not.toBeNull();
   await refreshTaskList();
-  await expect(page.getByTestId(`agentic-task-row-${session!.sessionId}`)).toBeVisible({ timeout: 30_000 });
+  const row = page.getByTestId(`agentic-session-row-${session!.sessionId}`);
+  await expect(row).toBeVisible({ timeout: 30_000 });
+  await expect(row).toContainText('BDD Turn 1');
+  await expect(row).not.toContainText(prompt);
   return session!;
 }
 
@@ -271,7 +274,7 @@ test.describe('ACP Chat Agentic Rich History Restore', () => {
       hardeningVerdict: 'CONVERT',
     });
 
-    await expect(page.getByTestId('agentic-task-list')).toBeVisible();
+    await expect(page.getByTestId('agentic-session-list')).toBeVisible();
     await expect(page.locator('[data-testid="acp-chat-history-inline"]')).toHaveCount(0);
 
     const richSession = await createTaskWithRichUi(RICH_PROMPT);
@@ -315,7 +318,7 @@ test.describe('ACP Chat Agentic Rich History Restore', () => {
     await page.reload({ waitUntil: 'domcontentloaded' });
     await waitForWorkbenchReady(page);
     await showAcpChatView();
-    await expect(page.getByTestId('agentic-task-list')).toBeVisible();
+    await expect(page.getByTestId('agentic-session-list')).toBeVisible();
     await selectTask(richSession.sessionId);
 
     const postReloadState = await getSessionState();

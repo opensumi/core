@@ -22,6 +22,7 @@ import { MsgHistoryManager } from '../model/msg-history-manager';
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel, ChatResponseModel } from './chat-model';
 import {
+  AcpAgentSessionDescriptor,
   ISessionModel,
   ISessionModelExtension,
   ISessionProvider,
@@ -91,9 +92,20 @@ export class AcpChatManagerService extends ChatManagerService {
   private readonly sessionLoadGenerations = new Map<string, number>();
   private readonly sessionLifecycleOperations = new Map<string, Promise<void>>();
   private readonly shouldFailBddAttachment = createAcpAttachmentFailureFixture();
+  private agentSessionCatalog: AcpAgentSessionDescriptor[] = [];
+  private metadataOnlySessionIds = new Set<string>();
+  private agentSessionMetadataRevision = 0;
+  private readonly agentSessionMetadataUpdates = new Map<
+    string,
+    { revision: number; title?: string | null; updatedAt?: string | null }
+  >();
 
   private readonly onDidApplySessionStateEmitter = this.registerDispose(new Emitter<AcpSessionStateChangeEvent>());
   public readonly onDidApplySessionState = this.onDidApplySessionStateEmitter.event;
+  private readonly onDidChangeAgentSessionCatalogEmitter = this.registerDispose(
+    new Emitter<ReadonlyArray<AcpAgentSessionDescriptor>>(),
+  );
+  public readonly onDidChangeAgentSessionCatalog = this.onDidChangeAgentSessionCatalogEmitter.event;
 
   constructor() {
     super();
@@ -335,6 +347,73 @@ export class AcpChatManagerService extends ChatManagerService {
     await this.storageInitEmitter.fireAndAwait();
   }
 
+  getAgentSessionCatalog(): AcpAgentSessionDescriptor[] {
+    return this.agentSessionCatalog.map((session) => ({ ...session }));
+  }
+
+  async refreshAgentSessionCatalog(): Promise<AcpAgentSessionDescriptor[]> {
+    this.useAcpProviderWhenAvailable();
+    if (!this.mainProvider?.refreshAgentSessions) {
+      this.agentSessionCatalog = [];
+      return [];
+    }
+
+    const refreshStartMetadataRevision = this.agentSessionMetadataRevision;
+    const listedDescriptors = await this.mainProvider.refreshAgentSessions();
+    const descriptors = listedDescriptors.map((descriptor) => {
+      const update = this.agentSessionMetadataUpdates.get(descriptor.sessionId);
+      if (!update || update.revision <= refreshStartMetadataRevision) {
+        return descriptor;
+      }
+      return {
+        ...descriptor,
+        ...(update.title !== undefined ? { title: update.title || undefined } : {}),
+        ...(update.updatedAt !== undefined ? { updatedAt: update.updatedAt || undefined } : {}),
+      };
+    });
+    const nextIds = new Set(descriptors.map((session) => session.sessionId));
+    const nextMetadataModels = new Map<string, ChatModel>();
+
+    for (const descriptor of descriptors) {
+      const existing = this.peekSession(descriptor.sessionId);
+      if (existing && !this.metadataOnlySessionIds.has(descriptor.sessionId)) {
+        continue;
+      }
+      const updatedAt = descriptor.updatedAt ? Date.parse(descriptor.updatedAt) : undefined;
+      const [model] = this.fromAcpJSON([
+        {
+          sessionId: descriptor.sessionId,
+          createdAt: Number.isFinite(updatedAt) ? updatedAt : undefined,
+          history: { additional: {}, messages: [] },
+          requests: [],
+          title: descriptor.title || '',
+          extension: {
+            availableCommands: [],
+            acpTarget: { agentId: descriptor.agentId, cwd: descriptor.cwd },
+            metadataOnly: true,
+            updatedAt: descriptor.updatedAt,
+          },
+        },
+      ]);
+      if (model) {
+        nextMetadataModels.set(descriptor.sessionId, model);
+      }
+    }
+
+    for (const sessionId of this.metadataOnlySessionIds) {
+      if (!nextIds.has(sessionId)) {
+        this.sessionModels.delete(sessionId);
+      }
+    }
+    for (const [sessionId, model] of nextMetadataModels) {
+      this.sessionModels.set(sessionId, model);
+    }
+    this.metadataOnlySessionIds = new Set(nextMetadataModels.keys());
+    this.agentSessionCatalog = descriptors.map((session) => ({ ...session }));
+    this.onDidChangeAgentSessionCatalogEmitter.fire(this.getAgentSessionCatalog());
+    return this.getAgentSessionCatalog();
+  }
+
   override getSessions() {
     return Array.from(this.sessionModels.values());
   }
@@ -453,6 +532,7 @@ export class AcpChatManagerService extends ChatManagerService {
       this.getAvailableCommandsBySession().set(sessionId, sessionData.extension.availableCommands);
     }
     this.setSessionPreservingOrder(sessionId, session);
+    this.metadataOnlySessionIds.delete(sessionId);
     this.listenSession(session);
     if (existingSession && existingSession !== session) {
       this.onDidApplySessionStateEmitter?.fire({
@@ -687,6 +767,7 @@ export class AcpChatManagerService extends ChatManagerService {
 
   applySessionStateUpdate(sessionId: string, state: Partial<Omit<IChatSessionState, 'kind' | 'sessionId'>>): void {
     const lookupKey = sessionId.startsWith('acp:') ? sessionId : `acp:${sessionId}`;
+    this.applyAgentSessionMetadataUpdate(lookupKey, state.title, state.updatedAt);
     const model = this.getSession(lookupKey);
     if (!model) {
       return;
@@ -711,6 +792,10 @@ export class AcpChatManagerService extends ChatManagerService {
       this.getAvailableCommandsBySession().set(lookupKey, state.availableCommands);
       changed = true;
     }
+    if (state.title !== undefined && model.title !== (state.title || '')) {
+      model.setTitle(state.title || '');
+      changed = true;
+    }
 
     if (!changed) {
       return;
@@ -723,6 +808,36 @@ export class AcpChatManagerService extends ChatManagerService {
       currentModeId: model.currentModeId,
       availableCommands: state.availableCommands,
     });
+  }
+
+  private applyAgentSessionMetadataUpdate(sessionId: string, title?: string | null, updatedAt?: string | null): void {
+    if (title === undefined && updatedAt === undefined) {
+      return;
+    }
+    const index = this.agentSessionCatalog.findIndex((session) => session.sessionId === sessionId);
+    if (index === -1) {
+      return;
+    }
+    const current = this.agentSessionCatalog[index];
+    const next = {
+      ...current,
+      ...(title !== undefined ? { title: title || undefined } : {}),
+      ...(updatedAt !== undefined ? { updatedAt: updatedAt || undefined } : {}),
+    };
+    this.agentSessionCatalog = this.agentSessionCatalog.map((session, sessionIndex) =>
+      sessionIndex === index ? next : session,
+    );
+    const previous = this.agentSessionMetadataUpdates.get(sessionId);
+    this.agentSessionMetadataUpdates.set(sessionId, {
+      revision: ++this.agentSessionMetadataRevision,
+      ...(title !== undefined ? { title } : previous?.title !== undefined ? { title: previous.title } : {}),
+      ...(updatedAt !== undefined
+        ? { updatedAt }
+        : previous?.updatedAt !== undefined
+        ? { updatedAt: previous.updatedAt }
+        : {}),
+    });
+    this.onDidChangeAgentSessionCatalogEmitter.fire(this.getAgentSessionCatalog());
   }
 
   fallbackToLocal(): void {

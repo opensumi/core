@@ -48,8 +48,23 @@ export interface ISessionModel {
  */
 export interface ISessionModelExtension {
   availableCommands: AvailableCommand[];
-  /** Resolved ACP process identity for a newly created session. Never persisted. */
+  /** Resolved ACP process identity for a created or Agent-listed session. Never persisted. */
   acpTarget?: AcpTargetConfigRequest;
+  /** Agent list metadata that has not yet been hydrated through session/load. */
+  metadataOnly?: boolean;
+  /** Agent-supplied last update time from session/list. */
+  updatedAt?: string;
+}
+
+export interface AcpAgentSessionDescriptor {
+  /** Browser-facing id with the `acp:` prefix. */
+  sessionId: string;
+  /** Raw ACP Agent session id. */
+  agentSessionId: string;
+  agentId: string;
+  cwd: string;
+  title?: string;
+  updatedAt?: string;
 }
 
 export interface AcpSessionModeOption {
@@ -97,6 +112,12 @@ export interface ISessionProvider {
    * @returns Session 数据列表
    */
   loadSessions(): Promise<ISessionModel[]>;
+
+  /** Refresh the Agentic session catalog from every available Agent and known Project. */
+  refreshAgentSessions?(): Promise<AcpAgentSessionDescriptor[]>;
+
+  /** Return the last atomically committed Agentic session catalog. */
+  getAgentSessions?(): AcpAgentSessionDescriptor[];
 
   /**
    * 加载指定会话

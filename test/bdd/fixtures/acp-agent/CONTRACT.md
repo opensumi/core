@@ -21,6 +21,7 @@ This contract summarizes the deterministic fixture modes consumed by BDD hardeni
 | `model-not-found` | Deterministic `-32602` invalid-model failure with `providerId` and `modelId` metadata. |
 | `create-failure` | Deterministic `session/new` failure. |
 | `load-failure` | Deterministic `session/load` not-found failure. |
+| `list-failure` | Deterministic `session/list` service failure for Agent-level snapshot discard coverage. |
 | `auth-required` | Deterministic ACP auth-required prompt failure. |
 | `config-failure` | Deterministic `session/set_config_option` failure. |
 | `process-exit` | Emits deterministic prompt updates, then exits the ACP agent process with a fixed non-zero code. |

@@ -12,12 +12,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@agentclientprotocol/sdk@npm:^0.16.1":
-  version: 0.16.1
-  resolution: "@agentclientprotocol/sdk@npm:0.16.1"
+"@agentclientprotocol/sdk@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@agentclientprotocol/sdk@npm:1.3.0"
   peerDependencies:
     zod: ^3.25.0 || ^4.0.0
-  checksum: 10/565495a1024712423ddac966a944ae03ee1e54592504be74cc538250979e907f91550f7ba9fef080aac4cc15de430ee44bdd3bda32009a2735513d4024cec1f5
+  checksum: 10/24ced047c2a803a5d2978ca87ab0f13b9531a092b075dd04430b8b76e680c77bc8bb0192bb5f34fa4d19f998ed13e092d40ebe5bf1c08f5fa01bd3e401174481
   languageName: node
   linkType: hard
 
@@ -3423,7 +3423,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-ai-native@workspace:packages/ai-native"
   dependencies:
-    "@agentclientprotocol/sdk": "npm:^0.16.1"
+    "@agentclientprotocol/sdk": "npm:^1.3.0"
     "@ai-sdk/anthropic": "npm:^1.1.9"
     "@ai-sdk/deepseek": "npm:^0.1.11"
     "@ai-sdk/openai": "npm:^1.1.9"
@@ -3593,7 +3593,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-core-common@workspace:packages/core-common"
   dependencies:
-    "@agentclientprotocol/sdk": "npm:^0.16.1"
+    "@agentclientprotocol/sdk": "npm:^1.3.0"
     "@opensumi/di": "npm:^1.8.0"
     "@opensumi/events": "npm:^1.0.0"
     "@opensumi/ide-dev-tool": "workspace:*"

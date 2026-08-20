@@ -85,12 +85,14 @@ function storeTaskListWidth(width: number): void {
   }
 }
 
-function TaskListResizeHandle({
+export function TaskListResizeHandle({
+  ariaLabel = localize('aiNative.agentic.taskList.resize', 'Resize Agent Tasks'),
   getConfiguredWidth,
   maximumWidth,
   onResize,
   refreshMaximumWidth,
 }: {
+  ariaLabel?: string;
   getConfiguredWidth: (maximumWidth: number) => number;
   maximumWidth: number;
   onResize: (width: number) => void;
@@ -158,7 +160,7 @@ function TaskListResizeHandle({
 
   return (
     <div
-      aria-label={localize('aiNative.agentic.taskList.resize', 'Resize Agent Tasks')}
+      aria-label={ariaLabel}
       aria-orientation='vertical'
       aria-valuemax={maximumWidth}
       aria-valuemin={MIN_TASK_LIST_WIDTH}
@@ -215,20 +217,8 @@ const TASK_ROW_PRESENTATIONS: Readonly<Record<BaseTaskRowMetaKind, TaskRowPresen
     testIdPrefix: 'agentic-task-status',
     tone: 'warning',
   },
-  stopped: {
-    fullLabel: localize('aiNative.agentic.task.status.stopped', 'Stopped'),
-    icon: 'codicon-circle-slash',
-    kind: 'stopped',
-    testIdPrefix: 'agentic-task-status',
-    tone: 'secondary',
-  },
-  error: {
-    fullLabel: localize('aiNative.agentic.task.status.error', 'Error'),
-    icon: 'codicon-error',
-    kind: 'error',
-    testIdPrefix: 'agentic-task-status',
-    tone: 'error',
-  },
+  stopped: undefined,
+  error: undefined,
   ready: undefined,
   permission: {
     fullLabel: localize('aiNative.agentic.task.status.permissionRequired', 'Permission required'),
@@ -289,7 +279,7 @@ function getTaskRowPresentation(
   };
 }
 
-function ProjectRenameModal({
+export function ProjectRenameModal({
   onClose,
   onRename,
   project,

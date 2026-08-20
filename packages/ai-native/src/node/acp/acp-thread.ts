@@ -314,7 +314,8 @@ export interface IAcpThread {
   // Unstable session operations
   unstable_forkSession(params: ForkSessionRequest): Promise<ForkSessionResponse>;
   unstable_resumeSession(params: ResumeSessionRequest): Promise<ResumeSessionResponse>;
-  unstable_closeSession(params: CloseSessionRequest): Promise<CloseSessionResponse>;
+  closeSession(params: CloseSessionRequest): Promise<CloseSessionResponse>;
+  deleteSession(params: { sessionId: string }): Promise<void>;
   unstable_setSessionModel(params: SetSessionModelRequest): Promise<SetSessionModelResponse | void>;
 
   // State management (internal + testing)
@@ -958,20 +959,33 @@ export class AcpThread extends Disposable implements IAcpThread {
       ...(params?._meta ? { _meta: params._meta } : {}),
     };
 
-    const response: NewSessionResponse = await this._connection.newSession(request);
+    const rpcStartedAt = Date.now();
+    let response: NewSessionResponse;
+    try {
+      response = await this._connection.newSession(request);
+    } catch (error) {
+      this.logger?.error(
+        `[AcpThread:${this.threadId}] newSession() — rpc failed, durationMs=${Date.now() - rpcStartedAt}`,
+        error,
+      );
+      throw error;
+    }
     this._sessionId = response.sessionId;
     acpDebugLogStore.setThreadSessionId(this.threadId, response.sessionId);
     this._needsReset = true;
     this.applySessionInitialState(response);
     this.setStatus('awaiting_prompt');
     this.logger?.log(
-      `[AcpThread:${this.threadId}] newSession() — sessionId=${response.sessionId}, status=awaiting_prompt`,
+      `[AcpThread:${this.threadId}] newSession() — sessionId=${
+        response.sessionId
+      }, status=awaiting_prompt, rpcDurationMs=${Date.now() - rpcStartedAt}`,
     );
     return response;
   }
 
   async loadSession(params: LoadSessionRequest): Promise<LoadSessionResponse> {
     await this.ensureInitialized();
+    this.assertSessionCapability('session/load', this._agentCapabilities?.loadSession === true);
     this.logger?.log(`[AcpThread:${this.threadId}] loadSession() — sessionId=${params.sessionId}`);
 
     this._sessionId = params.sessionId;
@@ -1064,7 +1078,17 @@ export class AcpThread extends Disposable implements IAcpThread {
   async listSessions(params?: ListSessionsRequest): Promise<ListSessionsResponse> {
     this.logger?.log(`[AcpThread:${this.threadId}] listSessions()`);
     await this.ensureInitialized();
+    this.assertSessionCapability('session/list', this._agentCapabilities?.sessionCapabilities?.list != null);
     return this._connection.listSessions(params || {});
+  }
+
+  private assertSessionCapability(
+    operation: 'session/list' | 'session/load' | 'session/close' | 'session/delete',
+    supported: boolean,
+  ): void {
+    if (!supported) {
+      throw new Error(`Agent does not support ACP ${operation}.`);
+    }
   }
 
   async setSessionMode(params: SetSessionModeRequest): Promise<SetSessionModeResponse | void> {
@@ -1110,10 +1134,18 @@ export class AcpThread extends Disposable implements IAcpThread {
     return this._connection.unstable_resumeSession(params);
   }
 
-  async unstable_closeSession(params: CloseSessionRequest): Promise<CloseSessionResponse> {
-    this.logger?.log(`[AcpThread:${this.threadId}] unstable_closeSession()`);
+  async closeSession(params: CloseSessionRequest): Promise<CloseSessionResponse> {
+    this.logger?.log(`[AcpThread:${this.threadId}] closeSession()`);
     await this.ensureInitialized();
-    return this._connection.unstable_closeSession(params);
+    this.assertSessionCapability('session/close', this._agentCapabilities?.sessionCapabilities?.close != null);
+    return this._connection.closeSession(params);
+  }
+
+  async deleteSession(params: { sessionId: string }): Promise<void> {
+    this.logger?.log(`[AcpThread:${this.threadId}] deleteSession()`);
+    await this.ensureInitialized();
+    this.assertSessionCapability('session/delete', this._agentCapabilities?.sessionCapabilities?.delete != null);
+    await this._connection.deleteSession(params as any);
   }
 
   async unstable_setSessionModel(params: SetSessionModelRequest): Promise<SetSessionModelResponse | void> {

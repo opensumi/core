@@ -109,15 +109,40 @@ test.describe('ACP Chat layout-aware New Draft actions', () => {
     await expect(dropdown).toHaveAttribute('aria-label', 'Choose Agent');
 
     await createExistingTaskConversation();
+    const taskRows = page.locator('[data-testid^="agentic-task-row-"]');
+    const existingTaskRow = taskRows.filter({ hasText: 'BDD existing Task Conversation' });
+    await expect(existingTaskRow).toHaveCount(1);
+    const taskCountBeforeDraft = await taskRows.count();
+    const projectGroup = page.locator('[data-testid="agentic-task-project-group"]').filter({
+      has: existingTaskRow,
+    });
+    const projectNewTask = projectGroup.getByTestId('agentic-task-launch-button');
+    const mainConversation = page.locator('#ai_chat_left_container');
+    await expect(mainConversation).toContainText('BDD existing Task Conversation');
     const input = chatInput();
     await input.click();
     await page.keyboard.insertText('preserved Agentic draft');
     expect((await getSessionState()).active).toBe(true);
-    await primary.click();
+    await projectNewTask.click();
     await expect(header.getByTestId('agentic-task-agent-menu')).toHaveCount(0);
+    await expect(header.getByTestId('agentic-chat-panel-header-title')).toHaveText('New Task');
+    await expect(header.getByTestId('agentic-task-draft-context')).toContainText(
+      'Send your first message to add this Task to the list.',
+    );
+    await expect(page.getByTestId('agentic-task-draft-hint')).toContainText(
+      'Send your first message to create this Task and add it to the Task List.',
+    );
+    await expect(page.locator('[data-testid^="agentic-task-row-"]')).toHaveCount(taskCountBeforeDraft);
+    await expect(mainConversation).not.toContainText('BDD existing Task Conversation');
+    await expect(page.getByTestId('agentic-virtual-message-list')).toHaveCount(0);
     await expect(input).toContainText('preserved Agentic draft');
     await expect(input).toBeFocused();
     expect((await getSessionState()).active).toBe(false);
+
+    await page.getByTestId('agentic-task-draft-close').click();
+    await expect(page.getByText('Discard draft?', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Keep Editing', exact: true }).click();
+    await expect(input).toContainText('preserved Agentic draft');
 
     await dropdown.click();
     const menu = header.getByTestId('agentic-task-agent-menu');
@@ -132,6 +157,13 @@ test.describe('ACP Chat layout-aware New Draft actions', () => {
     await pressNewDraftShortcut();
     await expect(input).toBeFocused();
     await expect(header.getByTestId('agentic-task-agent-menu')).toHaveCount(0);
+    expect((await getSessionState()).active).toBe(false);
+
+    await page.getByTestId('agentic-task-draft-close').click();
+    await page.getByRole('button', { name: 'Discard Draft', exact: true }).click();
+    await expect(header.getByTestId('agentic-task-draft-context')).toHaveCount(0);
+    await expect(page.getByTestId('agentic-task-draft-hint')).toHaveCount(0);
+    await expect(taskRows).toHaveCount(taskCountBeforeDraft);
     expect((await getSessionState()).active).toBe(false);
 
     await writeAiNativePanelLayoutSettings(runtime.workspaceDir, 'classic');

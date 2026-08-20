@@ -131,6 +131,35 @@
           white-space: nowrap;
         }
 
+        .agentic_task_draft_context {
+          flex: 0 1 280px;
+          min-width: 0;
+          overflow: hidden;
+          color: var(--descriptionForeground);
+          font-size: 12px;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .agentic_task_draft_close {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          padding: 0;
+          border: 0;
+          border-radius: 4px;
+          background: transparent;
+          color: var(--descriptionForeground);
+          cursor: pointer;
+
+          &:hover {
+            background: var(--list-hoverBackground);
+            color: var(--foreground);
+          }
+        }
+
         .agentic_chat_panel_actions {
           display: flex;
           flex: 0 0 auto;
@@ -784,6 +813,14 @@
         .agentic_task_empty_content {
           min-height: 0;
           flex: 1 1 auto;
+        }
+
+        .agentic_task_draft_hint {
+          flex: 0 0 auto;
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--panel-border);
+          color: var(--descriptionForeground);
+          font-size: 12px;
         }
 
         .chat_input_wrap {

@@ -185,7 +185,12 @@ export class AcpChatAgent implements IChatAgent {
     );
 
     try {
-      const config = await this.configProvider.resolveConfig();
+      const browserSessionId = request.sessionId.startsWith('acp:') ? request.sessionId : `acp:${request.sessionId}`;
+      const target = this.chatManagerService.getSession(browserSessionId)?.acpTarget;
+      const config =
+        target && this.configProvider.resolveConfigForTarget
+          ? await this.configProvider.resolveConfigForTarget(target)
+          : await this.configProvider.resolveConfig();
       this.logger.log(`[ACP Chat] invoke: sessionId=${sessionId}, config=${JSON.stringify(config)}`);
       const acpDeliveryMode = this.preferenceService.get<'minimal' | 'stream'>(
         AINativeSettingSectionsId.AcpDeliveryMode,
@@ -314,6 +319,8 @@ export class AcpChatAgent implements IChatAgent {
       currentModelId: state.currentModelId,
       configOptions: state.configOptions,
       availableCommands: state.availableCommands,
+      title: state.title,
+      updatedAt: state.updatedAt,
     });
   }
 

@@ -210,7 +210,7 @@ describe('AgenticTaskRegistryService', () => {
     });
   });
 
-  it('drops legacy MRU-only Projects but retains task history and Project Agent recall', async () => {
+  it('retains Project-only authorization records without requiring legacy Task history', async () => {
     const mruOnlyProject = {
       ...project,
       id: 'file:///workspace/mru-only',
@@ -238,7 +238,7 @@ describe('AgenticTaskRegistryService', () => {
       rememberProjectAgent: (projectId: string, agentId: string) => Promise<AgenticProjectRecord | undefined>;
     };
 
-    await expect(registry.listProjects()).resolves.toEqual([taskProject]);
+    await expect(registry.listProjects()).resolves.toEqual([mruOnlyProject, taskProject]);
     await expect(projectManagementRegistry.rememberProjectAgent(taskProject.id, 'agent-b')).resolves.toMatchObject({
       lastAgentId: 'agent-b',
     });
@@ -433,6 +433,15 @@ describe('AgenticTaskRegistryService', () => {
     expect(registry.consumePendingActivation()).toEqual({ sessionId: 'acp:a' });
     expect(registry.consumePendingActivation()).toBeUndefined();
     expect(registry.consumePendingLaunch()).toEqual({ projectId: 'project-b', agentId: 'agent-b' });
+    expect(registry.consumePendingLaunch()).toBeUndefined();
+  });
+
+  it('clears a discarded pending Task launch without consuming it', () => {
+    registry.preparePendingLaunch({ projectId: 'project-b', agentId: 'agent-b' });
+
+    registry.clearPendingLaunch();
+
+    expect(window.sessionStorage.getItem('agentic.pending-task-launch.v2')).toBeNull();
     expect(registry.consumePendingLaunch()).toBeUndefined();
   });
 

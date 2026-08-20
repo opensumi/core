@@ -153,6 +153,7 @@ The fixture can be selected either with `--fixture=<name>` or `OPENSUMI_ACP_BDD_
 | `model-not-found` | Invalid selected-model mapping with explicit model-switch guidance. |
 | `create-failure` | Create-session failure UI and service recovery. |
 | `load-failure` | History/session reload failure and `loadSessionOrNew` recovery. |
+| `list-failure` | Agent Session Browser refresh failure and Agent-level snapshot discard. |
 | `task-session-missing` | Agentic Task creation followed by process restart and a deterministic missing Session on `session/load`. |
 | `auth-required` | Auth-required status/error recovery without relying on live credentials. |
 | `config-failure` | Footer config error and retry behavior. |
