@@ -37,8 +37,7 @@ jest.mock('@opensumi/ide-core-browser', () => ({
   PreferenceService: Symbol('PreferenceService'),
   QuickPickService: Symbol('QuickPickService'),
   getIcon: (name: string) => `icon-${name}`,
-  localize: (_key: string, defaultValue?: string, ...args: string[]) =>
-    (defaultValue || _key).replace(/\{(\d+)\}/g, (_, index) => args[Number(index)] || ''),
+  localize: (_key: string, defaultValue?: string) => defaultValue || _key,
   useInjectable: jest.fn(),
   useUpdateOnEvent: jest.fn(),
 }));
@@ -268,6 +267,7 @@ import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/setting
 
 import { AcpChatViewHeader } from '../../src/browser/acp/components/AcpChatViewHeader';
 import { AI_CHAT_NEW_CHAT, AI_CHAT_NEW_TASK } from '../../src/browser/chat/acp-new-draft.commands';
+import { AgenticChatPanelHeader } from '../../src/browser/chat/AgenticChatPanelHeader';
 import { DefaultChatViewHeader } from '../../src/browser/chat/chat.view';
 import { AIChatViewACPContent, DefaultChatViewHeaderACP } from '../../src/browser/chat/chat.view.acp';
 
@@ -452,6 +452,7 @@ function createMockServices({
     getInputDraft: jest.fn(() => undefined),
     getActiveAgenticTaskTarget: jest.fn(() => undefined),
     getActiveAgenticTaskAgentId: jest.fn(() => undefined),
+    isActiveAgenticTaskDraft: jest.fn(() => false),
     ensureSessionModel: jest.fn(async () => {
       const ensuredSession = ensureSessionModel
         ? await ensureSessionModel()
@@ -1489,6 +1490,7 @@ describe('ACP chat view headers', () => {
     services.agenticTaskRegistry.getProject.mockResolvedValue(currentProject);
     services.aiChatService.getActiveAgenticTaskTarget.mockReturnValue({ agentId: 'agent-b', cwd: '/work/current' });
     services.aiChatService.getActiveAgenticTaskAgentId.mockReturnValue('agent-b');
+    services.aiChatService.isActiveAgenticTaskDraft.mockReturnValue(true);
     installInjectableMocks(services);
 
     await renderHeader(React.createElement(AIChatViewACPContent));
@@ -1498,6 +1500,9 @@ describe('ACP chat view headers', () => {
     });
     expect(container.querySelector('[data-testid="agentic-task-draft-context"]')?.textContent).toContain('Agent B');
     expect(container.querySelector('[data-testid="agentic-task-draft-context"]')?.textContent).toContain('current');
+    expect(container.querySelector('[data-testid="agentic-task-draft-context"]')?.textContent).not.toContain(
+      'Send your first message',
+    );
     await act(async () => {
       (container.querySelector('[data-testid="agentic-task-agent-menu-button"]') as HTMLButtonElement).click();
     });
@@ -1505,6 +1510,50 @@ describe('ACP chat view headers', () => {
       '[data-testid="agentic-task-agent-option-agent-b"]',
     ) as HTMLButtonElement;
     expect(agentBButton.getAttribute('aria-current')).toBe('true');
+  });
+
+  it('keeps draft controls visible after an unaccepted Agent Session model is prepared', async () => {
+    const services = createMockServices({
+      agentConfigs: {
+        'agent-b': { command: 'agent-b', description: 'Agent B' },
+      },
+      panelLayout: 'agentic',
+      session: createMockSession({ messages: [], title: 'New Session' }),
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    services.aiChatService.isActiveAgenticTaskDraft.mockReturnValue(true);
+    services.aiChatService.getActiveAgenticTaskTarget.mockReturnValue({ agentId: 'agent-b', cwd: '/work/current' });
+    services.aiChatService.getActiveAgenticTaskAgentId.mockReturnValue('agent-b');
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    await act(async () => {
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-chat-panel-header-title"]')?.textContent).toBe('New Session');
+    expect(container.querySelector('[data-testid="agentic-task-draft-context"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-draft-prompt"]')?.textContent).toBe(
+      'What would you like the Agent to do?',
+    );
+    expect(container.querySelector('[data-testid="agentic-task-draft-close"]')).not.toBeNull();
+  });
+
+  it('refreshes the panel title when the active Session model title changes in place', async () => {
+    const session = createMockSession({ title: 'BDD Turn 1' });
+    const services = createMockServices({ panelLayout: 'agentic', session });
+    installInjectableMocks(services);
+
+    await renderHeader(
+      React.createElement(AgenticChatPanelHeader, { preferSessionTitle: true, sessionModel: session as any }),
+    );
+    expect(container.querySelector('[data-testid="agentic-chat-panel-header-title"]')?.textContent).toBe('BDD Turn 1');
+
+    session.title = 'BDD Turn 2';
+    await renderHeader(
+      React.createElement(AgenticChatPanelHeader, { preferSessionTitle: true, sessionModel: session as any }),
+    );
+    expect(container.querySelector('[data-testid="agentic-chat-panel-header-title"]')?.textContent).toBe('BDD Turn 2');
   });
 
   it('maximizes the default chat header in agentic layout', async () => {

@@ -697,7 +697,7 @@ export class AcpChatInternalService extends ChatInternalService {
         if (generation !== this.draftBoundSessionGeneration || this.pendingAgenticTarget !== target) {
           return undefined;
         }
-        if (!capabilities.close) {
+        if (!capabilities.close || !capabilities.delete) {
           this.setSkillCatalogState('unavailable');
           return undefined;
         }
