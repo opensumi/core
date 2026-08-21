@@ -88,16 +88,16 @@ export async function renderApp(opts: IClientAppOpts) {
       executeCommand: (commandId: string, ...args: any[]) =>
         app.injector.get<CommandService>(CommandService).executeCommand(commandId, ...args),
       getAcpInputDraft: () => app.injector.get<any>(IChatInternalService).getInputDraft?.(),
-      disposeAcpSessions: async (additionalSessionIds: string[] = []) => {
+      disposeAcpSessions: async (additionalSessionIds: string[] = [], force = false) => {
         const aiChatService = app.injector.get<any>(IChatInternalService);
         const sessions = [...aiChatService.getSessions()];
-        await Promise.allSettled(sessions.map((session) => aiChatService.clearSessionModel(session.sessionId, true)));
+        await Promise.allSettled(sessions.map((session) => aiChatService.clearSessionModel(session.sessionId, force)));
         const currentSessionIds = new Set(sessions.map((session) => session.sessionId.replace(/^acp:/, '')));
         const aiBackService = app.injector.get<IAIBackService>(AIBackSerivcePath);
         await Promise.allSettled(
           additionalSessionIds
             .filter((sessionId) => sessionId && !currentSessionIds.has(sessionId.replace(/^acp:/, '')))
-            .map((sessionId) => aiBackService.disposeSession?.(sessionId.replace(/^acp:/, ''), true)),
+            .map((sessionId) => aiBackService.disposeSession?.(sessionId.replace(/^acp:/, ''), force)),
         );
       },
     };

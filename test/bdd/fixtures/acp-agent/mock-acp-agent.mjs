@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import fs from 'node:fs';
+import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
 
 import { AgentSideConnection, RequestError, ndJsonStream } from '@agentclientprotocol/sdk';
@@ -265,6 +267,48 @@ function createAgent(conn) {
   const pendingPrompts = new Map();
   let nextSessionNumber = 1;
   let historySeedCwd;
+
+  const usesSharedSessionStore = options.fixture === 'history' || options.fixture === 'load-failure';
+  const sessionStorePath = (cwd) =>
+    path.join(
+      cwd,
+      '.sumi',
+      `acp-bdd-sessions-${options.sessionPrefix.replace(/[^a-z0-9_-]+/gi, '-')}.json`,
+    );
+  const readSessionStore = (cwd) => {
+    if (!usesSharedSessionStore || !cwd) {
+      return [];
+    }
+    try {
+      const parsed = JSON.parse(fs.readFileSync(sessionStorePath(cwd), 'utf8'));
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+  const loadSessionStore = (cwd) => {
+    if (!usesSharedSessionStore || !cwd) {
+      return;
+    }
+    for (const session of readSessionStore(cwd)) {
+      if (session?.sessionId) {
+        sessions.set(session.sessionId, session);
+      }
+    }
+  };
+  const persistSessionStore = (cwd) => {
+    if (!usesSharedSessionStore || !cwd) {
+      return;
+    }
+    const merged = new Map(readSessionStore(cwd).map((session) => [session.sessionId, session]));
+    for (const session of sessions.values()) {
+      if (session.cwd === cwd) {
+        merged.set(session.sessionId, session);
+      }
+    }
+    fs.mkdirSync(path.dirname(sessionStorePath(cwd)), { recursive: true });
+    fs.writeFileSync(sessionStorePath(cwd), `${JSON.stringify([...merged.values()], null, 2)}\n`, 'utf8');
+  };
 
   if (options.fixture === 'history' || options.fixture === 'load-failure') {
     const seeds = [
@@ -637,6 +681,7 @@ test/test.js
           sessionCapabilities: {
             list: {},
             loadSession: {},
+            close: {},
           },
           mcpCapabilities: {
             http: true,
@@ -655,12 +700,14 @@ test/test.js
         throw RequestError.internalError({ fixture: options.fixture }, 'BDD create-session failure');
       }
 
+      loadSessionStore(params.cwd);
       // The test harness may create several ACP threads for one workspace.
       // Each thread starts a fresh mock process, so the local counter alone
       // would otherwise return the same id from every process.
       const sessionId = `${options.sessionPrefix}-${process.pid}-${nextSessionNumber++}`;
       const session = createSessionRecord(sessionId, params.cwd);
       sessions.set(sessionId, session);
+      persistSessionStore(params.cwd);
       await emitInitialSessionUpdates(session);
       scheduleAvailableCommandsUpdate(session);
       return responseForSession(session);
@@ -671,6 +718,7 @@ test/test.js
         throw RequestError.resourceNotFound(params.sessionId);
       }
 
+      loadSessionStore(params.cwd);
       const session = getOrCreateSession(params.sessionId, params.cwd);
       // A real ACP Agent reloads persisted history after the browser reconnects.
       // Dynamic fixture sessions live only in a mock process, so give an unknown
@@ -684,6 +732,7 @@ test/test.js
         session.promptCount = 1;
       }
       session.updatedAt = nowIso();
+      persistSessionStore(session.cwd);
       await emitInitialSessionUpdates(session);
       await emitHistoryReplay(session);
       scheduleAvailableCommandsUpdate(session);
@@ -697,6 +746,7 @@ test/test.js
           'BDD list-session failure',
         );
       }
+      loadSessionStore(params.cwd);
       if ((options.fixture === 'history' || options.fixture === 'load-failure') && params.cwd && !historySeedCwd) {
         historySeedCwd = params.cwd;
         for (const session of sessions.values()) {
@@ -704,6 +754,7 @@ test/test.js
             session.cwd = historySeedCwd;
           }
         }
+        persistSessionStore(params.cwd);
       }
       const allSessions = [...sessions.values()]
         .filter((session) => !params.cwd || session.cwd === params.cwd)
@@ -777,6 +828,7 @@ test/test.js
       session.promptCount += 1;
       session.title = `BDD Turn ${session.promptCount}`;
       session.updatedAt = nowIso();
+      persistSessionStore(session.cwd);
       const promptText = extractPromptText(params.prompt);
 
       await emit(params.sessionId, {

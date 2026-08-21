@@ -327,9 +327,10 @@ full Profile 期望覆盖以下 IDE capability groups：
 | `acp-chat-agentic-project-management-and-disclosure.scenario.md` | `runtime-ui` | `interactive` | Project 标签、搜索、折叠、重命名、添加/移除和不可用过滤。 |
 | `acp-chat-agentic-task-launch-and-activation.scenario.md` | `runtime-ui` | `interactive` | Task 创建、Agent recall、当前 Project 激活、失败与竞态安全。 |
 | `acp-chat-agentic-cross-project-session-activation.scenario.md` | `runtime-ui` | `interactive` | 跨 Project 会话原地激活，不切换工作区或干扰脏编辑器。 |
-| `acp-chat-agentic-task-archive-status-and-restore.scenario.md` | `runtime-ui` | `interactive` | Task 状态/注意力、归档、刷新恢复和 Classic 边界。 |
+| `acp-chat-agentic-session-archive-and-restore.scenario.md` | `runtime-ui` | `interactive` | Agent 会话本地归档/取消归档、刷新持久化、Agent 所有权和 Classic 边界。 |
 | `acp-chat-agentic-session-isolation.scenario.md` | `runtime-ui` | `interactive` | 多会话并发状态和 stream 更新隔离。 |
 | `acp-chat-agentic-rich-history-restore.scenario.md` | `runtime-ui` | `interactive` | 复杂响应在切换/刷新后不丢不重。 |
+| `acp-chat-agentic-long-history-switching.scenario.md` | `runtime-ui` | `interactive` | 两个千条消息会话原子切换、DOM 有界、内容隔离和阅读位置恢复。 |
 | `acp-chat-agentic-context-attachments.scenario.md` | `runtime-ui` | `interactive` | 文件、文件夹、代码、规则上下文 chip 和附件清理。 |
 | `acp-chat-agentic-command-surface.scenario.md` | `runtime-ui` | `interactive` | Slash command 发现、选择、取消、发送和 metadata parity。 |
 | `acp-chat-agentic-layout-interop.scenario.md` | `runtime-ui` | `interactive` | Agentic Chat 与 Explorer/editor 的常规互操作。 |
@@ -350,6 +351,8 @@ full Profile 期望覆盖以下 IDE capability groups：
 | `error-handling.scenario.md` | `mcp-contract` | `full` | Capability boundaries、invalid inputs 和 redacted structured errors。 |
 | `webmcp-ide-capability-groups.scenario.md` | `mcp-contract` | `full` | Workspace/Search/Diagnostics/File/Terminal/Editor groups。 |
 | `acp-agent-session-lifecycle.scenario.md` | `node-contract` | `default` | Node session lifecycle、stream、cancel、dispose 和 pool cleanup。 |
+| `acp-standby-capacity-and-session-launch.scenario.md` | `node-contract` | `default` | Standby 容量上限、最新目标、前台启动优先、取消和首条 Prompt 提交边界。 |
+| `playwright-workspace-isolation.scenario.md` | `node-contract` | `default` | Playwright 临时工作区/偏好隔离、按所有权清理和旧目录精确清理。 |
 | `acp-agent-protocol-client.scenario.md` | `node-contract` | `default` | ACP protocol handshake、状态机、entry conversion 和 isolation。 |
 | `acp-thread-pool-lru.scenario.md` | `node-contract` | `default` | Thread pool LRU recycling、evicted reload、race handling。 |
 | `acp-session-advanced-operations.scenario.md` | `node-contract` | `default` | Config、fork、resume、close、model、modes 合约。 |

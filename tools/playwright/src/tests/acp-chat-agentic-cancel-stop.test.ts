@@ -102,11 +102,9 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
     const activeState = await getSessionState();
     const sessionId = activeState.session?.sessionId;
     expect(sessionId).toBeTruthy();
-    const taskRow = page.getByTestId(`agentic-task-row-${sessionId}`);
-    await expect(taskRow).toBeVisible({ timeout: 30_000 });
-    await expect(taskRow.locator('[data-agentic-task-meta-kind="running"]')).toBeVisible();
-    await expect(taskRow.locator('[data-agentic-task-meta-kind="running"] .codicon-pulse')).toBeVisible();
-    await expect(taskRow.locator('.codicon-modifier-spin')).toHaveCount(0);
+    const sessionRow = page.getByTestId(`agentic-session-row-${sessionId}`);
+    await expect(sessionRow).toBeVisible({ timeout: 30_000 });
+    await expect(sessionRow).toHaveAttribute('aria-current', 'true');
 
     const activeProof = await evidence.saveJson(
       '01-active-stream',
@@ -115,20 +113,14 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
         assistantRows: await chatSlot().locator('.rce-ai-msg').count(),
         hasActiveSentinel: await chatSlot().getByText(ACTIVE_STREAM_SENTINEL).isVisible(),
         stopVisible: await chatButton('Stop').isVisible(),
-        taskRunningIcon: await taskRow.locator('.codicon-pulse').isVisible(),
-        taskSpinnerVisible: await taskRow
-          .locator('.codicon-modifier-spin')
-          .isVisible()
-          .catch(() => false),
+        sessionRowVisible: await sessionRow.isVisible(),
       },
-      'long-stream request shows active content, a stop affordance, and a static running indicator',
+      'long-stream request shows active content, a stop affordance, and the active Agent Session row',
     );
 
     await chatButton('Stop').click();
     await expect(chatButton('Send')).toBeVisible({ timeout: 30_000 });
     await expect(chatButton('Stop')).toBeHidden();
-    await expect(taskRow.locator('[data-agentic-task-meta-kind="running"]')).toHaveCount(0);
-    await expect(taskRow.locator('.codicon-modifier-spin')).toHaveCount(0);
 
     const input = chatInput();
     await input.click();
@@ -143,17 +135,14 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
     expect(followUpState.session?.sessionId).toBe(sessionId);
     expect(followUpState.session?.requestCount).toBe(2);
     expect(followUpState.session?.threadStatus).toBe('awaiting_prompt');
-    await expect(taskRow.locator('[data-agentic-task-meta-kind="running"]')).toHaveCount(0);
-    await expect(taskRow.locator('.codicon-modifier-spin')).toHaveCount(0);
+    await expect(sessionRow).toHaveAttribute('aria-current', 'true');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await waitForWorkbenchReady(page);
     await showAcpChatView();
 
-    const restoredTaskRow = page.getByTestId(`agentic-task-row-${sessionId}`);
-    await expect(restoredTaskRow).toBeVisible({ timeout: 30_000 });
-    await expect(restoredTaskRow.locator('[data-agentic-task-meta-kind="running"]')).toHaveCount(0);
-    await expect(restoredTaskRow.locator('.codicon-modifier-spin')).toHaveCount(0);
+    const restoredSessionRow = page.getByTestId(`agentic-session-row-${sessionId}`);
+    await expect(restoredSessionRow).toBeVisible({ timeout: 30_000 });
 
     const stoppedProof = await evidence.saveJson(
       '02-stopped-input-usable',
@@ -163,16 +152,9 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
           .isVisible()
           .catch(() => false),
         followUpSession: followUpState.session,
-        taskRunningAfterReload: await restoredTaskRow
-          .locator('[data-agentic-task-meta-kind="running"]')
-          .isVisible()
-          .catch(() => false),
-        taskSpinnerAfterReload: await restoredTaskRow
-          .locator('.codicon-modifier-spin')
-          .isVisible()
-          .catch(() => false),
+        restoredSessionRowVisible: await restoredSessionRow.isVisible(),
       },
-      'stopping restores the session, permits a follow-up turn, and leaves no running spinner after reload',
+      'stopping restores the session, permits a follow-up turn, and preserves the active Session row after reload',
     );
 
     evidence.recordCriticalPoint({
@@ -189,7 +171,7 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
     });
     evidence.recordCriticalPoint({
       id: 'CP3',
-      requirement: 'Stopping updates the Task Row, permits a follow-up turn, and survives reload without a spinner.',
+      requirement: 'Stopping permits a follow-up turn and preserves the active Agent Session across reload.',
       status: 'pass',
       evidence: [stoppedProof].filter(Boolean) as string[],
     });

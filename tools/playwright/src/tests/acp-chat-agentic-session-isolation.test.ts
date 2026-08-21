@@ -86,7 +86,7 @@ async function getSessionState() {
 }
 
 async function selectTask(sessionId: string) {
-  const row = page.getByTestId(`agentic-task-row-${sessionId}`);
+  const row = page.getByTestId(`agentic-session-row-${sessionId}`);
   await expect(row).toBeVisible({ timeout: 30_000 });
   await row.click();
   await expect
@@ -107,11 +107,11 @@ async function selectTask(sessionId: string) {
 async function startTaskInCurrentProject() {
   const agentLabel = await launchTaskInCurrentProject(page);
   expect(agentLabel).toBeTruthy();
-  await expect.poll(async () => (await getSessionState()).active, { timeout: 30_000 }).toBe(false);
+  await expect(chatInput()).toBeVisible();
 }
 
 async function refreshTaskList() {
-  const search = page.getByPlaceholder('Search tasks');
+  const search = page.getByPlaceholder('Search sessions');
   await search.fill('BDD history isolation');
   await search.fill('');
 }
@@ -180,7 +180,7 @@ async function createTaskWithBaseline(prompt: string): Promise<AcpSessionSummary
   const session = (await getSessionState()).session;
   expect(session).not.toBeNull();
   await refreshTaskList();
-  await expect(page.getByTestId(`agentic-task-row-${session!.sessionId}`)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId(`agentic-session-row-${session!.sessionId}`)).toBeVisible({ timeout: 30_000 });
   return session!;
 }
 
@@ -192,8 +192,10 @@ async function waitForSessionShell(session: AcpSessionSummary, requestCount: num
     })
     .toEqual({ requestCount, sessionId: session.sessionId });
 
+  const currentSession = (await getSessionState()).session;
+  expect(currentSession).not.toBeNull();
   const headerTitle = page.getByTestId('agentic-chat-panel-header-title');
-  await expect(headerTitle).toHaveText(session.title, { timeout: 30_000 });
+  await expect(headerTitle).toHaveText(currentSession!.title, { timeout: 30_000 });
   const messageList = page.getByTestId('agentic-virtual-message-list');
   await expect(messageList).toBeVisible({ timeout: 30_000 });
   const messageRows = page.getByTestId('agentic-message-row');

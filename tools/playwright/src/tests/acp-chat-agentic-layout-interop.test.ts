@@ -24,10 +24,18 @@ async function openWorkspaceFile(path: string) {
   explorer.initFileTreeView(runtime.workspace.workspace.displayName);
   const waitForNode = async (nodePath: string) => {
     let node: Awaited<ReturnType<typeof explorer.getFileStatTreeNodeByPath>>;
+    let attempts = 0;
+    let refreshed = false;
     await expect
       .poll(
         async () => {
+          attempts += 1;
           node = await explorer.getFileStatTreeNodeByPath(nodePath);
+          if (!node && !refreshed && attempts >= 3) {
+            refreshed = true;
+            const refresh = await explorer.fileTreeView.getTitleActionByName('Refresh');
+            await refresh?.click();
+          }
           return Boolean(node);
         },
         { message: `Explorer 中缺少 ${nodePath}`, timeout: 30_000 },
@@ -38,7 +46,8 @@ async function openWorkspaceFile(path: string) {
   if (path.includes('/')) {
     const parentPath = path.slice(0, path.lastIndexOf('/'));
     const parent = await waitForNode(parentPath);
-    await parent.expand();
+    await parent.open();
+    await page.keyboard.press('ArrowRight');
   }
   const node = await waitForNode(path);
   await node.open();

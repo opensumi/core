@@ -1,4 +1,4 @@
-// Source: test/bdd/acp-chat-agentic-task-archive-status-and-restore.scenario.md
+// Source: test/bdd/acp-chat-agentic-session-archive-and-restore.scenario.md
 
 import { type Frame, expect } from '@playwright/test';
 
@@ -42,7 +42,7 @@ interface AcpSessionSummary {
   hasPendingPermission?: boolean;
 }
 
-interface TaskRowProof {
+interface SessionRowProof {
   id: string;
   title: string;
   selected: boolean;
@@ -93,7 +93,7 @@ async function getSessionState() {
 }
 
 async function expectAgenticFourRegions() {
-  await expect(page.getByTestId('agentic-task-list')).toBeVisible();
+  await expect(page.getByTestId('agentic-session-list')).toBeVisible();
   await expect(page.getByTestId('agentic-chat-panel-header')).toBeVisible();
   const visibleWorkbench = page.locator('#main-horizontal-ai-agentic > #main-horizontal-agentic:visible');
   await expect(visibleWorkbench).toHaveCount(1);
@@ -102,7 +102,7 @@ async function expectAgenticFourRegions() {
   await expect(page.locator('[data-viewlet-id="explorer"]')).toBeVisible();
 }
 
-async function readTaskRows(): Promise<TaskRowProof[]> {
+async function readSessionRows(): Promise<SessionRowProof[]> {
   return page.evaluate(() => {
     const isVisible = (element: HTMLElement) => {
       const rect = element.getBoundingClientRect();
@@ -110,10 +110,10 @@ async function readTaskRows(): Promise<TaskRowProof[]> {
       return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
     };
 
-    return Array.from(document.querySelectorAll<HTMLElement>('[data-testid^="agentic-task-row-"]'))
+    return Array.from(document.querySelectorAll<HTMLElement>('[data-testid^="agentic-session-row-"]'))
       .filter(isVisible)
       .map((element) => {
-        const id = element.getAttribute('data-testid')!.replace('agentic-task-row-', '');
+        const id = element.getAttribute('data-testid')!.replace('agentic-session-row-', '');
         return {
           id,
           title: element.getAttribute('title') || '',
@@ -124,7 +124,7 @@ async function readTaskRows(): Promise<TaskRowProof[]> {
 }
 
 async function selectTask(sessionId: string) {
-  const row = page.getByTestId(`agentic-task-row-${sessionId}`);
+  const row = page.getByTestId(`agentic-session-row-${sessionId}`);
   await expect(row).toBeVisible({ timeout: 30_000 });
   await row.click();
   await expect
@@ -173,7 +173,7 @@ function sendButton() {
 async function startTaskInCurrentProject() {
   const agentLabel = await launchTaskInCurrentProject(page);
   expect(agentLabel).toBeTruthy();
-  await expect.poll(async () => (await getSessionState()).active, { timeout: 30_000 }).toBe(false);
+  await expect(chatInput()).toBeVisible();
 }
 
 async function sendTaskPrompt(title: string): Promise<AcpSessionSummary> {
@@ -183,29 +183,8 @@ async function sendTaskPrompt(title: string): Promise<AcpSessionSummary> {
 
   await expect.poll(async () => (await getSessionState()).session, { timeout: 30_000 }).not.toBeNull();
   const session = (await getSessionState()).session!;
-  await expect(page.getByTestId(`agentic-task-row-${session.sessionId}`)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId(`agentic-session-row-${session.sessionId}`)).toBeVisible({ timeout: 30_000 });
   return session;
-}
-
-async function refreshTaskList() {
-  const search = page.getByPlaceholder('Search tasks');
-  await search.fill('Task List');
-  await search.fill('');
-}
-
-async function readPersistedTaskRegistryEvidence() {
-  return page.evaluate(() => {
-    const globalRecentData = window.localStorage.getItem('global:/recent');
-    if (!globalRecentData) {
-      return undefined;
-    }
-    const globalRecent = JSON.parse(globalRecentData) as Record<string, unknown>;
-    const cachedTaskRegistry = globalRecent['agentic.task-registry.v2'];
-    return {
-      globalRecent,
-      taskRegistry: typeof cachedTaskRegistry === 'string' ? JSON.parse(cachedTaskRegistry) : cachedTaskRegistry,
-    };
-  });
 }
 
 async function showClassicAcpChatView() {
@@ -237,11 +216,12 @@ test.describe('ACP Chat Agentic History', () => {
     await runtime?.dispose();
   });
 
-  test('Task List keeps the Agentic workbench visible, filters ordered Tasks, and restores selection safely', async ({
+  test('Session Browser keeps the Agentic workbench visible, filters ordered Sessions, and restores selection safely', async ({
     browser: _browser,
   }, testInfo) => {
-    const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-task-archive-status-and-restore', {
-      sourceScenario: 'test/bdd/acp-chat-agentic-task-archive-status-and-restore.scenario.md',
+    void _browser;
+    const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-session-archive-and-restore', {
+      sourceScenario: 'test/bdd/acp-chat-agentic-session-archive-and-restore.scenario.md',
       profile: 'interactive',
       executionMode: 'deterministic-fixture',
       hardeningVerdict: 'CONVERT',
@@ -251,128 +231,119 @@ test.describe('ACP Chat Agentic History', () => {
     await expect(page.locator('[data-testid="acp-chat-history-inline"]')).toHaveCount(0);
 
     await startTaskInCurrentProject();
-    const olderTask = await sendTaskPrompt('Task List older immutable title');
+    const olderSession = await sendTaskPrompt('Session Browser older prompt');
     await startTaskInCurrentProject();
-    const newerTask = await sendTaskPrompt('Task List newer immutable title');
-    await refreshTaskList();
+    const newerSession = await sendTaskPrompt('Session Browser newer prompt');
 
-    expect(newerTask.sessionId).not.toBe(olderTask.sessionId);
-    const orderedRows = await readTaskRows();
-    const taskRows = orderedRows.filter((row) => [olderTask.sessionId, newerTask.sessionId].includes(row.id));
-    expect(taskRows.map((row) => row.id)).toEqual([newerTask.sessionId, olderTask.sessionId]);
+    expect(newerSession.sessionId).not.toBe(olderSession.sessionId);
+    const orderedRows = await readSessionRows();
+    const sessionRows = orderedRows.filter((row) => [olderSession.sessionId, newerSession.sessionId].includes(row.id));
+    expect(sessionRows.map((row) => row.id)).toEqual([newerSession.sessionId, olderSession.sessionId]);
 
     const listProof = await evidence.saveJson(
-      '01-task-list-four-regions-and-order',
-      { orderedRows, taskRows },
-      'Agentic Task List remains visible with the chat, editor, and Explorer while Task rows are newest-first',
+      '01-session-browser-four-regions-and-order',
+      { orderedRows, sessionRows },
+      'Agent Session Browser remains visible with the chat, editor, and Explorer while Session rows are newest-first',
     );
 
-    const search = page.getByPlaceholder('Search tasks');
-    await search.fill('newer immutable');
-    await expect(page.getByTestId(`agentic-task-row-${newerTask.sessionId}`)).toBeVisible();
-    await expect(page.getByTestId(`agentic-task-row-${olderTask.sessionId}`)).toHaveCount(0);
+    const search = page.getByPlaceholder('Search sessions');
+    await search.fill(newerSession.title);
+    await expect(page.getByTestId(`agentic-session-row-${newerSession.sessionId}`)).toBeVisible();
+    await search.fill('prompt text must not be Session metadata');
+    await expect(page.getByTestId(`agentic-session-row-${newerSession.sessionId}`)).toHaveCount(0);
+    await expect(page.getByTestId(`agentic-session-row-${olderSession.sessionId}`)).toHaveCount(0);
     await search.fill('');
 
-    await selectTaskWithoutNavigation(olderTask.sessionId);
-    const rowsAfterSelection = await readTaskRows();
-    expect(rowsAfterSelection.filter((row) => row.selected).map((row) => row.id)).toEqual([olderTask.sessionId]);
+    await selectTaskWithoutNavigation(olderSession.sessionId);
+    const rowsAfterSelection = await readSessionRows();
+    expect(rowsAfterSelection.filter((row) => row.selected).map((row) => row.id)).toEqual([olderSession.sessionId]);
 
-    await selectTask(newerTask.sessionId);
-    const newerTaskRow = page.getByTestId(`agentic-task-row-${newerTask.sessionId}`);
-    const newerTaskTitle = newerTaskRow.getByText(newerTask.title, { exact: true });
-    await expect(newerTaskRow).toContainText(newerTask.title);
-    await expect(newerTaskRow).not.toContainText(/ready/i);
-    await expect(page.getByTestId(`agentic-task-status-${newerTask.sessionId}`)).toHaveCount(0);
-    const archiveNewerTask = page.getByTestId(`agentic-task-archive-${newerTask.sessionId}`);
-    const titleBeforeHover = await newerTaskTitle.boundingBox();
-    expect(titleBeforeHover).not.toBeNull();
-    await newerTaskRow.hover();
-    await expect(archiveNewerTask).toHaveCSS('pointer-events', 'auto', { timeout: 30_000 });
-    const titleAfterHover = await newerTaskTitle.boundingBox();
-    expect(titleAfterHover?.x).toBeCloseTo(titleBeforeHover!.x, 3);
-    expect(titleAfterHover?.width).toBeCloseTo(titleBeforeHover!.width, 3);
-    await search.hover();
-    await search.focus();
-    await newerTaskRow.focus();
-    await expect(archiveNewerTask).toHaveCSS('pointer-events', 'auto');
-    const titleAfterKeyboardFocus = await newerTaskTitle.boundingBox();
-    expect(titleAfterKeyboardFocus?.x).toBeCloseTo(titleBeforeHover!.x, 3);
-    expect(titleAfterKeyboardFocus?.width).toBeCloseTo(titleBeforeHover!.width, 3);
-    await expect(archiveNewerTask).toHaveAttribute('aria-label', `Archive ${newerTask.title}`);
-    await archiveNewerTask.click();
-    await expect(page.getByTestId(`agentic-task-row-${newerTask.sessionId}`)).toHaveCount(0);
-    await page.getByRole('button', { name: 'Archived Tasks' }).click();
-    const archivedRow = page.getByTestId(`agentic-task-row-${newerTask.sessionId}`);
-    const archivedTaskTitle = archivedRow.getByText(newerTask.title, { exact: true });
-    await archivedRow.scrollIntoViewIfNeeded();
-    await expect(archivedRow).toContainText(newerTask.title);
-    await expect(page.getByTestId(`agentic-task-status-${newerTask.sessionId}`)).toHaveCount(0);
-    await search.hover();
-    await search.focus();
-    const archivedTitleBeforeFocus = await archivedTaskTitle.boundingBox();
-    expect(archivedTitleBeforeFocus).not.toBeNull();
-    await archivedRow.focus();
-    const archivedTitleAfterRowFocus = await archivedTaskTitle.boundingBox();
-    expect(archivedTitleAfterRowFocus?.x).toBeCloseTo(archivedTitleBeforeFocus!.x, 3);
-    expect(archivedTitleAfterRowFocus?.width).toBeCloseTo(archivedTitleBeforeFocus!.width, 3);
-    await page.keyboard.press('Tab');
-    const unarchive = page.getByTestId(`agentic-task-unarchive-${newerTask.sessionId}`);
-    await expect(unarchive).toBeVisible();
-    await expect(unarchive).toBeFocused();
-    const archivedTitleAfterActionFocus = await archivedTaskTitle.boundingBox();
-    expect(archivedTitleAfterActionFocus?.x).toBeCloseTo(archivedTitleBeforeFocus!.x, 3);
-    expect(archivedTitleAfterActionFocus?.width).toBeCloseTo(archivedTitleBeforeFocus!.width, 3);
-    await page.keyboard.press('Enter');
-    await expect(page.getByTestId(`agentic-task-row-${newerTask.sessionId}`)).toBeVisible();
+    await selectTask(newerSession.sessionId);
+    await expect(page.getByTestId(`agentic-session-row-${newerSession.sessionId}`)).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    await expect(page.locator('[data-testid^="agentic-task-row-"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid^="agentic-task-archive-"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid^="agentic-task-status-"]')).toHaveCount(0);
+
+    const archivedArea = page.getByTestId('agentic-archived-session-area');
+    await expect(archivedArea).toHaveAttribute('data-expanded', 'false');
+    const olderRow = page.getByTestId(`agentic-session-row-${olderSession.sessionId}`);
+    await olderRow.hover();
+    const archiveButton = page.getByTestId(`agentic-session-archive-${olderSession.sessionId}`);
+    await expect(archiveButton).toBeVisible();
+    await archiveButton.click();
+    await expect(olderRow).toHaveCount(0);
+
+    await archivedArea.getByRole('button', { name: 'Archived Sessions' }).click();
+    await expect(archivedArea).toHaveAttribute('data-expanded', 'true');
+    await expect(page.getByTestId(`agentic-session-row-${olderSession.sessionId}`)).toBeVisible();
+    await expect(page.getByTestId(`agentic-session-unarchive-${olderSession.sessionId}`)).toBeVisible();
+    await selectTaskWithoutNavigation(olderSession.sessionId);
+
+    await page.reload();
+    await waitForWorkbenchReady(page);
+    await expect(page.getByTestId('agentic-session-list')).toBeVisible();
+    await expect(page.getByTestId('agentic-chat-panel-header')).toBeVisible();
+    await expect(page.getByTestId('agentic-archived-session-area')).toHaveAttribute('data-expanded', 'false');
+    await expect(page.getByTestId(`agentic-session-row-${olderSession.sessionId}`)).toHaveCount(0);
+    await page.getByTestId('agentic-archived-session-area').getByRole('button', { name: 'Archived Sessions' }).click();
+    const restoredArchivedRow = page.getByTestId(`agentic-session-row-${olderSession.sessionId}`);
+    await expect(restoredArchivedRow).toBeVisible({ timeout: 30_000 });
+    await restoredArchivedRow.hover();
+    await page.getByTestId(`agentic-session-unarchive-${olderSession.sessionId}`).click();
+    await expect(page.getByTestId(`agentic-session-archive-${olderSession.sessionId}`)).toBeAttached();
+
+    const sessionsAfterArchiveRoundTrip = await listSessions();
+    expect(sessionsAfterArchiveRoundTrip.some((session) => session.sessionId === olderSession.sessionId)).toBe(true);
+    const archiveEvidence = await evidence.saveJson(
+      '02-session-archive-round-trip',
+      {
+        archivedSessionId: olderSession.sessionId,
+        agentStillListsSession: sessionsAfterArchiveRoundTrip.some(
+          (session) => session.sessionId === olderSession.sessionId,
+        ),
+      },
+      'Local Archive survives reload, remains selectable, and does not remove the Agent-owned Session',
+    );
 
     const stateAfterSelection = await getSessionState();
     const sessionsAfterSelection = await listSessions();
-    await expect
-      .poll(async () => (await readPersistedTaskRegistryEvidence())?.taskRegistry, { timeout: 30_000 })
-      .toBeTruthy();
-    const persistedEvidence = await readPersistedTaskRegistryEvidence();
-    expect(typeof persistedEvidence?.taskRegistry).toBe('string');
-    const persistedTaskRegistry = JSON.parse(persistedEvidence!.taskRegistry as string);
-    expect(persistedTaskRegistry.tasks).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ sessionId: olderTask.sessionId }),
-        expect.objectContaining({ sessionId: newerTask.sessionId }),
-      ]),
-    );
-    expectMetadataOnly({ persistedEvidence, persistedTaskRegistry, sessionsAfterSelection, stateAfterSelection });
+    expectMetadataOnly({ sessionsAfterSelection, stateAfterSelection });
     const safeEvidence = await evidence.saveJson(
-      '02-task-list-metadata-and-storage-safety',
-      { persistedEvidence, persistedTaskRegistry, sessionsAfterSelection, stateAfterSelection },
-      'Task List selection and the actual GLOBAL_RECENT_DATA task registry exclude fixture prompt, assistant, thought, tool-result, and permission content sentinels',
+      '03-session-browser-metadata-safety',
+      { sessionsAfterSelection, stateAfterSelection },
+      'Session Browser selection and ACP list/state tools exclude fixture prompt, assistant, thought, tool-result, and permission content sentinels',
     );
 
     evidence.recordCriticalPoint({
       id: 'CP1',
-      requirement: 'Agentic keeps Task List, conversation, editor, and Explorer visible with newest-first Task rows.',
+      requirement: 'Agentic keeps Session Browser, conversation, editor, and Explorer visible with newest-first rows.',
       status: 'pass',
       evidence: [listProof].filter(Boolean) as string[],
     });
     evidence.recordCriticalPoint({
       id: 'CP2',
-      requirement: 'Task search filters immutable titles without showing nonmatching Task rows.',
+      requirement: 'Session search filters Agent-owned metadata without matching prompt content.',
       status: 'pass',
       evidence: [listProof].filter(Boolean) as string[],
     });
     evidence.recordCriticalPoint({
       id: 'CP3',
-      requirement: 'Same-project Task selection changes the active ACP session without a workspace reload.',
+      requirement: 'Same-project Session selection changes the active ACP session without a workspace reload.',
       status: 'pass',
       evidence: [listProof].filter(Boolean) as string[],
     });
     evidence.recordCriticalPoint({
       id: 'CP4',
-      requirement: 'A ready Task can be archived and restored from Archived Tasks.',
+      requirement: 'Archive and Unarchive move Agent-owned Sessions locally without closing or deleting them.',
       status: 'pass',
-      evidence: [safeEvidence].filter(Boolean) as string[],
+      evidence: [archiveEvidence].filter(Boolean) as string[],
     });
     evidence.recordCriticalPoint({
       id: 'CP5',
-      requirement: 'Task selection state, session metadata, and browser persisted evidence remain sentinel-free.',
+      requirement: 'Session selection state and metadata-only ACP tools remain sentinel-free.',
       status: 'pass',
       evidence: [safeEvidence].filter(Boolean) as string[],
     });
