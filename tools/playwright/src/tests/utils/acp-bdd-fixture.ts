@@ -471,7 +471,7 @@ export async function loadAcpBddFixtureWorkbench(
         try {
           try {
             await page.evaluate(async () => {
-              await (window as any).__OPENSUMI_E2E__?.disposeAcpSessions?.();
+              await (window as any).__OPENSUMI_E2E__?.disposeAcpSessions?.([], true);
             });
           } catch {
             // Best-effort: navigation below still terminates WebMCP and RPC.

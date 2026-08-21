@@ -13,7 +13,7 @@
 ## When
 
 1. Run `--fixture=create-failure` and record visible error, input state, and session list state.
-2. 重置 fixture，将面板切换到 Classic 布局，并从 ACP 历史记录选择 seeded session 执行 `--fixture=load-failure`。Agentic 布局使用 Task List，不再把未注册为 Agent Task 的 ACP 历史会话作为选择入口。
+2. Reset and run `--fixture=load-failure`; select the seeded Agent-owned Session from the Agent Session Browser and retry the same row after failure.
 3. Reset and run `--fixture=send-failure` after a user row has rendered.
 4. Reset and run `--fixture=service-failure`; verify the raw `Internal error: OpenCode service failure` text is replaced with retry/new-session guidance and bounded `service`/`errorName` details.
 5. Reset and run `--fixture=model-not-found`; verify the selected model id is visible with guidance to choose another model.
@@ -28,7 +28,7 @@
 - Each failure class shows a user-visible, bounded, non-stack-trace error.
 - Input and loading state recover after each failure.
 - Create/load failures do not persist empty duplicate sessions.
-- 历史加载失败子用例在提供 ACP 历史选择入口的 Classic 布局执行；失败后回到可输入草稿，并且不产生空的重复会话。
+- A historical load failure keeps the previous active transcript visible, marks only the requested Session row unavailable for the current page lifecycle, and retries the same raw Session id without creating an empty duplicate Session.
 - Send failures preserve the user row and allow retry.
 - Generic OpenCode service failures show retry and new-session guidance, include only bounded service/error-name diagnostics, and do not expose the raw JSON-RPC message.
 - Invalid-model failures identify the unavailable model and tell the user to choose another model.

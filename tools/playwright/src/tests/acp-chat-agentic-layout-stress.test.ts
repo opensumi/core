@@ -103,8 +103,8 @@ async function readLayoutBounds(): Promise<LayoutBoundsProof> {
     const chatSlot = document.querySelector('.AI-Chat-slot');
     const workbench = document.querySelector('#workbench-editor');
     const conversation = document.querySelector('.AI-Chat-slot [class*="body_container"]');
-    const taskList = document.querySelector('[data-testid="agentic-task-list"]');
-    const taskTitle = document.querySelector('[data-testid^="agentic-task-row-"] span');
+    const taskList = document.querySelector('[data-testid="agentic-session-list"]');
+    const taskTitle = document.querySelector('[data-testid^="agentic-session-row-"] span');
     const explorer = document.querySelector('[data-viewlet-id="explorer"]');
     const explorerFileRow = Array.from(
       explorer?.querySelectorAll<HTMLElement>('[class*="file_tree_node__"]') || [],
@@ -202,7 +202,7 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
     await sendPrompt(LONG_STREAM_PROMPT);
     await expect(chatSlot().getByText(LONG_CONTENT_SENTINEL)).toBeVisible({ timeout: 30_000 });
     await expect(chatButton('Stop')).toBeVisible();
-    await expect(page.locator('[data-testid^="agentic-task-row-"]').first()).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('[data-testid^="agentic-session-row-"]').first()).toBeVisible({ timeout: 30_000 });
     await waitForScrollableMessageList();
 
     const wideBounds = await readLayoutBounds();
@@ -230,7 +230,7 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
         })
         .toBe(workbenchExpected);
       await expect(chatSlot().getByText(LONG_CONTENT_SENTINEL)).toBeVisible();
-      await expect(page.locator('[data-testid^="agentic-task-row-"]').first()).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('[data-testid^="agentic-session-row-"]').first()).toBeVisible({ timeout: 5000 });
       await waitForScrollableMessageList();
 
       const bounds = await readLayoutBounds();
@@ -253,7 +253,7 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
     await page.waitForFunction(() => !document.querySelector('#workbench-editor'));
     await page.setViewportSize({ width: 1366, height: 768 });
     await page.waitForTimeout(100);
-    await expect(page.locator('[data-testid^="agentic-task-row-"]').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid^="agentic-session-row-"]').first()).toBeVisible({ timeout: 5000 });
 
     const hiddenPreferenceBounds = await readLayoutBounds();
     expectLayoutBounds(hiddenPreferenceBounds, false);

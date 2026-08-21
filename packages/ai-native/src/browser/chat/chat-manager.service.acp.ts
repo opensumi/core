@@ -254,6 +254,10 @@ export class AcpChatManagerService extends ChatManagerService {
   }
 
   private resolveAcpSessionTitle(item: ISessionModel): string {
+    const metadataTitle = this.agentSessionMetadataUpdates.get(item.sessionId)?.title;
+    if (metadataTitle) {
+      return this.createDisplayTitle(metadataTitle);
+    }
     const overrideTitle = this.getDisplayTitleOverride(item.sessionId);
     if (overrideTitle) {
       return overrideTitle;
@@ -814,6 +818,16 @@ export class AcpChatManagerService extends ChatManagerService {
     if (title === undefined && updatedAt === undefined) {
       return;
     }
+    const previous = this.agentSessionMetadataUpdates.get(sessionId);
+    this.agentSessionMetadataUpdates.set(sessionId, {
+      revision: ++this.agentSessionMetadataRevision,
+      ...(title !== undefined ? { title } : previous?.title !== undefined ? { title: previous.title } : {}),
+      ...(updatedAt !== undefined
+        ? { updatedAt }
+        : previous?.updatedAt !== undefined
+        ? { updatedAt: previous.updatedAt }
+        : {}),
+    });
     const index = this.agentSessionCatalog.findIndex((session) => session.sessionId === sessionId);
     if (index === -1) {
       return;
@@ -827,16 +841,6 @@ export class AcpChatManagerService extends ChatManagerService {
     this.agentSessionCatalog = this.agentSessionCatalog.map((session, sessionIndex) =>
       sessionIndex === index ? next : session,
     );
-    const previous = this.agentSessionMetadataUpdates.get(sessionId);
-    this.agentSessionMetadataUpdates.set(sessionId, {
-      revision: ++this.agentSessionMetadataRevision,
-      ...(title !== undefined ? { title } : previous?.title !== undefined ? { title: previous.title } : {}),
-      ...(updatedAt !== undefined
-        ? { updatedAt }
-        : previous?.updatedAt !== undefined
-        ? { updatedAt: previous.updatedAt }
-        : {}),
-    });
     this.onDidChangeAgentSessionCatalogEmitter.fire(this.getAgentSessionCatalog());
   }
 

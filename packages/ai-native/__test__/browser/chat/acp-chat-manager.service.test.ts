@@ -1975,6 +1975,24 @@ describe('AcpChatManagerService', () => {
     expect(service.getSession('acp:active')).toBe(loadedSession);
   });
 
+  it('uses an early Agent metadata title when the live model is created after the update', () => {
+    const service = createService() as any;
+
+    service.applySessionStateUpdate('new', { title: 'Agent-owned title' });
+    const [model] = service.fromAcpJSON([
+      {
+        sessionId: 'acp:new',
+        createdAt: 1,
+        title: 'Local prompt title',
+        history: { additional: {}, messages: [] },
+        requests: [],
+      },
+    ]);
+
+    expect(model.title).toBe('Agent-owned title');
+    expect(service.getAgentSessionCatalog()).toEqual([]);
+  });
+
   it('stores raw first user message as ACP display title when creating request', () => {
     const { service, storage } = createConstructedService();
     const sessionId = 'acp:s1';

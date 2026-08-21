@@ -37,11 +37,11 @@ function sendButton() {
     .last();
 }
 
-async function waitForTaskRow(sessionId: string) {
-  const search = page.getByPlaceholder('Search tasks');
+async function waitForSessionRow(sessionId: string) {
+  const search = page.getByPlaceholder('Search sessions');
   await search.fill('Long history switching');
   await search.fill('');
-  const row = page.getByTestId(`agentic-task-row-${sessionId}`);
+  const row = page.getByTestId(`agentic-session-row-${sessionId}`);
   await expect(row).toBeVisible({ timeout: 60_000 });
   return row;
 }
@@ -56,7 +56,6 @@ async function getSessionState() {
 
 async function launchTask(prompt: string): Promise<string> {
   await launchTaskInCurrentProject(page);
-  await expect.poll(async () => (await getSessionState()).active, { timeout: 30_000 }).toBe(false);
   await expect(chatInput()).toBeVisible();
   await chatInput().click();
   await page.keyboard.insertText(prompt);
@@ -66,7 +65,7 @@ async function launchTask(prompt: string): Promise<string> {
   await expect(chatSlot().getByText('BDD_ASSISTANT_PART_2 completed.').last()).toBeVisible({ timeout: 30_000 });
   const sessionId = (await getSessionState()).session?.sessionId;
   expect(sessionId).toBeTruthy();
-  await waitForTaskRow(sessionId!);
+  await waitForSessionRow(sessionId!);
   return sessionId!;
 }
 
@@ -80,7 +79,7 @@ async function showAgenticChat() {
 }
 
 async function selectTask(sessionId: string) {
-  const row = await waitForTaskRow(sessionId);
+  const row = await waitForSessionRow(sessionId);
   await row.click();
   await expect.poll(async () => (await getSessionState()).session?.sessionId, { timeout: 60_000 }).toBe(sessionId);
   await expect
@@ -138,11 +137,7 @@ test.describe('ACP Chat Agentic long-history switching', () => {
     const betaSessionId = await launchTask('Long history switching Beta');
 
     await page.evaluate(async () => {
-      const disposeAcpSessions = (window as any).__OPENSUMI_E2E__?.disposeAcpSessions;
-      if (typeof disposeAcpSessions !== 'function') {
-        throw new Error('OpenSumi E2E ACP session release hook is unavailable');
-      }
-      await disposeAcpSessions();
+      await (window as any).__OPENSUMI_E2E__.disposeAcpSessions();
     });
     await clearAcpBddTransientSessionState(page);
     await page.reload({ waitUntil: 'domcontentloaded' });

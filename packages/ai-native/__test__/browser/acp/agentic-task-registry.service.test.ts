@@ -331,6 +331,30 @@ describe('AgenticTaskRegistryService', () => {
     disposable.dispose();
   });
 
+  it('stores Agent Session archive markers separately from legacy Task records', async () => {
+    const archivedSession = {
+      sessionId: 'acp:session-a',
+      agentId: 'agent-a',
+      cwd: '/workspace/project-a',
+    };
+
+    await expect(registry.archiveAgentSession(archivedSession)).resolves.toBe(true);
+    await expect(registry.archiveAgentSession(archivedSession)).resolves.toBe(false);
+    await expect(registry.listArchivedAgentSessions()).resolves.toEqual([
+      expect.objectContaining({ ...archivedSession, archivedAt: expect.any(Number) }),
+    ]);
+
+    expect(storage.set).toHaveBeenCalledWith(
+      'agentic.archived-agent-sessions.v1',
+      expect.stringContaining('"sessionId":"acp:session-a"'),
+    );
+    expect(storage.set.mock.calls.at(-1)?.[1]).not.toContain('title');
+
+    await expect(registry.unarchiveAgentSession(archivedSession)).resolves.toBe(true);
+    await expect(registry.unarchiveAgentSession(archivedSession)).resolves.toBe(false);
+    await expect(registry.listArchivedAgentSessions()).resolves.toEqual([]);
+  });
+
   it.each(['ready', 'stopped', 'error'])('retains loaded %s tasks and permits archiving them', async (status) => {
     storage.get.mockReturnValue({
       version: 2,

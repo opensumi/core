@@ -25,10 +25,10 @@
 
 - The first prompt creates exactly one user row and one active assistant response row.
 - Stop/cancel is available only while the request is active.
-- A live `running` Task Row uses a static activity indicator; loading animation is reserved for Pending Task Selection.
+- Session-row loading animation is reserved for Pending Agent Session Selection and is not reused as a persisted task-status indicator.
 - Clicking stop/cancel does not remove the user row and does not leave the assistant row stuck in a spinner-only state.
 - The input becomes editable after cancellation.
-- The matching Agent Task Row leaves `running`, does not retain a spinner, and remains non-running after reload.
+- The matching Agent Session remains discoverable, does not retain a pending-selection spinner, and remains selectable after reload.
 - The session remains usable and the second prompt succeeds in the same active session.
 - No duplicate assistant rows, duplicate tool cards, or stale loading controls remain after retry.
 - State tools remain metadata-only; bounded session titles are allowed, but full canceled prompt/message bodies, partial assistant text, and raw cancellation payloads are not exposed.
@@ -41,7 +41,7 @@
 ## Deterministic Playwright Coverage
 
 - `tools/playwright/src/tests/acp-chat-agentic-cancel-stop.test.ts` runs `loadAcpBddFixtureWorkbench({ fixture: 'long-stream', profile: 'interactive' })`.
-- Covered: visible active long-stream sentinel, exactly one initial user row, scoped Stop affordance, static live-running Task Row presentation, Task Row status synchronization, editable input recovery, deterministic follow-up success in the same session, metadata-only session state, and reload without a stale spinner.
+- Covered: visible active long-stream sentinel, exactly one initial user row, scoped Stop affordance, editable input recovery, deterministic follow-up success in the same Session, metadata-only session state, Session discovery continuity, and reload without a stale pending-selection spinner.
 - Remaining outside this focused pass: duplicate tool-card assertions, because the `long-stream` fixture emits no tool calls.
 
 ## Pass / Fail Judgment

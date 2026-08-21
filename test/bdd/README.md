@@ -288,6 +288,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-deep-thinking-collapse.scenario.md` | `runtime-ui` | `interactive` | Deep Thinking default collapse, streaming expansion, explicit toggle state, and metadata-only state checks. |
 | `acp-chat-agentic-cancel-stop.scenario.md` | `runtime-ui` | `interactive` | Long-stream stop/cancel behavior, input recovery, and follow-up send. |
 | `acp-chat-agentic-rich-history-restore.scenario.md` | `runtime-ui` | `interactive` | Complex content, reasoning, plan, and tool-call history restore across switching and reload. |
+| `acp-chat-agentic-long-history-switching.scenario.md` | `runtime-ui` | `interactive` | Atomic switching between two 1,000-message Agent Sessions with bounded DOM, isolation, and reading-position restoration. |
 | `acp-chat-agentic-history-restore-after-session-release.scenario.md` | `runtime-ui` | `interactive` | Retained Task history restores before live attachment after Browser-owned ACP sessions are released. |
 | `acp-chat-agentic-permission-during-send.scenario.md` | `runtime-ui` | `full` | Permission dialog, badge, dismissal, and recovery during an active Agentic send. |
 | `acp-chat-agentic-session-isolation.scenario.md` | `runtime-ui` | `interactive` | Concurrent session status, stream updates, and history selection isolation. |
@@ -307,7 +308,7 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `acp-chat-agentic-project-management-and-disclosure.scenario.md` | `runtime-ui` | `interactive` | Project labels, search, disclosure state, rename, add/remove, and unavailable filtering. |
 | `acp-chat-agentic-task-launch-and-activation.scenario.md` | `runtime-ui` | `interactive` | Contextual Task launch, Agent recall, registration, activation, failure, and last-selection-wins safety. |
 | `acp-chat-agentic-cross-project-session-activation.scenario.md` | `runtime-ui` | `interactive` | Cross-Project sessions and drafts activate in place without navigating or disturbing dirty editors. |
-| `acp-chat-agentic-task-archive-status-and-restore.scenario.md` | `runtime-ui` | `interactive` | Task status/attention, archive eligibility, selection persistence, rich restore, and Classic boundaries. |
+| `acp-chat-agentic-session-archive-and-restore.scenario.md` | `runtime-ui` | `interactive` | Agent Session local Archive/Unarchive, reload persistence, Agent ownership, selection, metadata safety, and Classic boundaries. |
 | `acp-chat-agentic-layout-interop.scenario.md` | `runtime-ui` | `interactive` | Explorer/editor interop, resize, reload, and Agentic/Classic round trip. |
 | `available-commands.scenario.md` | `mcp-contract` | `interactive/full` | Command metadata through profile-granted `acp_chat`. |
 | `webmcp-capability-surface.scenario.md` | `mcp-contract` | `interactive/full` | Browser and MCP surfaces expose the same canonical tool names. |
@@ -321,6 +322,8 @@ Startup logs for the built-in `opensumi-ide` MCP server must not print the full 
 | `editor-pinned-tabs-contract.scenario.md` | `node-contract` | `default` | Pinned-tab restoration edges, protected close policy, movement failure atomicity, group locality, and VS Code Tab API synchronization. |
 | `acp-chat-interaction-contract.scenario.md` | `node-contract` | `interactive` | Queued-turn failure/race recovery, IME and editor keyboard semantics, paste lifetime safety, and tool disclosure accessibility. |
 | `acp-agent-session-lifecycle.scenario.md` | `node-contract` | `default` | Node-owned session streaming across browser detach/reattach, cancellation, disposal, and pool cleanup. |
+| `acp-standby-capacity-and-session-launch.scenario.md` | `node-contract` | `default` | Bounded latest-target standby reconciliation, foreground launch priority, cancellation, and first-Prompt commit boundary. |
+| `playwright-workspace-isolation.scenario.md` | `node-contract` | `default` | Playwright temporary workspace/preferences isolation, scoped disposal, and exact preview-first legacy cleanup. |
 | `ui-overlay-and-terminal-lifecycle-contract.scenario.md` | `node-contract` | `default` | React 18 Modal/Notification root compatibility and Terminal context rebinding lifecycle. |
 | `acp-session-advanced-operations.scenario.md` | `node-contract` | `default` | Config option, fork, resume, close, model selection, and available-mode operations. |
 | `acp-thread-pool-lru.scenario.md` | `node-contract` | `default` | Thread-pool LRU recycling, evicted-session reload, race handling, and failure diagnostics. |

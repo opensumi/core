@@ -1476,16 +1476,11 @@ export const AIChatViewACPContent = () => {
   const handleCloseChatView = React.useCallback(() => {
     const draft = chatInputRegistry.preserveActiveDraft() || aiChatService.getInputDraft();
     aiChatService.updateInputDraft(draft);
-    if (
-      isAgenticLayout &&
-      !aiChatService.sessionModel &&
-      !!aiChatService.getActiveAgenticTaskAgentId() &&
-      hasAcpChatSendPayload(draft || {})
-    ) {
+    if (isAgenticLayout && aiChatService.isActiveAgenticTaskDraft() && hasAcpChatSendPayload(draft || {})) {
       setDiscardDraftConfirmationVisible(true);
       return;
     }
-    if (isAgenticLayout && !aiChatService.sessionModel && !!aiChatService.getActiveAgenticTaskAgentId()) {
+    if (isAgenticLayout && aiChatService.isActiveAgenticTaskDraft()) {
       void aiChatService.discardAgenticTaskDraft();
     }
     panelLayoutService.hideAIChatView();
@@ -1811,8 +1806,7 @@ export const AIChatViewACPContent = () => {
   }, [aiChatService.sessionModel, setChatLoading]);
 
   const welcomePageRender = chatRenderRegistry.chatWelcomePageRender;
-  const isAgenticTaskDraft =
-    isAgenticLayout && !activeServiceSessionId && !!aiChatService.getActiveAgenticTaskAgentId();
+  const isAgenticTaskDraft = isAgenticLayout && aiChatService.isActiveAgenticTaskDraft();
   const visibleMessageCount = isAgenticLayout ? agenticConversation?.messages.length || 0 : messageListData.length;
   const showWelcomePage =
     !isAgenticTaskDraft &&
@@ -1820,7 +1814,6 @@ export const AIChatViewACPContent = () => {
     visibleMessageCount <= (isAgenticLayout ? 0 : 1) &&
     !!welcomePageRender;
   const showAgenticTaskEmptyState = (showWelcomePage || isAgenticTaskDraft) && isAgenticLayout;
-  const showAgenticTaskDraftHint = isAgenticTaskDraft;
   const showBlockingSessionLoading = sessionLoading && !isAgenticLayout;
   const welcomePage =
     showWelcomePage && welcomePageRender
@@ -1866,14 +1859,6 @@ export const AIChatViewACPContent = () => {
             sessionModel={aiChatService.sessionModel}
           />
           <div aria-busy={sessionLoading} className={styles.chat_container} ref={containerRef}>
-            {showAgenticTaskDraftHint && (
-              <div className={styles.agentic_task_draft_hint} data-testid='agentic-task-draft-hint'>
-                {localize(
-                  'aiNative.chat.agenticTask.draft.hint',
-                  'Send your first message to create this Agent session.',
-                )}
-              </div>
-            )}
             {showBlockingSessionLoading ? (
               <div
                 aria-live='polite'
@@ -1886,7 +1871,13 @@ export const AIChatViewACPContent = () => {
             ) : isAgenticTaskDraft || showWelcomePage ? (
               showAgenticTaskEmptyState ? (
                 <div className={styles.agentic_task_empty_layout}>
-                  <div className={styles.agentic_task_empty_content}>{welcomePage}</div>
+                  {isAgenticTaskDraft ? (
+                    <div className={styles.agentic_task_draft_prompt} data-testid='agentic-task-draft-prompt'>
+                      {localize('aiNative.chat.agenticTask.draft.prompt', 'What would you like the Agent to do?')}
+                    </div>
+                  ) : (
+                    <div className={styles.agentic_task_empty_content}>{welcomePage}</div>
+                  )}
                 </div>
               ) : (
                 welcomePage

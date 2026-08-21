@@ -22,11 +22,13 @@ This context describes OpenSumi's workspace-local Agentic Layout. Its desktop wo
 
 **Agent Session Authority**: The originating ACP Agent is authoritative for Session existence, Session metadata, and conversation content. OpenSumi discovers metadata through `session/list` and reconstructs content only from `session/load` updates and result. Local Durable Task metadata must not create, rename, restore, or otherwise substitute for an Agent Session. _Avoid_: Local transcript authority, Task-registry fallback, inferred history
 
-**Agent Session Discovery Refresh**: A serial traversal of every available ACP Agent across every available Known Workspace Target. If any target query fails for an Agent, all results from that Agent are discarded for that refresh. Failures are silent in the UI and produce only bounded diagnostics. Refresh occurs on Agentic Layout entry, after a newly created Session accepts its first prompt, and from the manual refresh action; it is not polled. _Avoid_: Background polling, partial Agent snapshot, stale fallback
+**Agent Session Discovery Refresh**: A serial traversal of every available ACP Agent across every available Known Workspace Target. If any target query fails for an Agent, all results from that Agent are discarded for that refresh. Failures are silent in the UI and produce only bounded diagnostics. Refresh occurs on Agentic Layout entry, after a newly created Session accepts its first prompt, and on relevant catalog lifecycle changes; it is not manually triggered or polled. _Avoid_: Background polling, partial Agent snapshot, stale fallback
 
 **Agentic Layout Isolation**: The boundary that Agentic Layout changes must not alter IDE Layout lifecycle, Workspace behavior, or shared layout interactions. Agent-specific composition and behavior live within Agentic Layout; a shared component may be reused only when it is a stable, presentation-only primitive with no IDE Layout coupling. _Avoid_: IDE Layout modification, shared behavior regression, coupled layout component
 
-**Legacy Durable Task Metadata**: Previously persisted Task, archived, unread, attention, status, pending activation, and remembered-active records. These records remain stored for compatibility but Agentic Layout no longer reads or writes them for Session discovery, selection, restoration, notification, or project-removal decisions. _Avoid_: Session source, migration input, fallback history
+**Legacy Durable Task Metadata**: Previously persisted Task, archived, unread, attention, status, pending activation, and remembered-active records. These records remain stored for compatibility but Agentic Layout no longer reads or writes them for Session discovery, selection, restoration, notification, or project-removal decisions. The separate Agent Session Archive Marker is not legacy Task metadata. _Avoid_: Session source, migration input, fallback history
+
+**Agent Session Archive Marker**: A local, user-profile-scoped presentation preference keyed by the Agent Session's `{agentId, cwd, sessionId}` route. It moves an Agent-returned Session between the active and archived sections of the Agent Session Browser without closing, deleting, renaming, or otherwise mutating the Agent-owned Session. An archive marker is displayed only while the matching Session remains present in the current Agent discovery snapshot. _Avoid_: Agent archive state, Session deletion, Durable Task record
 
 **Unavailable Agent Session**: A page-local condition observed when the originating Agent cannot complete `session/load` for a selected Session. The previous active Session remains visible, the failed row is marked unavailable for the current page lifecycle, and selecting the row again retries the same raw `sessionId`. _Avoid_: Deleted local Task, permanent failure metadata, draft fallback
 
@@ -38,7 +40,7 @@ This context describes OpenSumi's workspace-local Agentic Layout. Its desktop wo
 
 **Catalog Joined At**: The time a Known Workspace Target was added to the user's Workspace Catalog and part of its stable catalog order. _Avoid_: Directory creation time, last opened time
 
-**Session Row**: The compact Agent Session Browser representation containing the Agent-provided title, originating ACP Agent identity, and page-local pending or unavailable state. It has no archive, unread, attention, follow, or persisted status affordances. _Avoid_: Task card, prompt-derived summary, local status row
+**Session Row**: The compact Agent Session Browser representation containing the Agent-provided title, originating ACP Agent identity, and page-local pending or unavailable state. It may expose local archive or unarchive actions, but has no unread, attention, follow, or persisted task-status affordances. _Avoid_: Task card, prompt-derived summary, local status row
 
 **Workspace Target**: The project, workspace, worktree, or remote development environment used as an ACP Session's `cwd`. _Avoid_: Current workspace, repository
 
@@ -64,7 +66,7 @@ This context describes OpenSumi's workspace-local Agentic Layout. Its desktop wo
 
 **Project Addition**: The action that authorizes a developer-selected directory as a Known Workspace Target. Adding an existing target reuses and revalidates it rather than creating a duplicate. _Avoid_: New Session creation, Workspace switch
 
-**Project Removal**: The action that removes a manually added Project from the local Workspace Catalog when the current Agent snapshot has no Sessions for it. Legacy Task records do not block removal and remain untouched. _Avoid_: Agent Session deletion, legacy-data migration
+**Project Removal**: The action that removes a manually added Project from the local Workspace Catalog when the current Agent snapshot has no Sessions for it, including locally archived Sessions. Legacy Task records do not block removal and remain untouched. _Avoid_: Agent Session deletion, legacy-data migration
 
 **Project Management Menu**: The overflow menu on a Project Group containing Rename and, when allowed, Project Removal. It is separate from the group's visible New Session action. _Avoid_: Session actions, task archive menu
 

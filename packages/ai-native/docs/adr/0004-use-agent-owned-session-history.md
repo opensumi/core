@@ -13,11 +13,12 @@ ACP v1 defines `session/list` as the discovery surface for Sessions known to an 
 - A failed target query discards that Agent's entire result for the refresh. The UI remains silent and diagnostics contain only bounded Agent, Project, and error-type identifiers.
 - Only Agent-returned Sessions whose `cwd` matches an available authorized project are shown. Agent-provided titles and `updatedAt` values are used directly.
 - A listed Session creates only a metadata model and a page-local route from `sessionId` to `{ agentId, cwd }`.
+- Agentic Layout may retain a separate local archive marker keyed by `{ agentId, cwd, sessionId }`. This marker changes only whether an Agent-returned Session appears in the active or archived browser section; it never substitutes for Agent discovery or mutates the Agent-owned Session.
 - Selection calls the originating Agent's `session/load`, buffers all load-time updates, and replaces the active conversation only after the load succeeds. Live attachment is a separate step and cannot remove a restored transcript when it fails.
-- The local Registry remains authoritative only for the Workspace Catalog. Existing Task, archive, unread, attention, status, pending-activation, and remembered-active records remain stored for compatibility but are no longer read or written by Agentic Layout runtime behavior.
+- The local Registry remains authoritative for the Workspace Catalog and Agent Session Archive Markers. Existing legacy Task, archive, unread, attention, status, pending-activation, and remembered-active records remain stored for compatibility but are no longer read or written by Agentic Layout runtime behavior.
 
 ## Consequences
 
-Users see only Sessions that an Agent currently reports and recover the transcript returned by that Agent. A list or load failure never falls back to local prompt-derived history. Refresh is explicit and lifecycle-triggered rather than polled. Removing a Project changes future discovery scope but does not delete Agent Sessions or legacy local records.
+Users see only Sessions that an Agent currently reports and recover the transcript returned by that Agent. Locally archived Sessions remain discoverable in a separate collapsed section without being closed or deleted. A list or load failure never falls back to local prompt-derived history. Refresh is lifecycle-triggered rather than polled. Removing a Project changes future discovery scope but does not delete Agent Sessions or legacy local records.
 
 The current implementation assumes raw ACP `sessionId` values are globally unique across configured Agents. Protocol calls retain the raw value, while browser models continue to use the `acp:` prefix.

@@ -17,7 +17,7 @@ let runtime: AcpBddFixtureRuntime;
 
 async function getSessionState(): Promise<{
   active: boolean;
-  session: { sessionId: string; threadStatus?: string } | null;
+  session: { sessionId: string; threadStatus?: string; requestCount?: number } | null;
 }> {
   const result = await page.evaluate(async () =>
     (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
@@ -59,7 +59,7 @@ async function showAcpChat(): Promise<void> {
   await waitForAcpChatReady(page);
 }
 
-async function createExistingTaskConversation(): Promise<void> {
+async function createExistingTaskConversation(): Promise<string> {
   const input = chatInput();
   await input.click();
   await page.keyboard.insertText('BDD existing Task Conversation');
@@ -76,6 +76,7 @@ async function createExistingTaskConversation(): Promise<void> {
       { timeout: 30_000 },
     )
     .toBe(true);
+  return (await getSessionState()).session!.sessionId;
 }
 
 test.describe('ACP Chat layout-aware New Draft actions', () => {
@@ -99,22 +100,21 @@ test.describe('ACP Chat layout-aware New Draft actions', () => {
     await runtime?.dispose();
   });
 
-  test('uses direct New Task in Agentic and direct New Chat in Classic/IDE', async () => {
+  test('uses direct New Session in Agentic and direct New Chat in Classic/IDE', async () => {
     const header = page.getByTestId('agentic-chat-panel-header');
     const primary = header.getByTestId('agentic-task-launch-button');
     const dropdown = header.getByTestId('agentic-task-agent-menu-button');
 
     await expect(primary).toBeVisible();
-    await expect(primary).toHaveAttribute('aria-label', /New Task with .+N/);
+    await expect(primary).toHaveAttribute('aria-label', /New session with .+N/i);
     await expect(dropdown).toHaveAttribute('aria-label', 'Choose Agent');
 
-    await createExistingTaskConversation();
-    const taskRows = page.locator('[data-testid^="agentic-task-row-"]');
-    const existingTaskRow = taskRows.filter({ hasText: 'BDD existing Task Conversation' });
-    await expect(existingTaskRow).toHaveCount(1);
-    const taskCountBeforeDraft = await taskRows.count();
-    const projectGroup = page.locator('[data-testid="agentic-task-project-group"]').filter({
-      has: existingTaskRow,
+    const existingSessionId = await createExistingTaskConversation();
+    const sessionRows = page.locator('[data-testid^="agentic-session-row-"]');
+    const existingSessionRow = page.getByTestId(`agentic-session-row-${existingSessionId}`);
+    await expect(existingSessionRow).toBeVisible({ timeout: 30_000 });
+    const projectGroup = page.locator('[data-testid="agentic-session-project-group"]').filter({
+      has: existingSessionRow,
     });
     const projectNewTask = projectGroup.getByTestId('agentic-task-launch-button');
     const mainConversation = page.locator('#ai_chat_left_container');
@@ -125,19 +125,17 @@ test.describe('ACP Chat layout-aware New Draft actions', () => {
     expect((await getSessionState()).active).toBe(true);
     await projectNewTask.click();
     await expect(header.getByTestId('agentic-task-agent-menu')).toHaveCount(0);
-    await expect(header.getByTestId('agentic-chat-panel-header-title')).toHaveText('New Task');
-    await expect(header.getByTestId('agentic-task-draft-context')).toContainText(
-      'Send your first message to add this Task to the list.',
-    );
-    await expect(page.getByTestId('agentic-task-draft-hint')).toContainText(
-      'Send your first message to create this Task and add it to the Task List.',
-    );
-    await expect(page.locator('[data-testid^="agentic-task-row-"]')).toHaveCount(taskCountBeforeDraft);
+    await expect(header.getByTestId('agentic-chat-panel-header-title')).toHaveText('New Session');
+    await expect(header.getByTestId('agentic-task-draft-context')).toContainText('Using ');
+    await expect(header.getByTestId('agentic-task-draft-context')).not.toContainText('Send your first message');
+    await expect(page.getByTestId('agentic-task-draft-prompt')).toHaveText('What would you like the Agent to do?');
+    await expect(existingSessionRow).toBeVisible();
+    await expect(page.locator('[data-testid^="agentic-task-row-"]')).toHaveCount(0);
     await expect(mainConversation).not.toContainText('BDD existing Task Conversation');
     await expect(page.getByTestId('agentic-virtual-message-list')).toHaveCount(0);
     await expect(input).toContainText('preserved Agentic draft');
     await expect(input).toBeFocused();
-    expect((await getSessionState()).active).toBe(false);
+    expect((await getSessionState()).session?.requestCount ?? 0).toBe(0);
 
     await page.getByTestId('agentic-task-draft-close').click();
     await expect(page.getByText('Discard draft?', { exact: true })).toBeVisible();
@@ -151,19 +149,20 @@ test.describe('ACP Chat layout-aware New Draft actions', () => {
     await expect(menu).toBeHidden();
     await expect(input).toContainText('preserved Agentic draft');
     await expect(input).toBeFocused();
-    expect((await getSessionState()).active).toBe(false);
+    expect((await getSessionState()).session?.requestCount ?? 0).toBe(0);
 
     await focusEditor();
     await pressNewDraftShortcut();
     await expect(input).toBeFocused();
     await expect(header.getByTestId('agentic-task-agent-menu')).toHaveCount(0);
-    expect((await getSessionState()).active).toBe(false);
+    expect((await getSessionState()).session?.requestCount ?? 0).toBe(0);
 
     await page.getByTestId('agentic-task-draft-close').click();
     await page.getByRole('button', { name: 'Discard Draft', exact: true }).click();
     await expect(header.getByTestId('agentic-task-draft-context')).toHaveCount(0);
-    await expect(page.getByTestId('agentic-task-draft-hint')).toHaveCount(0);
-    await expect(taskRows).toHaveCount(taskCountBeforeDraft);
+    await expect(page.getByTestId('agentic-task-draft-prompt')).toHaveCount(0);
+    await expect(existingSessionRow).toBeVisible();
+    await expect(sessionRows).not.toHaveCount(0);
     expect((await getSessionState()).active).toBe(false);
 
     await writeAiNativePanelLayoutSettings(runtime.workspaceDir, 'classic');
