@@ -2,14 +2,20 @@ import React from 'react';
 
 import { PreferenceService, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
+import { strings } from '@opensumi/ide-utils';
 
 import { IChatInternalService } from '../../../common';
 import { AcpChatInternalService } from '../../chat/chat.internal.service.acp';
 import chatStyles from '../../chat/chat.module.less';
-import { getAvailableAgentConfigs } from '../../chat/get-default-agent-type';
+import { getDefaultAgentType } from '../../chat/get-default-agent-type';
 import { AcpAgentSessionDescriptor } from '../../chat/session-provider';
 import { hasAcpChatSendPayload } from '../../components/acp/chat-input-validation';
-import { AgenticProjectRecord, AgenticTaskRegistryService } from '../agentic-task-registry.service';
+import {
+  AgenticArchivedSessionIdentity,
+  AgenticArchivedSessionRecord,
+  AgenticProjectRecord,
+  AgenticTaskRegistryService,
+} from '../agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../agentic-workspace-switch.service';
 
 import { getAgenticProjectDisplayLabel, getAgenticProjectDisplayLabels } from './agentic-project-label';
@@ -68,18 +74,32 @@ function formatUpdatedAt(value: string | undefined): string {
   return Number.isFinite(timestamp) ? new Date(timestamp).toLocaleString() : '';
 }
 
+function getArchivedSessionIdentity(session: AcpAgentSessionDescriptor): AgenticArchivedSessionIdentity {
+  return { sessionId: session.sessionId, agentId: session.agentId, cwd: session.cwd };
+}
+
+function getArchivedSessionKey(session: AgenticArchivedSessionIdentity): string {
+  return JSON.stringify([session.agentId, session.cwd, session.sessionId]);
+}
+
 function SessionRow({
   active,
+  archived,
   failed,
   pending,
   session,
   onActivate,
+  onArchive,
+  onUnarchive,
 }: {
   active: boolean;
+  archived: boolean;
   failed: boolean;
   pending: boolean;
   session: AcpAgentSessionDescriptor;
   onActivate: (session: AcpAgentSessionDescriptor) => void;
+  onArchive?: (session: AcpAgentSessionDescriptor) => void;
+  onUnarchive?: (session: AcpAgentSessionDescriptor) => void;
 }) {
   const title = session.title?.trim() || localize('aiNative.agentic.session.untitled', 'Untitled session');
   const updatedAt = formatUpdatedAt(session.updatedAt);
@@ -97,26 +117,45 @@ function SessionRow({
         type='button'
       >
         <span className={styles.task_title}>{title}</span>
-        <span
-          aria-label={
-            pending
-              ? localize('aiNative.agentic.session.loading', 'Loading session')
-              : failed
-              ? localize('aiNative.agentic.session.unavailable', 'Session unavailable')
-              : session.agentId
-          }
-          className={`${styles.task_meta} ${
-            failed ? styles.task_meta_error : pending ? styles.task_meta_information : styles.task_meta_secondary
-          }`}
-        >
+        {(pending || failed) && (
           <span
-            aria-hidden='true'
-            className={`codicon ${
-              failed ? 'codicon-error' : pending ? 'codicon-loading codicon-modifier-spin' : 'codicon-hubot'
-            }`}
-          />
-        </span>
+            aria-label={
+              pending
+                ? localize('aiNative.agentic.session.loading', 'Loading session')
+                : localize('aiNative.agentic.session.unavailable', 'Session unavailable')
+            }
+            className={`${styles.task_meta} ${failed ? styles.task_meta_error : styles.task_meta_information}`}
+          >
+            <span
+              aria-hidden='true'
+              className={`codicon ${failed ? 'codicon-error' : 'codicon-loading codicon-modifier-spin'}`}
+            />
+          </span>
+        )}
       </button>
+      {archived ? (
+        <button
+          aria-label={localize('aiNative.agentic.session.unarchive', 'Unarchive session')}
+          className={styles.archive_button}
+          data-testid={`agentic-session-unarchive-${session.sessionId}`}
+          onClick={() => onUnarchive?.(session)}
+          title={localize('aiNative.agentic.session.unarchive', 'Unarchive session')}
+          type='button'
+        >
+          <span aria-hidden='true' className='codicon codicon-archive' />
+        </button>
+      ) : (
+        <button
+          aria-label={localize('aiNative.agentic.session.archive', 'Archive session')}
+          className={styles.archive_button}
+          data-testid={`agentic-session-archive-${session.sessionId}`}
+          onClick={() => onArchive?.(session)}
+          title={localize('aiNative.agentic.session.archive', 'Archive session')}
+          type='button'
+        >
+          <span aria-hidden='true' className='codicon codicon-archive' />
+        </button>
+      )}
     </div>
   );
 }
@@ -126,10 +165,12 @@ function SessionProjectGroup({
   collapsed,
   failedSessionIds,
   group,
+  hasAgentSessions,
   pendingSessionId,
   preferredAgentId,
   projectLabel,
   onActivate,
+  onArchive,
   onRemove,
   onRename,
   onToggle,
@@ -138,10 +179,12 @@ function SessionProjectGroup({
   collapsed: boolean;
   failedSessionIds: ReadonlySet<string>;
   group: AgentSessionGroup;
+  hasAgentSessions: boolean;
   pendingSessionId?: string;
   preferredAgentId?: string;
   projectLabel: string;
   onActivate: (session: AcpAgentSessionDescriptor) => void;
+  onArchive: (session: AcpAgentSessionDescriptor) => void;
   onRemove: (project: AgenticProjectRecord) => void;
   onRename: (project: AgenticProjectRecord) => void;
   onToggle: () => void;
@@ -177,7 +220,7 @@ function SessionProjectGroup({
         />
         <button
           aria-expanded={managementOpen}
-          aria-label={localize('aiNative.agentic.project.manage', 'Manage project')}
+          aria-label={strings.format(localize('aiNative.agentic.project.manage', 'Manage {0}'), projectLabel)}
           className={`${styles.project_manage} ${managementOpen ? styles.project_manage_open : ''}`}
           onClick={() => setManagementOpen((open) => !open)}
           type='button'
@@ -198,13 +241,13 @@ function SessionProjectGroup({
             </button>
             <button
               className={styles.project_management_menu_item}
-              disabled={hasSessions}
+              disabled={hasAgentSessions}
               onClick={() => {
                 setManagementOpen(false);
                 onRemove(group.project);
               }}
               title={
-                hasSessions
+                hasAgentSessions
                   ? localize(
                       'aiNative.agentic.project.removeHasSessions',
                       'Projects with Agent sessions cannot be removed.',
@@ -222,12 +265,69 @@ function SessionProjectGroup({
         group.sessions.map((session) => (
           <SessionRow
             active={session.sessionId === activeSessionId}
+            archived={false}
             failed={failedSessionIds.has(session.sessionId)}
             key={session.sessionId}
             onActivate={onActivate}
+            onArchive={onArchive}
             pending={session.sessionId === pendingSessionId}
             session={session}
           />
+        ))}
+    </section>
+  );
+}
+
+function ArchivedSessionGroups({
+  groups,
+  onActivate,
+  onUnarchive,
+  projectLabels,
+}: {
+  groups: AgentSessionGroup[];
+  onActivate: (session: AcpAgentSessionDescriptor) => void;
+  onUnarchive: (session: AcpAgentSessionDescriptor) => void;
+  projectLabels: ReadonlyMap<string, string>;
+}) {
+  const [expanded, setExpanded] = React.useState(false);
+
+  return (
+    <section
+      className={`${styles.archived_area} ${expanded ? styles.archived_area_expanded : ''}`}
+      data-expanded={expanded}
+      data-testid='agentic-archived-session-area'
+    >
+      <button
+        aria-expanded={expanded}
+        className={styles.archived_toggle}
+        onClick={() => setExpanded((current) => !current)}
+        type='button'
+      >
+        <span aria-hidden='true' className={`codicon ${expanded ? 'codicon-chevron-down' : 'codicon-chevron-right'}`} />
+        <span>{localize('aiNative.agentic.sessionList.archived', 'Archived Sessions')}</span>
+      </button>
+      {expanded &&
+        groups.map((group) => (
+          <section className={styles.archived_project_group} key={group.project.id}>
+            <div className={styles.project_header}>
+              <span className={styles.project_label} title={group.project.workspacePath}>
+                {projectLabels.get(group.project.id) || getAgenticProjectDisplayLabel(group.project)}
+              </span>
+              <span className={styles.project_count}>{group.sessions.length}</span>
+            </div>
+            {group.sessions.map((session) => (
+              <SessionRow
+                active={false}
+                archived
+                failed={false}
+                key={session.sessionId}
+                onActivate={onActivate}
+                onUnarchive={onUnarchive}
+                pending={false}
+                session={session}
+              />
+            ))}
+          </section>
         ))}
     </section>
   );
@@ -245,8 +345,8 @@ export function AgenticSessionList() {
   const projectRefreshVersionRef = React.useRef(0);
   const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
   const [sessions, setSessions] = React.useState<AcpAgentSessionDescriptor[]>(() => aiChatService.getAgentSessions());
+  const [archivedSessions, setArchivedSessions] = React.useState<AgenticArchivedSessionRecord[]>([]);
   const [query, setQuery] = React.useState('');
-  const [refreshing, setRefreshing] = React.useState(false);
   const [activeSessionId, setActiveSessionId] = React.useState<string | undefined>(
     aiChatService.sessionModel?.sessionId,
   );
@@ -297,24 +397,27 @@ export function AgenticSessionList() {
     return refreshed;
   }, [registry, workspaceSwitch]);
 
+  const refreshArchivedSessions = React.useCallback(async () => {
+    const archived = await registry.listArchivedAgentSessions();
+    setArchivedSessions(archived);
+    return archived;
+  }, [registry]);
+
   const refresh = React.useCallback(async () => {
-    setRefreshing(true);
     try {
-      await refreshProjects();
+      await Promise.all([refreshProjects(), refreshArchivedSessions()]);
       setSessions(await aiChatService.refreshAgentSessions());
     } catch {
       // Discovery failures are intentionally silent in Agentic Layout.
-    } finally {
-      setRefreshing(false);
     }
-  }, [aiChatService, refreshProjects]);
+  }, [aiChatService, refreshArchivedSessions, refreshProjects]);
 
   React.useEffect(() => {
     void refresh();
     const catalogDisposable = aiChatService.onDidChangeAgentSessions((catalog) => {
       setSessions(catalog.map((session) => ({ ...session })));
     });
-    const projectDisposable = registry.onDidChange(() => void refreshProjects());
+    const projectDisposable = registry.onDidChange(() => void refresh());
     const sessionDisposable = aiChatService.onChangeSession((sessionId) => setActiveSessionId(sessionId || undefined));
     return () => {
       projectRefreshVersionRef.current += 1;
@@ -322,34 +425,45 @@ export function AgenticSessionList() {
       projectDisposable.dispose();
       sessionDisposable?.dispose();
     };
-  }, [aiChatService, refresh, refreshProjects, registry]);
+  }, [aiChatService, refresh, registry]);
 
   const projectLabels = React.useMemo(() => getAgenticProjectDisplayLabels(projects), [projects]);
   const normalizedQuery = query.trim().toLocaleLowerCase();
-  const groups = React.useMemo<AgentSessionGroup[]>(() => {
-    const sessionsByPath = new Map<string, AcpAgentSessionDescriptor[]>();
-    for (const session of sessions) {
-      if (normalizedQuery && !(session.title || '').toLocaleLowerCase().includes(normalizedQuery)) {
-        continue;
+  const archivedSessionKeys = React.useMemo(
+    () => new Set(archivedSessions.map(getArchivedSessionKey)),
+    [archivedSessions],
+  );
+  const createGroups = React.useCallback(
+    (archived: boolean): AgentSessionGroup[] => {
+      const sessionsByPath = new Map<string, AcpAgentSessionDescriptor[]>();
+      for (const session of sessions) {
+        if (archivedSessionKeys.has(getArchivedSessionKey(session)) !== archived) {
+          continue;
+        }
+        if (normalizedQuery && !(session.title || '').toLocaleLowerCase().includes(normalizedQuery)) {
+          continue;
+        }
+        const bucket = sessionsByPath.get(session.cwd) || [];
+        bucket.push(session);
+        sessionsByPath.set(session.cwd, bucket);
       }
-      const bucket = sessionsByPath.get(session.cwd) || [];
-      bucket.push(session);
-      sessionsByPath.set(session.cwd, bucket);
-    }
-    return projects
-      .filter((project) => project.availability === 'available')
-      .map((project) => ({
-        project,
-        sessions: (sessionsByPath.get(project.workspacePath) || []).sort(
-          (a, b) => (Date.parse(b.updatedAt || '') || 0) - (Date.parse(a.updatedAt || '') || 0),
-        ),
-      }))
-      .filter((group) => !normalizedQuery || group.sessions.length > 0);
-  }, [normalizedQuery, projects, sessions]);
+      return projects
+        .filter((project) => project.availability === 'available')
+        .map((project) => ({
+          project,
+          sessions: (sessionsByPath.get(project.workspacePath) || []).sort(
+            (a, b) => (Date.parse(b.updatedAt || '') || 0) - (Date.parse(a.updatedAt || '') || 0),
+          ),
+        }))
+        .filter((group) => (archived ? group.sessions.length > 0 : !normalizedQuery || group.sessions.length > 0));
+    },
+    [archivedSessionKeys, normalizedQuery, projects, sessions],
+  );
+  const groups = React.useMemo(() => createGroups(false), [createGroups]);
+  const archivedGroups = React.useMemo(() => createGroups(true), [createGroups]);
 
   const activeTarget = aiChatService.getActiveAgenticTaskTarget(activeSessionId);
-  const configuredAgents = getAvailableAgentConfigs(preferenceService);
-  const preferredAgentId = activeTarget?.agentId || Object.keys(configuredAgents)[0];
+  const preferredAgentId = activeTarget?.agentId || getDefaultAgentType(preferenceService);
 
   const activate = React.useCallback(
     async (session: AcpAgentSessionDescriptor) => {
@@ -394,6 +508,24 @@ export function AgenticSessionList() {
       }
     },
     [activeSessionId, aiChatService, failedSessionIds, messageService],
+  );
+
+  const archive = React.useCallback(
+    async (session: AcpAgentSessionDescriptor) => {
+      if (await registry.archiveAgentSession(getArchivedSessionIdentity(session))) {
+        await refreshArchivedSessions();
+      }
+    },
+    [refreshArchivedSessions, registry],
+  );
+
+  const unarchive = React.useCallback(
+    async (session: AcpAgentSessionDescriptor) => {
+      if (await registry.unarchiveAgentSession(getArchivedSessionIdentity(session))) {
+        await refreshArchivedSessions();
+      }
+    },
+    [refreshArchivedSessions, registry],
   );
 
   const addProject = React.useCallback(async () => {
@@ -446,17 +578,6 @@ export function AgenticSessionList() {
       <header className={styles.task_list_header}>
         <h2>{localize('aiNative.agentic.sessionList.title', 'Agent Sessions')}</h2>
         <button
-          aria-label={localize('aiNative.agentic.sessionList.refresh', 'Refresh Agent sessions')}
-          className={styles.project_add}
-          data-testid='agentic-session-refresh-button'
-          disabled={refreshing}
-          onClick={() => void refresh()}
-          title={localize('aiNative.agentic.sessionList.refresh', 'Refresh Agent sessions')}
-          type='button'
-        >
-          <span aria-hidden='true' className={`codicon codicon-refresh ${refreshing ? 'codicon-modifier-spin' : ''}`} />
-        </button>
-        <button
           aria-label={localize('aiNative.agentic.project.add', 'Add Project')}
           className={styles.project_add}
           data-testid='agentic-project-add-button'
@@ -483,8 +604,10 @@ export function AgenticSessionList() {
             collapsed={collapsedProjectIds.has(group.project.id) && !normalizedQuery}
             failedSessionIds={failedSessionIds}
             group={group}
+            hasAgentSessions={sessions.some((session) => session.cwd === group.project.workspacePath)}
             key={group.project.id}
             onActivate={activate}
+            onArchive={(session) => void archive(session)}
             onRemove={(project) => void removeProject(project)}
             onRename={setRenameProject}
             onToggle={() =>
@@ -504,6 +627,12 @@ export function AgenticSessionList() {
           />
         ))}
       </div>
+      <ArchivedSessionGroups
+        groups={archivedGroups}
+        onActivate={activate}
+        onUnarchive={(session) => void unarchive(session)}
+        projectLabels={projectLabels}
+      />
       <ProjectRenameModal
         onClose={() => setRenameProject(undefined)}
         onRename={rename}

@@ -4,7 +4,9 @@ import { act } from 'react-dom/test-utils';
 
 jest.mock('@opensumi/ide-core-browser', () => ({
   PreferenceService: class PreferenceService {},
-  localize: jest.fn((_key: string, fallback?: string) => fallback || _key),
+  localize: jest.fn((key: string, fallback?: string) =>
+    key === 'aiNative.agentic.project.manage' ? 'Manage {0}' : fallback || key,
+  ),
   useInjectable: jest.fn(),
 }));
 
@@ -27,15 +29,22 @@ jest.mock('../../../src/browser/acp/components/AgenticTaskList', () => ({
 }));
 
 jest.mock('../../../src/browser/acp/components/AgenticTaskLaunchMenu', () => ({
-  AgenticTaskLaunchMenu: () =>
-    require('react').createElement('button', { 'data-testid': 'agentic-task-launch-button', type: 'button' }),
+  AgenticTaskLaunchMenu: ({ preferredAgentId }: { preferredAgentId?: string }) =>
+    require('react').createElement('button', {
+      'data-preferred-agent-id': preferredAgentId,
+      'data-testid': 'agentic-task-launch-button',
+      type: 'button',
+    }),
 }));
 
 jest.mock('../../../src/browser/chat/get-default-agent-type', () => ({
   getAvailableAgentConfigs: jest.fn(() => ({ 'agent-a': { command: 'agent-a' } })),
+  getDefaultAgentType: jest.fn(() => 'opencode'),
 }));
 
 import { PreferenceService } from '@opensumi/ide-core-browser';
+import { localizationBundle as enUSLocalizationBundle } from '@opensumi/ide-i18n/lib/common/en-US.lang';
+import { localizationBundle as zhCNLocalizationBundle } from '@opensumi/ide-i18n/lib/common/zh-CN.lang';
 import { IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
 
 import { AgenticTaskRegistryService } from '../../../src/browser/acp/agentic-task-registry.service';
@@ -44,6 +53,15 @@ import { AgenticSessionList } from '../../../src/browser/acp/components/AgenticS
 import { IChatInternalService } from '../../../src/common';
 
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+const agenticLocalizationKeys = [
+  'aiNative.chat.acp.skills.loading',
+  'aiNative.chat.acp.skills.empty',
+  'aiNative.agentic.session.discardDraftAndSwitch',
+  'aiNative.agentic.session.switchDiscardDraft',
+  'aiNative.chat.session.connectionUnavailable',
+  'aiNative.chat.session.restoringConnection',
+] as const;
 
 const projectA = {
   id: 'project-a',
@@ -78,9 +96,25 @@ function createServices(initialSessions = [session('one', '/work/a', 'Agent titl
   const sessionListeners = new Set<(sessionId: string) => void>();
   const catalogListeners = new Set<(sessions: ReturnType<typeof session>[]) => void>();
   const registryListeners = new Set<() => void>();
+  let archivedSessions: Array<{ sessionId: string; agentId: string; cwd: string; archivedAt: number }> = [];
   return {
     registry: {
+      archiveAgentSession: jest.fn(async (archivedSession) => {
+        if (
+          archivedSessions.some(
+            (candidate) =>
+              candidate.sessionId === archivedSession.sessionId &&
+              candidate.agentId === archivedSession.agentId &&
+              candidate.cwd === archivedSession.cwd,
+          )
+        ) {
+          return false;
+        }
+        archivedSessions = [...archivedSessions, { ...archivedSession, archivedAt: Date.now() }];
+        return true;
+      }),
       listActiveGroups: jest.fn(),
+      listArchivedAgentSessions: jest.fn(async () => archivedSessions),
       listProjects: jest.fn().mockResolvedValue([projectA, projectB]),
       onDidChange: jest.fn((listener: () => void) => {
         registryListeners.add(listener);
@@ -88,6 +122,16 @@ function createServices(initialSessions = [session('one', '/work/a', 'Agent titl
       }),
       removeManagedSessionProject: jest.fn().mockResolvedValue(true),
       renameProject: jest.fn().mockResolvedValue(projectA),
+      unarchiveAgentSession: jest.fn(async (archivedSession) => {
+        const previousLength = archivedSessions.length;
+        archivedSessions = archivedSessions.filter(
+          (candidate) =>
+            candidate.sessionId !== archivedSession.sessionId ||
+            candidate.agentId !== archivedSession.agentId ||
+            candidate.cwd !== archivedSession.cwd,
+        );
+        return archivedSessions.length !== previousLength;
+      }),
     },
     workspaceSwitch: {
       addProject: jest.fn().mockResolvedValue(projectA),
@@ -178,9 +222,12 @@ describe('AgenticSessionList', () => {
     expect(container.textContent).toContain('Untitled session');
     expect(container.textContent).not.toContain('Legacy local prompt title');
     expect(services.registry.listActiveGroups).not.toHaveBeenCalled();
-    expect(container.querySelector('[data-testid*="archive"]')).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-session-archive-acp:newer"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="agentic-session-refresh-button"]')).toBeNull();
     expect(container.querySelector('[aria-label*="Unread"]')).toBeNull();
     expect(container.querySelector('[aria-label*="attention"]')).toBeNull();
+    expect(container.querySelector('.codicon-hubot')).toBeNull();
+    expect(container.querySelector('[aria-label="Manage Project A"]')).not.toBeNull();
 
     const rows = Array.from(container.querySelectorAll('[data-testid^="agentic-session-row-"]'));
     expect(rows.map((row) => row.textContent)).toEqual([
@@ -190,35 +237,75 @@ describe('AgenticSessionList', () => {
     ]);
   });
 
-  it('replaces the visible snapshot on manual refresh', async () => {
-    const services = createServices();
-    services.aiChatService.refreshAgentSessions
-      .mockResolvedValueOnce([session('one', '/work/a', 'First snapshot')])
-      .mockResolvedValueOnce([session('two', '/work/b', 'Second snapshot')]);
+  it('registers the Agent Session UI strings in both supported language bundles', () => {
+    for (const key of agenticLocalizationKeys) {
+      expect(enUSLocalizationBundle.contents[key]).toBeTruthy();
+      expect(zhCNLocalizationBundle.contents[key]).toBeTruthy();
+    }
+  });
+
+  it('uses the configured default Agent when no active session supplies one', async () => {
+    await renderList(createServices([]));
+
+    expect(
+      container.querySelector('[data-testid="agentic-task-launch-button"]')?.getAttribute('data-preferred-agent-id'),
+    ).toBe('opencode');
+  });
+
+  it('archives and restores Agent sessions without closing or deleting them', async () => {
+    const services = createServices([session('one', '/work/a', 'Agent title')]);
     await renderList(services);
 
     await act(async () => {
-      (container.querySelector('[data-testid="agentic-session-refresh-button"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="agentic-session-archive-acp:one"]') as HTMLButtonElement).click();
       await flushPromises();
     });
 
-    expect(container.textContent).not.toContain('First snapshot');
-    expect(container.textContent).toContain('Second snapshot');
-    expect(services.aiChatService.refreshAgentSessions).toHaveBeenCalledTimes(2);
+    expect(services.registry.archiveAgentSession).toHaveBeenCalledWith({
+      sessionId: 'acp:one',
+      agentId: 'agent-a',
+      cwd: '/work/a',
+    });
+    expect(container.querySelector('[data-testid="agentic-session-row-acp:one"]')).toBeNull();
+
+    const archivedArea = container.querySelector('[data-testid="agentic-archived-session-area"]');
+    expect(archivedArea).not.toBeNull();
+    await act(async () => {
+      (archivedArea?.querySelector('button') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-session-row-acp:one"]')).not.toBeNull();
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-session-unarchive-acp:one"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(services.registry.unarchiveAgentSession).toHaveBeenCalledWith({
+      sessionId: 'acp:one',
+      agentId: 'agent-a',
+      cwd: '/work/a',
+    });
+    expect(container.querySelector('[data-testid="agentic-session-archive-acp:one"]')).not.toBeNull();
+    expect(services.aiChatService.discardAgenticTaskDraft).not.toHaveBeenCalled();
   });
 
   it('shows a listed session when its project is registered after the initial layout refresh', async () => {
-    const services = createServices([session('new', '/work/b', 'New Agent session')]);
+    const newlyDiscoveredSession = session('new', '/work/b', 'New Agent session');
+    const services = createServices([]);
     services.registry.listProjects.mockResolvedValue([projectA]);
     await renderList(services);
     expect(container.textContent).not.toContain('New Agent session');
 
     services.registry.listProjects.mockResolvedValue([projectA, projectB]);
+    services.aiChatService.refreshAgentSessions.mockResolvedValue([newlyDiscoveredSession]);
     await act(async () => {
       services.emitRegistryChange();
       await flushPromises();
+      await flushPromises();
     });
 
+    expect(services.aiChatService.refreshAgentSessions).toHaveBeenCalledTimes(2);
     expect(container.textContent).toContain('New Agent session');
   });
 
@@ -274,6 +361,7 @@ describe('AgenticSessionList', () => {
       await flushPromises();
     });
     expect(row.querySelector('[aria-label="Session unavailable"]')).not.toBeNull();
+    expect(row.querySelector('.codicon-error')).not.toBeNull();
 
     await act(async () => {
       row.click();
@@ -305,6 +393,7 @@ describe('AgenticSessionList', () => {
       await Promise.resolve();
     });
     expect(services.aiChatService.activateAgentSession).toHaveBeenCalledTimes(2);
+    expect(container.querySelector('[data-testid="agentic-session-row-acp:two"] .codicon-loading')).not.toBeNull();
 
     await act(async () => {
       resolveSecond({ status: 'activated' });

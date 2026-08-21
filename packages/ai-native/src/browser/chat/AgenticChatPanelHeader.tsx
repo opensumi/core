@@ -11,6 +11,7 @@ import {
   URI,
 } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
+import { strings } from '@opensumi/ide-utils';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
@@ -164,12 +165,12 @@ export function AgenticChatPanelHeader({
   const acpChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
-  const registry = useInjectable<AgenticTaskRegistryService>(AgenticTaskRegistryService);
   const [panelLayout, setPanelLayout] = React.useState(() => panelLayoutService.getLayoutMode());
   const [title, setTitle] = React.useState(() => getAgenticChatPanelTitle(sessionModel, preferSessionTitle));
   const [executionContext, setExecutionContext] = React.useState<AgenticProjectRecord>();
   const titleRefreshVersionRef = React.useRef(0);
-  const isTaskDraft = !sessionModel && !!acpChatService.getActiveAgenticTaskAgentId();
+  const isTaskDraft = acpChatService.isActiveAgenticTaskDraft();
+  const sessionTitle = sessionModel?.title;
   const draftTarget = acpChatService.getActiveAgenticTaskTarget();
   const draftAgentId = draftTarget?.agentId;
   const draftAgentLabel = draftAgentId
@@ -187,7 +188,7 @@ export function AgenticChatPanelHeader({
         ? localize('aiNative.chat.agenticTask.draft.title', 'New Session')
         : getAgenticChatPanelTitle(sessionModel, preferSessionTitle),
     );
-  }, [isTaskDraft, preferSessionTitle, sessionModel]);
+  }, [isTaskDraft, preferSessionTitle, sessionModel, sessionTitle]);
 
   React.useEffect(() => {
     setPanelLayout(panelLayoutService.getLayoutMode());
@@ -219,28 +220,22 @@ export function AgenticChatPanelHeader({
       </div>
       {isTaskDraft && (
         <div className={styles.agentic_task_draft_context} data-testid='agentic-task-draft-context'>
-          {localize(
-            'aiNative.chat.agenticTask.draft.context',
-            'Using {0}. Send your first message to create this Agent session.',
-            draftAgentLabel,
-          )}
+          {strings.format(localize('aiNative.chat.agenticTask.draft.context', 'Using {0}'), draftAgentLabel)}
           {draftProjectLabel && ` · ${draftProjectLabel}`}
         </div>
       )}
       {executionContext && (
         <div
-          aria-label={localize(
-            'aiNative.chat.agenticTask.workingDirectory',
-            'Agent working directory: {0}',
+          aria-label={strings.format(
+            localize('aiNative.chat.agenticTask.workingDirectory', 'Agent working directory: {0}'),
             executionContext.workspacePath,
           )}
           className={styles.agentic_task_execution_context}
           data-testid='agentic-task-execution-context'
           title={executionContext.workspacePath}
         >
-          {localize(
-            'aiNative.chat.agenticTask.workingDirectory',
-            'Agent working directory: {0}',
+          {strings.format(
+            localize('aiNative.chat.agenticTask.workingDirectory', 'Agent working directory: {0}'),
             getAgenticProjectDisplayLabel(executionContext),
           )}
         </div>
