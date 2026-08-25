@@ -492,17 +492,18 @@ describe('AcpChatInternalService', () => {
       expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
     });
 
-    it('keeps first-Prompt creation lazy when an unprompted Session cannot be deleted', async () => {
+    it('creates a closable draft-bound Session without requiring Session deletion', async () => {
       const { aiBackService, chatManagerService, model, service } = createService();
       aiBackService.getSessionCapabilities.mockResolvedValue({ close: true, delete: false });
 
       service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
-      expect(chatManagerService.startSession).not.toHaveBeenCalled();
-      expect(service.getSkillCatalogState()).toBe('unavailable');
       await expect(service.ensureSessionModel()).resolves.toBe(model);
+
       expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
+      expect(service.getSkillCatalogState()).toBe('ready');
+      await service.discardAgenticTaskDraft();
+      expect(aiBackService.closeSession).toHaveBeenCalledWith('sess-1');
+      expect(aiBackService.deleteSession).not.toHaveBeenCalled();
     });
 
     it('closes and deletes only its unprompted draft-bound Session on discard', async () => {
