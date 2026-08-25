@@ -66,7 +66,6 @@ function renderQueue(
     onImmediateSend?: jest.Mock;
     onEditorReady?: jest.Mock;
     onOpenCapacitySettings?: jest.Mock;
-    onCancelInitialStart?: jest.Mock;
   } = {},
 ) {
   const snapshot = { ...baseSnapshot, ...overrides };
@@ -101,34 +100,21 @@ function renderQueue(
         onImmediateSend={handlers.onImmediateSend}
         onEditorReady={handlers.onEditorReady}
         onOpenCapacitySettings={overrides.onOpenCapacitySettings}
-        onCancelInitialStart={overrides.onCancelInitialStart}
       />,
     );
   });
   return handlers;
 }
 
-it('shows cancellable first-launch progress at the 300ms and 8s thresholds', () => {
-  jest.useFakeTimers();
-  const onCancelInitialStart = jest.fn();
+it('shows a loading status while the first Task is launching', () => {
   renderQueue({
     activeSessionId: undefined,
     entries: [],
     initialStartPending: true,
-    onCancelInitialStart,
   });
 
-  expect(query('[data-testid="acp-task-launch-status"]')?.textContent).toContain('Preparing task');
-  expect(query('[data-testid="acp-task-launch-status"]')?.textContent).not.toContain('Starting task');
-  click('[data-testid="acp-task-launch-cancel"]');
-  expect(onCancelInitialStart).toHaveBeenCalledTimes(1);
-
-  act(() => jest.advanceTimersByTime(300));
   expect(query('[data-testid="acp-task-launch-status"]')?.textContent).toContain('Starting task');
-
-  act(() => jest.advanceTimersByTime(7700));
-  expect(query('[data-testid="acp-task-launch-status"]')?.textContent).toContain('taking longer than usual');
-  jest.useRealTimers();
+  expect(query('[data-testid="acp-task-launch-status"] button')).toBeNull();
 });
 
 it('renders paused state and resumes', () => {

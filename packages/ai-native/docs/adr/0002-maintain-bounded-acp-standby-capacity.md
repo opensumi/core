@@ -8,7 +8,7 @@ Foreground Task Launch remains cancellable while the Agent is being prepared. Ca
 
 A Task Launch commits only when ACP has accepted the first Prompt and established its request stream. Session creation before that point is temporary: failure or cancellation releases it and preserves the Draft, while errors after acceptance belong to the now-durable Agent Task. This prevents failed retries from creating orphan Sessions, duplicate Tasks, or duplicate first Prompts.
 
-While launch is in progress, Agentic Layout freezes the submitted Draft configuration and Prompt, presents a single user-facing task-starting state, and offers cancellation as the only foreground action. It avoids exposing warmup or process-initialization phases; cancellation restores the editable Draft and input focus, while a slow launch may add non-technical explanatory text without changing the committed submission snapshot.
+While launch is in progress, Agentic Layout freezes the submitted Draft configuration and Prompt and presents a single user-facing task-starting state without foreground actions. It avoids exposing warmup or process-initialization phases; internal cancellation still cleans up an abandoned launch without changing the committed submission snapshot.
 
 Project Addition alone does not change the standby target or start an ACP process. Task Draft Agent or Workspace changes are debounced and replace one target rather than accumulating warm processes; foreground submission flushes that debounce and immediately uses the latest Draft configuration.
 
