@@ -31,7 +31,6 @@ export interface AcpQueuedTurnsProps {
   onImmediateSend(id: string): void;
   onEditorReady(handle: ChatInputHandle | null): void;
   onOpenCapacitySettings?(): void;
-  onCancelInitialStart?(): void;
 }
 
 export function getAcpQueuedTurnPreview(message: string): string {
@@ -80,41 +79,11 @@ export const AcpQueuedTurns = ({
   onImmediateSend,
   onEditorReady,
   onOpenCapacitySettings,
-  onCancelInitialStart,
 }: AcpQueuedTurnsProps) => {
-  const [initialStartStage, setInitialStartStage] = React.useState<0 | 1 | 2>(0);
-
-  React.useEffect(() => {
-    if (!snapshot.initialStartPending) {
-      setInitialStartStage(0);
-      return undefined;
-    }
-    const startingTimer = setTimeout(() => setInitialStartStage(1), 300);
-    const slowTimer = setTimeout(() => setInitialStartStage(2), 8000);
-    return () => {
-      clearTimeout(startingTimer);
-      clearTimeout(slowTimer);
-    };
-  }, [snapshot.initialStartPending]);
-
   if (snapshot.initialStartPending) {
     return (
       <div className={styles.queued_turns_status} data-testid='acp-task-launch-status' role='status'>
-        <span>
-          {initialStartStage === 0
-            ? localize('aiNative.chat.acp.preparingTask', 'Preparing task…')
-            : initialStartStage === 1
-            ? localize('aiNative.chat.acp.startingTask', 'Starting task…')
-            : localize(
-                'aiNative.chat.acp.slowTaskStart',
-                'Task startup is taking longer than usual. You can continue waiting or cancel.',
-              )}
-        </span>
-        {onCancelInitialStart && (
-          <button data-testid='acp-task-launch-cancel' onClick={onCancelInitialStart} type='button'>
-            {localize('aiNative.chat.acp.cancelTaskStart', 'Cancel')}
-          </button>
-        )}
+        <span>{localize('aiNative.chat.acp.startingTask', 'Starting task…')}</span>
       </div>
     );
   }

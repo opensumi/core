@@ -1465,14 +1465,6 @@ export const AIChatViewACPContent = () => {
     void queuedTurns.resume();
   }, [aiChatService, queuedTurns]);
 
-  const handleCancelInitialStart = React.useCallback(() => {
-    void queuedTurns.cancelInitialStart().then((result) => {
-      if (result.accepted) {
-        mainInputHandleRef.current?.focus?.();
-      }
-    });
-  }, [queuedTurns]);
-
   const handleCloseChatView = React.useCallback(() => {
     const draft = chatInputRegistry.preserveActiveDraft() || aiChatService.getInputDraft();
     aiChatService.updateInputDraft(draft);
@@ -1933,7 +1925,6 @@ export const AIChatViewACPContent = () => {
                   AINativeSettingSectionsId.AcpThreadPoolSize,
                 )
               }
-              onCancelInitialStart={handleCancelInitialStart}
             />
             <div className={styles.header_operate}>
               {/* 定制需求。不需要透出shortcut*/}
