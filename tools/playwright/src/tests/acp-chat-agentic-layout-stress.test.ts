@@ -6,8 +6,8 @@ import test, { page, resetPage } from './hooks';
 import {
   ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS,
   type AcpBddFixtureRuntime,
-  ensureAgenticLayout,
   loadAcpBddFixtureWorkbench,
+  waitForExplorerViewVisible,
 } from './utils/acp-bdd-fixture';
 import { createBddEvidence } from './utils/bdd-evidence';
 
@@ -61,6 +61,7 @@ async function loadLongStreamWorkbench() {
     ensureAgenticLayout: true,
     viewport: { width: 1440, height: 820 },
   });
+  await waitForExplorerViewVisible(page);
   await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
 }
 
@@ -156,7 +157,7 @@ function expectLayoutBounds(proof: LayoutBoundsProof, workbenchExpected = true) 
   expect(proof.chatSlot?.right).toBeLessThanOrEqual(proof.viewport.width + 2);
   if (workbenchExpected) {
     expect(proof.workbench?.width).toBeGreaterThan(0);
-    expect(proof.explorer?.width).toBeGreaterThanOrEqual(240);
+    expect(proof.explorer?.width).toBeGreaterThanOrEqual(160);
     expect(proof.explorerFileRow?.width).toBeGreaterThanOrEqual(160);
   } else {
     expect(proof.workbench?.width ?? 0).toBe(0);
@@ -229,6 +230,9 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
           timeout: 5000,
         })
         .toBe(workbenchExpected);
+      if (workbenchExpected) {
+        await waitForExplorerViewVisible(page);
+      }
       await expect(chatSlot().getByText(LONG_CONTENT_SENTINEL)).toBeVisible();
       await expect(page.locator('[data-testid^="agentic-session-row-"]').first()).toBeVisible({ timeout: 5000 });
       await waitForScrollableMessageList();

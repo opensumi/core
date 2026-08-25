@@ -181,7 +181,9 @@ async function sendTaskPrompt(title: string): Promise<AcpSessionSummary> {
   await page.keyboard.insertText(title);
   await sendButton().click();
 
-  await expect.poll(async () => (await getSessionState()).session, { timeout: 30_000 }).not.toBeNull();
+  await expect
+    .poll(async () => (await getSessionState()).session?.requestCount ?? 0, { timeout: 30_000 })
+    .toBeGreaterThanOrEqual(1);
   const session = (await getSessionState()).session!;
   await expect(page.getByTestId(`agentic-session-row-${session.sessionId}`)).toBeVisible({ timeout: 30_000 });
   return session;
