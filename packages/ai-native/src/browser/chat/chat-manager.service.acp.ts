@@ -528,7 +528,21 @@ export class AcpChatManagerService extends ChatManagerService {
       existingTitle && (!sessionData.title || this.isLikelyAcpContextTitle(sessionData.title))
         ? { ...sessionData, title: existingTitle }
         : sessionData;
-    const [session] = this.fromAcpJSON([sessionDataWithTitle]);
+    const sessionDataWithRuntimeMetadata: AcpSessionModelData = {
+      ...sessionDataWithTitle,
+      extension: sessionDataWithTitle.extension
+        ? {
+            ...sessionDataWithTitle.extension,
+            acpTarget: sessionDataWithTitle.extension.acpTarget ?? existingSession?.acpTarget,
+          }
+        : existingSession?.acpTarget
+        ? {
+            availableCommands: [],
+            acpTarget: existingSession.acpTarget,
+          }
+        : undefined,
+    };
+    const [session] = this.fromAcpJSON([sessionDataWithRuntimeMetadata]);
     if (!session) {
       return;
     }
