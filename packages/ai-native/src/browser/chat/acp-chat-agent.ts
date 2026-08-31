@@ -163,6 +163,7 @@ export class AcpChatAgent implements IChatAgent {
         this.logger.log(
           `[ACP Chat] invoke custom slash handler — requestId=${request.requestId}, command=${command}, promptChars=${prompt.length}`,
         );
+        progress({ kind: 'requestAccepted', sessionId: request.sessionId });
         await commandHandler.invoke(prompt, progress, token);
         chatDeferred.resolve();
         return {};

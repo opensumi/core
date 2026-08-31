@@ -1183,6 +1183,52 @@ describe('AcpChatManagerService', () => {
     expect(loadedModel?.history.getMessages()).toHaveLength(1);
   });
 
+  it('preserves the ACP target when a loaded session snapshot omits runtime routing metadata', async () => {
+    const service = createService();
+    const sessionId = 'acp:targeted-session';
+    const acpTarget = { agentId: 'agent-b', cwd: '/work/b' };
+    const metadataModel = service.fromAcpJSON([
+      {
+        sessionId,
+        history: {
+          additional: {},
+          messages: [],
+        },
+        requests: [],
+        extension: {
+          availableCommands: [],
+          acpTarget,
+        },
+      },
+    ])[0];
+
+    service.sessionModels.set(sessionId, metadataModel);
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue({
+          sessionId,
+          history: {
+            additional: {},
+            messages: [
+              {
+                id: `${sessionId}-msg-0`,
+                role: ChatMessageRole.User,
+                content: 'continue in the original project',
+                order: 0,
+              },
+            ],
+          },
+          requests: [],
+        }),
+      },
+    });
+
+    await service.loadSession(sessionId);
+
+    expect(service.getSession(sessionId)).not.toBe(metadataModel);
+    expect(service.getSession(sessionId)?.acpTarget).toEqual(acpTarget);
+  });
+
   it('reattaches a loaded ACP session and applies snapshot status plus later output', async () => {
     const service = createService();
     const sessionId = 'acp:s-running';
