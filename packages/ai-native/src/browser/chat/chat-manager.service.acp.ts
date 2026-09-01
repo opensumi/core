@@ -523,11 +523,13 @@ export class AcpChatManagerService extends ChatManagerService {
   }
 
   private restoreLoadedSession(sessionId: string, sessionData: ISessionModel, existingSession?: ChatModel): void {
+    const sessionDataWithPreservedUsers = this.preserveExistingUsersWhenSnapshotOmitsThem(sessionData, existingSession);
     const existingTitle = this.getExistingTitleForLoadedSession(sessionId, existingSession);
     const sessionDataWithTitle =
-      existingTitle && (!sessionData.title || this.isLikelyAcpContextTitle(sessionData.title))
-        ? { ...sessionData, title: existingTitle }
-        : sessionData;
+      existingTitle &&
+      (!sessionDataWithPreservedUsers.title || this.isLikelyAcpContextTitle(sessionDataWithPreservedUsers.title))
+        ? { ...sessionDataWithPreservedUsers, title: existingTitle }
+        : sessionDataWithPreservedUsers;
     const sessionDataWithRuntimeMetadata: AcpSessionModelData = {
       ...sessionDataWithTitle,
       extension: sessionDataWithTitle.extension
@@ -567,6 +569,97 @@ export class AcpChatManagerService extends ChatManagerService {
     ) {
       this.setDisplayTitleOverride(sessionId, session.title);
     }
+  }
+
+  private preserveExistingUsersWhenSnapshotOmitsThem(
+    sessionData: ISessionModel,
+    existingSession?: ChatModel,
+  ): ISessionModel {
+    const incomingMessages = sessionData.history.messages;
+    if (!existingSession || incomingMessages.some((message) => message.role === ChatMessageRole.User)) {
+      return sessionData;
+    }
+
+    const existingMessages = existingSession.history.getMessages();
+    if (!existingMessages.some((message) => message.role === ChatMessageRole.User)) {
+      return sessionData;
+    }
+
+    const preserveExistingTranscript = (): ISessionModel => {
+      const existingData = this.toSessionData(existingSession);
+      return {
+        ...sessionData,
+        history: {
+          ...sessionData.history,
+          messages: existingData.history.messages.map((message) => ({ ...message })),
+        },
+        requests: existingData.requests,
+      };
+    };
+    const existingUsers = existingMessages.filter((message) => message.role === ChatMessageRole.User);
+    const incomingRelations = new Set(
+      incomingMessages.map((message) => message.relationId).filter((relationId): relationId is string => !!relationId),
+    );
+    const usersByRelation = new Map<string, typeof existingUsers>();
+    const usersWithoutRelation = existingUsers.filter((message) => !message.relationId);
+    existingUsers.forEach((message) => {
+      if (!message.relationId) {
+        return;
+      }
+      const relatedUsers = usersByRelation.get(message.relationId) || [];
+      relatedUsers.push(message);
+      usersByRelation.set(message.relationId, relatedUsers);
+    });
+
+    const canUseSingleTurnFallback =
+      existingUsers.length === 1 &&
+      usersWithoutRelation.length === 1 &&
+      incomingMessages.length === 1 &&
+      sessionData.requests.length === 1;
+    if (
+      (!canUseSingleTurnFallback && usersWithoutRelation.length > 0) ||
+      Array.from(usersByRelation.keys()).some((relationId) => !incomingRelations.has(relationId))
+    ) {
+      return preserveExistingTranscript();
+    }
+
+    const restoredRelations = new Set<string>();
+    const mergedMessages = incomingMessages.flatMap((message) => {
+      const relatedUsers = message.relationId ? usersByRelation.get(message.relationId) : undefined;
+      if (relatedUsers && message.relationId && !restoredRelations.has(message.relationId)) {
+        restoredRelations.add(message.relationId);
+        return [...relatedUsers.map((user) => ({ ...user })), { ...message }];
+      }
+      if (canUseSingleTurnFallback) {
+        return [{ ...usersWithoutRelation[0] }, { ...message }];
+      }
+      return [{ ...message }];
+    });
+    const existingRequests = existingSession.requests;
+    const existingRequestsById = new Map(existingRequests.map((request) => [request.requestId, request]));
+    const canUseSingleRequestFallback = existingRequests.length === 1 && sessionData.requests.length === 1;
+    return {
+      ...sessionData,
+      history: {
+        ...sessionData.history,
+        messages: mergedMessages.map((message, index) => ({ ...message, order: index })),
+      },
+      requests: sessionData.requests.map((request) => {
+        const existingRequest =
+          existingRequestsById.get(request.requestId) ||
+          (canUseSingleRequestFallback ? existingRequests[0] : undefined);
+        if (request.message.prompt || !existingRequest?.message.prompt) {
+          return request;
+        }
+        return {
+          ...request,
+          message: {
+            ...request.message,
+            prompt: existingRequest.message.prompt,
+          },
+        };
+      }),
+    };
   }
 
   private getSessionAttachments(): Map<

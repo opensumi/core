@@ -384,6 +384,9 @@ export class ACPSessionProvider implements ISessionProvider {
         return undefined;
       }
 
+      // eslint-disable-next-line no-console
+      console.log('[ACP Chat][session/load] Agent history updates:', agentSession.historyUpdates || []);
+
       // 将 Agent Session 转换为 ISessionModel 格式
       const sessionModel = this.convertAgentSessionToModel(sessionId, agentSession);
       const target = this.agentSessionTargets.get(sessionId);
@@ -536,7 +539,9 @@ export class ACPSessionProvider implements ISessionProvider {
   ): ISessionModel {
     interface RestoredTurn {
       userContent: string;
+      userMessageId?: string;
       assistantContent: string;
+      assistantMessageId?: string;
       responseParts: IChatProgressResponseContent[];
       toolCalls: Map<string, IChatToolCall>;
     }
@@ -592,16 +597,26 @@ export class ACPSessionProvider implements ISessionProvider {
           if (!text) {
             break;
           }
-          if (current && (current.assistantContent || current.responseParts.length > 0)) {
+          const messageId = typeof update.messageId === 'string' ? update.messageId : undefined;
+          const startsNewUserMessage = current?.userMessageId && messageId && current.userMessageId !== messageId;
+          if (current && (current.assistantContent || current.responseParts.length > 0 || startsNewUserMessage)) {
             flushTurn();
           }
-          ensureTurn().userContent += text;
+          const turn = ensureTurn();
+          turn.userMessageId = turn.userMessageId || messageId;
+          turn.userContent += text;
           break;
         }
         case 'agent_message_chunk': {
           const text = update.content?.type === 'text' ? update.content.text : '';
           if (text) {
-            appendMarkdown(ensureTurn(), text);
+            const messageId = typeof update.messageId === 'string' ? update.messageId : undefined;
+            if (current?.assistantMessageId && messageId && current.assistantMessageId !== messageId) {
+              flushTurn();
+            }
+            const turn = ensureTurn();
+            turn.assistantMessageId = turn.assistantMessageId || messageId;
+            appendMarkdown(turn, text);
           }
           break;
         }
@@ -684,20 +699,23 @@ export class ACPSessionProvider implements ISessionProvider {
     const messages: ISessionModel['history']['messages'] = [];
     const requests: ISessionModel['requests'] = [];
     turns.forEach((turn, index) => {
-      const relationId = `${sessionId}-restored-relation-${index}`;
-      const requestId = `${sessionId}-restored-request-${index}`;
+      const turnIdentity = turn.assistantMessageId || turn.userMessageId || String(index);
+      const relationId = `${sessionId}-restored-relation-${turnIdentity}`;
+      const requestId = `${sessionId}-restored-request-${turnIdentity}`;
+      if (turn.userContent) {
+        messages.push({
+          id: `${sessionId}-restored-user-${turn.userMessageId || index}`,
+          role: ChatMessageRole.User,
+          content: turn.userContent,
+          order: messages.length,
+          relationId,
+          agentId: DEFAULT_ACP_CHAT_AGENT_ID,
+          agentCommand: '',
+          images: [],
+        });
+      }
       messages.push({
-        id: `${sessionId}-restored-user-${index}`,
-        role: ChatMessageRole.User,
-        content: turn.userContent,
-        order: messages.length,
-        relationId,
-        agentId: DEFAULT_ACP_CHAT_AGENT_ID,
-        agentCommand: '',
-        images: [],
-      });
-      messages.push({
-        id: `${sessionId}-restored-assistant-${index}`,
+        id: `${sessionId}-restored-assistant-${turn.assistantMessageId || index}`,
         role: ChatMessageRole.Assistant,
         content: turn.assistantContent,
         order: messages.length,
