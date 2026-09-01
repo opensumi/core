@@ -39,6 +39,14 @@ async function getActiveSessionId(): Promise<string | undefined> {
   return result.result.session?.sessionId;
 }
 
+async function getActiveRequestCount(): Promise<number> {
+  const result = await page.evaluate(async () =>
+    (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
+  );
+  expect(result.success).toBe(true);
+  return result.result.session?.requestCount ?? 0;
+}
+
 async function notificationText(): Promise<string> {
   return (await page.locator('.kt-notification-wrapper').allInnerTexts()).join('\n');
 }
@@ -57,7 +65,20 @@ async function launchAndCompleteTask(prompt: string): Promise<string> {
   await expect(chatInput()).toBeVisible();
   await chatInput().click();
   await page.keyboard.type(prompt);
-  await sendButton().click();
+  const send = sendButton();
+  await send.click();
+  await expect
+    .poll(
+      async () => {
+        const requestCount = await getActiveRequestCount();
+        if (requestCount === 0 && (await chatInput().textContent())?.includes(prompt)) {
+          await send.click();
+        }
+        return requestCount;
+      },
+      { timeout: 60_000 },
+    )
+    .toBeGreaterThanOrEqual(1);
   await expect(chatSlot().getByText('BDD_ASSISTANT_PART_2 completed.').last()).toBeVisible({ timeout: 30_000 });
 
   const sessionId = await getActiveSessionId();

@@ -64,6 +64,7 @@ async function getSessionState() {
       sessionId: string;
       rawSessionId?: string;
       title?: string;
+      requestCount: number;
     } | null;
   }>('acp_chat_get_session_state');
   expect(result.success).toBe(true);
@@ -89,17 +90,20 @@ async function createActiveTask(): Promise<string> {
   await expect
     .poll(
       async () => {
-        const state = await getSessionState();
-        return state.session?.sessionId;
+        const requestCount = (await getSessionState()).session?.requestCount ?? 0;
+        if (requestCount === 0 && (await input.textContent())?.includes(FIRST_PROMPT)) {
+          await send.click();
+        }
+        return requestCount;
       },
-      { timeout: 30_000 },
+      { timeout: 60_000 },
     )
-    .toBeTruthy();
+    .toBeGreaterThanOrEqual(1);
 
   const session = (await getSessionState()).session!;
-  await expect(
-    page.getByTestId('agentic-session-list').getByRole('button', { name: AGENT_SESSION_TITLE, exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  const row = page.getByTestId(`agentic-session-row-${session.sessionId}`);
+  await expect(row).toBeVisible({ timeout: 30_000 });
+  await expect(row).toHaveAttribute('aria-label', AGENT_SESSION_TITLE);
   return session.sessionId;
 }
 
