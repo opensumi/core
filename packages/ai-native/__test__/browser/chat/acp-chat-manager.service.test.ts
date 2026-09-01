@@ -428,6 +428,29 @@ describe('AcpChatManagerService', () => {
     );
   });
 
+  it('logs the complete Agent history update list before converting a loaded session', async () => {
+    const provider = createSessionProvider() as any;
+    const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    const historyUpdates = [
+      {
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'user_message_chunk',
+          content: { type: 'text', text: 'first prompt' },
+        },
+      },
+    ];
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        loadAgentSession: jest.fn().mockResolvedValue({ sessionId: 's1', messages: [], historyUpdates }),
+      },
+    });
+
+    await provider.loadSession('acp:s1');
+
+    expect(consoleLog).toHaveBeenCalledWith('[ACP Chat][session/load] Agent history updates:', historyUpdates);
+  });
+
   it('disposes an ACP provider session using its raw backend session id', async () => {
     const provider = createSessionProvider();
     const disposeSession = jest.fn().mockResolvedValue(undefined);
@@ -859,6 +882,62 @@ describe('AcpChatManagerService', () => {
       ]),
     );
     expect(session?.history.messages[1]).toEqual(expect.objectContaining({ requestId: expect.any(String) }));
+  });
+
+  it('preserves messageId boundaries without creating an empty user message during history restore', async () => {
+    const provider = createSessionProvider();
+    jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        loadAgentSession: jest.fn().mockResolvedValue({
+          sessionId: 'message-boundaries',
+          messages: [],
+          historyUpdates: [
+            {
+              sessionId: 'message-boundaries',
+              update: {
+                sessionUpdate: 'agent_message_chunk',
+                messageId: 'assistant-greeting',
+                content: { type: 'text', text: 'How can I help?' },
+              },
+            },
+            {
+              sessionId: 'message-boundaries',
+              update: {
+                sessionUpdate: 'user_message_chunk',
+                messageId: 'user-1',
+                content: { type: 'text', text: 'hello' },
+              },
+            },
+            {
+              sessionId: 'message-boundaries',
+              update: {
+                sessionUpdate: 'agent_message_chunk',
+                messageId: 'assistant-1',
+                content: { type: 'text', text: 'first response' },
+              },
+            },
+            {
+              sessionId: 'message-boundaries',
+              update: {
+                sessionUpdate: 'agent_message_chunk',
+                messageId: 'assistant-2',
+                content: { type: 'text', text: 'second response' },
+              },
+            },
+          ],
+        }),
+      },
+    });
+
+    const session = await provider.loadSession('acp:message-boundaries');
+
+    expect(session?.history.messages.map(({ role, content }) => ({ role, content }))).toEqual([
+      { role: ChatMessageRole.Assistant, content: 'How can I help?' },
+      { role: ChatMessageRole.User, content: 'hello' },
+      { role: ChatMessageRole.Assistant, content: 'first response' },
+      { role: ChatMessageRole.Assistant, content: 'second response' },
+    ]);
   });
 
   it.each(['auth_required', 'stopping'] as const)('keeps a %s restored response open for later progress', (status) => {
@@ -1571,13 +1650,6 @@ describe('AcpChatManagerService', () => {
         {
           sessionId: 's-existing',
           update: {
-            sessionUpdate: 'user_message_chunk',
-            content: { type: 'text', text: 'keep working' },
-          },
-        },
-        {
-          sessionId: 's-existing',
-          update: {
             sessionUpdate: 'agent_message_chunk',
             content: { type: 'text', text: 'before reload while offline' },
           },
@@ -1591,6 +1663,134 @@ describe('AcpChatManagerService', () => {
     expect(service.getSession(sessionId)?.requests[0].response.responseText).toBe(
       'before reload while offline after reload',
     );
+    expect(service.getSession(sessionId)?.history.getMessages()).toEqual([
+      expect.objectContaining({ role: ChatMessageRole.User, content: 'keep working' }),
+      expect.objectContaining({ role: ChatMessageRole.Assistant, content: 'before reload while offline' }),
+    ]);
+    attachment.end();
+  });
+
+  it('keeps restored user turns attached to their Agent message identities when a snapshot adds a greeting', async () => {
+    const service = createService();
+    const provider = createSessionProvider();
+    const sessionId = 'acp:stable-message-identities';
+    const attachment = new SumiReadableStream<any>();
+    const initialSession = provider.restoreSessionSnapshot(sessionId, {
+      kind: 'sessionSnapshot',
+      sessionId: 'stable-message-identities',
+      threadStatus: 'idle',
+      historyUpdates: [
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-greeting',
+            content: { type: 'text', text: 'How can I help?' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            messageId: 'user-1',
+            content: { type: 'text', text: 'first prompt' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-1',
+            content: { type: 'text', text: 'first response' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            messageId: 'user-2',
+            content: { type: 'text', text: 'second prompt' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-2',
+            content: { type: 'text', text: 'second response' },
+          },
+        },
+      ],
+    });
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue(initialSession),
+        attachSession: jest.fn().mockResolvedValue(attachment),
+        restoreSessionSnapshot: provider.restoreSessionSnapshot.bind(provider),
+      },
+    });
+
+    const result = await service.loadSession(sessionId);
+    await expect(result.liveReady).resolves.toBe('ready');
+    attachment.emitData({
+      kind: 'sessionSnapshot',
+      sessionId: 'stable-message-identities',
+      threadStatus: 'idle',
+      historyUpdates: [
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-new-greeting',
+            content: { type: 'text', text: 'New greeting' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-greeting',
+            content: { type: 'text', text: 'How can I help?' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-1',
+            content: { type: 'text', text: 'first response' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-2',
+            content: { type: 'text', text: 'second response' },
+          },
+        },
+      ],
+    });
+
+    expect(
+      service
+        .getSession(sessionId)
+        ?.history.getMessages()
+        .map(({ role, content }) => ({ role, content })),
+    ).toEqual([
+      { role: ChatMessageRole.Assistant, content: 'New greeting' },
+      { role: ChatMessageRole.Assistant, content: 'How can I help?' },
+      { role: ChatMessageRole.User, content: 'first prompt' },
+      { role: ChatMessageRole.Assistant, content: 'first response' },
+      { role: ChatMessageRole.User, content: 'second prompt' },
+      { role: ChatMessageRole.Assistant, content: 'second response' },
+    ]);
+    expect(service.getSession(sessionId)?.requests.map((request) => request.message.prompt)).toEqual([
+      '',
+      '',
+      'first prompt',
+      'second prompt',
+    ]);
     attachment.end();
   });
 
