@@ -436,6 +436,7 @@ export class AcpThread extends Disposable implements IAcpThread {
   private _status: ThreadStatus = 'idle';
   private _entries: AgentThreadEntry[] = [];
   private _sessionNotifications: SessionNotification[] = [];
+  private _pendingLocalUserMessageEcho: { content: string; matchedLength: number } | undefined;
   private _sessionId: string = '';
   private _needsReset = false;
   private _agentCapabilities: AgentCapabilities | null = null;
@@ -799,6 +800,9 @@ export class AcpThread extends Disposable implements IAcpThread {
 
       async sessionUpdate(params: SessionNotification): Promise<void> {
         if (!self.isCurrentSessionNotification(params)) {
+          return;
+        }
+        if (self.consumeLocalUserMessageEcho(params)) {
           return;
         }
         self.recordSessionNotification(params);
@@ -1170,6 +1174,17 @@ export class AcpThread extends Disposable implements IAcpThread {
     };
     const threadEntry: AgentThreadEntry = { type: 'user_message', data: entry };
     this._entries.push(threadEntry);
+    if (this._sessionId) {
+      this.recordSessionNotification({
+        sessionId: this._sessionId,
+        update: {
+          sessionUpdate: 'user_message_chunk',
+          content: { type: 'text', text: content },
+          messageId: entry.id,
+        } as any,
+      });
+      this._pendingLocalUserMessageEcho = { content, matchedLength: 0 };
+    }
     this.fireEntryAdded(threadEntry);
     return entry;
   }
@@ -1241,6 +1256,7 @@ export class AcpThread extends Disposable implements IAcpThread {
     );
     this._entries = [];
     this._sessionNotifications = [];
+    this._pendingLocalUserMessageEcho = undefined;
     this._sessionId = '';
     this._needsReset = false;
     this.clearSessionState();
@@ -1351,6 +1367,41 @@ export class AcpThread extends Disposable implements IAcpThread {
     this.logger?.warn(
       `[AcpThread:${this.threadId}] Ignoring session notification for ${params.sessionId}; current session is ${this._sessionId}`,
     );
+    return false;
+  }
+
+  private consumeLocalUserMessageEcho(notification: SessionNotification): boolean {
+    const pending = this._pendingLocalUserMessageEcho;
+    if (!pending) {
+      return false;
+    }
+
+    const update = notification.update as any;
+    if (update?.sessionUpdate === 'user_message_chunk') {
+      const content = this.extractTextContent(update.content);
+      if (!content) {
+        return false;
+      }
+      const remaining = pending.content.slice(pending.matchedLength);
+      if (!remaining.startsWith(content)) {
+        this._pendingLocalUserMessageEcho = undefined;
+        return false;
+      }
+      pending.matchedLength += content.length;
+      if (pending.matchedLength === pending.content.length) {
+        this._pendingLocalUserMessageEcho = undefined;
+      }
+      return true;
+    }
+
+    if (
+      update?.sessionUpdate === 'agent_message_chunk' ||
+      update?.sessionUpdate === 'agent_thought_chunk' ||
+      update?.sessionUpdate === 'tool_call' ||
+      update?.sessionUpdate === 'plan'
+    ) {
+      this._pendingLocalUserMessageEcho = undefined;
+    }
     return false;
   }
 
