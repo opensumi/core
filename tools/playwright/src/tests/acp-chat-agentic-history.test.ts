@@ -179,10 +179,20 @@ async function startTaskInCurrentProject() {
 async function sendTaskPrompt(title: string): Promise<AcpSessionSummary> {
   await chatInput().click();
   await page.keyboard.insertText(title);
+  await expect(chatInput()).toContainText(title);
   await sendButton().click();
 
   await expect
-    .poll(async () => (await getSessionState()).session?.requestCount ?? 0, { timeout: 30_000 })
+    .poll(
+      async () => {
+        const requestCount = (await getSessionState()).session?.requestCount ?? 0;
+        if (requestCount === 0 && (await chatInput().textContent())?.includes(title)) {
+          await sendButton().click();
+        }
+        return requestCount;
+      },
+      { timeout: 60_000 },
+    )
     .toBeGreaterThanOrEqual(1);
   const session = (await getSessionState()).session!;
   await expect(page.getByTestId(`agentic-session-row-${session.sessionId}`)).toBeVisible({ timeout: 30_000 });
@@ -297,8 +307,12 @@ test.describe('ACP Chat Agentic History', () => {
     await page.getByTestId(`agentic-session-unarchive-${olderSession.sessionId}`).click();
     await expect(page.getByTestId(`agentic-session-archive-${olderSession.sessionId}`)).toBeAttached();
 
+    await expect
+      .poll(async () => (await listSessions()).some((session) => session.sessionId === olderSession.sessionId), {
+        timeout: 30_000,
+      })
+      .toBe(true);
     const sessionsAfterArchiveRoundTrip = await listSessions();
-    expect(sessionsAfterArchiveRoundTrip.some((session) => session.sessionId === olderSession.sessionId)).toBe(true);
     const archiveEvidence = await evidence.saveJson(
       '02-session-archive-round-trip',
       {

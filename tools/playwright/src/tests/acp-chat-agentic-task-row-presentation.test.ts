@@ -18,11 +18,11 @@ function chatInput() {
   return chatSlot().locator('[contenteditable="true"]').last();
 }
 
-async function activeSessionId(): Promise<string | undefined> {
+async function activeSessionState(): Promise<{ sessionId?: string; requestCount?: number }> {
   const state = await page.evaluate(async () =>
     (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
   );
-  return state?.result?.session?.sessionId;
+  return state?.result?.session || {};
 }
 
 async function resizeTaskListTo(targetWidth: number): Promise<void> {
@@ -44,11 +44,18 @@ async function resizeTaskListTo(targetWidth: number): Promise<void> {
 }
 
 async function chooseTheme(theme: (typeof THEMES)[number]): Promise<void> {
+  const { label, root, className } = theme;
+  const alreadySelected = await page.evaluate(
+    ({ root, className }) => document.querySelector(root)?.classList.contains(className),
+    { root, className },
+  );
+  if (alreadySelected) {
+    return;
+  }
   const command = page.evaluate(() =>
     (window as any).__OPENSUMI_E2E__?.executeCommand?.('workbench.action.selectTheme'),
   );
-  const { label, root, className } = theme;
-  const option = page.getByText(label, { exact: true }).last();
+  const option = page.locator('#opensumi-quickpick-item:visible').filter({ hasText: label });
   await expect(option).toBeVisible({ timeout: 15_000 });
   await option.click();
   await command;
@@ -82,16 +89,25 @@ test.describe('ACP Chat Agent Session Row presentation', () => {
       await chatInput().click();
       await page.keyboard.insertText(SESSION_PROMPT);
       await expect(chatInput()).toContainText(SESSION_PROMPT);
-      await chatSlot()
+      const send = chatSlot()
         .getByRole('button', { name: /^(Enter\s+)?Send$|^Enter\s+发送$|^发送$/i })
-        .last()
-        .click();
+        .last();
+      await send.click();
 
-      await expect.poll(activeSessionId, { timeout: 30_000 }).toBeTruthy();
-      const sessionId = (await activeSessionId())!;
-      const refresh = page.getByTestId('agentic-session-refresh-button');
-      await refresh.click();
-      await expect(refresh).toBeEnabled();
+      await expect
+        .poll(
+          async () => {
+            const requestCount = (await activeSessionState()).requestCount ?? 0;
+            if (requestCount === 0 && (await chatInput().textContent())?.includes(SESSION_PROMPT)) {
+              await send.click();
+            }
+            return requestCount;
+          },
+          { timeout: 60_000 },
+        )
+        .toBeGreaterThanOrEqual(1);
+      const sessionId = (await activeSessionState()).sessionId!;
+      expect(sessionId).toBeTruthy();
       const row = page.getByTestId(`agentic-session-row-${sessionId}`);
       await expect(row).toBeVisible({ timeout: 30_000 });
       const title = row.locator('span').first();

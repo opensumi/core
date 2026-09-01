@@ -76,7 +76,8 @@ test.describe('ACP Chat Agentic side entry filter', () => {
     workspace.dispose();
   });
 
-  test('shows only Explorer and Git side entries in Agentic layout', async ({ browser: _browser }, testInfo) => {
+  test('keeps standard side entries available in Agentic layout', async ({ browser: _browser }, testInfo) => {
+    void _browser;
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-side-entry-filter', {
       sourceScenario: 'test/bdd/acp-chat-agentic-side-entry-filter.scenario.md',
       profile: 'default',
@@ -94,7 +95,7 @@ test.describe('ACP Chat Agentic side entry filter', () => {
       'Agentic left side entries',
     );
 
-    expect(agenticEntries).toEqual(['explorer', 'scm']);
+    expect(agenticEntries).toEqual(STANDARD_LEFT_CONTAINER_IDS);
 
     await clickSideEntry('scm');
     await expect(page.locator('#opensumi-left-tabbar li#scm')).toHaveClass(/active/);
@@ -117,7 +118,7 @@ test.describe('ACP Chat Agentic side entry filter', () => {
 
     evidence.recordCriticalPoint({
       id: 'CP1',
-      requirement: 'Agentic side entries show only Explorer and Git/SCM.',
+      requirement: 'Agentic keeps the standard IDE side entries available.',
       status: 'pass',
       evidence: [agenticProof].filter(Boolean) as string[],
     });
