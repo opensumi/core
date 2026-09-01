@@ -33,13 +33,20 @@ jest.mock('stream/web', () => ({
 const mockClientSideConnection = jest.fn().mockImplementation(() => ({
   initialize: jest.fn().mockResolvedValue({
     protocolVersion: 1,
-    agentCapabilities: { fs: { readTextFile: true, writeTextFile: true }, terminal: true },
+    agentCapabilities: {
+      fs: { readTextFile: true, writeTextFile: true },
+      terminal: true,
+      loadSession: true,
+      sessionCapabilities: { list: {} },
+    },
   }),
   newSession: jest.fn().mockResolvedValue({ sessionId: 'new-session-1' }),
   loadSession: jest.fn().mockResolvedValue({ sessionId: 'loaded-session-1' }),
   prompt: jest.fn().mockResolvedValue({ stopReason: 'end_turn' }),
   cancel: jest.fn().mockResolvedValue(undefined),
   listSessions: jest.fn().mockResolvedValue({ sessions: [] }),
+  closeSession: jest.fn().mockResolvedValue({}),
+  deleteSession: jest.fn().mockResolvedValue({}),
 }));
 
 jest.mock('@agentclientprotocol/sdk', () => ({
@@ -137,6 +144,16 @@ function createTestConfig(): AgentProcessConfig {
     args: ['@anthropic-ai/claude-code@latest', '--print'],
     cwd: '/test/workspace',
   };
+}
+
+function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
 }
 
 /** Helper: extract UserMessageEntry from AgentThreadEntry */
@@ -243,6 +260,7 @@ describe('AcpThread', () => {
 
       expect(thread.status).toBe('awaiting_prompt');
       expect(thread.sessionId).toBe('s1');
+      expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('rpcDurationMs='));
     });
 
     it('should transition to working during prompt', async () => {
@@ -267,6 +285,75 @@ describe('AcpThread', () => {
       resolvePrompt!({ stopReason: 'end_turn' });
       await promptPromise;
 
+      expect(thread.status).toBe('awaiting_prompt');
+    });
+
+    it('should transition from working through stopping to awaiting_prompt when cancellation completes', async () => {
+      const prompt = createDeferred<any>();
+      const cancel = jest.fn().mockResolvedValue(undefined);
+      (thread as any)._connected = true;
+      (thread as any)._connection = {
+        prompt: jest.fn(() => prompt.promise),
+        cancel,
+      };
+      (thread as any)._initialized = true;
+
+      const promptPromise = thread.prompt({ sessionId: 's1' } as any);
+      await Promise.resolve();
+      expect(thread.status).toBe('working');
+
+      await thread.cancel({ sessionId: 's1' } as any);
+      expect(thread.status).toBe('stopping');
+
+      prompt.resolve({ stopReason: 'cancelled' });
+      await expect(promptPromise).resolves.toEqual({ stopReason: 'cancelled' });
+      expect(thread.status).toBe('awaiting_prompt');
+    });
+
+    it('should keep repeated cancellation idempotent while stopping', async () => {
+      const cancel = createDeferred<void>();
+      const cancelRequest = jest.fn(() => cancel.promise);
+      (thread as any)._connected = true;
+      (thread as any)._connection = { cancel: cancelRequest };
+      (thread as any)._initialized = true;
+      thread.setStatus('working');
+
+      const firstCancel = thread.cancel({ sessionId: 's1' } as any);
+      expect(thread.status).toBe('stopping');
+      await expect(thread.cancel({ sessionId: 's1' } as any)).resolves.toBeUndefined();
+      expect(cancelRequest).toHaveBeenCalledTimes(1);
+
+      cancel.resolve();
+      await firstCancel;
+      expect(thread.status).toBe('stopping');
+    });
+
+    it('should restore the previous pending status when sending cancellation fails', async () => {
+      (thread as any)._connected = true;
+      (thread as any)._connection = {
+        cancel: jest.fn().mockRejectedValue(new Error('cancel transport failed')),
+      };
+      (thread as any)._initialized = true;
+      thread.setStatus('working');
+
+      await expect(thread.cancel({ sessionId: 's1' } as any)).rejects.toThrow('cancel transport failed');
+      expect(thread.status).toBe('working');
+    });
+
+    it('should recover to awaiting_prompt when a stopping prompt rejects', async () => {
+      const prompt = createDeferred<any>();
+      (thread as any)._connected = true;
+      (thread as any)._connection = {
+        prompt: jest.fn(() => prompt.promise),
+        cancel: jest.fn().mockResolvedValue(undefined),
+      };
+      (thread as any)._initialized = true;
+
+      const promptPromise = thread.prompt({ sessionId: 's1' } as any);
+      await thread.cancel({ sessionId: 's1' } as any);
+      prompt.reject(new Error('cancelled prompt rejected'));
+
+      await expect(promptPromise).rejects.toThrow('cancelled prompt rejected');
       expect(thread.status).toBe('awaiting_prompt');
     });
 
@@ -636,6 +723,63 @@ describe('AcpThread', () => {
       expect(mockInitialize).toHaveBeenCalled();
       expect(thread.initialized).toBe(true);
     });
+
+    it('does not revive a thread when disposal wins the process-start race', async () => {
+      jest.useFakeTimers();
+
+      const initialization = thread.initialize(createTestConfig());
+      const initializationCancelled = expect(initialization).rejects.toMatchObject({
+        name: 'AcpThreadInitializationCancelledError',
+      });
+      await Promise.resolve();
+
+      const disposal = thread.dispose();
+      await jest.runAllTimersAsync();
+      await disposal;
+
+      await initializationCancelled;
+      expect(thread.initialized).toBe(false);
+      expect(thread.isProcessRunning).toBe(false);
+      expect(thread.isConnected).toBe(false);
+    });
+
+    it('force-kills a starting process that does not exit after SIGTERM', async () => {
+      jest.useFakeTimers();
+      const initialization = thread.initialize(createTestConfig());
+      const initializationCancelled = expect(initialization).rejects.toMatchObject({
+        name: 'AcpThreadInitializationCancelledError',
+      });
+      await Promise.resolve();
+
+      const disposal = thread.dispose();
+      await jest.advanceTimersByTimeAsync(5000);
+      await disposal;
+      await initializationCancelled;
+
+      expect(process.kill).toHaveBeenCalledWith(-mockChildProcess.pid, 'SIGTERM');
+      expect(process.kill).toHaveBeenCalledWith(-mockChildProcess.pid, 'SIGKILL');
+      expect(thread.isProcessRunning).toBe(false);
+    });
+
+    it('ignores an ACP initialize response that arrives after disposal', async () => {
+      const initializeResult = createDeferred<any>();
+      (thread as any)._connected = true;
+      (thread as any)._connection = {
+        initialize: jest.fn(() => initializeResult.promise),
+      };
+
+      const initialization = thread.initialize(createTestConfig());
+      const initializationCancelled = expect(initialization).rejects.toMatchObject({
+        name: 'AcpThreadInitializationCancelledError',
+      });
+      await Promise.resolve();
+      await thread.dispose();
+      initializeResult.resolve({ protocolVersion: 1, agentCapabilities: {} });
+
+      await initializationCancelled;
+      expect(thread.initialized).toBe(false);
+      expect(thread.isConnected).toBe(false);
+    });
   });
 
   // ===================================================================
@@ -754,6 +898,68 @@ describe('AcpThread', () => {
     it('should set timestamp', () => {
       const entry = thread.addUserMessage('Test');
       expect(entry.timestamp).toBeGreaterThan(0);
+    });
+
+    it('should retain submitted user messages in native session history', () => {
+      (thread as any)._sessionId = 's1';
+
+      const entry = thread.addUserMessage('Hello, AI!');
+
+      expect(thread.getSessionNotifications()).toEqual([
+        {
+          sessionId: 's1',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: { type: 'text', text: 'Hello, AI!' },
+            messageId: entry.id,
+          },
+        },
+      ]);
+    });
+
+    it('should ignore an Agent echo of the submitted user message', async () => {
+      (thread as any)._sessionId = 's1';
+      const client = (thread as any).createClientImpl();
+
+      thread.addUserMessage('Hello, AI!');
+      await client.sessionUpdate({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'user_message_chunk',
+          content: { type: 'text', text: 'Hello, ' },
+        },
+      });
+      await client.sessionUpdate({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'user_message_chunk',
+          content: { type: 'text', text: 'AI!' },
+        },
+      });
+      await client.sessionUpdate({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'agent_message_chunk',
+          content: { type: 'text', text: 'Hi!' },
+        },
+      });
+
+      expect(thread.getSessionNotifications()).toEqual([
+        expect.objectContaining({
+          update: expect.objectContaining({
+            sessionUpdate: 'user_message_chunk',
+            content: { type: 'text', text: 'Hello, AI!' },
+          }),
+        }),
+        expect.objectContaining({
+          update: expect.objectContaining({
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: 'Hi!' },
+          }),
+        }),
+      ]);
+      expect(thread.entries).toHaveLength(2);
+      expect(getUserData(thread.entries[0])?.content).toBe('Hello, AI!');
     });
   });
 
@@ -994,6 +1200,7 @@ describe('AcpThread', () => {
         }),
       };
       (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = { loadSession: true };
       (thread as any)._connection = connection;
 
       await thread.loadSession({ sessionId: 's1' } as any);
@@ -1206,6 +1413,68 @@ describe('AcpThread', () => {
       (thread as any)._connection = null;
 
       await expect(thread.listSessions()).rejects.toThrow('AcpThread not initialized');
+    });
+
+    it('does not send session/load when the agent did not advertise loadSession', async () => {
+      const connection = { loadSession: jest.fn() };
+      (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = {};
+      (thread as any)._connection = connection;
+
+      await expect(thread.loadSession({ sessionId: 's1' } as any)).rejects.toThrow(
+        'Agent does not support ACP session/load.',
+      );
+      expect(connection.loadSession).not.toHaveBeenCalled();
+    });
+
+    it('does not send session/list when the agent did not advertise sessionCapabilities.list', async () => {
+      const connection = { listSessions: jest.fn() };
+      (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = { loadSession: true, sessionCapabilities: {} };
+      (thread as any)._connection = connection;
+
+      await expect(thread.listSessions()).rejects.toThrow('Agent does not support ACP session/list.');
+      expect(connection.listSessions).not.toHaveBeenCalled();
+    });
+
+    it('does not send session/close when the agent did not advertise sessionCapabilities.close', async () => {
+      const connection = { closeSession: jest.fn() };
+      (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = { sessionCapabilities: {} };
+      (thread as any)._connection = connection;
+
+      await expect(thread.closeSession({ sessionId: 's1' } as any)).rejects.toThrow(
+        'Agent does not support ACP session/close.',
+      );
+      expect(connection.closeSession).not.toHaveBeenCalled();
+    });
+
+    it('does not send session/delete when the agent did not advertise sessionCapabilities.delete', async () => {
+      const connection = { deleteSession: jest.fn() };
+      (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = { sessionCapabilities: {} };
+      (thread as any)._connection = connection;
+
+      await expect(thread.deleteSession({ sessionId: 's1' })).rejects.toThrow(
+        'Agent does not support ACP session/delete.',
+      );
+      expect(connection.deleteSession).not.toHaveBeenCalled();
+    });
+
+    it('uses the standard close and delete methods after capability negotiation', async () => {
+      const connection = {
+        closeSession: jest.fn().mockResolvedValue({}),
+        deleteSession: jest.fn().mockResolvedValue({}),
+      };
+      (thread as any)._initialized = true;
+      (thread as any)._agentCapabilities = { sessionCapabilities: { close: {}, delete: {} } };
+      (thread as any)._connection = connection;
+
+      await thread.closeSession({ sessionId: 's1' } as any);
+      await thread.deleteSession({ sessionId: 's1' });
+
+      expect(connection.closeSession).toHaveBeenCalledWith({ sessionId: 's1' });
+      expect(connection.deleteSession).toHaveBeenCalledWith({ sessionId: 's1' });
     });
   });
 

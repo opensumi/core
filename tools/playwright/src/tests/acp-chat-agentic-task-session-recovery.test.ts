@@ -23,16 +23,17 @@ function chatInput() {
   return chatSlot().locator('[contenteditable="true"]').last();
 }
 
+async function getActiveSessionId(): Promise<string | undefined> {
+  const state = await page.evaluate(async () =>
+    (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
+  );
+  return state?.result?.session?.sessionId;
+}
+
 test.describe('ACP Chat Agentic Task Session Recovery', () => {
   test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS * 2);
 
-  test('keeps a retained Task visible and retryable when its originating Agent reports the Session missing', async () => {
-    let missingLoadAttempts = 0;
-    page.on('console', (message) => {
-      if (message.type() === 'warning' && message.text().includes('AIBackSerivcePath:loadAgentSession')) {
-        missingLoadAttempts += 1;
-      }
-    });
+  test('omits a Session that the originating Agent no longer returns and keeps the draft usable', async () => {
     const runtime = await loadAcpBddFixtureWorkbench(page, {
       fixture: 'task-session-missing',
       profile: 'interactive',
@@ -47,11 +48,8 @@ test.describe('ACP Chat Agentic Task Session Recovery', () => {
       await chatSlot().getByRole('button', { name: 'Send' }).last().click();
       await expect(chatSlot().getByText('BDD_ASSISTANT_PART_2 completed.')).toBeVisible({ timeout: 30_000 });
 
-      const createdRow = page.locator('[data-testid^="agentic-task-row-"]').filter({ hasText: TASK_PROMPT }).first();
-      await expect(createdRow).toBeVisible({ timeout: 30_000 });
-      const rowTestId = await createdRow.getAttribute('data-testid');
-      expect(rowTestId).toBeTruthy();
-      const sessionId = rowTestId!.replace('agentic-task-row-', '');
+      const sessionId = await getActiveSessionId();
+      expect(sessionId).toBeTruthy();
 
       await page.waitForTimeout(250);
       await clearAcpBddTransientSessionState(page);
@@ -64,40 +62,22 @@ test.describe('ACP Chat Agentic Task Session Recovery', () => {
       await waitForAcpChatReady(page);
       await ensureAgenticLayout(page);
 
-      const retainedRow = page.getByTestId(`agentic-task-row-${sessionId}`);
-      await expect(retainedRow).toBeVisible({ timeout: 30_000 });
-      await expect(retainedRow).toHaveAttribute('aria-label', /Agent: .*claude-agent-acp/);
+      const retainedRow = page.getByTestId(`agentic-session-row-${sessionId}`);
+      await expect(retainedRow).toHaveCount(0, { timeout: 30_000 });
+      await expect(chatInput()).toBeVisible();
+      await expect(chatInput()).toBeEditable();
 
       await chatInput().click();
       await page.keyboard.type(PREVIOUS_ACTIVE_PROMPT);
       await chatSlot().getByRole('button', { name: 'Send' }).last().click();
       await expect(chatSlot().getByText('BDD_ASSISTANT_PART_2 completed.')).toBeVisible({ timeout: 30_000 });
-      const previousActiveRow = page
-        .locator('[data-testid^="agentic-task-row-"]')
-        .filter({ hasText: PREVIOUS_ACTIVE_PROMPT })
-        .first();
-      await expect(previousActiveRow).toHaveAttribute('aria-current', 'true');
-      await page.waitForTimeout(250);
+      const previousActiveSessionId = await getActiveSessionId();
+      expect(previousActiveSessionId).toBeTruthy();
+      expect(previousActiveSessionId).not.toBe(sessionId);
+      await expect(retainedRow).toHaveCount(0);
 
-      await retainedRow.click();
-      const unavailable = page.getByTestId(`agentic-task-availability-${sessionId}`);
-      await expect(unavailable).toBeVisible({ timeout: 30_000 });
-      await expect(unavailable).toHaveAttribute('data-agentic-task-meta-kind', 'conversation-unavailable');
-      await expect(retainedRow).toHaveAttribute('aria-label', /Status: History unavailable/);
-      await expect(retainedRow).not.toHaveAttribute('aria-current', 'true');
-      await expect(previousActiveRow).toHaveAttribute('aria-current', 'true');
-      await expect.poll(() => missingLoadAttempts).toBeGreaterThanOrEqual(1);
-
-      await retainedRow.click();
-      await expect(unavailable).toBeVisible();
-      await expect(unavailable).toHaveAttribute('data-agentic-task-meta-kind', 'conversation-unavailable');
-      await expect(retainedRow).toHaveAttribute('aria-label', /Status: History unavailable/);
-      await expect.poll(() => missingLoadAttempts).toBeGreaterThanOrEqual(2);
-      await expect(previousActiveRow).toHaveAttribute('aria-current', 'true');
-
-      const visibleText = `${await chatSlot().innerText()}\n${await page
-        .locator('.kt-notification-wrapper')
-        .innerText()}`;
+      const notificationText = (await page.locator('.kt-notification-wrapper:visible').allInnerTexts()).join('\n');
+      const visibleText = `${await chatSlot().innerText()}\n${notificationText}`;
       expect(visibleText).not.toMatch(
         /\n\s*at\s+\S+\s+\(|"jsonrpc"|session\/load|api[_-]?key|password|\bsk-[a-z0-9]{8,}/i,
       );

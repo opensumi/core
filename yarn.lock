@@ -12,12 +12,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@agentclientprotocol/sdk@npm:^0.16.1":
-  version: 0.16.1
-  resolution: "@agentclientprotocol/sdk@npm:0.16.1"
+"@agentclientprotocol/sdk@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@agentclientprotocol/sdk@npm:1.3.0"
   peerDependencies:
     zod: ^3.25.0 || ^4.0.0
-  checksum: 10/565495a1024712423ddac966a944ae03ee1e54592504be74cc538250979e907f91550f7ba9fef080aac4cc15de430ee44bdd3bda32009a2735513d4024cec1f5
+  checksum: 10/24ced047c2a803a5d2978ca87ab0f13b9531a092b075dd04430b8b76e680c77bc8bb0192bb5f34fa4d19f998ed13e092d40ebe5bf1c08f5fa01bd3e401174481
   languageName: node
   linkType: hard
 
@@ -3423,7 +3423,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-ai-native@workspace:packages/ai-native"
   dependencies:
-    "@agentclientprotocol/sdk": "npm:^0.16.1"
+    "@agentclientprotocol/sdk": "npm:^1.3.0"
     "@ai-sdk/anthropic": "npm:^1.1.9"
     "@ai-sdk/deepseek": "npm:^0.1.11"
     "@ai-sdk/openai": "npm:^1.1.9"
@@ -3463,6 +3463,7 @@ __metadata:
     rc-collapse: "npm:^4.0.0"
     react-chat-elements: "npm:^12.0.10"
     react-highlight: "npm:^0.15.0"
+    react-virtuoso: "npm:^4.18.11"
     tiktoken: "npm:1.0.12"
     web-tree-sitter: "npm:0.22.6"
     zod: "npm:^3.25.0 || ^4.0.0"
@@ -3535,7 +3536,7 @@ __metadata:
     react-ctxmenu-trigger: "npm:^1.0.0"
     react-lifecycles-compat: "npm:^3.0.4"
     react-virtualized-auto-sizer: "npm:^1.0.2"
-    react-virtuoso: "npm:^3.1.5"
+    react-virtuoso: "npm:^4.18.11"
     react-window: "npm:^1.8.5"
   languageName: unknown
   linkType: soft
@@ -3592,7 +3593,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-core-common@workspace:packages/core-common"
   dependencies:
-    "@agentclientprotocol/sdk": "npm:^0.16.1"
+    "@agentclientprotocol/sdk": "npm:^1.3.0"
     "@opensumi/di": "npm:^1.8.0"
     "@opensumi/events": "npm:^1.0.0"
     "@opensumi/ide-dev-tool": "workspace:*"
@@ -6443,24 +6444,6 @@ __metadata:
   version: 1.2.0
   resolution: "@ungap/structured-clone@npm:1.2.0"
   checksum: 10/c6fe89a505e513a7592e1438280db1c075764793a2397877ff1351721fe8792a966a5359769e30242b3cd023f2efb9e63ca2ca88019d73b564488cc20e3eab12
-  languageName: node
-  linkType: hard
-
-"@virtuoso.dev/react-urx@npm:^0.2.12":
-  version: 0.2.13
-  resolution: "@virtuoso.dev/react-urx@npm:0.2.13"
-  dependencies:
-    "@virtuoso.dev/urx": "npm:^0.2.13"
-  peerDependencies:
-    react: ">=16"
-  checksum: 10/75ec098a991807b6e963e642c16a9fb03fc25bdfb7e1d46d845f2f912362b2652ec5e22a79c563c9d77548b0345262eca4238585e8f9402077a909657208c933
-  languageName: node
-  linkType: hard
-
-"@virtuoso.dev/urx@npm:^0.2.12, @virtuoso.dev/urx@npm:^0.2.13":
-  version: 0.2.13
-  resolution: "@virtuoso.dev/urx@npm:0.2.13"
-  checksum: 10/9dec1fec47f8cc2eac95f6a2962e5c46468482fc333f8e85f779aef08fbbbedd298c30fe6647b4873df48cf7c85657c73e9f4e414cd78b832307ba901dbc5dfc
   languageName: node
   linkType: hard
 
@@ -21663,16 +21646,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-virtuoso@npm:^3.1.5":
-  version: 3.1.5
-  resolution: "react-virtuoso@npm:3.1.5"
-  dependencies:
-    "@virtuoso.dev/react-urx": "npm:^0.2.12"
-    "@virtuoso.dev/urx": "npm:^0.2.12"
+"react-virtuoso@npm:^4.18.11":
+  version: 4.18.11
+  resolution: "react-virtuoso@npm:4.18.11"
   peerDependencies:
-    react: ">=16 || >=17 || >= 18"
-    react-dom: ">=16 || >=17 || >= 18"
-  checksum: 10/f619ac81bbaefced398844305c23d8a0ed7c8845515f16a2b90dc685081b36c1440c9f191cfa9e4902ae4200632406afcd1fd789b55dc4476b9969c55b40e026
+    react: ">=16 || >=17 || >= 18 || >= 19"
+    react-dom: ">=16 || >=17 || >= 18 || >=19"
+  checksum: 10/a41bca414daf6747903af9717347182ec109cb85db04654ac14190e407d03795008571dd44e8e3598452871eef16eb0db1a5031379bb75e70dfd6f17136604db
   languageName: node
   linkType: hard
 

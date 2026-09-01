@@ -1,12 +1,17 @@
-import { ChatMessageRole } from '@opensumi/ide-core-common';
+import { ChatMessageRole, Deferred, Emitter } from '@opensumi/ide-core-common';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { ACPSessionProvider } from '../../../src/browser/chat/acp-session-provider';
 import { AcpChatManagerService } from '../../../src/browser/chat/chat-manager.service.acp';
 import { ChatModel } from '../../../src/browser/chat/chat-model';
 import { ChatFeatureRegistry } from '../../../src/browser/chat/chat.feature.registry';
+import * as agentTypeModule from '../../../src/browser/chat/get-default-agent-type';
 
 describe('AcpChatManagerService', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   const createService = () => {
     const service = Object.create(AcpChatManagerService.prototype) as AcpChatManagerService & {
       aiNativeConfig: any;
@@ -55,6 +60,27 @@ describe('AcpChatManagerService', () => {
     });
     Object.defineProperty(service, 'shouldFailBddAttachment', {
       value: () => false,
+    });
+    Object.defineProperty(service, 'agentSessionCatalog', {
+      value: [],
+      writable: true,
+    });
+    Object.defineProperty(service, 'metadataOnlySessionIds', {
+      value: new Set(),
+      writable: true,
+    });
+    Object.defineProperty(service, 'agentSessionMetadataRevision', {
+      value: 0,
+      writable: true,
+    });
+    Object.defineProperty(service, 'agentSessionMetadataUpdates', {
+      value: new Map(),
+    });
+    Object.defineProperty(service, 'onDidChangeAgentSessionCatalogEmitter', {
+      value: new Emitter(),
+    });
+    Object.defineProperty(service, 'onDidChangeAgentSessionCatalog', {
+      value: (service as any).onDidChangeAgentSessionCatalogEmitter.event,
     });
     Object.defineProperty(service, 'acpSessionDisplayTitleOverrides', {
       value: {},
@@ -153,6 +179,8 @@ describe('AcpChatManagerService', () => {
       configProvider: any;
       agenticTaskRegistry: any;
       loadedSessionMap: Map<string, any>;
+      agentSessionCatalog: any[];
+      agentSessionTargets: Map<string, any>;
       messageService: any;
       convertAgentSessionToModel(sessionId: string, agentSession: any): any;
     };
@@ -169,6 +197,27 @@ describe('AcpChatManagerService', () => {
     });
     Object.defineProperty(provider, 'loadedSessionMap', {
       value: new Map(),
+    });
+    Object.defineProperty(provider, 'agentSessionCatalog', {
+      value: [],
+      writable: true,
+    });
+    Object.defineProperty(provider, 'agentSessionTargets', {
+      value: new Map(),
+      writable: true,
+    });
+    Object.defineProperty(provider, 'logger', {
+      value: { warn: jest.fn() },
+    });
+    Object.defineProperty(provider, 'preferenceService', {
+      value: { get: jest.fn() },
+    });
+    Object.defineProperty(provider, 'agenticTaskRegistry', {
+      configurable: true,
+      value: {
+        listProjects: jest.fn().mockResolvedValue([]),
+        getTask: jest.fn().mockResolvedValue(undefined),
+      },
     });
 
     return provider;
@@ -212,6 +261,196 @@ describe('AcpChatManagerService', () => {
     });
   });
 
+  it('builds the Agent session catalog from every Agent and known Project, discarding a failed Agent', async () => {
+    const provider = createSessionProvider() as any;
+    jest.spyOn(agentTypeModule, 'getAvailableAgentConfigs').mockReturnValue({
+      'agent-a': { command: 'agent-a', args: [] },
+      'agent-b': { command: 'agent-b', args: [] },
+    });
+    provider.agenticTaskRegistry.listProjects.mockResolvedValue([
+      { id: 'a', workspacePath: '/work/a', availability: 'available' },
+      { id: 'b', workspacePath: '/work/b', availability: 'available' },
+      { id: 'hidden', workspacePath: '/work/hidden', availability: 'unavailable' },
+    ]);
+    provider.configProvider.resolveConfigForTarget = jest.fn(async ({ agentId, cwd }) => ({
+      agentId,
+      cwd,
+      env: { ACP_SESSION_TEST_SECRET: 'never-log-this' },
+    }));
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        listSessions: jest.fn(async ({ agentId, cwd }) => {
+          if (agentId === 'agent-b' && cwd === '/work/b') {
+            throw new Error('agent-b list failed');
+          }
+          return {
+            sessions: [
+              {
+                sessionId: `${agentId}-${cwd.slice(-1)}`,
+                cwd,
+                title: `${agentId} ${cwd}`,
+                updatedAt: '2026-01-01',
+              },
+              { sessionId: 'unknown', cwd: '/not-authorized', title: 'Unknown' },
+            ],
+          };
+        }),
+      },
+    });
+
+    await expect(provider.refreshAgentSessions()).resolves.toEqual([
+      expect.objectContaining({ sessionId: 'acp:agent-a-a', agentId: 'agent-a', cwd: '/work/a' }),
+      expect.objectContaining({ sessionId: 'acp:agent-a-b', agentId: 'agent-a', cwd: '/work/b' }),
+    ]);
+    expect(provider.aiBackService.listSessions).toHaveBeenCalledTimes(4);
+    expect(provider.messageService.error).not.toHaveBeenCalled();
+    expect(provider.logger.warn).toHaveBeenCalledWith(expect.stringContaining('agentId=agent-b'));
+    expect(provider.logger.warn.mock.calls.flat().join('\n')).not.toContain('never-log-this');
+    expect(provider.getAgentSessions()).toHaveLength(2);
+  });
+
+  it('runs a follow-up discovery when a refresh is requested during an in-flight stale snapshot', async () => {
+    const provider = createSessionProvider() as any;
+    const firstList = new Deferred<any>();
+    jest.spyOn(agentTypeModule, 'getAvailableAgentConfigs').mockReturnValue({
+      'agent-a': { command: 'agent-a', args: [] },
+    });
+    provider.agenticTaskRegistry.listProjects
+      .mockResolvedValueOnce([{ id: 'old', workspacePath: '/work/old', availability: 'available' }])
+      .mockResolvedValueOnce([{ id: 'new', workspacePath: '/work/new', availability: 'available' }]);
+    provider.configProvider.resolveConfigForTarget = jest.fn(async ({ agentId, cwd }) => ({ agentId, cwd }));
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        listSessions: jest
+          .fn()
+          .mockImplementationOnce(() => firstList.promise)
+          .mockResolvedValueOnce({
+            sessions: [{ sessionId: 'new-session', cwd: '/work/new', title: 'New Session' }],
+          }),
+      },
+    });
+
+    const initialRefresh = provider.refreshAgentSessions();
+    await Promise.resolve();
+    const overlappingRefresh = provider.refreshAgentSessions();
+    firstList.resolve({
+      sessions: [{ sessionId: 'old-session', cwd: '/work/old', title: 'Old Session' }],
+    });
+
+    await expect(initialRefresh).resolves.toEqual([
+      expect.objectContaining({ sessionId: 'acp:new-session', cwd: '/work/new' }),
+    ]);
+    await expect(overlappingRefresh).resolves.toEqual([
+      expect.objectContaining({ sessionId: 'acp:new-session', cwd: '/work/new' }),
+    ]);
+    expect(provider.agenticTaskRegistry.listProjects).toHaveBeenCalledTimes(2);
+    expect(provider.aiBackService.listSessions).toHaveBeenCalledTimes(2);
+    expect(provider.getAgentSessions()).toEqual([
+      expect.objectContaining({ sessionId: 'acp:new-session', cwd: '/work/new' }),
+    ]);
+  });
+
+  it('excludes a raw Session ID returned by more than one Agent instead of guessing its route', async () => {
+    const provider = createSessionProvider() as any;
+    jest.spyOn(agentTypeModule, 'getAvailableAgentConfigs').mockReturnValue({
+      'agent-a': { command: 'agent-a', args: [] },
+      'agent-b': { command: 'agent-b', args: [] },
+    });
+    provider.agenticTaskRegistry.listProjects.mockResolvedValue([
+      { id: 'a', workspacePath: '/work/a', availability: 'available' },
+    ]);
+    provider.configProvider.resolveConfigForTarget = jest.fn(async ({ agentId, cwd }) => ({ agentId, cwd }));
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        listSessions: jest.fn(async ({ agentId, cwd }) => ({
+          sessions: [
+            { sessionId: 'collision', cwd, title: `${agentId} collision` },
+            { sessionId: `${agentId}-unique`, cwd, title: `${agentId} unique` },
+          ],
+        })),
+      },
+    });
+
+    await expect(provider.refreshAgentSessions()).resolves.toEqual([
+      expect.objectContaining({ sessionId: 'acp:agent-a-unique', agentId: 'agent-a' }),
+      expect.objectContaining({ sessionId: 'acp:agent-b-unique', agentId: 'agent-b' }),
+    ]);
+    expect(provider.getAgentSessions().map((entry) => entry.sessionId)).not.toContain('acp:collision');
+    expect(provider.agentSessionTargets.has('acp:collision')).toBe(false);
+    expect(provider.logger.warn).toHaveBeenCalledWith(expect.stringContaining('agentCount=2'));
+  });
+
+  it('queries only available absolute Workspace Targets and ignores relative Agent metadata', async () => {
+    const provider = createSessionProvider() as any;
+    jest.spyOn(agentTypeModule, 'getAvailableAgentConfigs').mockReturnValue({
+      'agent-a': { command: 'agent-a', args: [] },
+    });
+    provider.agenticTaskRegistry.listProjects.mockResolvedValue([
+      { id: 'relative', workspacePath: 'relative/path', availability: 'available' },
+      { id: 'available', workspacePath: '/work/a', availability: 'available' },
+      { id: 'unavailable', workspacePath: '/work/b', availability: 'unavailable' },
+    ]);
+    provider.configProvider.resolveConfigForTarget = jest.fn(async ({ agentId, cwd }) => ({ agentId, cwd }));
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        listSessions: jest.fn().mockResolvedValue({
+          sessions: [
+            { sessionId: 'relative-result', cwd: 'relative/path', title: 'Relative' },
+            { sessionId: 'authorized-result', cwd: '/work/a', title: 'Authorized' },
+          ],
+        }),
+      },
+    });
+
+    await expect(provider.refreshAgentSessions()).resolves.toEqual([
+      expect.objectContaining({ sessionId: 'acp:authorized-result', cwd: '/work/a' }),
+    ]);
+    expect(provider.configProvider.resolveConfigForTarget).toHaveBeenCalledTimes(1);
+    expect(provider.configProvider.resolveConfigForTarget).toHaveBeenCalledWith({ agentId: 'agent-a', cwd: '/work/a' });
+  });
+
+  it('loads an Agent-listed session through the Agent and cwd returned by session/list', async () => {
+    const provider = createSessionProvider() as any;
+    provider.agentSessionTargets.set('acp:s1', { agentId: 'agent-b', cwd: '/work/b' });
+    provider.configProvider.resolveConfigForTarget = jest.fn(async (target) => ({ ...target }));
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        loadAgentSession: jest.fn().mockResolvedValue({ sessionId: 's1', messages: [] }),
+      },
+    });
+
+    const session = await provider.loadSession('acp:s1');
+
+    expect(provider.configProvider.resolveConfigForTarget).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
+    expect(provider.aiBackService.loadAgentSession).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' }, 's1');
+    expect(session.extension).toEqual(
+      expect.objectContaining({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' }, metadataOnly: false }),
+    );
+  });
+
+  it('logs the complete Agent history update list before converting a loaded session', async () => {
+    const provider = createSessionProvider() as any;
+    const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    const historyUpdates = [
+      {
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'user_message_chunk',
+          content: { type: 'text', text: 'first prompt' },
+        },
+      },
+    ];
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        loadAgentSession: jest.fn().mockResolvedValue({ sessionId: 's1', messages: [], historyUpdates }),
+      },
+    });
+
+    await provider.loadSession('acp:s1');
+
+    expect(consoleLog).toHaveBeenCalledWith('[ACP Chat][session/load] Agent history updates:', historyUpdates);
+  });
+
   it('disposes an ACP provider session using its raw backend session id', async () => {
     const provider = createSessionProvider();
     const disposeSession = jest.fn().mockResolvedValue(undefined);
@@ -222,6 +461,18 @@ describe('AcpChatManagerService', () => {
     await provider.disposeSession('acp:s1');
 
     expect(disposeSession).toHaveBeenCalledWith('s1');
+  });
+
+  it('force disposes an ACP provider session using its raw backend session id', async () => {
+    const provider = createSessionProvider();
+    const disposeSession = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(provider, 'aiBackService', {
+      value: { disposeSession },
+    });
+
+    await provider.disposeSession('acp:s1', true);
+
+    expect(disposeSession).toHaveBeenCalledWith('s1', true);
   });
 
   it('releases the backend session before clearing the browser session model', async () => {
@@ -241,6 +492,20 @@ describe('AcpChatManagerService', () => {
     await service.disposeSession('acp:s1');
 
     expect(calls).toEqual(['backend', 'browser']);
+  });
+
+  it('force releases a restored backend session that is not browser-owned', async () => {
+    const service = createService() as any;
+    service.mainProvider = {
+      disposeSession: jest.fn().mockResolvedValue(undefined),
+    };
+    service.clearSession = jest.fn();
+    service.getSession = jest.fn(() => ({}));
+
+    await service.disposeSession('acp:restored', true);
+
+    expect(service.mainProvider.disposeSession).toHaveBeenCalledWith('acp:restored', true);
+    expect(service.clearSession).toHaveBeenCalledWith('acp:restored');
   });
 
   it('deduplicates overlapping backend session disposal and clears the browser model once', async () => {
@@ -480,10 +745,10 @@ describe('AcpChatManagerService', () => {
       value: { createSession },
     });
 
-    await provider.createSession({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' } });
+    await provider.createSession({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' }, operationId: 'launch-1' });
 
     expect(resolveConfigForTarget).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
-    expect(createSession).toHaveBeenCalledWith(config);
+    expect(createSession).toHaveBeenCalledWith(config, 'launch-1');
   });
 
   it('keeps ACP target metadata on a newly created browser session', async () => {
@@ -514,28 +779,32 @@ describe('AcpChatManagerService', () => {
     expect(service.toSessionData(model)).not.toHaveProperty('extension');
   });
 
-  it('reloads a registered Task through its stored Agent and Project target', async () => {
+  it('does not use a legacy Task record to route an unlisted ACP session', async () => {
     const provider = createSessionProvider();
-    const config = { agentId: 'agent-b', cwd: '/work/b' };
-    const resolveConfigForTarget = jest.fn().mockResolvedValue(config);
+    const config = { agentId: 'claude-agent-acp', cwd: '/workspace' };
     const loadAgentSession = jest.fn().mockResolvedValue({
       sessionId: 'b',
       messages: [],
     });
+    const getTask = jest.fn().mockResolvedValue({
+      sessionId: 'acp:b',
+      projectId: 'project-b',
+      agentId: 'agent-b',
+    });
     Object.defineProperty(provider, 'agenticTaskRegistry', {
       value: {
-        getTask: jest.fn().mockResolvedValue({ sessionId: 'acp:b', projectId: 'project-b', agentId: 'agent-b' }),
+        getTask,
         getProject: jest.fn().mockResolvedValue({ id: 'project-b', workspacePath: '/work/b' }),
       },
     });
-    (provider as any).configProvider.resolveConfigForTarget = resolveConfigForTarget;
     Object.defineProperty(provider, 'aiBackService', {
       value: { loadAgentSession },
     });
 
     await provider.loadSession('acp:b');
 
-    expect(resolveConfigForTarget).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
+    expect(getTask).not.toHaveBeenCalled();
+    expect((provider as any).configProvider.resolveConfig).toHaveBeenCalledTimes(1);
     expect(loadAgentSession).toHaveBeenCalledWith(config, 'b');
   });
 
@@ -615,23 +884,124 @@ describe('AcpChatManagerService', () => {
     expect(session?.history.messages[1]).toEqual(expect.objectContaining({ requestId: expect.any(String) }));
   });
 
-  it('keeps an auth-required restored response open for later progress', () => {
+  it('preserves messageId boundaries without creating an empty user message during history restore', async () => {
     const provider = createSessionProvider();
+    jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    Object.defineProperty(provider, 'aiBackService', {
+      value: {
+        loadAgentSession: jest.fn().mockResolvedValue({
+          sessionId: 'message-boundaries',
+          messages: [],
+          historyUpdates: [
+            {
+              sessionId: 'message-boundaries',
+              update: {
+                sessionUpdate: 'agent_message_chunk',
+                messageId: 'assistant-greeting',
+                content: { type: 'text', text: 'How can I help?' },
+              },
+            },
+            {
+              sessionId: 'message-boundaries',
+              update: {
+                sessionUpdate: 'user_message_chunk',
+                messageId: 'user-1',
+                content: { type: 'text', text: 'hello' },
+              },
+            },
+            {
+              sessionId: 'message-boundaries',
+              update: {
+                sessionUpdate: 'agent_message_chunk',
+                messageId: 'assistant-1',
+                content: { type: 'text', text: 'first response' },
+              },
+            },
+            {
+              sessionId: 'message-boundaries',
+              update: {
+                sessionUpdate: 'agent_message_chunk',
+                messageId: 'assistant-2',
+                content: { type: 'text', text: 'second response' },
+              },
+            },
+          ],
+        }),
+      },
+    });
 
-    const session = provider.restoreSessionSnapshot('acp:auth-required', {
+    const session = await provider.loadSession('acp:message-boundaries');
+
+    expect(session?.history.messages.map(({ role, content }) => ({ role, content }))).toEqual([
+      { role: ChatMessageRole.Assistant, content: 'How can I help?' },
+      { role: ChatMessageRole.User, content: 'hello' },
+      { role: ChatMessageRole.Assistant, content: 'first response' },
+      { role: ChatMessageRole.Assistant, content: 'second response' },
+    ]);
+  });
+
+  it('hides the internal WebMCP usage hint from a restored user message', () => {
+    const provider = createSessionProvider();
+    const session = provider.restoreSessionSnapshot('acp:webmcp-hint', {
       kind: 'sessionSnapshot',
-      sessionId: 'auth-required',
-      threadStatus: 'auth_required',
+      sessionId: 'webmcp-hint',
+      threadStatus: 'awaiting_prompt',
       historyUpdates: [
         {
-          sessionId: 'auth-required',
+          sessionId: 'webmcp-hint',
           update: {
             sessionUpdate: 'user_message_chunk',
-            content: { type: 'text', text: 'continue after auth' },
+            content: {
+              type: 'text',
+              text: '<opensumi_mcp_usage_hint priority="low">\nUse the opensumi-ide MCP catalog tools ',
+            },
           },
         },
         {
-          sessionId: 'auth-required',
+          sessionId: 'webmcp-hint',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: {
+              type: 'text',
+              text: 'before invoking tools.\n</opensumi_mcp_usage_hint>\nACP 会话测试一',
+            },
+          },
+        },
+        {
+          sessionId: 'webmcp-hint',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: '会话一正常' },
+          },
+        },
+      ],
+    });
+
+    expect(session.history.messages.map(({ role, content }) => ({ role, content }))).toEqual([
+      { role: ChatMessageRole.User, content: 'ACP 会话测试一' },
+      { role: ChatMessageRole.Assistant, content: '会话一正常' },
+    ]);
+    expect(session.requests[0].message.prompt).toBe('ACP 会话测试一');
+  });
+
+  it.each(['auth_required', 'stopping'] as const)('keeps a %s restored response open for later progress', (status) => {
+    const provider = createSessionProvider();
+    const sessionId = `acp:${status}`;
+
+    const session = provider.restoreSessionSnapshot(sessionId, {
+      kind: 'sessionSnapshot',
+      sessionId: status,
+      threadStatus: status,
+      historyUpdates: [
+        {
+          sessionId: status,
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: { type: 'text', text: 'continue after pending state' },
+          },
+        },
+        {
+          sessionId: status,
           update: {
             sessionUpdate: 'agent_message_chunk',
             content: { type: 'text', text: 'waiting' },
@@ -936,6 +1306,52 @@ describe('AcpChatManagerService', () => {
     expect(loadedModel?.history.getMessages()).toHaveLength(1);
   });
 
+  it('preserves the ACP target when a loaded session snapshot omits runtime routing metadata', async () => {
+    const service = createService();
+    const sessionId = 'acp:targeted-session';
+    const acpTarget = { agentId: 'agent-b', cwd: '/work/b' };
+    const metadataModel = service.fromAcpJSON([
+      {
+        sessionId,
+        history: {
+          additional: {},
+          messages: [],
+        },
+        requests: [],
+        extension: {
+          availableCommands: [],
+          acpTarget,
+        },
+      },
+    ])[0];
+
+    service.sessionModels.set(sessionId, metadataModel);
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue({
+          sessionId,
+          history: {
+            additional: {},
+            messages: [
+              {
+                id: `${sessionId}-msg-0`,
+                role: ChatMessageRole.User,
+                content: 'continue in the original project',
+                order: 0,
+              },
+            ],
+          },
+          requests: [],
+        }),
+      },
+    });
+
+    await service.loadSession(sessionId);
+
+    expect(service.getSession(sessionId)).not.toBe(metadataModel);
+    expect(service.getSession(sessionId)?.acpTarget).toEqual(acpTarget);
+  });
+
   it('reattaches a loaded ACP session and applies snapshot status plus later output', async () => {
     const service = createService();
     const sessionId = 'acp:s-running';
@@ -999,12 +1415,14 @@ describe('AcpChatManagerService', () => {
       sessionId: 's-running',
       threadStatus: 'working',
       historyUpdates: [],
+      availableCommands: [{ name: 'new-skill', description: 'Run the new skill' }],
     });
     attachment.emitData({ kind: 'content', content: 'continued output' });
 
     const model = service.getSession(sessionId)!;
     expect(attachSession).toHaveBeenCalledWith(sessionId);
     expect(model.threadStatus).toBe('working');
+    expect(service.getAvailableCommands(sessionId)).toEqual([{ name: 'new-skill', description: 'Run the new skill' }]);
     expect(model.getRequest('request-1')?.response.responseText).toBe('continued output');
     attachment.end();
   });
@@ -1025,6 +1443,9 @@ describe('AcpChatManagerService', () => {
           },
         ],
       },
+      extension: {
+        availableCommands: [{ name: 'restored-skill', description: 'Restored skill' }],
+      },
       requests: [],
     });
     const attachSession = jest
@@ -1040,7 +1461,8 @@ describe('AcpChatManagerService', () => {
       value: { loadSession, attachSession },
     });
 
-    await expect(service.loadSession(sessionId)).resolves.toBeUndefined();
+    const firstLoad = await service.loadSession(sessionId);
+    await expect(firstLoad.liveReady).resolves.toBe('failed');
 
     const restoredModel = service.getSession(sessionId);
     expect(restoredModel).toBeDefined();
@@ -1048,13 +1470,17 @@ describe('AcpChatManagerService', () => {
       expect.objectContaining({ content: 'restore this history once' }),
     ]);
     expect(restoredModel?.requests).toHaveLength(0);
+    expect(service.getAvailableCommands(sessionId)).toEqual([
+      { name: 'restored-skill', description: 'Restored skill' },
+    ]);
     expect(loadSession).toHaveBeenCalledTimes(1);
     expect(attachSession).toHaveBeenCalledTimes(1);
     expect((service as any).logger.error).toHaveBeenCalledWith(
       '[ACP Chat][Manager] attach session failed after restoring history — errorType=Error',
     );
 
-    await service.loadSession(sessionId);
+    const secondLoad = await service.loadSession(sessionId);
+    await expect(secondLoad.liveReady).resolves.toBe('ready');
 
     expect(loadSession).toHaveBeenCalledTimes(1);
     expect(attachSession).toHaveBeenCalledTimes(2);
@@ -1064,7 +1490,101 @@ describe('AcpChatManagerService', () => {
     expect(service.getSession(sessionId)?.requests).toHaveLength(0);
   });
 
-  it('propagates queued attachment snapshot restoration failures', async () => {
+  it('makes a restored transcript available without waiting for Live Ready attachment', async () => {
+    const service = createService();
+    const sessionId = 'acp:transcript-ready';
+    let resolveAttachment: (stream: undefined) => void;
+    const attachment = new Promise<undefined>((resolve) => {
+      resolveAttachment = resolve;
+    });
+    const attachSession = jest.fn(() => attachment);
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue({
+          sessionId,
+          history: {
+            additional: {},
+            messages: [
+              {
+                id: `${sessionId}-user`,
+                role: ChatMessageRole.User,
+                content: 'Transcript Ready content',
+                order: 0,
+              },
+            ],
+          },
+          requests: [],
+        }),
+        attachSession,
+      },
+    });
+
+    const loading = service.loadSession(sessionId);
+    const outcome = await Promise.race([
+      loading.then(() => 'transcript-ready' as const),
+      new Promise<'blocked'>((resolve) => setTimeout(() => resolve('blocked'), 0)),
+    ]);
+
+    expect(outcome).toBe('transcript-ready');
+    expect(service.getSession(sessionId)?.history.getMessages()).toEqual([
+      expect.objectContaining({ content: 'Transcript Ready content' }),
+    ]);
+    expect(attachSession).toHaveBeenCalledWith(sessionId);
+
+    resolveAttachment!(undefined);
+    const result = await loading;
+    await expect(result.liveReady).resolves.toBe('ready');
+  });
+
+  it('does not attach a stale Live Ready stream after the transcript session was disposed', async () => {
+    const service = createService();
+    const sessionModels = (service as any).sessionModels;
+    jest.spyOn(service, 'clearSession').mockImplementation((key: string) => {
+      sessionModels.delete(key);
+    });
+    const sessionId = 'acp:disposed-before-live-ready';
+    let resolveAttachment!: (stream: any) => void;
+    const pendingAttachment = new Promise<any>((resolve) => {
+      resolveAttachment = resolve;
+    });
+    const attachment = {
+      onData: jest.fn(() => ({ dispose: jest.fn() })),
+      onEnd: jest.fn(() => ({ dispose: jest.fn() })),
+      onError: jest.fn(() => ({ dispose: jest.fn() })),
+      end: jest.fn(),
+    };
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue({
+          sessionId,
+          history: {
+            additional: {},
+            messages: [
+              {
+                id: `${sessionId}-user`,
+                role: ChatMessageRole.User,
+                content: 'dispose after Transcript Ready',
+                order: 0,
+              },
+            ],
+          },
+          requests: [],
+        }),
+        attachSession: jest.fn(() => pendingAttachment),
+        disposeSession: jest.fn().mockResolvedValue(undefined),
+      },
+    });
+
+    const result = await service.loadSession(sessionId);
+    await service.disposeSession(sessionId);
+    resolveAttachment(attachment);
+
+    await expect(result.liveReady).resolves.toBe('failed');
+    expect(attachment.end).toHaveBeenCalledTimes(1);
+    expect(service.getSession(sessionId)).toBeUndefined();
+  });
+
+  it('reports queued attachment snapshot restoration failures through Live Ready', async () => {
     const service = createService();
     const sessionId = 'acp:s-snapshot-failure';
     const restoreError = new Error('snapshot conversion failed');
@@ -1085,6 +1605,21 @@ describe('AcpChatManagerService', () => {
     };
     Object.defineProperty(service, 'mainProvider', {
       value: {
+        loadSession: jest.fn().mockResolvedValue({
+          sessionId,
+          history: {
+            additional: {},
+            messages: [
+              {
+                id: `${sessionId}-user`,
+                role: ChatMessageRole.User,
+                content: 'restore before applying queued snapshot',
+                order: 0,
+              },
+            ],
+          },
+          requests: [],
+        }),
         attachSession: jest.fn().mockResolvedValue(attachment),
         restoreSessionSnapshot: jest.fn(() => {
           throw restoreError;
@@ -1092,8 +1627,12 @@ describe('AcpChatManagerService', () => {
       },
     });
 
-    await expect(service.loadSession(sessionId)).rejects.toBe(restoreError);
-    expect((service as any).logger.error).not.toHaveBeenCalled();
+    const result = await service.loadSession(sessionId);
+
+    await expect(result.liveReady).resolves.toBe('failed');
+    expect((service as any).logger.error).toHaveBeenCalledWith(
+      '[ACP Chat][Manager] attach session failed after restoring history — errorType=Error',
+    );
   });
 
   it('reattaches an already populated ACP session without reloading or resending its prompt', async () => {
@@ -1155,13 +1694,6 @@ describe('AcpChatManagerService', () => {
         {
           sessionId: 's-existing',
           update: {
-            sessionUpdate: 'user_message_chunk',
-            content: { type: 'text', text: 'keep working' },
-          },
-        },
-        {
-          sessionId: 's-existing',
-          update: {
             sessionUpdate: 'agent_message_chunk',
             content: { type: 'text', text: 'before reload while offline' },
           },
@@ -1175,6 +1707,134 @@ describe('AcpChatManagerService', () => {
     expect(service.getSession(sessionId)?.requests[0].response.responseText).toBe(
       'before reload while offline after reload',
     );
+    expect(service.getSession(sessionId)?.history.getMessages()).toEqual([
+      expect.objectContaining({ role: ChatMessageRole.User, content: 'keep working' }),
+      expect.objectContaining({ role: ChatMessageRole.Assistant, content: 'before reload while offline' }),
+    ]);
+    attachment.end();
+  });
+
+  it('keeps restored user turns attached to their Agent message identities when a snapshot adds a greeting', async () => {
+    const service = createService();
+    const provider = createSessionProvider();
+    const sessionId = 'acp:stable-message-identities';
+    const attachment = new SumiReadableStream<any>();
+    const initialSession = provider.restoreSessionSnapshot(sessionId, {
+      kind: 'sessionSnapshot',
+      sessionId: 'stable-message-identities',
+      threadStatus: 'idle',
+      historyUpdates: [
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-greeting',
+            content: { type: 'text', text: 'How can I help?' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            messageId: 'user-1',
+            content: { type: 'text', text: 'first prompt' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-1',
+            content: { type: 'text', text: 'first response' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            messageId: 'user-2',
+            content: { type: 'text', text: 'second prompt' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-2',
+            content: { type: 'text', text: 'second response' },
+          },
+        },
+      ],
+    });
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue(initialSession),
+        attachSession: jest.fn().mockResolvedValue(attachment),
+        restoreSessionSnapshot: provider.restoreSessionSnapshot.bind(provider),
+      },
+    });
+
+    const result = await service.loadSession(sessionId);
+    await expect(result.liveReady).resolves.toBe('ready');
+    attachment.emitData({
+      kind: 'sessionSnapshot',
+      sessionId: 'stable-message-identities',
+      threadStatus: 'idle',
+      historyUpdates: [
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-new-greeting',
+            content: { type: 'text', text: 'New greeting' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-greeting',
+            content: { type: 'text', text: 'How can I help?' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-1',
+            content: { type: 'text', text: 'first response' },
+          },
+        },
+        {
+          sessionId: 'stable-message-identities',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            messageId: 'assistant-2',
+            content: { type: 'text', text: 'second response' },
+          },
+        },
+      ],
+    });
+
+    expect(
+      service
+        .getSession(sessionId)
+        ?.history.getMessages()
+        .map(({ role, content }) => ({ role, content })),
+    ).toEqual([
+      { role: ChatMessageRole.Assistant, content: 'New greeting' },
+      { role: ChatMessageRole.Assistant, content: 'How can I help?' },
+      { role: ChatMessageRole.User, content: 'first prompt' },
+      { role: ChatMessageRole.Assistant, content: 'first response' },
+      { role: ChatMessageRole.User, content: 'second prompt' },
+      { role: ChatMessageRole.Assistant, content: 'second response' },
+    ]);
+    expect(service.getSession(sessionId)?.requests.map((request) => request.message.prompt)).toEqual([
+      '',
+      '',
+      'first prompt',
+      'second prompt',
+    ]);
     attachment.end();
   });
 
@@ -1189,6 +1849,19 @@ describe('AcpChatManagerService', () => {
 
     expect(service.cancelRequest(sessionId)).toBe(true);
     expect(cancelSession).toHaveBeenCalledWith(sessionId);
+  });
+
+  it('does not send duplicate cancellation for a stopping ACP session', () => {
+    const { service } = createConstructedService();
+    const sessionId = 'acp:s-stopping';
+    const model = new ChatModel(new ChatFeatureRegistry(), { sessionId });
+    const cancelSession = jest.fn().mockResolvedValue(undefined);
+    model.setThreadStatus('stopping');
+    (service as any).sessionModels.set(sessionId, model);
+    (service as any).mainProvider = { cancelSession };
+
+    expect(service.cancelRequest(sessionId)).toBe(false);
+    expect(cancelSession).not.toHaveBeenCalled();
   });
 
   it('normalizes the ACP session id when explicitly cancelling through the back service', async () => {
@@ -1520,6 +2193,96 @@ describe('AcpChatManagerService', () => {
     expect(service.getSession('acp:first')?.history.getMessages()).toHaveLength(1);
   });
 
+  it('keeps a listed session metadata update when an older catalog refresh completes', async () => {
+    const service = createService() as any;
+    let resolveRefresh!: (sessions: any[]) => void;
+    service.mainProvider = {
+      refreshAgentSessions: jest.fn(
+        () =>
+          new Promise<any[]>((resolve) => {
+            resolveRefresh = resolve;
+          }),
+      ),
+    };
+    service.agentSessionCatalog = [
+      {
+        sessionId: 'acp:one',
+        agentId: 'agent-a',
+        cwd: '/workspace',
+        title: 'Before',
+        updatedAt: '2026-08-20T00:00:00.000Z',
+      },
+    ];
+    const catalogChanges: any[] = [];
+    service.onDidChangeAgentSessionCatalog((catalog: any[]) => catalogChanges.push(catalog));
+
+    const refresh = service.refreshAgentSessionCatalog();
+    service.applySessionStateUpdate('one', {
+      title: 'Live update',
+    });
+    service.applySessionStateUpdate('one', {
+      updatedAt: '2026-08-20T01:00:00.000Z',
+    });
+    service.applySessionStateUpdate('not-listed', {
+      title: 'Must not create a row',
+    });
+    resolveRefresh([
+      {
+        sessionId: 'acp:one',
+        agentId: 'agent-a',
+        cwd: '/workspace',
+        title: 'Stale discovery title',
+        updatedAt: '2026-08-20T00:30:00.000Z',
+      },
+    ]);
+
+    await refresh;
+
+    expect(service.getAgentSessionCatalog()).toEqual([
+      expect.objectContaining({
+        sessionId: 'acp:one',
+        title: 'Live update',
+        updatedAt: '2026-08-20T01:00:00.000Z',
+      }),
+    ]);
+    expect(catalogChanges).toHaveLength(3);
+  });
+
+  it('keeps a loaded session when a catalog refresh omits it', async () => {
+    const service = createService() as any;
+    const loadedSession = new ChatModel(new ChatFeatureRegistry(), {
+      sessionId: 'acp:active',
+      title: 'Active conversation',
+    });
+    service.sessionModels.set(loadedSession.sessionId, loadedSession);
+    service.mainProvider = {
+      refreshAgentSessions: jest.fn().mockResolvedValue([]),
+    };
+
+    await service.refreshAgentSessionCatalog();
+
+    expect(service.getAgentSessionCatalog()).toEqual([]);
+    expect(service.getSession('acp:active')).toBe(loadedSession);
+  });
+
+  it('uses an early Agent metadata title when the live model is created after the update', () => {
+    const service = createService() as any;
+
+    service.applySessionStateUpdate('new', { title: 'Agent-owned title' });
+    const [model] = service.fromAcpJSON([
+      {
+        sessionId: 'acp:new',
+        createdAt: 1,
+        title: 'Local prompt title',
+        history: { additional: {}, messages: [] },
+        requests: [],
+      },
+    ]);
+
+    expect(model.title).toBe('Agent-owned title');
+    expect(service.getAgentSessionCatalog()).toEqual([]);
+  });
+
   it('stores raw first user message as ACP display title when creating request', () => {
     const { service, storage } = createConstructedService();
     const sessionId = 'acp:s1';
@@ -1727,12 +2490,34 @@ describe('AcpChatManagerService', () => {
       availableCommands,
     } as any);
 
-    expect(service.getAvailableCommands()).toEqual(availableCommands);
+    expect(service.getAvailableCommands(model.sessionId)).toEqual(availableCommands);
     expect(changes).toEqual([
       expect.objectContaining({
         sessionId: 'acp:sess-1',
         model,
       }),
+    ]);
+  });
+
+  it('keeps available command catalogs isolated by ACP session', () => {
+    const { service } = createConstructedService();
+    const firstSession = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:first' });
+    const secondSession = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:second' });
+    (service as any).sessionModels.set(firstSession.sessionId, firstSession);
+    (service as any).sessionModels.set(secondSession.sessionId, secondSession);
+
+    service.applySessionStateUpdate('first', {
+      availableCommands: [{ name: 'first-skill', description: 'First session skill' }],
+    } as any);
+    service.applySessionStateUpdate('second', {
+      availableCommands: [{ name: 'second-skill', description: 'Second session skill' }],
+    } as any);
+
+    expect(service.getAvailableCommands(firstSession.sessionId)).toEqual([
+      { name: 'first-skill', description: 'First session skill' },
+    ]);
+    expect(service.getAvailableCommands(secondSession.sessionId)).toEqual([
+      { name: 'second-skill', description: 'Second session skill' },
     ]);
   });
 });

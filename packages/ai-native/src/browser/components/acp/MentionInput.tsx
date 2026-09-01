@@ -307,6 +307,7 @@ const MentionInputImpl = (
     onToggleExpanded,
     onUserInput,
     disabled = false,
+    submitDisabled = false,
     loading = false,
     mentionKeyword = MENTION_KEYWORD,
     onSelectionChange,
@@ -444,6 +445,7 @@ const MentionInputImpl = (
       getSerializedContent: () => (editorRef.current ? serializeEditorContent(editorRef.current) : ''),
       restoreSerializedContent,
       focus: () => focusEditorAtEnd(editorRef.current),
+      isFocused: () => document.activeElement === editorRef.current,
       closeTransientUi,
     }),
     [closeTransientUi, restoreSerializedContent],
@@ -1687,6 +1689,9 @@ const MentionInputImpl = (
   );
 
   const handleSendWith = (send?: MentionInputSubmitHandler) => {
+    if (submitDisabled) {
+      return;
+    }
     if (disabled || !editorRef.current) {
       return;
     }
@@ -2180,9 +2185,9 @@ const MentionInputImpl = (
               <EnhanceIcon
                 wrapperClassName={styles.send_logo}
                 className={cls(getIcon('send-outlined'), styles.send_logo_icon)}
-                tabIndex={disabled ? -1 : 0}
+                tabIndex={disabled || submitDisabled ? -1 : 0}
                 role='button'
-                onClick={disabled ? undefined : handleSend}
+                onClick={disabled || submitDisabled ? undefined : handleSend}
                 ariaLabel={'Send'}
               />
             ) : (

@@ -12,6 +12,8 @@ export const ACP_BDD_FIXTURES = [
   'long-stream',
   'permission',
   'send-failure',
+  'service-failure',
+  'model-not-found',
   'create-failure',
   'load-failure',
   'task-session-missing',
@@ -38,6 +40,7 @@ export interface AcpBddFixtureOptions {
   workspaceFiles?: string[];
   delayMs?: number;
   longStreamTicks?: number;
+  historyMessageCount?: number;
   sessionPrefix?: string;
   agentType?: string;
   showChatView?: boolean;
@@ -190,6 +193,10 @@ export function getMockAcpAgentCommand(options: AcpBddFixtureOptions) {
   if (options.longStreamTicks !== undefined) {
     args.push(`--long-stream-ticks=${options.longStreamTicks}`);
     env.OPENSUMI_ACP_BDD_LONG_STREAM_TICKS = String(options.longStreamTicks);
+  }
+  if (options.historyMessageCount !== undefined) {
+    args.push(`--history-message-count=${options.historyMessageCount}`);
+    env.OPENSUMI_ACP_BDD_HISTORY_MESSAGE_COUNT = String(options.historyMessageCount);
   }
   if (options.sessionPrefix) {
     args.push(`--session-prefix=${options.sessionPrefix}`);
@@ -464,7 +471,7 @@ export async function loadAcpBddFixtureWorkbench(
         try {
           try {
             await page.evaluate(async () => {
-              await (window as any).__OPENSUMI_E2E__?.disposeAcpSessions?.();
+              await (window as any).__OPENSUMI_E2E__?.disposeAcpSessions?.([], true);
             });
           } catch {
             // Best-effort: navigation below still terminates WebMCP and RPC.

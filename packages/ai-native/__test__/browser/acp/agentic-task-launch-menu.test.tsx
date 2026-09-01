@@ -7,6 +7,7 @@ jest.mock('@opensumi/ide-core-browser', () => ({
   CommandService: class CommandService {},
   KeybindingRegistry: class KeybindingRegistry {},
   PreferenceService: class PreferenceService {},
+  fastdom: { measureAtNextFrame: (callback: () => void) => callback() },
   getIcon: (icon: string) => `codicon codicon-${icon}`,
   localize: jest.fn((_key: string, fallback: string) => fallback),
   useInjectable: jest.fn(),
@@ -23,6 +24,7 @@ jest.mock('../../../src/browser/chat/get-default-agent-type', () => ({
 }));
 
 import { CommandService, KeybindingRegistry, PreferenceService, localize } from '@opensumi/ide-core-browser';
+import { ChatInputRegistryToken } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
@@ -64,6 +66,10 @@ describe('AgenticTaskLaunchMenu', () => {
 
   function configureServices(agentConfigs: Record<string, { command: string; description: string }>) {
     const commandService = { executeCommand: jest.fn() };
+    const chatInputRegistry = {
+      focusActiveInput: jest.fn(),
+      isActiveInputFocused: jest.fn(() => true),
+    };
     const taskLaunchListeners = new Set<(pending: boolean) => void>();
     let taskLaunchPending = false;
     const workspaceSwitch = {
@@ -92,6 +98,9 @@ describe('AgenticTaskLaunchMenu', () => {
       if (token === CommandService) {
         return commandService;
       }
+      if (token === ChatInputRegistryToken) {
+        return chatInputRegistry;
+      }
       if (token === KeybindingRegistry) {
         return keybindingRegistry;
       }
@@ -101,6 +110,7 @@ describe('AgenticTaskLaunchMenu', () => {
     (getConfiguredAgentConfigs as jest.Mock).mockReturnValue(agentConfigs);
     (getDefaultAgentType as jest.Mock).mockReturnValue('agent-a');
     return {
+      chatInputRegistry,
       commandService,
       preferenceService,
       setTaskLaunchPending: (pending: boolean) => {
@@ -111,8 +121,8 @@ describe('AgenticTaskLaunchMenu', () => {
     };
   }
 
-  it('launches its contextual Project directly with its recalled Agent', async () => {
-    const { workspaceSwitch } = configureServices({
+  it('launches its contextual Project with the current Agent selection', async () => {
+    const { chatInputRegistry, workspaceSwitch } = configureServices({
       'agent-a': { command: 'agent-a', description: 'Agent A' },
       'agent-b': { command: 'agent-b', description: 'Agent B' },
     });
@@ -125,11 +135,12 @@ describe('AgenticTaskLaunchMenu', () => {
       await Promise.resolve();
     });
 
-    expect(workspaceSwitch.launchTask).toHaveBeenCalledWith(project, 'agent-b');
+    expect(workspaceSwitch.launchTask).toHaveBeenCalledWith(project, 'agent-a');
+    expect(chatInputRegistry.focusActiveInput).toHaveBeenCalled();
     expect(container.textContent).not.toContain('Choose Project');
   });
 
-  it('launches the recalled Agent directly and keeps a separate Agent override menu', async () => {
+  it('launches the default Agent directly and keeps a separate Agent override menu', async () => {
     const { commandService, workspaceSwitch } = configureServices({
       'agent-a': { command: 'agent-a', description: 'Agent A' },
       'agent-b': { command: 'agent-b', description: 'Agent B' },
@@ -138,15 +149,13 @@ describe('AgenticTaskLaunchMenu', () => {
     await act(async () => {
       root.render(<AgenticTaskLaunchMenu {...({ project, variant: 'chat-header' } as any)} />);
     });
-    expect((container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).title).toBe(
-      'New Task with Agent B (Ctrl+Alt+N)',
-    );
+    expect((container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).title).toBe('');
     await act(async () => {
       (container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement).click();
       await Promise.resolve();
     });
 
-    expect(commandService.executeCommand).toHaveBeenCalledWith(AI_CHAT_NEW_TASK.id, 'agent-b');
+    expect(commandService.executeCommand).toHaveBeenCalledWith(AI_CHAT_NEW_TASK.id, 'agent-a');
     expect(workspaceSwitch.launchTask).not.toHaveBeenCalled();
     expect(container.querySelector('[data-testid="agentic-task-agent-menu"]')).toBeNull();
 
@@ -171,7 +180,7 @@ describe('AgenticTaskLaunchMenu', () => {
     const launchButton = container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement;
     const menuButton = container.querySelector('[data-testid="agentic-task-agent-menu-button"]') as HTMLButtonElement;
     expect(launchButton.disabled).toBe(true);
-    expect(launchButton.title).toBe('No ACP Agent available');
+    expect(launchButton.title).toBe('');
     expect(menuButton.disabled).toBe(false);
     await act(async () => {
       menuButton.click();
@@ -242,7 +251,7 @@ describe('AgenticTaskLaunchMenu', () => {
 
     const launchButton = container.querySelector('[data-testid="agentic-task-launch-button"]') as HTMLButtonElement;
     expect(launchButton.querySelector('.codicon-add')).not.toBeNull();
-    expect(launchButton.getAttribute('aria-label')).toBe('New Task for Project A');
+    expect(launchButton.getAttribute('aria-label')).toBe('New session for Project A');
     expect(container.querySelector('[data-testid="agentic-task-agent-menu-button"]')).toBeNull();
   });
 });

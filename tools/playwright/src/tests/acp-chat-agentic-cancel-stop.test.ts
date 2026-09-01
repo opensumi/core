@@ -6,7 +6,9 @@ import test, { page } from './hooks';
 import {
   ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS,
   type AcpBddFixtureRuntime,
+  ensureAgenticLayout,
   loadAcpBddFixtureWorkbench,
+  waitForWorkbenchReady,
 } from './utils/acp-bdd-fixture';
 import { createBddEvidence } from './utils/bdd-evidence';
 
@@ -49,6 +51,27 @@ async function sendPrompt(prompt: string) {
   await chatButton('Send').click();
 }
 
+async function showAcpChatView() {
+  await page.waitForFunction(() => Boolean((navigator as any).modelContext?.executeTool), undefined, {
+    timeout: 60_000,
+  });
+  await page.evaluate(async () => {
+    await (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {});
+  });
+  await ensureAgenticLayout(page);
+}
+
+async function getSessionState() {
+  const result = await page.evaluate(async () =>
+    (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
+  );
+  expect(result.success).toBe(true);
+  return result.result as {
+    active: boolean;
+    session: { sessionId?: string; threadStatus?: string; requestCount?: number } | null;
+  };
+}
+
 test.describe('ACP Chat Agentic Cancel Stop', () => {
   test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
 
@@ -76,6 +99,12 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
     await expect(chatSlot().locator('.rce-user-msg')).toHaveCount(1, { timeout: 30_000 });
     await expect(chatSlot().getByText(ACTIVE_STREAM_SENTINEL)).toBeVisible({ timeout: 30_000 });
     await expect(chatButton('Stop')).toBeVisible();
+    const activeState = await getSessionState();
+    const sessionId = activeState.session?.sessionId;
+    expect(sessionId).toBeTruthy();
+    const sessionRow = page.getByTestId(`agentic-session-row-${sessionId}`);
+    await expect(sessionRow).toBeVisible({ timeout: 30_000 });
+    await expect(sessionRow).toHaveAttribute('aria-current', 'true');
 
     const activeProof = await evidence.saveJson(
       '01-active-stream',
@@ -84,8 +113,9 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
         assistantRows: await chatSlot().locator('.rce-ai-msg').count(),
         hasActiveSentinel: await chatSlot().getByText(ACTIVE_STREAM_SENTINEL).isVisible(),
         stopVisible: await chatButton('Stop').isVisible(),
+        sessionRowVisible: await sessionRow.isVisible(),
       },
-      'long-stream request shows active content and a stop affordance',
+      'long-stream request shows active content, a stop affordance, and the active Agent Session row',
     );
 
     await chatButton('Stop').click();
@@ -96,6 +126,23 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
     await input.click();
     await page.keyboard.type(POST_CANCEL_DRAFT);
     await expect(input).toContainText(POST_CANCEL_DRAFT);
+    await chatButton('Send').click();
+    await expect(chatSlot().locator('.rce-user-msg')).toHaveCount(2, { timeout: 30_000 });
+    await expect(chatButton('Send')).toBeVisible({ timeout: 30_000 });
+    await expect(chatButton('Stop')).toBeHidden();
+
+    const followUpState = await getSessionState();
+    expect(followUpState.session?.sessionId).toBe(sessionId);
+    expect(followUpState.session?.requestCount).toBe(2);
+    expect(followUpState.session?.threadStatus).toBe('awaiting_prompt');
+    await expect(sessionRow).toHaveAttribute('aria-current', 'true');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await waitForWorkbenchReady(page);
+    await showAcpChatView();
+
+    const restoredSessionRow = page.getByTestId(`agentic-session-row-${sessionId}`);
+    await expect(restoredSessionRow).toBeVisible({ timeout: 30_000 });
 
     const stoppedProof = await evidence.saveJson(
       '02-stopped-input-usable',
@@ -104,9 +151,10 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
         stopVisible: await chatButton('Stop')
           .isVisible()
           .catch(() => false),
-        inputText: await input.textContent(),
+        followUpSession: followUpState.session,
+        restoredSessionRowVisible: await restoredSessionRow.isVisible(),
       },
-      'stopping the long stream restores the send affordance and editable input',
+      'stopping restores the session, permits a follow-up turn, and preserves the active Session row after reload',
     );
 
     evidence.recordCriticalPoint({
@@ -123,7 +171,7 @@ test.describe('ACP Chat Agentic Cancel Stop', () => {
     });
     evidence.recordCriticalPoint({
       id: 'CP3',
-      requirement: 'Stopping the stream returns the Agentic input to a usable state.',
+      requirement: 'Stopping permits a follow-up turn and preserves the active Agent Session across reload.',
       status: 'pass',
       evidence: [stoppedProof].filter(Boolean) as string[],
     });

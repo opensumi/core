@@ -24,7 +24,7 @@ Use it in an ACP BDD runtime by overriding the configured ACP agent command:
 }
 ```
 
-The fixture can also be selected with `OPENSUMI_ACP_BDD_FIXTURE`. Supported fixture modes include `stream-rich`, `long-stream`, `permission`, `send-failure`, `create-failure`, `load-failure`, `auth-required`, `config-failure`, `process-exit`, `history`, and `file-link`.
+The fixture can also be selected with `OPENSUMI_ACP_BDD_FIXTURE`. Supported fixture modes include `stream-rich`, `long-stream`, `permission`, `send-failure`, `service-failure`, `model-not-found`, `create-failure`, `load-failure`, `auth-required`, `config-failure`, `process-exit`, `history`, and `file-link`.
 
 `stream-rich` exposes deterministic ACP `configOptions` for `bdd-mode`, `bdd-model`, `bdd-thought-level`, and `bdd-web-search`. After `session/set_config_option`, it returns the complete `configOptions` list. During `session/prompt`, it emits a `BDD_CONFIG_SNAPSHOT` and a tool-call `rawInput.configSnapshot` so tests can prove the prompt turn used the selected footer values without asserting LLM-generated content.
 

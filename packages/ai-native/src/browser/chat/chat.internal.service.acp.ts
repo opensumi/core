@@ -5,9 +5,9 @@ import {
   AcpTargetConfigRequest,
   AvailableCommand,
   ChatMessageRole,
-  DisposableCollection,
   Emitter,
   Event,
+  IACPConfigProvider,
   IDisposable,
   ThreadStatus,
   URI,
@@ -21,7 +21,12 @@ import { AIPanelLayoutService } from '../layout/panel-layout.service';
 import { AcpChatManagerService } from './chat-manager.service.acp';
 import { ChatModel, ChatRequestModel } from './chat-model';
 import { ChatInternalService } from './chat.internal.service';
-import { AcpSessionConfigOption, AcpSessionModeOption, AcpSessionModelOption } from './session-provider';
+import {
+  AcpAgentSessionDescriptor,
+  AcpSessionConfigOption,
+  AcpSessionModeOption,
+  AcpSessionModelOption,
+} from './session-provider';
 
 import type { AcpTurnDraft } from './acp-chat-queued-turns';
 
@@ -31,6 +36,13 @@ const ACP_LOAD_SESSION_NOT_FOUND_MESSAGE =
   'This chat history is no longer available. A new chat draft is ready, and a session will be created when you send a message.';
 const ACP_LOAD_TASK_FALLBACK_MESSAGE = 'Unable to open this task history. The previous Task remains active.';
 const ACP_LOAD_TASK_NOT_FOUND_MESSAGE = 'This task history is no longer available. The previous Task remains active.';
+const ACP_SESSION_CREATION_CANCELLED_ERROR_NAME = 'ACP_SESSION_CREATION_CANCELLED';
+
+function createSessionCreationCancelledError(): Error {
+  const error = new Error('ACP session creation was cancelled.');
+  error.name = ACP_SESSION_CREATION_CANCELLED_ERROR_NAME;
+  return error;
+}
 
 export function formatAcpLoadSessionFallbackMessage(error: unknown): string {
   if (isAcpSessionNotFoundError(error)) {
@@ -112,10 +124,26 @@ interface AcpDraftSessionState {
   configOptions?: AcpSessionConfigOption[];
 }
 
+/**
+ * Page-local ownership of the ordinary ACP Session acquired for an unsent
+ * Agentic draft. This is deliberately not durable state: the Agent remains
+ * authoritative for the Session itself and its catalog.
+ */
+interface AcpDraftBoundSessionOwnership {
+  sessionId: string;
+  deleteOnDiscard: boolean;
+  generation: number;
+}
+
+export type AcpSkillCatalogState = 'unavailable' | 'pending' | 'empty' | 'ready';
+
 @Injectable()
 export class AcpChatInternalService extends ChatInternalService {
   @Autowired(AINativeConfigService)
   protected aiNativeConfigService: AINativeConfigService;
+
+  @Autowired(IACPConfigProvider)
+  private configProvider: IACPConfigProvider;
 
   @Autowired(IMessageService)
   private messageService: IMessageService;
@@ -138,9 +166,43 @@ export class AcpChatInternalService extends ChatInternalService {
   private readonly _onSessionLoadingChange = new Emitter<boolean>();
   public readonly onSessionLoadingChange: Event<boolean> = this._onSessionLoadingChange.event;
   private sessionLoadingCount = 0;
+  private readonly agenticSessionLiveReadyStatuses = new Map<string, 'pending' | 'ready' | 'failed'>();
+  private pendingAgenticSessionId: string | undefined;
 
   public get isSessionLoading(): boolean {
     return this.sessionLoadingCount > 0;
+  }
+
+  public getAgenticSessionLiveReadyStatus(sessionId: string | undefined): 'pending' | 'ready' | 'failed' {
+    return sessionId ? this.agenticSessionLiveReadyStatuses.get(sessionId) || 'ready' : 'ready';
+  }
+
+  public getPendingAgenticSessionId(): string | undefined {
+    return this.pendingAgenticSessionId;
+  }
+
+  /** Reconnect the active task without replaying its prompt or transcript. */
+  async retryAgenticSessionConnection(sessionId: string): Promise<void> {
+    if (this._sessionModel?.sessionId !== sessionId || this.getAgenticSessionLiveReadyStatus(sessionId) !== 'failed') {
+      return;
+    }
+
+    this.agenticSessionLiveReadyStatuses.set(sessionId, 'pending');
+    this.beginSessionLoading();
+    try {
+      const acpManager = this.chatManagerService as AcpChatManagerService;
+      const loadResult = await acpManager.loadSession(sessionId);
+      const status = await loadResult.liveReady;
+      if (this._sessionModel?.sessionId === sessionId) {
+        this.agenticSessionLiveReadyStatuses.set(sessionId, status);
+      }
+    } catch {
+      if (this._sessionModel?.sessionId === sessionId) {
+        this.agenticSessionLiveReadyStatuses.set(sessionId, 'failed');
+      }
+    } finally {
+      this.endSessionLoading();
+    }
   }
 
   private readonly _onSessionModelChange = new Emitter<ChatModel | undefined>();
@@ -149,7 +211,11 @@ export class AcpChatInternalService extends ChatInternalService {
   private readonly _onAvailableCommandsChange = new Emitter<AvailableCommand[]>();
   public readonly onAvailableCommandsChange: Event<AvailableCommand[]> = this._onAvailableCommandsChange.event;
 
+  private readonly _onSkillCatalogStateChange = new Emitter<AcpSkillCatalogState>();
+  public readonly onSkillCatalogStateChange: Event<AcpSkillCatalogState> = this._onSkillCatalogStateChange.event;
+
   private availableCommands: AvailableCommand[] = [];
+  private skillCatalogState: AcpSkillCatalogState = 'unavailable';
 
   private draftSessionState: AcpDraftSessionState = {};
   private inputDraft: AcpTurnDraft | undefined;
@@ -159,10 +225,13 @@ export class AcpChatInternalService extends ChatInternalService {
   private storageInitDisposable: IDisposable | undefined;
 
   private sessionCreationPromise: Promise<ChatModel> | undefined;
+  private sessionCreationOperationId: string | undefined;
+  private sessionCreationGeneration = 0;
+  private nextSessionCreationId = 1;
 
-  private bootstrapSessionId: string | undefined;
-
-  private bootstrapSessionAttempted = false;
+  private draftBoundSession: AcpDraftBoundSessionOwnership | undefined;
+  private draftBoundSessionPreparation: Promise<ChatModel | undefined> | undefined;
+  private draftBoundSessionGeneration = 0;
 
   private lifecycleGeneration = 0;
 
@@ -174,13 +243,12 @@ export class AcpChatInternalService extends ChatInternalService {
   private sessionSelectionVersion = 0;
 
   private pendingAgenticTarget: AcpTargetConfigRequest | undefined;
+  private standbyTargetTimer: ReturnType<typeof setTimeout> | undefined;
+  private standbyTargetGeneration = 0;
 
-  private readonly taskObservationDisposables = new Map<
-    string,
-    { model: ChatModel; disposable: DisposableCollection }
-  >();
-  private readonly agenticTaskRegistrationBarriers = new Map<string, Promise<void>>();
+  private readonly agentSessionCatalogRefreshBarriers = new Map<string, Promise<void>>();
   private readonly requestCancellationGenerations = new Map<string, number>();
+  private readonly acceptedRequestSessions = new Set<string>();
   private beginSessionLoading(): void {
     this.sessionLoadingCount += 1;
     if (this.sessionLoadingCount === 1) {
@@ -198,37 +266,37 @@ export class AcpChatInternalService extends ChatInternalService {
     }
   }
 
+  private clearPendingAgenticSession(sessionId: string): void {
+    if (this.pendingAgenticSessionId === sessionId) {
+      this.pendingAgenticSessionId = undefined;
+    }
+  }
+
   private stripAcpPrefix(sessionId: string): string {
     return sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
-  }
-
-  private hasDraftSessionState(): boolean {
-    return Boolean(
-      this.draftSessionState.currentModeId ||
-        this.draftSessionState.modelId ||
-        this.draftSessionState.agentModes?.length ||
-        this.draftSessionState.agentModels?.length ||
-        this.draftSessionState.configOptions?.length,
-    );
-  }
-
-  private isUnusedBootstrapSession(model: ChatModel | undefined): boolean {
-    return Boolean(
-      model &&
-        this.bootstrapSessionId &&
-        model.sessionId === this.bootstrapSessionId &&
-        model.history.getMessages().length === 0 &&
-        model.requests.length === 0,
-    );
   }
 
   getAvailableCommands(): AvailableCommand[] {
     return this.availableCommands;
   }
 
+  getSkillCatalogState(): AcpSkillCatalogState {
+    return this.skillCatalogState;
+  }
+
+  private setSkillCatalogState(state: AcpSkillCatalogState): void {
+    if (this.skillCatalogState !== state) {
+      this.skillCatalogState = state;
+      this._onSkillCatalogStateChange.fire(state);
+    }
+  }
+
   setAvailableCommands(commands: AvailableCommand[]) {
     this.availableCommands = commands;
     this._onAvailableCommandsChange.fire(commands);
+    if (this._sessionModel) {
+      this.setSkillCatalogState(commands.length > 0 ? 'ready' : 'empty');
+    }
   }
 
   getDraftSessionState(): AcpDraftSessionState {
@@ -244,7 +312,7 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   getVisibleSessions(): ChatModel[] {
-    return this.chatManagerService.getSessions().filter((session) => !this.isUnusedBootstrapSession(session));
+    return this.chatManagerService.getSessions();
   }
 
   public get onStorageInit() {
@@ -273,14 +341,16 @@ export class AcpChatInternalService extends ChatInternalService {
     return request;
   }
 
-  override async sendRequest(request: ChatRequestModel, regenerate = false): Promise<void> {
+  override async sendRequest(
+    request: ChatRequestModel,
+    regenerate = false,
+    onRequestAccepted?: () => void,
+  ): Promise<void> {
     const lifecycleGeneration = this.lifecycleGeneration;
     const sessionId = this._sessionModel?.sessionId;
     const cancellationGeneration = sessionId ? this.requestCancellationGenerations.get(sessionId) || 0 : 0;
     const shouldRegisterAgenticTask = Boolean(sessionId && this.isAgenticLayout());
-    if (shouldRegisterAgenticTask && sessionId) {
-      this.agenticTaskRegistry.rememberActiveTaskSession(sessionId);
-    }
+    let requestAccepted = false;
     this.logger.log(
       `[ACP Chat][Frontend] sendRequest start — sessionId=${sessionId ?? '(empty)'}, requestId=${
         request.requestId
@@ -307,12 +377,6 @@ export class AcpChatInternalService extends ChatInternalService {
       return;
     }
 
-    const registrationBarrier =
-      this.agenticTaskRegistrationBarriers.get(sessionId) ||
-      (shouldRegisterAgenticTask ? this.getAgenticTaskRegistrationBarrier(request, sessionId) : undefined);
-    if (registrationBarrier) {
-      await registrationBarrier;
-    }
     if (lifecycleGeneration !== this.lifecycleGeneration) {
       handleError(new Error('ACP chat service was disposed before request kickoff.'));
       return;
@@ -325,14 +389,50 @@ export class AcpChatInternalService extends ChatInternalService {
     }
 
     try {
-      const result = this.chatManagerService.sendRequest(sessionId, request, regenerate);
+      let registrationBarrier = this.agentSessionCatalogRefreshBarriers.get(sessionId);
+      const result = this.chatManagerService.sendRequest(sessionId, request, regenerate, () => {
+        requestAccepted = true;
+        this.acceptedRequestSessions.add(sessionId);
+        if (this.draftBoundSession?.sessionId === sessionId) {
+          this.draftBoundSession = undefined;
+        }
+        onRequestAccepted?.();
+        if (shouldRegisterAgenticTask && !registrationBarrier) {
+          registrationBarrier = this.getAgentSessionCatalogRefreshBarrier(request, sessionId);
+        }
+      });
       if (regenerate) {
         this._onRegenerateRequest.fire();
       }
       await result;
+      if (shouldRegisterAgenticTask && !requestAccepted && !this.acceptedRequestSessions.has(sessionId)) {
+        throw new Error(request.response.errorDetails?.message || 'ACP request ended before it was accepted.');
+      }
+      await registrationBarrier;
       this.logger.log(`[ACP Chat][Frontend] sendRequest done — sessionId=${sessionId}, requestId=${request.requestId}`);
     } catch (error) {
       handleError(error);
+      if (
+        shouldRegisterAgenticTask &&
+        !requestAccepted &&
+        !this.acceptedRequestSessions.has(sessionId) &&
+        this.draftBoundSession?.sessionId !== sessionId
+      ) {
+        await this.releaseUnacceptedTaskLaunchSession(sessionId);
+      }
+    }
+  }
+
+  private async releaseUnacceptedTaskLaunchSession(sessionId: string): Promise<void> {
+    const draftBoundSession = this.draftBoundSession;
+    if (draftBoundSession?.sessionId === sessionId) {
+      await this.releaseDraftBoundSession(draftBoundSession, true);
+      return;
+    }
+    const sessionModel = this.chatManagerService.getSession(sessionId);
+    await (this.chatManagerService as AcpChatManagerService).disposeSession(sessionId);
+    if (sessionModel && this._sessionModel === sessionModel) {
+      this.enterDraftSession({ force: true });
     }
   }
 
@@ -353,7 +453,9 @@ export class AcpChatInternalService extends ChatInternalService {
 
     this.storageInitDisposable = this.chatManagerService.onStorageInit(async () => {
       if (this.aiNativeConfigService.capabilities.supportsAgentMode) {
-        await this.observeRegisteredTaskSessions();
+        if (this.isAgenticLayout()) {
+          await (this.chatManagerService as AcpChatManagerService).refreshAgentSessionCatalog();
+        }
         return;
       }
       const sessions = this.chatManagerService.getSessions();
@@ -381,6 +483,9 @@ export class AcpChatInternalService extends ChatInternalService {
         return;
       }
 
+      if (event.modelReplaced && event.model !== this._sessionModel) {
+        this._sessionModel = event.model;
+      }
       this._onSessionModelChange.fire(this._sessionModel);
       if (event.availableCommands !== undefined) {
         this.setAvailableCommands(event.availableCommands);
@@ -392,22 +497,52 @@ export class AcpChatInternalService extends ChatInternalService {
     this.addDispose(this.sessionStateDisposable);
   }
 
-  private async doStartSessionModel(): Promise<ChatModel> {
+  private async doStartSessionModel(
+    operationId: string,
+    generation: number,
+    draftBoundSession?: Pick<AcpDraftBoundSessionOwnership, 'deleteOnDiscard' | 'generation'>,
+  ): Promise<ChatModel> {
     const draftSessionState = this.draftSessionState;
-    const launch = this.agenticTaskRegistry.consumePendingLaunch?.();
-    let target = this.pendingAgenticTarget;
-    if (!target && launch) {
-      const project = await this.agenticTaskRegistry.getProject(launch.projectId);
-      target = project ? { agentId: launch.agentId, cwd: project.workspacePath } : undefined;
-    }
+    const target = this.pendingAgenticTarget;
     if (target) {
       this.pendingAgenticTarget = target;
+      await this.flushStandbyTarget(target);
     }
     const acpManager = this.chatManagerService as AcpChatManagerService;
-    this._sessionModel = await acpManager.startSession(target ? { acpTarget: target } : undefined);
+    const sessionModel = await acpManager.startSession({ acpTarget: target, operationId });
+    const acquiredDraftBoundSession = draftBoundSession && {
+      sessionId: sessionModel.sessionId,
+      ...draftBoundSession,
+    };
+    if (
+      generation !== this.sessionCreationGeneration ||
+      (acquiredDraftBoundSession && acquiredDraftBoundSession.generation !== this.draftBoundSessionGeneration)
+    ) {
+      if (acquiredDraftBoundSession) {
+        await this.releaseDraftBoundSession(acquiredDraftBoundSession, false);
+      } else {
+        await acpManager.disposeSession(sessionModel.sessionId);
+      }
+      throw createSessionCreationCancelledError();
+    }
     this.pendingAgenticTarget = undefined;
-    await this.applyDraftSessionState(this._sessionModel, draftSessionState);
-    this.setAvailableCommands(acpManager.getAvailableCommands());
+    await this.applyDraftSessionState(sessionModel, draftSessionState);
+    if (
+      generation !== this.sessionCreationGeneration ||
+      (acquiredDraftBoundSession && acquiredDraftBoundSession.generation !== this.draftBoundSessionGeneration)
+    ) {
+      if (acquiredDraftBoundSession) {
+        await this.releaseDraftBoundSession(acquiredDraftBoundSession, false);
+      } else {
+        await acpManager.disposeSession(sessionModel.sessionId);
+      }
+      throw createSessionCreationCancelledError();
+    }
+    this._sessionModel = sessionModel;
+    if (acquiredDraftBoundSession) {
+      this.draftBoundSession = acquiredDraftBoundSession;
+    }
+    this.setAvailableCommands(acpManager.getAvailableCommands(this._sessionModel.sessionId));
     this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || {};
     this._onSessionModelChange.fire(this._sessionModel);
     // Notify permission bridge of session change
@@ -417,18 +552,56 @@ export class AcpChatInternalService extends ChatInternalService {
     return this._sessionModel;
   }
 
-  private async startSessionModel(): Promise<ChatModel> {
+  private async startSessionModel(
+    draftBoundSession?: Pick<AcpDraftBoundSessionOwnership, 'deleteOnDiscard' | 'generation'>,
+  ): Promise<ChatModel> {
     if (this.sessionCreationPromise) {
       return this.sessionCreationPromise;
     }
 
     this.beginSessionLoading();
-    this.sessionCreationPromise = this.doStartSessionModel();
+    const operationId = `acp-launch-${Date.now()}-${this.nextSessionCreationId++}`;
+    const generation = ++this.sessionCreationGeneration;
+    this.sessionCreationOperationId = operationId;
+    this.sessionCreationPromise = this.doStartSessionModel(operationId, generation, draftBoundSession);
     try {
       return await this.sessionCreationPromise;
     } finally {
       this.sessionCreationPromise = undefined;
+      if (this.sessionCreationOperationId === operationId) {
+        this.sessionCreationOperationId = undefined;
+      }
       this.endSessionLoading();
+    }
+  }
+
+  async cancelPendingSessionCreation(options?: { releaseCurrentUnacceptedSession?: boolean }): Promise<void> {
+    const operationId = this.sessionCreationOperationId;
+    const creation = this.sessionCreationPromise;
+    if (operationId && creation) {
+      this.sessionCreationGeneration += 1;
+      await this.aiBackService.cancelSessionCreation?.(operationId);
+      await creation.catch(() => undefined);
+      return;
+    }
+
+    if (options?.releaseCurrentUnacceptedSession === false) {
+      return;
+    }
+
+    const sessionModel = this._sessionModel;
+    if (!sessionModel || this.acceptedRequestSessions.has(sessionModel.sessionId)) {
+      return;
+    }
+    const draftBoundSession = this.draftBoundSession;
+    if (draftBoundSession?.sessionId === sessionModel.sessionId) {
+      await this.releaseDraftBoundSession(draftBoundSession, true);
+      return;
+    }
+    this.cancelRequest();
+    await (this.chatManagerService as AcpChatManagerService).disposeSession(sessionModel.sessionId);
+    if (this._sessionModel === sessionModel) {
+      this.enterDraftSession({ force: true });
     }
   }
 
@@ -437,37 +610,36 @@ export class AcpChatInternalService extends ChatInternalService {
       return this._sessionModel;
     }
 
+    const preparation = this.draftBoundSessionPreparation;
+    if (preparation) {
+      const preparedModel = await preparation;
+      if (preparedModel) {
+        return preparedModel;
+      }
+      if (this._sessionModel) {
+        return this._sessionModel;
+      }
+      if (this.draftBoundSessionPreparation && this.draftBoundSessionPreparation !== preparation) {
+        return this.ensureSessionModel();
+      }
+    }
+
     return this.startSessionModel();
   }
 
+  /**
+   * Kept as a compatibility entry point for callers from the former bootstrap
+   * experiment. Initial catalogs are now scoped to an explicit Agentic draft.
+   */
   async ensureBootstrapSessionModel(): Promise<ChatModel | undefined> {
-    if (!this.aiNativeConfigService.capabilities.supportsAgentMode || this._sessionModel) {
-      return this._sessionModel;
-    }
-
-    if (this.bootstrapSessionAttempted || this.hasDraftSessionState()) {
-      return undefined;
-    }
-
-    this.bootstrapSessionAttempted = true;
-    try {
-      const model = await this.startSessionModel();
-      this.bootstrapSessionId = model.sessionId;
-      return model;
-    } catch (error) {
-      this.logger.warn?.('[ACP Chat][Frontend] Failed to create bootstrap session', error);
-      return undefined;
-    }
+    return this._sessionModel;
   }
 
   enterDraftSession(options?: { force?: boolean }): void {
-    if (!options?.force && this.isUnusedBootstrapSession(this._sessionModel)) {
-      return;
-    }
-
-    this.agenticTaskRegistry.clearRememberedActiveTaskSession(this._sessionModel?.sessionId);
     this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || this.draftSessionState;
     this._sessionModel = undefined as unknown as ChatModel;
+    this.setAvailableCommands([]);
+    this.setSkillCatalogState('unavailable');
     this.permissionBridgeService.setActiveSession(undefined);
     this._onSessionModelChange.fire(undefined);
     this._onModeChange.fire('');
@@ -475,64 +647,201 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   enterAgenticTaskDraft(target: AcpTargetConfigRequest): void {
+    const previousDraftBoundSession = this.draftBoundSession;
+    this.draftBoundSession = undefined;
+    const generation = ++this.draftBoundSessionGeneration;
     this.pendingAgenticTarget = target;
+    this.scheduleStandbyTarget(target);
     this.enterDraftSession({ force: true });
+    this.setSkillCatalogState(
+      this.aiBackService.getSessionCapabilities && this.configProvider.resolveConfigForTarget
+        ? 'pending'
+        : 'unavailable',
+    );
+    if (previousDraftBoundSession) {
+      void this.releaseDraftBoundSession(previousDraftBoundSession, false);
+    }
+    void this.cancelPendingSessionCreation({ releaseCurrentUnacceptedSession: false });
+    this.prepareDraftBoundSession(target, generation);
+  }
+
+  async discardAgenticTaskDraft(): Promise<void> {
+    this.standbyTargetGeneration += 1;
+    if (this.standbyTargetTimer) {
+      clearTimeout(this.standbyTargetTimer);
+      this.standbyTargetTimer = undefined;
+    }
+    ++this.draftBoundSessionGeneration;
+    const draftBoundSession = this.draftBoundSession;
+    this.draftBoundSession = undefined;
+    await this.cancelPendingSessionCreation({ releaseCurrentUnacceptedSession: false });
+    if (draftBoundSession) {
+      await this.releaseDraftBoundSession(draftBoundSession, true);
+    }
+    this.pendingAgenticTarget = undefined;
+    this.inputDraft = undefined;
+    this.setSkillCatalogState('unavailable');
+    this.agenticTaskRegistry.clearPendingLaunch?.();
+  }
+
+  private prepareDraftBoundSession(target: AcpTargetConfigRequest, generation: number): void {
+    if (!this.aiBackService.getSessionCapabilities || !this.configProvider.resolveConfigForTarget) {
+      return;
+    }
+
+    let preparation!: Promise<ChatModel | undefined>;
+    preparation = (async () => {
+      try {
+        const config = await this.configProvider.resolveConfigForTarget!(target);
+        const capabilities = await this.aiBackService.getSessionCapabilities!(config);
+        if (generation !== this.draftBoundSessionGeneration || this.pendingAgenticTarget !== target) {
+          return undefined;
+        }
+        if (!capabilities.close) {
+          this.setSkillCatalogState('unavailable');
+          return undefined;
+        }
+        return await this.startSessionModel({ deleteOnDiscard: capabilities.delete, generation });
+      } catch (error) {
+        if (generation === this.draftBoundSessionGeneration) {
+          this.logger.warn?.('[ACP Chat][Frontend] Failed to prepare draft-bound ACP session', error);
+          this.setSkillCatalogState('unavailable');
+        }
+        return undefined;
+      }
+    })().finally(() => {
+      if (this.draftBoundSessionPreparation === preparation) {
+        this.draftBoundSessionPreparation = undefined;
+      }
+    });
+    this.draftBoundSessionPreparation = preparation;
+  }
+
+  private async releaseDraftBoundSession(
+    draftBoundSession: AcpDraftBoundSessionOwnership,
+    resetActiveDraft: boolean,
+  ): Promise<void> {
+    if (this.acceptedRequestSessions.has(draftBoundSession.sessionId)) {
+      return;
+    }
+    if (this.draftBoundSession === draftBoundSession) {
+      this.draftBoundSession = undefined;
+    }
+
+    const rawSessionId = this.stripAcpPrefix(draftBoundSession.sessionId);
+    try {
+      await this.aiBackService.closeSession?.(rawSessionId);
+    } catch (error) {
+      this.logger.warn?.('[ACP Chat][Frontend] Failed to close draft-bound ACP session', error);
+    }
+    if (draftBoundSession.deleteOnDiscard) {
+      try {
+        await this.aiBackService.deleteSession?.(rawSessionId);
+      } catch (error) {
+        this.logger.warn?.('[ACP Chat][Frontend] Failed to delete draft-bound ACP session', error);
+      }
+    }
+
+    const acpManager = this.chatManagerService as AcpChatManagerService;
+    await acpManager.disposeSession(draftBoundSession.sessionId);
+    if (resetActiveDraft && this._sessionModel?.sessionId === draftBoundSession.sessionId) {
+      this.enterDraftSession({ force: true });
+    }
+  }
+
+  private scheduleStandbyTarget(target: AcpTargetConfigRequest): void {
+    const generation = ++this.standbyTargetGeneration;
+    if (this.standbyTargetTimer) {
+      clearTimeout(this.standbyTargetTimer);
+    }
+    this.standbyTargetTimer = setTimeout(() => {
+      this.standbyTargetTimer = undefined;
+      void this.declareStandbyTarget(target, generation);
+    }, 500);
+  }
+
+  private async flushStandbyTarget(target: AcpTargetConfigRequest): Promise<void> {
+    const generation = ++this.standbyTargetGeneration;
+    if (this.standbyTargetTimer) {
+      clearTimeout(this.standbyTargetTimer);
+      this.standbyTargetTimer = undefined;
+    }
+    await this.declareStandbyTarget(target, generation);
+  }
+
+  private async declareStandbyTarget(target: AcpTargetConfigRequest, generation: number): Promise<void> {
+    if (!this.aiBackService.setAcpStandbyTarget || !this.configProvider.resolveConfigForTarget) {
+      return;
+    }
+    try {
+      const config = await this.configProvider.resolveConfigForTarget(target);
+      if (generation !== this.standbyTargetGeneration) {
+        return;
+      }
+      await this.aiBackService.setAcpStandbyTarget(config);
+    } catch (error) {
+      if (generation === this.standbyTargetGeneration) {
+        this.logger.warn?.('[ACP Chat][Frontend] Failed to update ACP standby target', error);
+      }
+    }
   }
 
   /**
-   * Returns the Agent selected for an Agentic draft or an unregistered ACP
-   * session. The Task registry becomes the source of truth after the first
-   * prompt is registered.
+   * Returns the launch target selected for an Agentic draft or captured on an
+   * ACP session model. Agent Session routing never falls back to local Tasks.
    */
-  getActiveAgenticTaskAgentId(sessionId?: string): string | undefined {
-    if (!sessionId) {
-      return this.pendingAgenticTarget?.agentId;
-    }
+  getActiveAgenticTaskTarget(sessionId?: string): AcpTargetConfigRequest | undefined {
+    const target = sessionId
+      ? (this.chatManagerService.getSession(sessionId) as ChatModel | undefined)?.acpTarget
+      : this.pendingAgenticTarget;
+    return target && { ...target };
+  }
 
-    return (this.chatManagerService.getSession(sessionId) as ChatModel | undefined)?.acpTarget?.agentId;
+  getActiveAgenticTaskAgentId(sessionId?: string): string | undefined {
+    return this.getActiveAgenticTaskTarget(sessionId)?.agentId;
+  }
+
+  /** Whether the active composition state is an unaccepted Agentic draft. */
+  isActiveAgenticTaskDraft(): boolean {
+    return Boolean(
+      this.pendingAgenticTarget ||
+        (this.draftBoundSession && this._sessionModel?.sessionId === this.draftBoundSession.sessionId),
+    );
   }
 
   private isAgenticLayout(): boolean {
     return this.panelLayoutService?.getLayoutMode() === 'agentic';
   }
 
-  private getAgenticTaskRegistrationBarrier(request: ChatRequestModel, sessionId: string): Promise<void> {
-    const existingBarrier = this.agenticTaskRegistrationBarriers.get(sessionId);
+  private getAgentSessionCatalogRefreshBarrier(request: ChatRequestModel, sessionId: string): Promise<void> {
+    const existingBarrier = this.agentSessionCatalogRefreshBarriers.get(sessionId);
     if (existingBarrier) {
       return existingBarrier;
     }
 
-    const barrier = this.registerFirstAgenticPrompt(request, sessionId)
+    const barrier = this.refreshCatalogAfterFirstAgenticPrompt(sessionId)
       .catch((error) => {
         this.logger.error(
-          `[ACP Chat][Frontend] register Agentic task failed — sessionId=${sessionId}, requestId=${
+          `[ACP Chat][Frontend] refresh Agent session catalog failed — sessionId=${sessionId}, requestId=${
             request.requestId
           }, error=${error instanceof Error ? error.message : String(error)}`,
         );
       })
       .finally(() => {
-        if (this.agenticTaskRegistrationBarriers.get(sessionId) === barrier) {
-          this.agenticTaskRegistrationBarriers.delete(sessionId);
+        if (this.agentSessionCatalogRefreshBarriers.get(sessionId) === barrier) {
+          this.agentSessionCatalogRefreshBarriers.delete(sessionId);
         }
       });
-    this.agenticTaskRegistrationBarriers.set(sessionId, barrier);
+    this.agentSessionCatalogRefreshBarriers.set(sessionId, barrier);
     return barrier;
   }
 
-  private async registerFirstAgenticPrompt(request: ChatRequestModel, sessionId: string | undefined): Promise<void> {
+  private async refreshCatalogAfterFirstAgenticPrompt(sessionId: string | undefined): Promise<void> {
     if (!sessionId || !this.isAgenticLayout()) {
       return;
     }
 
-    const existingTask = await this.agenticTaskRegistry.getTask(sessionId);
     const model = this.chatManagerService.getSession(sessionId);
-    if (existingTask) {
-      if (model) {
-        this.observeTaskSession(model);
-      }
-      return;
-    }
-
     if (!model) {
       return;
     }
@@ -551,119 +860,23 @@ export class AcpChatInternalService extends ChatInternalService {
     };
 
     await this.agenticTaskRegistry.registerProject(project);
-    await this.agenticTaskRegistry.registerFirstPrompt({
-      sessionId,
-      agentId: target.agentId,
-      project,
-      firstPrompt: request.message.prompt,
-      createdAt: model.createdAt,
-    });
-    this.agenticTaskRegistry.rememberActiveTaskSession(sessionId);
-    this.observeTaskSession(model);
-    await this.observeRegisteredTaskSessions();
-  }
-
-  private async observeRegisteredTaskSessions(): Promise<void> {
-    if (!this.isAgenticLayout()) {
-      return;
-    }
-
-    for (const model of this.chatManagerService.getSessions()) {
-      if (model.acpTarget && (await this.agenticTaskRegistry.getTask(model.sessionId))) {
-        this.observeTaskSession(model);
-      }
-    }
-  }
-
-  private observeTaskSession(model: ChatModel): void {
-    if (!this.isAgenticLayout()) {
-      return;
-    }
-
-    const existing = this.taskObservationDisposables.get(model.sessionId);
-    if (existing?.model === model) {
-      return;
-    }
-    existing?.disposable.dispose();
-
-    const seenMessageIds = new Set(model.history.getMessages().map((message) => message.id));
-    const pendingPermissionRequestIds = new Set<string>();
-    const disposable = new DisposableCollection();
-    void this.agenticTaskRegistry.updateStatus(model.sessionId, this.toAgenticTaskStatus(model.threadStatus));
-    disposable.push(
-      model.onThreadStatusChange((status) => {
-        if (!this.isAgenticLayout()) {
-          return;
-        }
-        void this.agenticTaskRegistry.updateStatus(model.sessionId, this.toAgenticTaskStatus(status));
-      }),
-    );
-    disposable.push(
-      model.history.onMessageChange((messages) => {
-        if (!this.isAgenticLayout()) {
-          messages.forEach((message) => seenMessageIds.add(message.id));
-          return;
-        }
-        const hasAgentActivity = messages.some((message) => {
-          if (seenMessageIds.has(message.id)) {
-            return false;
-          }
-          seenMessageIds.add(message.id);
-          if (message.role !== ChatMessageRole.Assistant) {
-            return false;
-          }
-          return Boolean(message.content);
-        });
-        if (hasAgentActivity) {
-          this.markUnreadIfBackground(model.sessionId);
-        }
-      }),
-    );
-    disposable.push(
-      this.permissionBridgeService.onDidRequestPermission((params) => {
-        if (!this.isAgenticLayout()) {
-          return;
-        }
-        if (this.stripAcpPrefix(model.sessionId) !== this.stripAcpPrefix(params.sessionId)) {
-          return;
-        }
-        pendingPermissionRequestIds.add(params.requestId);
-        void this.agenticTaskRegistry.updateAttention(model.sessionId, 'permission');
-        this.markUnreadIfBackground(model.sessionId);
-      }),
-    );
-    disposable.push(
-      this.permissionBridgeService.onDidReceivePermissionResult((result) => {
-        pendingPermissionRequestIds.delete(result.requestId);
-        if (
-          pendingPermissionRequestIds.size > 0 ||
-          this.permissionBridgeService.hasPendingForSession(model.sessionId)
-        ) {
-          return;
-        }
-        void this.agenticTaskRegistry.updateAttention(model.sessionId, undefined);
-      }),
-    );
-    if (this.permissionBridgeService.hasPendingForSession(model.sessionId)) {
-      void this.agenticTaskRegistry.updateAttention(model.sessionId, 'permission');
-      this.markUnreadIfBackground(model.sessionId);
-    }
-    this.taskObservationDisposables.set(model.sessionId, { model, disposable });
+    await (this.chatManagerService as AcpChatManagerService).refreshAgentSessionCatalog();
   }
 
   isAgenticTaskSessionObserved(sessionId: string): boolean {
-    return this.taskObservationDisposables.has(sessionId);
+    return false;
   }
 
   getObservedAgenticTaskStatus(sessionId: string): AgenticTaskStatus | undefined {
-    const observation = this.taskObservationDisposables.get(sessionId);
-    return observation ? this.toAgenticTaskStatus(observation.model.threadStatus) : undefined;
+    return undefined;
   }
 
   private toAgenticTaskStatus(status: ThreadStatus): AgenticTaskStatus {
     switch (status) {
       case 'working':
         return 'running';
+      case 'stopping':
+        return 'stopping';
       case 'disconnected':
         return 'stopped';
       case 'errored':
@@ -673,12 +886,6 @@ export class AcpChatInternalService extends ChatInternalService {
       case 'auth_required':
       default:
         return 'ready';
-    }
-  }
-
-  private markUnreadIfBackground(sessionId: string): void {
-    if (this._sessionModel?.sessionId !== sessionId) {
-      void this.agenticTaskRegistry.markUnread(sessionId, true);
     }
   }
 
@@ -857,7 +1064,7 @@ export class AcpChatInternalService extends ChatInternalService {
     }
   }
 
-  override async clearSessionModel(sessionId?: string) {
+  override async clearSessionModel(sessionId?: string, force = false) {
     sessionId = sessionId || this._sessionModel?.sessionId;
     if (!sessionId) {
       this.enterDraftSession({ force: true });
@@ -869,7 +1076,11 @@ export class AcpChatInternalService extends ChatInternalService {
     try {
       const acpManager = this.chatManagerService as AcpChatManagerService;
       if (acpManager.disposeSession) {
-        await acpManager.disposeSession(sessionId);
+        if (force) {
+          await acpManager.disposeSession(sessionId, true);
+        } else {
+          await acpManager.disposeSession(sessionId);
+        }
       } else {
         this.chatManagerService.clearSession(sessionId);
       }
@@ -891,12 +1102,20 @@ export class AcpChatInternalService extends ChatInternalService {
 
   async loadSessionModel(sessionId: string) {
     const acpManager = this.chatManagerService as AcpChatManagerService;
-    await acpManager.loadSession(sessionId);
+    const loadResult = await acpManager.loadSession(sessionId);
+    await loadResult?.liveReady;
     return this.chatManagerService.getSession(sessionId);
   }
 
   async getSessionsByAcp() {
     const acpManager = this.chatManagerService as AcpChatManagerService;
+    if (this.isAgenticLayout()) {
+      await acpManager.refreshAgentSessionCatalog();
+      return acpManager
+        .getAgentSessionCatalog()
+        .map((session) => acpManager.getSession(session.sessionId))
+        .filter((session): session is ChatModel => Boolean(session));
+    }
     await acpManager.loadSessionList();
     if (acpManager.getSessions().length === 0) {
       await new Promise((resolve) => setTimeout(resolve, 1000 * 3));
@@ -905,27 +1124,32 @@ export class AcpChatInternalService extends ChatInternalService {
     return this.chatManagerService.getSessions();
   }
 
+  getAgentSessions(): AcpAgentSessionDescriptor[] {
+    return (this.chatManagerService as AcpChatManagerService).getAgentSessionCatalog();
+  }
+
+  async refreshAgentSessions(): Promise<AcpAgentSessionDescriptor[]> {
+    return (this.chatManagerService as AcpChatManagerService).refreshAgentSessionCatalog();
+  }
+
+  get onDidChangeAgentSessions() {
+    return (this.chatManagerService as AcpChatManagerService).onDidChangeAgentSessionCatalog;
+  }
+
   private async applyActivatedSession(
     sessionId: string,
     session: ChatModel,
     shouldApply: () => boolean = () => true,
   ): Promise<boolean> {
-    const task = this.isAgenticLayout() ? await this.agenticTaskRegistry.getTask(session.sessionId) : undefined;
     if (!shouldApply()) {
       return false;
     }
 
     this._sessionModel = session;
-    if (task) {
-      this.observeTaskSession(session);
-    }
-    if (this.isAgenticLayout()) {
-      this.agenticTaskRegistry.rememberActiveTaskSession(session.sessionId);
-    }
     // Notify permission bridge of session change
     const rawSessionId = this.stripAcpPrefix(sessionId);
     this.permissionBridgeService.setActiveSession(rawSessionId);
-    this.setAvailableCommands((this.chatManagerService as AcpChatManagerService).getAvailableCommands());
+    this.setAvailableCommands((this.chatManagerService as AcpChatManagerService).getAvailableCommands(sessionId));
     this._onSessionModelChange.fire(this._sessionModel);
     this._onChangeSession.fire(this._sessionModel.sessionId);
     return true;
@@ -935,16 +1159,42 @@ export class AcpChatInternalService extends ChatInternalService {
     sessionId: string,
     shouldApply: () => boolean = () => true,
   ): Promise<AgenticTaskSessionActivationResult> {
+    return this.doActivateAgenticSession(sessionId, shouldApply, true);
+  }
+
+  async activateAgentSession(
+    session: AcpAgentSessionDescriptor,
+    shouldApply: () => boolean = () => true,
+  ): Promise<AgenticTaskSessionActivationResult> {
+    return this.doActivateAgenticSession(session.sessionId, shouldApply, false);
+  }
+
+  private async doActivateAgenticSession(
+    sessionId: string,
+    shouldApply: () => boolean,
+    showFallbackMessage: boolean,
+  ): Promise<AgenticTaskSessionActivationResult> {
     const selectionVersion = ++this.sessionSelectionVersion;
+    let releaseLoadingOnReturn = true;
     this.beginSessionLoading();
+    this.pendingAgenticSessionId = sessionId;
+    this.agenticSessionLiveReadyStatuses.set(sessionId, 'pending');
     try {
-      await (this.chatManagerService as AcpChatManagerService).loadSession(sessionId);
+      const acpManager = this.chatManagerService as AcpChatManagerService;
+      const loadResult = await acpManager.loadSession(sessionId);
       const session = this.chatManagerService.getSession(sessionId);
       if (selectionVersion !== this.sessionSelectionVersion || !shouldApply()) {
+        this.agenticSessionLiveReadyStatuses.delete(sessionId);
+        this.clearPendingAgenticSession(sessionId);
+        await acpManager.disposeSession(sessionId);
         return { status: 'superseded' };
       }
       if (!session) {
-        this.messageService.info(ACP_LOAD_TASK_FALLBACK_MESSAGE);
+        this.agenticSessionLiveReadyStatuses.delete(sessionId);
+        this.clearPendingAgenticSession(sessionId);
+        if (showFallbackMessage) {
+          this.messageService.info(ACP_LOAD_TASK_FALLBACK_MESSAGE);
+        }
         return { status: 'failed' };
       }
       const activated = await this.applyActivatedSession(
@@ -952,15 +1202,44 @@ export class AcpChatInternalService extends ChatInternalService {
         session,
         () => selectionVersion === this.sessionSelectionVersion && shouldApply(),
       );
+      if (!activated) {
+        this.agenticSessionLiveReadyStatuses.delete(sessionId);
+        await acpManager.disposeSession(sessionId);
+      } else if (loadResult?.liveReady) {
+        releaseLoadingOnReturn = false;
+        void loadResult.liveReady.then(
+          (status) => {
+            if (selectionVersion === this.sessionSelectionVersion) {
+              this.agenticSessionLiveReadyStatuses.set(sessionId, status);
+            }
+            this.endSessionLoading();
+          },
+          () => {
+            if (selectionVersion === this.sessionSelectionVersion) {
+              this.agenticSessionLiveReadyStatuses.set(sessionId, 'failed');
+            }
+            this.endSessionLoading();
+          },
+        );
+      } else {
+        this.agenticSessionLiveReadyStatuses.set(sessionId, 'ready');
+      }
+      this.clearPendingAgenticSession(sessionId);
       return { status: activated ? 'activated' : 'superseded' };
     } catch (error) {
+      this.agenticSessionLiveReadyStatuses.delete(sessionId);
+      this.clearPendingAgenticSession(sessionId);
       if (selectionVersion === this.sessionSelectionVersion && shouldApply()) {
-        this.messageService.info(formatAcpLoadTaskFallbackMessage(error));
+        if (showFallbackMessage) {
+          this.messageService.info(formatAcpLoadTaskFallbackMessage(error));
+        }
         return { status: isAcpSessionNotFoundError(error) ? 'conversation-unavailable' : 'failed' };
       }
       return { status: 'superseded' };
     } finally {
-      this.endSessionLoading();
+      if (releaseLoadingOnReturn) {
+        this.endSessionLoading();
+      }
     }
   }
 
@@ -970,8 +1249,11 @@ export class AcpChatInternalService extends ChatInternalService {
   ): Promise<AgenticTaskSessionValidationResult> {
     this.beginSessionLoading();
     try {
-      await (this.chatManagerService as AcpChatManagerService).loadSession(sessionId);
+      const acpManager = this.chatManagerService as AcpChatManagerService;
+      const loadResult = await acpManager.loadSession(sessionId);
+      await loadResult?.liveReady;
       if (!shouldApply()) {
+        await acpManager.disposeSession(sessionId);
         return { status: 'superseded' };
       }
       const session = this.chatManagerService.getSession(sessionId);
@@ -979,10 +1261,8 @@ export class AcpChatInternalService extends ChatInternalService {
         this.messageService.info(ACP_LOAD_TASK_FALLBACK_MESSAGE);
         return { status: 'failed' };
       }
-      if (await this.agenticTaskRegistry.getTask(sessionId)) {
-        this.observeTaskSession(session);
-      }
       if (!shouldApply()) {
+        await acpManager.disposeSession(sessionId);
         return { status: 'superseded' };
       }
       return { status: 'validated', taskStatus: this.toAgenticTaskStatus(session.threadStatus) };
@@ -1005,7 +1285,12 @@ export class AcpChatInternalService extends ChatInternalService {
       if (selectionVersion !== this.sessionSelectionVersion) {
         return;
       }
-      await acpManager.loadSession(sessionId);
+      const loadResult = await acpManager.loadSession(sessionId);
+      await loadResult?.liveReady;
+      if (selectionVersion !== this.sessionSelectionVersion) {
+        await acpManager.disposeSession(sessionId);
+        return;
+      }
       const updatedSession = this.chatManagerService.getSession(sessionId);
       if (!updatedSession) {
         this.messageService.info(
@@ -1014,15 +1299,18 @@ export class AcpChatInternalService extends ChatInternalService {
         this.enterDraftSession({ force: true });
         return;
       }
-      await this.applyActivatedSession(
+      const activated = await this.applyActivatedSession(
         sessionId,
         updatedSession,
         () => selectionVersion === this.sessionSelectionVersion,
       );
+      if (!activated) {
+        await acpManager.disposeSession(sessionId);
+      }
+    } catch (error) {
       if (selectionVersion !== this.sessionSelectionVersion) {
         return;
       }
-    } catch (error) {
       this.messageService.info(formatAcpLoadSessionFallbackMessage(error));
       this.enterDraftSession({ force: true });
     } finally {
@@ -1032,11 +1320,15 @@ export class AcpChatInternalService extends ChatInternalService {
 
   override dispose(): void {
     this.lifecycleGeneration += 1;
+    this.standbyTargetGeneration += 1;
+    if (this.standbyTargetTimer) {
+      clearTimeout(this.standbyTargetTimer);
+      this.standbyTargetTimer = undefined;
+    }
     this.permissionBridgeService.setActiveSession(undefined);
-    this.agenticTaskRegistrationBarriers.clear();
+    this.agentSessionCatalogRefreshBarriers.clear();
     this.requestCancellationGenerations.clear();
-    this.taskObservationDisposables.forEach(({ disposable }) => disposable.dispose());
-    this.taskObservationDisposables.clear();
+    this.acceptedRequestSessions.clear();
     this._onModeChange.dispose();
     this._onSessionLoadingChange.dispose();
     this._onSessionModelChange.dispose();

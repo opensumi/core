@@ -163,6 +163,7 @@ export class AcpChatAgent implements IChatAgent {
         this.logger.log(
           `[ACP Chat] invoke custom slash handler — requestId=${request.requestId}, command=${command}, promptChars=${prompt.length}`,
         );
+        progress({ kind: 'requestAccepted', sessionId: request.sessionId });
         await commandHandler.invoke(prompt, progress, token);
         chatDeferred.resolve();
         return {};
@@ -185,7 +186,12 @@ export class AcpChatAgent implements IChatAgent {
     );
 
     try {
-      const config = await this.configProvider.resolveConfig();
+      const browserSessionId = request.sessionId.startsWith('acp:') ? request.sessionId : `acp:${request.sessionId}`;
+      const target = this.chatManagerService.getSession(browserSessionId)?.acpTarget;
+      const config =
+        target && this.configProvider.resolveConfigForTarget
+          ? await this.configProvider.resolveConfigForTarget(target)
+          : await this.configProvider.resolveConfig();
       this.logger.log(`[ACP Chat] invoke: sessionId=${sessionId}, config=${JSON.stringify(config)}`);
       const acpDeliveryMode = this.preferenceService.get<'minimal' | 'stream'>(
         AINativeSettingSectionsId.AcpDeliveryMode,
@@ -211,6 +217,7 @@ export class AcpChatAgent implements IChatAgent {
       this.logger.log(
         `[ACP Chat] requestStream opened — sessionId=${sessionId}, requestId=${request.requestId}, historyMessages=${requestOptions.history.length}`,
       );
+      progress({ kind: 'requestAccepted', sessionId });
       let streamDataCount = 0;
       let hasLoggedFirstContent = false;
 
@@ -291,6 +298,8 @@ export class AcpChatAgent implements IChatAgent {
     switch (status) {
       case 'working':
         return localize('aiNative.chat.safeProgress.agentWorking');
+      case 'stopping':
+        return localize('aiNative.chat.safeProgress.agentStopping');
       case 'auth_required':
         return localize('aiNative.chat.safeProgress.authRequired');
       case 'errored':
@@ -311,6 +320,8 @@ export class AcpChatAgent implements IChatAgent {
       currentModelId: state.currentModelId,
       configOptions: state.configOptions,
       availableCommands: state.availableCommands,
+      title: state.title,
+      updatedAt: state.updatedAt,
     });
   }
 

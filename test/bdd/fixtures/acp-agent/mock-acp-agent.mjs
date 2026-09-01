@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 
-import { AgentSideConnection, RequestError, ndJsonStream } from '@agentclientprotocol/sdk';
+import fs from 'node:fs';
+import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
+
+import { AgentSideConnection, RequestError, ndJsonStream } from '@agentclientprotocol/sdk';
 
 const DEFAULT_DELAY_MS = 40;
 const DEFAULT_LONG_STREAM_TICKS = 80;
@@ -13,6 +16,7 @@ function parseArgs(argv) {
     fixture: process.env.OPENSUMI_ACP_BDD_FIXTURE || 'stream-rich',
     delayMs: Number(process.env.OPENSUMI_ACP_BDD_DELAY_MS || DEFAULT_DELAY_MS),
     longStreamTicks: Number(process.env.OPENSUMI_ACP_BDD_LONG_STREAM_TICKS || DEFAULT_LONG_STREAM_TICKS),
+    historyMessageCount: Number(process.env.OPENSUMI_ACP_BDD_HISTORY_MESSAGE_COUNT || 0),
     sessionPrefix: process.env.OPENSUMI_ACP_BDD_SESSION_PREFIX || 'bdd-session',
     verbose: process.env.OPENSUMI_ACP_BDD_VERBOSE === '1',
     help: false,
@@ -34,6 +38,10 @@ function parseArgs(argv) {
       options.longStreamTicks = Number(argv[++i] || options.longStreamTicks);
     } else if (arg.startsWith('--long-stream-ticks=')) {
       options.longStreamTicks = Number(arg.slice('--long-stream-ticks='.length));
+    } else if (arg === '--history-message-count') {
+      options.historyMessageCount = Number(argv[++i] || options.historyMessageCount);
+    } else if (arg.startsWith('--history-message-count=')) {
+      options.historyMessageCount = Number(arg.slice('--history-message-count='.length));
     } else if (arg === '--session-prefix') {
       options.sessionPrefix = argv[++i] || options.sessionPrefix;
     } else if (arg.startsWith('--session-prefix=')) {
@@ -48,6 +56,9 @@ function parseArgs(argv) {
   }
   if (!Number.isFinite(options.longStreamTicks) || options.longStreamTicks < 1) {
     options.longStreamTicks = DEFAULT_LONG_STREAM_TICKS;
+  }
+  if (!Number.isInteger(options.historyMessageCount) || options.historyMessageCount < 0) {
+    options.historyMessageCount = 0;
   }
 
   return options;
@@ -65,6 +76,7 @@ Options:
   --fixture <name>          Fixture mode. Also accepts OPENSUMI_ACP_BDD_FIXTURE.
   --delay-ms <ms>          Delay between streamed updates.
   --long-stream-ticks <n>  Number of long-stream chunks before natural completion.
+  --history-message-count <n> Number of visible messages seeded for each history session.
   --session-prefix <text>  Prefix for generated session ids.
   --verbose                Write diagnostics to stderr.
 
@@ -73,8 +85,11 @@ Fixtures:
   long-stream       Repeated content chunks until session/cancel or tick limit.
   permission        Requests visible client permission during prompt.
   send-failure      Fails deterministically during session/prompt.
+  service-failure   Returns the generic OpenCode service failure shape.
+  model-not-found   Returns an invalid-model JSON-RPC error with model metadata.
   create-failure    Fails deterministically during session/new.
   load-failure      Fails deterministically during session/load.
+  list-failure      Fails deterministically during session/list.
   task-session-missing Completes a Task, exits, then reports its Session missing after restart.
   auth-required     Raises an ACP auth-required error during session/prompt.
   config-failure    Fails deterministic session/set_config_option calls.
@@ -253,6 +268,48 @@ function createAgent(conn) {
   let nextSessionNumber = 1;
   let historySeedCwd;
 
+  const usesSharedSessionStore = options.fixture === 'history' || options.fixture === 'load-failure';
+  const sessionStorePath = (cwd) =>
+    path.join(
+      cwd,
+      '.sumi',
+      `acp-bdd-sessions-${options.sessionPrefix.replace(/[^a-z0-9_-]+/gi, '-')}.json`,
+    );
+  const readSessionStore = (cwd) => {
+    if (!usesSharedSessionStore || !cwd) {
+      return [];
+    }
+    try {
+      const parsed = JSON.parse(fs.readFileSync(sessionStorePath(cwd), 'utf8'));
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+  const loadSessionStore = (cwd) => {
+    if (!usesSharedSessionStore || !cwd) {
+      return;
+    }
+    for (const session of readSessionStore(cwd)) {
+      if (session?.sessionId) {
+        sessions.set(session.sessionId, session);
+      }
+    }
+  };
+  const persistSessionStore = (cwd) => {
+    if (!usesSharedSessionStore || !cwd) {
+      return;
+    }
+    const merged = new Map(readSessionStore(cwd).map((session) => [session.sessionId, session]));
+    for (const session of sessions.values()) {
+      if (session.cwd === cwd) {
+        merged.set(session.sessionId, session);
+      }
+    }
+    fs.mkdirSync(path.dirname(sessionStorePath(cwd)), { recursive: true });
+    fs.writeFileSync(sessionStorePath(cwd), `${JSON.stringify([...merged.values()], null, 2)}\n`, 'utf8');
+  };
+
   if (options.fixture === 'history' || options.fixture === 'load-failure') {
     const seeds = [
       { suffix: 'alpha', updatedAt: '2026-06-11T00:00:01.000Z' },
@@ -408,6 +465,51 @@ function createAgent(conn) {
     const assistantPartTwo = restoredDynamicSession
       ? ' Restored Task response, part two.'
       : ` BDD_HISTORY_ASSISTANT_${upperSeed}_PART_2.`;
+
+    if (options.historyMessageCount > 0) {
+      for (let index = 0; index < options.historyMessageCount; index++) {
+        const turn = Math.floor(index / 2);
+        if (index % 2 === 0) {
+          await emit(session.sessionId, {
+            sessionUpdate: 'user_message_chunk',
+            content: text(`BDD_LONG_HISTORY_${upperSeed}_USER_${turn}`),
+          });
+          continue;
+        }
+        if (turn % 25 === 0) {
+          const longToolCallId = `bdd-long-history-${seed}-${turn}`;
+          await emit(session.sessionId, {
+            sessionUpdate: 'agent_thought_chunk',
+            content: text(`BDD_LONG_HISTORY_${upperSeed}_THOUGHT_${turn}: inspect the retained context.`),
+          });
+          await emit(session.sessionId, {
+            sessionUpdate: 'plan',
+            entries: [
+              { content: `Review long-history turn ${turn}`, status: 'completed', priority: 'medium' },
+              { content: `Render long-history turn ${turn}`, status: 'in_progress', priority: 'high' },
+            ],
+          });
+          await emit(session.sessionId, {
+            sessionUpdate: 'tool_call',
+            toolCallId: longToolCallId,
+            title: `BDD long-history tool ${turn}`,
+            kind: 'read',
+            status: 'completed',
+            rawInput: { fixture: 'history', seed, turn },
+            rawOutput: { ok: true, sentinel: `BDD_LONG_HISTORY_${upperSeed}_TOOL_${turn}` },
+          });
+        }
+        await emit(session.sessionId, {
+          sessionUpdate: 'agent_message_chunk',
+          content: text(
+            turn % 20 === 0
+              ? `BDD_LONG_HISTORY_${upperSeed}_ASSISTANT_${turn}\n\n- mixed Markdown row\n- stable message identity`
+              : `BDD_LONG_HISTORY_${upperSeed}_ASSISTANT_${turn}`,
+          ),
+        });
+      }
+      return;
+    }
 
     await emit(session.sessionId, {
       sessionUpdate: 'user_message_chunk',
@@ -579,6 +681,7 @@ test/test.js
           sessionCapabilities: {
             list: {},
             loadSession: {},
+            close: {},
           },
           mcpCapabilities: {
             http: true,
@@ -597,12 +700,14 @@ test/test.js
         throw RequestError.internalError({ fixture: options.fixture }, 'BDD create-session failure');
       }
 
+      loadSessionStore(params.cwd);
       // The test harness may create several ACP threads for one workspace.
       // Each thread starts a fresh mock process, so the local counter alone
       // would otherwise return the same id from every process.
       const sessionId = `${options.sessionPrefix}-${process.pid}-${nextSessionNumber++}`;
       const session = createSessionRecord(sessionId, params.cwd);
       sessions.set(sessionId, session);
+      persistSessionStore(params.cwd);
       await emitInitialSessionUpdates(session);
       scheduleAvailableCommandsUpdate(session);
       return responseForSession(session);
@@ -613,16 +718,21 @@ test/test.js
         throw RequestError.resourceNotFound(params.sessionId);
       }
 
+      loadSessionStore(params.cwd);
       const session = getOrCreateSession(params.sessionId, params.cwd);
       // A real ACP Agent reloads persisted history after the browser reconnects.
       // Dynamic fixture sessions live only in a mock process, so give an unknown
       // history session a bounded replay payload when it is reloaded on a new
       // process.
       if (options.fixture === 'history' && !session.historySeed) {
-        session.historySeed = 'restored';
+        session.historySeed =
+          options.historyMessageCount > 0
+            ? `long-${params.sessionId.replace(/[^a-z0-9]+/gi, '-').slice(-12)}`
+            : 'restored';
         session.promptCount = 1;
       }
       session.updatedAt = nowIso();
+      persistSessionStore(session.cwd);
       await emitInitialSessionUpdates(session);
       await emitHistoryReplay(session);
       scheduleAvailableCommandsUpdate(session);
@@ -630,6 +740,13 @@ test/test.js
     },
 
     async listSessions(params = {}) {
+      if (options.fixture === 'list-failure') {
+        throw RequestError.internalError(
+          { fixture: options.fixture, service: 'session' },
+          'BDD list-session failure',
+        );
+      }
+      loadSessionStore(params.cwd);
       if ((options.fixture === 'history' || options.fixture === 'load-failure') && params.cwd && !historySeedCwd) {
         historySeedCwd = params.cwd;
         for (const session of sessions.values()) {
@@ -637,6 +754,7 @@ test/test.js
             session.cwd = historySeedCwd;
           }
         }
+        persistSessionStore(params.cwd);
       }
       const allSessions = [...sessions.values()]
         .filter((session) => !params.cwd || session.cwd === params.cwd)
@@ -690,6 +808,18 @@ test/test.js
       if (options.fixture === 'send-failure') {
         throw RequestError.internalError({ fixture: options.fixture }, 'BDD send failure');
       }
+      if (options.fixture === 'service-failure') {
+        throw RequestError.internalError(
+          { fixture: options.fixture, service: 'session', errorName: 'DatabaseError' },
+          'OpenCode service failure',
+        );
+      }
+      if (options.fixture === 'model-not-found') {
+        throw RequestError.invalidParams(
+          { fixture: options.fixture, providerId: 'cfuse', modelId: 'cfuse/GLM-5.2' },
+          'model not found: cfuse/GLM-5.2',
+        );
+      }
       if (options.fixture === 'auth-required') {
         throw RequestError.authRequired({ fixture: options.fixture }, 'BDD auth required');
       }
@@ -698,6 +828,7 @@ test/test.js
       session.promptCount += 1;
       session.title = `BDD Turn ${session.promptCount}`;
       session.updatedAt = nowIso();
+      persistSessionStore(session.cwd);
       const promptText = extractPromptText(params.prompt);
 
       await emit(params.sessionId, {

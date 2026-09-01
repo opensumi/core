@@ -5,6 +5,7 @@ import { act } from 'react-dom/test-utils';
 jest.mock('@opensumi/ide-core-browser', () => ({
   KeybindingRegistry: class KeybindingRegistry {},
   PreferenceService: class PreferenceService {},
+  localize: jest.fn((_key: string, fallback?: string) => fallback || _key),
   useInjectable: jest.fn(),
 }));
 
@@ -63,7 +64,7 @@ jest.mock('@opensumi/ide-components/lib/popover', () => ({
 
 import { KeybindingRegistry } from '@opensumi/ide-core-browser';
 import { URI } from '@opensumi/ide-core-common';
-import { IWindowDialogService } from '@opensumi/ide-overlay';
+import { IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
 
 import { AgenticTaskRegistryService } from '../../../src/browser/acp/agentic-task-registry.service';
 import { AgenticWorkspaceSwitchService } from '../../../src/browser/acp/agentic-workspace-switch.service';
@@ -145,6 +146,9 @@ function createServices() {
       get: jest.fn(() => ({})),
       set: jest.fn(),
     },
+    messageService: {
+      info: jest.fn(),
+    },
     windowDialogService: {
       showOpenDialog: jest.fn(() => Promise.resolve([URI.file('/work/added-project')])),
     },
@@ -157,6 +161,9 @@ describe('AgenticTaskList', () => {
   let root: Root;
 
   beforeEach(() => {
+    jest
+      .requireMock('@opensumi/ide-core-browser')
+      .localize.mockImplementation((_key: string, fallback?: string) => fallback || _key);
     (getAvailableAgentConfigs as jest.Mock).mockReturnValue({
       'agent-a': { command: 'agent-a', description: 'Agent A' },
       'agent-b': { command: 'agent-b', description: 'Agent B' },
@@ -202,6 +209,9 @@ describe('AgenticTaskList', () => {
       }
       if (token === IWindowDialogService) {
         return services.windowDialogService;
+      }
+      if (token === IMessageService) {
+        return services.messageService;
       }
       if (token === KeybindingRegistry) {
         return services.keybindingRegistry;
@@ -274,8 +284,52 @@ describe('AgenticTaskList', () => {
     const launchButton = projectGroup?.querySelector('[data-testid="agentic-task-launch-button"]');
     expect(launchButton?.textContent).toBe('');
     expect(launchButton?.querySelector('.codicon.codicon-add')).not.toBeNull();
-    expect(launchButton?.getAttribute('aria-label')).toBe('New Task for a');
+    expect(launchButton?.getAttribute('aria-label')).toBe('New session for a');
     expect(projectGroup?.querySelector('[data-testid="agentic-task-agent-menu-button"]')).toBeNull();
+  });
+
+  it('localizes Agent Task List and empty Project management operations', async () => {
+    const translations: Record<string, string> = {
+      'aiNative.agentic.taskList.title': 'Agent 任务',
+      'aiNative.agentic.taskList.resize': '调整 Agent 任务列表宽度',
+      'aiNative.agentic.taskList.search': '搜索任务',
+      'aiNative.agentic.project.add': '添加项目',
+      'aiNative.agentic.project.newTask': '在 {0} 中新建任务',
+      'aiNative.agentic.project.manage': '管理 {0}',
+      'aiNative.agentic.project.rename.action': '重命名',
+      'aiNative.agentic.project.rename.title': '重命名 {0}',
+      'aiNative.agentic.project.remove': '移除 {0}',
+      'aiNative.agentic.project.removeAction': '移除项目',
+    };
+    jest
+      .requireMock('@opensumi/ide-core-browser')
+      .localize.mockImplementation((key: string, fallback?: string) => translations[key] || fallback || key);
+    const services = createServices();
+    const emptyManagedProject = { ...projectA, label: undefined, managed: true as const };
+    services.registry.listProjects.mockResolvedValue([emptyManagedProject]);
+    services.registry.listActiveGroups.mockResolvedValue([{ project: emptyManagedProject, tasks: [] }]);
+
+    await renderTaskList(services);
+
+    expect(container.querySelector('[data-testid="agentic-task-list"]')?.getAttribute('aria-label')).toBe('Agent 任务');
+    expect(container.querySelector('h2')?.textContent).toBe('Agent 任务');
+    expect(container.querySelector('[data-testid="agentic-task-list-resize-handle"]')?.getAttribute('aria-label')).toBe(
+      '调整 Agent 任务列表宽度',
+    );
+    expect(container.querySelector('[data-testid="agentic-project-add-button"]')?.getAttribute('aria-label')).toBe(
+      '添加项目',
+    );
+    expect(container.querySelector('input[type="search"]')?.getAttribute('placeholder')).toBe('搜索任务');
+    expect(container.querySelector('[data-testid="agentic-task-launch-button"]')?.getAttribute('aria-label')).toBe(
+      '在 a 中新建任务',
+    );
+
+    const manage = container.querySelector('[aria-label="管理 a"]') as HTMLButtonElement;
+    await act(async () => {
+      manage.click();
+    });
+    expect(container.querySelector('[aria-label="重命名 a"]')?.textContent).toBe('重命名');
+    expect(container.querySelector('[aria-label="移除 a"]')?.textContent).toBe('移除项目');
   });
 
   it('uses the active Task Agent before the user default for an empty Project Group', async () => {
@@ -327,6 +381,68 @@ describe('AgenticTaskList', () => {
       await flushPromises();
     });
     expect(services.registry.removeManagedProject).toHaveBeenCalledWith(unnamedManagedProject.id);
+  });
+
+  it('explains why a Project with retained Tasks cannot be removed', async () => {
+    const services = createServices();
+    const managedProject = { ...projectA, managed: true as const };
+    services.registry.listProjects.mockResolvedValue([managedProject]);
+    services.registry.listActiveGroups.mockResolvedValue([
+      { project: managedProject, tasks: [createTask(managedProject, 'acp:retained', 'Retained task')] },
+    ]);
+    await renderTaskList(services);
+
+    await act(async () => {
+      (container.querySelector('[aria-label="Manage Project A"]') as HTMLButtonElement).click();
+    });
+
+    const remove = container.querySelector('[aria-label="Remove Project A"]') as HTMLButtonElement;
+    expect(remove).not.toBeNull();
+    expect(remove.disabled).toBe(true);
+    expect(remove.getAttribute('aria-describedby')).toBe('agentic-project-remove-reason-project-a');
+    expect(container.querySelector('#agentic-project-remove-reason-project-a')?.textContent).toBe(
+      'Projects with active or archived Tasks cannot be removed.',
+    );
+  });
+
+  it('explains why a non-manually-added Project cannot be removed', async () => {
+    const services = createServices();
+    services.registry.listProjects.mockResolvedValue([projectA]);
+    services.registry.listActiveGroups.mockResolvedValue([
+      { project: projectA, tasks: [createTask(projectA, 'acp:current', 'Current task')] },
+    ]);
+    await renderTaskList(services);
+
+    await act(async () => {
+      (container.querySelector('[aria-label="Manage Project A"]') as HTMLButtonElement).click();
+    });
+
+    const remove = container.querySelector('[aria-label="Remove Project A"]') as HTMLButtonElement;
+    expect(remove.disabled).toBe(true);
+    expect(container.querySelector('#agentic-project-remove-reason-project-a')?.textContent).toBe(
+      'Only manually added Projects can be removed.',
+    );
+  });
+
+  it('shows the retained Task reason when an empty Project removal is rejected', async () => {
+    const services = createServices();
+    const emptyManagedProject = { ...projectA, managed: true as const };
+    services.registry.listProjects.mockResolvedValue([emptyManagedProject]);
+    services.registry.listActiveGroups.mockResolvedValue([{ project: emptyManagedProject, tasks: [] }]);
+    services.registry.removeManagedProject.mockResolvedValue(false);
+    await renderTaskList(services);
+
+    await act(async () => {
+      (container.querySelector('[aria-label="Manage Project A"]') as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (container.querySelector('[aria-label="Remove Project A"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(services.messageService.info).toHaveBeenCalledWith(
+      'Projects with active or archived Tasks cannot be removed.',
+    );
   });
 
   it('refreshes when the Task Registry records a newly created Task', async () => {
@@ -852,6 +968,16 @@ describe('AgenticTaskList', () => {
             status: 'running' as const,
           },
           {
+            sessionId: 'acp:stopping',
+            projectId: projectA.id,
+            agentId: 'agent-a',
+            title: 'Stopping task',
+            createdAt: 3,
+            archived: false,
+            unread: false,
+            status: 'stopping' as const,
+          },
+          {
             sessionId: 'acp:stopped',
             projectId: projectA.id,
             agentId: 'agent-a',
@@ -922,14 +1048,20 @@ describe('AgenticTaskList', () => {
 
     expectMetadata('agentic-task-attention-acp:permission', 'permission', 'codicon-shield', 'task_meta_warning');
     expectMetadata('agentic-task-attention-acp:input', 'input', 'codicon-edit', 'task_meta_warning');
-    expectMetadata('agentic-task-status-acp:running', 'running', 'codicon-loading', 'task_meta_information');
+    expectMetadata('agentic-task-status-acp:running', 'running', 'codicon-pulse', 'task_meta_information');
     expect(
-      container
-        .querySelector('[data-testid="agentic-task-status-acp:running"] .codicon.codicon-modifier-spin')
-        ?.getAttribute('aria-hidden'),
-    ).toBe('true');
-    expectMetadata('agentic-task-status-acp:stopped', 'stopped', 'codicon-circle-slash', 'task_meta_secondary');
-    expectMetadata('agentic-task-status-acp:error', 'error', 'codicon-error', 'task_meta_error');
+      container.querySelector('[data-testid="agentic-task-status-acp:running"] .codicon-modifier-spin'),
+    ).toBeNull();
+    expectMetadata('agentic-task-status-acp:stopping', 'stopping', 'codicon-debug-pause', 'task_meta_warning');
+    expect(
+      container.querySelector('[data-testid="agentic-task-status-acp:stopping"] .codicon-modifier-spin'),
+    ).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-archive-acp:stopping"]')).toBeNull();
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:stopping"]')?.getAttribute('aria-label'),
+    ).toContain('Status: Stopping.');
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:stopped"]')).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-status-acp:error"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-status-acp:permission"]')).toBeNull();
     expect(container.querySelector('[data-testid="agentic-task-unread-acp:permission"]')).not.toBeNull();
     expect(
@@ -1038,6 +1170,64 @@ describe('AgenticTaskList', () => {
     expect(services.workspaceSwitch.activateTask).toHaveBeenCalledTimes(3);
   });
 
+  it('keeps the Active Task selected and shows only one Pending Task Selection', async () => {
+    const services = createServices();
+    let resolvePendingActivation: (result: { status: 'activated' }) => void;
+    const pendingActivation = new Promise<{ status: 'activated' }>((resolve) => {
+      resolvePendingActivation = resolve;
+    });
+    services.workspaceSwitch.activateTask
+      .mockResolvedValueOnce({ status: 'activated' })
+      .mockReturnValueOnce(pendingActivation);
+    services.registry.listActiveGroups.mockResolvedValue([
+      {
+        project: projectA,
+        tasks: [createTask(projectA, 'acp:active', 'Active task'), createTask(projectA, 'acp:pending', 'Pending task')],
+      },
+    ]);
+    await renderTaskList(services);
+
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-row-acp:active"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="agentic-task-row-acp:pending"]') as HTMLButtonElement).click();
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:active"]')?.getAttribute('aria-current')).toBe(
+      'true',
+    );
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:pending"]')?.getAttribute('aria-current'),
+    ).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:pending"]')?.getAttribute('aria-busy')).toBe(
+      'true',
+    );
+    expect(container.querySelector('[data-testid="agentic-task-pending-acp:pending"]')).not.toBeNull();
+    expect(
+      container.querySelector(
+        '[data-testid="agentic-task-pending-acp:pending"] .codicon-loading.codicon-modifier-spin',
+      ),
+    ).not.toBeNull();
+
+    act(() => {
+      (container.querySelector('[data-testid="agentic-task-row-acp:pending"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-testid="agentic-task-row-acp:active"]') as HTMLButtonElement).click();
+    });
+    expect(services.workspaceSwitch.activateTask).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      resolvePendingActivation!({ status: 'activated' });
+      await flushPromises();
+    });
+    expect(container.querySelector('[data-testid="agentic-task-row-acp:pending"]')?.getAttribute('aria-current')).toBe(
+      'true',
+    );
+    expect(container.querySelector('[data-testid="agentic-task-pending-acp:pending"]')).toBeNull();
+  });
+
   it('selects only the most recent Task Row after rapid successful activation requests', async () => {
     const services = createServices();
     let resolveFirstActivation: (result: { status: 'activated' }) => void;
@@ -1103,7 +1293,7 @@ describe('AgenticTaskList', () => {
     );
   });
 
-  it('shows the originating Agent and marks persisted ACP status as last known until the session is observed', async () => {
+  it('shows the originating Agent and keeps persisted running/stopping status static until observed', async () => {
     const services = createServices();
     services.aiChatService.isAgenticTaskSessionObserved.mockReturnValue(false);
     services.registry.listActiveGroups.mockResolvedValue([
@@ -1120,6 +1310,16 @@ describe('AgenticTaskList', () => {
             unread: false,
             status: 'running' as const,
           },
+          {
+            sessionId: 'acp:last-known-stopping',
+            projectId: projectA.id,
+            agentId: 'agent-b',
+            title: 'Stopping background task',
+            createdAt: 2,
+            archived: false,
+            unread: false,
+            status: 'stopping' as const,
+          },
         ],
       },
     ]);
@@ -1135,6 +1335,12 @@ describe('AgenticTaskList', () => {
     expect(
       container.querySelector('[data-testid="agentic-task-row-acp:last-known"]')?.getAttribute('aria-label'),
     ).toContain('Status: Last known status: Running.');
+    expect(
+      container.querySelector('[data-testid="agentic-task-status-acp:last-known-stopping"] .codicon-modifier-spin'),
+    ).toBeNull();
+    expect(
+      container.querySelector('[data-testid="agentic-task-row-acp:last-known-stopping"]')?.getAttribute('aria-label'),
+    ).toContain('Status: Last known status: Stopping.');
 
     const popover = container.querySelector('[data-popover-id="agentic-task-tooltip-acp:last-known"]') as HTMLElement;
     await act(async () => {

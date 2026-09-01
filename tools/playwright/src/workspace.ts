@@ -1,24 +1,31 @@
+import os from 'os';
 import path from 'path';
 
 import fse from 'fs-extra';
-import temp from 'temp';
 
 import { Disposable, URI } from '@opensumi/ide-utils';
 
+export const PLAYWRIGHT_TMP_DIR = path.resolve(__dirname, '../tmp');
+
 export class OpenSumiWorkspace extends Disposable {
   private workspacePath: string;
+  private preferencePath: string;
   private preferenceDirName: string;
 
   constructor(private filesToWorkspace: string[]) {
     super();
-    const track = temp.track();
+    fse.ensureDirSync(PLAYWRIGHT_TMP_DIR);
+    this.workspacePath = fse.realpathSync(fse.mkdtempSync(path.join(PLAYWRIGHT_TMP_DIR, 'workspace-')));
+    this.preferencePath = path.join(PLAYWRIGHT_TMP_DIR, `playwright-${path.basename(this.workspacePath)}`);
+    fse.ensureDirSync(this.preferencePath);
+    this.preferenceDirName = path.relative(os.homedir(), this.preferencePath).split(path.sep).join('/');
+
     this.disposables.push({
       dispose: () => {
-        track.cleanupSync();
+        fse.removeSync(this.workspacePath);
+        fse.removeSync(this.preferencePath);
       },
     });
-    this.workspacePath = fse.realpathSync(path.join(temp.mkdirSync('workspace')));
-    this.preferenceDirName = `playwright-${path.basename(this.workspacePath)}`;
   }
 
   get workspace() {

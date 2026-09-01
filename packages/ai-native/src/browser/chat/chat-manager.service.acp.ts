@@ -22,10 +22,12 @@ import { MsgHistoryManager } from '../model/msg-history-manager';
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel, ChatResponseModel } from './chat-model';
 import {
+  AcpAgentSessionDescriptor,
   ISessionModel,
   ISessionModelExtension,
   ISessionProvider,
   SessionCreationOptions,
+  isAcpCancellationAllowed,
   isAcpResponsePending,
 } from './session-provider';
 import { ISessionProviderRegistry } from './session-provider-registry';
@@ -44,9 +46,16 @@ const ACP_PROMPT_TITLE_PREFIXES = [
 export interface AcpSessionStateChangeEvent {
   sessionId: string;
   model: ChatModel;
+  modelReplaced?: boolean;
   previousModeId?: string;
   currentModeId?: string;
   availableCommands?: AvailableCommand[];
+}
+
+export type AcpSessionLiveReadyStatus = 'ready' | 'failed';
+
+export interface AcpSessionLoadResult {
+  liveReady: Promise<AcpSessionLiveReadyStatus>;
 }
 
 type AcpSessionModelData = ISessionModel & { extension?: ISessionModelExtension };
@@ -69,7 +78,7 @@ export class AcpChatManagerService extends ChatManagerService {
 
   private localFallbackActive = false;
 
-  private availableCommands: AvailableCommand[] = [];
+  private availableCommandsBySession: Map<string, AvailableCommand[]> | undefined;
 
   private acpTitleStorage: IStorage | undefined;
 
@@ -83,9 +92,20 @@ export class AcpChatManagerService extends ChatManagerService {
   private readonly sessionLoadGenerations = new Map<string, number>();
   private readonly sessionLifecycleOperations = new Map<string, Promise<void>>();
   private readonly shouldFailBddAttachment = createAcpAttachmentFailureFixture();
+  private agentSessionCatalog: AcpAgentSessionDescriptor[] = [];
+  private metadataOnlySessionIds = new Set<string>();
+  private agentSessionMetadataRevision = 0;
+  private readonly agentSessionMetadataUpdates = new Map<
+    string,
+    { revision: number; title?: string | null; updatedAt?: string | null }
+  >();
 
   private readonly onDidApplySessionStateEmitter = this.registerDispose(new Emitter<AcpSessionStateChangeEvent>());
   public readonly onDidApplySessionState = this.onDidApplySessionStateEmitter.event;
+  private readonly onDidChangeAgentSessionCatalogEmitter = this.registerDispose(
+    new Emitter<ReadonlyArray<AcpAgentSessionDescriptor>>(),
+  );
+  public readonly onDidChangeAgentSessionCatalog = this.onDidChangeAgentSessionCatalogEmitter.event;
 
   constructor() {
     super();
@@ -234,6 +254,10 @@ export class AcpChatManagerService extends ChatManagerService {
   }
 
   private resolveAcpSessionTitle(item: ISessionModel): string {
+    const metadataTitle = this.agentSessionMetadataUpdates.get(item.sessionId)?.title;
+    if (metadataTitle) {
+      return this.createDisplayTitle(metadataTitle);
+    }
     const overrideTitle = this.getDisplayTitleOverride(item.sessionId);
     if (overrideTitle) {
       return overrideTitle;
@@ -327,24 +351,98 @@ export class AcpChatManagerService extends ChatManagerService {
     await this.storageInitEmitter.fireAndAwait();
   }
 
+  getAgentSessionCatalog(): AcpAgentSessionDescriptor[] {
+    return this.agentSessionCatalog.map((session) => ({ ...session }));
+  }
+
+  async refreshAgentSessionCatalog(): Promise<AcpAgentSessionDescriptor[]> {
+    this.useAcpProviderWhenAvailable();
+    if (!this.mainProvider?.refreshAgentSessions) {
+      this.agentSessionCatalog = [];
+      return [];
+    }
+
+    const refreshStartMetadataRevision = this.agentSessionMetadataRevision;
+    const listedDescriptors = await this.mainProvider.refreshAgentSessions();
+    const descriptors = listedDescriptors.map((descriptor) => {
+      const update = this.agentSessionMetadataUpdates.get(descriptor.sessionId);
+      if (!update || update.revision <= refreshStartMetadataRevision) {
+        return descriptor;
+      }
+      return {
+        ...descriptor,
+        ...(update.title !== undefined ? { title: update.title || undefined } : {}),
+        ...(update.updatedAt !== undefined ? { updatedAt: update.updatedAt || undefined } : {}),
+      };
+    });
+    const nextIds = new Set(descriptors.map((session) => session.sessionId));
+    const nextMetadataModels = new Map<string, ChatModel>();
+
+    for (const descriptor of descriptors) {
+      const existing = this.peekSession(descriptor.sessionId);
+      if (existing && !this.metadataOnlySessionIds.has(descriptor.sessionId)) {
+        continue;
+      }
+      const updatedAt = descriptor.updatedAt ? Date.parse(descriptor.updatedAt) : undefined;
+      const [model] = this.fromAcpJSON([
+        {
+          sessionId: descriptor.sessionId,
+          createdAt: Number.isFinite(updatedAt) ? updatedAt : undefined,
+          history: { additional: {}, messages: [] },
+          requests: [],
+          title: descriptor.title || '',
+          extension: {
+            availableCommands: [],
+            acpTarget: { agentId: descriptor.agentId, cwd: descriptor.cwd },
+            metadataOnly: true,
+            updatedAt: descriptor.updatedAt,
+          },
+        },
+      ]);
+      if (model) {
+        nextMetadataModels.set(descriptor.sessionId, model);
+      }
+    }
+
+    for (const sessionId of this.metadataOnlySessionIds) {
+      if (!nextIds.has(sessionId)) {
+        this.sessionModels.delete(sessionId);
+      }
+    }
+    for (const [sessionId, model] of nextMetadataModels) {
+      this.sessionModels.set(sessionId, model);
+    }
+    this.metadataOnlySessionIds = new Set(nextMetadataModels.keys());
+    this.agentSessionCatalog = descriptors.map((session) => ({ ...session }));
+    this.onDidChangeAgentSessionCatalogEmitter.fire(this.getAgentSessionCatalog());
+    return this.getAgentSessionCatalog();
+  }
+
   override getSessions() {
     return Array.from(this.sessionModels.values());
   }
 
-  getAvailableCommands(): AvailableCommand[] {
-    return this.availableCommands;
+  getAvailableCommands(sessionId: string): AvailableCommand[] {
+    return this.availableCommandsBySession?.get(sessionId) || [];
+  }
+
+  private getAvailableCommandsBySession(): Map<string, AvailableCommand[]> {
+    if (!this.availableCommandsBySession) {
+      this.availableCommandsBySession = new Map();
+    }
+    return this.availableCommandsBySession;
   }
 
   override async startSession(options?: SessionCreationOptions): Promise<ChatModel> {
     this.useAcpProviderWhenAvailable();
     if (this.aiNativeConfig.capabilities.supportsAgentMode && this.mainProvider?.createSession) {
       const sessionData = await this.mainProvider.createSession(options);
-      if (sessionData.extension?.availableCommands) {
-        this.availableCommands = sessionData.extension.availableCommands;
-      }
       const models = this.fromAcpJSON([sessionData]);
       if (models.length > 0) {
         const model = models[0];
+        if (sessionData.extension?.availableCommands) {
+          this.getAvailableCommandsBySession().set(model.sessionId, sessionData.extension.availableCommands);
+        }
         this.ownedBackendSessions.add(model.sessionId);
         this.sessionModels.set(model.sessionId, model);
         this.listenSession(model);
@@ -358,9 +456,11 @@ export class AcpChatManagerService extends ChatManagerService {
     return model;
   }
 
-  async loadSession(sessionId: string) {
-    this.sessionLoadGenerations.set(sessionId, (this.sessionLoadGenerations.get(sessionId) || 0) + 1);
-    return this.enqueueSessionLifecycle(sessionId, async () => {
+  async loadSession(sessionId: string): Promise<AcpSessionLoadResult> {
+    const loadGeneration = (this.sessionLoadGenerations.get(sessionId) || 0) + 1;
+    this.sessionLoadGenerations.set(sessionId, loadGeneration);
+    let liveReady: Promise<AcpSessionLiveReadyStatus> = Promise.resolve('ready');
+    await this.enqueueSessionLifecycle(sessionId, async () => {
       this.useAcpProviderWhenAvailable();
       if (this.aiNativeConfig.capabilities.supportsAgentMode) {
         const existingSession = this.peekSession(sessionId);
@@ -376,28 +476,34 @@ export class AcpChatManagerService extends ChatManagerService {
               this.restoreLoadedSession(sessionId, sessionData, existingSession);
             }
           }
-          let attachment: SumiReadableStream<IChatProgress> | undefined;
-          try {
+          liveReady = (async () => {
             if (this.shouldFailBddAttachment()) {
               throw new Error('BDD attachment transport unavailable');
             }
-            attachment = await this.mainProvider.attachSession?.(sessionId);
-          } catch (error) {
+            const attachment = await this.mainProvider?.attachSession?.(sessionId);
+            if (this.sessionLoadGenerations.get(sessionId) !== loadGeneration || !this.peekSession(sessionId)) {
+              attachment?.end();
+              return 'failed' as const;
+            }
+            if (attachment) {
+              this.observeSessionAttachment(sessionId, attachment);
+            }
+            if (loaded) {
+              this.ownedBackendSessions.add(sessionId);
+            }
+            return 'ready' as const;
+          })().catch((error) => {
             this.logger.error(
               `[ACP Chat][Manager] attach session failed after restoring history — errorType=${
                 error instanceof Error ? error.name : typeof error
               }`,
             );
-          }
-          if (attachment) {
-            this.observeSessionAttachment(sessionId, attachment);
-          }
-          if (loaded) {
-            this.ownedBackendSessions.add(sessionId);
-          }
+            return 'failed' as const;
+          });
         }
       }
     });
+    return { liveReady };
   }
 
   private enqueueSessionLifecycle<T>(sessionId: string, operation: () => Promise<T>): Promise<T> {
@@ -417,17 +523,44 @@ export class AcpChatManagerService extends ChatManagerService {
   }
 
   private restoreLoadedSession(sessionId: string, sessionData: ISessionModel, existingSession?: ChatModel): void {
+    const sessionDataWithPreservedUsers = this.preserveExistingUsersWhenSnapshotOmitsThem(sessionData, existingSession);
     const existingTitle = this.getExistingTitleForLoadedSession(sessionId, existingSession);
     const sessionDataWithTitle =
-      existingTitle && (!sessionData.title || this.isLikelyAcpContextTitle(sessionData.title))
-        ? { ...sessionData, title: existingTitle }
-        : sessionData;
-    const [session] = this.fromAcpJSON([sessionDataWithTitle]);
+      existingTitle &&
+      (!sessionDataWithPreservedUsers.title || this.isLikelyAcpContextTitle(sessionDataWithPreservedUsers.title))
+        ? { ...sessionDataWithPreservedUsers, title: existingTitle }
+        : sessionDataWithPreservedUsers;
+    const sessionDataWithRuntimeMetadata: AcpSessionModelData = {
+      ...sessionDataWithTitle,
+      extension: sessionDataWithTitle.extension
+        ? {
+            ...sessionDataWithTitle.extension,
+            acpTarget: sessionDataWithTitle.extension.acpTarget ?? existingSession?.acpTarget,
+          }
+        : existingSession?.acpTarget
+        ? {
+            availableCommands: [],
+            acpTarget: existingSession.acpTarget,
+          }
+        : undefined,
+    };
+    const [session] = this.fromAcpJSON([sessionDataWithRuntimeMetadata]);
     if (!session) {
       return;
     }
+    if (sessionData.extension?.availableCommands) {
+      this.getAvailableCommandsBySession().set(sessionId, sessionData.extension.availableCommands);
+    }
     this.setSessionPreservingOrder(sessionId, session);
+    this.metadataOnlySessionIds.delete(sessionId);
     this.listenSession(session);
+    if (existingSession && existingSession !== session) {
+      this.onDidApplySessionStateEmitter?.fire({
+        sessionId,
+        model: session,
+        modelReplaced: true,
+      });
+    }
     if (
       !existingSession &&
       session.title &&
@@ -436,6 +569,97 @@ export class AcpChatManagerService extends ChatManagerService {
     ) {
       this.setDisplayTitleOverride(sessionId, session.title);
     }
+  }
+
+  private preserveExistingUsersWhenSnapshotOmitsThem(
+    sessionData: ISessionModel,
+    existingSession?: ChatModel,
+  ): ISessionModel {
+    const incomingMessages = sessionData.history.messages;
+    if (!existingSession || incomingMessages.some((message) => message.role === ChatMessageRole.User)) {
+      return sessionData;
+    }
+
+    const existingMessages = existingSession.history.getMessages();
+    if (!existingMessages.some((message) => message.role === ChatMessageRole.User)) {
+      return sessionData;
+    }
+
+    const preserveExistingTranscript = (): ISessionModel => {
+      const existingData = this.toSessionData(existingSession);
+      return {
+        ...sessionData,
+        history: {
+          ...sessionData.history,
+          messages: existingData.history.messages.map((message) => ({ ...message })),
+        },
+        requests: existingData.requests,
+      };
+    };
+    const existingUsers = existingMessages.filter((message) => message.role === ChatMessageRole.User);
+    const incomingRelations = new Set(
+      incomingMessages.map((message) => message.relationId).filter((relationId): relationId is string => !!relationId),
+    );
+    const usersByRelation = new Map<string, typeof existingUsers>();
+    const usersWithoutRelation = existingUsers.filter((message) => !message.relationId);
+    existingUsers.forEach((message) => {
+      if (!message.relationId) {
+        return;
+      }
+      const relatedUsers = usersByRelation.get(message.relationId) || [];
+      relatedUsers.push(message);
+      usersByRelation.set(message.relationId, relatedUsers);
+    });
+
+    const canUseSingleTurnFallback =
+      existingUsers.length === 1 &&
+      usersWithoutRelation.length === 1 &&
+      incomingMessages.length === 1 &&
+      sessionData.requests.length === 1;
+    if (
+      (!canUseSingleTurnFallback && usersWithoutRelation.length > 0) ||
+      Array.from(usersByRelation.keys()).some((relationId) => !incomingRelations.has(relationId))
+    ) {
+      return preserveExistingTranscript();
+    }
+
+    const restoredRelations = new Set<string>();
+    const mergedMessages = incomingMessages.flatMap((message) => {
+      const relatedUsers = message.relationId ? usersByRelation.get(message.relationId) : undefined;
+      if (relatedUsers && message.relationId && !restoredRelations.has(message.relationId)) {
+        restoredRelations.add(message.relationId);
+        return [...relatedUsers.map((user) => ({ ...user })), { ...message }];
+      }
+      if (canUseSingleTurnFallback) {
+        return [{ ...usersWithoutRelation[0] }, { ...message }];
+      }
+      return [{ ...message }];
+    });
+    const existingRequests = existingSession.requests;
+    const existingRequestsById = new Map(existingRequests.map((request) => [request.requestId, request]));
+    const canUseSingleRequestFallback = existingRequests.length === 1 && sessionData.requests.length === 1;
+    return {
+      ...sessionData,
+      history: {
+        ...sessionData.history,
+        messages: mergedMessages.map((message, index) => ({ ...message, order: index })),
+      },
+      requests: sessionData.requests.map((request) => {
+        const existingRequest =
+          existingRequestsById.get(request.requestId) ||
+          (canUseSingleRequestFallback ? existingRequests[0] : undefined);
+        if (request.message.prompt || !existingRequest?.message.prompt) {
+          return request;
+        }
+        return {
+          ...request,
+          message: {
+            ...request.message,
+            prompt: existingRequest.message.prompt,
+          },
+        };
+      }),
+    };
   }
 
   private getSessionAttachments(): Map<
@@ -500,6 +724,7 @@ export class AcpChatManagerService extends ChatManagerService {
             currentModeId: progress.currentModeId,
             currentModelId: progress.currentModelId,
             configOptions: progress.configOptions,
+            availableCommands: progress.availableCommands,
           });
           return;
         }
@@ -553,7 +778,12 @@ export class AcpChatManagerService extends ChatManagerService {
     return request;
   }
 
-  override async sendRequest(sessionId: string, request: ChatRequestModel, regenerate: boolean): Promise<void> {
+  override async sendRequest(
+    sessionId: string,
+    request: ChatRequestModel,
+    regenerate: boolean,
+    onRequestAccepted?: () => void,
+  ): Promise<void> {
     this.logger.log(
       `[ACP Chat][Manager] sendRequest start — sessionId=${sessionId}, requestId=${
         request.requestId
@@ -562,7 +792,7 @@ export class AcpChatManagerService extends ChatManagerService {
       }, messageChars=${request.message.prompt.length}, images=${request.message.images?.length ?? 0}`,
     );
     try {
-      await super.sendRequest(sessionId, request, regenerate);
+      await super.sendRequest(sessionId, request, regenerate, onRequestAccepted);
       this.logger.log(`[ACP Chat][Manager] sendRequest done — sessionId=${sessionId}, requestId=${request.requestId}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -580,7 +810,7 @@ export class AcpChatManagerService extends ChatManagerService {
     }
 
     const model = this.getSession(sessionId);
-    if (!model || !isAcpResponsePending(model.threadStatus) || !this.mainProvider?.cancelSession) {
+    if (!model || !isAcpCancellationAllowed(model.threadStatus) || !this.mainProvider?.cancelSession) {
       return false;
     }
 
@@ -599,10 +829,11 @@ export class AcpChatManagerService extends ChatManagerService {
 
   override clearSession(sessionId: string): void {
     super.clearSession(sessionId);
+    this.availableCommandsBySession?.delete(sessionId);
     this.removeDisplayTitleOverride(sessionId);
   }
 
-  async disposeSession(sessionId: string): Promise<void> {
+  async disposeSession(sessionId: string, force = false): Promise<void> {
     const generation = this.sessionLoadGenerations.get(sessionId) || 0;
     const existingRequest = this.sessionDisposeRequests.get(sessionId);
     if (existingRequest?.generation === generation) {
@@ -610,7 +841,13 @@ export class AcpChatManagerService extends ChatManagerService {
     }
 
     const disposal = this.enqueueSessionLifecycle(sessionId, async () => {
-      if (!this.ownedBackendSessions.has(sessionId)) {
+      const attachment = this.sessionAttachments?.get(sessionId);
+      if (attachment) {
+        this.sessionAttachments?.delete(sessionId);
+        attachment.disposables.forEach((disposable) => disposable.dispose());
+        attachment.stream.end();
+      }
+      if (!force && !this.ownedBackendSessions.has(sessionId)) {
         if (this.getSession(sessionId)) {
           this.clearSession(sessionId);
         }
@@ -618,7 +855,11 @@ export class AcpChatManagerService extends ChatManagerService {
       }
 
       try {
-        await this.mainProvider?.disposeSession?.(sessionId);
+        if (force) {
+          await this.mainProvider?.disposeSession?.(sessionId, true);
+        } else {
+          await this.mainProvider?.disposeSession?.(sessionId);
+        }
         this.ownedBackendSessions.delete(sessionId);
       } finally {
         if (this.getSession(sessionId)) {
@@ -637,6 +878,7 @@ export class AcpChatManagerService extends ChatManagerService {
 
   applySessionStateUpdate(sessionId: string, state: Partial<Omit<IChatSessionState, 'kind' | 'sessionId'>>): void {
     const lookupKey = sessionId.startsWith('acp:') ? sessionId : `acp:${sessionId}`;
+    this.applyAgentSessionMetadataUpdate(lookupKey, state.title, state.updatedAt);
     const model = this.getSession(lookupKey);
     if (!model) {
       return;
@@ -658,7 +900,11 @@ export class AcpChatManagerService extends ChatManagerService {
       changed = true;
     }
     if (state.availableCommands !== undefined) {
-      this.availableCommands = state.availableCommands;
+      this.getAvailableCommandsBySession().set(lookupKey, state.availableCommands);
+      changed = true;
+    }
+    if (state.title !== undefined && model.title !== (state.title || '')) {
+      model.setTitle(state.title || '');
       changed = true;
     }
 
@@ -673,6 +919,36 @@ export class AcpChatManagerService extends ChatManagerService {
       currentModeId: model.currentModeId,
       availableCommands: state.availableCommands,
     });
+  }
+
+  private applyAgentSessionMetadataUpdate(sessionId: string, title?: string | null, updatedAt?: string | null): void {
+    if (title === undefined && updatedAt === undefined) {
+      return;
+    }
+    const previous = this.agentSessionMetadataUpdates.get(sessionId);
+    this.agentSessionMetadataUpdates.set(sessionId, {
+      revision: ++this.agentSessionMetadataRevision,
+      ...(title !== undefined ? { title } : previous?.title !== undefined ? { title: previous.title } : {}),
+      ...(updatedAt !== undefined
+        ? { updatedAt }
+        : previous?.updatedAt !== undefined
+        ? { updatedAt: previous.updatedAt }
+        : {}),
+    });
+    const index = this.agentSessionCatalog.findIndex((session) => session.sessionId === sessionId);
+    if (index === -1) {
+      return;
+    }
+    const current = this.agentSessionCatalog[index];
+    const next = {
+      ...current,
+      ...(title !== undefined ? { title: title || undefined } : {}),
+      ...(updatedAt !== undefined ? { updatedAt: updatedAt || undefined } : {}),
+    };
+    this.agentSessionCatalog = this.agentSessionCatalog.map((session, sessionIndex) =>
+      sessionIndex === index ? next : session,
+    );
+    this.onDidChangeAgentSessionCatalogEmitter.fire(this.getAgentSessionCatalog());
   }
 
   fallbackToLocal(): void {
