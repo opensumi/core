@@ -36,6 +36,11 @@ import {
 } from './session-provider';
 
 const DEFAULT_ACP_CHAT_AGENT_ID = 'Default_Chat_Agent';
+const INTERNAL_WEBMCP_USAGE_HINT_PATTERN = /^\s*<opensumi_mcp_usage_hint\b[^>]*>[\s\S]*?<\/opensumi_mcp_usage_hint>\s*/;
+
+function stripInternalUserPromptMetadata(content: string): string {
+  return content.replace(INTERNAL_WEBMCP_USAGE_HINT_PATTERN, '');
+}
 
 function isAbsoluteWorkspacePath(path: string): boolean {
   return /^(?:[A-Za-z]:[\\/]|[\\/])/.test(path);
@@ -488,13 +493,16 @@ export class ACPSessionProvider implements ISessionProvider {
     }
 
     // 过滤掉包含 <command-name> 或 <local-command-stdout> 的系统消息
-    const filteredMessages = agentSession.messages.filter((msg, index) => {
-      // 如果内容包含系统命令的 XML 标签，则过滤掉
-      if (msg.content.includes('<command-name>') || msg.content.includes('<local-command-stdout>')) {
-        return false;
-      }
-      return true;
-    });
+    const filteredMessages = agentSession.messages
+      .filter((msg) => {
+        // 如果内容包含系统命令的 XML 标签，则过滤掉
+        if (msg.content.includes('<command-name>') || msg.content.includes('<local-command-stdout>')) {
+          return false;
+        }
+        return true;
+      })
+      .map((msg) => (msg.role === 'user' ? { ...msg, content: stripInternalUserPromptMetadata(msg.content) } : msg))
+      .filter((msg) => msg.role !== 'user' || Boolean(msg.content));
 
     // 转换消息格式
     const messages = filteredMessages.map((msg, index) => ({
@@ -560,8 +568,11 @@ export class ACPSessionProvider implements ISessionProvider {
       return current;
     };
     const flushTurn = () => {
-      if (current && (current.userContent || current.responseParts.length > 0)) {
-        turns.push(current);
+      if (current) {
+        current.userContent = stripInternalUserPromptMetadata(current.userContent);
+        if (current.userContent || current.responseParts.length > 0) {
+          turns.push(current);
+        }
       }
       current = undefined;
     };
