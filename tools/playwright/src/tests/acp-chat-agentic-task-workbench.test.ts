@@ -101,6 +101,7 @@ test.describe('ACP Chat Agent Session workbench', () => {
   });
 
   test('安全创建、切换并在重载后恢复 Agent-owned Sessions', async ({ browser: _browser }, testInfo) => {
+    void _browser;
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-task-workbench', {
       sourceScenario: 'test/bdd/acp-chat-agentic-task-workbench.scenario.md',
       profile: 'interactive',
@@ -136,6 +137,9 @@ test.describe('ACP Chat Agent Session workbench', () => {
     await waitForWorkbenchReady(page);
     await showAgenticChat();
     await selectSession(firstSessionId);
+    const restoredUserMessage = chatSlot().locator('.rce-user-msg').filter({ hasText: 'Current older' });
+    await expect(restoredUserMessage).toHaveCount(1);
+    await expect(chatSlot().getByText('BDD_ASSISTANT_PART_2 completed.').last()).toBeVisible();
 
     const afterReload = await evidence.saveJson(
       '02-session-browser-reload',
@@ -143,8 +147,9 @@ test.describe('ACP Chat Agent Session workbench', () => {
         restoredSessionId: (await getSessionState()).session?.sessionId,
         firstRowVisible: await page.getByTestId(`agentic-session-row-${firstSessionId}`).isVisible(),
         secondRowVisible: await page.getByTestId(`agentic-session-row-${secondSessionId}`).isVisible(),
+        restoredUserMessageCount: await restoredUserMessage.count(),
       },
-      'Agent discovery restores both rows and permits selecting the original session after reload',
+      'Agent discovery restores both rows and the original user turn after reload',
     );
 
     evidence.recordCriticalPoint({
@@ -155,7 +160,7 @@ test.describe('ACP Chat Agent Session workbench', () => {
     });
     evidence.recordCriticalPoint({
       id: 'CP2',
-      requirement: 'Two sessions can be switched and restored after reload.',
+      requirement: 'Two sessions can be switched and restore their user and assistant turns after reload.',
       status: 'pass',
       evidence: [beforeReload, afterReload].filter(Boolean) as string[],
     });

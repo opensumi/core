@@ -899,6 +899,68 @@ describe('AcpThread', () => {
       const entry = thread.addUserMessage('Test');
       expect(entry.timestamp).toBeGreaterThan(0);
     });
+
+    it('should retain submitted user messages in native session history', () => {
+      (thread as any)._sessionId = 's1';
+
+      const entry = thread.addUserMessage('Hello, AI!');
+
+      expect(thread.getSessionNotifications()).toEqual([
+        {
+          sessionId: 's1',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: { type: 'text', text: 'Hello, AI!' },
+            messageId: entry.id,
+          },
+        },
+      ]);
+    });
+
+    it('should ignore an Agent echo of the submitted user message', async () => {
+      (thread as any)._sessionId = 's1';
+      const client = (thread as any).createClientImpl();
+
+      thread.addUserMessage('Hello, AI!');
+      await client.sessionUpdate({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'user_message_chunk',
+          content: { type: 'text', text: 'Hello, ' },
+        },
+      });
+      await client.sessionUpdate({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'user_message_chunk',
+          content: { type: 'text', text: 'AI!' },
+        },
+      });
+      await client.sessionUpdate({
+        sessionId: 's1',
+        update: {
+          sessionUpdate: 'agent_message_chunk',
+          content: { type: 'text', text: 'Hi!' },
+        },
+      });
+
+      expect(thread.getSessionNotifications()).toEqual([
+        expect.objectContaining({
+          update: expect.objectContaining({
+            sessionUpdate: 'user_message_chunk',
+            content: { type: 'text', text: 'Hello, AI!' },
+          }),
+        }),
+        expect.objectContaining({
+          update: expect.objectContaining({
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: 'Hi!' },
+          }),
+        }),
+      ]);
+      expect(thread.entries).toHaveLength(2);
+      expect(getUserData(thread.entries[0])?.content).toBe('Hello, AI!');
+    });
   });
 
   describe('markAssistantComplete()', () => {

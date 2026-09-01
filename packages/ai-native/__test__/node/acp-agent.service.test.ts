@@ -1251,7 +1251,17 @@ describe('AcpAgentService (Thread Pool)', () => {
       expect(result.historyUpdates).toEqual(nativeHistory);
     });
 
-    it('does not expose local prompt, response, tool, thought, or permission sentinels in metadata-only session restore results', async () => {
+    it('restores retained user prompts without exposing other local entry sentinels', async () => {
+      const retainedUserHistory = [
+        {
+          sessionId: 'existing-session-id',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: { type: 'text', text: 'BDD_SENSITIVE_PROMPT' },
+            messageId: 'msg-1',
+          },
+        },
+      ];
       const thread = createMockThread({
         initialized: true,
         getStatus: jest.fn().mockReturnValue('idle'),
@@ -1277,7 +1287,7 @@ describe('AcpAgentService (Thread Pool)', () => {
             data: { id: 'msg-5', content: 'BDD_PERMISSION_ALLOWED', timestamp: 5 },
           },
         ]),
-        getSessionNotifications: jest.fn().mockReturnValue([]),
+        getSessionNotifications: jest.fn().mockReturnValue(retainedUserHistory),
         onEvent: jest.fn(() => ({ dispose: jest.fn() })),
       });
       const mockFactory = jest.fn().mockReturnValue(thread);
@@ -1285,15 +1295,11 @@ describe('AcpAgentService (Thread Pool)', () => {
 
       const result = await service.loadSession('existing-session-id', mockAgentProcessConfig);
 
-      expect(result.historyUpdates).toEqual([]);
+      expect(result.historyUpdates).toEqual(retainedUserHistory);
       const serialized = JSON.stringify(result);
-      [
-        'BDD_SENSITIVE_PROMPT',
-        'BDD_ASSISTANT_PART',
-        'BDD_THOUGHT_STEP',
-        'BDD_TOOL_RESULT',
-        'BDD_PERMISSION_ALLOWED',
-      ].forEach((sentinel) => expect(serialized).not.toContain(sentinel));
+      ['BDD_ASSISTANT_PART', 'BDD_THOUGHT_STEP', 'BDD_TOOL_RESULT', 'BDD_PERMISSION_ALLOWED'].forEach((sentinel) =>
+        expect(serialized).not.toContain(sentinel),
+      );
     });
 
     it('should apply default session options after loading a session', async () => {
