@@ -940,6 +940,50 @@ describe('AcpChatManagerService', () => {
     ]);
   });
 
+  it('hides the internal WebMCP usage hint from a restored user message', () => {
+    const provider = createSessionProvider();
+    const session = provider.restoreSessionSnapshot('acp:webmcp-hint', {
+      kind: 'sessionSnapshot',
+      sessionId: 'webmcp-hint',
+      threadStatus: 'awaiting_prompt',
+      historyUpdates: [
+        {
+          sessionId: 'webmcp-hint',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: {
+              type: 'text',
+              text: '<opensumi_mcp_usage_hint priority="low">\nUse the opensumi-ide MCP catalog tools ',
+            },
+          },
+        },
+        {
+          sessionId: 'webmcp-hint',
+          update: {
+            sessionUpdate: 'user_message_chunk',
+            content: {
+              type: 'text',
+              text: 'before invoking tools.\n</opensumi_mcp_usage_hint>\nACP 会话测试一',
+            },
+          },
+        },
+        {
+          sessionId: 'webmcp-hint',
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: '会话一正常' },
+          },
+        },
+      ],
+    });
+
+    expect(session.history.messages.map(({ role, content }) => ({ role, content }))).toEqual([
+      { role: ChatMessageRole.User, content: 'ACP 会话测试一' },
+      { role: ChatMessageRole.Assistant, content: '会话一正常' },
+    ]);
+    expect(session.requests[0].message.prompt).toBe('ACP 会话测试一');
+  });
+
   it.each(['auth_required', 'stopping'] as const)('keeps a %s restored response open for later progress', (status) => {
     const provider = createSessionProvider();
     const sessionId = `acp:${status}`;
