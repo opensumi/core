@@ -17,6 +17,7 @@ function parseArgs(argv) {
     delayMs: Number(process.env.OPENSUMI_ACP_BDD_DELAY_MS || DEFAULT_DELAY_MS),
     longStreamTicks: Number(process.env.OPENSUMI_ACP_BDD_LONG_STREAM_TICKS || DEFAULT_LONG_STREAM_TICKS),
     historyMessageCount: Number(process.env.OPENSUMI_ACP_BDD_HISTORY_MESSAGE_COUNT || 0),
+    listDelayMs: Number(process.env.OPENSUMI_ACP_BDD_LIST_DELAY_MS || 0),
     sessionPrefix: process.env.OPENSUMI_ACP_BDD_SESSION_PREFIX || 'bdd-session',
     verbose: process.env.OPENSUMI_ACP_BDD_VERBOSE === '1',
     help: false,
@@ -42,6 +43,10 @@ function parseArgs(argv) {
       options.historyMessageCount = Number(argv[++i] || options.historyMessageCount);
     } else if (arg.startsWith('--history-message-count=')) {
       options.historyMessageCount = Number(arg.slice('--history-message-count='.length));
+    } else if (arg === '--list-delay-ms') {
+      options.listDelayMs = Number(argv[++i] || options.listDelayMs);
+    } else if (arg.startsWith('--list-delay-ms=')) {
+      options.listDelayMs = Number(arg.slice('--list-delay-ms='.length));
     } else if (arg === '--session-prefix') {
       options.sessionPrefix = argv[++i] || options.sessionPrefix;
     } else if (arg.startsWith('--session-prefix=')) {
@@ -60,6 +65,9 @@ function parseArgs(argv) {
   if (!Number.isInteger(options.historyMessageCount) || options.historyMessageCount < 0) {
     options.historyMessageCount = 0;
   }
+  if (!Number.isFinite(options.listDelayMs) || options.listDelayMs < 0) {
+    options.listDelayMs = 0;
+  }
 
   return options;
 }
@@ -77,6 +85,7 @@ Options:
   --delay-ms <ms>          Delay between streamed updates.
   --long-stream-ticks <n>  Number of long-stream chunks before natural completion.
   --history-message-count <n> Number of visible messages seeded for each history session.
+  --list-delay-ms <ms>     Delay before answering session/list. Defaults to no extra delay.
   --session-prefix <text>  Prefix for generated session ids.
   --verbose                Write diagnostics to stderr.
 
@@ -740,6 +749,9 @@ test/test.js
     },
 
     async listSessions(params = {}) {
+      if (options.listDelayMs > 0) {
+        await sleep(options.listDelayMs);
+      }
       if (options.fixture === 'list-failure') {
         throw RequestError.internalError(
           { fixture: options.fixture, service: 'session' },

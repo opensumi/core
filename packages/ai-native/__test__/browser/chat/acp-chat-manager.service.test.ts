@@ -76,11 +76,21 @@ describe('AcpChatManagerService', () => {
     Object.defineProperty(service, 'agentSessionMetadataUpdates', {
       value: new Map(),
     });
+    Object.defineProperty(service, 'agentSessionDiscoveryInProgress', {
+      value: false,
+      writable: true,
+    });
     Object.defineProperty(service, 'onDidChangeAgentSessionCatalogEmitter', {
       value: new Emitter(),
     });
     Object.defineProperty(service, 'onDidChangeAgentSessionCatalog', {
       value: (service as any).onDidChangeAgentSessionCatalogEmitter.event,
+    });
+    Object.defineProperty(service, 'onDidChangeAgentSessionDiscoveryEmitter', {
+      value: new Emitter<boolean>(),
+    });
+    Object.defineProperty(service, 'onDidChangeAgentSessionDiscovery', {
+      value: (service as any).onDidChangeAgentSessionDiscoveryEmitter.event,
     });
     Object.defineProperty(service, 'acpSessionDisplayTitleOverrides', {
       value: {},
@@ -2363,6 +2373,31 @@ describe('AcpChatManagerService', () => {
       }),
     ]);
     expect(catalogChanges).toHaveLength(3);
+  });
+
+  it('exposes Agent Session Discovery Loading while a catalog refresh is in flight', async () => {
+    const service = createService() as any;
+    let resolveRefresh!: (sessions: any[]) => void;
+    service.mainProvider = {
+      refreshAgentSessions: jest.fn(
+        () =>
+          new Promise<any[]>((resolve) => {
+            resolveRefresh = resolve;
+          }),
+      ),
+    };
+    const discoveryChanges: boolean[] = [];
+    service.onDidChangeAgentSessionDiscovery((inProgress: boolean) => discoveryChanges.push(inProgress));
+
+    expect(service.getAgentSessionDiscoveryInProgress()).toBe(false);
+    const refresh = service.refreshAgentSessionCatalog();
+    expect(service.getAgentSessionDiscoveryInProgress()).toBe(true);
+
+    resolveRefresh([]);
+    await refresh;
+
+    expect(service.getAgentSessionDiscoveryInProgress()).toBe(false);
+    expect(discoveryChanges).toEqual([true, false]);
   });
 
   it('keeps a loaded session when a catalog refresh omits it', async () => {
