@@ -1634,6 +1634,8 @@ export const localizationBundle = {
     'aiNative.chat.acp.cancelTaskStart': 'Cancel',
     'aiNative.chat.acp.skills.loading': 'Skills loading…',
     'aiNative.chat.acp.skills.empty': 'No Skills',
+    'aiNative.agentic.sessionList.loading': 'Loading sessions…',
+    'aiNative.agentic.sessionList.empty': 'No sessions yet',
     'aiNative.chat.acp.capacityFull':
       'The Agent task capacity limit has been reached, and no reusable Agent is currently available. Your task draft and unsent content have been preserved. Wait for a running task to finish and try again, or increase the ACP process limit in Settings.',
     'aiNative.chat.acp.capacityFull.withLimit':

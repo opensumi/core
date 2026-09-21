@@ -93,6 +93,7 @@ export class AcpChatManagerService extends ChatManagerService {
   private readonly sessionLifecycleOperations = new Map<string, Promise<void>>();
   private readonly shouldFailBddAttachment = createAcpAttachmentFailureFixture();
   private agentSessionCatalog: AcpAgentSessionDescriptor[] = [];
+  private agentSessionDiscoveryInProgress = false;
   private metadataOnlySessionIds = new Set<string>();
   private agentSessionMetadataRevision = 0;
   private readonly agentSessionMetadataUpdates = new Map<
@@ -106,6 +107,8 @@ export class AcpChatManagerService extends ChatManagerService {
     new Emitter<ReadonlyArray<AcpAgentSessionDescriptor>>(),
   );
   public readonly onDidChangeAgentSessionCatalog = this.onDidChangeAgentSessionCatalogEmitter.event;
+  private readonly onDidChangeAgentSessionDiscoveryEmitter = this.registerDispose(new Emitter<boolean>());
+  public readonly onDidChangeAgentSessionDiscovery = this.onDidChangeAgentSessionDiscoveryEmitter.event;
 
   constructor() {
     super();
@@ -357,13 +360,37 @@ export class AcpChatManagerService extends ChatManagerService {
 
   async refreshAgentSessionCatalog(): Promise<AcpAgentSessionDescriptor[]> {
     this.useAcpProviderWhenAvailable();
-    if (!this.mainProvider?.refreshAgentSessions) {
+    const provider = this.mainProvider;
+    if (!provider?.refreshAgentSessions) {
       this.agentSessionCatalog = [];
       return [];
     }
 
+    this.setAgentSessionDiscoveryInProgress(true);
+    try {
+      return await this.doRefreshAgentSessionCatalog(provider.refreshAgentSessions.bind(provider));
+    } finally {
+      this.setAgentSessionDiscoveryInProgress(false);
+    }
+  }
+
+  getAgentSessionDiscoveryInProgress(): boolean {
+    return this.agentSessionDiscoveryInProgress;
+  }
+
+  private setAgentSessionDiscoveryInProgress(inProgress: boolean): void {
+    if (this.agentSessionDiscoveryInProgress === inProgress) {
+      return;
+    }
+    this.agentSessionDiscoveryInProgress = inProgress;
+    this.onDidChangeAgentSessionDiscoveryEmitter.fire(inProgress);
+  }
+
+  private async doRefreshAgentSessionCatalog(
+    refreshAgentSessions: () => Promise<AcpAgentSessionDescriptor[]>,
+  ): Promise<AcpAgentSessionDescriptor[]> {
     const refreshStartMetadataRevision = this.agentSessionMetadataRevision;
-    const listedDescriptors = await this.mainProvider.refreshAgentSessions();
+    const listedDescriptors = await refreshAgentSessions();
     const descriptors = listedDescriptors.map((descriptor) => {
       const update = this.agentSessionMetadataUpdates.get(descriptor.sessionId);
       if (!update || update.revision <= refreshStartMetadataRevision) {

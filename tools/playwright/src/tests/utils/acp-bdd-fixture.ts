@@ -16,6 +16,7 @@ export const ACP_BDD_FIXTURES = [
   'model-not-found',
   'create-failure',
   'load-failure',
+  'list-failure',
   'task-session-missing',
   'auth-required',
   'config-failure',
@@ -39,6 +40,7 @@ export interface AcpBddFixtureOptions {
   panelLayout?: AiNativePanelLayout;
   workspaceFiles?: string[];
   delayMs?: number;
+  listDelayMs?: number;
   longStreamTicks?: number;
   historyMessageCount?: number;
   sessionPrefix?: string;
@@ -189,6 +191,10 @@ export function getMockAcpAgentCommand(options: AcpBddFixtureOptions) {
   if (options.delayMs !== undefined) {
     args.push(`--delay-ms=${options.delayMs}`);
     env.OPENSUMI_ACP_BDD_DELAY_MS = String(options.delayMs);
+  }
+  if (options.listDelayMs !== undefined) {
+    args.push(`--list-delay-ms=${options.listDelayMs}`);
+    env.OPENSUMI_ACP_BDD_LIST_DELAY_MS = String(options.listDelayMs);
   }
   if (options.longStreamTicks !== undefined) {
     args.push(`--long-stream-ticks=${options.longStreamTicks}`);

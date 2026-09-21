@@ -1401,6 +1401,8 @@ export const localizationBundle = {
     'aiNative.chat.acp.cancelTaskStart': '取消',
     'aiNative.chat.acp.skills.loading': '技能加载中…',
     'aiNative.chat.acp.skills.empty': '暂无技能',
+    'aiNative.agentic.sessionList.loading': '会话加载中…',
+    'aiNative.agentic.sessionList.empty': '暂无会话',
     'aiNative.chat.acp.capacityFull':
       '暂时无法启动任务：可同时运行的 Agent 任务已达到上限，当前没有可复用的 Agent。你的任务草稿和未发送内容已保留。请等待正在运行的任务结束后重试，或在设置中提高 ACP 进程上限。',
     'aiNative.chat.acp.capacityFull.withLimit':

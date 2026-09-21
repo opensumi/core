@@ -164,6 +164,8 @@ If a scenario needs more than one fixture class, run the subcases as separate de
 
 For an Active Session switch that must keep a newly submitted history-fixture turn active long enough to enqueue and edit later drafts, run `--fixture=history --delay-ms=2000`. Observe active loading and an enabled Stop control before enqueueing, and confirm both remain visible immediately before switching; otherwise restart the pass instead of counting it as PASS.
 
+Agent Session Discovery Loading coverage uses `--fixture=history --list-delay-ms=45000` to observe the browser loading indicator while the first discovery refresh is in flight, and `--fixture=list-failure` to cover the silent failure settlement to the empty placeholder.
+
 ## Tool Names
 
 The canonical WebMCP tool name is the only external capability identifier. Each tool is registered once in the browser `WebMcpGroupRegistry` with `tool.name`, and both supported surfaces expose that same name:

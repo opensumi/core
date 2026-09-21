@@ -57,6 +57,8 @@ const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 const agenticLocalizationKeys = [
   'aiNative.chat.acp.skills.loading',
   'aiNative.chat.acp.skills.empty',
+  'aiNative.agentic.sessionList.loading',
+  'aiNative.agentic.sessionList.empty',
   'aiNative.agentic.session.discardDraftAndSwitch',
   'aiNative.agentic.session.switchDiscardDraft',
   'aiNative.chat.session.connectionUnavailable',
@@ -95,6 +97,7 @@ function session(sessionId: string, cwd: string, title?: string, updatedAt?: str
 function createServices(initialSessions = [session('one', '/work/a', 'Agent title', '2026-08-19T10:00:00Z')]) {
   const sessionListeners = new Set<(sessionId: string) => void>();
   const catalogListeners = new Set<(sessions: ReturnType<typeof session>[]) => void>();
+  const discoveryListeners = new Set<(inProgress: boolean) => void>();
   const registryListeners = new Set<() => void>();
   let archivedSessions: Array<{ sessionId: string; agentId: string; cwd: string; archivedAt: number }> = [];
   return {
@@ -153,6 +156,11 @@ function createServices(initialSessions = [session('one', '/work/a', 'Agent titl
         catalogListeners.add(listener);
         return { dispose: () => catalogListeners.delete(listener) };
       }),
+      getAgentSessionDiscoveryInProgress: jest.fn(() => false),
+      onDidChangeAgentSessionDiscovery: jest.fn((listener: (inProgress: boolean) => void) => {
+        discoveryListeners.add(listener);
+        return { dispose: () => discoveryListeners.delete(listener) };
+      }),
       refreshAgentSessions: jest.fn().mockResolvedValue(initialSessions),
       sessionModel: undefined,
     },
@@ -160,6 +168,7 @@ function createServices(initialSessions = [session('one', '/work/a', 'Agent titl
     messageService: { info: jest.fn(), warning: jest.fn().mockResolvedValue(undefined) },
     windowDialogService: { showOpenDialog: jest.fn().mockResolvedValue(undefined) },
     emitRegistryChange: () => registryListeners.forEach((listener) => listener()),
+    emitDiscoveryChange: (inProgress: boolean) => discoveryListeners.forEach((listener) => listener(inProgress)),
   };
 }
 
@@ -242,6 +251,61 @@ describe('AgenticSessionList', () => {
       expect(enUSLocalizationBundle.contents[key]).toBeTruthy();
       expect(zhCNLocalizationBundle.contents[key]).toBeTruthy();
     }
+  });
+
+  it('shows Agent Session Discovery Loading while the first discovery refresh is in flight', async () => {
+    let resolveRefresh!: (sessions: ReturnType<typeof session>[]) => void;
+    const services = createServices([]);
+    services.aiChatService.refreshAgentSessions.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveRefresh = resolve as typeof resolveRefresh;
+        }),
+    );
+    await renderList(services);
+
+    expect(container.querySelector('[data-testid="agentic-session-list-loading"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="agentic-session-list-empty"]')).toBeNull();
+
+    await act(async () => {
+      resolveRefresh([]);
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-session-list-loading"]')).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-session-list-empty"]')).not.toBeNull();
+  });
+
+  it('reflects an externally triggered discovery on an empty catalog and settles back to the placeholder', async () => {
+    const services = createServices([]);
+    await renderList(services);
+    expect(container.querySelector('[data-testid="agentic-session-list-empty"]')).not.toBeNull();
+
+    await act(async () => {
+      services.emitDiscoveryChange(true);
+      await flushPromises();
+    });
+    expect(container.querySelector('[data-testid="agentic-session-list-loading"]')).not.toBeNull();
+
+    await act(async () => {
+      services.emitDiscoveryChange(false);
+      await flushPromises();
+    });
+    expect(container.querySelector('[data-testid="agentic-session-list-loading"]')).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-session-list-empty"]')).not.toBeNull();
+  });
+
+  it('keeps settled sessions visible without a loading state while a stale discovery refresh reruns', async () => {
+    const services = createServices([session('one', '/work/a', 'Agent title')]);
+    await renderList(services);
+
+    await act(async () => {
+      services.emitDiscoveryChange(true);
+      await flushPromises();
+    });
+
+    expect(container.querySelector('[data-testid="agentic-session-list-loading"]')).toBeNull();
+    expect(container.querySelector('[data-testid="agentic-session-row-acp:one"]')).not.toBeNull();
   });
 
   it('uses the configured default Agent when no active session supplies one', async () => {

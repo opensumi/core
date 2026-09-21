@@ -1136,6 +1136,14 @@ export class AcpChatInternalService extends ChatInternalService {
     return (this.chatManagerService as AcpChatManagerService).onDidChangeAgentSessionCatalog;
   }
 
+  getAgentSessionDiscoveryInProgress(): boolean {
+    return (this.chatManagerService as AcpChatManagerService).getAgentSessionDiscoveryInProgress();
+  }
+
+  get onDidChangeAgentSessionDiscovery() {
+    return (this.chatManagerService as AcpChatManagerService).onDidChangeAgentSessionDiscovery;
+  }
+
   private async applyActivatedSession(
     sessionId: string,
     session: ChatModel,

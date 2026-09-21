@@ -345,6 +345,7 @@ export function AgenticSessionList() {
   const projectRefreshVersionRef = React.useRef(0);
   const [projects, setProjects] = React.useState<AgenticProjectRecord[]>([]);
   const [sessions, setSessions] = React.useState<AcpAgentSessionDescriptor[]>(() => aiChatService.getAgentSessions());
+  const [discoveryLoading, setDiscoveryLoading] = React.useState<boolean>(() => sessions.length === 0);
   const [archivedSessions, setArchivedSessions] = React.useState<AgenticArchivedSessionRecord[]>([]);
   const [query, setQuery] = React.useState('');
   const [activeSessionId, setActiveSessionId] = React.useState<string | undefined>(
@@ -409,10 +410,15 @@ export function AgenticSessionList() {
       setSessions(await aiChatService.refreshAgentSessions());
     } catch {
       // Discovery failures are intentionally silent in Agentic Layout.
+    } finally {
+      setDiscoveryLoading(aiChatService.getAgentSessionDiscoveryInProgress());
     }
   }, [aiChatService, refreshArchivedSessions, refreshProjects]);
 
   React.useEffect(() => {
+    const discoveryDisposable = aiChatService.onDidChangeAgentSessionDiscovery((inProgress) => {
+      setDiscoveryLoading(inProgress);
+    });
     void refresh();
     const catalogDisposable = aiChatService.onDidChangeAgentSessions((catalog) => {
       setSessions(catalog.map((session) => ({ ...session })));
@@ -421,6 +427,7 @@ export function AgenticSessionList() {
     const sessionDisposable = aiChatService.onChangeSession((sessionId) => setActiveSessionId(sessionId || undefined));
     return () => {
       projectRefreshVersionRef.current += 1;
+      discoveryDisposable.dispose();
       catalogDisposable.dispose();
       projectDisposable.dispose();
       sessionDisposable?.dispose();
@@ -461,6 +468,7 @@ export function AgenticSessionList() {
   );
   const groups = React.useMemo(() => createGroups(false), [createGroups]);
   const archivedGroups = React.useMemo(() => createGroups(true), [createGroups]);
+  const showDiscoveryLoading = discoveryLoading && sessions.length === 0;
 
   const activeTarget = aiChatService.getActiveAgenticTaskTarget(activeSessionId);
   const preferredAgentId = activeTarget?.agentId || getDefaultAgentType(preferenceService);
@@ -598,34 +606,48 @@ export function AgenticSessionList() {
         />
       </label>
       <div className={styles.task_groups}>
-        {groups.map((group) => (
-          <SessionProjectGroup
-            activeSessionId={activeSessionId}
-            collapsed={collapsedProjectIds.has(group.project.id) && !normalizedQuery}
-            failedSessionIds={failedSessionIds}
-            group={group}
-            hasAgentSessions={sessions.some((session) => session.cwd === group.project.workspacePath)}
-            key={group.project.id}
-            onActivate={activate}
-            onArchive={(session) => void archive(session)}
-            onRemove={(project) => void removeProject(project)}
-            onRename={setRenameProject}
-            onToggle={() =>
-              setCollapsedProjectIds((current) => {
-                const next = new Set(current);
-                if (next.has(group.project.id)) {
-                  next.delete(group.project.id);
-                } else {
-                  next.add(group.project.id);
+        {showDiscoveryLoading ? (
+          <div className={styles.task_list_loading} data-testid='agentic-session-list-loading'>
+            <span aria-hidden='true' className='codicon codicon-loading codicon-modifier-spin' />
+            <span>{localize('aiNative.agentic.sessionList.loading', 'Loading sessions…')}</span>
+          </div>
+        ) : (
+          <>
+            {groups.map((group) => (
+              <SessionProjectGroup
+                activeSessionId={activeSessionId}
+                collapsed={collapsedProjectIds.has(group.project.id) && !normalizedQuery}
+                failedSessionIds={failedSessionIds}
+                group={group}
+                hasAgentSessions={sessions.some((session) => session.cwd === group.project.workspacePath)}
+                key={group.project.id}
+                onActivate={activate}
+                onArchive={(session) => void archive(session)}
+                onRemove={(project) => void removeProject(project)}
+                onRename={setRenameProject}
+                onToggle={() =>
+                  setCollapsedProjectIds((current) => {
+                    const next = new Set(current);
+                    if (next.has(group.project.id)) {
+                      next.delete(group.project.id);
+                    } else {
+                      next.add(group.project.id);
+                    }
+                    return next;
+                  })
                 }
-                return next;
-              })
-            }
-            pendingSessionId={pendingSessionId}
-            preferredAgentId={preferredAgentId}
-            projectLabel={projectLabels.get(group.project.id) || getAgenticProjectDisplayLabel(group.project)}
-          />
-        ))}
+                pendingSessionId={pendingSessionId}
+                preferredAgentId={preferredAgentId}
+                projectLabel={projectLabels.get(group.project.id) || getAgenticProjectDisplayLabel(group.project)}
+              />
+            ))}
+            {sessions.length === 0 && !normalizedQuery && (
+              <div className={styles.task_list_empty} data-testid='agentic-session-list-empty'>
+                {localize('aiNative.agentic.sessionList.empty', 'No sessions yet')}
+              </div>
+            )}
+          </>
+        )}
       </div>
       <ArchivedSessionGroups
         groups={archivedGroups}

@@ -261,6 +261,27 @@
   overflow: auto;
 }
 
+.task_list_loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 12px;
+  color: var(--descriptionForeground);
+  font-size: 12px;
+
+  .codicon-loading {
+    font-size: 14px;
+  }
+}
+
+.task_list_empty {
+  padding: 24px 12px;
+  color: var(--descriptionForeground);
+  font-size: 12px;
+  text-align: center;
+}
+
 .project_group,
 .archived_project_group {
   margin: 6px 5px 0;

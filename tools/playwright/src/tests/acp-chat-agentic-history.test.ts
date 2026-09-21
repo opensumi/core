@@ -389,3 +389,143 @@ test.describe('ACP Chat Agentic History', () => {
     await expect(page.getByTestId('acp-chat-history-popover')).toBeVisible();
   });
 });
+
+test.describe('Agent Session Discovery Loading', () => {
+  test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
+
+  let discoveryRuntime: AcpBddFixtureRuntime | undefined;
+
+  test.afterAll(async () => {
+    await discoveryRuntime?.dispose();
+  });
+
+  test('shows Agent Session Discovery Loading during the first discovery and settles back to the Session Browser', async ({
+    browser: _browser,
+  }, testInfo) => {
+    void _browser;
+    const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-session-archive-and-restore', {
+      sourceScenario: 'test/bdd/acp-chat-agentic-session-archive-and-restore.scenario.md',
+      profile: 'interactive',
+      executionMode: 'deterministic-fixture',
+      hardeningVerdict: 'CONVERT',
+    });
+
+    discoveryRuntime = await loadAcpBddFixtureWorkbench(page, {
+      fixture: 'history',
+      profile: 'interactive',
+      delayMs: 10,
+      listDelayMs: 15_000,
+      sessionPrefix: SESSION_PREFIX,
+      ensureAgenticLayout: true,
+      viewport: { width: 1600, height: 900 },
+    });
+    test.setTimeout(420_000);
+
+    try {
+      const loading = page.getByTestId('agentic-session-list-loading');
+      // The indicator shows from mount while the serial per-Agent x per-Target discovery is in flight.
+      await expect(loading).toBeVisible({ timeout: 60_000 });
+      const loadingProof = await evidence.saveJson(
+        '01-discovery-loading-visible',
+        { url: page.url(), listDelayMs: 15_000 },
+        'The Agent Session Browser shows the Agent Session Discovery Loading indicator while the first discovery refresh is in flight',
+      );
+
+      // The delayed list applies per Agent x Target combination, so allow the serial traversal to settle.
+      await expect(loading).toBeHidden({ timeout: 240_000 });
+      await expect(page.getByTestId('agentic-session-list')).toBeVisible();
+      const rows = await readSessionRows();
+      const placeholder = await page.getByTestId('agentic-session-list-empty').isVisible();
+      expect(rows.length > 0 || placeholder).toBe(true);
+      const settleProof = await evidence.saveJson(
+        '02-discovery-loading-settled',
+        { rows, placeholder },
+        'The loading indicator ends when the refresh settles and the browser renders Agent rows or the empty placeholder without hanging',
+      );
+
+      evidence.recordCriticalPoint({
+        id: 'CP1',
+        requirement: 'An empty catalog shows the discovery loading indicator instead of a bare empty list.',
+        status: 'pass',
+        evidence: [loadingProof].filter(Boolean) as string[],
+      });
+      evidence.recordCriticalPoint({
+        id: 'CP2',
+        requirement: 'The discovery loading indicator ends when the refresh settles and never hangs.',
+        status: 'pass',
+        evidence: [settleProof].filter(Boolean) as string[],
+      });
+
+      await evidence.finalize({
+        scenarioVerdict: 'PASS',
+        hardeningVerdict: 'CONVERT',
+        runtime: {
+          url: page.url(),
+          viewport: page.viewportSize(),
+          browserSurface: 'Playwright Chromium',
+          fixture: discoveryRuntime.fixture,
+          profile: discoveryRuntime.profile,
+        },
+      });
+    } finally {
+      await discoveryRuntime.dispose();
+      discoveryRuntime = undefined;
+    }
+  });
+
+  test('settles a silently failed discovery to the empty placeholder without a stuck loading state', async ({
+    browser: _browser,
+  }, testInfo) => {
+    void _browser;
+    const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-session-archive-and-restore', {
+      sourceScenario: 'test/bdd/acp-chat-agentic-session-archive-and-restore.scenario.md',
+      profile: 'interactive',
+      executionMode: 'deterministic-fixture',
+      hardeningVerdict: 'CONVERT',
+    });
+
+    discoveryRuntime = await loadAcpBddFixtureWorkbench(page, {
+      fixture: 'list-failure',
+      profile: 'interactive',
+      delayMs: 10,
+      sessionPrefix: SESSION_PREFIX,
+      ensureAgenticLayout: true,
+      viewport: { width: 1600, height: 900 },
+    });
+
+    try {
+      await expect(page.getByTestId('agentic-session-list')).toBeVisible();
+      await expect(page.getByTestId('agentic-session-list-loading')).toBeHidden({ timeout: 30_000 });
+      await expect(page.getByTestId('agentic-session-list-empty')).toBeVisible({ timeout: 30_000 });
+      const placeholderText = await page.getByTestId('agentic-session-list-empty').innerText();
+      expect(placeholderText).not.toMatch(/error|fail/i);
+      const placeholderProof = await evidence.saveJson(
+        '01-list-failure-empty-placeholder',
+        { placeholderText },
+        'After a silent discovery failure the browser shows the neutral empty placeholder, keeps failures silent, and shows no loading indicator',
+      );
+
+      evidence.recordCriticalPoint({
+        id: 'CP1',
+        requirement: 'Discovery failures stay silent and settle to the neutral empty placeholder.',
+        status: 'pass',
+        evidence: [placeholderProof].filter(Boolean) as string[],
+      });
+
+      await evidence.finalize({
+        scenarioVerdict: 'PASS',
+        hardeningVerdict: 'CONVERT',
+        runtime: {
+          url: page.url(),
+          viewport: page.viewportSize(),
+          browserSurface: 'Playwright Chromium',
+          fixture: discoveryRuntime.fixture,
+          profile: discoveryRuntime.profile,
+        },
+      });
+    } finally {
+      await discoveryRuntime.dispose();
+      discoveryRuntime = undefined;
+    }
+  });
+});
