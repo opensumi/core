@@ -471,6 +471,7 @@ export const ChatReply = (props: IChatReplyProps) => {
       }
       onRegenerate={handleRegenerate}
       requestId={request.requestId}
+      copyContent={request.response.errorDetails ? undefined : request.response.responseText}
     >
       <div className={styles.ai_chat_response_container}>
         {request.response.errorDetails?.message ? (

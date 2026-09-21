@@ -1235,6 +1235,8 @@ export const localizationBundle = {
     'aiNative.chat.code.insert': '插入代码',
     'aiNative.chat.code.copy': '复制代码',
     'aiNative.chat.code.copy.success': '复制成功',
+    'aiNative.chat.message.copy': '复制',
+    'aiNative.chat.message.copy.success': '已复制',
     'aiNative.chat.expand.unfullscreen': '恢复编辑器和资源管理器',
     'aiNative.chat.expand.fullescreen': '专注 AI 对话',
     'aiNative.chat.enter.send': 'Enter 发送',
