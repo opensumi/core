@@ -522,7 +522,30 @@ export class AcpChatManagerService extends ChatManagerService {
     return currentOperation;
   }
 
+  // A load result and its follow-up attach snapshot describe the same thread,
+  // and both restore paths derive stable message ids from the Agent's own
+  // message ids. When the incoming transcript matches what is already active,
+  // replacing the model would only unmount and remount every message row.
+  private isSameActiveTranscript(existingSession: ChatModel | undefined, sessionData: ISessionModel): boolean {
+    if (!existingSession) {
+      return false;
+    }
+    const existingMessages = existingSession.history.getMessages();
+    const incomingMessages = sessionData.history?.messages || [];
+    if (existingMessages.length === 0 || existingMessages.length !== incomingMessages.length) {
+      return false;
+    }
+    return incomingMessages.every((message, index) => message.id === existingMessages[index].id);
+  }
+
   private restoreLoadedSession(sessionId: string, sessionData: ISessionModel, existingSession?: ChatModel): void {
+    if (this.isSameActiveTranscript(existingSession, sessionData)) {
+      if (sessionData.extension?.availableCommands) {
+        this.getAvailableCommandsBySession().set(sessionId, sessionData.extension.availableCommands);
+      }
+      this.metadataOnlySessionIds.delete(sessionId);
+      return;
+    }
     const sessionDataWithPreservedUsers = this.preserveExistingUsersWhenSnapshotOmitsThem(sessionData, existingSession);
     const existingTitle = this.getExistingTitleForLoadedSession(sessionId, existingSession);
     const sessionDataWithTitle =

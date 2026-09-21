@@ -1427,6 +1427,123 @@ describe('AcpChatManagerService', () => {
     attachment.end();
   });
 
+  it('skips replacing the active model when the attach snapshot repeats the loaded transcript', async () => {
+    const service = createService();
+    const sessionId = 'acp:s-same-snapshot';
+    const attachment = new SumiReadableStream<any>();
+    const attachSession = jest.fn().mockResolvedValue(attachment);
+    const messages = [
+      {
+        id: `${sessionId}-restored-user-1`,
+        role: ChatMessageRole.User,
+        content: 'restore me',
+        order: 0,
+      },
+      {
+        id: `${sessionId}-restored-assistant-1`,
+        role: ChatMessageRole.Assistant,
+        content: 'restored reply',
+        order: 1,
+      },
+    ];
+    const loadedSession = {
+      sessionId,
+      history: { additional: {}, messages },
+      requests: [],
+    };
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue(loadedSession),
+        attachSession,
+        restoreSessionSnapshot: jest.fn().mockImplementation((_id: string, snapshot: any) => {
+          if (!snapshot.historyUpdates?.length) {
+            return undefined;
+          }
+          // Same transcript, fresh object identities — exactly what the real
+          // ACPSessionProvider produces from the same historyUpdates.
+          return {
+            ...loadedSession,
+            history: { additional: {}, messages: messages.map((message) => ({ ...message })) },
+          };
+        }),
+      },
+    });
+
+    await service.loadSession(sessionId);
+    const restoredModel = service.getSession(sessionId)!;
+    expect(restoredModel.history.getMessages()).toHaveLength(2);
+
+    attachment.emitData({
+      kind: 'sessionSnapshot',
+      sessionId: 's-same-snapshot',
+      threadStatus: 'idle',
+      historyUpdates: [
+        { update: { sessionUpdate: 'user_message_chunk', content: { type: 'text', text: 'restore me' } } },
+      ],
+      availableCommands: [{ name: 'snapshot-skill', description: 'Snapshot skill' }],
+    });
+
+    expect(service.getSession(sessionId)).toBe(restoredModel);
+    expect(service.getAvailableCommands(sessionId)).toEqual([
+      { name: 'snapshot-skill', description: 'Snapshot skill' },
+    ]);
+    expect((service as any).listenSession).toHaveBeenCalledTimes(1);
+    attachment.end();
+  });
+
+  it('replaces the active model when the attach snapshot carries a different transcript', async () => {
+    const service = createService();
+    const sessionId = 'acp:s-new-snapshot';
+    const attachment = new SumiReadableStream<any>();
+    const attachSession = jest.fn().mockResolvedValue(attachment);
+    Object.defineProperty(service, 'mainProvider', {
+      value: {
+        loadSession: jest.fn().mockResolvedValue({
+          sessionId,
+          history: {
+            additional: {},
+            messages: [{ id: `${sessionId}-user-1`, role: ChatMessageRole.User, content: 'old turn', order: 0 }],
+          },
+          requests: [],
+        }),
+        attachSession,
+        restoreSessionSnapshot: jest.fn().mockImplementation((_id: string, snapshot: any) => {
+          if (!snapshot.historyUpdates?.length) {
+            return undefined;
+          }
+          return {
+            sessionId,
+            history: {
+              additional: {},
+              messages: [
+                { id: `${sessionId}-user-1`, role: ChatMessageRole.User, content: 'old turn', order: 0 },
+                { id: `${sessionId}-assistant-2`, role: ChatMessageRole.Assistant, content: 'new output', order: 1 },
+              ],
+            },
+            requests: [],
+          };
+        }),
+      },
+    });
+
+    await service.loadSession(sessionId);
+    const firstModel = service.getSession(sessionId)!;
+    expect(firstModel.history.getMessages()).toHaveLength(1);
+
+    attachment.emitData({
+      kind: 'sessionSnapshot',
+      sessionId: 's-new-snapshot',
+      threadStatus: 'idle',
+      historyUpdates: [
+        { update: { sessionUpdate: 'agent_message_chunk', content: { type: 'text', text: 'new output' } } },
+      ],
+    });
+
+    expect(service.getSession(sessionId)).not.toBe(firstModel);
+    expect(service.getSession(sessionId)!.history.getMessages()).toHaveLength(2);
+    attachment.end();
+  });
+
   it('keeps restored ACP history when attachment fails and retries attachment on a later selection', async () => {
     const service = createService();
     const sessionId = 'acp:s-attach-failure';

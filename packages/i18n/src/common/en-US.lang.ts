@@ -1467,6 +1467,8 @@ export const localizationBundle = {
     'aiNative.chat.code.insert': 'Insert code',
     'aiNative.chat.code.copy': 'Copy code',
     'aiNative.chat.code.copy.success': 'Copied successfully',
+    'aiNative.chat.message.copy': 'Copy',
+    'aiNative.chat.message.copy.success': 'Copied',
     'aiNative.chat.expand.unfullscreen': 'Restore editor and Explorer',
     'aiNative.chat.expand.fullescreen': 'Focus AI Chat',
     'aiNative.chat.enter.send': 'Send (Enter)',
