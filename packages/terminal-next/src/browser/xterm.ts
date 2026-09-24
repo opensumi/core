@@ -78,7 +78,49 @@ export class XTerm extends Disposable implements IXTerm {
       ...this.xtermOptions,
     });
     this._prepareAddons();
+    // 终端内运行的程序（如 vim、tmux、opencode 等）会通过 OSC 52 序列请求设置系统剪贴板，
+    // 这是 Web / 远程场景下程序写入用户本机剪贴板的唯一通道，xterm.js 核心不处理该序列，
+    // 需在此注册 handler 将内容写入浏览器剪贴板，否则序列会被静默丢弃。
+    this.addDispose(this.raw.parser.registerOscHandler(52, (data) => this._handleOsc52(data)));
     this.raw.onSelectionChange(this.onSelectionChange.bind(this));
+  }
+
+  /**
+   * 处理 OSC 52（Clipboard）序列，格式为 `OSC 52 ; Ps ; Pt ST`，Pt 为 base64 编码的内容，为 `?` 时表示查询剪贴板（不支持）。
+   * Ps 为目标选择区：`c` 系统剪贴板、`s` 主选择区、`0-7` cut buffer；浏览器环境只有系统剪贴板，
+   * 因此仅处理 Ps 为空（默认）或包含 `c`/`s` 的请求，其余目标（如 cut buffer）忽略。
+   * @see https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Operating-System-Commands
+   */
+  private async _handleOsc52(data: string): Promise<boolean> {
+    const semiIndex = data.indexOf(';');
+    if (semiIndex === -1) {
+      return false;
+    }
+    const selection = data.slice(0, semiIndex);
+    // 非剪贴板目标（如 cut buffer）忽略
+    if (selection && !selection.includes('c') && !selection.includes('s')) {
+      return false;
+    }
+    const payload = data.slice(semiIndex + 1);
+    // 不支持剪贴板查询
+    if (!payload || payload === '?') {
+      return false;
+    }
+    try {
+      const byteString = atob(payload);
+      const bytes = new Uint8Array(byteString.length);
+      for (let i = 0; i < byteString.length; i++) {
+        bytes[i] = byteString.charCodeAt(i);
+      }
+      // 编码侧使用 UTF-8（如 `Buffer.from(text).toString('base64')`），需按 UTF-8 解码，
+      // 避免中文等多字节字符乱码；fatal 拒绝非法 UTF-8，避免把乱码内容写进剪贴板
+      const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      await this.clipboardService.writeText(text);
+      return true;
+    } catch (err) {
+      // 忽略非法序列，不影响终端正常输出
+      return false;
+    }
   }
 
   protected async enableCanvasRenderer() {

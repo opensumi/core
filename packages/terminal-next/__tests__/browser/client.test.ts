@@ -110,6 +110,12 @@ jest.mock('@xterm/xterm', () => {
     registerLinkProvider() {
       return Disposable.create(() => {});
     }
+    // XTerm 构造时会通过 parser API 注册 OSC 序列处理（如 OSC 52 剪贴板）
+    get parser() {
+      return {
+        registerOscHandler: () => Disposable.create(() => {}),
+      };
+    }
   };
   return {
     ...jest.requireActual('@xterm/xterm'),
