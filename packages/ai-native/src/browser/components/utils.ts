@@ -19,17 +19,33 @@ type UserMessageData = Omit<MessageData, 'role' | 'position' | 'title'>;
 
 const createMessage = (message: MessageData) => ({
   ...message,
-  type: 'text',
+  type: 'text' as const,
   className: `${message.position === 'left' ? 'rce-ai-msg' : 'rce-user-msg'} ${
     message.className ? message.className : ''
   }`,
 });
 
 export const createMessageByUser = (message: UserMessageData, className?: string) =>
-  createMessage({ ...message, position: 'right', title: ME_NAME, className, role: ChatMessageRole.User });
+  createMessage({
+    ...message,
+    position: 'right',
+    title: ME_NAME,
+    // A call site may pass the className either as this argument or inside the
+    // message object; both must survive, otherwise the message loses its
+    // layout reserve class (e.g. chat_with_more_actions) and the absolutely
+    // positioned action bar paints over the next message row.
+    className: className ?? message.className,
+    role: ChatMessageRole.User,
+  });
 
 export const createMessageByAI = (message: AIMessageData, className?: string) =>
-  createMessage({ ...message, position: 'left', title: '', className, role: ChatMessageRole.Assistant });
+  createMessage({
+    ...message,
+    position: 'left',
+    title: '',
+    className: className ?? message.className,
+    role: ChatMessageRole.Assistant,
+  });
 
 export const extractIcon = (question: ISampleQuestions): ISampleQuestions => {
   let { title } = question;

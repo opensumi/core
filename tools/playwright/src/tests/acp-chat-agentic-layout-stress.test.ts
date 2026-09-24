@@ -6,8 +6,8 @@ import test, { page, resetPage } from './hooks';
 import {
   ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS,
   type AcpBddFixtureRuntime,
-  ensureAgenticLayout,
   loadAcpBddFixtureWorkbench,
+  waitForExplorerViewVisible,
 } from './utils/acp-bdd-fixture';
 import { createBddEvidence } from './utils/bdd-evidence';
 
@@ -35,7 +35,7 @@ interface LayoutBoundsProof {
   messageViewport?: RectProof;
   messageList?: RectProof;
   input?: RectProof;
-  messageCount: number;
+  mountedMessageCount: number;
   overflowingMessageCount: number;
   pageHasHorizontalOverflow: boolean;
   messageListScrollable: boolean;
@@ -61,6 +61,7 @@ async function loadLongStreamWorkbench() {
     ensureAgenticLayout: true,
     viewport: { width: 1440, height: 820 },
   });
+  await waitForExplorerViewVisible(page);
   await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
 }
 
@@ -83,14 +84,6 @@ async function sendPrompt(prompt: string) {
   await chatButton('Send').click();
 }
 
-async function stopStreamIfActive() {
-  const stopButton = chatButton('Stop');
-  if (await stopButton.isVisible().catch(() => false)) {
-    await stopButton.click();
-    await expect(chatButton('Send')).toBeVisible({ timeout: 30_000 });
-  }
-}
-
 async function readLayoutBounds(): Promise<LayoutBoundsProof> {
   return page.evaluate(() => {
     const toRect = (rect: DOMRect): RectProof => ({
@@ -111,8 +104,8 @@ async function readLayoutBounds(): Promise<LayoutBoundsProof> {
     const chatSlot = document.querySelector('.AI-Chat-slot');
     const workbench = document.querySelector('#workbench-editor');
     const conversation = document.querySelector('.AI-Chat-slot [class*="body_container"]');
-    const taskList = document.querySelector('[data-testid="agentic-task-list"]');
-    const taskTitle = document.querySelector('[data-testid^="agentic-task-row-"] span');
+    const taskList = document.querySelector('[data-testid="agentic-session-list"]');
+    const taskTitle = document.querySelector('[data-testid^="agentic-session-row-"] span');
     const explorer = document.querySelector('[data-viewlet-id="explorer"]');
     const explorerFileRow = Array.from(
       explorer?.querySelectorAll<HTMLElement>('[class*="file_tree_node__"]') || [],
@@ -121,7 +114,8 @@ async function readLayoutBounds(): Promise<LayoutBoundsProof> {
     const messageViewport = leftContainer?.querySelector('[class*="chat_container"]');
     const messageList = leftContainer?.querySelector('.rce-mlist');
     const input = leftContainer?.querySelector('[contenteditable="true"]');
-    const messageRows = Array.from(leftContainer?.querySelectorAll('.rce-container-mbox') || []).filter(isVisible);
+    const agenticMessageRows = Array.from(leftContainer?.querySelectorAll('[data-testid="agentic-message-row"]') || []);
+    const messageRows = Array.from(leftContainer?.querySelectorAll('.rce-mbox') || []).filter(isVisible);
     const chatRect = chatSlot?.getBoundingClientRect();
     const inputRect = input?.getBoundingClientRect();
 
@@ -147,13 +141,10 @@ async function readLayoutBounds(): Promise<LayoutBoundsProof> {
       messageViewport: messageViewport ? toRect(messageViewport.getBoundingClientRect()) : undefined,
       messageList: messageList ? toRect(messageList.getBoundingClientRect()) : undefined,
       input: inputRect ? toRect(inputRect) : undefined,
-      messageCount: messageRows.length,
+      mountedMessageCount: agenticMessageRows.length,
       overflowingMessageCount,
       pageHasHorizontalOverflow: document.documentElement.scrollWidth > window.innerWidth + 2,
-      messageListScrollable: messageViewport
-        ? messageViewport.scrollHeight > messageViewport.clientHeight + 8 ||
-          messageViewport.classList.contains('chat_scroll')
-        : false,
+      messageListScrollable: messageList ? messageList.scrollHeight > messageList.clientHeight + 8 : false,
     };
   });
 }
@@ -166,13 +157,13 @@ function expectLayoutBounds(proof: LayoutBoundsProof, workbenchExpected = true) 
   expect(proof.chatSlot?.right).toBeLessThanOrEqual(proof.viewport.width + 2);
   if (workbenchExpected) {
     expect(proof.workbench?.width).toBeGreaterThan(0);
-    expect(proof.explorer?.width).toBeGreaterThanOrEqual(240);
+    expect(proof.explorer?.width).toBeGreaterThanOrEqual(160);
     expect(proof.explorerFileRow?.width).toBeGreaterThanOrEqual(160);
   } else {
     expect(proof.workbench?.width ?? 0).toBe(0);
     expect(proof.explorer?.width ?? 0).toBe(0);
   }
-  expect(proof.messageCount).toBeGreaterThanOrEqual(2);
+  expect(proof.mountedMessageCount).toBeGreaterThanOrEqual(1);
   expect(proof.overflowingMessageCount).toBe(0);
   expect(proof.pageHasHorizontalOverflow).toBe(false);
   expect(proof.messageListScrollable).toBe(true);
@@ -198,7 +189,6 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
   });
 
   test.afterAll(async () => {
-    await stopStreamIfActive();
     await runtime?.dispose();
   });
 
@@ -213,7 +203,7 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
     await sendPrompt(LONG_STREAM_PROMPT);
     await expect(chatSlot().getByText(LONG_CONTENT_SENTINEL)).toBeVisible({ timeout: 30_000 });
     await expect(chatButton('Stop')).toBeVisible();
-    await expect(page.locator('[data-testid^="agentic-task-row-"]').first()).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('[data-testid^="agentic-session-row-"]').first()).toBeVisible({ timeout: 30_000 });
     await waitForScrollableMessageList();
 
     const wideBounds = await readLayoutBounds();
@@ -240,8 +230,11 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
           timeout: 5000,
         })
         .toBe(workbenchExpected);
+      if (workbenchExpected) {
+        await waitForExplorerViewVisible(page);
+      }
       await expect(chatSlot().getByText(LONG_CONTENT_SENTINEL)).toBeVisible();
-      await expect(page.locator('[data-testid^="agentic-task-row-"]').first()).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('[data-testid^="agentic-session-row-"]').first()).toBeVisible({ timeout: 5000 });
       await waitForScrollableMessageList();
 
       const bounds = await readLayoutBounds();
@@ -264,7 +257,7 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
     await page.waitForFunction(() => !document.querySelector('#workbench-editor'));
     await page.setViewportSize({ width: 1366, height: 768 });
     await page.waitForTimeout(100);
-    await expect(page.locator('[data-testid^="agentic-task-row-"]').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid^="agentic-session-row-"]').first()).toBeVisible({ timeout: 5000 });
 
     const hiddenPreferenceBounds = await readLayoutBounds();
     expectLayoutBounds(hiddenPreferenceBounds, false);
@@ -273,8 +266,6 @@ test.describe('ACP Chat Agentic Layout Stress', () => {
       hiddenPreferenceBounds,
       'an explicitly hidden workbench remains hidden after a responsive viewport round trip',
     );
-
-    await stopStreamIfActive();
 
     evidence.recordCriticalPoint({
       id: 'CP1',

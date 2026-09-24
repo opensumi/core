@@ -4,24 +4,29 @@ import test, { page } from './hooks';
 import { ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS, loadAcpBddFixtureWorkbench } from './utils/acp-bdd-fixture';
 import { launchTaskInCurrentProject } from './utils/acp-task-list';
 
-const TASK_TITLE = 'A deliberately long Agent Task title for compact row presentation';
-const THEME_LABELS = [
-  'OpenSumi Design Dark+ (default dark)',
-  'OpenSumi Design Light+ (default light)',
-  'Dark High Contrast',
-  'Light High Contrast',
+const SESSION_PROMPT = 'A deliberately long prompt that must not become the Agent Session title';
+const THEMES = [
+  { label: 'OpenSumi Design Dark+ (default dark)', root: 'body', className: 'design-dark' },
+  { label: 'OpenSumi Design Light+ (default light)', root: 'body', className: 'design-light' },
 ] as const;
 
 function chatSlot() {
-  return page.locator('.AI-Chat-slot');
+  return page.locator('.AI-Chat-slot:visible');
 }
 
 function chatInput() {
   return chatSlot().locator('[contenteditable="true"]').last();
 }
 
+async function activeSessionState(): Promise<{ sessionId?: string; requestCount?: number }> {
+  const state = await page.evaluate(async () =>
+    (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
+  );
+  return state?.result?.session || {};
+}
+
 async function resizeTaskListTo(targetWidth: number): Promise<void> {
-  const taskList = page.getByTestId('agentic-task-list');
+  const taskList = page.getByTestId('agentic-session-list');
   const resizeHandle = page.getByTestId('agentic-task-list-resize-handle');
   const currentWidth = Math.round(await taskList.evaluate((element) => element.getBoundingClientRect().width));
   if (currentWidth !== targetWidth) {
@@ -38,60 +43,37 @@ async function resizeTaskListTo(targetWidth: number): Promise<void> {
   await expect(taskList).toHaveCSS('width', `${targetWidth}px`);
 }
 
-async function chooseTheme(label: string): Promise<void> {
-  const isMac = await page.evaluate(() => /Mac/.test(navigator.platform));
-  await page.keyboard.press(`${isMac ? 'Meta' : 'Control'}+Shift+P`);
-  const input = page.locator('#opensumi-quickpick-input');
-  await expect(input).toBeVisible();
-  await input.fill('Color Theme');
+async function chooseTheme(theme: (typeof THEMES)[number]): Promise<void> {
+  const { label, root, className } = theme;
+  const alreadySelected = await page.evaluate(
+    ({ root, className }) => document.querySelector(root)?.classList.contains(className),
+    { root, className },
+  );
+  if (alreadySelected) {
+    return;
+  }
+  const command = page.evaluate(() =>
+    (window as any).__OPENSUMI_E2E__?.executeCommand?.('workbench.action.selectTheme'),
+  );
+  const option = page.locator('#opensumi-quickpick-item:visible').filter({ hasText: label });
+  await expect(option).toBeVisible({ timeout: 15_000 });
+  await option.click();
+  await command;
+  await expect(option).toBeHidden();
   await expect
     .poll(() =>
-      page.evaluate(() => {
-        const command = document.querySelector<HTMLElement>('#opensumi-quickpick-item[aria-label="Color Theme"]');
-        return !!command && command.getBoundingClientRect().height > 0;
+      page.evaluate(({ root, className }) => document.querySelector(root)?.classList.contains(className), {
+        root,
+        className,
       }),
     )
     .toBe(true);
-  await page.evaluate(() => {
-    document
-      .querySelector<HTMLElement>('#opensumi-quickpick-item[aria-label="Color Theme"] [class*="item_label_container"]')
-      ?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
-  });
-  await expect
-    .poll(() =>
-      page.evaluate(() =>
-        Array.from(document.querySelectorAll<HTMLElement>('#opensumi-quickpick-item')).some(
-          (element) =>
-            /High Contrast|default light|default dark/.test(element.textContent || '') &&
-            element.getBoundingClientRect().height > 0,
-        ),
-      ),
-    )
-    .toBe(true);
-  await input.fill(label);
-  await expect
-    .poll(() =>
-      page.evaluate((themeLabel) => {
-        const option = Array.from(document.querySelectorAll<HTMLElement>('#opensumi-quickpick-item')).find(
-          (element) => element.textContent?.includes(themeLabel) && element.getBoundingClientRect().height > 0,
-        );
-        return !!option;
-      }, label),
-    )
-    .toBe(true);
-  await page.evaluate((themeLabel) => {
-    Array.from(document.querySelectorAll<HTMLElement>('#opensumi-quickpick-item'))
-      .find((element) => element.textContent?.includes(themeLabel) && element.getBoundingClientRect().height > 0)
-      ?.querySelector<HTMLElement>('[class*="item_label_container"]')
-      ?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
-  }, label);
-  await expect(input).toBeHidden();
 }
 
-test.describe('ACP Chat Agentic Task Row presentation', () => {
+test.describe('ACP Chat Agent Session Row presentation', () => {
   test.setTimeout(Math.max(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS, 180_000));
 
-  test('keeps compact metadata, Tooltip disclosure, and row actions stable across Task List widths', async () => {
+  test('keeps Agent-owned Session metadata compact across list widths and themes', async () => {
     const runtime = await loadAcpBddFixtureWorkbench(page, {
       fixture: 'history',
       profile: 'interactive',
@@ -105,32 +87,48 @@ test.describe('ACP Chat Agentic Task Row presentation', () => {
     try {
       await launchTaskInCurrentProject(page);
       await chatInput().click();
-      await page.keyboard.insertText(TASK_TITLE);
-      await chatSlot()
+      await page.keyboard.insertText(SESSION_PROMPT);
+      await expect(chatInput()).toContainText(SESSION_PROMPT);
+      const send = chatSlot()
         .getByRole('button', { name: /^(Enter\s+)?Send$|^Enter\s+发送$|^发送$/i })
-        .last()
-        .click();
+        .last();
+      await send.click();
 
-      const row = page.locator('[data-testid^="agentic-task-row-"]').filter({ hasText: TASK_TITLE }).first();
+      await expect
+        .poll(
+          async () => {
+            const requestCount = (await activeSessionState()).requestCount ?? 0;
+            if (requestCount === 0 && (await chatInput().textContent())?.includes(SESSION_PROMPT)) {
+              await send.click();
+            }
+            return requestCount;
+          },
+          { timeout: 60_000 },
+        )
+        .toBeGreaterThanOrEqual(1);
+      const sessionId = (await activeSessionState()).sessionId!;
+      expect(sessionId).toBeTruthy();
+      const row = page.getByTestId(`agentic-session-row-${sessionId}`);
       await expect(row).toBeVisible({ timeout: 30_000 });
-      const rowTestId = await row.getAttribute('data-testid');
-      expect(rowTestId).toBeTruthy();
-      const sessionId = rowTestId!.replace('agentic-task-row-', '');
-      const title = row.getByText(TASK_TITLE, { exact: true });
-      const archive = page.getByTestId(`agentic-task-archive-${sessionId}`);
-      const tooltipContent = page.getByTestId(`agentic-task-tooltip-content-${sessionId}`);
+      const title = row.locator('span').first();
 
       await expect(row).toHaveAttribute('aria-current', 'true');
+      await expect(title).toBeVisible({ timeout: 30_000 });
+      const sessionTitle = (await title.textContent())?.trim();
+      expect(sessionTitle).toBeTruthy();
+      expect(sessionTitle).not.toBe(SESSION_PROMPT);
+      await expect(row).toHaveAttribute('aria-label', sessionTitle!);
+      await expect(row).toHaveAttribute('title', /claude-agent-acp/);
       await expect(row).toHaveCSS('height', '22px');
       await expect(row).toHaveCSS('overflow', 'hidden');
       await expect(title).toHaveCSS('white-space', 'nowrap');
       await expect(title).toHaveCSS('text-overflow', 'ellipsis');
-      await expect(page.getByTestId(`agentic-task-agent-${sessionId}`)).toHaveCount(0);
-      await expect(archive).toBeAttached({ timeout: 30_000 });
+      await expect(page.locator('[data-testid^="agentic-task-archive-"]')).toHaveCount(0);
+      await expect(page.locator('[data-testid^="agentic-task-unread-"]')).toHaveCount(0);
 
       for (const width of [208, 244, 280]) {
         await resizeTaskListTo(width);
-        await expect(page.getByTestId('agentic-task-list')).toHaveCSS('width', `${width}px`);
+        await expect(page.getByTestId('agentic-session-list')).toHaveCSS('width', `${width}px`);
         await expect(row).toHaveCSS('height', '22px');
         await expect(title).toHaveCSS('white-space', 'nowrap');
         const bounds = await row.evaluate((element) => {
@@ -143,33 +141,16 @@ test.describe('ACP Chat Agentic Task Row presentation', () => {
         expect(bounds.every(({ left, right, rowLeft, rowRight }) => left >= rowLeft && right <= rowRight)).toBe(true);
       }
 
-      await row.hover();
-      await expect(tooltipContent).toBeVisible();
-      await expect(tooltipContent).toContainText(TASK_TITLE);
-      await expect(tooltipContent).toContainText('Agent');
-      await expect(tooltipContent).toHaveCSS('font-size', '12px');
-      await expect(tooltipContent.getByRole('button')).toHaveCount(0);
-      const tooltipBounds = await tooltipContent.evaluate((element) => {
-        const rect = element.closest('[role="tooltip"]')!.getBoundingClientRect();
-        return { top: rect.top, left: rect.left, right: rect.right, bottom: rect.bottom };
-      });
-      expect(tooltipBounds.top).toBeGreaterThanOrEqual(0);
-      expect(tooltipBounds.left).toBeGreaterThanOrEqual(0);
-      expect(tooltipBounds.right).toBeLessThanOrEqual(1600);
-      expect(tooltipBounds.bottom).toBeLessThanOrEqual(900);
-
       const themeSurfaces: string[] = [];
-      for (const themeLabel of THEME_LABELS) {
-        await chooseTheme(themeLabel);
+      for (const theme of THEMES) {
+        await chooseTheme(theme);
         await row.focus();
-        await expect(tooltipContent).toBeVisible();
         await expect(row).toHaveCSS('height', '22px');
         const themeStyles = await page.evaluate(() => {
           const body = window.getComputedStyle(document.body);
           const selected = document.querySelector<HTMLElement>(
-            '[data-testid^="agentic-task-row-"][aria-current="true"]',
+            '[data-testid^="agentic-session-row-"][aria-current="true"]',
           );
-          const tooltip = document.querySelector<HTMLElement>('[role="tooltip"]');
           const styles = (element: HTMLElement | null) => {
             const style = element && window.getComputedStyle(element);
             return (
@@ -179,29 +160,18 @@ test.describe('ACP Chat Agentic Task Row presentation', () => {
           return {
             body: { color: body.color, backgroundColor: body.backgroundColor },
             selected: styles(selected),
-            tooltip: styles(tooltip),
           };
         });
         themeSurfaces.push(`${themeStyles.body.color}/${themeStyles.body.backgroundColor}`);
         expect(themeStyles.selected?.color).not.toBe(themeStyles.selected?.backgroundColor);
-        expect(themeStyles.tooltip?.color).not.toBe(themeStyles.tooltip?.backgroundColor);
       }
-      expect(new Set(themeSurfaces).size).toBeGreaterThanOrEqual(3);
+      expect(new Set(themeSurfaces).size).toBe(2);
 
-      await page.getByPlaceholder('Search tasks').focus();
-      await page.mouse.move(1200, 100);
-      await expect(tooltipContent).toBeHidden();
-      await row.focus();
-      await expect(tooltipContent).toBeVisible();
-      await row.press('Escape');
-      await expect(tooltipContent).toBeHidden();
-
-      const titleBeforeAction = await title.boundingBox();
-      await row.hover();
-      await expect(archive).toHaveCSS('pointer-events', 'auto');
-      await archive.focus();
-      await expect(tooltipContent).toBeHidden();
-      expect(await title.boundingBox()).toEqual(titleBeforeAction);
+      const search = page.getByPlaceholder('Search sessions');
+      await search.fill(sessionTitle!);
+      await expect(row).toBeVisible();
+      await search.fill(SESSION_PROMPT);
+      await expect(row).toHaveCount(0);
     } finally {
       await runtime.dispose();
     }

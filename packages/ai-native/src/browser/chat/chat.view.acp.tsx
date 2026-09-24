@@ -2,9 +2,11 @@ import debounce from 'lodash/debounce';
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
+import { Modal } from '@opensumi/ide-components/lib/modal';
 import {
   AINativeConfigService,
   AppConfig,
+  COMMON_COMMANDS,
   LabelService,
   getIcon,
   localize,
@@ -14,6 +16,7 @@ import {
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
+  ACP_THREAD_POOL_SATURATED_ERROR_NAME,
   AIServiceType,
   ActionSourceEnum,
   ActionTypeEnum,
@@ -30,11 +33,13 @@ import {
   IAIReporter,
   IChatComponent,
   IChatContent,
+  IHistoryChatMessage,
   URI,
   formatLocalize,
   path,
   uuid,
 } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMessageService } from '@opensumi/ide-overlay';
 import 'react-chat-elements/dist/main.css';
@@ -69,8 +74,15 @@ import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, To
 import { AcpQueuedTurnModule } from './acp-chat-queued-turns';
 import { AI_CHAT_NEW_CHAT } from './acp-new-draft.commands';
 import { AcpQueuedTurns } from './AcpQueuedTurns';
+import {
+  AgenticConversationViewModel,
+  AgenticConversationViewModelCache,
+  isAgenticConversationViewModelCurrent,
+  updateAgenticConversationViewModel,
+} from './agentic-conversation-view-model';
 import { AgenticChatHeaderMaximizeAction } from './AgenticChatHeaderMaximizeAction';
 import { AgenticChatPanelHeader } from './AgenticChatPanelHeader';
+import { AgenticVirtualMessageList, AgenticVirtualMessageListHandle } from './AgenticVirtualMessageList';
 import { ChatModel, ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
 import { ChatService } from './chat.api.service';
@@ -106,6 +118,7 @@ interface AcpQueuedTurnPortCallbacks {
   getStatus(sessionId: string | undefined): 'idle' | 'generating';
   start(sessionId: string | undefined, draft: AcpTurnDraft, assertRuntimeActive: () => void): Promise<StartedAcpTurn>;
   requestCancellation(sessionId: string | undefined): Promise<void>;
+  cancelPendingStart(sessionId: string | undefined): Promise<void>;
   didFinish(started: StartedAcpTurn): void;
 }
 
@@ -235,9 +248,11 @@ export const AIChatViewACPContent = () => {
   const labelService = useInjectable<LabelService>(LabelService);
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const commandService = useInjectable<CommandService>(CommandService);
+  const isAgenticLayout = panelLayoutService.getLayoutMode() === 'agentic';
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
   const [sessionModelId, setSessionModelId] = React.useState<string | undefined>(aiChatService.sessionModel?.modelId);
   const [hasUserSentMessage, setHasUserSentMessage] = React.useState(false);
+  const [discardDraftConfirmationVisible, setDiscardDraftConfirmationVisible] = React.useState(false);
 
   const [changeList, setChangeList] = React.useState<FileChange[]>(
     getFileChanges(applyService.getSessionCodeBlocks() || []),
@@ -257,6 +272,12 @@ export const AIChatViewACPContent = () => {
   }, []);
 
   const [loading, setLoading] = React.useState(false);
+  const agenticConversationCacheRef = React.useRef(new AgenticConversationViewModelCache());
+  const agenticConversationSubscriptionsRef = React.useRef(
+    new Map<string, { history: MsgHistoryManager; disposable: { dispose(): void } }>(),
+  );
+  const [agenticConversation, setAgenticConversation] = React.useState<AgenticConversationViewModel>();
+  const agenticMessageListRef = React.useRef<AgenticVirtualMessageListHandle>(null);
   const [queuedTurnsExpanded, setQueuedTurnsExpanded] = React.useState(true);
   const mainInputHandleRef = React.useRef<ChatInputHandle | null>(null);
   const queuedEditorHandleRef = React.useRef<ChatInputHandle | null>(null);
@@ -274,6 +295,7 @@ export const AIChatViewACPContent = () => {
       throw new Error('ACP queued turn port is not ready.');
     },
     requestCancellation: async () => undefined,
+    cancelPendingStart: async () => undefined,
     didFinish: () => undefined,
   });
   const queuedTurnRuntime = React.useMemo(() => {
@@ -353,6 +375,12 @@ export const AIChatViewACPContent = () => {
           await activeTurn.observer.outcome;
         }
       },
+      cancelPendingStart: async (sessionId) => {
+        if (!active || sessionId !== undefined) {
+          throw new Error('ACP first-launch cancellation is no longer available.');
+        }
+        await queuedTurnPortCallbacksRef.current.cancelPendingStart(sessionId);
+      },
     };
     queuedTurns = new AcpQueuedTurnModule(port);
     return {
@@ -362,6 +390,9 @@ export const AIChatViewACPContent = () => {
         active = true;
       },
       teardown: () => {
+        if (queuedTurns.snapshot.initialStartPending) {
+          void queuedTurns.cancelInitialStart();
+        }
         active = false;
         generation += 1;
         queuedTurns.deactivate();
@@ -1003,8 +1034,11 @@ export const AIChatViewACPContent = () => {
       try {
         sessionModel = await aiChatService.ensureSessionModel();
       } catch (error) {
-        messageService.error(`Failed to create session. (${getErrorMessage(error)})`);
-        return undefined;
+        const errorName = error instanceof Error ? error.name : undefined;
+        if (errorName !== ACP_THREAD_POOL_SATURATED_ERROR_NAME && errorName !== 'ACP_SESSION_CREATION_CANCELLED') {
+          messageService.error(`Failed to create session. (${getErrorMessage(error)})`);
+        }
+        throw error;
       }
       sessionGuard?.(sessionModel.sessionId);
 
@@ -1057,13 +1091,36 @@ export const AIChatViewACPContent = () => {
       });
 
       sessionGuard?.();
+      let requestAccepted = false;
+      let resolveRequestAccepted!: () => void;
+      const requestAcceptance = new Promise<void>((resolve) => {
+        resolveRequestAccepted = resolve;
+      });
+      let sendResult: Promise<void>;
       try {
-        void Promise.resolve(aiChatService.sendRequest(request)).catch((error) => {
+        sendResult = Promise.resolve(
+          aiChatService.sendRequest(request, false, () => {
+            requestAccepted = true;
+            resolveRequestAccepted();
+          }),
+        );
+        void sendResult.catch((error) => {
           completeResponseWithError(request.response, error);
         });
       } catch (error) {
+        sendResult = Promise.reject(error);
+        void sendResult.catch(() => undefined);
         completeResponseWithError(request.response, error);
       }
+
+      await Promise.race([
+        requestAcceptance,
+        sendResult.then(() => {
+          if (!requestAccepted) {
+            throw new Error(request.response.errorDetails?.message || 'ACP request ended before it was accepted.');
+          }
+        }),
+      ]);
 
       sessionGuard?.();
       const msgId = activeHistory.addAssistantMessage({
@@ -1252,6 +1309,9 @@ export const AIChatViewACPContent = () => {
       }
       await aiChatService.cancelRequest();
     },
+    cancelPendingStart: async () => {
+      await aiChatService.cancelPendingSessionCreation();
+    },
     didFinish: (started) => {
       const activeSessionId = aiChatService.sessionModel?.sessionId;
       if (activeSessionId === undefined || activeSessionId === started.sessionId) {
@@ -1396,15 +1456,152 @@ export const AIChatViewACPContent = () => {
   }, []);
 
   const handleQueuedTurnsResume = React.useCallback(() => {
+    if (queuedTurns.snapshot.pauseError?.name === 'ACP_THREAD_POOL_SATURATED') {
+      const latestDraft = mainInputHandleRef.current?.getDraft?.() || aiChatService.getInputDraft();
+      if (latestDraft) {
+        queuedTurns.replaceFailedStartDraft(latestDraft);
+      }
+    }
     void queuedTurns.resume();
-  }, [queuedTurns]);
+  }, [aiChatService, queuedTurns]);
 
   const handleCloseChatView = React.useCallback(() => {
-    aiChatService.updateInputDraft(chatInputRegistry.preserveActiveDraft() || aiChatService.getInputDraft());
+    const draft = chatInputRegistry.preserveActiveDraft() || aiChatService.getInputDraft();
+    aiChatService.updateInputDraft(draft);
+    if (isAgenticLayout && aiChatService.isActiveAgenticTaskDraft() && hasAcpChatSendPayload(draft || {})) {
+      setDiscardDraftConfirmationVisible(true);
+      return;
+    }
+    if (isAgenticLayout && aiChatService.isActiveAgenticTaskDraft()) {
+      void aiChatService.discardAgenticTaskDraft();
+    }
     panelLayoutService.hideAIChatView();
-  }, [aiChatService, chatInputRegistry, panelLayoutService]);
+  }, [aiChatService, chatInputRegistry, isAgenticLayout, panelLayoutService]);
 
   const HeaderRender: ChatViewHeaderRender = chatRenderRegistry.chatViewHeaderRender || DefaultChatViewHeaderACP;
+
+  const renderAgenticHistoryMessage = React.useCallback(
+    (msg: Readonly<IHistoryChatMessage>) => {
+      const relationId = msg.relationId || msg.id;
+      const visibleAgentId = msg.agentId === ChatProxyService.AGENT_ID ? '' : msg.agentId;
+      if (msg.role === ChatMessageRole.User) {
+        const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
+        return createMessageByUser(
+          {
+            id: msg.id,
+            relationId,
+            text: ChatUserRoleRender ? (
+              <ChatUserRoleRender
+                content={msg.content}
+                images={msg.images}
+                agentId={visibleAgentId}
+                command={msg.agentCommand}
+              />
+            ) : (
+              <CodeBlockWrapperInput
+                labelService={labelService}
+                relationId={relationId}
+                text={msg.content}
+                images={msg.images}
+                agentId={visibleAgentId}
+                command={msg.agentCommand}
+                workspaceService={workspaceService}
+                commandService={commandService}
+              />
+            ),
+          },
+          styles.chat_message_code,
+        );
+      }
+
+      const request = msg.requestId ? aiChatService.sessionModel?.getRequest(msg.requestId) : undefined;
+      if (request) {
+        const commandHandler = msg.agentCommand
+          ? chatFeatureRegistry.getSlashCommandHandler(msg.agentCommand)
+          : undefined;
+        if (msg.agentId === ChatProxyService.AGENT_ID && commandHandler?.providerRender && msg.agentCommand) {
+          return createMessageByAI({
+            id: msg.id,
+            relationId,
+            className: styles.chat_with_more_actions,
+            text: (
+              <SlashCustomRender
+                userMessage={msg.content}
+                startTime={msg.replyStartTime || 0}
+                relationId={relationId}
+                requestId={request.requestId}
+                renderContent={commandHandler.providerRender}
+                command={msg.agentCommand}
+                agentId={msg.agentId}
+              />
+            ),
+          });
+        }
+        return createMessageByAI({
+          id: msg.id,
+          relationId,
+          className: styles.chat_with_more_actions,
+          text: (
+            <ChatReply
+              relationId={relationId}
+              request={request}
+              startTime={msg.replyStartTime || 0}
+              agentId={visibleAgentId}
+              command={msg.agentCommand}
+              onDidChange={() => agenticMessageListRef.current?.maintainBottom()}
+              history={msgHistoryManager!}
+              onRegenerate={() => void aiChatService.sendRequest(request, true)}
+              msgId={msg.id}
+              collapseReasoningByDefault
+            />
+          ),
+        });
+      }
+
+      if (msg.componentId) {
+        return createMessageByAI(
+          {
+            id: msg.id,
+            relationId,
+            text: (
+              <ChatNotify
+                requestId={relationId}
+                chunk={{ kind: 'component', component: msg.componentId, value: msg.componentValue }}
+              />
+            ),
+          },
+          styles.chat_notify,
+        );
+      }
+
+      const ChatAIRoleRender = chatRenderRegistry.chatAIRoleRender;
+      return createMessageByAI({
+        id: msg.id,
+        relationId,
+        className: styles.chat_with_more_actions,
+        text: ChatAIRoleRender ? (
+          <ChatAIRoleRender content={msg.content} />
+        ) : (
+          <ChatMarkdown
+            markdown={msg.content}
+            fillInIncompleteTokens
+            agentId={msg.agentId}
+            command={msg.agentCommand}
+          />
+        ),
+      });
+    },
+    [
+      aiChatService,
+      chatFeatureRegistry,
+      chatRenderRegistry.chatAIRoleRender,
+      chatRenderRegistry.chatUserRoleRender,
+      commandService,
+      labelService,
+      msgHistoryManager,
+      workspaceService,
+    ],
+  );
 
   const recover = React.useCallback(
     async (cancellationToken: CancellationToken) => {
@@ -1461,6 +1658,105 @@ export const AIChatViewACPContent = () => {
   );
 
   const activeServiceSessionId = aiChatService.sessionModel?.sessionId;
+  const pendingAgenticSessionId = aiChatService.getPendingAgenticSessionId();
+  const activeAgenticLiveReadyStatus = aiChatService.getAgenticSessionLiveReadyStatus(activeServiceSessionId);
+  const showAgenticConnectionStatus = isAgenticLayout && (sessionLoading || activeAgenticLiveReadyStatus !== 'ready');
+  const [showDelayedAgenticConnectionStatus, setShowDelayedAgenticConnectionStatus] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!showAgenticConnectionStatus) {
+      setShowDelayedAgenticConnectionStatus(false);
+      return;
+    }
+    if (activeAgenticLiveReadyStatus === 'failed') {
+      setShowDelayedAgenticConnectionStatus(true);
+      return;
+    }
+    const timer = window.setTimeout(() => setShowDelayedAgenticConnectionStatus(true), 500);
+    return () => window.clearTimeout(timer);
+  }, [activeAgenticLiveReadyStatus, showAgenticConnectionStatus]);
+
+  const handleAgenticConnectionRetry = React.useCallback(() => {
+    if (activeServiceSessionId) {
+      void aiChatService.retryAgenticSessionConnection(activeServiceSessionId);
+    }
+  }, [activeServiceSessionId, aiChatService]);
+
+  const syncAgenticConversation = React.useCallback(
+    (sessionId: string, messages: IHistoryChatMessage[]) => {
+      const cache = agenticConversationCacheRef.current;
+      const cached = cache.get(sessionId);
+      const isActive = liveSessionIdRef.current === sessionId;
+      const isPending = aiChatService.getPendingAgenticSessionId() === sessionId;
+      if (!cached && !isActive && !isPending) {
+        return undefined;
+      }
+      const viewModel = updateAgenticConversationViewModel(sessionId, messages, cached);
+      cache.set(viewModel);
+      if (isActive) {
+        setAgenticConversation(viewModel);
+        setHasUserSentMessage(messages.some((message) => message.role === ChatMessageRole.User));
+      }
+      return viewModel;
+    },
+    [aiChatService],
+  );
+
+  React.useEffect(() => {
+    const subscriptions = agenticConversationSubscriptionsRef.current;
+    if (!isAgenticLayout) {
+      subscriptions.forEach(({ disposable }) => disposable.dispose());
+      subscriptions.clear();
+      return;
+    }
+
+    const syncSubscriptions = () => {
+      aiChatService.getSessions().forEach((session) => {
+        const existingSubscription = subscriptions.get(session.sessionId);
+        if (existingSubscription?.history === session.history) {
+          return;
+        }
+        existingSubscription?.disposable.dispose();
+        subscriptions.set(session.sessionId, {
+          history: session.history,
+          disposable: session.history.onMessageChange((messages) => {
+            syncAgenticConversation(session.sessionId, messages);
+          }),
+        });
+      });
+    };
+
+    syncSubscriptions();
+    const sessionDisposable = aiChatService.onSessionModelChange(syncSubscriptions);
+    return () => {
+      sessionDisposable.dispose();
+      subscriptions.forEach(({ disposable }) => disposable.dispose());
+      subscriptions.clear();
+    };
+  }, [aiChatService, isAgenticLayout, syncAgenticConversation]);
+
+  React.useEffect(() => {
+    if (!isAgenticLayout || !activeServiceSessionId || !msgHistoryManager) {
+      setAgenticConversation(undefined);
+      setHasUserSentMessage(false);
+      return;
+    }
+    const cache = agenticConversationCacheRef.current;
+    cache.protect(
+      [activeServiceSessionId, pendingAgenticSessionId].filter((sessionId): sessionId is string => Boolean(sessionId)),
+    );
+    const syncConversation = (messages: IHistoryChatMessage[]) => {
+      syncAgenticConversation(activeServiceSessionId, messages);
+    };
+    const messages = msgHistoryManager.getMessages();
+    const cached = cache.get(activeServiceSessionId);
+    if (cached && isAgenticConversationViewModelCurrent(cached, messages)) {
+      setAgenticConversation(cached);
+      setHasUserSentMessage(cached.messages.some((message) => message.role === ChatMessageRole.User));
+    } else {
+      syncConversation(messages);
+    }
+  }, [activeServiceSessionId, isAgenticLayout, msgHistoryManager, pendingAgenticSessionId, syncAgenticConversation]);
 
   React.useEffect(() => {
     queuedTurns.activate(activeServiceSessionId);
@@ -1472,6 +1768,10 @@ export const AIChatViewACPContent = () => {
   }, [activeServiceSessionId, queuedTurns]);
 
   React.useEffect(() => {
+    if (isAgenticLayout) {
+      setChatLoading(false);
+      return;
+    }
     // 尝试重新渲染历史记录
     clearChatContent();
     setHasUserSentMessage(false);
@@ -1481,7 +1781,7 @@ export const AIChatViewACPContent = () => {
     return () => {
       cancellationTokenSource.cancel();
     };
-  }, [aiChatService.sessionModel, msgHistoryManager, recover]);
+  }, [aiChatService.sessionModel, isAgenticLayout, msgHistoryManager, recover]);
 
   React.useEffect(() => {
     const sessionModel = aiChatService.sessionModel;
@@ -1498,8 +1798,15 @@ export const AIChatViewACPContent = () => {
   }, [aiChatService.sessionModel, setChatLoading]);
 
   const welcomePageRender = chatRenderRegistry.chatWelcomePageRender;
-  const showWelcomePage = !hasUserSentMessage && messageListData.length <= 1 && !!welcomePageRender;
-  const showAgenticTaskEmptyState = showWelcomePage && panelLayoutService.getLayoutMode() === 'agentic';
+  const isAgenticTaskDraft = isAgenticLayout && aiChatService.isActiveAgenticTaskDraft();
+  const visibleMessageCount = isAgenticLayout ? agenticConversation?.messages.length || 0 : messageListData.length;
+  const showWelcomePage =
+    !isAgenticTaskDraft &&
+    !hasUserSentMessage &&
+    visibleMessageCount <= (isAgenticLayout ? 0 : 1) &&
+    !!welcomePageRender;
+  const showAgenticTaskEmptyState = (showWelcomePage || isAgenticTaskDraft) && isAgenticLayout;
+  const showBlockingSessionLoading = sessionLoading && !isAgenticLayout;
   const welcomePage =
     showWelcomePage && welcomePageRender
       ? React.createElement(welcomePageRender, {
@@ -1513,6 +1820,22 @@ export const AIChatViewACPContent = () => {
 
   return (
     <div id={styles.ai_chat_view}>
+      <Modal
+        cancelText={localize('aiNative.chat.agenticTask.draft.keepEditing', 'Keep Editing')}
+        centered
+        okText={localize('aiNative.chat.agenticTask.draft.discard', 'Discard Draft')}
+        onCancel={() => setDiscardDraftConfirmationVisible(false)}
+        onOk={() => {
+          void Promise.resolve(aiChatService.discardAgenticTaskDraft()).then(() => {
+            setDiscardDraftConfirmationVisible(false);
+            panelLayoutService.hideAIChatView();
+          });
+        }}
+        title={localize('aiNative.chat.agenticTask.draft.discardTitle', 'Discard draft?')}
+        visible={discardDraftConfirmationVisible}
+      >
+        {localize('aiNative.chat.agenticTask.draft.discardMessage', 'Your unsent message will be lost.')}
+      </Modal>
       <div className={styles.header_container}>
         <HeaderRender
           handleClear={handleClear}
@@ -1522,9 +1845,13 @@ export const AIChatViewACPContent = () => {
       </div>
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>
-          <AgenticChatPanelHeader preferSessionTitle={true} sessionModel={aiChatService.sessionModel} />
+          <AgenticChatPanelHeader
+            onCloseTaskDraft={handleCloseChatView}
+            preferSessionTitle={true}
+            sessionModel={aiChatService.sessionModel}
+          />
           <div aria-busy={sessionLoading} className={styles.chat_container} ref={containerRef}>
-            {sessionLoading ? (
+            {showBlockingSessionLoading ? (
               <div
                 aria-live='polite'
                 className={styles.loading_container}
@@ -1533,14 +1860,29 @@ export const AIChatViewACPContent = () => {
               >
                 {localize('aiNative.chat.session.loading', 'Loading chat…')}
               </div>
-            ) : showWelcomePage ? (
+            ) : isAgenticTaskDraft || showWelcomePage ? (
               showAgenticTaskEmptyState ? (
                 <div className={styles.agentic_task_empty_layout}>
-                  <div className={styles.agentic_task_empty_content}>{welcomePage}</div>
+                  {isAgenticTaskDraft ? (
+                    <div className={styles.agentic_task_draft_prompt} data-testid='agentic-task-draft-prompt'>
+                      {localize('aiNative.chat.agenticTask.draft.prompt', 'What would you like the Agent to do?')}
+                    </div>
+                  ) : (
+                    <div className={styles.agentic_task_empty_content}>{welcomePage}</div>
+                  )}
                 </div>
               ) : (
                 welcomePage
               )
+            ) : isAgenticLayout && agenticConversation && activeServiceSessionId ? (
+              <AgenticVirtualMessageList
+                key={activeServiceSessionId}
+                ref={agenticMessageListRef}
+                className={styles.message_list}
+                messages={agenticConversation.messages}
+                renderMessage={renderAgenticHistoryMessage}
+                sessionId={activeServiceSessionId}
+              />
             ) : (
               <MessageList
                 className={styles.message_list}
@@ -1565,7 +1907,7 @@ export const AIChatViewACPContent = () => {
             <AcpQueuedTurns
               snapshot={queuedTurnSnapshot}
               expanded={queuedTurnsExpanded}
-              disabled={sessionLoading}
+              disabled={showBlockingSessionLoading}
               capabilities={activeChatInput?.capabilities || []}
               QueuedEditor={activeChatInput?.queuedTurnEditor}
               onToggleExpanded={handleQueuedTurnsToggle}
@@ -1577,6 +1919,12 @@ export const AIChatViewACPContent = () => {
               onDelete={(id) => void handleQueuedTurnDelete(id)}
               onImmediateSend={(id) => void handleQueuedTurnImmediate(id)}
               onEditorReady={handleQueuedEditorReady}
+              onOpenCapacitySettings={() =>
+                void commandService.executeCommand(
+                  COMMON_COMMANDS.OPEN_PREFERENCES.id,
+                  AINativeSettingSectionsId.AcpThreadPoolSize,
+                )
+              }
             />
             <div className={styles.header_operate}>
               {/* 定制需求。不需要透出shortcut*/}
@@ -1613,7 +1961,8 @@ export const AIChatViewACPContent = () => {
               onSend={handleSend}
               initialDraft={aiChatService.getInputDraft()}
               onDraftChange={(draft) => aiChatService.updateInputDraft(draft)}
-              disabled={sessionLoading}
+              disabled={showBlockingSessionLoading}
+              submitDisabled={showAgenticConnectionStatus}
               loading={loading}
               enableOptions={true}
               theme={theme}
@@ -1642,6 +1991,28 @@ export const AIChatViewACPContent = () => {
               onInputHandleReady={handleActiveInputReady}
               placeholder={localize('aiNative.chat.input.placeholder.acp')}
             />
+            {showDelayedAgenticConnectionStatus && (
+              <div
+                aria-live='polite'
+                className={styles.agentic_connection_status}
+                data-testid='acp-live-connecting'
+                role='status'
+              >
+                <span>
+                  {activeAgenticLiveReadyStatus === 'failed'
+                    ? localize('aiNative.chat.session.connectionUnavailable', 'Unable to restore the session.')
+                    : localize(
+                        'aiNative.chat.session.restoringConnection',
+                        'Restoring session. You can send when it is ready.',
+                      )}
+                </span>
+                {activeAgenticLiveReadyStatus === 'failed' && (
+                  <button data-testid='acp-live-connection-retry' onClick={handleAgenticConnectionRetry} type='button'>
+                    {localize('aiNative.chat.acp.capacityRetry', 'Retry')}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

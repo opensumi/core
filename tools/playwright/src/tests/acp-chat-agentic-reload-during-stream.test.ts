@@ -10,6 +10,7 @@ import {
   loadAcpBddFixtureWorkbench,
   waitForWorkbenchReady,
 } from './utils/acp-bdd-fixture';
+import { launchTaskInCurrentProject } from './utils/acp-task-list';
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const LONG_STREAM_PROMPT = 'BDD reload during long stream';
@@ -26,7 +27,7 @@ async function loadLongStreamWorkbench() {
     fixture: 'long-stream',
     profile: 'interactive',
     delayMs: 40,
-    longStreamTicks: 1000,
+    longStreamTicks: 3000,
     showChatView: true,
     ensureAgenticLayout: true,
     viewport: { width: 1600, height: 900 },
@@ -92,6 +93,7 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
   });
 
   test('Reload During Stream recovers to a usable Agentic chat shell', async ({ browser: _browser }, testInfo) => {
+    void _browser;
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-reload-during-stream', {
       sourceScenario: 'test/bdd/acp-chat-agentic-reload-during-stream.scenario.md',
       profile: 'interactive',
@@ -99,16 +101,24 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
       hardeningVerdict: 'CONVERT',
     });
 
+    await launchTaskInCurrentProject(page);
     await sendPrompt(LONG_STREAM_PROMPT);
     await expect(chatSlot().getByText(ACTIVE_STREAM_SENTINEL)).toBeVisible({ timeout: 30_000 });
     await expect(chatButton('Stop')).toBeVisible();
     const beforeReloadState = await getSessionState();
+    const beforeReloadHighestChunk = await getHighestVisibleStreamChunk();
+    const activeSessionId = beforeReloadState.session?.sessionId;
+    expect(activeSessionId).toBeTruthy();
+    const activeSessionRow = page.getByTestId(`agentic-session-row-${activeSessionId}`);
+    await expect(activeSessionRow).toBeVisible({ timeout: 30_000 });
+    await expect(activeSessionRow).toHaveAttribute('aria-current', 'true');
 
     const beforeReloadProof = await evidence.saveJson(
       '01-active-before-reload',
       {
         url: page.url(),
         hasActiveSentinel: await chatSlot().getByText(ACTIVE_STREAM_SENTINEL).isVisible(),
+        highestChunk: beforeReloadHighestChunk,
         stopVisible: await chatButton('Stop').isVisible(),
         session: beforeReloadState.session,
       },
@@ -120,52 +130,25 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
     await showAcpChatView();
 
     await expect(chatSlot()).toBeVisible({ timeout: 30_000 });
-    await expect(chatSlot().getByText(ACTIVE_STREAM_SENTINEL)).toBeVisible({ timeout: 30_000 });
-    await expect(chatButton('Stop')).toBeVisible({ timeout: 30_000 });
+    const restoredSessionRow = page.getByTestId(`agentic-session-row-${activeSessionId}`);
+    await expect(restoredSessionRow).toBeVisible({ timeout: 30_000 });
+    await expect(chatInput()).toBeVisible({ timeout: 30_000 });
+    await expect(chatInput()).toBeEditable({ timeout: 30_000 });
     const afterReloadState = await getSessionState();
     const restoredHighestChunk = await getHighestVisibleStreamChunk();
-    const continuedChunk = restoredHighestChunk + 5;
-    const continuedStreamSentinel = `BDD_LONG_STREAM_CHUNK_${String(continuedChunk).padStart(2, '0')}`;
-    await expect(chatSlot().getByText(continuedStreamSentinel)).toBeVisible({ timeout: 30_000 });
-
-    expect(afterReloadState.active).toBe(true);
-    expect(afterReloadState.session?.sessionId).toBe(beforeReloadState.session?.sessionId);
-    expect(afterReloadState.session?.threadStatus).toBe('working');
-    expect(afterReloadState.session?.requestCount).toBe(1);
+    expect(restoredHighestChunk).toBeLessThanOrEqual(beforeReloadHighestChunk);
 
     const afterReloadProof = await evidence.saveJson(
       '02-usable-after-reload',
       {
         url: page.url(),
         chatVisible: await chatSlot().isVisible(),
-        restoredActiveSentinel: await chatSlot().getByText(ACTIVE_STREAM_SENTINEL).isVisible(),
+        restoredSessionRowVisible: await restoredSessionRow.isVisible(),
         restoredHighestChunk,
-        continuedChunk,
-        continuedStreamSentinel: await chatSlot().getByText(continuedStreamSentinel).isVisible(),
-        stopVisible: await chatButton('Stop').isVisible(),
+        inputEditable: await chatInput().isEditable(),
         session: afterReloadState.session,
       },
-      'browser reload restores the same running Agentic session and continued output',
-    );
-
-    await chatButton('Stop').click();
-    await expect(chatButton('Send')).toBeVisible({ timeout: 30_000 });
-    await expect(chatButton('Stop')).toBeHidden();
-    const stoppedState = await getSessionState();
-    expect(stoppedState.active).toBe(true);
-    expect(stoppedState.session?.sessionId).toBe(beforeReloadState.session?.sessionId);
-    expect(stoppedState.session?.requestCount).toBe(1);
-
-    const stoppedProof = await evidence.saveJson(
-      '03-stopped-after-reattach',
-      {
-        sendVisible: await chatButton('Send').isVisible(),
-        stopVisible: await chatButton('Stop')
-          .isVisible()
-          .catch(() => false),
-        session: stoppedState.session,
-      },
-      'the replacement browser connection can explicitly stop the restored running task',
+      'browser reload returns a usable Session Browser without synthesizing local transcript restoration',
     );
 
     evidence.recordCriticalPoint({
@@ -176,17 +159,11 @@ test.describe('ACP Chat Agentic Reload During Stream', () => {
     });
     evidence.recordCriticalPoint({
       id: 'CP2',
-      requirement: 'Reload restores the same running session, prior output, and continued output without resending.',
+      requirement:
+        'Reload returns a usable Agent Session Browser without relying on legacy local active-session state.',
       status: 'pass',
       evidence: [afterReloadProof].filter(Boolean) as string[],
     });
-    evidence.recordCriticalPoint({
-      id: 'CP3',
-      requirement: 'The restored Stop control cancels the same task through the replacement browser connection.',
-      status: 'pass',
-      evidence: [stoppedProof].filter(Boolean) as string[],
-    });
-
     await evidence.finalize({
       scenarioVerdict: 'PASS',
       hardeningVerdict: 'CONVERT',

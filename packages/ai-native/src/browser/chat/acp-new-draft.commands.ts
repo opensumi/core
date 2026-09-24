@@ -7,5 +7,5 @@ export const AI_CHAT_NEW_CHAT = {
 
 export const AI_CHAT_NEW_TASK = {
   id: 'ai.chat.newTask',
-  label: localize('aiNative.command.newTask', 'Agent: New Task'),
+  label: localize('aiNative.command.newTask', 'Agent: New Session'),
 };

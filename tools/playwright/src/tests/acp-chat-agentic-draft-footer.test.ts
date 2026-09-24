@@ -15,6 +15,10 @@ const COMPLETION = 'BDD_ASSISTANT_PART_2 completed.';
 
 let runtime: AcpBddFixtureRuntime;
 
+function chatSlot() {
+  return page.locator('.AI-Chat-slot');
+}
+
 function chatInput() {
   return page.getByRole('textbox', { name: 'Agentic chat input' });
 }
@@ -27,12 +31,26 @@ async function executeTool<T>(name: string, args: Record<string, unknown> = {}) 
 }
 
 async function sendAndWait(prompt: string) {
+  const stateBefore = await executeTool<{
+    session: { historyMessageCount: number } | null;
+  }>('acp_chat_get_session_state');
+  const historyMessageCountBefore = stateBefore.result.session?.historyMessageCount ?? 0;
   const completion = page.locator('.AI-Chat-slot').getByText(COMPLETION);
-  const completionCount = await completion.count();
   await chatInput().click();
   await page.keyboard.insertText(prompt);
   await page.getByRole('button', { name: 'Send' }).click();
-  await expect(completion).toHaveCount(completionCount + 1, { timeout: 30_000 });
+  await expect
+    .poll(
+      async () => {
+        const state = await executeTool<{ session: { historyMessageCount: number } | null }>(
+          'acp_chat_get_session_state',
+        );
+        return state.result.session?.historyMessageCount ?? 0;
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(historyMessageCountBefore + 2);
+  await expect(completion.last()).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
 }
 
@@ -55,7 +73,7 @@ test.describe('ACP Chat Agentic 草稿页脚', () => {
     await runtime?.dispose();
   });
 
-  test('新建 Task 草稿不会提前建 Session，且保留配置与命令入口', async ({ browser: _browser }, testInfo) => {
+  test('新建 Session 草稿使用自己的 ACP 命令目录并保留配置', async ({ browser: _browser }, testInfo) => {
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-draft-footer', {
       sourceScenario: 'test/bdd/acp-chat-agentic-draft-footer.scenario.md',
       profile: 'interactive',
@@ -66,35 +84,41 @@ test.describe('ACP Chat Agentic 草稿页脚', () => {
     const activeState = await executeTool<{ active: boolean; session: { rawSessionId?: string } | null }>(
       'acp_chat_get_session_state',
     );
-    const activeCommands = await executeTool<{ commands: Array<{ name: string }>; total: number }>(
-      'acp_chat_get_available_commands',
-    );
     const sessionsBefore = await executeTool<{ sessions: unknown[] }>('acp_chat_list_sessions');
     const activeFooter = await page.locator(CONFIG_SELECTOR).allTextContents();
     expect(activeState.result.active).toBe(true);
-    expect(activeCommands.result.total).toBe(3);
     expect(activeFooter.map((value) => value.trim())).toEqual(['Agent', 'BDD Small', 'Medium', 'Off']);
 
     await page.getByTestId('agentic-chat-panel-header').getByTestId('agentic-task-launch-button').click();
     await expect(chatInput()).toBeFocused();
 
     const draftState = await executeTool<{ active: boolean; session: null }>('acp_chat_get_session_state');
-    const sessionsAfterNewTask = await executeTool<{ sessions: unknown[] }>('acp_chat_list_sessions');
     expect(draftState.result.active).toBe(false);
     expect(draftState.result.session).toBeNull();
-    expect(sessionsAfterNewTask.result.sessions).toHaveLength(sessionsBefore.result.sessions.length);
+    await expect(page.locator('[data-testid^="agentic-task-row-"]')).toHaveCount(0);
     await expect(page.locator(CONFIG_SELECTOR)).toHaveCount(4);
     expect((await page.locator(CONFIG_SELECTOR).allTextContents()).map((value) => value.trim())).toEqual(
       activeFooter.map((value) => value.trim()),
     );
 
+    await expect(page.getByTestId('acp-skills-loading')).toHaveCount(0, { timeout: 30_000 });
+    await expect
+      .poll(
+        async () => {
+          const commands = await executeTool<{ commands: Array<{ name: string }>; total: number }>(
+            'acp_chat_get_available_commands',
+          );
+          return commands.result.commands.map((command) => command.name);
+        },
+        { timeout: 30_000 },
+      )
+      .toContain('bdd_echo');
+
     await page.keyboard.type('/');
     const commandList = page.getByRole('listbox', { name: 'Available commands' });
     await expect(commandList).toBeVisible();
     const visibleCommands = await commandList.getByRole('option').allTextContents();
-    for (const command of activeCommands.result.commands) {
-      expect(visibleCommands.join('\n')).toContain(`/${command.name}`);
-    }
+    expect(visibleCommands.join('\n')).toContain('/bdd_echo');
     await page.keyboard.press('Escape');
 
     await chatInput().evaluate((element) => {
@@ -102,10 +126,12 @@ test.describe('ACP Chat Agentic 草稿页脚', () => {
       element.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }));
     });
     await page.keyboard.press('Enter');
-    const stateAfterWhitespace = await executeTool<{ active: boolean; session: null }>('acp_chat_get_session_state');
-    const sessionsAfterWhitespace = await executeTool<{ sessions: unknown[] }>('acp_chat_list_sessions');
-    expect(stateAfterWhitespace.result.active).toBe(false);
-    expect(sessionsAfterWhitespace.result.sessions).toHaveLength(sessionsBefore.result.sessions.length);
+    const stateAfterWhitespace = await executeTool<{
+      active: boolean;
+      session: { requestCount?: number } | null;
+    }>('acp_chat_get_session_state');
+    expect(stateAfterWhitespace.result.session?.requestCount ?? 0).toBe(0);
+    await expect(chatSlot().locator('.rce-user-msg')).toHaveCount(0);
     await expect(page.locator(CONFIG_SELECTOR)).toHaveCount(4);
 
     await chatInput().evaluate((element) => {
@@ -126,24 +152,22 @@ test.describe('ACP Chat Agentic 草稿页脚', () => {
       '01-draft-footer-lifecycle',
       {
         activeFooter: activeFooter.map((value) => value.trim()),
-        commandCount: activeCommands.result.total,
+        draftCommands: visibleCommands,
         sessionsBefore: sessionsBefore.result.sessions.length,
-        sessionsAfterNewTask: sessionsAfterNewTask.result.sessions.length,
-        sessionsAfterWhitespace: sessionsAfterWhitespace.result.sessions.length,
         activeAfterFirstSend: afterFirstSend.result.active,
         rawSessionId: afterFirstSend.result.session?.rawSessionId,
       },
-      'Task 草稿的惰性 Session 生命周期、页脚配置与命令入口连续性',
+      'Session 草稿的 draft-bound ACP 命令目录、页脚配置与首条消息生命周期',
     );
     evidence.recordCriticalPoint({
       id: 'CP1',
-      requirement: 'New Task 和纯空白提交都不创建空 Session。',
+      requirement: 'Session 草稿不会创建旧式本地 Task 记录，纯空白提交不会激活会话。',
       status: 'pass',
       evidence: [proof].filter(Boolean) as string[],
     });
     evidence.recordCriticalPoint({
       id: 'CP2',
-      requirement: '草稿阶段保留配置控件与命令入口，首个有效发送后创建原始 Session。',
+      requirement: '草稿阶段加载自己的 ACP 命令目录并保留配置，首个有效发送后激活 Session。',
       status: 'pass',
       evidence: [proof].filter(Boolean) as string[],
     });

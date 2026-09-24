@@ -131,6 +131,35 @@
           white-space: nowrap;
         }
 
+        .agentic_task_draft_context {
+          flex: 0 1 280px;
+          min-width: 0;
+          overflow: hidden;
+          color: var(--descriptionForeground);
+          font-size: 12px;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .agentic_task_draft_close {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          padding: 0;
+          border: 0;
+          border-radius: 4px;
+          background: transparent;
+          color: var(--descriptionForeground);
+          cursor: pointer;
+
+          &:hover {
+            background: var(--list-hoverBackground);
+            color: var(--foreground);
+          }
+        }
+
         .agentic_chat_panel_actions {
           display: flex;
           flex: 0 0 auto;
@@ -420,6 +449,27 @@
         position: relative;
         background-color: var(--panel-background);
         border-radius: 0 0 0 12px;
+
+        .agentic_connection_status {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 8px;
+          min-height: 20px;
+          margin-top: 6px;
+          color: var(--descriptionForeground);
+          font-size: 12px;
+          line-height: 18px;
+
+          button {
+            padding: 0;
+            border: 0;
+            color: var(--activeLinkForeground);
+            background: transparent;
+            cursor: pointer;
+            font: inherit;
+          }
+        }
 
         .queued_turns {
           display: flex;
@@ -744,7 +794,13 @@
         }
 
         .chat_container {
-          height: auto;
+          flex: 1 1 0;
+          height: 0;
+          overflow: hidden;
+
+          .message_list {
+            height: 100%;
+          }
         }
 
         .agentic_task_empty_layout {
@@ -757,6 +813,18 @@
         .agentic_task_empty_content {
           min-height: 0;
           flex: 1 1 auto;
+        }
+
+        .agentic_task_draft_prompt {
+          display: flex;
+          min-height: 0;
+          flex: 1 1 auto;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+          color: var(--descriptionForeground);
+          font-size: 14px;
+          text-align: center;
         }
 
         .chat_input_wrap {

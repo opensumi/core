@@ -180,7 +180,7 @@ export class ChatManagerService extends Disposable {
     return model.addRequest({ prompt: message, agentId, command, images });
   }
 
-  async sendRequest(sessionId: string, request: ChatRequestModel, regenerate: boolean) {
+  async sendRequest(sessionId: string, request: ChatRequestModel, regenerate: boolean, onRequestAccepted?: () => void) {
     const startTime = Date.now();
     this.logger.log(
       `[ChatManagerService] sendRequest enter — sessionId=${sessionId}, requestId=${request.requestId}, agentId=${
@@ -251,6 +251,10 @@ export class ChatManagerService extends Disposable {
     try {
       const progressCallback = (progress: IChatProgress) => {
         if (token.isCancellationRequested) {
+          return;
+        }
+        if (progress.kind === 'requestAccepted') {
+          onRequestAccepted?.();
           return;
         }
         model.acceptResponseProgress(request, progress);

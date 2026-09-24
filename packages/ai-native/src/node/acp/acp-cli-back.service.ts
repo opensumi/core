@@ -18,6 +18,7 @@ import {
   IChatToolContent,
   ListSessionsResponse,
   McpServer,
+  SessionInfo,
   SessionNotification,
   SetSessionModeRequest,
   ThreadStatus,
@@ -705,6 +706,8 @@ ${input}`;
           ...(update.currentModelId !== undefined ? { currentModelId: update.currentModelId } : {}),
           ...(update.configOptions !== undefined ? { configOptions: update.configOptions } : {}),
           ...(update.availableCommands !== undefined ? { availableCommands: update.availableCommands } : {}),
+          ...(update.title !== undefined ? { title: update.title } : {}),
+          ...(update.updatedAt !== undefined ? { updatedAt: update.updatedAt } : {}),
         } as IChatSessionState;
       case 'tool_call': {
         const toolCall: IChatToolCall = {
@@ -849,6 +852,7 @@ ${input}`;
             models: attachmentUpdate.snapshot.models,
             currentModelId: attachmentUpdate.snapshot.currentModelId,
             configOptions: attachmentUpdate.snapshot.configOptions,
+            availableCommands: attachmentUpdate.snapshot.availableCommands,
           };
           output.emitData(snapshot);
           return;
@@ -897,6 +901,7 @@ ${input}`;
         models: result.models,
         currentModelId: result.currentModelId,
         configOptions: result.configOptions,
+        availableCommands: result.availableCommands,
         threadStatus: result.threadStatus,
         historyUpdates: result.historyUpdates,
       };
@@ -957,10 +962,13 @@ ${input}`;
     return messages;
   }
 
-  async disposeSession(sessionId: string): Promise<void> {
-    await this.cancelSession(sessionId);
+  async disposeSession(sessionId: string, force = false): Promise<void> {
     try {
-      await this.agentService.disposeSession(sessionId);
+      if (force) {
+        await this.agentService.disposeSession(sessionId, true);
+      } else {
+        await this.agentService.disposeSession(sessionId);
+      }
     } catch (error) {
       this.logger.error(`Failed to release terminals for session ${sessionId}:`, error);
     }
@@ -983,9 +991,13 @@ ${input}`;
     }
   }
 
-  async createSession(config: AgentProcessConfig) {
+  async createSession(config: AgentProcessConfig, operationId?: string) {
     this.logger.log('[ACP Back] createSession called');
-    return this.agentService.createSession(config);
+    return operationId ? this.agentService.createSession(config, operationId) : this.agentService.createSession(config);
+  }
+
+  async cancelSessionCreation(operationId: string): Promise<void> {
+    await this.agentService.cancelSessionCreation(operationId);
   }
 
   async warmUpAgentPool(config: AgentProcessConfig): Promise<void> {
@@ -993,9 +1005,41 @@ ${input}`;
     await this.agentService.warmUpAgentPool(config);
   }
 
+  async setAcpStandbyTarget(config?: AgentProcessConfig): Promise<void> {
+    this.logger.log(`[ACP Back] setAcpStandbyTarget called, cwd=${config?.cwd ?? '(cleared)'}`);
+    await this.agentService.setStandbyTarget(config);
+  }
+
   async listSessions(config: AgentProcessConfig): Promise<ListSessionsResponse> {
-    this.logger.log(`[ACP Back] listSessions called, cwd=${config?.cwd}`);
-    return this.agentService.listSessions(config?.cwd ? { cwd: config.cwd } : undefined, config);
+    this.logger.log('[ACP Back] listSessions called');
+    const sessions = new Map<string, SessionInfo>();
+    const seenCursors = new Set<string>();
+    let cursor: string | undefined;
+
+    do {
+      const result = await this.agentService.listSessions(
+        config?.cwd ? { cwd: config.cwd, ...(cursor ? { cursor } : {}) } : cursor ? { cursor } : undefined,
+        config,
+      );
+      for (const session of result.sessions || []) {
+        sessions.set(session.sessionId, session);
+      }
+      if (!result.nextCursor || seenCursors.has(result.nextCursor)) {
+        break;
+      }
+      seenCursors.add(result.nextCursor);
+      cursor = result.nextCursor;
+    } while (cursor);
+
+    return { sessions: Array.from(sessions.values()) };
+  }
+
+  async getSessionCapabilities(config: AgentProcessConfig): Promise<{ close: boolean; delete: boolean }> {
+    return this.agentService.getSessionCapabilities(config);
+  }
+
+  async deleteSession(sessionId: string): Promise<void> {
+    await this.agentService.deleteSession({ sessionId });
   }
 
   async dispose(): Promise<void> {

@@ -127,6 +127,7 @@ export interface MentionInputProps {
   onUserInput?: () => void;
   placeholder?: string;
   disabled?: boolean;
+  submitDisabled?: boolean;
   loading?: boolean;
   onSelectionChange?: (value: string) => void;
   onImageUpload?: (files: File[]) => Promise<void>;
@@ -144,6 +145,7 @@ export interface MentionInputHandle {
   getSerializedContent(): string;
   restoreSerializedContent(content: string): void;
   focus(): void;
+  isFocused(): boolean;
   closeTransientUi(): boolean;
 }
 

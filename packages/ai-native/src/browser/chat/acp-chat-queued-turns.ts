@@ -29,6 +29,7 @@ export interface AcpQueuedTurnPort {
    * when one is available. Rejects only when the session is stale or a still-active response could not be cancelled.
    */
   ensureCurrentCancelled(sessionId: string | undefined): Promise<void>;
+  cancelPendingStart?(sessionId: string | undefined): Promise<void>;
 }
 
 export type QueuePauseReason = 'manual-stop' | 'agent-error' | 'start-failed' | 'cancel-failed';
@@ -39,8 +40,10 @@ export interface AcpQueuedTurnSnapshot {
   entries: readonly QueuedTurn[];
   editingTurnId?: string;
   pauseReason?: QueuePauseReason;
+  pauseError?: { name?: string; message: string; limit?: number };
   canResume: boolean;
   canFastTrack: boolean;
+  initialStartPending: boolean;
 }
 
 export type TurnActionResult =
@@ -55,6 +58,7 @@ export type TurnActionResult =
         | 'stale-session'
         | 'unsupported-capability'
         | 'start-failed'
+        | 'start-cancelled'
         | 'cancel-failed';
     };
 
@@ -69,6 +73,7 @@ export class AcpQueuedTurnModule implements IDisposable {
   private entries: QueuedTurn[] = [];
   private editingTurnId: string | undefined;
   private pauseReason: QueuePauseReason | undefined;
+  private pauseError: { name?: string; message: string; limit?: number } | undefined;
   private reservedTurn: QueuedTurn | undefined;
   private immediateReservation: QueuedTurn | undefined;
   private immediateReservationIndex: number | undefined;
@@ -78,6 +83,8 @@ export class AcpQueuedTurnModule implements IDisposable {
   private intentVersion = 0;
   private activeDelivery: ActiveDelivery | undefined;
   private pendingInitialStart = false;
+  private cancelledInitialStartTurnId: string | undefined;
+  private initialStartCancellation: Promise<TurnActionResult> | undefined;
   private hasPendingActivation = false;
   private pendingActivationId: string | undefined;
 
@@ -96,12 +103,14 @@ export class AcpQueuedTurnModule implements IDisposable {
       entries: [...this.entries],
       editingTurnId: this.editingTurnId,
       pauseReason: this.pauseReason,
+      pauseError: this.pauseError,
       canResume: phase === 'paused' && this.entries.length > 0,
       canFastTrack:
         this.canFastTrack &&
         phase === 'generating' &&
         this.entries.length > 0 &&
         this.entries[0].id !== this.editingTurnId,
+      initialStartPending: this.pendingInitialStart,
     };
   }
 
@@ -132,8 +141,11 @@ export class AcpQueuedTurnModule implements IDisposable {
     this.immediateReservationIndex = undefined;
     this.activeDelivery = undefined;
     this.pauseReason = undefined;
+    this.pauseError = undefined;
     this.canFastTrack = false;
     this.pendingInitialStart = false;
+    this.cancelledInitialStartTurnId = undefined;
+    this.initialStartCancellation = undefined;
     this.hasPendingActivation = false;
     this.pendingActivationId = undefined;
   }
@@ -180,6 +192,7 @@ export class AcpQueuedTurnModule implements IDisposable {
         this.canFastTrack = this.processing === 'auto';
         if (this.processing !== 'paused') {
           this.pauseReason = undefined;
+          this.pauseError = undefined;
         }
         this.fireDidChange();
         return { accepted: true, outcome: 'queued' };
@@ -202,6 +215,7 @@ export class AcpQueuedTurnModule implements IDisposable {
 
       this.processing = 'auto';
       this.pauseReason = undefined;
+      this.pauseError = undefined;
       this.fireDidChange();
       if (this.activeDelivery) {
         return { accepted: true, outcome: 'resumed' };
@@ -215,13 +229,31 @@ export class AcpQueuedTurnModule implements IDisposable {
     });
   }
 
+  replaceFailedStartDraft(draft: AcpTurnDraft): boolean {
+    const failedTurn = this.entries[0];
+    if (
+      this.processing !== 'paused' ||
+      this.pauseReason !== 'start-failed' ||
+      !failedTurn ||
+      !hasAcpChatSendPayload(draft)
+    ) {
+      return false;
+    }
+    this.entries[0] = { ...this.copyDraft(draft), id: failedTurn.id };
+    this.fireDidChange();
+    return true;
+  }
+
   stop(): Promise<TurnActionResult> {
     const epoch = this.sessionEpoch;
     const sessionId = this.activeSessionId;
     const intentVersion = ++this.intentVersion;
     this.processing = 'paused';
     this.pauseReason = 'manual-stop';
+    this.pauseError = undefined;
     this.canFastTrack = false;
+    this.cancelledInitialStartTurnId = undefined;
+    this.initialStartCancellation = undefined;
     this.fireDidChange();
 
     return this.serialize(async () => {
@@ -238,6 +270,7 @@ export class AcpQueuedTurnModule implements IDisposable {
         if (intentVersion === this.intentVersion) {
           this.processing = 'paused';
           this.pauseReason = 'cancel-failed';
+          this.pauseError = undefined;
           this.fireDidChange();
         }
         return { accepted: false, reason: 'cancel-failed' };
@@ -250,11 +283,40 @@ export class AcpQueuedTurnModule implements IDisposable {
       if (intentVersion === this.intentVersion) {
         this.processing = 'paused';
         this.pauseReason = 'manual-stop';
+        this.pauseError = undefined;
         this.canFastTrack = false;
       }
       this.fireDidChange();
       return { accepted: true, outcome: 'stopped' };
     });
+  }
+
+  cancelInitialStart(): Promise<TurnActionResult> {
+    if (!this.pendingInitialStart || !this.reservedTurn || !this.port.cancelPendingStart) {
+      return Promise.resolve({ accepted: false, reason: 'turn-not-found' });
+    }
+    if (this.initialStartCancellation) {
+      return this.initialStartCancellation;
+    }
+
+    this.cancelledInitialStartTurnId = this.reservedTurn.id;
+    this.fireDidChange();
+    const cancellation = this.port
+      .cancelPendingStart(this.activeSessionId)
+      .then(() => this.whenSettled())
+      .then(() => ({ accepted: true, outcome: 'stopped' } as TurnActionResult))
+      .catch(() => {
+        this.cancelledInitialStartTurnId = undefined;
+        this.fireDidChange();
+        return { accepted: false, reason: 'cancel-failed' } as TurnActionResult;
+      })
+      .finally(() => {
+        if (this.initialStartCancellation === cancellation) {
+          this.initialStartCancellation = undefined;
+        }
+      });
+    this.initialStartCancellation = cancellation;
+    return cancellation;
   }
 
   sendImmediately(turnId: string): Promise<TurnActionResult> {
@@ -282,6 +344,7 @@ export class AcpQueuedTurnModule implements IDisposable {
     this.immediateReservationIndex = index;
     this.processing = 'absorbing-cancel';
     this.pauseReason = undefined;
+    this.pauseError = undefined;
     this.canFastTrack = false;
     this.fireDidChange();
 
@@ -435,6 +498,7 @@ export class AcpQueuedTurnModule implements IDisposable {
     this.immediateReservationIndex = undefined;
     this.processing = 'auto';
     this.pauseReason = undefined;
+    this.pauseError = undefined;
     this.canFastTrack = false;
     this.fireDidChange();
   }
@@ -468,7 +532,10 @@ export class AcpQueuedTurnModule implements IDisposable {
     this.immediateReservationIndex = undefined;
     this.activeDelivery = undefined;
     this.pauseReason = undefined;
+    this.pauseError = undefined;
     this.canFastTrack = false;
+    this.cancelledInitialStartTurnId = undefined;
+    this.initialStartCancellation = undefined;
     this.hasPendingActivation = false;
     this.pendingActivationId = undefined;
     this.fireDidChange();
@@ -482,6 +549,7 @@ export class AcpQueuedTurnModule implements IDisposable {
     this.reservedTurn = turn;
     this.processing = 'auto';
     this.pauseReason = undefined;
+    this.pauseError = undefined;
     this.canFastTrack = false;
     this.pendingInitialStart = sessionId === undefined;
     this.fireDidChange();
@@ -489,9 +557,19 @@ export class AcpQueuedTurnModule implements IDisposable {
     let handle: AcpTurnHandle;
     try {
       handle = await this.port.start(sessionId, draft);
-    } catch {
+    } catch (error) {
       const pendingActivationId = this.takePendingActivation();
       this.pendingInitialStart = false;
+
+      if (this.cancelledInitialStartTurnId === turn.id) {
+        this.cancelledInitialStartTurnId = undefined;
+        this.reservedTurn = undefined;
+        this.processing = 'auto';
+        this.pauseReason = undefined;
+        this.pauseError = undefined;
+        this.fireDidChange();
+        return { accepted: false, reason: 'start-cancelled' };
+      }
 
       if (epoch !== this.sessionEpoch) {
         return { accepted: false, reason: 'stale-session' };
@@ -509,6 +587,14 @@ export class AcpQueuedTurnModule implements IDisposable {
       if (intentVersion === this.intentVersion) {
         this.processing = 'paused';
         this.pauseReason = 'start-failed';
+        this.pauseError = {
+          name: error instanceof Error ? error.name : undefined,
+          message: error instanceof Error ? error.message : String(error),
+          limit:
+            error && typeof error === 'object' && typeof (error as { limit?: unknown }).limit === 'number'
+              ? (error as { limit: number }).limit
+              : undefined,
+        };
       }
       this.fireDidChange();
       return { accepted: false, reason: 'start-failed' };

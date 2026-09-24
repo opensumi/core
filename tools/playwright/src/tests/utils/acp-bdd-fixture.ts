@@ -12,8 +12,11 @@ export const ACP_BDD_FIXTURES = [
   'long-stream',
   'permission',
   'send-failure',
+  'service-failure',
+  'model-not-found',
   'create-failure',
   'load-failure',
+  'list-failure',
   'task-session-missing',
   'auth-required',
   'config-failure',
@@ -37,7 +40,9 @@ export interface AcpBddFixtureOptions {
   panelLayout?: AiNativePanelLayout;
   workspaceFiles?: string[];
   delayMs?: number;
+  listDelayMs?: number;
   longStreamTicks?: number;
+  historyMessageCount?: number;
   sessionPrefix?: string;
   agentType?: string;
   showChatView?: boolean;
@@ -187,9 +192,17 @@ export function getMockAcpAgentCommand(options: AcpBddFixtureOptions) {
     args.push(`--delay-ms=${options.delayMs}`);
     env.OPENSUMI_ACP_BDD_DELAY_MS = String(options.delayMs);
   }
+  if (options.listDelayMs !== undefined) {
+    args.push(`--list-delay-ms=${options.listDelayMs}`);
+    env.OPENSUMI_ACP_BDD_LIST_DELAY_MS = String(options.listDelayMs);
+  }
   if (options.longStreamTicks !== undefined) {
     args.push(`--long-stream-ticks=${options.longStreamTicks}`);
     env.OPENSUMI_ACP_BDD_LONG_STREAM_TICKS = String(options.longStreamTicks);
+  }
+  if (options.historyMessageCount !== undefined) {
+    args.push(`--history-message-count=${options.historyMessageCount}`);
+    env.OPENSUMI_ACP_BDD_HISTORY_MESSAGE_COUNT = String(options.historyMessageCount);
   }
   if (options.sessionPrefix) {
     args.push(`--session-prefix=${options.sessionPrefix}`);
@@ -464,7 +477,7 @@ export async function loadAcpBddFixtureWorkbench(
         try {
           try {
             await page.evaluate(async () => {
-              await (window as any).__OPENSUMI_E2E__?.disposeAcpSessions?.();
+              await (window as any).__OPENSUMI_E2E__?.disposeAcpSessions?.([], true);
             });
           } catch {
             // Best-effort: navigation below still terminates WebMCP and RPC.

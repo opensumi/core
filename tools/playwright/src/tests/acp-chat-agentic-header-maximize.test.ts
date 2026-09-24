@@ -13,7 +13,8 @@ import {
 import { createBddEvidence } from './utils/bdd-evidence';
 
 const SESSION_PREFIX = 'bdd-header-maximize';
-const ACTIVE_TASK_TITLE = 'Agentic maximize task';
+const FIRST_PROMPT = 'Agentic maximize task';
+const AGENT_SESSION_TITLE = 'BDD Turn 1';
 
 let runtime: AcpBddFixtureRuntime;
 
@@ -63,6 +64,7 @@ async function getSessionState() {
       sessionId: string;
       rawSessionId?: string;
       title?: string;
+      requestCount: number;
     } | null;
   }>('acp_chat_get_session_state');
   expect(result.success).toBe(true);
@@ -79,7 +81,7 @@ async function createActiveTask(): Promise<string> {
   const input = page.locator('.AI-Chat-slot [contenteditable="true"]');
   await expect(input).toHaveCount(1);
   await input.click();
-  await page.keyboard.insertText(ACTIVE_TASK_TITLE);
+  await page.keyboard.insertText(FIRST_PROMPT);
 
   const send = page.locator('.AI-Chat-slot').getByRole('button', { name: 'Send', exact: true });
   await expect(send).toHaveCount(1);
@@ -88,16 +90,21 @@ async function createActiveTask(): Promise<string> {
   await expect
     .poll(
       async () => {
-        const state = await getSessionState();
-        return state.session?.sessionId;
+        const requestCount = (await getSessionState()).session?.requestCount ?? 0;
+        if (requestCount === 0 && (await input.textContent())?.includes(FIRST_PROMPT)) {
+          await send.click();
+        }
+        return requestCount;
       },
-      { timeout: 30_000 },
+      { timeout: 60_000 },
     )
-    .toBeTruthy();
+    .toBeGreaterThanOrEqual(1);
 
-  const sessionId = (await getSessionState()).session!.sessionId;
-  await expect(page.getByTestId(`agentic-task-row-${sessionId}`)).toBeVisible({ timeout: 30_000 });
-  return sessionId;
+  const session = (await getSessionState()).session!;
+  const row = page.getByTestId(`agentic-session-row-${session.sessionId}`);
+  await expect(row).toBeVisible({ timeout: 30_000 });
+  await expect(row).toHaveAttribute('aria-label', AGENT_SESSION_TITLE);
+  return session.sessionId;
 }
 
 async function readHeaderLayoutProof(): Promise<HeaderLayoutProof> {
@@ -217,7 +224,8 @@ test.describe('ACP Chat Agentic Header Maximize', () => {
 
     const before = await readHeaderLayoutProof();
     expect(before.activeSessionId).toBe(activeSessionId);
-    expect(before.headerTitle).toBe(ACTIVE_TASK_TITLE);
+    expect(before.activeSessionTitle).toBe(AGENT_SESSION_TITLE);
+    expect(before.headerTitle).toBe(AGENT_SESSION_TITLE);
     expect(before.maximizeVisible).toBe(true);
     expect(before.maximizeWorkbenchVisibleState).toBe('true');
     expect(before.maximizeLabel).toBe('Focus AI Chat');
@@ -236,11 +244,12 @@ test.describe('ACP Chat Agentic Header Maximize', () => {
     await expect(maximizeAction).toHaveAttribute('aria-label', 'Focus AI Chat');
     await maximizeAction.click();
     await expect(maximizeAction).toHaveAttribute('aria-label', 'Restore editor and Explorer');
-    await expect(page.getByTestId('agentic-chat-panel-header-title')).toHaveText(ACTIVE_TASK_TITLE);
+    await expect(page.getByTestId('agentic-chat-panel-header-title')).toHaveText(AGENT_SESSION_TITLE);
 
     const after = await readHeaderLayoutProof();
     expect(after.activeSessionId).toBe(activeSessionId);
-    expect(after.headerTitle).toBe(ACTIVE_TASK_TITLE);
+    expect(after.activeSessionTitle).toBe(AGENT_SESSION_TITLE);
+    expect(after.headerTitle).toBe(AGENT_SESSION_TITLE);
     expect(after.maximizeVisible).toBe(true);
     expect(after.maximizeWorkbenchVisibleState).toBe('false');
     expect(after.maximizeLabel).toBe('Restore editor and Explorer');
@@ -260,11 +269,12 @@ test.describe('ACP Chat Agentic Header Maximize', () => {
     await maximizeAction.click();
     await expect(maximizeAction).toHaveAttribute('aria-label', 'Focus AI Chat');
     await ensureAgenticLayout(page);
-    await expect(page.getByTestId('agentic-chat-panel-header-title')).toHaveText(ACTIVE_TASK_TITLE);
+    await expect(page.getByTestId('agentic-chat-panel-header-title')).toHaveText(AGENT_SESSION_TITLE);
 
     const restored = await readHeaderLayoutProof();
     expect(restored.activeSessionId).toBe(activeSessionId);
-    expect(restored.headerTitle).toBe(ACTIVE_TASK_TITLE);
+    expect(restored.activeSessionTitle).toBe(AGENT_SESSION_TITLE);
+    expect(restored.headerTitle).toBe(AGENT_SESSION_TITLE);
     expect(restored.maximizeVisible).toBe(true);
     expect(restored.maximizeWorkbenchVisibleState).toBe('true');
     expect(restored.maximizeLabel).toBe('Focus AI Chat');

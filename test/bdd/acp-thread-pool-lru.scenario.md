@@ -17,7 +17,7 @@
   - A `disconnected` process is not reusable, but its process capacity is reclaimable without deleting the durable ACP Session.
   - An ordinary prompt or Session operation failure does not make a still-connected process reclaimable.
   - A process in `working`, `auth_required`, reserved, warming, pending-load, or undefined `errored` state is protected from automatic reclamation.
-- Startup warmup is a one-shot optimization that prepares at most one ACP process and does not refill a consumed standby process.
+- Agentic Layout declares one latest ACP Standby Target, and the Node service best-effort reconciles at most one compatible unbound standby process within the shared capacity limit.
 - The pool limit is a global ACP process-capacity ceiling shared across Workspace Targets; foreground Session demand has priority over background warmup.
 
 ## When
@@ -87,12 +87,12 @@
 - Part E does not emit `thread-pool-switch` because no active session is evicted.
 - Part F keeps the global process count at or below 1 throughout the race.
 - Part F reserves the warming slot for one foreground owner, waits for A initialization to settle before disposal, then creates the B-configured process and succeeds without `ACP_THREAD_POOL_SATURATED`.
-- Part F does not continuously warm a replacement process after the foreground Session claims capacity.
+- Part F does not create a replacement while the foreground Session consumes the only capacity slot; reconciliation retries only after capacity becomes available.
 - Part G disposes the disconnected process instance and releases its terminal, permission routing, listeners, references, and active node mapping.
 - Part G preserves the durable Session metadata and conversation history, so the Session remains discoverable and can be lazily loaded through a new process.
 - Part G keeps other Session selection available throughout recovery and does not treat an ordinary prompt failure on a connected process as a reason to reclaim it.
 
 ## Pass / Fail Judgment
 
-- **PASS** - ACP warms at most one process, foreground demand safely replaces incompatible warmup without exceeding the global limit, ready Sessions remain LRU-reloadable, disconnected processes release capacity without deleting durable Sessions, reserved operations retain exclusive ownership, and genuine saturation leaves the UI usable with a stable actionable error and safe diagnostics.
+- **PASS** - ACP maintains at most one compatible standby within capacity, foreground demand safely replaces incompatible warmup without exceeding the global limit, ready Sessions remain LRU-reloadable, disconnected processes release capacity without deleting durable Sessions, reserved operations retain exclusive ownership, and genuine saturation leaves the UI usable with a stable actionable error and safe diagnostics.
 - **FAIL** - warmup fills the pool or causes false saturation, foreground demand disposes an initializing process concurrently, a fourth resident process exceeds the configured ceiling, an active working or permission-waiting Session is evicted, a disconnected durable Session is deleted, an evicted Session cannot send after reload, load steals an in-flight create thread, diagnostics leak sensitive runtime configuration, or New Session failure leaves the browser stuck in loading.

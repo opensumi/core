@@ -86,7 +86,7 @@ export class ChatInternalService extends Disposable {
     this._onChangeSession.fire(this._sessionModel.sessionId);
   }
 
-  async clearSessionModel(sessionId?: string) {
+  async clearSessionModel(sessionId?: string, _force = false) {
     sessionId = sessionId || this._sessionModel.sessionId;
     this._onWillClearSession.fire(sessionId);
     this.chatManagerService.clearSession(sessionId);

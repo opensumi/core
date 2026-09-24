@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { getIcon, localize, useInjectable } from '@opensumi/ide-core-browser';
-import { Popover } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 
 import { AIPanelLayoutService } from '../layout/panel-layout.service';
@@ -59,18 +58,16 @@ export const AgenticChatHeaderMaximizeAction = ({ id = 'ai-chat-header-maximize'
   const icon = getIcon(isWorkbenchVisible ? 'fullescreen' : 'unfullscreen');
 
   return (
-    <Popover overlayClassName={styles.popover_icon} id={`${id}-popover`} title={title}>
-      <div id={id} data-workbench-visible={String(isWorkbenchVisible)}>
-        <EnhanceIcon
-          wrapperClassName={styles.action_btn}
-          className={icon}
-          onClick={handleToggleWorkbench}
-          tabIndex={0}
-          role='button'
-          ariaLabel={title}
-          ariaPressed={!isWorkbenchVisible}
-        />
-      </div>
-    </Popover>
+    <div id={id} data-workbench-visible={String(isWorkbenchVisible)}>
+      <EnhanceIcon
+        wrapperClassName={styles.action_btn}
+        className={icon}
+        onClick={handleToggleWorkbench}
+        tabIndex={0}
+        role='button'
+        ariaLabel={title}
+        ariaPressed={!isWorkbenchVisible}
+      />
+    </div>
   );
 };

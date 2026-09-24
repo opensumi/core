@@ -11,6 +11,7 @@ import {
   URI,
 } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
+import { strings } from '@opensumi/ide-utils';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
@@ -93,6 +94,7 @@ function AgenticChatHeaderTaskLauncher({
     const refreshVersion = ++refreshVersionRef.current;
     const currentWorkspace = workspaceService.workspace;
     const latestRequest = sessionModel?.requests?.at(-1);
+    const activeTarget = acpChatService.getActiveAgenticTaskTarget(sessionModel?.sessionId);
     try {
       const workspaceUri = currentWorkspace?.uri ? URI.parse(currentWorkspace.uri) : undefined;
       const currentProject =
@@ -105,20 +107,22 @@ function AgenticChatHeaderTaskLauncher({
               availability: 'available' as const,
             }
           : undefined;
-      const activeTask = sessionModel ? await registry.getTask(sessionModel.sessionId) : undefined;
-      const activeTaskProject = activeTask?.projectId ? await registry.getProject(activeTask.projectId) : undefined;
+      const projects = await registry.listProjects();
+      const activeSessionProject = activeTarget
+        ? projects.find((candidate) => candidate.workspacePath === activeTarget.cwd)
+        : undefined;
       const persistedCurrentProject = currentProject ? await registry.getProject(currentProject.id) : undefined;
       if (refreshVersion !== refreshVersionRef.current) {
         return;
       }
-      setProject(activeTaskProject || persistedCurrentProject || currentProject);
+      setProject(activeSessionProject || persistedCurrentProject || currentProject);
       onExecutionContextChange(
-        activeTaskProject && activeTaskProject.workspacePath !== currentProject?.workspacePath
-          ? activeTaskProject
+        activeSessionProject && activeSessionProject.workspacePath !== currentProject?.workspacePath
+          ? activeSessionProject
           : undefined,
       );
       setPreferredAgentId(
-        activeTask?.agentId ||
+        activeTarget?.agentId ||
           latestRequest?.message.agentId ||
           acpChatService.getActiveAgenticTaskAgentId(sessionModel?.sessionId),
       );
@@ -150,27 +154,41 @@ function AgenticChatHeaderTaskLauncher({
 }
 
 export function AgenticChatPanelHeader({
+  onCloseTaskDraft,
   preferSessionTitle = false,
   sessionModel,
 }: {
+  onCloseTaskDraft?: () => void;
   preferSessionTitle?: boolean;
   sessionModel?: ChatModel;
 }) {
+  const acpChatService = useInjectable<AcpChatInternalService>(IChatInternalService);
+  const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
-  const registry = useInjectable<AgenticTaskRegistryService>(AgenticTaskRegistryService);
   const [panelLayout, setPanelLayout] = React.useState(() => panelLayoutService.getLayoutMode());
   const [title, setTitle] = React.useState(() => getAgenticChatPanelTitle(sessionModel, preferSessionTitle));
   const [executionContext, setExecutionContext] = React.useState<AgenticProjectRecord>();
   const titleRefreshVersionRef = React.useRef(0);
+  const isTaskDraft = acpChatService.isActiveAgenticTaskDraft();
+  const sessionTitle = sessionModel?.title;
+  const draftTarget = acpChatService.getActiveAgenticTaskTarget();
+  const draftAgentId = draftTarget?.agentId;
+  const draftAgentLabel = draftAgentId
+    ? getAvailableAgentConfigs(preferenceService)[draftAgentId]?.description || draftAgentId
+    : '';
+  const draftProjectLabel = draftTarget ? URI.file(draftTarget.cwd).displayName : '';
 
   const refreshTitle = React.useCallback(async () => {
     const refreshVersion = ++titleRefreshVersionRef.current;
-    const task = sessionModel?.sessionId ? await registry.getTask(sessionModel.sessionId) : undefined;
     if (refreshVersion !== titleRefreshVersionRef.current) {
       return;
     }
-    setTitle(task?.title?.slice(0, MAX_TITLE_LENGTH) || getAgenticChatPanelTitle(sessionModel, preferSessionTitle));
-  }, [preferSessionTitle, registry, sessionModel]);
+    setTitle(
+      isTaskDraft
+        ? localize('aiNative.chat.agenticTask.draft.title', 'New Session')
+        : getAgenticChatPanelTitle(sessionModel, preferSessionTitle),
+    );
+  }, [isTaskDraft, preferSessionTitle, sessionModel, sessionTitle]);
 
   React.useEffect(() => {
     setPanelLayout(panelLayoutService.getLayoutMode());
@@ -184,14 +202,12 @@ export function AgenticChatPanelHeader({
   React.useEffect(() => {
     void refreshTitle();
     const messageDisposable = sessionModel?.history.onMessageChange(() => void refreshTitle());
-    const registryDisposable = registry.onDidChange(() => void refreshTitle());
 
     return () => {
       titleRefreshVersionRef.current += 1;
       messageDisposable?.dispose();
-      registryDisposable.dispose();
     };
-  }, [refreshTitle, registry, sessionModel]);
+  }, [refreshTitle, sessionModel]);
 
   if (panelLayout !== 'agentic') {
     return null;
@@ -202,25 +218,41 @@ export function AgenticChatPanelHeader({
       <div className={styles.agentic_chat_panel_title} data-testid='agentic-chat-panel-header-title' title={title}>
         {title}
       </div>
+      {isTaskDraft && (
+        <div className={styles.agentic_task_draft_context} data-testid='agentic-task-draft-context'>
+          {strings.format(localize('aiNative.chat.agenticTask.draft.context', 'Using {0}'), draftAgentLabel)}
+          {draftProjectLabel && ` · ${draftProjectLabel}`}
+        </div>
+      )}
       {executionContext && (
         <div
-          aria-label={localize(
-            'aiNative.chat.agenticTask.workingDirectory',
-            'Agent working directory: {0}',
+          aria-label={strings.format(
+            localize('aiNative.chat.agenticTask.workingDirectory', 'Agent working directory: {0}'),
             executionContext.workspacePath,
           )}
           className={styles.agentic_task_execution_context}
           data-testid='agentic-task-execution-context'
           title={executionContext.workspacePath}
         >
-          {localize(
-            'aiNative.chat.agenticTask.workingDirectory',
-            'Agent working directory: {0}',
+          {strings.format(
+            localize('aiNative.chat.agenticTask.workingDirectory', 'Agent working directory: {0}'),
             getAgenticProjectDisplayLabel(executionContext),
           )}
         </div>
       )}
       <div className={styles.agentic_chat_panel_actions}>
+        {isTaskDraft && onCloseTaskDraft && (
+          <button
+            aria-label={localize('aiNative.operate.close.title', 'Close')}
+            className={styles.agentic_task_draft_close}
+            data-testid='agentic-task-draft-close'
+            onClick={onCloseTaskDraft}
+            title={localize('aiNative.operate.close.title', 'Close')}
+            type='button'
+          >
+            <span aria-hidden='true' className='codicon codicon-close' />
+          </button>
+        )}
         <AgenticChatHeaderTaskLauncher onExecutionContextChange={setExecutionContext} sessionModel={sessionModel} />
         <AgenticChatHeaderMaximizeAction id='agentic-chat-panel-header-maximize' />
       </div>

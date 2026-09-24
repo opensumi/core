@@ -105,10 +105,6 @@ async function sendPermissionPrompt(prompt: string) {
   await page.getByRole('button', { name: 'Send' }).click();
 }
 
-function activeSessionPermissionAttention(sessionId: string) {
-  return page.locator(`[data-testid="agentic-task-attention-acp:${sessionId}"]`);
-}
-
 async function waitForPendingPermission(): Promise<PermissionStateResult> {
   await expect(permissionDialog()).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(PERMISSION_TITLE_SELECTOR)).toBeVisible();
@@ -130,13 +126,9 @@ async function waitForPendingPermission(): Promise<PermissionStateResult> {
   const titleText = (await page.locator(PERMISSION_TITLE_SELECTOR).textContent()) || '';
   expect(titleText.trim().length).toBeGreaterThan(0);
 
-  const attention = activeSessionPermissionAttention(pendingState.result.activeSessionId!);
-  await expect(attention).toBeVisible({ timeout: 10_000 });
-  await expect(attention).toHaveAttribute('data-agentic-task-meta-kind', 'permission');
-  await expect(attention.locator('xpath=ancestor::button')).toHaveAttribute(
-    'aria-label',
-    /Status: Permission required/,
-  );
+  const sessionRow = page.getByTestId(`agentic-session-row-acp:${pendingState.result.activeSessionId}`);
+  await expect(sessionRow).toBeVisible({ timeout: 10_000 });
+  await expect(sessionRow).toHaveAttribute('aria-current', 'true');
 
   return pendingState;
 }
@@ -151,7 +143,7 @@ async function waitForPermissionDismissed(sessionId: string) {
   await expect(chatInput()).toBeEditable({ timeout: 30_000 });
   await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
   await expect.poll(async () => page.title(), { timeout: 10_000 }).not.toMatch(PERMISSION_TAB_TITLE_PREFIX);
-  await expect(activeSessionPermissionAttention(sessionId)).toBeHidden({ timeout: 10_000 });
+  await expect(page.getByTestId(`agentic-session-row-acp:${sessionId}`)).toHaveAttribute('aria-current', 'true');
 }
 
 async function readVisiblePermissionProof() {
@@ -172,8 +164,8 @@ async function readVisiblePermissionProof() {
     tabTitle,
     tabTitlePermissionCount: tabTitleMatch ? Number(tabTitleMatch[1]) : null,
     tabTitleHasPermissionPrefix: Boolean(tabTitleMatch),
-    activeSessionPermissionAttentionVisible: state.result.activeSessionId
-      ? await activeSessionPermissionAttention(state.result.activeSessionId).isVisible()
+    activeSessionRowVisible: state.result.activeSessionId
+      ? await page.getByTestId(`agentic-session-row-acp:${state.result.activeSessionId}`).isVisible()
       : false,
   };
 }
@@ -212,7 +204,7 @@ test.describe('权限对话框确定性可观测性', () => {
       dialogVisible: true,
       titleHasVisibleText: true,
       closeVisible: true,
-      activeSessionPermissionAttentionVisible: true,
+      activeSessionRowVisible: true,
       tabTitleHasPermissionPrefix: true,
       tabTitlePermissionCount: pendingState.result.activeDialogCount,
     });
@@ -298,7 +290,7 @@ test.describe('权限对话框确定性可观测性', () => {
       dialogVisible: true,
       titleHasVisibleText: true,
       rejectVisible: true,
-      activeSessionPermissionAttentionVisible: true,
+      activeSessionRowVisible: true,
       tabTitleHasPermissionPrefix: true,
       tabTitlePermissionCount: pendingState.result.activeDialogCount,
     });

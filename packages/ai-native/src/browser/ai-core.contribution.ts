@@ -28,6 +28,7 @@ import {
   SlotRendererContribution,
   SlotRendererRegistry,
   TabbarBehaviorConfig,
+  fastdom,
   getIcon,
   localize,
   useInjectable,
@@ -1180,8 +1181,15 @@ export class AINativeBrowserContribution
   }
 
   private focusChatInputAfterReveal(): void {
-    this.chatInputRegistry.focusActiveInput();
-    runWhenIdle(() => this.chatInputRegistry.focusActiveInput());
+    const focusActiveInput = (attempt = 0) => {
+      this.chatInputRegistry.focusActiveInput();
+      const focused = this.chatInputRegistry.isActiveInputFocused();
+      if (focused !== false || attempt >= 60) {
+        return;
+      }
+      fastdom.measureAtNextFrame(() => focusActiveInput(attempt + 1));
+    };
+    focusActiveInput();
   }
 
   registerMenus(menus: IMenuRegistry): void {

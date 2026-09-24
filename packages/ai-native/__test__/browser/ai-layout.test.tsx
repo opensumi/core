@@ -201,7 +201,7 @@ describe('AILayout BDD', () => {
     storedLayout = {};
     storedLayouts = {};
     panelLayoutChangeListener = undefined;
-    agenticWorkbenchVisible = false;
+    agenticWorkbenchVisible = true;
     agenticWorkbenchWidthConstrained = false;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1366, writable: true });
     agenticWorkbenchVisibilityListeners.clear();
@@ -325,7 +325,7 @@ describe('AILayout BDD', () => {
     expect(getSplitChildIds('main-horizontal-agentic')).toEqual(['main-vertical-agentic', 'view']);
   });
 
-  it('Given agentic layout, when it renders by default, then AI chat is the only main split child', async () => {
+  it('Given agentic layout, when it renders by default, then AI chat and the workbench are both visible', async () => {
     panelLayoutMode = 'agentic';
     const { AILayout } = await import('../../src/browser/layout/ai-layout');
 
@@ -333,9 +333,9 @@ describe('AILayout BDD', () => {
       root.render(<AILayout />);
     });
 
-    expect(getSlots()).toEqual(['top', 'AI-Chat', 'statusBar']);
-    expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat']);
-    expect(container.querySelector('[data-split="main-horizontal-agentic"]')).toBeFalsy();
+    expect(getSlots()).toEqual(['top', 'AI-Chat', 'main', 'panel', 'view', 'statusBar']);
+    expect(getSplitChildIds('main-horizontal-ai-agentic')).toEqual(['AI-Chat', 'main-horizontal-agentic']);
+    expect(getSplitChildIds('main-horizontal-agentic')).toEqual(['main-vertical-agentic', 'view']);
   });
 
   it('Given agentic workbench is collapsed, when it becomes visible, then the editor and Explorer return', async () => {

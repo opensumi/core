@@ -20,6 +20,8 @@
 7. Cancel the selected command and verify command state is cleared. If the input retains literal user-typed text, record it and clear it before the send check.
 8. Select the command again, type a deterministic prompt, and send it.
 9. Record user row command display, assistant completion, and final input state.
+10. Restore a historical Agent Session through `session/load` and open `/` before and after its `available_commands_update` notification.
+11. Emit a replacement command catalog for the active Session while the picker is open.
 
 ## Then
 
@@ -28,6 +30,9 @@
 - Command selection updates visible input state without sending immediately.
 - Canceling a selected command removes command state and restores normal input behavior; it does not have to delete unrelated literal input text.
 - Sending with a command produces one user row and one assistant response.
+- A restored Session uses only its own cached command catalog; catalogs never leak across Sessions.
+- `available_commands_update` replaces the complete active Session catalog and may update an already open picker without recreating the Session.
+- Opening `/` reads the current cached catalog without waiting for a client-to-Agent refresh request.
 - Command metadata and state tools may expose bounded session title metadata, but do not expose full prompt/message bodies, assistant content, or tool-call results.
 
 ## Live Agent Execution
@@ -37,6 +42,6 @@
 
 ## Pass / Fail Judgment
 
-- **PASS** - slash command discovery, selection, cancellation, send, and metadata parity work in Agentic input.
+- **PASS** - slash command discovery, Session-scoped refresh, restoration, selection, cancellation, send, and metadata parity work in Agentic input.
 - **BLOCKED** - the run lacks interactive profile, the mock ACP agent `stream-rich` command metadata, or stable command picker selectors.
 - **FAIL** - command UI drifts from metadata, the picker or selected command state gets stuck, sends duplicate rows, or leaks content through command tools.

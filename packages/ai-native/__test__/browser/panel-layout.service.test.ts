@@ -252,10 +252,10 @@ describe('AIPanelLayoutService', () => {
     expect(layoutService.toggleSlot).toHaveBeenCalledWith(AI_CHAT_VIEW_ID, true, AI_AGENTIC_CHAT_DEFAULT_SIZE);
   });
 
-  it('should default the agentic workbench to hidden in agentic mode', () => {
+  it('should default the agentic workbench to visible in agentic mode', () => {
     const { service } = createService({ inspectValue: { globalValue: 'agentic' } });
 
-    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+    expect(service.isAgenticWorkbenchVisible()).toBe(true);
   });
 
   it('should not handle agentic workbench visibility outside agentic mode', () => {
@@ -271,13 +271,13 @@ describe('AIPanelLayoutService', () => {
     const listener = jest.fn();
     const disposable = service.onDidChangeAgenticWorkbenchVisibility(listener);
 
-    expect(service.toggleAgenticWorkbenchVisibility()).toBe(true);
-    expect(service.isAgenticWorkbenchVisible()).toBe(true);
-    expect(listener).toHaveBeenCalledWith(true);
-
-    expect(service.toggleAgenticWorkbenchVisibility(false)).toBe(false);
+    expect(service.toggleAgenticWorkbenchVisibility()).toBe(false);
     expect(service.isAgenticWorkbenchVisible()).toBe(false);
     expect(listener).toHaveBeenCalledWith(false);
+
+    expect(service.toggleAgenticWorkbenchVisibility(true)).toBe(true);
+    expect(service.isAgenticWorkbenchVisible()).toBe(true);
+    expect(listener).toHaveBeenCalledWith(true);
 
     disposable.dispose();
   });
@@ -285,7 +285,7 @@ describe('AIPanelLayoutService', () => {
   it('should reveal the agentic workbench only in agentic mode', () => {
     const { service } = createService({ inspectValue: { globalValue: 'agentic' } });
 
-    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+    expect(service.toggleAgenticWorkbenchVisibility(false)).toBe(false);
     expect(service.revealAgenticWorkbench()).toBe(true);
     expect(service.isAgenticWorkbenchVisible()).toBe(true);
   });
@@ -294,7 +294,6 @@ describe('AIPanelLayoutService', () => {
     const { service } = createService({ inspectValue: { globalValue: 'agentic' } });
     const listener = jest.fn();
     service.onDidChangeAgenticWorkbenchVisibility(listener);
-    service.toggleAgenticWorkbenchVisibility(true);
     listener.mockClear();
 
     expect(service.setAgenticWorkbenchWidthConstrained(true)).toBe(false);
@@ -310,6 +309,7 @@ describe('AIPanelLayoutService', () => {
     const { service, workbenchEditorService } = createService({ inspectValue: { globalValue: 'agentic' } });
 
     service.initialize();
+    service.toggleAgenticWorkbenchVisibility(false);
 
     expect(service.isAgenticWorkbenchVisible()).toBe(false);
 
@@ -322,6 +322,7 @@ describe('AIPanelLayoutService', () => {
     const { service, workbenchEditorService } = createService({ inspectValue: { globalValue: 'agentic' } });
 
     service.initialize();
+    service.toggleAgenticWorkbenchVisibility(false);
     await workbenchEditorService.open(new URI('file:///workspace/file.ts'), { backend: true });
 
     expect(service.isAgenticWorkbenchVisible()).toBe(false);
@@ -334,6 +335,7 @@ describe('AIPanelLayoutService', () => {
     });
 
     service.initialize();
+    service.toggleAgenticWorkbenchVisibility(false);
     await workbenchEditorService.open(new URI('file:///workspace/file.ts'), { preview: false });
 
     expect(service.isAgenticWorkbenchVisible()).toBe(false);
@@ -342,13 +344,13 @@ describe('AIPanelLayoutService', () => {
   it('should reset agentic workbench visibility when layout mode changes', async () => {
     const { service } = createService({ inspectValue: { globalValue: 'agentic' } });
 
-    expect(service.toggleAgenticWorkbenchVisibility(true)).toBe(true);
+    expect(service.toggleAgenticWorkbenchVisibility(false)).toBe(false);
 
     await service.setLayoutMode('classic');
     expect(service.isAgenticWorkbenchVisible()).toBeUndefined();
 
     await service.setLayoutMode('agentic');
-    expect(service.isAgenticWorkbenchVisible()).toBe(false);
+    expect(service.isAgenticWorkbenchVisible()).toBe(true);
   });
 
   it('should toggle both layout modes', async () => {

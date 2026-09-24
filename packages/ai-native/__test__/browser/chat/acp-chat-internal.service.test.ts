@@ -79,6 +79,36 @@ describe('AcpChatInternalService', () => {
     expect(modeChanges).toEqual(['code']);
   });
 
+  it('rebinds the active session when an attachment snapshot replaces its model', () => {
+    const service = new AcpChatInternalService() as any;
+    const stateEmitter = new Emitter<any>();
+    const originalModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:sess-1' });
+    const restoredModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:sess-1' });
+    const sessionModelChanges: any[] = [];
+
+    Object.defineProperties(service, {
+      aiNativeConfigService: { value: { capabilities: { supportsAgentMode: true } } },
+      chatManagerService: {
+        value: {
+          onDidApplySessionState: stateEmitter.event,
+          onStorageInit: jest.fn(() => disposable()),
+        },
+      },
+    });
+    service._sessionModel = originalModel;
+    service.onSessionModelChange((sessionModel) => sessionModelChanges.push(sessionModel));
+
+    service.init();
+    stateEmitter.fire({
+      sessionId: originalModel.sessionId,
+      model: restoredModel,
+      modelReplaced: true,
+    });
+
+    expect(service.sessionModel).toBe(restoredModel);
+    expect(sessionModelChanges).toEqual([restoredModel]);
+  });
+
   it('does not treat lightweight Agentic session-list models as live observations on storage init', async () => {
     const service = new AcpChatInternalService() as any;
     const model = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:retained' });
@@ -98,6 +128,7 @@ describe('AcpChatInternalService', () => {
             onStorageInit = listener;
             return disposable();
           }),
+          refreshAgentSessionCatalog: jest.fn().mockResolvedValue([]),
         },
       },
       panelLayoutService: { value: { getLayoutMode: jest.fn(() => 'agentic') } },
@@ -108,6 +139,32 @@ describe('AcpChatInternalService', () => {
 
     expect(service.isAgenticTaskSessionObserved(model.sessionId)).toBe(false);
     expect(registry.updateStatus).not.toHaveBeenCalled();
+  });
+
+  it('returns the refreshed Agent Session snapshot without stale local models in Agentic Layout', async () => {
+    const service = new AcpChatInternalService() as any;
+    const listed = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:listed' });
+    const stale = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:stale' });
+    const chatManagerService = {
+      getAgentSessionCatalog: jest.fn(() => [
+        {
+          sessionId: listed.sessionId,
+          agentSessionId: 'listed',
+          agentId: 'agent-a',
+          cwd: '/work/a',
+        },
+      ]),
+      getSession: jest.fn((sessionId: string) => (sessionId === listed.sessionId ? listed : stale)),
+      getSessions: jest.fn(() => [listed, stale]),
+      refreshAgentSessionCatalog: jest.fn().mockResolvedValue(undefined),
+    };
+    Object.defineProperties(service, {
+      chatManagerService: { value: chatManagerService },
+      panelLayoutService: { value: { getLayoutMode: jest.fn(() => 'agentic') } },
+    });
+
+    await expect(service.getSessionsByAcp()).resolves.toEqual([listed]);
+    expect(chatManagerService.refreshAgentSessionCatalog).toHaveBeenCalledTimes(1);
   });
 
   it('notifies session model listeners for non-mode ACP session state changes', () => {
@@ -214,16 +271,22 @@ describe('AcpChatInternalService', () => {
       const chatManagerService = {
         cancelRequest: jest.fn(),
         clearSession: jest.fn(),
+        disposeSession: jest.fn(() => Promise.resolve()),
         getAvailableCommands: jest.fn(() => [{ name: 'help', description: 'Help' }]),
         getSession: jest.fn(() => model),
         getSessions: jest.fn(() => [model]),
         loadSession: jest.fn(() => Promise.resolve()),
         onDidApplySessionState: stateEmitter.event,
         onStorageInit: jest.fn(() => disposable()),
-        sendRequest: jest.fn(() => Promise.resolve()),
+        refreshAgentSessionCatalog: jest.fn().mockResolvedValue([]),
+        sendRequest: jest.fn((_sessionId, _request, _regenerate, onRequestAccepted?: () => void) => {
+          onRequestAccepted?.();
+          return Promise.resolve();
+        }),
         startSession: jest.fn(() => Promise.resolve(model)),
       };
       const registry = {
+        clearPendingLaunch: jest.fn(),
         clearRememberedActiveTaskSession: jest.fn(),
         consumePendingLaunch: jest.fn(),
         getTask: jest.fn(),
@@ -249,6 +312,11 @@ describe('AcpChatInternalService', () => {
         info: jest.fn(),
       };
       const aiBackService = {
+        cancelSessionCreation: jest.fn(() => Promise.resolve()),
+        closeSession: jest.fn(() => Promise.resolve()),
+        deleteSession: jest.fn(() => Promise.resolve()),
+        getSessionCapabilities: jest.fn(() => Promise.resolve({ close: false, delete: false })),
+        setAcpStandbyTarget: jest.fn(() => Promise.resolve()),
         setSessionConfigOption: jest.fn(() => Promise.resolve()),
         setSessionMode: jest.fn(() => Promise.resolve()),
         setSessionModel: jest.fn(() => Promise.resolve()),
@@ -265,6 +333,15 @@ describe('AcpChatInternalService', () => {
       });
       Object.defineProperty(service, 'aiBackService', {
         value: aiBackService,
+      });
+      Object.defineProperty(service, 'configProvider', {
+        value: {
+          resolveConfigForTarget: jest.fn(async (target) => ({
+            ...target,
+            command: 'agent-cli',
+            args: [],
+          })),
+        },
       });
       Object.defineProperty(service, 'aiNativeConfigService', {
         value: { capabilities: { supportsAgentMode: true } },
@@ -327,124 +404,142 @@ describe('AcpChatInternalService', () => {
       });
     });
 
-    it('creates one bootstrap ACP session and exposes its footer metadata', async () => {
-      const { chatManagerService, model, permissionBridgeService, service } = createService();
+    it('declares only the latest Task Draft standby target after 500 milliseconds', async () => {
+      jest.useFakeTimers();
+      const { aiBackService, service } = createService();
 
-      await expect(service.ensureBootstrapSessionModel()).resolves.toBe(model);
-      await expect(service.ensureBootstrapSessionModel()).resolves.toBe(model);
+      service.enterAgenticTaskDraft({ agentId: 'agent-a', cwd: '/work/a' });
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
+      await jest.advanceTimersByTimeAsync(499);
+      expect(aiBackService.setAcpStandbyTarget).not.toHaveBeenCalled();
 
-      expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
-      expect(permissionBridgeService.setActiveSession).toHaveBeenCalledWith('sess-1');
-      expect(service.sessionModel).toBe(model);
-      expect(service.getAvailableCommands()).toEqual([{ name: 'help', description: 'Help' }]);
-      expect(service.getDraftSessionState()).toEqual({
-        agentModes: model.agentModes,
-        currentModeId: 'code',
-        agentModels: model.agentModels,
-        modelId: 'model-a',
-        configOptions: model.configOptions,
-      });
+      await jest.advanceTimersByTimeAsync(1);
+
+      expect(aiBackService.setAcpStandbyTarget).toHaveBeenCalledTimes(1);
+      expect(aiBackService.setAcpStandbyTarget).toHaveBeenCalledWith(
+        expect.objectContaining({ agentId: 'agent-b', cwd: '/work/b' }),
+      );
+      jest.useRealTimers();
     });
 
-    it('reuses the bootstrap ACP session on first send instead of creating another session', async () => {
-      const { chatManagerService, model, service } = createService();
+    it('does not declare standby capacity after a Task Draft is discarded', async () => {
+      jest.useFakeTimers();
+      const { aiBackService, registry, service } = createService();
 
-      await expect(service.ensureBootstrapSessionModel()).resolves.toBe(model);
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
+      await service.discardAgenticTaskDraft();
+      await jest.advanceTimersByTimeAsync(500);
+
+      expect(aiBackService.setAcpStandbyTarget).not.toHaveBeenCalled();
+      expect(registry.clearPendingLaunch).toHaveBeenCalledTimes(1);
+      jest.useRealTimers();
+    });
+
+    it('flushes the latest Task Draft standby target before foreground session creation', async () => {
+      jest.useFakeTimers();
+      const { aiBackService, chatManagerService, service } = createService();
+
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
+      await service.ensureSessionModel();
+
+      expect(aiBackService.setAcpStandbyTarget).toHaveBeenCalledWith(
+        expect.objectContaining({ agentId: 'agent-b', cwd: '/work/b' }),
+      );
+      expect(aiBackService.setAcpStandbyTarget.mock.invocationCallOrder[0]).toBeLessThan(
+        chatManagerService.startSession.mock.invocationCallOrder[0],
+      );
+      await jest.runOnlyPendingTimersAsync();
+      expect(aiBackService.setAcpStandbyTarget).toHaveBeenCalledTimes(1);
+      jest.useRealTimers();
+    });
+
+    it('does not create an unscoped bootstrap Session outside an explicit Agentic draft', async () => {
+      const { chatManagerService, service } = createService();
+
+      await expect(service.ensureBootstrapSessionModel()).resolves.toBeUndefined();
+
+      expect(chatManagerService.startSession).not.toHaveBeenCalled();
+    });
+
+    it('creates one capability-gated draft-bound Session and exposes its Agent catalog', async () => {
+      const { aiBackService, chatManagerService, model, permissionBridgeService, service } = createService();
+      aiBackService.getSessionCapabilities.mockResolvedValue({ close: true, delete: true });
+
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
+      await expect(service.ensureSessionModel()).resolves.toBe(model);
+
+      expect(aiBackService.getSessionCapabilities).toHaveBeenCalledWith(
+        expect.objectContaining({ agentId: 'agent-b', cwd: '/work/b' }),
+      );
+      expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
+      expect(permissionBridgeService.setActiveSession).toHaveBeenCalledWith('sess-1');
+      expect(service.getAvailableCommands()).toEqual([{ name: 'help', description: 'Help' }]);
+      expect(service.getSkillCatalogState()).toBe('ready');
+      expect(service.getVisibleSessions()).toEqual([model]);
+    });
+
+    it('keeps first-Prompt creation lazy when standard Session closing is unavailable', async () => {
+      const { aiBackService, chatManagerService, model, service } = createService();
+      aiBackService.getSessionCapabilities.mockResolvedValue({ close: false, delete: false });
+
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(chatManagerService.startSession).not.toHaveBeenCalled();
+      expect(service.getSkillCatalogState()).toBe('unavailable');
+      await expect(service.ensureSessionModel()).resolves.toBe(model);
+      expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
+    });
+
+    it('creates a closable draft-bound Session without requiring Session deletion', async () => {
+      const { aiBackService, chatManagerService, model, service } = createService();
+      aiBackService.getSessionCapabilities.mockResolvedValue({ close: true, delete: false });
+
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
       await expect(service.ensureSessionModel()).resolves.toBe(model);
 
       expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
+      expect(service.getSkillCatalogState()).toBe('ready');
+      await service.discardAgenticTaskDraft();
+      expect(aiBackService.closeSession).toHaveBeenCalledWith('sess-1');
+      expect(aiBackService.deleteSession).not.toHaveBeenCalled();
     });
 
-    it('registers a default bootstrap Task with the resolved ACP Agent identity', async () => {
-      const { model, registry, service } = createService({ agentId: 'claude-agent-acp', cwd: '/work/a' });
+    it('closes and deletes only its unprompted draft-bound Session on discard', async () => {
+      const { aiBackService, chatManagerService, model, service } = createService();
+      aiBackService.getSessionCapabilities.mockResolvedValue({ close: true, delete: true });
 
-      await service.ensureBootstrapSessionModel();
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
+      await service.ensureSessionModel();
+      await service.discardAgenticTaskDraft();
+
+      expect(aiBackService.closeSession).toHaveBeenCalledWith('sess-1');
+      expect(aiBackService.deleteSession).toHaveBeenCalledWith('sess-1');
+      expect(chatManagerService.disposeSession).toHaveBeenCalledWith(model.sessionId);
+      expect(service.sessionModel).toBeUndefined();
+    });
+
+    it('retains a draft-bound Session after its first Prompt is rejected so the draft can retry', async () => {
+      const { aiBackService, chatManagerService, model, service } = createService();
+      aiBackService.getSessionCapabilities.mockResolvedValue({ close: true, delete: true });
+      chatManagerService.sendRequest.mockResolvedValue(undefined);
+
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
+      await service.ensureSessionModel();
       const request = model.addRequest({
-        prompt: 'Recover this Task later',
-        agentId: 'Default_Chat_Agent',
+        prompt: 'Try again',
+        agentId: 'agent-b',
         command: '',
         images: [],
       });
 
       await service.sendRequest(request);
 
-      expect(registry.registerFirstPrompt).toHaveBeenCalledWith(
-        expect.objectContaining({
-          sessionId: model.sessionId,
-          agentId: 'claude-agent-acp',
-        }),
-      );
-    });
-
-    it('hides an unused bootstrap session from visible history until it receives user content', async () => {
-      const { model, service } = createService();
-
-      await service.ensureBootstrapSessionModel();
-
-      expect(service.getSessions()).toEqual([model]);
-      expect(service.getVisibleSessions()).toEqual([]);
-
-      model.history.addUserMessage({
-        content: 'hello',
-        agentId: 'default-agent',
-        agentCommand: '',
-        images: [],
-        relationId: 'request-1',
-      });
-
-      expect(service.getVisibleSessions()).toEqual([model]);
-    });
-
-    it('keeps an unused bootstrap session active when starting a new chat', async () => {
-      const { chatManagerService, model, permissionBridgeService, service } = createService();
-
-      await service.ensureBootstrapSessionModel();
-      permissionBridgeService.setActiveSession.mockClear();
-
-      service.enterDraftSession();
-
+      expect(aiBackService.closeSession).not.toHaveBeenCalled();
+      expect(aiBackService.deleteSession).not.toHaveBeenCalled();
+      expect(chatManagerService.disposeSession).not.toHaveBeenCalled();
       expect(service.sessionModel).toBe(model);
-      expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
-      expect(permissionBridgeService.setActiveSession).not.toHaveBeenCalledWith(undefined);
-    });
-
-    it('keeps later new chat lazy after the bootstrap session has been used', async () => {
-      const { chatManagerService, model, registry, service } = createService();
-      const nextModel = new ChatModel(new ChatFeatureRegistry(), {
-        sessionId: 'acp:sess-2',
-      });
-      chatManagerService.startSession.mockReset();
-      chatManagerService.startSession.mockResolvedValueOnce(model).mockResolvedValueOnce(nextModel);
-
-      await service.ensureBootstrapSessionModel();
-      model.history.addUserMessage({
-        content: 'hello',
-        agentId: 'default-agent',
-        agentCommand: '',
-        images: [],
-        relationId: 'request-1',
-      });
-
-      service.enterDraftSession();
-
-      expect(registry.clearRememberedActiveTaskSession).toHaveBeenCalledWith(model.sessionId);
-      expect(service.sessionModel).toBeUndefined();
-      expect(chatManagerService.startSession).toHaveBeenCalledTimes(1);
-
-      await expect(service.ensureSessionModel()).resolves.toBe(nextModel);
-      expect(chatManagerService.startSession).toHaveBeenCalledTimes(2);
-    });
-
-    it('does not block first-send lazy session creation when bootstrap creation fails', async () => {
-      const { chatManagerService, model, service } = createService();
-      chatManagerService.startSession.mockReset();
-      chatManagerService.startSession.mockRejectedValueOnce(new Error('session/new failed'));
-      chatManagerService.startSession.mockResolvedValueOnce(model);
-
-      await expect(service.ensureBootstrapSessionModel()).resolves.toBeUndefined();
-      await expect(service.ensureSessionModel()).resolves.toBe(model);
-
-      expect(chatManagerService.startSession).toHaveBeenCalledTimes(2);
     });
 
     it('creates the ACP session only when ensuring from draft', async () => {
@@ -496,15 +591,21 @@ describe('AcpChatInternalService', () => {
       service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
       await service.ensureSessionModel();
 
-      expect(chatManagerService.startSession).toHaveBeenCalledWith({
-        acpTarget: { agentId: 'agent-b', cwd: '/work/b' },
-      });
+      expect(chatManagerService.startSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          acpTarget: { agentId: 'agent-b', cwd: '/work/b' },
+          operationId: expect.stringMatching(/^acp-launch-/),
+        }),
+      );
       expect(service.sessionModel).toBe(model);
       expect(preferenceService.set).not.toHaveBeenCalled();
     });
 
-    it('stores the selected ACP Agent instead of the chat-agent message identity for a new Task', async () => {
-      const { model, registry, service } = createService({ agentId: 'claude-agent-acp', cwd: '/work/a' });
+    it('uses the selected ACP target when registering the Project without creating a local Task', async () => {
+      const { chatManagerService, model, registry, service } = createService({
+        agentId: 'claude-agent-acp',
+        cwd: '/work/a',
+      });
       service.enterAgenticTaskDraft({ agentId: 'claude-agent-acp', cwd: '/work/a' });
       await service.ensureSessionModel();
       const request = model.addRequest({
@@ -516,37 +617,75 @@ describe('AcpChatInternalService', () => {
 
       await service.sendRequest(request);
 
-      expect(registry.registerFirstPrompt).toHaveBeenCalledWith(
-        expect.objectContaining({
-          sessionId: 'acp:sess-1',
-          agentId: 'claude-agent-acp',
-        }),
-      );
-      expect(registry.rememberActiveTaskSession).toHaveBeenCalledWith(model.sessionId);
+      expect(registry.registerProject).toHaveBeenCalledWith(expect.objectContaining({ workspacePath: '/work/a' }));
+      expect(registry.registerFirstPrompt).not.toHaveBeenCalled();
+      expect(registry.rememberActiveTaskSession).not.toHaveBeenCalled();
+      expect(chatManagerService.refreshAgentSessionCatalog).toHaveBeenCalledTimes(1);
     });
 
-    it('remembers the activated Agentic Task as the reload target', async () => {
+    it('does not persist an activated Agent session as a legacy Task reload target', async () => {
       const { model, registry, service } = createService();
       registry.getTask.mockResolvedValue({ sessionId: model.sessionId });
 
       await expect(service.activateAgenticTaskSession(model.sessionId)).resolves.toEqual({ status: 'activated' });
 
-      expect(registry.rememberActiveTaskSession).toHaveBeenCalledWith(model.sessionId);
+      expect(registry.rememberActiveTaskSession).not.toHaveBeenCalled();
     });
 
-    it('uses pending Project and Agent metadata when the active chat service creates the Task session', async () => {
+    it('commits an Agentic transcript before Live Ready and keeps submission loading active', async () => {
+      const { chatManagerService, model, service } = createService();
+      const loadingChanges: boolean[] = [];
+      let resolveLiveReady!: (status: 'ready') => void;
+      const liveReady = new Promise<'ready'>((resolve) => {
+        resolveLiveReady = resolve;
+      });
+      chatManagerService.loadSession.mockResolvedValue({ liveReady });
+      service.onSessionLoadingChange((loading) => loadingChanges.push(loading));
+
+      await expect(service.activateAgenticTaskSession(model.sessionId)).resolves.toEqual({ status: 'activated' });
+
+      expect(service.sessionModel).toBe(model);
+      expect(service.isSessionLoading).toBe(true);
+      expect(service.getAgenticSessionLiveReadyStatus(model.sessionId)).toBe('pending');
+      expect(loadingChanges).toEqual([true]);
+
+      resolveLiveReady('ready');
+      await liveReady;
+      await Promise.resolve();
+
+      expect(service.isSessionLoading).toBe(false);
+      expect(service.getAgenticSessionLiveReadyStatus(model.sessionId)).toBe('ready');
+      expect(loadingChanges).toEqual([true, false]);
+    });
+
+    it('keeps a Transcript Ready Agentic session unsendable when Live Ready fails', async () => {
+      const { chatManagerService, model, service } = createService();
+      chatManagerService.loadSession.mockResolvedValue({ liveReady: Promise.resolve('failed') });
+
+      await expect(service.activateAgenticTaskSession(model.sessionId)).resolves.toEqual({ status: 'activated' });
+      await Promise.resolve();
+
+      expect(service.isSessionLoading).toBe(false);
+      expect(service.getAgenticSessionLiveReadyStatus(model.sessionId)).toBe('failed');
+    });
+
+    it('does not use a legacy persisted Task Draft when creating a Session', async () => {
       const { chatManagerService, registry, service } = createService();
       registry.consumePendingLaunch.mockReturnValue({ projectId: 'project-b', agentId: 'agent-b' });
       registry.getProject.mockResolvedValue({ id: 'project-b', workspacePath: '/work/b' });
 
       await service.ensureSessionModel();
 
-      expect(chatManagerService.startSession).toHaveBeenCalledWith({
-        acpTarget: { agentId: 'agent-b', cwd: '/work/b' },
-      });
+      expect(chatManagerService.startSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          acpTarget: undefined,
+          operationId: expect.stringMatching(/^acp-launch-/),
+        }),
+      );
+      expect(registry.consumePendingLaunch).not.toHaveBeenCalled();
     });
 
-    it('registers the first accepted Agentic prompt and marks background Agent content unread', async () => {
+    it('refreshes Agent sessions after the first accepted prompt without writing unread Task metadata', async () => {
       const { chatManagerService, model, registry, service } = createService();
       const backgroundModel = new ChatModel(new ChatFeatureRegistry(), {
         sessionId: 'acp:background',
@@ -566,17 +705,13 @@ describe('AcpChatInternalService', () => {
 
       await service.sendRequest(request);
 
-      expect(registry.registerFirstPrompt).toHaveBeenCalledWith(
-        expect.objectContaining({
-          sessionId: 'acp:sess-1',
-          agentId: 'agent-b',
-          firstPrompt: 'Fix list\nprivate text',
-        }),
-      );
+      expect(registry.registerProject).toHaveBeenCalledWith(expect.objectContaining({ workspacePath: '/work/a' }));
+      expect(registry.registerFirstPrompt).not.toHaveBeenCalled();
+      expect(chatManagerService.refreshAgentSessionCatalog).toHaveBeenCalledTimes(1);
 
       backgroundModel.history.addAssistantMessage({ content: 'background reply' });
 
-      expect(registry.markUnread).toHaveBeenCalledWith('acp:background', true);
+      expect(registry.markUnread).not.toHaveBeenCalled();
     });
 
     it('completes an unfinished response when sendRequest rejects before ACP request handling starts', async () => {
@@ -617,7 +752,7 @@ describe('AcpChatInternalService', () => {
       expect(request.response.isComplete).toBe(true);
     });
 
-    it('completes and resolves a synchronous ACP request failure after Agentic Task persistence', async () => {
+    it('does not persist an Agentic Task when request kickoff fails before acceptance', async () => {
       const { chatManagerService, model, registry, service } = createService();
       service._sessionModel = model;
       const error = new Error('request kickoff threw');
@@ -633,268 +768,17 @@ describe('AcpChatInternalService', () => {
 
       await expect(service.sendRequest(request)).resolves.toBeUndefined();
 
-      expect(registry.registerFirstPrompt).toHaveBeenCalledTimes(1);
+      expect(registry.registerFirstPrompt).not.toHaveBeenCalled();
+      expect(chatManagerService.disposeSession).toHaveBeenCalledWith(model.sessionId);
+      expect(service.sessionModel).toBeUndefined();
       expect(request.response.errorDetails).toEqual({ message: error.message });
       expect(request.response.isComplete).toBe(true);
     });
 
-    it('shares first Agentic Task persistence and preserves concurrent send kickoff order', async () => {
-      const { chatManagerService, model, registry, service } = createService();
-      let resolveRegistration!: () => void;
-      let notifyRegistrationStarted!: () => void;
-      const registrationStarted = new Promise<void>((resolve) => {
-        notifyRegistrationStarted = resolve;
-      });
-      registry.registerFirstPrompt.mockImplementation(
-        () =>
-          new Promise<void>((resolve) => {
-            if (!resolveRegistration) {
-              resolveRegistration = resolve;
-              notifyRegistrationStarted();
-              return;
-            }
-            resolve();
-          }),
-      );
-      service._sessionModel = model;
-      const firstRequest = model.addRequest({
-        prompt: 'First queued send',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-      const secondRequest = model.addRequest({
-        prompt: 'Second queued send',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-
-      const firstSend = service.sendRequest(firstRequest);
-      await registrationStarted;
-      const secondSend = service.sendRequest(secondRequest);
-
-      expect(registry.registerFirstPrompt).toHaveBeenCalledTimes(1);
-      expect(chatManagerService.sendRequest).not.toHaveBeenCalled();
-
-      resolveRegistration();
-      await Promise.all([firstSend, secondSend]);
-
-      expect(registry.registerFirstPrompt).toHaveBeenCalledTimes(1);
-      expect(chatManagerService.sendRequest.mock.calls.map(([, request]) => request.requestId)).toEqual([
-        firstRequest.requestId,
-        secondRequest.requestId,
-      ]);
-    });
-
-    it('does not start a request after disposal while first Agentic Task persistence is pending', async () => {
-      const { chatManagerService, model, registry, service } = createService();
-      let resolveRegistration!: () => void;
-      let notifyRegistrationStarted!: () => void;
-      const registrationStarted = new Promise<void>((resolve) => {
-        notifyRegistrationStarted = resolve;
-      });
-      registry.registerFirstPrompt.mockImplementationOnce(
-        () =>
-          new Promise<void>((resolve) => {
-            resolveRegistration = resolve;
-            notifyRegistrationStarted();
-          }),
-      );
-      service._sessionModel = model;
-      const request = model.addRequest({
-        prompt: 'Do not send after disposal',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-
-      const send = service.sendRequest(request);
-      await registrationStarted;
-      service.dispose();
-      resolveRegistration();
-
-      await expect(send).resolves.toBeUndefined();
-
-      expect(chatManagerService.sendRequest).not.toHaveBeenCalled();
-      expect(request.response.errorDetails).toEqual({
-        message: 'ACP chat service was disposed before request kickoff.',
-      });
-      expect(request.response.isComplete).toBe(true);
-    });
-
-    it('does not start a request canceled while first Agentic Task persistence is pending', async () => {
-      const { chatManagerService, model, registry, service } = createService();
-      let resolveRegistration!: () => void;
-      let notifyRegistrationStarted!: () => void;
-      const registrationStarted = new Promise<void>((resolve) => {
-        notifyRegistrationStarted = resolve;
-      });
-      registry.registerFirstPrompt.mockImplementationOnce(
-        () =>
-          new Promise<void>((resolve) => {
-            resolveRegistration = resolve;
-            notifyRegistrationStarted();
-          }),
-      );
-      service._sessionModel = model;
-      const request = model.addRequest({
-        prompt: 'Cancel before request kickoff',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-
-      const send = service.sendRequest(request);
-      await registrationStarted;
-      service.cancelRequest();
-      resolveRegistration();
-
-      await expect(send).resolves.toBeUndefined();
-
-      expect(chatManagerService.cancelRequest).toHaveBeenCalledWith(model.sessionId);
-      expect(chatManagerService.sendRequest).not.toHaveBeenCalled();
-      expect(request.response.isComplete).toBe(true);
-    });
-
-    it('keeps an existing Agentic persistence barrier after switching to Classic layout', async () => {
-      const { chatManagerService, model, registry, service } = createService();
-      let resolveRegistration!: () => void;
-      let notifyRegistrationStarted!: () => void;
-      const registrationStarted = new Promise<void>((resolve) => {
-        notifyRegistrationStarted = resolve;
-      });
-      registry.registerFirstPrompt.mockImplementationOnce(
-        () =>
-          new Promise<void>((resolve) => {
-            resolveRegistration = resolve;
-            notifyRegistrationStarted();
-          }),
-      );
-      service._sessionModel = model;
-      const firstRequest = model.addRequest({
-        prompt: 'Agentic send before layout switch',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-      const secondRequest = model.addRequest({
-        prompt: 'Classic send after layout switch',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-
-      const firstSend = service.sendRequest(firstRequest);
-      await registrationStarted;
-      service.panelLayoutService.getLayoutMode.mockReturnValue('classic');
-      const secondSend = service.sendRequest(secondRequest);
-
-      expect(chatManagerService.sendRequest).not.toHaveBeenCalled();
-
-      resolveRegistration();
-      await Promise.all([firstSend, secondSend]);
-
-      expect(chatManagerService.sendRequest.mock.calls.map(([, request]) => request.requestId)).toEqual([
-        firstRequest.requestId,
-        secondRequest.requestId,
-      ]);
-    });
-
-    it('delivers a request through its captured session when the active session changes during persistence', async () => {
-      const { chatManagerService, model, registry, service } = createService();
-      let resolveRegistration!: () => void;
-      let notifyRegistrationStarted!: () => void;
-      const registrationStarted = new Promise<void>((resolve) => {
-        notifyRegistrationStarted = resolve;
-      });
-      registry.registerFirstPrompt.mockImplementationOnce(
-        () =>
-          new Promise<void>((resolve) => {
-            resolveRegistration = resolve;
-            notifyRegistrationStarted();
-          }),
-      );
-      service._sessionModel = model;
-      const request = model.addRequest({
-        prompt: 'Stay with the original session',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-      const send = service.sendRequest(request);
-      await registrationStarted;
-      service._sessionModel = new ChatModel(new ChatFeatureRegistry(), {
-        sessionId: 'acp:sess-2',
-        acpTarget: { agentId: 'agent-b', cwd: '/work/a' },
-      });
-
-      resolveRegistration();
-      await send;
-
-      expect(chatManagerService.sendRequest).toHaveBeenCalledWith(model.sessionId, request, false);
-    });
-
-    it('waits for the first Agentic Task persistence before starting the ACP request stream', async () => {
-      const { chatManagerService, model, registry, service } = createService();
-      let resolveRegistration!: () => void;
-      let notifyRegistrationStarted!: () => void;
-      const registrationStarted = new Promise<void>((resolve) => {
-        notifyRegistrationStarted = resolve;
-      });
-      registry.registerFirstPrompt.mockImplementationOnce(
-        () =>
-          new Promise<void>((resolve) => {
-            resolveRegistration = resolve;
-            notifyRegistrationStarted();
-          }),
-      );
-      service._sessionModel = model;
-      const request = model.addRequest({
-        prompt: 'Persist before streaming',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-
-      const send = service.sendRequest(request);
-      await registrationStarted;
-
-      expect(chatManagerService.sendRequest).not.toHaveBeenCalled();
-
-      resolveRegistration();
-      await send;
-
-      expect(chatManagerService.sendRequest).toHaveBeenCalledTimes(1);
-    });
-
-    it('logs first Agentic Task persistence failures and still starts the ACP request stream', async () => {
-      const { chatManagerService, model, registry, service } = createService();
-      const error = new Error('task persistence failed');
-      registry.registerFirstPrompt.mockRejectedValueOnce(error);
-      service._sessionModel = model;
-      const request = model.addRequest({
-        prompt: 'Continue despite persistence failure',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-
-      await expect(service.sendRequest(request)).resolves.toBeUndefined();
-
-      expect(service.logger.error).toHaveBeenCalledWith(
-        expect.stringContaining(`register Agentic task failed — sessionId=${model.sessionId}`),
-      );
-      expect(service.logger.error).toHaveBeenCalledWith(expect.stringContaining(`error=${error.message}`));
-      expect(chatManagerService.sendRequest).toHaveBeenCalledTimes(1);
-    });
-
-    it('seeds the registered Task status from the model current ACP thread status', async () => {
+    it('does not write legacy Task status, unread, attention, or active-session metadata', async () => {
       const { model, registry, service } = createService();
-      service._sessionModel = model;
-      model.setThreadStatus('working');
       const request = model.addRequest({
-        prompt: 'Fix list',
+        prompt: 'Agent-owned session',
         agentId: 'agent-b',
         command: '',
         images: [],
@@ -902,143 +786,11 @@ describe('AcpChatInternalService', () => {
 
       await service.sendRequest(request);
 
-      expect(registry.updateStatus).toHaveBeenCalledWith('acp:sess-1', 'running');
-    });
-
-    it('records the active session before waiting for a long-running first prompt', () => {
-      const { chatManagerService, model, registry, service } = createService();
-      let resolveSend!: () => void;
-      chatManagerService.sendRequest.mockReturnValue(
-        new Promise<void>((resolve) => {
-          resolveSend = resolve;
-        }),
-      );
-      service._sessionModel = model;
-      const request = model.addRequest({
-        prompt: 'Long task',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-
-      const send = service.sendRequest(request);
-
-      expect(registry.rememberActiveTaskSession).toHaveBeenCalledWith(model.sessionId);
-      resolveSend();
-      return send;
-    });
-
-    it('首个 Agentic 请求等待权限时应先注册任务并显示权限关注状态', async () => {
-      const { chatManagerService, model, permissionRequestEmitter, registry, service } = createService();
-      let resolveSend!: () => void;
-      let notifySendStarted!: () => void;
-      const sendStarted = new Promise<void>((resolve) => {
-        notifySendStarted = resolve;
-      });
-      chatManagerService.sendRequest.mockImplementationOnce(() => {
-        notifySendStarted();
-        return new Promise<void>((resolve) => {
-          resolveSend = resolve;
-        });
-      });
-      service._sessionModel = model;
-      const request = model.addRequest({
-        prompt: 'Permission task',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-
-      const send = service.sendRequest(request);
-      await sendStarted;
-
-      expect(registry.registerFirstPrompt).toHaveBeenCalledWith(
-        expect.objectContaining({ sessionId: model.sessionId, firstPrompt: 'Permission task' }),
-      );
-      permissionRequestEmitter.fire({ requestId: 'permission-1', sessionId: 'sess-1' });
-      expect(registry.updateAttention).toHaveBeenCalledWith(model.sessionId, 'permission');
-
-      resolveSend();
-      await send;
-    });
-
-    it('does not infer input attention from a generic background assistant component', async () => {
-      const { chatManagerService, model, registry, service } = createService();
-      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), {
-        sessionId: 'acp:background',
-        acpTarget: { agentId: 'agent-b', cwd: '/work/a' },
-      });
-      chatManagerService.getSessions.mockReturnValue([model, backgroundModel]);
-      registry.getTask.mockImplementation((sessionId: string) =>
-        Promise.resolve(sessionId === 'acp:background' ? { sessionId } : undefined),
-      );
-      service._sessionModel = model;
-      const request = model.addRequest({
-        prompt: 'Fix list',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-
-      await service.sendRequest(request);
-      backgroundModel.history.addAssistantMessage({ content: 'rendered component', type: 'component' });
-
-      expect(registry.markUnread).toHaveBeenCalledWith('acp:background', true);
-      expect(registry.updateAttention).not.toHaveBeenCalledWith('acp:background', 'input');
-    });
-
-    it('maps ACP thread statuses and background permission attention only for registered Agentic Tasks', async () => {
-      const { chatManagerService, model, permissionRequestEmitter, registry, service } = createService();
-      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), {
-        sessionId: 'acp:background',
-        acpTarget: { agentId: 'agent-b', cwd: '/work/a' },
-      });
-      chatManagerService.getSessions.mockReturnValue([model, backgroundModel]);
-      registry.getTask.mockImplementation((sessionId: string) =>
-        Promise.resolve(sessionId === 'acp:background' ? { sessionId } : undefined),
-      );
-      service._sessionModel = model;
-      const request = model.addRequest({
-        prompt: 'Fix list',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-      await service.sendRequest(request);
-
-      backgroundModel.setThreadStatus('working');
-      permissionRequestEmitter.fire({ sessionId: 'background' });
-
-      expect(registry.updateStatus).toHaveBeenCalledWith('acp:background', 'running');
-      expect(registry.updateAttention).toHaveBeenCalledWith('acp:background', 'permission');
-      expect(registry.markUnread).toHaveBeenCalledWith('acp:background', true);
-    });
-
-    it('clears background permission attention when the ACP permission request resolves', async () => {
-      const { chatManagerService, model, permissionRequestEmitter, permissionResultEmitter, registry, service } =
-        createService();
-      const backgroundModel = new ChatModel(new ChatFeatureRegistry(), {
-        sessionId: 'acp:background',
-        acpTarget: { agentId: 'agent-b', cwd: '/work/a' },
-      });
-      chatManagerService.getSessions.mockReturnValue([model, backgroundModel]);
-      registry.getTask.mockImplementation((sessionId: string) =>
-        Promise.resolve(sessionId === 'acp:background' ? { sessionId } : undefined),
-      );
-      service._sessionModel = model;
-      const request = model.addRequest({
-        prompt: 'Fix list',
-        agentId: 'agent-b',
-        command: '',
-        images: [],
-      });
-      await service.sendRequest(request);
-
-      permissionRequestEmitter.fire({ requestId: 'permission-1', sessionId: 'background' });
-      permissionResultEmitter.fire({ requestId: 'permission-1', decision: { type: 'allow' } });
-
-      expect(registry.updateAttention).toHaveBeenNthCalledWith(1, 'acp:background', 'permission');
-      expect(registry.updateAttention).toHaveBeenLastCalledWith('acp:background', undefined);
+      expect(registry.registerFirstPrompt).not.toHaveBeenCalled();
+      expect(registry.rememberActiveTaskSession).not.toHaveBeenCalled();
+      expect(registry.updateStatus).not.toHaveBeenCalled();
+      expect(registry.updateAttention).not.toHaveBeenCalled();
+      expect(registry.markUnread).not.toHaveBeenCalled();
     });
 
     it('reuses the in-flight ACP session creation request', async () => {
@@ -1095,7 +847,71 @@ describe('AcpChatInternalService', () => {
       expect(loadingChanges).toEqual([true, false]);
     });
 
-    it('enters draft and preserves ACP footer state for the next input', () => {
+    it('cancels a pending first-launch Session and ignores a late successful result', async () => {
+      const { aiBackService, chatManagerService, model, service } = createService();
+      let resolveStartSession!: (model: ChatModel) => void;
+      chatManagerService.startSession.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveStartSession = resolve;
+          }),
+      );
+
+      const creation = service.ensureSessionModel();
+      await Promise.resolve();
+      const cancellation = service.cancelPendingSessionCreation();
+
+      expect(aiBackService.cancelSessionCreation).toHaveBeenCalledWith(expect.stringMatching(/^acp-launch-/));
+      resolveStartSession(model);
+      await cancellation;
+
+      await expect(creation).rejects.toMatchObject({ name: 'ACP_SESSION_CREATION_CANCELLED' });
+      expect(chatManagerService.disposeSession).toHaveBeenCalledWith(model.sessionId);
+      expect(service.sessionModel).toBeUndefined();
+    });
+
+    it('invalidates a pending draft capability lookup before Session acquisition', async () => {
+      const { aiBackService, chatManagerService, registry, service } = createService();
+      let resolveCapabilities!: (value: { close: boolean; delete: boolean }) => void;
+      aiBackService.getSessionCapabilities.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveCapabilities = resolve;
+          }),
+      );
+
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/b' });
+      await Promise.resolve();
+      const discard = service.discardAgenticTaskDraft();
+      resolveCapabilities({ close: true, delete: true });
+      await discard;
+      await Promise.resolve();
+
+      expect(chatManagerService.startSession).not.toHaveBeenCalled();
+      expect(registry.clearPendingLaunch).toHaveBeenCalledTimes(1);
+      expect(service.sessionModel).toBeUndefined();
+    });
+
+    it('releases a temporary first-launch Session when cancellation wins before request acceptance', async () => {
+      const { chatManagerService, model, service } = createService();
+      service._sessionModel = model;
+
+      await service.cancelPendingSessionCreation();
+
+      expect(chatManagerService.cancelRequest).toHaveBeenCalledWith(model.sessionId);
+      expect(chatManagerService.disposeSession).toHaveBeenCalledWith(model.sessionId);
+      expect(service.sessionModel).toBeUndefined();
+    });
+
+    it('keeps the remembered active Task when entering draft before a Session is established', () => {
+      const { registry, service } = createService();
+
+      service.enterDraftSession({ force: true });
+
+      expect(registry.clearRememberedActiveTaskSession).not.toHaveBeenCalled();
+    });
+
+    it('enters draft without retaining the previous session slash commands', () => {
       const { model, permissionBridgeService, service } = createService();
       const sessionModelChanges: any[] = [];
       const availableCommandsChanges: any[] = [];
@@ -1119,10 +935,10 @@ describe('AcpChatInternalService', () => {
         modelId: 'model-a',
         configOptions: model.configOptions,
       });
-      expect(service.getAvailableCommands()).toEqual([{ name: 'help', description: 'Help' }]);
+      expect(service.getAvailableCommands()).toEqual([]);
       expect(permissionBridgeService.setActiveSession).toHaveBeenCalledWith(undefined);
       expect(sessionModelChanges).toEqual([undefined]);
-      expect(availableCommandsChanges).toEqual([]);
+      expect(availableCommandsChanges).toEqual([[]]);
       expect(modeChanges).toEqual(['']);
       expect(sessionChanges).toEqual(['']);
     });
@@ -1149,7 +965,7 @@ describe('AcpChatInternalService', () => {
 
       await service.clearSessionModel();
 
-      expect(chatManagerService.clearSession).toHaveBeenCalledWith('acp:sess-1');
+      expect(chatManagerService.disposeSession).toHaveBeenCalledWith('acp:sess-1');
       expect(chatManagerService.startSession).not.toHaveBeenCalled();
       expect(permissionBridgeService.clearSessionDialogs).toHaveBeenCalledWith('sess-1');
       expect(service.sessionModel).toBeUndefined();
@@ -1167,18 +983,13 @@ describe('AcpChatInternalService', () => {
       expect(service.sessionModel).toBeUndefined();
     });
 
-    it('registers an Agentic draft first prompt under its target Project instead of the IDE workspace', async () => {
-      const { model, registry, service } = createService({ agentId: 'agent-b', cwd: '/work/other' });
+    it('registers an Agentic draft target Project instead of the IDE workspace', async () => {
+      const { chatManagerService, model, registry, service } = createService({
+        agentId: 'agent-b',
+        cwd: '/work/other',
+      });
 
-      await service.registerFirstAgenticPrompt(
-        {
-          message: {
-            agentId: 'agent-b',
-            prompt: 'Work in the other Project',
-          },
-        },
-        model.sessionId,
-      );
+      await service.refreshCatalogAfterFirstAgenticPrompt(model.sessionId);
 
       expect(registry.registerProject).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1186,12 +997,8 @@ describe('AcpChatInternalService', () => {
           workspaceUri: URI.file('/work/other').toString(),
         }),
       );
-      expect(registry.registerFirstPrompt).toHaveBeenCalledWith(
-        expect.objectContaining({
-          agentId: 'agent-b',
-          project: expect.objectContaining({ workspacePath: '/work/other' }),
-        }),
-      );
+      expect(registry.registerFirstPrompt).not.toHaveBeenCalled();
+      expect(chatManagerService.refreshAgentSessionCatalog).toHaveBeenCalledTimes(1);
     });
 
     it('falls back to draft when loading an ACP session fails', async () => {
@@ -1258,7 +1065,7 @@ describe('AcpChatInternalService', () => {
       );
     });
 
-    it('validates an Agentic Task session for archive without changing the Active Session', async () => {
+    it('validates an Agent session without changing the Active Session or recording Task metadata', async () => {
       const { chatManagerService, model: currentModel, registry, service } = createService();
       const validatedModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:validated' });
       validatedModel.setThreadStatus('working');
@@ -1275,7 +1082,7 @@ describe('AcpChatInternalService', () => {
 
       expect(service.sessionModel).toBe(currentModel);
       expect(registry.rememberActiveTaskSession).not.toHaveBeenCalledWith(validatedModel.sessionId);
-      expect(service.isAgenticTaskSessionObserved(validatedModel.sessionId)).toBe(true);
+      expect(service.isAgenticTaskSessionObserved(validatedModel.sessionId)).toBe(false);
     });
 
     it('activates only the latest overlapping Agentic Task selection', async () => {
@@ -1305,6 +1112,7 @@ describe('AcpChatInternalService', () => {
       resolveFirst();
 
       await expect(firstActivation).resolves.toEqual({ status: 'superseded' });
+      expect(chatManagerService.disposeSession).toHaveBeenCalledWith('acp:first');
       expect(service.sessionModel?.sessionId).toBe('acp:second');
       expect(loadingChanges).toEqual([true, false]);
       expect(service.isSessionLoading).toBe(false);
@@ -1341,82 +1149,9 @@ describe('AcpChatInternalService', () => {
       await firstActivation;
 
       expect(service.sessionModel).toBe(secondModel);
+      expect(chatManagerService.disposeSession).toHaveBeenCalledWith('acp:first');
       expect(loadingChanges).toEqual([true, false]);
       expect(service.isSessionLoading).toBe(false);
-    });
-
-    it('does not publish an ordinary session selection invalidated while its task lookup is pending', async () => {
-      const { chatManagerService, permissionBridgeService, registry, service } = createService();
-      const firstModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:first' });
-      const secondModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:second' });
-      let resolveFirstTask!: () => void;
-      let signalFirstTaskLookup!: () => void;
-      const firstTask = new Promise<void>((resolve) => (resolveFirstTask = resolve));
-      const firstTaskLookup = new Promise<void>((resolve) => (signalFirstTaskLookup = resolve));
-      const sessionChanges: string[] = [];
-      chatManagerService.getSession.mockImplementation((id: string) => {
-        if (id === 'acp:first') {
-          return firstModel;
-        }
-        return id === 'acp:second' ? secondModel : undefined;
-      });
-      registry.getTask.mockImplementation((sessionId: string) => {
-        if (sessionId === 'acp:first') {
-          signalFirstTaskLookup();
-          return firstTask;
-        }
-        return Promise.resolve(undefined);
-      });
-      service.onChangeSession((sessionId: string) => sessionChanges.push(sessionId));
-      permissionBridgeService.setActiveSession.mockClear();
-
-      const firstActivation = service.activateSession('acp:first');
-      await firstTaskLookup;
-      await service.activateSession('acp:second');
-      resolveFirstTask();
-      await firstActivation;
-
-      expect(service.sessionModel).toBe(secondModel);
-      expect(permissionBridgeService.setActiveSession).toHaveBeenCalledTimes(1);
-      expect(permissionBridgeService.setActiveSession).toHaveBeenCalledWith('second');
-      expect(sessionChanges).toEqual(['acp:second']);
-    });
-
-    it('does not publish a stale Task selection after its task lookup overlaps a newer selection', async () => {
-      const { chatManagerService, permissionBridgeService, registry, service } = createService();
-      const firstModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:first' });
-      const secondModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:second' });
-      let resolveFirstTask!: () => void;
-      let signalFirstTaskLookup!: () => void;
-      const firstTask = new Promise<void>((resolve) => (resolveFirstTask = resolve));
-      const firstTaskLookup = new Promise<void>((resolve) => (signalFirstTaskLookup = resolve));
-      const sessionChanges: string[] = [];
-      chatManagerService.getSession.mockImplementation((id: string) => {
-        if (id === 'acp:first') {
-          return firstModel;
-        }
-        return id === 'acp:second' ? secondModel : undefined;
-      });
-      registry.getTask.mockImplementation((sessionId: string) => {
-        if (sessionId === 'acp:first') {
-          signalFirstTaskLookup();
-          return firstTask;
-        }
-        return Promise.resolve(undefined);
-      });
-      service.onChangeSession((sessionId: string) => sessionChanges.push(sessionId));
-      permissionBridgeService.setActiveSession.mockClear();
-
-      const firstActivation = service.activateAgenticTaskSession('acp:first');
-      await firstTaskLookup;
-      await expect(service.activateAgenticTaskSession('acp:second')).resolves.toEqual({ status: 'activated' });
-      resolveFirstTask();
-
-      await expect(firstActivation).resolves.toEqual({ status: 'superseded' });
-      expect(service.sessionModel).toBe(secondModel);
-      expect(permissionBridgeService.setActiveSession).toHaveBeenCalledTimes(1);
-      expect(permissionBridgeService.setActiveSession).toHaveBeenCalledWith('second');
-      expect(sessionChanges).toEqual(['acp:second']);
     });
 
     it('does not publish a Task selection invalidated by a newer Task action', async () => {
@@ -1437,6 +1172,26 @@ describe('AcpChatInternalService', () => {
 
       await expect(activation).resolves.toEqual({ status: 'superseded' });
       expect(service.sessionModel).toBe(currentModel);
+      expect(chatManagerService.disposeSession).toHaveBeenCalledWith('acp:selected');
+    });
+
+    it('releases a validation load superseded after it settles', async () => {
+      const { chatManagerService, service } = createService();
+      const selectedModel = new ChatModel(new ChatFeatureRegistry(), { sessionId: 'acp:selected' });
+      let resolveLoad!: () => void;
+      const load = new Promise<void>((resolve) => {
+        resolveLoad = resolve;
+      });
+      let shouldApply = true;
+      chatManagerService.loadSession.mockReturnValue(load);
+      chatManagerService.getSession.mockReturnValue(selectedModel);
+
+      const validation = service.validateAgenticTaskSession('acp:selected', () => shouldApply);
+      shouldApply = false;
+      resolveLoad();
+
+      await expect(validation).resolves.toEqual({ status: 'superseded' });
+      expect(chatManagerService.disposeSession).toHaveBeenCalledWith('acp:selected');
     });
   });
 

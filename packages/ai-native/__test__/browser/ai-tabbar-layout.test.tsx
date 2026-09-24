@@ -237,7 +237,7 @@ describe('AI tabbar layout BDD', () => {
     expect(mockTabbarServiceFactory).not.toHaveBeenCalledWith('extendView');
   });
 
-  it('Given agentic layout, when rendering side entries, then it allows only Explorer and SCM', async () => {
+  it('Given agentic layout, when rendering side entries, then it allows all view containers', async () => {
     panelLayoutMode = 'agentic';
     mockViewTabbarService.visibleContainers = [
       {
@@ -272,10 +272,7 @@ describe('AI tabbar layout BDD', () => {
       root.render(<AILeftTabRenderer className='slot-class' components={[]} />);
     });
 
-    const containerFilter = mockCapturedLeftTabbarProps.tabbarViewProps.containerFilter;
-    expect(
-      mockViewTabbarService.visibleContainers.filter(containerFilter).map((container) => container.options.containerId),
-    ).toEqual(['explorer', 'scm']);
+    expect(mockCapturedLeftTabbarProps.tabbarViewProps).toBeUndefined();
     expect(mockCapturedLeftTabbarProps.renderOtherVisibleContainers).toBeUndefined();
   });
 

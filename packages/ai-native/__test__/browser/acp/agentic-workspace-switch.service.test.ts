@@ -59,6 +59,7 @@ describe('AgenticWorkspaceSwitchService', () => {
       ),
       activateSession: jest.fn().mockResolvedValue(undefined),
       enterAgenticTaskDraft: jest.fn(),
+      getActiveAgenticTaskTarget: jest.fn(),
       getActiveAgenticTaskAgentId: jest.fn(),
       getObservedAgenticTaskStatus: jest.fn(),
       isAgenticTaskSessionObserved: jest.fn(() => false),
@@ -79,11 +80,13 @@ describe('AgenticWorkspaceSwitchService', () => {
     registry = {
       archive: jest.fn().mockResolvedValue(true),
       archiveUnavailable: jest.fn().mockResolvedValue(true),
+      clearRememberedActiveTaskSession: jest.fn(),
       consumePendingActivation: jest.fn(),
       consumePendingLaunch: jest.fn(),
       getRememberedActiveTaskSession: jest.fn(),
       getProject: jest.fn(),
       getTask: jest.fn(),
+      listProjects: jest.fn().mockResolvedValue([]),
       markProjectAvailability: jest.fn().mockResolvedValue(undefined),
       markUnread: jest.fn().mockResolvedValue(undefined),
       rememberProjectAgent: jest.fn().mockResolvedValue(undefined),
@@ -257,30 +260,27 @@ describe('AgenticWorkspaceSwitchService', () => {
     await expect(switcher.launchTask(projectB, 'agent-b')).resolves.toBe(true);
 
     expect(aiChatService.enterAgenticTaskDraft).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
-    expect(registry.preparePendingLaunch).toHaveBeenCalledWith({ projectId: projectB.id, agentId: 'agent-b' });
+    expect(registry.preparePendingLaunch).not.toHaveBeenCalled();
     expect(windowService.openWorkspace).not.toHaveBeenCalled();
     expect(dialogService.warning).not.toHaveBeenCalled();
     expect(workspaceService.open).not.toHaveBeenCalled();
   });
 
-  it('resolves Header Task Launch from the selected Task Project and Project Agent Recall', async () => {
+  it('resolves Header Session Launch from the selected Session target and Project Agent Recall', async () => {
     aiChatService.sessionModel = {
       sessionId: 'acp:b',
       requests: [{ message: { agentId: 'agent-a' } }],
     };
-    registry.getTask.mockResolvedValue(taskFor('/work/b'));
-    registry.getProject.mockImplementation((projectId: string) => {
-      if (projectId === projectB.id) {
-        return Promise.resolve({ ...projectB, lastAgentId: 'agent-b' });
-      }
-      return Promise.resolve(undefined);
-    });
+    aiChatService.getActiveAgenticTaskTarget.mockReturnValue({ agentId: 'agent-b', cwd: '/work/b' });
+    registry.listProjects.mockResolvedValue([{ ...projectB, lastAgentId: 'agent-b' }]);
+    registry.getProject.mockResolvedValue(undefined);
 
     await expect(switcher.resolveHeaderTaskLaunchContext()).resolves.toMatchObject({
       project: { id: projectB.id },
       preferredAgentId: 'agent-b',
       executionContext: { id: projectB.id },
     });
+    expect(registry.getTask).not.toHaveBeenCalled();
   });
 
   it('single-flights Task Launch and publishes its pending state', async () => {
@@ -305,12 +305,11 @@ describe('AgenticWorkspaceSwitchService', () => {
     expect(pendingStates).toEqual([true, false]);
   });
 
-  it('rejects Header Task Launch when the selected Workspace Target is unavailable', async () => {
+  it('rejects Header Session Launch when the selected Workspace Target is unavailable', async () => {
     aiChatService.sessionModel = { sessionId: 'acp:b', requests: [] };
-    registry.getTask.mockResolvedValue(taskFor('/work/b'));
-    registry.getProject.mockImplementation((projectId: string) =>
-      Promise.resolve(projectId === projectB.id ? { ...projectB, availability: 'unavailable' } : projectA),
-    );
+    aiChatService.getActiveAgenticTaskTarget.mockReturnValue({ agentId: 'agent-b', cwd: '/work/b' });
+    registry.listProjects.mockResolvedValue([{ ...projectB, availability: 'unavailable' }]);
+    registry.getProject.mockResolvedValue(projectA);
 
     await expect(switcher.launchHeaderTask()).resolves.toEqual({ status: 'project-unavailable' });
     expect(aiChatService.enterAgenticTaskDraft).not.toHaveBeenCalled();
@@ -326,12 +325,12 @@ describe('AgenticWorkspaceSwitchService', () => {
     expect(aiChatService.enterAgenticTaskDraft).not.toHaveBeenCalled();
   });
 
-  it('preserves the active conversation when Header Task Launch fails', async () => {
+  it('does not let legacy Agent-recall storage affect Header Session Launch', async () => {
     registry.getProject.mockResolvedValue(projectA);
     registry.rememberProjectAgent.mockRejectedValue(new Error('storage failed'));
 
-    await expect(switcher.launchHeaderTask('agent-a')).resolves.toEqual({ status: 'failed' });
-    expect(aiChatService.enterAgenticTaskDraft).not.toHaveBeenCalled();
+    await expect(switcher.launchHeaderTask('agent-a')).resolves.toEqual({ status: 'launched' });
+    expect(aiChatService.enterAgenticTaskDraft).toHaveBeenCalledWith({ agentId: 'agent-a', cwd: '/work/a' });
   });
 
   it('creates a target draft immediately in the current Project', async () => {
@@ -340,7 +339,7 @@ describe('AgenticWorkspaceSwitchService', () => {
     await switcher.launchTask(projectA, 'agent-a');
 
     expect(aiChatService.enterAgenticTaskDraft).toHaveBeenCalledWith({ agentId: 'agent-a', cwd: '/work/a' });
-    expect(registry.preparePendingLaunch).toHaveBeenCalledWith({ projectId: projectA.id, agentId: 'agent-a' });
+    expect(registry.preparePendingLaunch).not.toHaveBeenCalled();
     expect(workspaceService.open).not.toHaveBeenCalled();
   });
 
@@ -355,12 +354,12 @@ describe('AgenticWorkspaceSwitchService', () => {
     expect(windowService.openWorkspace).not.toHaveBeenCalled();
   });
 
-  it('remembers the Agent after launching a registered Project', async () => {
+  it('does not persist an Agent choice when launching a registered Project', async () => {
     registry.getProject.mockResolvedValue(projectA);
 
     await switcher.launchTask(projectA, 'agent-a');
 
-    expect(registry.rememberProjectAgent).toHaveBeenCalledWith(projectA.id, 'agent-a');
+    expect(registry.rememberProjectAgent).not.toHaveBeenCalled();
   });
 
   it('does not switch to a forged Project that is absent from the registry', async () => {
@@ -399,48 +398,19 @@ describe('AgenticWorkspaceSwitchService', () => {
     expect(workspaceService.open).not.toHaveBeenCalled();
   });
 
-  it('restores a legacy pending Task activation before consuming a pending launch', async () => {
+  it('does not read or mutate legacy Task restoration state', async () => {
     registry.consumePendingActivation.mockReturnValue({ sessionId: 'acp:a' });
-    registry.getTask.mockResolvedValue(taskFor('/work/a'));
-    registry.getProject.mockResolvedValue(projectA);
-
-    await switcher.restorePendingWork();
-
-    expect(aiChatService.activateAgenticTaskSession).toHaveBeenCalledWith('acp:a', expect.any(Function));
-    expect(registry.markUnread).toHaveBeenCalledWith('acp:a', false);
-    expect(registry.consumePendingLaunch).not.toHaveBeenCalled();
-  });
-
-  it('consumes a pending launch only after no activation is available', async () => {
-    registry.getRememberedActiveTaskSession.mockReturnValue({ sessionId: 'acp:a' });
     registry.consumePendingLaunch.mockReturnValue({ projectId: projectB.id, agentId: 'agent-b' });
-    registry.getProject.mockResolvedValue(projectB);
-
-    await switcher.restorePendingWork();
-
-    expect(aiChatService.enterAgenticTaskDraft).toHaveBeenCalledWith({ agentId: 'agent-b', cwd: '/work/b' });
-    expect(aiChatService.activateAgenticTaskSession).not.toHaveBeenCalled();
-  });
-
-  it('restores the remembered active Task only when no pending activation or launch exists', async () => {
     registry.getRememberedActiveTaskSession.mockReturnValue({ sessionId: 'acp:a' });
-    registry.getTask.mockResolvedValue(taskFor('/work/a'));
-    registry.getProject.mockResolvedValue(projectA);
 
     await switcher.restorePendingWork();
 
-    expect(aiChatService.activateAgenticTaskSession).toHaveBeenCalledWith('acp:a', expect.any(Function));
-    expect(registry.markUnread).toHaveBeenCalledWith('acp:a', false);
-  });
-
-  it('does not restore a remembered session without its Agent Task binding', async () => {
-    registry.getRememberedActiveTaskSession.mockReturnValue({ sessionId: 'acp:orphaned' });
-    registry.getTask.mockResolvedValue(undefined);
-
-    await switcher.restorePendingWork();
-
+    expect(registry.consumePendingActivation).not.toHaveBeenCalled();
+    expect(registry.consumePendingLaunch).not.toHaveBeenCalled();
+    expect(registry.clearRememberedActiveTaskSession).not.toHaveBeenCalled();
     expect(aiChatService.activateAgenticTaskSession).not.toHaveBeenCalled();
-    expect(registry.markUnread).not.toHaveBeenCalled();
+    expect(aiChatService.enterAgenticTaskDraft).not.toHaveBeenCalled();
+    expect(registry.getTask).not.toHaveBeenCalled();
   });
 
   it('does not admit the current Workspace or MRU entries while refreshing the Project catalog', async () => {

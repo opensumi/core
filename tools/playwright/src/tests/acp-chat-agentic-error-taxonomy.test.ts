@@ -145,11 +145,11 @@ async function readFailureUiSnapshot(): Promise<FailureUiSnapshot> {
       notificationText,
       errorNotificationCount: Array.from(document.querySelectorAll('.kt-notification-error')).filter(isVisible).length,
       infoNotificationCount: Array.from(document.querySelectorAll('.kt-notification-info')).filter(isVisible).length,
-      chatErrorCount: Array.from(document.querySelectorAll('.AI-Chat-slot .rce-ai-msg [class*="error"]')).filter(
-        isVisible,
-      ).length,
-      userRowCount: Array.from(document.querySelectorAll('.AI-Chat-slot .rce-user-msg')).filter(isVisible).length,
-      assistantRowCount: Array.from(document.querySelectorAll('.AI-Chat-slot .rce-ai-msg')).filter(isVisible).length,
+      chatErrorCount: Array.from(
+        document.querySelectorAll('.AI-Chat-slot [data-message-role="assistant"] [class*="error"]'),
+      ).filter(isVisible).length,
+      userRowCount: Array.from(document.querySelectorAll('.AI-Chat-slot [data-message-role="user"]')).length,
+      assistantRowCount: Array.from(document.querySelectorAll('.AI-Chat-slot [data-message-role="assistant"]')).length,
       hasStackTrace: /\n\s*at\s+\S+\s+\(|\bat\s+\S+:\d+:\d+/.test(visibleTextToScan),
       hasRawRpcPayload: /"jsonrpc"|rawInput|rawOutput|session\/prompt|session\/new|session\/load/i.test(
         visibleTextToScan,
@@ -157,6 +157,24 @@ async function readFailureUiSnapshot(): Promise<FailureUiSnapshot> {
       hasSecretLikeText: /token=|api[_-]?key|password|sk-[a-z0-9]/i.test(visibleTextToScan),
     };
   });
+}
+
+async function waitForFailureUiSnapshot(
+  predicate: (snapshot: FailureUiSnapshot) => boolean,
+): Promise<FailureUiSnapshot> {
+  let snapshot = await readFailureUiSnapshot();
+
+  await expect
+    .poll(
+      async () => {
+        snapshot = await readFailureUiSnapshot();
+        return predicate(snapshot);
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+
+  return snapshot;
 }
 
 async function expectSafeVisibleFailure(snapshot: FailureUiSnapshot) {
@@ -334,20 +352,10 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
     await withFixture('send-failure', async () => {
       await sendPrompt('BDD visible recovery case A');
 
-      await expect
-        .poll(async () => (await readFailureUiSnapshot()).userRowCount, { timeout: 30_000 })
-        .toBeGreaterThan(0);
-      await expect
-        .poll(
-          async () => {
-            const snapshot = await readFailureUiSnapshot();
-            return snapshot.chatErrorCount > 0 && /send|failure|error/i.test(snapshot.chatText);
-          },
-          { timeout: 30_000 },
-        )
-        .toBe(true);
-
-      const snapshot = await readFailureUiSnapshot();
+      const snapshot = await waitForFailureUiSnapshot(
+        (current) =>
+          current.userRowCount > 0 && current.chatErrorCount > 0 && /send|failure|error/i.test(current.chatText),
+      );
       expect(snapshot.chatErrorCount).toBeGreaterThan(0);
       expect(snapshot.userRowCount).toBeGreaterThan(0);
       await expect(recoveryButton()).toBeVisible();
@@ -358,24 +366,64 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
     await expectStreamRichRecovery('send-failure');
   });
 
+  test('Error Guidance: OpenCode service failure is actionable and keeps bounded diagnostics', async () => {
+    await withFixture('service-failure', async () => {
+      await sendPrompt('BDD OpenCode service failure guidance');
+
+      const snapshot = await waitForFailureUiSnapshot(
+        (current) =>
+          current.chatErrorCount > 0 &&
+          current.userRowCount > 0 &&
+          /OpenCode couldn't complete the request/i.test(current.chatText) &&
+          /Retry the request/i.test(current.chatText) &&
+          /start a new session/i.test(current.chatText) &&
+          /service: session/i.test(current.chatText) &&
+          /error: DatabaseError/i.test(current.chatText) &&
+          !/Internal error: OpenCode service failure/i.test(current.chatText),
+      );
+
+      expect(snapshot.chatErrorCount).toBeGreaterThan(0);
+      expect(snapshot.userRowCount).toBeGreaterThan(0);
+      await expect(recoveryButton()).toBeVisible();
+      await expectInputRecovered();
+      await expectSafeVisibleFailure(snapshot);
+    });
+
+    await expectStreamRichRecovery('service-failure');
+  });
+
+  test('Error Guidance: unavailable model identifies the model and next action', async () => {
+    await withFixture('model-not-found', async () => {
+      await sendPrompt('BDD unavailable model guidance');
+
+      const snapshot = await waitForFailureUiSnapshot(
+        (current) =>
+          current.chatErrorCount > 0 &&
+          current.userRowCount > 0 &&
+          /selected model "cfuse\/GLM-5\.2" is unavailable/i.test(current.chatText) &&
+          /Choose another model and try again/i.test(current.chatText) &&
+          !/Invalid params: model not found/i.test(current.chatText),
+      );
+      expect(snapshot.chatErrorCount).toBeGreaterThan(0);
+      expect(snapshot.userRowCount).toBeGreaterThan(0);
+      await expect(recoveryButton()).toBeVisible();
+      await expectInputRecovered();
+      await expectSafeVisibleFailure(snapshot);
+    });
+
+    await expectStreamRichRecovery('model-not-found');
+  });
+
   test('Error Taxonomy: create failure leaves the draft input recoverable', async () => {
     await withFixture('create-failure', async () => {
       await sendPrompt('BDD visible recovery case B');
 
-      await expect
-        .poll(
-          async () => {
-            const snapshot = await readFailureUiSnapshot();
-            return {
-              errorNotificationCount: snapshot.errorNotificationCount,
-              hasCreateFailureCategory: /create|session|failure|error/i.test(snapshot.notificationText),
-            };
-          },
-          { timeout: 30_000 },
-        )
-        .toMatchObject({ errorNotificationCount: expect.any(Number), hasCreateFailureCategory: true });
-
-      const snapshot = await readFailureUiSnapshot();
+      const snapshot = await waitForFailureUiSnapshot(
+        (current) =>
+          current.errorNotificationCount > 0 &&
+          current.userRowCount === 0 &&
+          /create|session|failure|error/i.test(current.notificationText),
+      );
       expect(snapshot.errorNotificationCount).toBeGreaterThan(0);
       expect(snapshot.userRowCount).toBe(0);
       await expectInputRecovered();
@@ -413,24 +461,24 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
         await expect(historyItem).toBeVisible({ timeout: 30_000 });
         await historyItem.click();
 
+        let snapshot = await readFailureUiSnapshot();
         await expect
           .poll(
             async () => {
-              const snapshot = await readFailureUiSnapshot();
+              snapshot = await readFailureUiSnapshot();
               const state = await readSessionState();
               return {
                 hasRecoveryNotice: /history|new chat draft|session|not found|available/i.test(
                   snapshot.notificationText,
                 ),
-                infoNotificationCount: snapshot.infoNotificationCount,
+                hasInfoNotification: snapshot.infoNotificationCount > 0,
                 active: state.result?.active,
               };
             },
             { timeout: 30_000 },
           )
-          .toMatchObject({ hasRecoveryNotice: true, active: false });
+          .toMatchObject({ hasRecoveryNotice: true, hasInfoNotification: true, active: false });
 
-        const snapshot = await readFailureUiSnapshot();
         expect(snapshot.infoNotificationCount).toBeGreaterThan(0);
         await expectInputRecovered();
         await expectSafeVisibleFailure(snapshot);
@@ -449,17 +497,12 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
     await withFixture('auth-required', async () => {
       await sendPrompt('BDD visible recovery case C');
 
-      await expect
-        .poll(
-          async () => {
-            const snapshot = await readFailureUiSnapshot();
-            return snapshot.chatErrorCount > 0 && /auth|required|sign.?in|login/i.test(snapshot.chatText);
-          },
-          { timeout: 30_000 },
-        )
-        .toBe(true);
-
-      const snapshot = await readFailureUiSnapshot();
+      const snapshot = await waitForFailureUiSnapshot(
+        (current) =>
+          current.chatErrorCount > 0 &&
+          current.userRowCount > 0 &&
+          /auth|required|sign.?in|login/i.test(current.chatText),
+      );
       expect(snapshot.chatErrorCount).toBeGreaterThan(0);
       expect(snapshot.userRowCount).toBeGreaterThan(0);
       await expect(recoveryButton()).toBeVisible();
@@ -475,20 +518,9 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
       await createConfigFailureSession();
       await selectFooterConfig(0, 'Chat');
 
-      await expect
-        .poll(
-          async () => {
-            const snapshot = await readFailureUiSnapshot();
-            return {
-              errorNotificationCount: snapshot.errorNotificationCount,
-              hasConfigCategory: /config|failure|error/i.test(snapshot.notificationText),
-            };
-          },
-          { timeout: 30_000 },
-        )
-        .toMatchObject({ errorNotificationCount: expect.any(Number), hasConfigCategory: true });
-
-      const snapshot = await readFailureUiSnapshot();
+      const snapshot = await waitForFailureUiSnapshot(
+        (current) => current.errorNotificationCount > 0 && /config|failure|error/i.test(current.notificationText),
+      );
       expect(snapshot.errorNotificationCount).toBeGreaterThan(0);
       await expect.poll(async () => configSelectors().count()).toBeGreaterThanOrEqual(4);
       await expectInputRecovered();
@@ -502,26 +534,14 @@ test.describe('ACP Chat Agentic Error Taxonomy and Recovery', () => {
     await withFixture('process-exit', async () => {
       await sendPrompt('BDD process exit recovery case D');
 
-      await expect
-        .poll(
-          async () => {
-            const snapshot = await readFailureUiSnapshot();
-            const visibleFailureText = `${snapshot.chatText}\n${snapshot.notificationText}`;
-            return {
-              hasVisibleFailure: snapshot.chatErrorCount > 0 || snapshot.errorNotificationCount > 0,
-              hasDisconnectedCategory: DISCONNECTED_AGENT_ERROR_PATTERN.test(visibleFailureText),
-              hasUserRow: snapshot.userRowCount > 0,
-            };
-          },
-          { timeout: 30_000 },
-        )
-        .toMatchObject({
-          hasVisibleFailure: true,
-          hasDisconnectedCategory: true,
-          hasUserRow: true,
-        });
-
-      const snapshot = await readFailureUiSnapshot();
+      const snapshot = await waitForFailureUiSnapshot((current) => {
+        const visibleFailureText = `${current.chatText}\n${current.notificationText}`;
+        return (
+          current.userRowCount > 0 &&
+          current.chatErrorCount + current.errorNotificationCount > 0 &&
+          DISCONNECTED_AGENT_ERROR_PATTERN.test(visibleFailureText)
+        );
+      });
       expect(snapshot.userRowCount).toBeGreaterThan(0);
       expect(snapshot.chatErrorCount + snapshot.errorNotificationCount).toBeGreaterThan(0);
       await expectInputRecovered();
