@@ -86,13 +86,19 @@ export class XTerm extends Disposable implements IXTerm {
   }
 
   /**
-   * 处理 OSC 52（Clipboard）序列，格式为 `OSC 52 ; Ps ; Pt ST`（Ps 为剪贴板选择，如 `c` 表示系统剪贴板），
-   * Pt 为 base64 编码的内容，为 `?` 时表示查询剪贴板（不支持）。
+   * 处理 OSC 52（Clipboard）序列，格式为 `OSC 52 ; Ps ; Pt ST`，Pt 为 base64 编码的内容，为 `?` 时表示查询剪贴板（不支持）。
+   * Ps 为目标选择区：`c` 系统剪贴板、`s` 主选择区、`0-7` cut buffer；浏览器环境只有系统剪贴板，
+   * 因此仅处理 Ps 为空（默认）或包含 `c`/`s` 的请求，其余目标（如 cut buffer）忽略。
    * @see https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Operating-System-Commands
    */
   private async _handleOsc52(data: string): Promise<boolean> {
     const semiIndex = data.indexOf(';');
     if (semiIndex === -1) {
+      return false;
+    }
+    const selection = data.slice(0, semiIndex);
+    // 非剪贴板目标（如 cut buffer）忽略
+    if (selection && !selection.includes('c') && !selection.includes('s')) {
       return false;
     }
     const payload = data.slice(semiIndex + 1);
@@ -107,8 +113,8 @@ export class XTerm extends Disposable implements IXTerm {
         bytes[i] = byteString.charCodeAt(i);
       }
       // 编码侧使用 UTF-8（如 `Buffer.from(text).toString('base64')`），需按 UTF-8 解码，
-      // 避免中文等多字节字符乱码
-      const text = new TextDecoder().decode(bytes);
+      // 避免中文等多字节字符乱码；fatal 拒绝非法 UTF-8，避免把乱码内容写进剪贴板
+      const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
       await this.clipboardService.writeText(text);
       return true;
     } catch (err) {
