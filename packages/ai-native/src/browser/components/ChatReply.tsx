@@ -236,6 +236,7 @@ export const ChatReply = (props: IChatReplyProps) => {
   const iconService = useInjectable<IIconService>(IIconService);
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const agentCwd = aiChatService.sessionModel?.acpTarget?.cwd;
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
@@ -326,9 +327,9 @@ export const ChatReply = (props: IChatReplyProps) => {
         return <Render content={markdown.value} />;
       }
 
-      return <ChatMarkdown markdown={markdown} fillInIncompleteTokens />;
+      return <ChatMarkdown markdown={markdown} fillInIncompleteTokens agentCwd={agentCwd} />;
     },
-    [chatRenderRegistry, chatRenderRegistry.chatAIRoleRender],
+    [agentCwd, chatRenderRegistry, chatRenderRegistry.chatAIRoleRender],
   );
 
   const renderTreeData = (treeData: IChatResponseProgressFileTreeData) => <TreeRenderer treeData={treeData} />;

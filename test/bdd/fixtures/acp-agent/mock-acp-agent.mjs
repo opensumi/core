@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -111,6 +112,8 @@ Fixtures:
   process-exit      Emits prompt updates, then exits the ACP agent process.
   history           Seeds deterministic list/load session metadata and bounded rich replay updates.
   file-link         Emits deterministic assistant markdown with file-link cases.
+  file-link-agent-cwd Emits deterministic assistant markdown with relative paths meant to resolve
+                     against the launched Agent Session cwd (Workspace Target), not the IDE workspace.
 `);
   process.exit(0);
 }
@@ -681,6 +684,21 @@ test/test.js
     });
   };
 
+  const runAgentCwdFileLinkStream = async (session) => {
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_thought_chunk',
+      content: text('BDD_AGENT_CWD_THOUGHT: deterministic reasoning so the thinking container renders.'),
+    });
+    await emit(session.sessionId, {
+      sessionUpdate: 'agent_message_chunk',
+      content: text(`BDD_AGENT_CWD_FILE_LINK_READY
+
+Note updated notes/agent-note.md
+Inline \`notes/agent-note.md:1:1\`
+`),
+    });
+  };
+
   return {
     async initialize(params) {
       log('initialize', params?.protocolVersion);
@@ -876,6 +894,18 @@ test/test.js
       }
       if (options.fixture === 'file-link') {
         await runFileLinkStream(session);
+        return {
+          stopReason: 'end_turn',
+          usage: {
+            inputTokens: Math.max(1, promptText.length),
+            outputTokens: 24,
+            totalTokens: Math.max(1, promptText.length) + 24,
+            thoughtTokens: 0,
+          },
+        };
+      }
+      if (options.fixture === 'file-link-agent-cwd') {
+        await runAgentCwdFileLinkStream(session);
         return {
           stopReason: 'end_turn',
           usage: {

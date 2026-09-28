@@ -24,6 +24,7 @@ export const ACP_BDD_FIXTURES = [
   'process-exit',
   'history',
   'file-link',
+  'file-link-agent-cwd',
 ] as const;
 
 export type AcpBddFixture = (typeof ACP_BDD_FIXTURES)[number];

@@ -984,7 +984,15 @@ export const AIChatViewACPContent = () => {
   const renderSimpleMarkdownReply = React.useCallback(
     (renderModel: { chunk: string; relationId: string }) => {
       const { chunk, relationId } = renderModel;
-      let renderContent = <ChatMarkdown markdown={chunk} fillInIncompleteTokens agentId={agentId} command={command} />;
+      let renderContent = (
+        <ChatMarkdown
+          markdown={chunk}
+          fillInIncompleteTokens
+          agentId={agentId}
+          command={command}
+          agentCwd={aiChatService.sessionModel?.acpTarget?.cwd}
+        />
+      );
 
       if (chatRenderRegistry.chatAIRoleRender) {
         const ChatAIRoleRender = chatRenderRegistry.chatAIRoleRender;
@@ -1000,7 +1008,7 @@ export const AIChatViewACPContent = () => {
 
       handleDispatchMessage({ type: 'add', payload: [aiMessage] });
     },
-    [chatRenderRegistry, msgHistoryManager, scrollToBottom],
+    [aiChatService, chatRenderRegistry, msgHistoryManager, scrollToBottom],
   );
 
   const renderCustomComponent = React.useCallback(
@@ -1590,6 +1598,7 @@ export const AIChatViewACPContent = () => {
             fillInIncompleteTokens
             agentId={msg.agentId}
             command={msg.agentCommand}
+            agentCwd={aiChatService.sessionModel?.acpTarget?.cwd}
           />
         ),
       });
