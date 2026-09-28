@@ -2,9 +2,11 @@
   position: relative;
   height: 100%;
   // Reserve in-flow space for the absolutely positioned message action bar
-  // (.bottom_container). Without this reserve the bar paints 40px below its
-  // own message and overlaps the next message row.
-  padding-bottom: 52px;
+  // (.bottom_container). Without this reserve the bar paints below its
+  // own message and overlaps the next message row. The strip only needs
+  // to fit the ~22px action bar plus a small breath, otherwise it reads as
+  // oversized blank padding at the bottom of the session.
+  padding-bottom: 28px;
   .stop {
     position: absolute;
     bottom: -15px;
