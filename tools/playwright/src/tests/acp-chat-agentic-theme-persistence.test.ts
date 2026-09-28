@@ -18,17 +18,14 @@ const LIGHT_THEME = 'OpenSumi Design Light+ (default light)';
 let runtime: AcpBddFixtureRuntime;
 
 async function chooseTheme(label: string) {
-  const isMac = await page.evaluate(() => /Mac/.test(navigator.platform));
-  await page.keyboard.press(`${isMac ? 'Meta' : 'Control'}+Shift+P`);
-  const input = page.locator('#opensumi-quickpick-input');
-  await expect(input).toBeVisible();
-  await input.fill('Color Theme');
-  const command = page.locator('#opensumi-quickpick-item[aria-label="Color Theme"]');
-  await expect(command).toBeVisible({ timeout: 15_000 });
-  await command.locator("[class*='item_label_container']").first().click();
-  const option = page.getByText(label, { exact: true }).last();
+  const command = page.evaluate(() =>
+    (window as any).__OPENSUMI_E2E__?.executeCommand?.('workbench.action.selectTheme'),
+  );
+  const option = page.locator('#opensumi-quickpick-item:visible').filter({ hasText: label });
   await expect(option).toBeVisible({ timeout: 15_000 });
   await option.click();
+  await command;
+  await expect(option).toBeHidden();
 }
 
 async function switchLayoutByMenu(target: 'Agent' | 'Classic') {
@@ -52,10 +49,18 @@ async function visualState() {
       const style = window.getComputedStyle(element);
       return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
     };
-    const chat = document.querySelector('.AI-Chat-slot');
-    const workbench = document.querySelector('#workbench-editor');
-    const input = document.querySelector('.AI-Chat-slot [role="textbox"]');
-    const header = document.querySelector('.AI-Chat-slot [data-testid="agentic-chat-panel-header"]');
+    const findVisible = (selector: string) =>
+      Array.from(document.querySelectorAll(selector)).find((element) => visible(element)) || null;
+    const chat = findVisible('.AI-Chat-slot');
+    const workbench = findVisible('#workbench-editor');
+    const input = chat
+      ? Array.from(chat.querySelectorAll('[role="textbox"]')).find((element) => visible(element)) || null
+      : null;
+    const header = chat
+      ? Array.from(chat.querySelectorAll('[data-testid="agentic-chat-panel-header"]')).find((element) =>
+          visible(element),
+        ) || null
+      : null;
     const chatRect = chat?.getBoundingClientRect();
     const workbenchRect = workbench?.getBoundingClientRect();
     const bodyStyle = window.getComputedStyle(document.body);
@@ -110,6 +115,8 @@ async function showChatAfterReload() {
   await page.evaluate(async () => (navigator as any).modelContext.executeTool('acp_chat_show_chat_view', {}));
   await waitForAcpChatReady(page);
   await ensureAgenticLayout(page);
+  await expect(page.locator('[data-testid="agentic-chat-panel-header"]:visible')).toBeVisible();
+  await expect(page.locator('.AI-Chat-slot:visible [role="textbox"]')).toBeVisible();
 }
 
 test.describe('ACP Chat Agentic 主题与布局持久化', () => {
@@ -132,16 +139,24 @@ test.describe('ACP Chat Agentic 主题与布局持久化', () => {
   });
 
   test('切换浅色主题并调整宽度后，重载和布局往返仍保持可读与可用', async ({ browser: _browser }, testInfo) => {
+    void _browser;
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-theme-persistence', {
       sourceScenario: 'test/bdd/acp-chat-agentic-theme-persistence.scenario.md',
       profile: 'default',
       executionMode: 'deterministic-fixture',
       hardeningVerdict: 'CONVERT',
     });
+    await waitForAcpChatReady(page);
+    await ensureAgenticLayout(page);
+    await expect(page.locator('[data-testid="agentic-chat-panel-header"]:visible')).toBeVisible();
+    await expect(page.locator('.AI-Chat-slot:visible [role="textbox"]')).toBeVisible();
     const initial = await visualState();
 
     await chooseTheme(LIGHT_THEME);
     await expect.poll(() => page.evaluate(() => document.body.classList.contains('design-light'))).toBe(true);
+    await waitForAcpChatReady(page);
+    await expect(page.locator('[data-testid="agentic-chat-panel-header"]:visible')).toBeVisible();
+    await expect(page.locator('.AI-Chat-slot:visible [role="textbox"]')).toBeVisible();
     const light = await visualState();
     expect(light.chatVisible).toBe(true);
     expect(light.headerVisible).toBe(true);
@@ -172,6 +187,8 @@ test.describe('ACP Chat Agentic 主题与布局持久化', () => {
     await switchLayoutByMenu('Agent');
     await page.waitForSelector('#main-horizontal-ai-agentic');
     await ensureAgenticLayout(page);
+    await expect(page.locator('[data-testid="agentic-chat-panel-header"]:visible')).toBeVisible();
+    await expect(page.locator('.AI-Chat-slot:visible [role="textbox"]')).toBeVisible();
     const roundTrip = await visualState();
     expect(roundTrip.bodyClass).toContain('design-light');
     expect(roundTrip.chat?.x).toBeLessThan(roundTrip.workbench?.x ?? Number.POSITIVE_INFINITY);
