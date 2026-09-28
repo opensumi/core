@@ -16,8 +16,10 @@ import { IMessageService } from '@opensumi/ide-overlay';
 
 import { AgenticTaskRegistryService, AgenticTaskStatus } from '../acp/agentic-task-registry.service';
 import { AcpPermissionBridgeService } from '../acp/permission-bridge.service';
+import { hasAcpChatSendPayload } from '../components/acp/chat-input-validation';
 import { AIPanelLayoutService } from '../layout/panel-layout.service';
 
+import { ACP_SESSION_CREATION_CANCELLED_ERROR_NAME, type AcpTurnDraft } from './acp-chat-queued-turns';
 import { AcpChatManagerService } from './chat-manager.service.acp';
 import { ChatModel, ChatRequestModel } from './chat-model';
 import { ChatInternalService } from './chat.internal.service';
@@ -28,16 +30,14 @@ import {
   AcpSessionModelOption,
 } from './session-provider';
 
-import type { AcpTurnDraft } from './acp-chat-queued-turns';
-
 const ACP_LOAD_SESSION_FALLBACK_MESSAGE =
   'Unable to open this chat history. A new chat draft is ready, and a session will be created when you send a message.';
 const ACP_LOAD_SESSION_NOT_FOUND_MESSAGE =
   'This chat history is no longer available. A new chat draft is ready, and a session will be created when you send a message.';
 const ACP_LOAD_TASK_FALLBACK_MESSAGE = 'Unable to open this task history. The previous Task remains active.';
 const ACP_LOAD_TASK_NOT_FOUND_MESSAGE = 'This task history is no longer available. The previous Task remains active.';
-const ACP_SESSION_CREATION_CANCELLED_ERROR_NAME = 'ACP_SESSION_CREATION_CANCELLED';
-
+/** Input-draft slot key used while no session is bound (the agentic task draft phase). */
+const ACP_INPUT_DRAFT_SLOT = '__acp_input_draft__';
 function createSessionCreationCancelledError(): Error {
   const error = new Error('ACP session creation was cancelled.');
   error.name = ACP_SESSION_CREATION_CANCELLED_ERROR_NAME;
@@ -173,6 +173,11 @@ export class AcpChatInternalService extends ChatInternalService {
     return this.sessionLoadingCount > 0;
   }
 
+  /** True while a session creation request (e.g. the draft-bound session) is in flight. */
+  public get isSessionCreationPending(): boolean {
+    return this.sessionCreationPromise !== undefined;
+  }
+
   public getAgenticSessionLiveReadyStatus(sessionId: string | undefined): 'pending' | 'ready' | 'failed' {
     return sessionId ? this.agenticSessionLiveReadyStatuses.get(sessionId) || 'ready' : 'ready';
   }
@@ -218,7 +223,8 @@ export class AcpChatInternalService extends ChatInternalService {
   private skillCatalogState: AcpSkillCatalogState = 'unavailable';
 
   private draftSessionState: AcpDraftSessionState = {};
-  private inputDraft: AcpTurnDraft | undefined;
+  /** Unsent input drafts, keyed by bound session id (`ACP_INPUT_DRAFT_SLOT` while in the draft phase). */
+  private inputDrafts = new Map<string, AcpTurnDraft>();
 
   private sessionStateDisposable: IDisposable | undefined;
 
@@ -304,11 +310,22 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   getInputDraft(): AcpTurnDraft | undefined {
-    return this.inputDraft ? this.cloneInputDraft(this.inputDraft) : undefined;
+    return this.getInputDraftFor(this._sessionModel?.sessionId);
+  }
+
+  /** Returns the unsent input draft stored for the given session (undefined = the draft phase). */
+  getInputDraftFor(sessionId: string | undefined): AcpTurnDraft | undefined {
+    const draft = this.inputDrafts.get(sessionId ?? ACP_INPUT_DRAFT_SLOT);
+    return draft ? this.cloneInputDraft(draft) : undefined;
   }
 
   updateInputDraft(draft: AcpTurnDraft | undefined): void {
-    this.inputDraft = draft ? this.cloneInputDraft(draft) : undefined;
+    const slot = this._sessionModel?.sessionId ?? ACP_INPUT_DRAFT_SLOT;
+    if (!draft) {
+      this.inputDrafts.delete(slot);
+      return;
+    }
+    this.inputDrafts.set(slot, this.cloneInputDraft(draft));
   }
 
   getVisibleSessions(): ChatModel[] {
@@ -541,6 +558,13 @@ export class AcpChatInternalService extends ChatInternalService {
     this._sessionModel = sessionModel;
     if (acquiredDraftBoundSession) {
       this.draftBoundSession = acquiredDraftBoundSession;
+      // Carry the draft-phase input over to its bound session so the per-session
+      // input draft survives the creation window (see .scratch/acp-sticky-send).
+      const draftSlotDraft = this.inputDrafts.get(ACP_INPUT_DRAFT_SLOT);
+      if (draftSlotDraft && hasAcpChatSendPayload(draftSlotDraft)) {
+        this.inputDrafts.set(sessionModel.sessionId, draftSlotDraft);
+      }
+      this.inputDrafts.delete(ACP_INPUT_DRAFT_SLOT);
     }
     this.setAvailableCommands(acpManager.getAvailableCommands(this._sessionModel.sessionId));
     this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || {};
@@ -610,9 +634,19 @@ export class AcpChatInternalService extends ChatInternalService {
       return this._sessionModel;
     }
 
+    const generationAtEntry = this.draftBoundSessionGeneration;
     const preparation = this.draftBoundSessionPreparation;
     if (preparation) {
       const preparedModel = await preparation;
+      // Latest intent wins (ADR-0004): if the draft that owned the in-flight
+      // creation was superseded or discarded while we waited, do not hand out its
+      // (possibly already released) session and do not silently start a fresh one —
+      // a caller still holding the stale draft, like a queued turn sent during the
+      // creation window, gets cancelled instead. Real agents take seconds to
+      // create sessions, so this window is reachable in practice.
+      if (generationAtEntry !== this.draftBoundSessionGeneration) {
+        throw createSessionCreationCancelledError();
+      }
       if (preparedModel) {
         return preparedModel;
       }
@@ -636,6 +670,7 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   enterDraftSession(options?: { force?: boolean }): void {
+    this.inputDrafts.delete(ACP_INPUT_DRAFT_SLOT);
     this.draftSessionState = this.createDraftStateFromModel(this._sessionModel) || this.draftSessionState;
     this._sessionModel = undefined as unknown as ChatModel;
     this.setAvailableCommands([]);
@@ -679,7 +714,7 @@ export class AcpChatInternalService extends ChatInternalService {
       await this.releaseDraftBoundSession(draftBoundSession, true);
     }
     this.pendingAgenticTarget = undefined;
-    this.inputDraft = undefined;
+    this.inputDrafts.delete(ACP_INPUT_DRAFT_SLOT);
     this.setSkillCatalogState('unavailable');
     this.agenticTaskRegistry.clearPendingLaunch?.();
   }
@@ -727,6 +762,8 @@ export class AcpChatInternalService extends ChatInternalService {
     if (this.draftBoundSession === draftBoundSession) {
       this.draftBoundSession = undefined;
     }
+    // A released draft-bound session is being closed: its unsent input dies with it.
+    this.inputDrafts.delete(draftBoundSession.sessionId);
 
     const rawSessionId = this.stripAcpPrefix(draftBoundSession.sessionId);
     try {
@@ -1071,6 +1108,9 @@ export class AcpChatInternalService extends ChatInternalService {
       return;
     }
     this._onWillClearSession.fire(sessionId);
+    // A cleared session's unsent input draft dies with it — never resurface into
+    // a later session that happens to reuse the id.
+    this.inputDrafts.delete(sessionId);
     const clearedSessionId =
       this._sessionModel && sessionId === this._sessionModel.sessionId ? this.stripAcpPrefix(sessionId) : undefined;
     try {
@@ -1337,6 +1377,7 @@ export class AcpChatInternalService extends ChatInternalService {
     this.agentSessionCatalogRefreshBarriers.clear();
     this.requestCancellationGenerations.clear();
     this.acceptedRequestSessions.clear();
+    this.inputDrafts.clear();
     this._onModeChange.dispose();
     this._onSessionLoadingChange.dispose();
     this._onSessionModelChange.dispose();

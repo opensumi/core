@@ -450,6 +450,8 @@ function createMockServices({
     getPendingAgenticSessionId: jest.fn(() => undefined),
     retryAgenticSessionConnection: jest.fn(() => Promise.resolve()),
     getInputDraft: jest.fn(() => undefined),
+    getInputDraftFor: jest.fn(() => undefined),
+    isSessionCreationPending: false,
     getActiveAgenticTaskTarget: jest.fn(() => undefined),
     getActiveAgenticTaskAgentId: jest.fn(() => undefined),
     isActiveAgenticTaskDraft: jest.fn(() => false),
@@ -3534,5 +3536,89 @@ describe('ACP chat view headers', () => {
     expect(ensureSessionModel).toHaveBeenCalledTimes(1);
     expect(createRequest).toHaveBeenCalledWith('   ', 'default-agent', undefined, 'generate');
     expect(sendRequest).toHaveBeenCalledWith(createRequest.mock.results[0].value, false, expect.any(Function));
+  });
+
+  // Locks the sticky-send input gate formula (see
+  // .scratch/acp-sticky-send/spec.md + issues/02):
+  //   submitDisabled = showAgenticConnectionStatus && !stickySendDuringSessionCreation
+  // with showAgenticConnectionStatus = isAgenticLayout && (sessionLoading || liveReady !== 'ready')
+  // and stickySendDuringSessionCreation = isAgenticLayout && isSessionCreationPending.
+  it('keeps sends enabled with the Starting Task copy while a session creation is in flight', async () => {
+    jest.useFakeTimers();
+    const services = createMockServices({ panelLayout: 'agentic' });
+    services.aiChatService.isSessionCreationPending = true;
+    services.aiChatService.getAgenticSessionLiveReadyStatus.mockReturnValue('pending');
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    act(() => jest.advanceTimersByTime(500));
+
+    expect(container.querySelector('[data-testid="acp-live-connecting"]')?.textContent).toBe(
+      'Starting task. Your message will be sent when the task is ready.',
+    );
+    expect(services.getLatestChatInputProps()).toEqual(
+      expect.objectContaining({
+        disabled: false,
+        submitDisabled: false,
+      }),
+    );
+  });
+
+  it('blocks sends with the restoring copy while a session restore is pending', async () => {
+    jest.useFakeTimers();
+    const services = createMockServices({ panelLayout: 'agentic' });
+    services.aiChatService.getAgenticSessionLiveReadyStatus.mockReturnValue('pending');
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+    act(() => jest.advanceTimersByTime(500));
+
+    expect(container.querySelector('[data-testid="acp-live-connecting"]')?.textContent).toBe(
+      'Restoring session. You can send when it is ready.',
+    );
+    expect(services.getLatestChatInputProps()).toEqual(
+      expect.objectContaining({
+        disabled: false,
+        submitDisabled: true,
+      }),
+    );
+  });
+
+  it('blocks sends via the non-agentic channel in classic layout while the session is loading', async () => {
+    const services = createMockServices({ panelLayout: 'classic' });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    services.setSessionLoadingForTest(true);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const props = services.getLatestChatInputProps();
+    expect(props).toEqual(
+      expect.objectContaining({
+        disabled: true,
+        // The agentic connection-status channel stays out of classic layout.
+        submitDisabled: false,
+      }),
+    );
+    expect(container.querySelector('[data-testid="acp-live-connecting"]')).toBeNull();
+  });
+
+  it('keeps sends fully enabled in the agentic layout once live-ready', async () => {
+    const services = createMockServices({ panelLayout: 'agentic' });
+    installInjectableMocks(services);
+
+    await renderHeader(React.createElement(AIChatViewACPContent));
+
+    expect(container.querySelector('[data-testid="acp-live-connecting"]')).toBeNull();
+    expect(services.getLatestChatInputProps()).toEqual(
+      expect.objectContaining({
+        disabled: false,
+        submitDisabled: false,
+      }),
+    );
   });
 });

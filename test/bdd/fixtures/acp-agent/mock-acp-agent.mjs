@@ -18,6 +18,7 @@ function parseArgs(argv) {
     longStreamTicks: Number(process.env.OPENSUMI_ACP_BDD_LONG_STREAM_TICKS || DEFAULT_LONG_STREAM_TICKS),
     historyMessageCount: Number(process.env.OPENSUMI_ACP_BDD_HISTORY_MESSAGE_COUNT || 0),
     listDelayMs: Number(process.env.OPENSUMI_ACP_BDD_LIST_DELAY_MS || 0),
+    newSessionDelayMs: Number(process.env.OPENSUMI_ACP_BDD_NEW_SESSION_DELAY_MS || 0),
     sessionPrefix: process.env.OPENSUMI_ACP_BDD_SESSION_PREFIX || 'bdd-session',
     verbose: process.env.OPENSUMI_ACP_BDD_VERBOSE === '1',
     help: false,
@@ -47,6 +48,10 @@ function parseArgs(argv) {
       options.listDelayMs = Number(argv[++i] || options.listDelayMs);
     } else if (arg.startsWith('--list-delay-ms=')) {
       options.listDelayMs = Number(arg.slice('--list-delay-ms='.length));
+    } else if (arg === '--new-session-delay-ms') {
+      options.newSessionDelayMs = Number(argv[++i] || options.newSessionDelayMs);
+    } else if (arg.startsWith('--new-session-delay-ms=')) {
+      options.newSessionDelayMs = Number(arg.slice('--new-session-delay-ms='.length));
     } else if (arg === '--session-prefix') {
       options.sessionPrefix = argv[++i] || options.sessionPrefix;
     } else if (arg.startsWith('--session-prefix=')) {
@@ -86,6 +91,7 @@ Options:
   --long-stream-ticks <n>  Number of long-stream chunks before natural completion.
   --history-message-count <n> Number of visible messages seeded for each history session.
   --list-delay-ms <ms>     Delay before answering session/list. Defaults to no extra delay.
+  --new-session-delay-ms <ms>  Delay before answering session/new. Defaults to no extra delay.
   --session-prefix <text>  Prefix for generated session ids.
   --verbose                Write diagnostics to stderr.
 
@@ -707,6 +713,11 @@ test/test.js
     async newSession(params) {
       if (options.fixture === 'create-failure') {
         throw RequestError.internalError({ fixture: options.fixture }, 'BDD create-session failure');
+      }
+      if (options.newSessionDelayMs > 0) {
+        // Widens the client's draft-bound session swap window deterministically
+        // (e.g. to reproduce send-click races inside that window).
+        await sleep(options.newSessionDelayMs);
       }
 
       loadSessionStore(params.cwd);

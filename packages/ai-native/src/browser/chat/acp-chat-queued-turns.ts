@@ -2,6 +2,14 @@ import { Emitter, Event, IDisposable } from '@opensumi/ide-core-common';
 
 import { hasAcpChatSendPayload } from '../components/acp/chat-input-validation';
 
+/**
+ * Name of the error the ACP chat service throws when a draft-bound session
+ * preparation is vetoed (superseded/discard). Lives here because this runtime
+ * is the consumer that drops the reserved turn instead of failing it, and both
+ * the service and the view already import from this module.
+ */
+export const ACP_SESSION_CREATION_CANCELLED_ERROR_NAME = 'ACP_SESSION_CREATION_CANCELLED';
+
 export interface AcpTurnDraft {
   message: string;
   images?: readonly string[];
@@ -560,15 +568,12 @@ export class AcpQueuedTurnModule implements IDisposable {
     } catch (error) {
       const pendingActivationId = this.takePendingActivation();
       this.pendingInitialStart = false;
+      const errorName = error instanceof Error ? error.name : undefined;
+      const draftSuperseded = errorName === ACP_SESSION_CREATION_CANCELLED_ERROR_NAME;
 
       if (this.cancelledInitialStartTurnId === turn.id) {
         this.cancelledInitialStartTurnId = undefined;
-        this.reservedTurn = undefined;
-        this.processing = 'auto';
-        this.pauseReason = undefined;
-        this.pauseError = undefined;
-        this.fireDidChange();
-        return { accepted: false, reason: 'start-cancelled' };
+        return this.dropReservedTurnSilently();
       }
 
       if (epoch !== this.sessionEpoch) {
@@ -577,7 +582,20 @@ export class AcpQueuedTurnModule implements IDisposable {
 
       if (pendingActivationId.pending) {
         this.applyActivation(pendingActivationId.sessionId);
-        return { accepted: false, reason: 'stale-session' };
+        if (!draftSuperseded) {
+          return { accepted: false, reason: 'stale-session' };
+        }
+        // A superseded/discarded draft with a deferred session switch: the
+        // switch has been applied above; fall through to dropping the turn below.
+        return this.dropReservedTurnSilently();
+      }
+
+      if (draftSuperseded) {
+        // The draft the turn was sent from was superseded or discarded while its
+        // session was still being created (latest-intent, see
+        // ensureSessionModel). Drop the held turn silently: re-queuing it or
+        // pausing with start-failed would defeat the user's explicit discard.
+        return this.dropReservedTurnSilently();
       }
 
       if (this.reservedTurn === turn && returnToHeadOnFailure) {
@@ -782,6 +800,20 @@ export class AcpQueuedTurnModule implements IDisposable {
       return { ...result, draftDisposition: 'queued' };
     }
     return result;
+  }
+
+  /**
+   * Reset the in-flight reserved start as if it had been explicitly cancelled,
+   * without re-queuing the turn or pausing with start-failed (latest-intent:
+   * the draft the turn belonged to is gone).
+   */
+  private dropReservedTurnSilently(): TurnActionResult {
+    this.reservedTurn = undefined;
+    this.processing = 'auto';
+    this.pauseReason = undefined;
+    this.pauseError = undefined;
+    this.fireDidChange();
+    return { accepted: false, reason: 'start-cancelled' };
   }
 
   private takePendingActivation(): { pending: boolean; sessionId: string | undefined } {

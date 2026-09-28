@@ -71,7 +71,7 @@ import { AIPanelLayoutService } from '../layout/panel-layout.service';
 import { BaseApplyService } from '../mcp/base-apply.service';
 import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
-import { AcpQueuedTurnModule } from './acp-chat-queued-turns';
+import { ACP_SESSION_CREATION_CANCELLED_ERROR_NAME, AcpQueuedTurnModule } from './acp-chat-queued-turns';
 import { AI_CHAT_NEW_CHAT } from './acp-new-draft.commands';
 import { AcpQueuedTurns } from './AcpQueuedTurns';
 import {
@@ -1035,7 +1035,10 @@ export const AIChatViewACPContent = () => {
         sessionModel = await aiChatService.ensureSessionModel();
       } catch (error) {
         const errorName = error instanceof Error ? error.name : undefined;
-        if (errorName !== ACP_THREAD_POOL_SATURATED_ERROR_NAME && errorName !== 'ACP_SESSION_CREATION_CANCELLED') {
+        if (
+          errorName !== ACP_THREAD_POOL_SATURATED_ERROR_NAME &&
+          errorName !== ACP_SESSION_CREATION_CANCELLED_ERROR_NAME
+        ) {
           messageService.error(`Failed to create session. (${getErrorMessage(error)})`);
         }
         throw error;
@@ -1767,6 +1770,35 @@ export const AIChatViewACPContent = () => {
     setQueuedTurnsExpanded(true);
   }, [activeServiceSessionId, queuedTurns]);
 
+  // Per-session input drafts: typing syncs into the service's slot store live; on
+  // arriving at a session (or the task draft) restore that slot's unsent text so each
+  // session remembers its own. The first run is skipped — the editor's initialDraft
+  // mount restore already covers it. Restores that would be no-ops (incoming content
+  // equals the live editor, or both empty) are skipped too: restoreDraft bumps the
+  // editor's draft generation, which would break submitDraft's initial-session
+  // promotion guard during the sticky send flow.
+  const previousInputSessionRef = React.useRef<{ sessionId: string | undefined } | null>(null);
+  React.useEffect(() => {
+    const previous = previousInputSessionRef.current;
+    previousInputSessionRef.current = { sessionId: activeServiceSessionId };
+    if (!previous || previous.sessionId === activeServiceSessionId) {
+      return;
+    }
+    const incomingDraft = aiChatService.getInputDraftFor(activeServiceSessionId);
+    const liveDraft = mainInputHandleRef.current?.getDraft?.();
+    if (incomingDraft && liveDraft && incomingDraft.message === liveDraft.message) {
+      const incomingImages = (incomingDraft.images ?? []).join('\n');
+      const liveImages = (liveDraft.images ?? []).join('\n');
+      if (incomingImages === liveImages) {
+        return;
+      }
+    }
+    if (!incomingDraft && (!liveDraft || !liveDraft.message)) {
+      return;
+    }
+    mainInputHandleRef.current?.restoreDraft?.(incomingDraft ?? { message: '', images: [], agentId: '', command: '' });
+  }, [activeServiceSessionId, aiChatService]);
+
   React.useEffect(() => {
     if (isAgenticLayout) {
       setChatLoading(false);
@@ -1807,6 +1839,28 @@ export const AIChatViewACPContent = () => {
     !!welcomePageRender;
   const showAgenticTaskEmptyState = (showWelcomePage || isAgenticTaskDraft) && isAgenticLayout;
   const showBlockingSessionLoading = sessionLoading && !isAgenticLayout;
+  // Sends stay active while a session creation (e.g. the draft-bound session) is in
+  // flight: the queued-turn runtime reserves the submitted turn ("Starting task…") and
+  // dispatches it once the session binds. Session restore keeps blocking sends until
+  // the session reports live-ready.
+  const stickySendDuringSessionCreation = isAgenticLayout && aiChatService.isSessionCreationPending;
+  // Copy differs by cause: a failed restore offers retry, a session creation means the
+  // send will be held and dispatched once the session binds, a restore asks to wait.
+  let agenticConnectionStatusMessage = localize(
+    'aiNative.chat.session.restoringConnection',
+    'Restoring session. You can send when it is ready.',
+  );
+  if (activeAgenticLiveReadyStatus === 'failed') {
+    agenticConnectionStatusMessage = localize(
+      'aiNative.chat.session.connectionUnavailable',
+      'Unable to restore the session.',
+    );
+  } else if (stickySendDuringSessionCreation) {
+    agenticConnectionStatusMessage = localize(
+      'aiNative.chat.session.startingTaskSend',
+      'Starting task. Your message will be sent when the task is ready.',
+    );
+  }
   const welcomePage =
     showWelcomePage && welcomePageRender
       ? React.createElement(welcomePageRender, {
@@ -1962,7 +2016,7 @@ export const AIChatViewACPContent = () => {
               initialDraft={aiChatService.getInputDraft()}
               onDraftChange={(draft) => aiChatService.updateInputDraft(draft)}
               disabled={showBlockingSessionLoading}
-              submitDisabled={showAgenticConnectionStatus}
+              submitDisabled={showAgenticConnectionStatus && !stickySendDuringSessionCreation}
               loading={loading}
               enableOptions={true}
               theme={theme}
@@ -1998,14 +2052,7 @@ export const AIChatViewACPContent = () => {
                 data-testid='acp-live-connecting'
                 role='status'
               >
-                <span>
-                  {activeAgenticLiveReadyStatus === 'failed'
-                    ? localize('aiNative.chat.session.connectionUnavailable', 'Unable to restore the session.')
-                    : localize(
-                        'aiNative.chat.session.restoringConnection',
-                        'Restoring session. You can send when it is ready.',
-                      )}
-                </span>
+                <span>{agenticConnectionStatusMessage}</span>
                 {activeAgenticLiveReadyStatus === 'failed' && (
                   <button data-testid='acp-live-connection-retry' onClick={handleAgenticConnectionRetry} type='button'>
                     {localize('aiNative.chat.acp.capacityRetry', 'Retry')}

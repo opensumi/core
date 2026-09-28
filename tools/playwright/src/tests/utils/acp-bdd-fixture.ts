@@ -6,6 +6,7 @@ import { type Page } from '@playwright/test';
 
 import { OpenSumiApp } from '../../app';
 import { OpenSumiWorkspace } from '../../workspace';
+import { ensurePage } from '../hooks';
 
 export const ACP_BDD_FIXTURES = [
   'stream-rich',
@@ -41,6 +42,7 @@ export interface AcpBddFixtureOptions {
   workspaceFiles?: string[];
   delayMs?: number;
   listDelayMs?: number;
+  newSessionDelayMs?: number;
   longStreamTicks?: number;
   historyMessageCount?: number;
   sessionPrefix?: string;
@@ -195,6 +197,10 @@ export function getMockAcpAgentCommand(options: AcpBddFixtureOptions) {
   if (options.listDelayMs !== undefined) {
     args.push(`--list-delay-ms=${options.listDelayMs}`);
     env.OPENSUMI_ACP_BDD_LIST_DELAY_MS = String(options.listDelayMs);
+  }
+  if (options.newSessionDelayMs !== undefined) {
+    args.push(`--new-session-delay-ms=${options.newSessionDelayMs}`);
+    env.OPENSUMI_ACP_BDD_NEW_SESSION_DELAY_MS = String(options.newSessionDelayMs);
   }
   if (options.longStreamTicks !== undefined) {
     args.push(`--long-stream-ticks=${options.longStreamTicks}`);
@@ -426,6 +432,12 @@ export async function loadAcpBddFixtureWorkbench(
   let workspace: OpenSumiWorkspace | undefined;
 
   try {
+    // A dead shared page (a previous spec file's hooks-level afterAll closed the
+    // context; top-level hooks only ever attach to the first spec file in a
+    // worker) is healed here so multi-spec invocations keep working.
+    if (page.isClosed()) {
+      page = await ensurePage();
+    }
     if (runtimeOptions.viewport) {
       await page.setViewportSize(runtimeOptions.viewport);
     }
