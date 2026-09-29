@@ -28,6 +28,7 @@ import {
   AcpSessionConfigOption,
   AcpSessionModeOption,
   AcpSessionModelOption,
+  isAcpResponsePending,
 } from './session-provider';
 
 const ACP_LOAD_SESSION_FALLBACK_MESSAGE =
@@ -225,6 +226,14 @@ export class AcpChatInternalService extends ChatInternalService {
   private draftSessionState: AcpDraftSessionState = {};
   /** Unsent input drafts, keyed by bound session id (`ACP_INPUT_DRAFT_SLOT` while in the draft phase). */
   private inputDrafts = new Map<string, AcpTurnDraft>();
+  /**
+   * Config changes made while the agent is still working on a prompt, keyed by the
+   * raw agent session id. ACP agents are not required to tolerate
+   * `session/set_config_option` during an active prompt (real agents crash), so
+   * changes taken mid-turn are held here and flushed at the next turn boundary
+   * instead of hitting the wire immediately. Latest value per option id wins.
+   */
+  private readonly pendingConfigOptionChanges = new Map<string, Map<string, boolean | string>>();
 
   private sessionStateDisposable: IDisposable | undefined;
 
@@ -406,6 +415,9 @@ export class AcpChatInternalService extends ChatInternalService {
     }
 
     try {
+      // A turn boundary is crossing: apply any config change taken mid-turn
+      // (e.g. a model switch) before this request reaches the agent.
+      await this.flushPendingConfigOptionChanges(sessionId);
       let registrationBarrier = this.agentSessionCatalogRefreshBarriers.get(sessionId);
       const result = this.chatManagerService.sendRequest(sessionId, request, regenerate, () => {
         requestAccepted = true;
@@ -1072,24 +1084,83 @@ export class AcpChatInternalService extends ChatInternalService {
   }
 
   async setSessionConfigOption(configId: string, value: boolean | string): Promise<void> {
-    const sessionId = this._sessionModel ? this.stripAcpPrefix(this._sessionModel.sessionId) : undefined;
-    if (!sessionId) {
+    const sessionModel = this._sessionModel;
+    if (!sessionModel) {
       this.updateDraftConfigOption(configId, value);
       return;
     }
 
+    if (isAcpResponsePending(sessionModel.threadStatus)) {
+      // The agent is still working on a prompt. Hold the change for the next
+      // turn boundary (queue drain, Immediate Send, or a manual send) instead
+      // of touching the wire: real agents reject or even crash on a
+      // session/set_config_option that arrives mid-prompt. Update the local
+      // model right away so the UI reflects the user's choice.
+      this.stagePendingConfigOptionChange(sessionModel, configId, value);
+      return;
+    }
+
+    const sessionId = this.stripAcpPrefix(sessionModel.sessionId);
     try {
       await this.aiBackService.setSessionConfigOption?.(sessionId, configId, value);
-      if (this._sessionModel) {
-        this._sessionModel.configOptions = this._sessionModel.configOptions.map((option) => {
-          const optionId = option.id || option.configId;
-          return optionId === configId ? updateConfigOptionValue(option, value) : option;
-        });
-        this._onSessionModelChange.fire(this._sessionModel);
-      }
+      this.applyLocalConfigOptionValue(sessionModel, configId, value);
     } catch (e) {
       this.messageService.error((e as Error).message);
     }
+  }
+
+  private stagePendingConfigOptionChange(sessionModel: ChatModel, configId: string, value: boolean | string): void {
+    const agentSessionId = this.stripAcpPrefix(sessionModel.sessionId);
+    const pending = this.pendingConfigOptionChanges.get(agentSessionId) || new Map<string, boolean | string>();
+    pending.set(configId, value);
+    this.pendingConfigOptionChanges.set(agentSessionId, pending);
+    this.applyLocalConfigOptionValue(sessionModel, configId, value);
+  }
+
+  private applyLocalConfigOptionValue(sessionModel: ChatModel, configId: string, value: boolean | string): void {
+    sessionModel.configOptions = (sessionModel.configOptions || []).map((option) => {
+      const optionId = option.id || option.configId;
+      return optionId === configId ? updateConfigOptionValue(option, value) : option;
+    });
+    this._onSessionModelChange.fire(sessionModel);
+  }
+
+  private async flushPendingConfigOptionChanges(sessionIdLike: string | undefined): Promise<void> {
+    if (!sessionIdLike) {
+      return;
+    }
+    const agentSessionId = this.stripAcpPrefix(sessionIdLike);
+    const pending = this.pendingConfigOptionChanges.get(agentSessionId);
+    if (!pending || pending.size === 0) {
+      return;
+    }
+    // A turn may still be running when this is reached through a non-drain
+    // path; keep deferring until the thread actually settles.
+    if (this._sessionModel && this.stripAcpPrefix(this._sessionModel.sessionId) === agentSessionId) {
+      if (isAcpResponsePending(this._sessionModel.threadStatus)) {
+        return;
+      }
+    }
+    this.pendingConfigOptionChanges.delete(agentSessionId);
+    for (const [configId, value] of pending) {
+      try {
+        await this.aiBackService.setSessionConfigOption?.(agentSessionId, configId, value);
+        if (this._sessionModel && this.stripAcpPrefix(this._sessionModel.sessionId) === agentSessionId) {
+          this.applyLocalConfigOptionValue(this._sessionModel, configId, value);
+        }
+        this.logger.log(`[ACP Chat][Frontend] applied deferred config option "${configId}" at a turn boundary`);
+      } catch (error) {
+        this.logger.warn?.(`[ACP Chat][Frontend] Failed to apply deferred config option "${configId}"`, error);
+      }
+    }
+  }
+
+  private dropPendingConfigOptionsFor(sessionIdLike: string | undefined): void {
+    if (!sessionIdLike) {
+      return;
+    }
+    this.pendingConfigOptionChanges.delete(sessionIdLike);
+    this.pendingConfigOptionChanges.delete(this.stripAcpPrefix(sessionIdLike));
   }
 
   override async createSessionModel() {
@@ -1111,6 +1182,8 @@ export class AcpChatInternalService extends ChatInternalService {
     // A cleared session's unsent input draft dies with it — never resurface into
     // a later session that happens to reuse the id.
     this.inputDrafts.delete(sessionId);
+    // Deferred config changes die with the session as well.
+    this.dropPendingConfigOptionsFor(sessionId);
     const clearedSessionId =
       this._sessionModel && sessionId === this._sessionModel.sessionId ? this.stripAcpPrefix(sessionId) : undefined;
     try {

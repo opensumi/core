@@ -959,6 +959,67 @@ describe('AcpChatInternalService', () => {
       expect(service.sessionModel.configOptions[0].currentValue).toBe('always');
     });
 
+    it('defers mid-turn config option changes to the next turn boundary', async () => {
+      const { aiBackService, model, service } = createService();
+      service._sessionModel = model;
+      model.setThreadStatus('working');
+
+      // The change must stay local: real agents crash on set_config_option
+      // while a prompt is still active.
+      await service.setSessionConfigOption('approval', 'always');
+
+      expect(aiBackService.setSessionConfigOption).not.toHaveBeenCalled();
+      // But the UI state reflects the user's choice right away.
+      expect(model.configOptions[0].currentValue).toBe('always');
+
+      // Crossing a turn boundary (any dispatch) applies the change first. The
+      // thread settles before a queued turn can dispatch, mirroring the drain.
+      model.setThreadStatus('awaiting_prompt');
+      const request = {
+        requestId: 'req-1',
+        message: { agentId: 'agent-b', command: undefined, prompt: 'next', images: [] },
+        response: { isComplete: false, setErrorDetails: jest.fn(), complete: jest.fn() },
+      };
+      await expect(service.sendRequest(request as any)).resolves.toBeUndefined();
+
+      expect(aiBackService.setSessionConfigOption).toHaveBeenCalledWith('sess-1', 'approval', 'always');
+      expect(aiBackService.setSessionConfigOption.mock.calls[0][1]).toBe('approval');
+      expect(model.configOptions[0].currentValue).toBe('always');
+    });
+
+    it('keeps only the latest value per config option when flushing deferred changes', async () => {
+      const { aiBackService, model, service } = createService();
+      service._sessionModel = model;
+      model.setThreadStatus('working');
+
+      await service.setSessionConfigOption('approval', 'always');
+      await service.setSessionConfigOption('approval', 'default');
+      await service.setSessionConfigOption('approval', 'always');
+
+      expect(aiBackService.setSessionConfigOption).not.toHaveBeenCalled();
+
+      model.setThreadStatus('awaiting_prompt');
+      await service['flushPendingConfigOptionChanges'](model.sessionId);
+
+      expect(aiBackService.setSessionConfigOption).toHaveBeenCalledTimes(1);
+      expect(aiBackService.setSessionConfigOption).toHaveBeenCalledWith('sess-1', 'approval', 'always');
+    });
+
+    it('drops deferred config option changes when the session is cleared', async () => {
+      const { aiBackService, chatManagerService, model, service } = createService();
+      service._sessionModel = model;
+      model.setThreadStatus('working');
+
+      await service.setSessionConfigOption('approval', 'always');
+
+      service.clearSessionModel();
+      model.setThreadStatus('awaiting_prompt');
+      await service['flushPendingConfigOptionChanges'](model.sessionId);
+
+      expect(aiBackService.setSessionConfigOption).not.toHaveBeenCalled();
+      expect(chatManagerService.disposeSession).toHaveBeenCalledWith('acp:sess-1');
+    });
+
     it('clears the current ACP session into draft without creating another session', async () => {
       const { chatManagerService, model, permissionBridgeService, service } = createService();
       service._sessionModel = model;
