@@ -12,6 +12,10 @@ const DEFAULT_LONG_STREAM_TICKS = 80;
 const PROCESS_EXIT_FIXTURE_CODE = 17;
 const TASK_SESSION_MISSING_EXIT_CODE = 18;
 
+function parseBooleanEnv(value) {
+  return value === '1' || value === 'true';
+}
+
 function parseArgs(argv) {
   const options = {
     fixture: process.env.OPENSUMI_ACP_BDD_FIXTURE || 'stream-rich',
@@ -20,6 +24,7 @@ function parseArgs(argv) {
     historyMessageCount: Number(process.env.OPENSUMI_ACP_BDD_HISTORY_MESSAGE_COUNT || 0),
     listDelayMs: Number(process.env.OPENSUMI_ACP_BDD_LIST_DELAY_MS || 0),
     newSessionDelayMs: Number(process.env.OPENSUMI_ACP_BDD_NEW_SESSION_DELAY_MS || 0),
+    crashOnConfigChange: parseBooleanEnv(process.env.OPENSUMI_ACP_BDD_CRASH_ON_CONFIG_CHANGE),
     sessionPrefix: process.env.OPENSUMI_ACP_BDD_SESSION_PREFIX || 'bdd-session',
     verbose: process.env.OPENSUMI_ACP_BDD_VERBOSE === '1',
     help: false,
@@ -53,6 +58,8 @@ function parseArgs(argv) {
       options.newSessionDelayMs = Number(argv[++i] || options.newSessionDelayMs);
     } else if (arg.startsWith('--new-session-delay-ms=')) {
       options.newSessionDelayMs = Number(arg.slice('--new-session-delay-ms='.length));
+    } else if (arg === '--crash-on-config-change') {
+      options.crashOnConfigChange = true;
     } else if (arg === '--session-prefix') {
       options.sessionPrefix = argv[++i] || options.sessionPrefix;
     } else if (arg.startsWith('--session-prefix=')) {
@@ -93,6 +100,7 @@ Options:
   --history-message-count <n> Number of visible messages seeded for each history session.
   --list-delay-ms <ms>     Delay before answering session/list. Defaults to no extra delay.
   --new-session-delay-ms <ms>  Delay before answering session/new. Defaults to no extra delay.
+  --crash-on-config-change   Exit when session/set_config_option arrives during an active prompt (simulates real agents).
   --session-prefix <text>  Prefix for generated session ids.
   --verbose                Write diagnostics to stderr.
 
@@ -824,6 +832,14 @@ Inline \`notes/agent-note.md:1:1\`
     async setSessionConfigOption(params) {
       if (options.fixture === 'config-failure') {
         throw RequestError.invalidParams({ fixture: options.fixture, configId: params.configId }, 'BDD config failure');
+      }
+
+      if (options.crashOnConfigChange && pendingPrompts.has(params.sessionId)) {
+        console.error(
+          '[mock-acp-agent] CRASH (kernel knob): session/set_config_option during an active prompt — exiting like real agents do',
+        );
+        await sleep(5);
+        process.exit(70);
       }
 
       const session = getOrCreateSession(params.sessionId);

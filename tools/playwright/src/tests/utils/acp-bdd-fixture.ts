@@ -45,6 +45,8 @@ export interface AcpBddFixtureOptions {
   listDelayMs?: number;
   newSessionDelayMs?: number;
   longStreamTicks?: number;
+  /** Exit the mock agent when a config change arrives during an active prompt (simulates real agents). */
+  crashOnConfigChange?: boolean;
   historyMessageCount?: number;
   sessionPrefix?: string;
   agentType?: string;
@@ -206,6 +208,10 @@ export function getMockAcpAgentCommand(options: AcpBddFixtureOptions) {
   if (options.longStreamTicks !== undefined) {
     args.push(`--long-stream-ticks=${options.longStreamTicks}`);
     env.OPENSUMI_ACP_BDD_LONG_STREAM_TICKS = String(options.longStreamTicks);
+  }
+  if (options.crashOnConfigChange) {
+    args.push('--crash-on-config-change');
+    env.OPENSUMI_ACP_BDD_CRASH_ON_CONFIG_CHANGE = '1';
   }
   if (options.historyMessageCount !== undefined) {
     args.push(`--history-message-count=${options.historyMessageCount}`);
