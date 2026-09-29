@@ -44,11 +44,17 @@ class ControlledTurnPort implements AcpQueuedTurnPort {
 class ControlledStartTurnPort extends ControlledTurnPort {
   readonly startRequested = new Deferred<void>();
   readonly releaseStart = new Deferred<void>();
+  readonly pendingStartCancellations: Array<string | undefined> = [];
 
   override async start(sessionId: string | undefined, draft: AcpTurnDraft): Promise<AcpTurnHandle> {
     this.startRequested.resolve();
     await this.releaseStart.promise;
     return super.start(sessionId, draft);
+  }
+
+  override async cancelPendingStart(sessionId: string | undefined): Promise<void> {
+    this.pendingStartCancellations.push(sessionId);
+    this.releaseStart.reject(new Error('session creation cancelled'));
   }
 }
 
@@ -152,6 +158,36 @@ class RepeatableOutcomeTurnPort implements AcpQueuedTurnPort {
 }
 
 describe('AcpQueuedTurnModule', () => {
+  it('exposes and cancels a pending first Task launch without retaining a queued duplicate', async () => {
+    const port = new ControlledStartTurnPort();
+    const turns = new AcpQueuedTurnModule(port);
+
+    const submit = turns.submit({ message: 'keep this draft', agentId: 'agent-a' });
+    await port.startRequested.promise;
+
+    expect(turns.snapshot.initialStartPending).toBe(true);
+    await expect(turns.cancelInitialStart()).resolves.toEqual({ accepted: true, outcome: 'stopped' });
+    await expect(submit).resolves.toEqual({ accepted: false, reason: 'start-cancelled' });
+    expect(port.pendingStartCancellations).toEqual([undefined]);
+    expect(turns.snapshot.initialStartPending).toBe(false);
+    expect(turns.snapshot.entries).toEqual([]);
+    expect(turns.snapshot.phase).toBe('idle');
+  });
+
+  it('retries a failed first launch with the latest visible Draft values', async () => {
+    const port = new RejectingNextStartTurnPort();
+    port.failNextStart = true;
+    const turns = new AcpQueuedTurnModule(port);
+
+    await turns.submit({ message: 'stale prompt', agentId: 'agent-a' });
+    expect(turns.snapshot.pauseReason).toBe('start-failed');
+
+    expect(turns.replaceFailedStartDraft({ message: 'edited prompt', agentId: 'agent-b' })).toBe(true);
+    await turns.resume();
+
+    expect(port.starts[0].draft).toEqual(expect.objectContaining({ message: 'edited prompt', agentId: 'agent-b' }));
+  });
+
   it('rejects an Active Session turn without a sendable ACP payload', async () => {
     const port = new ControlledTurnPort();
     const turns = new AcpQueuedTurnModule(port);

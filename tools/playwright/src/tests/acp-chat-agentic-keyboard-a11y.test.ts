@@ -25,6 +25,13 @@ async function clearInput() {
   });
 }
 
+async function executeTool<T>(name: string, args: Record<string, unknown> = {}) {
+  return page.evaluate(
+    async ({ toolName, toolArgs }) => (navigator as any).modelContext.executeTool(toolName, toolArgs),
+    { toolName: name, toolArgs: args },
+  ) as Promise<{ success: boolean; result: T }>;
+}
+
 test.describe('ACP Chat Agentic 键盘可访问性', () => {
   test.setTimeout(ACP_BDD_FIXTURE_HOOK_TIMEOUT_MS);
 
@@ -82,11 +89,28 @@ test.describe('ACP Chat Agentic 键盘可访问性', () => {
 
     await clearInput();
     await page.keyboard.insertText('BDD keyboard tool disclosure');
+    const stateBefore = await executeTool<{ session: { historyMessageCount: number } | null }>(
+      'acp_chat_get_session_state',
+    );
+    const historyMessageCountBefore = stateBefore.result.session?.historyMessageCount ?? 0;
     const completion = page.locator('.AI-Chat-slot').getByText(COMPLETION);
-    const completionCount = await completion.count();
     await page.keyboard.press('Enter');
-    await expect(completion).toHaveCount(completionCount + 1, { timeout: 30_000 });
-    const toolHeader = page.getByRole('button', { name: /BDD deterministic tool/ }).last();
+    await expect
+      .poll(
+        async () => {
+          const state = await executeTool<{ session: { historyMessageCount: number } | null }>(
+            'acp_chat_get_session_state',
+          );
+          return state.result.session?.historyMessageCount ?? 0;
+        },
+        { timeout: 30_000 },
+      )
+      .toBe(historyMessageCountBefore + 2);
+    await expect(completion.last()).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('button', { name: 'Send' })).toBeVisible({ timeout: 30_000 });
+    const latestAssistantRow = completion.last().locator('xpath=ancestor::*[@data-message-id][1]');
+    const toolHeader = latestAssistantRow.getByRole('button', { name: /BDD deterministic tool/ });
+    await expect(toolHeader).toBeVisible();
     await expect(toolHeader).toHaveAttribute('aria-expanded', 'false');
     const toolContent = toolHeader.locator('xpath=following-sibling::div[1]');
     await expect(toolContent).toHaveAttribute('inert', '');

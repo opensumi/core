@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { IClipboardService, useInjectable } from '@opensumi/ide-core-browser';
 import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
-import { ChatRenderRegistryToken, isUndefined, localize } from '@opensumi/ide-core-common';
+import { ChatRenderRegistryToken, isUndefined, localize, runWhenIdle } from '@opensumi/ide-core-common';
 
 import { IChatInternalService } from '../../common/index';
 import { ChatInternalService } from '../chat/chat.internal.service';
@@ -19,6 +19,7 @@ interface ITinkingProps {
   requestId?: string;
   thinkingText?: string;
   showRegenerate?: boolean;
+  copyContent?: string;
 }
 
 export const ChatThinking = (props: ITinkingProps) => {
@@ -80,10 +81,13 @@ export const ChatThinkingResult = ({
   requestId,
   hasMessage = true,
   showRegenerate,
+  copyContent,
 }: ITinkingProps) => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const clipboardService = useInjectable<IClipboardService>(IClipboardService);
   const [latestRequestId, setLatestRequestId] = useState(aiChatService.latestRequestId);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const [isCopied, setIsCopied] = useState<boolean>(false);
 
   useEffect(() => {
     const dispose = aiChatService.onChangeRequestId((id) => {
@@ -103,6 +107,17 @@ export const ChatThinkingResult = ({
       onRegenerate();
     }
   }, [onRegenerate]);
+
+  const handleCopy = useCallback(async () => {
+    if (!copyContent) {
+      return;
+    }
+    await clipboardService.writeText(copyContent);
+    setIsCopied(true);
+    runWhenIdle(() => {
+      setIsCopied(false);
+    }, 1000);
+  }, [clipboardService, copyContent]);
 
   const renderContent = useCallback(() => {
     if (typeof hasMessage === 'boolean' ? !hasMessage : !message?.trim()) {
@@ -140,6 +155,19 @@ export const ChatThinkingResult = ({
                 role='button'
               >
                 <span>{localize('aiNative.operate.afresh.title')}</span>
+              </EnhanceIcon>
+            ) : null}
+            {copyContent ? (
+              <EnhanceIcon
+                icon={'copy'}
+                wrapperClassName={styles.text_btn}
+                className={styles.copy_icon}
+                onClick={handleCopy}
+                tabIndex={0}
+                role='button'
+                ariaLabel={localize('aiNative.chat.message.copy')}
+              >
+                <span>{localize(isCopied ? 'aiNative.chat.message.copy.success' : 'aiNative.chat.message.copy')}</span>
               </EnhanceIcon>
             ) : null}
           </div>

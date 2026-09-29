@@ -7,6 +7,7 @@ import {
   ListSessionsRequest,
   ListSessionsResponse,
   McpServer,
+  NewSessionResponse,
   OpenSumiMcpServerConnectionInfo,
   SessionInfo,
   SessionNotification,
@@ -27,6 +28,7 @@ import {
   AcpThreadEvent,
   AcpThreadFactory,
   AcpThreadFactoryToken,
+  AcpThreadInitializationCancelledError,
   AcpThreadRuntimeConfig,
   ThreadStatus,
 } from './acp-thread';
@@ -50,6 +52,15 @@ const WEBMCP_CAPABILITY_HINT = [
 ].join('\n');
 
 const PENDING_CREATE_SESSION_LOG_LABEL = 'pending-create-session';
+const ACP_SESSION_CREATION_CANCELLED_ERROR_NAME = 'ACP_SESSION_CREATION_CANCELLED';
+
+class AcpSessionCreationCancelledError extends Error {
+  override name = ACP_SESSION_CREATION_CANCELLED_ERROR_NAME;
+
+  constructor() {
+    super('ACP session creation was cancelled.');
+  }
+}
 
 function mapSessionLoadError(error: unknown): unknown {
   if (error && typeof error === 'object' && (error as { code?: unknown }).code === -32002) {
@@ -101,6 +112,7 @@ export interface SessionLoadResult {
   configOptions?: Record<string, any>[];
   status: AgentSessionStatus;
   threadStatus?: ThreadStatus;
+  availableCommands?: AvailableCommand[];
   historyUpdates: SessionNotification[];
 }
 
@@ -117,6 +129,13 @@ interface PendingSessionLoad {
   refCount: number;
   thread: AcpThread;
   closeRequested: boolean;
+}
+
+interface PendingSessionCreation {
+  cancellation: Deferred<void>;
+  cancelled: boolean;
+  disposed: boolean;
+  thread?: AcpThread;
 }
 
 type AgentThreadRuntimeConfigKey = Pick<
@@ -194,7 +213,10 @@ export interface IAcpAgentService {
   /**
    * Create a new session
    */
-  createSession(config: AgentProcessConfig): Promise<{
+  createSession(
+    config: AgentProcessConfig,
+    operationId?: string,
+  ): Promise<{
     sessionId: string;
     availableCommands: AvailableCommand[];
     modes?: Array<{ id: string; name: string; description?: string }>;
@@ -204,11 +226,20 @@ export interface IAcpAgentService {
     configOptions?: Record<string, any>[];
   }>;
 
+  /** Cancel a createSession call before it binds a durable ACP session. */
+  cancelSessionCreation(operationId: string): Promise<void>;
+
   /**
    * Start and initialize the idle thread pool for one runtime configuration.
    * Does not create an ACP session.
    */
   warmUpAgentPool(config: AgentProcessConfig): Promise<void>;
+
+  /** Declare or clear the single compatible standby target. */
+  setStandbyTarget(config?: AgentProcessConfig): Promise<void>;
+
+  /** Read standard ACP session capabilities after initialize without creating a session. */
+  getSessionCapabilities(config: AgentProcessConfig): Promise<{ close: boolean; delete: boolean }>;
 
   /**
    * List all ACP Agent sessions
@@ -238,6 +269,9 @@ export interface IAcpAgentService {
 
   /** Close a session without disposing the thread */
   closeSession(params: { sessionId: string }): Promise<void>;
+
+  /** Remove a session from the Agent's session/list history when supported. */
+  deleteSession(params: { sessionId: string }): Promise<void>;
 
   /** Switch the AI model for the session */
   setSessionModel(params: { sessionId: string; model: string }): Promise<void>;
@@ -327,12 +361,23 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // Threads reserved by createSession() before the real ACP sessionId is known.
   private reservedThreads = new Set<AcpThread>();
 
+  // Browser launch operation -> unbound foreground thread. This lets a Task
+  // Draft cancel process startup before an ACP session id exists.
+  private pendingSessionCreations = new Map<string, PendingSessionCreation>();
+
   // Threads that have been added to the pool but are still completing ACP
   // initialize(). They cannot be used until a caller explicitly claims them.
   private warmingThreads = new Map<AcpThread, Promise<void>>();
 
-  // One background warmup task per agent runtime configuration.
-  private poolWarmups = new Map<string, Promise<void>>();
+  // Latest browser-declared standby target. Reconciliation remains owned by
+  // this service so active, warming, and standby processes share one limit.
+  private standbyTarget: AgentProcessConfig | undefined;
+  private standbyTargetKey: string | undefined;
+  private standbyRetryTimer: ReturnType<typeof setTimeout> | undefined;
+  private standbyFailureCount = 0;
+  private standbyReconcilePromise: Promise<void> | undefined;
+  private standbyReconcileRequested = false;
+  private standbyUnsatisfiedSince: number | undefined;
 
   // Service lifecycle gate. Foreground acquisition operations that started
   // before shutdown are drained before any pooled process is disposed.
@@ -530,7 +575,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
    * Claim an in-flight prewarmed thread so the caller can wait for the same
    * initialization instead of starting a duplicate CLI process.
    */
-  private async reserveWarmingThread(config: AgentProcessConfig): Promise<AcpThread | undefined> {
+  private async reserveWarmingThread(
+    config: AgentProcessConfig,
+    pendingCreation?: PendingSessionCreation,
+  ): Promise<AcpThread | undefined> {
     const thread = this.threadPool.find(
       (candidate) =>
         !this.reservedThreads.has(candidate) &&
@@ -548,6 +596,14 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
 
     this.reservedThreads.add(thread);
+    if (pendingCreation) {
+      pendingCreation.thread = thread;
+    }
+    this.markStandbyUnsatisfiedForClaim(thread);
+    this.logger.log(
+      `[AcpAgentService] standby-warmup-claim — threadId=${thread.threadId}, pool=${this.threadPool.length}/${this.maxPoolSize}`,
+    );
+    this.requestStandbyReconcile();
     try {
       await warmup;
       this.throwIfStopping();
@@ -589,6 +645,198 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     const index = this.threadPool.indexOf(thread);
     if (index !== -1) {
       this.threadPool.splice(index, 1);
+    }
+  }
+
+  private isInitializationCancellation(error: unknown): boolean {
+    return (
+      error instanceof AcpThreadInitializationCancelledError ||
+      (error instanceof Error && error.name === 'AcpThreadInitializationCancelledError')
+    );
+  }
+
+  private clearStandbyRetry(): void {
+    if (this.standbyRetryTimer) {
+      clearTimeout(this.standbyRetryTimer);
+      this.standbyRetryTimer = undefined;
+    }
+  }
+
+  private markStandbyUnsatisfied(): void {
+    if (this.standbyTarget && this.standbyUnsatisfiedSince === undefined) {
+      this.standbyUnsatisfiedSince = Date.now();
+    }
+  }
+
+  private markStandbyUnsatisfiedForClaim(thread: AcpThread): void {
+    if (this.threadRuntimeConfigKeys.get(thread) === this.standbyTargetKey) {
+      this.markStandbyUnsatisfied();
+    }
+  }
+
+  private logStandbySatisfied(): void {
+    if (this.standbyUnsatisfiedSince === undefined) {
+      return;
+    }
+    this.logger.log(
+      `[AcpAgentService] standby-satisfied — unsatisfiedDurationMs=${Date.now() - this.standbyUnsatisfiedSince}, pool=${
+        this.threadPool.length
+      }/${this.maxPoolSize}`,
+    );
+    this.standbyUnsatisfiedSince = undefined;
+  }
+
+  private scheduleStandbyRetry(targetKey: string): void {
+    if (this.stopping || this.standbyTargetKey !== targetKey || this.standbyRetryTimer) {
+      return;
+    }
+    const delays = [1000, 5000, 30000];
+    const delay = delays[Math.min(this.standbyFailureCount, delays.length - 1)];
+    this.standbyFailureCount += 1;
+    this.standbyRetryTimer = setTimeout(() => {
+      this.standbyRetryTimer = undefined;
+      if (!this.stopping && this.standbyTargetKey === targetKey) {
+        void this.reconcileStandbyTarget();
+      }
+    }, delay);
+  }
+
+  private requestStandbyReconcile(): void {
+    if (!this.stopping && this.standbyTarget) {
+      if (this.standbyReconcilePromise) {
+        this.standbyReconcileRequested = true;
+        return;
+      }
+      void this.reconcileStandbyTarget();
+    }
+  }
+
+  private async reclaimObsoleteStandby(targetKey: string | undefined): Promise<void> {
+    const obsoleteThreads = this.threadPool.filter(
+      (thread) =>
+        !this.hasActiveSession(thread) &&
+        !this.reservedThreads.has(thread) &&
+        (this.warmingThreads.has(thread) || this.isThreadCapacityReclaimable(thread)) &&
+        this.threadRuntimeConfigKeys.get(thread) !== targetKey,
+    );
+    await Promise.all(
+      obsoleteThreads.map(async (thread) => {
+        this.reservedThreads.add(thread);
+        try {
+          await thread.dispose();
+        } finally {
+          this.warmingThreads.delete(thread);
+          this.removeThreadFromPool(thread);
+          this.reservedThreads.delete(thread);
+        }
+      }),
+    );
+  }
+
+  async setStandbyTarget(config?: AgentProcessConfig): Promise<void> {
+    if (this.stopping) {
+      return;
+    }
+    const nextKey = config ? this.createThreadRuntimeConfigKey(config) : undefined;
+    const changed = nextKey !== this.standbyTargetKey;
+    this.standbyTarget = config ? { ...config } : undefined;
+    this.standbyTargetKey = nextKey;
+    if (changed) {
+      this.clearStandbyRetry();
+      this.standbyFailureCount = 0;
+      this.standbyUnsatisfiedSince = config ? Date.now() : undefined;
+      const hasObsoleteStandby = this.threadPool.some(
+        (thread) =>
+          !this.hasActiveSession(thread) &&
+          !this.reservedThreads.has(thread) &&
+          this.threadRuntimeConfigKeys.get(thread) !== nextKey,
+      );
+      if (hasObsoleteStandby) {
+        await this.reclaimObsoleteStandby(nextKey);
+        await this.standbyReconcilePromise;
+      }
+    }
+    if (config) {
+      await this.reconcileStandbyTarget();
+    }
+  }
+
+  private reconcileStandbyTarget(): Promise<void> {
+    if (this.standbyReconcilePromise) {
+      return this.standbyReconcilePromise;
+    }
+    const reconciliation = this.doReconcileStandbyTarget().finally(() => {
+      if (this.standbyReconcilePromise === reconciliation) {
+        this.standbyReconcilePromise = undefined;
+        if (this.standbyReconcileRequested) {
+          this.standbyReconcileRequested = false;
+          this.requestStandbyReconcile();
+        }
+      }
+    });
+    this.standbyReconcilePromise = reconciliation;
+    return reconciliation;
+  }
+
+  private async doReconcileStandbyTarget(): Promise<void> {
+    const config = this.standbyTarget;
+    const targetKey = this.standbyTargetKey;
+    if (!config || !targetKey || this.stopping) {
+      return;
+    }
+    this.syncMaxPoolSize(config);
+    const hasObsoleteStandby = this.threadPool.some(
+      (thread) =>
+        !this.hasActiveSession(thread) &&
+        !this.reservedThreads.has(thread) &&
+        (this.warmingThreads.has(thread) || this.isThreadCapacityReclaimable(thread)) &&
+        this.threadRuntimeConfigKeys.get(thread) !== targetKey,
+    );
+    if (hasObsoleteStandby) {
+      await this.reclaimObsoleteStandby(targetKey);
+      if (this.stopping || this.standbyTargetKey !== targetKey) {
+        return;
+      }
+    }
+    const hasCompatibleStandby = this.threadPool.some(
+      (thread) =>
+        !this.hasActiveSession(thread) &&
+        !this.reservedThreads.has(thread) &&
+        this.threadRuntimeConfigKeys.get(thread) === targetKey &&
+        (this.warmingThreads.has(thread) || (thread.initialized && this.isThreadProcessReusable(thread))),
+    );
+    if (hasCompatibleStandby) {
+      this.logStandbySatisfied();
+      return;
+    }
+    if (this.threadPool.length >= this.maxPoolSize) {
+      this.markStandbyUnsatisfied();
+      return;
+    }
+
+    const thread = this.createThreadInstance('', config);
+    this.threadPool.push(thread);
+    const startedAt = Date.now();
+    try {
+      await this.initializeWarmingThread(thread, config, false);
+      if (this.stopping || this.standbyTargetKey !== targetKey) {
+        if (this.threadPool.includes(thread)) {
+          await thread.dispose();
+          this.removeThreadFromPool(thread);
+        }
+        return;
+      }
+      this.standbyFailureCount = 0;
+      this.logStandbySatisfied();
+      this.logger.log(
+        `[AcpAgentService] standby-ready — threadId=${thread.threadId}, durationMs=${Date.now() - startedAt}, pool=${
+          this.threadPool.length
+        }/${this.maxPoolSize}`,
+      );
+    } catch (error) {
+      if (!this.isInitializationCancellation(error)) {
+        this.scheduleStandbyRetry(targetKey);
+      }
     }
   }
 
@@ -850,16 +1098,27 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   /**
    * Find an idle thread or create a new one, without binding to a sessionId.
    */
-  private async findOrCreateIdleThread(config: AgentProcessConfig): Promise<AcpThread> {
+  private async findOrCreateIdleThread(
+    config: AgentProcessConfig,
+    pendingCreation?: PendingSessionCreation,
+  ): Promise<AcpThread> {
     this.syncMaxPoolSize(config);
 
     const idleThread = this.findReusableIdleThread(config);
     if (idleThread) {
       this.reservedThreads.add(idleThread);
+      if (pendingCreation) {
+        pendingCreation.thread = idleThread;
+      }
+      this.markStandbyUnsatisfiedForClaim(idleThread);
+      this.logger.log(
+        `[AcpAgentService] standby-hit — threadId=${idleThread.threadId}, pool=${this.threadPool.length}/${this.maxPoolSize}`,
+      );
+      this.requestStandbyReconcile();
       return idleThread;
     }
 
-    const warmingThread = await this.reserveWarmingThread(config);
+    const warmingThread = await this.reserveWarmingThread(config, pendingCreation);
 
     if (warmingThread) {
       return warmingThread;
@@ -867,7 +1126,14 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
     this.throwIfStopping();
     if (this.threadPool.length < this.maxPoolSize) {
-      return this.createReservedThread(undefined, config);
+      this.logger.log(
+        `[AcpAgentService] standby-cold-start — pool=${this.threadPool.length}/${this.maxPoolSize}, cwd=${config.cwd}`,
+      );
+      const thread = this.createReservedThread(undefined, config);
+      if (pendingCreation) {
+        pendingCreation.thread = thread;
+      }
+      return thread;
     }
 
     const recycledThread = await this.allocateThreadAtCapacity({ reason: 'create-session', config });
@@ -935,57 +1201,28 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
    * of spawning another process.
    */
   async warmUpAgentPool(config: AgentProcessConfig): Promise<void> {
-    if (this.stopping) {
-      return;
-    }
-    this.syncMaxPoolSize(config);
+    await this.setStandbyTarget(config);
+  }
 
-    const runtimeConfigKey = this.createThreadRuntimeConfigKey(config);
-    const existingWarmup = this.poolWarmups.get(runtimeConfigKey);
-    if (existingWarmup) {
-      return existingWarmup;
-    }
-
-    const warmup = this.doWarmUpAgentPool(config);
-    this.poolWarmups.set(runtimeConfigKey, warmup);
+  async getSessionCapabilities(config: AgentProcessConfig): Promise<{ close: boolean; delete: boolean }> {
+    const thread = await this.findOrCreateIdleThread(config);
     try {
-      await warmup;
-    } finally {
-      if (this.poolWarmups.get(runtimeConfigKey) === warmup) {
-        this.poolWarmups.delete(runtimeConfigKey);
+      if (!thread.initialized) {
+        await thread.initialize(config as any);
+        this.throwIfStopping();
       }
+      const capabilities = thread.agentCapabilities?.sessionCapabilities;
+      return {
+        close: capabilities?.close != null,
+        delete: capabilities?.delete != null,
+      };
+    } finally {
+      this.reservedThreads.delete(thread);
+      this.requestStandbyReconcile();
     }
   }
 
-  private async doWarmUpAgentPool(config: AgentProcessConfig): Promise<void> {
-    const hasLiveProcess = this.threadPool.some((thread) => thread.getStatus() !== 'disconnected');
-    const capacity = Math.max(0, this.maxPoolSize - this.threadPool.length);
-    const targetCount = hasLiveProcess || capacity === 0 ? 0 : 1;
-
-    if (targetCount === 0) {
-      return;
-    }
-
-    this.logger.log(
-      `[AcpAgentService] warmUpAgentPool() — starting ${targetCount} threads for command=${config.command}, cwd=${config.cwd}`,
-    );
-
-    const warmups: Promise<void>[] = [];
-    for (let index = 0; index < targetCount; index += 1) {
-      const thread = this.createThreadInstance('', config);
-      this.threadPool.push(thread);
-
-      warmups.push(this.initializeWarmingThread(thread, config));
-    }
-
-    await Promise.all(warmups);
-    this.logger.log(
-      `[AcpAgentService] warmUpAgentPool() — completed, pool=${this.threadPool.length}/${this.maxPoolSize}`,
-    );
-    this.logPoolStatus('after-warmUpAgentPool');
-  }
-
-  private initializeWarmingThread(thread: AcpThread, config: AgentProcessConfig): Promise<void> {
+  private initializeWarmingThread(thread: AcpThread, config: AgentProcessConfig, swallowFailure = true): Promise<void> {
     // Defer initialize to a microtask so the thread is visible as warming
     // before an implementation can synchronously throw.
     const warmup = Promise.resolve()
@@ -1010,6 +1247,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
               disposeError,
             )}`,
           );
+        }
+        if (!swallowFailure) {
+          throw error;
         }
       })
       .finally(() => {
@@ -1047,7 +1287,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   // createSession — with Deferred pattern (NOT setTimeout)
   // -----------------------------------------------------------------------
 
-  createSession(config: AgentProcessConfig): Promise<{
+  createSession(
+    config: AgentProcessConfig,
+    operationId?: string,
+  ): Promise<{
     sessionId: string;
     availableCommands: AvailableCommand[];
     modes?: Array<{ id: string; name: string; description?: string }>;
@@ -1056,10 +1299,38 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     currentModelId?: string;
     configOptions?: Record<string, any>[];
   }> {
-    return this.trackForegroundOperation(() => this.doCreateSession(config));
+    if (!operationId) {
+      return this.trackForegroundOperation(() => this.doCreateSession(config));
+    }
+    const pending: PendingSessionCreation = { cancellation: new Deferred<void>(), cancelled: false, disposed: false };
+    this.pendingSessionCreations.set(operationId, pending);
+    return this.trackForegroundOperation(() => this.doCreateSession(config, pending)).finally(() => {
+      if (this.pendingSessionCreations.get(operationId) === pending) {
+        this.pendingSessionCreations.delete(operationId);
+      }
+    });
   }
 
-  private async doCreateSession(config: AgentProcessConfig): Promise<{
+  async cancelSessionCreation(operationId: string): Promise<void> {
+    const pending = this.pendingSessionCreations.get(operationId);
+    if (!pending || pending.cancelled) {
+      return;
+    }
+    pending.cancelled = true;
+    pending.cancellation.resolve();
+    if (!pending.thread) {
+      return;
+    }
+    this.warmingThreads.delete(pending.thread);
+    this.removeThreadFromPool(pending.thread);
+    pending.disposed = true;
+    await pending.thread.dispose();
+  }
+
+  private async doCreateSession(
+    config: AgentProcessConfig,
+    pending?: PendingSessionCreation,
+  ): Promise<{
     sessionId: string;
     availableCommands: AvailableCommand[];
     modes?: Array<{ id: string; name: string; description?: string }>;
@@ -1068,17 +1339,39 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     currentModelId?: string;
     configOptions?: Record<string, any>[];
   }> {
+    const createStartedAt = Date.now();
+    const timings = {
+      threadAcquireMs: 0,
+      initializeMs: 0,
+      mcpSetupMs: 0,
+      newSessionRpcMs: 0,
+      defaultOptionsMs: 0,
+      commandDiscoveryMs: 0,
+    };
     this.logger.log(`[AcpAgentService] createSession() — cwd=${config.cwd}, command=${config.command}`);
-    const thread = await this.findOrCreateIdleThread(config);
+    const threadAcquireStartedAt = Date.now();
+    const thread = await this.findOrCreateIdleThread(config, pending);
+    timings.threadAcquireMs = Date.now() - threadAcquireStartedAt;
+    if (pending) {
+      pending.thread = thread;
+      if (pending.cancelled) {
+        this.removeThreadFromPool(thread);
+        pending.disposed = true;
+        await thread.dispose();
+        throw new AcpSessionCreationCancelledError();
+      }
+    }
 
-    const availableCommands: AvailableCommand[] = [];
+    let availableCommands: AvailableCommand[] = [];
     const deferred = new Deferred<void>();
+    let receivedAvailableCommands = false;
 
     const disposable = thread.onEvent((event: AcpThreadEvent) => {
       if (event.type === 'session_notification') {
         const update = (event.notification as any).update;
         if (update?.sessionUpdate === 'available_commands_update' && Array.isArray(update.availableCommands)) {
-          availableCommands.push(...update.availableCommands);
+          receivedAvailableCommands = true;
+          availableCommands = [...update.availableCommands];
           deferred.resolve();
         }
       }
@@ -1089,37 +1382,90 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     try {
       this.throwIfStopping();
       if (!thread.initialized) {
-        await thread.initialize(config as any);
+        const initializeStartedAt = Date.now();
+        try {
+          await thread.initialize(config as any);
+        } finally {
+          timings.initializeMs = Date.now() - initializeStartedAt;
+        }
         this.throwIfStopping();
+      }
+      if (pending?.cancelled) {
+        throw new AcpSessionCreationCancelledError();
       }
       if (thread.needsReset) {
         thread.reset();
       }
 
-      const mcpServers = await this.getSessionMcpServers(thread, config);
-      const newSessionResponse = await thread.newSession({
-        cwd: config.cwd,
-        mcpServers,
-      } as any);
+      const mcpSetupStartedAt = Date.now();
+      let mcpServers: McpServer[];
+      try {
+        mcpServers = await this.getSessionMcpServers(thread, config);
+      } finally {
+        timings.mcpSetupMs = Date.now() - mcpSetupStartedAt;
+      }
+      this.logger.log(
+        `[AcpAgentService] createSession() — MCP ready, durationMs=${timings.mcpSetupMs}, servers=${JSON.stringify(
+          mcpServers.map((server) => ({ name: server.name, type: (server as { type?: string }).type ?? 'stdio' })),
+        )}`,
+      );
+      if (pending?.cancelled) {
+        throw new AcpSessionCreationCancelledError();
+      }
+      const newSessionStartedAt = Date.now();
+      let newSessionResponse: NewSessionResponse;
+      try {
+        newSessionResponse = await thread.newSession({
+          cwd: config.cwd,
+          mcpServers,
+        } as any);
+      } finally {
+        timings.newSessionRpcMs = Date.now() - newSessionStartedAt;
+      }
 
       realSessionId = newSessionResponse.sessionId;
+      if (pending?.cancelled) {
+        throw new AcpSessionCreationCancelledError();
+      }
       this.setBuiltInMcpSessionState(realSessionId, this.didAppendBuiltInMcpServer(config, mcpServers));
-      await this.applyDefaultSessionOptions(realSessionId, thread, config);
+      const defaultOptionsStartedAt = Date.now();
+      try {
+        await this.applyDefaultSessionOptions(realSessionId, thread, config);
+      } finally {
+        timings.defaultOptionsMs = Date.now() - defaultOptionsStartedAt;
+      }
+      if (pending?.cancelled) {
+        throw new AcpSessionCreationCancelledError();
+      }
       this.bindSession(realSessionId, thread);
       this.sessionRefCounts.set(realSessionId, 1);
       this.permissionRouting.registerSession(realSessionId);
       this.registerThreadStatusListener(realSessionId, thread);
 
-      await Promise.race([deferred.promise, new Promise<void>((resolve) => setTimeout(resolve, 5000))]);
-
-      const seen = new Set<string>();
-      const deduplicated = availableCommands.filter((cmd) => {
-        if (seen.has(cmd.name)) {
-          return false;
-        }
-        seen.add(cmd.name);
-        return true;
-      });
+      const commandDiscoveryStartedAt = Date.now();
+      try {
+        await Promise.race([
+          deferred.promise,
+          new Promise<void>((resolve) => setTimeout(resolve, 5000)),
+          ...(pending
+            ? [
+                pending.cancellation.promise.then(() => {
+                  throw new AcpSessionCreationCancelledError();
+                }),
+              ]
+            : []),
+        ]);
+      } finally {
+        timings.commandDiscoveryMs = Date.now() - commandDiscoveryStartedAt;
+      }
+      this.logger.log(
+        `[AcpAgentService] createSession() — commands ready, outcome=${
+          receivedAvailableCommands ? 'notification' : 'timeout'
+        }, durationMs=${timings.commandDiscoveryMs}, count=${availableCommands.length}`,
+      );
+      if (pending?.cancelled) {
+        throw new AcpSessionCreationCancelledError();
+      }
 
       const sessionState = thread.getSessionState();
       const modes = sessionState.modes
@@ -1128,13 +1474,15 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       this.updateLastSessionInfo(realSessionId, thread, modes);
 
       this.logger.log(
-        `[AcpAgentService] createSession() — done, sessionId=${realSessionId}, commands=${deduplicated.length}`,
+        `[AcpAgentService] createSession() — done, sessionId=${realSessionId}, commands=${
+          availableCommands.length
+        }, totalDurationMs=${Date.now() - createStartedAt}, timings=${JSON.stringify(timings)}`,
       );
       this.logPoolStatus('after-createSession');
 
       return {
         sessionId: realSessionId,
-        availableCommands: deduplicated,
+        availableCommands,
         modes,
         currentModeId: sessionState.currentModeId,
         models: sessionState.models ? [...sessionState.models] : undefined,
@@ -1144,12 +1492,28 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
           : undefined,
       };
     } catch (e) {
-      this.logger.error(`[AcpAgentService] createSession() — failed: ${getAcpErrorMessage(e)}`);
+      if (pending?.cancelled) {
+        if (realSessionId) {
+          await this.releaseSessionResources(realSessionId);
+        }
+        this.removeThreadFromPool(thread);
+        if (!pending.disposed) {
+          pending.disposed = true;
+          await thread.dispose();
+        }
+        throw new AcpSessionCreationCancelledError();
+      }
+      this.logger.error(
+        `[AcpAgentService] createSession() — failed, totalDurationMs=${
+          Date.now() - createStartedAt
+        }, timings=${JSON.stringify(timings)}, error=${getAcpErrorMessage(e)}`,
+      );
       await this.cleanupFailedSessionOperation(realSessionId, thread);
       throw e;
     } finally {
       this.reservedThreads.delete(thread);
       disposable.dispose();
+      this.requestStandbyReconcile();
     }
   }
 
@@ -1304,6 +1668,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       })
       .finally(() => {
         this.pendingSessionLoads.delete(sessionId);
+        this.requestStandbyReconcile();
       });
 
     pending.promise = promise;
@@ -1350,6 +1715,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         : undefined,
       status: 'ready',
       threadStatus: thread.getStatus(),
+      availableCommands: sessionState.availableCommands ? [...sessionState.availableCommands] : undefined,
       historyUpdates,
     };
   }
@@ -1694,14 +2060,17 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     const sessionsMap = new Map<string, SessionInfo>();
     let lastNextCursor: string | undefined;
     let activeThreadCount = 0;
+    let successfulThreadCount = 0;
+    let lastError: unknown;
 
-    for (const [sessionId, thread] of this.sessions) {
+    for (const thread of this.sessions.values()) {
       if (thread.getStatus() === 'disconnected' || (config && !this.canReuseThreadForConfig(thread, config))) {
         continue;
       }
       activeThreadCount++;
       try {
         const result = await thread.listSessions(params);
+        successfulThreadCount++;
         if (result?.sessions) {
           for (const info of result.sessions) {
             sessionsMap.set(info.sessionId, info);
@@ -1712,7 +2081,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
           lastNextCursor = result.nextCursor;
         }
       } catch (error) {
-        this.logger?.warn(`[AcpAgentService] listSessions error for thread ${sessionId}, cwd=${thread.cwd}:`, error);
+        lastError = error;
+        this.logger?.warn(
+          `[AcpAgentService] listSessions failed — threadId=${thread.threadId}, errorType=${
+            error instanceof Error ? error.name : typeof error
+          }`,
+        );
       }
     }
 
@@ -1727,6 +2101,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
           thread.reset();
         }
         const result = await thread.listSessions(params);
+        successfulThreadCount++;
         if (result?.sessions) {
           for (const info of result.sessions) {
             sessionsMap.set(info.sessionId, info);
@@ -1737,10 +2112,20 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         }
         activeThreadCount = 1;
       } catch (error) {
-        this.logger?.warn(`[AcpAgentService] listSessions error for idle thread, cwd=${thread.cwd}:`, error);
+        lastError = error;
+        activeThreadCount = 1;
+        this.logger?.warn(
+          `[AcpAgentService] listSessions failed for idle thread — threadId=${thread.threadId}, errorType=${
+            error instanceof Error ? error.name : typeof error
+          }`,
+        );
       } finally {
         this.reservedThreads.delete(thread);
       }
+    }
+
+    if (activeThreadCount > 0 && successfulThreadCount === 0 && lastError !== undefined) {
+      throw normalizeAcpError(lastError);
     }
 
     // Single active thread: preserve its cursor for pagination
@@ -1950,11 +2335,19 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
     this.touchSession(params.sessionId);
     try {
-      await thread.unstable_closeSession({ sessionId: params.sessionId } as any);
+      await thread.closeSession({ sessionId: params.sessionId } as any);
     } catch (error) {
       this.logger?.warn(`[AcpAgentService] closeSession error for session ${params.sessionId}:`, error);
       throw error;
     }
+  }
+
+  async deleteSession(params: { sessionId: string }): Promise<void> {
+    const thread = this.sessions.get(params.sessionId);
+    if (!thread) {
+      throw new Error(`No active session for sessionId: ${params.sessionId}`);
+    }
+    await thread.deleteSession({ sessionId: params.sessionId });
   }
 
   // -----------------------------------------------------------------------
@@ -2036,6 +2429,7 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     this.sessionRefCounts.delete(sessionId);
     this.logPoolStatus('after-disposeSession');
     this.builtInMcpSessionIds.delete(sessionId);
+    this.requestStandbyReconcile();
   }
 
   // -----------------------------------------------------------------------
@@ -2085,12 +2479,21 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
   async stopAgent(): Promise<void> {
     this.stopping = true;
+    this.clearStandbyRetry();
+    this.standbyTarget = undefined;
+    this.standbyTargetKey = undefined;
     this.logger?.log(
       `[AcpAgentService] stopAgent() — disposing ${this.threadPool.length} threads, ${this.sessions.size} active sessions`,
     );
 
     const warmingPromises = [...this.warmingThreads.values()];
     const foregroundPromises = [...this.foregroundOperations];
+    const unclaimedWarmupThreads = [...this.warmingThreads.keys()].filter(
+      (thread) => !this.reservedThreads.has(thread) && !this.hasActiveSession(thread),
+    );
+    if (unclaimedWarmupThreads.length > 0) {
+      await Promise.allSettled(unclaimedWarmupThreads.map((thread) => thread.dispose()));
+    }
     if (warmingPromises.length > 0 || foregroundPromises.length > 0) {
       await Promise.allSettled([...warmingPromises, ...foregroundPromises]);
     }
@@ -2109,7 +2512,9 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     }
     this.threadPool = [];
     this.warmingThreads.clear();
-    this.poolWarmups.clear();
+    this.standbyReconcilePromise = undefined;
+    this.standbyReconcileRequested = false;
+    this.standbyFailureCount = 0;
     this.sessions.clear();
     this.pendingSessionLoads.clear();
     this.reservedThreads.clear();
@@ -2188,9 +2593,12 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
     switch (status) {
       case 'idle':
       case 'awaiting_prompt':
+      case 'auth_required':
         return 'ready';
       case 'working':
         return 'running';
+      case 'stopping':
+        return 'stopping';
       case 'disconnected':
         return 'stopped';
       case 'errored':

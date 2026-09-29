@@ -4,15 +4,17 @@ import {
   COMMON_COMMANDS,
   CommandService,
   PreferenceService,
+  fastdom,
   getIcon,
   localize,
   useInjectable,
 } from '@opensumi/ide-core-browser';
-import { PreferenceScope } from '@opensumi/ide-core-common';
+import { ChatInputRegistryToken, PreferenceScope } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { strings } from '@opensumi/ide-utils';
 
 import { AI_CHAT_NEW_TASK } from '../../chat/acp-new-draft.commands';
+import { ChatInputRegistry } from '../../chat/chat.input.registry';
 import chatStyles from '../../chat/chat.module.less';
 import {
   getAvailableAgentConfigs,
@@ -55,6 +57,7 @@ export function AgenticTaskLaunchMenu({
   const workspaceSwitch = useInjectable<AgenticWorkspaceSwitchService>(AgenticWorkspaceSwitchService);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const commandService = useInjectable<CommandService>(CommandService);
+  const chatInputRegistry = useInjectable<ChatInputRegistry>(ChatInputRegistryToken);
   const [agentMenuOpen, setAgentMenuOpen] = React.useState(false);
   const [launching, setLaunching] = React.useState(() => workspaceSwitch.isTaskLaunchPending);
   const isChatHeader = variant === 'chat-header';
@@ -88,9 +91,20 @@ export function AgenticTaskLaunchMenu({
   const projectAvailable = !!project && project.availability === 'available';
   const available = projectAvailable && agentOptions.length > 0;
   const preferredAvailableAgentId =
-    [project?.lastAgentId, preferredAgentId, getDefaultAgentType(preferenceService)].find(
+    [preferredAgentId, getDefaultAgentType(preferenceService)].find(
       (agentId): agentId is string => !!agentId && agentOptions.some((agent) => agent.id === agentId),
     ) ?? agentOptions[0]?.id;
+
+  const focusTaskDraftInput = React.useCallback(() => {
+    const focus = (attempt = 0) => {
+      chatInputRegistry.focusActiveInput();
+      if (chatInputRegistry.isActiveInputFocused() !== false || attempt >= 60) {
+        return;
+      }
+      fastdom.measureAtNextFrame(() => focus(attempt + 1));
+    };
+    focus();
+  }, [chatInputRegistry]);
 
   const launch = React.useCallback(
     async (agentId = preferredAvailableAgentId) => {
@@ -105,9 +119,10 @@ export function AgenticTaskLaunchMenu({
       const launched = await workspaceSwitch.launchTask(project, agentId);
       if (launched) {
         setAgentMenuOpen(false);
+        focusTaskDraftInput();
       }
     },
-    [commandService, isChatHeader, launching, preferredAvailableAgentId, project, workspaceSwitch],
+    [commandService, focusTaskDraftInput, isChatHeader, launching, preferredAvailableAgentId, project, workspaceSwitch],
   );
 
   const openAgentConfigurations = React.useCallback(async () => {
@@ -124,16 +139,23 @@ export function AgenticTaskLaunchMenu({
   }, [commandService, preferenceService]);
 
   if (!isChatHeader) {
-    const targetLabel = projectLabel || project?.label || project?.workspacePath || 'Project';
+    const targetLabel =
+      projectLabel ||
+      project?.label ||
+      project?.workspacePath ||
+      localize('aiNative.agentic.project.fallbackName', 'Project');
+    const launchTitle = strings.format(
+      localize('aiNative.agentic.project.newTask', 'New session for {0}'),
+      targetLabel,
+    );
     return (
       <div className={styles.launch_menu_group}>
         <button
-          aria-label={`New Task for ${targetLabel}`}
+          aria-label={launchTitle}
           className={styles.project_new_task}
           data-testid='agentic-task-launch-button'
           disabled={!available || launching}
           onClick={() => void launch()}
-          title={available ? `New Task for ${targetLabel}` : 'No ACP Agent available'}
           type='button'
         >
           <span aria-hidden='true' className='codicon codicon-add' />
@@ -148,10 +170,9 @@ export function AgenticTaskLaunchMenu({
     ? localize('aiNative.chat.newTask.workspaceUnavailable', 'Workspace Target unavailable')
     : !selectedAgent
     ? localize('aiNative.chat.newTask.noAgent', 'No ACP Agent available')
-    : `${strings.format(
-        localize('aiNative.chat.newTask.withAgent', 'New Task with {0}'),
-        selectedAgent.label,
-      )}${newTaskKeybinding ? ` (${newTaskKeybinding})` : ''}`;
+    : `${strings.format(localize('aiNative.chat.newTask.withAgent', 'New session with {0}'), selectedAgent.label)}${
+        newTaskKeybinding ? ` (${newTaskKeybinding})` : ''
+      }`;
 
   return (
     <div className={chatStyles.agentic_task_launch_menu_group}>
@@ -162,7 +183,6 @@ export function AgenticTaskLaunchMenu({
         data-testid='agentic-task-launch-button'
         disabled={!available || launching}
         onClick={() => void launch()}
-        title={launchTitle}
         type='button'
       >
         <span
@@ -178,7 +198,6 @@ export function AgenticTaskLaunchMenu({
         data-testid='agentic-task-agent-menu-button'
         disabled={!projectAvailable || launching}
         onClick={() => setAgentMenuOpen((open) => !open)}
-        title={chooseAgentLabel}
         type='button'
       >
         <span aria-hidden='true' className='codicon codicon-chevron-down' />

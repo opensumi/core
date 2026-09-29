@@ -40,6 +40,7 @@ test.describe('ACP Chat Agentic startup layout', () => {
   test('starts with a usable Agentic chat layout and safe default tool surface', async ({
     browser: _browser,
   }, testInfo) => {
+    void _browser;
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-startup', {
       sourceScenario: 'test/bdd/acp-chat-agentic-startup.scenario.md',
       profile: 'default',
@@ -100,6 +101,21 @@ test.describe('ACP Chat Agentic startup layout', () => {
       };
     });
 
+    const maximizeAction = page.locator('#agentic-chat-panel-header-maximize [role="button"]');
+    await expect(maximizeAction).toHaveAttribute('aria-label', 'Focus AI Chat');
+    await maximizeAction.click();
+    await expect(maximizeAction).toHaveAttribute('aria-label', 'Restore editor and Explorer');
+    const focusedLayout = await page.evaluate(() => {
+      const aiChat = document.querySelector('.AI-Chat-slot')?.getBoundingClientRect();
+      const workbench = document.querySelector('#workbench-editor')?.getBoundingClientRect();
+      return {
+        aiChat: aiChat && { x: aiChat.x, width: aiChat.width, height: aiChat.height },
+        workbench: workbench && { x: workbench.x, width: workbench.width, height: workbench.height },
+      };
+    });
+
+    await maximizeAction.click();
+    await expect(maximizeAction).toHaveAttribute('aria-label', 'Focus AI Chat');
     await ensureAgenticLayout(page);
     await waitForExplorerViewVisible(page);
     const restoredLayout = await page.evaluate(() => {
@@ -112,8 +128,8 @@ test.describe('ACP Chat Agentic startup layout', () => {
     });
     const layoutProof = await evidence.saveJson(
       '01-layout-and-tools',
-      { initialLayout, restoredLayout },
-      'collapsed startup geometry, restored workbench geometry, and default tool surface',
+      { initialLayout, focusedLayout, restoredLayout },
+      'default split geometry, focused chat geometry, restored workbench geometry, and default tool surface',
     );
     const layoutScreenshot = await evidence.captureScreenshot(page, '02-agentic-startup', 'Agentic chat startup UI');
 
@@ -123,12 +139,16 @@ test.describe('ACP Chat Agentic startup layout', () => {
       'acp_chat_show_chat_view',
     ]);
     expect(initialLayout.forbiddenTools).toEqual([]);
-    expect(initialLayout.aiChat?.width).toBeGreaterThanOrEqual(initialLayout.viewportWidth - 2);
-    expect(initialLayout.aiChat?.width).toBeLessThanOrEqual(initialLayout.viewportWidth + 2);
-    expect(initialLayout.workbench).toBeUndefined();
+    expect(initialLayout.aiChat?.x).toBeLessThan(initialLayout.workbench?.x ?? Number.POSITIVE_INFINITY);
+    expect(initialLayout.aiChat?.width).toBeGreaterThanOrEqual(640);
+    expect(initialLayout.aiChat?.width).toBeLessThanOrEqual(1440);
+    expect(initialLayout.workbench?.width).toBeGreaterThanOrEqual(480);
     expect(initialLayout.statusVisible).toBe(true);
     expect(initialLayout.state.success).toBe(true);
     expect(initialLayout.permission.success).toBe(true);
+    expect(focusedLayout.aiChat?.width).toBeGreaterThanOrEqual(initialLayout.viewportWidth - 2);
+    expect(focusedLayout.aiChat?.width).toBeLessThanOrEqual(initialLayout.viewportWidth + 2);
+    expect(focusedLayout.workbench).toBeUndefined();
     expect(restoredLayout.aiChat?.x).toBeLessThan(restoredLayout.workbench?.x ?? Number.POSITIVE_INFINITY);
     expect(restoredLayout.aiChat?.width).toBeGreaterThanOrEqual(640);
     expect(restoredLayout.aiChat?.width).toBeLessThanOrEqual(1440);
@@ -136,7 +156,7 @@ test.describe('ACP Chat Agentic startup layout', () => {
 
     evidence.recordCriticalPoint({
       id: 'CP1',
-      requirement: 'Agentic AI Chat starts as the only main surface and explicitly restores Explorer/workbench.',
+      requirement: 'Agentic AI Chat starts beside the workbench and supports a reversible full-screen focus mode.',
       status: 'pass',
       evidence: [layoutProof, layoutScreenshot].filter(Boolean) as string[],
     });

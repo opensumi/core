@@ -56,7 +56,7 @@ export class AIPanelLayoutService {
   private panelLayoutContextKey?: ReturnType<IContextKeyService['createKey']>;
   private initialized = false;
   private isSettingLayoutMode = false;
-  private agenticWorkbenchVisible = false;
+  private agenticWorkbenchVisible = true;
   private agenticWorkbenchWidthConstrained = false;
 
   initialize(): void {
@@ -229,7 +229,7 @@ export class AIPanelLayoutService {
   }
 
   private getDefaultAgenticWorkbenchVisibility(mode: PanelLayoutMode): boolean {
-    return normalizePanelLayoutMode(mode) !== 'agentic';
+    return normalizePanelLayoutMode(mode) === 'agentic';
   }
 
   private activateLayoutMode(mode: PanelLayoutMode, restoreAIChat = false): void {

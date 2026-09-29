@@ -210,7 +210,7 @@ describe('AgenticTaskRegistryService', () => {
     });
   });
 
-  it('drops legacy MRU-only Projects but retains task history and Project Agent recall', async () => {
+  it('retains Project-only authorization records without requiring legacy Task history', async () => {
     const mruOnlyProject = {
       ...project,
       id: 'file:///workspace/mru-only',
@@ -238,7 +238,7 @@ describe('AgenticTaskRegistryService', () => {
       rememberProjectAgent: (projectId: string, agentId: string) => Promise<AgenticProjectRecord | undefined>;
     };
 
-    await expect(registry.listProjects()).resolves.toEqual([taskProject]);
+    await expect(registry.listProjects()).resolves.toEqual([mruOnlyProject, taskProject]);
     await expect(projectManagementRegistry.rememberProjectAgent(taskProject.id, 'agent-b')).resolves.toMatchObject({
       lastAgentId: 'agent-b',
     });
@@ -331,6 +331,30 @@ describe('AgenticTaskRegistryService', () => {
     disposable.dispose();
   });
 
+  it('stores Agent Session archive markers separately from legacy Task records', async () => {
+    const archivedSession = {
+      sessionId: 'acp:session-a',
+      agentId: 'agent-a',
+      cwd: '/workspace/project-a',
+    };
+
+    await expect(registry.archiveAgentSession(archivedSession)).resolves.toBe(true);
+    await expect(registry.archiveAgentSession(archivedSession)).resolves.toBe(false);
+    await expect(registry.listArchivedAgentSessions()).resolves.toEqual([
+      expect.objectContaining({ ...archivedSession, archivedAt: expect.any(Number) }),
+    ]);
+
+    expect(storage.set).toHaveBeenCalledWith(
+      'agentic.archived-agent-sessions.v1',
+      expect.stringContaining('"sessionId":"acp:session-a"'),
+    );
+    expect(storage.set.mock.calls.at(-1)?.[1]).not.toContain('title');
+
+    await expect(registry.unarchiveAgentSession(archivedSession)).resolves.toBe(true);
+    await expect(registry.unarchiveAgentSession(archivedSession)).resolves.toBe(false);
+    await expect(registry.listArchivedAgentSessions()).resolves.toEqual([]);
+  });
+
   it.each(['ready', 'stopped', 'error'])('retains loaded %s tasks and permits archiving them', async (status) => {
     storage.get.mockReturnValue({
       version: 2,
@@ -353,7 +377,7 @@ describe('AgenticTaskRegistryService', () => {
     await expect(registry.archive('acp:loaded')).resolves.toBe(true);
   });
 
-  it.each([undefined, 'running', 'other'])('rejects archiving tasks with %s status', async (status) => {
+  it.each([undefined, 'running', 'stopping', 'other'])('rejects archiving tasks with %s status', async (status) => {
     const task = {
       sessionId: 'acp:loaded',
       projectId: project.id,
@@ -367,6 +391,28 @@ describe('AgenticTaskRegistryService', () => {
     storage.get.mockReturnValue({ version: 2, projects: [project], tasks: [task] });
 
     await expect(registry.archive('acp:loaded')).resolves.toBe(false);
+  });
+
+  it('retains a loaded stopping task as non-archivable last-known state', async () => {
+    storage.get.mockReturnValue({
+      version: 3,
+      projects: [project],
+      tasks: [
+        {
+          sessionId: 'acp:stopping',
+          projectId: project.id,
+          agentId: 'agent-a',
+          title: 'Stopping task',
+          createdAt: 1,
+          archived: false,
+          unread: false,
+          status: 'stopping',
+        },
+      ],
+    });
+
+    await expect(registry.getTask('acp:stopping')).resolves.toMatchObject({ status: 'stopping' });
+    await expect(registry.archive('acp:stopping')).resolves.toBe(false);
   });
 
   it('archives an unavailable Task without changing its last-known ACP status', async () => {
@@ -411,6 +457,15 @@ describe('AgenticTaskRegistryService', () => {
     expect(registry.consumePendingActivation()).toEqual({ sessionId: 'acp:a' });
     expect(registry.consumePendingActivation()).toBeUndefined();
     expect(registry.consumePendingLaunch()).toEqual({ projectId: 'project-b', agentId: 'agent-b' });
+    expect(registry.consumePendingLaunch()).toBeUndefined();
+  });
+
+  it('clears a discarded pending Task launch without consuming it', () => {
+    registry.preparePendingLaunch({ projectId: 'project-b', agentId: 'agent-b' });
+
+    registry.clearPendingLaunch();
+
+    expect(window.sessionStorage.getItem('agentic.pending-task-launch.v2')).toBeNull();
     expect(registry.consumePendingLaunch()).toBeUndefined();
   });
 

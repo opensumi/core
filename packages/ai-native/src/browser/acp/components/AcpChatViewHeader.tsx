@@ -26,7 +26,7 @@ import { AgenticWorkspaceSwitchService } from '../agentic-workspace-switch.servi
 import { AcpPermissionBridgeService } from '../permission-bridge.service';
 
 import AcpChatHistory, { IChatHistoryItem } from './AcpChatHistory';
-import { AgenticTaskList } from './AgenticTaskList';
+import { AgenticSessionList } from './AgenticSessionList';
 
 const MAX_TITLE_LENGTH = 100;
 
@@ -292,7 +292,7 @@ export function AcpChatViewHeader({ handleCloseChatView }: { handleClear: () => 
     <div className={cls(styles.header, isAgenticLayout && styles.header_agentic)}>
       {isAgenticLayout ? (
         <div className={styles.agentic_task_list}>
-          <AgenticTaskList />
+          <AgenticSessionList />
         </div>
       ) : (
         <>

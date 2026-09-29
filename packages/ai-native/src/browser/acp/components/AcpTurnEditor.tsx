@@ -71,6 +71,7 @@ export interface IChatMentionInputProps {
   placeholder?: string;
   enableOptions?: boolean;
   disabled?: boolean;
+  submitDisabled?: boolean;
   loading?: boolean;
   sendBtnClassName?: string;
   defaultHeight?: number;
@@ -166,6 +167,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
   const uploadGenerationRef = useRef(0);
   const submitInFlightRef = useRef(false);
   const previousActiveSessionIdRef = useRef(props.activeSessionId);
+  const activeSessionGenerationRef = useRef(0);
   propsRef.current = props;
   valueRef.current = value;
   imagesRef.current = images;
@@ -181,6 +183,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
   }
   if (previousActiveSessionIdRef.current !== props.activeSessionId) {
     previousActiveSessionIdRef.current = props.activeSessionId;
+    activeSessionGenerationRef.current += 1;
     draftGenerationRef.current += 1;
     uploadGenerationRef.current += 1;
   }
@@ -299,6 +302,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         });
       },
       focus: () => mentionInputRef.current?.focus(),
+      isFocused: () => mentionInputRef.current?.isFocused() ?? false,
       setExpanded: (expanded) => {
         setIsExpanded((current) => {
           if (current !== expanded) {
@@ -965,6 +969,8 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
       }
 
       const submissionGeneration = draftGenerationRef.current;
+      const submissionActiveSessionGeneration = activeSessionGenerationRef.current;
+      const submissionActiveSessionId = props.activeSessionId;
       submitInFlightRef.current = true;
 
       try {
@@ -990,7 +996,15 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         if (!isAcceptedTurnActionResult(result)) {
           return result;
         }
-        if (!mountedRef.current || draftGenerationRef.current !== submissionGeneration) {
+        const isExpectedInitialSessionPromotion =
+          submissionActiveSessionId === undefined &&
+          propsRef.current.activeSessionId !== undefined &&
+          activeSessionGenerationRef.current === submissionActiveSessionGeneration + 1 &&
+          draftGenerationRef.current === submissionGeneration + 1;
+        if (
+          !mountedRef.current ||
+          (draftGenerationRef.current !== submissionGeneration && !isExpectedInitialSessionPromotion)
+        ) {
           return false;
         }
 
@@ -1012,6 +1026,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
       handleSend,
       isQueued,
       props.agentId,
+      props.activeSessionId,
       props.command,
       props.images,
       props.immediateSendDisabled,
@@ -1260,6 +1275,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
           onToggleExpanded={isQueued ? undefined : toggleExpanded}
           onUserInput={handleUserInput}
           disabled={disabled}
+          submitDisabled={props.submitDisabled}
           loading={loading}
           labelService={labelService}
           workspaceService={workspaceService}

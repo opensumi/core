@@ -13,6 +13,7 @@ import styles from '../../components/acp/chat-history.module.less';
 const threadStatusIcon: Record<ThreadStatus, string> = {
   idle: 'disconnect',
   working: 'loading',
+  stopping: 'debug-pause',
   awaiting_prompt: 'disconnect',
   auth_required: 'disconnect',
   errored: 'error',
