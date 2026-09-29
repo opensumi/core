@@ -171,7 +171,9 @@ test.describe('ACP Chat Agentic Agent-Cwd File Link', () => {
     await runtime?.dispose();
   });
 
-  test('Agent Session cwd (Workspace Target) resolves relative file links, not the IDE workspace', async (_fixtures, testInfo) => {
+  test('Agent Session cwd (Workspace Target) resolves relative file links, not the IDE workspace', async ({
+    browser: _browser,
+  }, testInfo) => {
     const evidence = createBddEvidence(testInfo, 'acp-chat-agentic-agent-cwd-file-link', {
       sourceScenario: 'test/bdd/acp-chat-agentic-agent-cwd-file-link.scenario.md',
       profile: 'interactive',
