@@ -40,9 +40,18 @@ async function switchModel(fromLabel: string, toLabel: string): Promise<void> {
   await expect(trigger).toBeVisible({ timeout: 10_000 });
   await trigger.click();
   const option = page.getByRole('option', { name: toLabel }).first();
-  await expect(option).toBeVisible({ timeout: 5_000 });
+  await expect(option).toBeVisible({ timeout: 10_000 });
+  // While a turn streams the selector sits under the disabled-tooltip
+  // ("Clear or create session to change model"). The pointer stays on the
+  // trigger after opening the dropdown and that tooltip can pop above the
+  // open option list and swallow the click on slower machines. Park the
+  // pointer over the message list so the tooltip closes, then click.
+  const list = page.getByTestId('agentic-virtual-message-list');
+  const box = (await list.boundingBox().catch(() => null)) ?? { x: 200, y: 200, width: 400, height: 400 };
+  await page.mouse.move(box.x + box.width / 2, box.y + 30);
+  await page.waitForTimeout(300);
   await option.click();
-  await expect(chatSlot().locator('[role="combobox"]', { hasText: toLabel }).first()).toBeVisible({ timeout: 5_000 });
+  await expect(chatSlot().locator('[role="combobox"]', { hasText: toLabel }).first()).toBeVisible({ timeout: 10_000 });
 }
 
 async function slotText(): Promise<string> {
@@ -108,12 +117,9 @@ test.describe('ACP agentic: model switch defers to turn boundary', () => {
     await switchModel('BDD Small', 'BDD Large');
     await expect(stopButton).toBeVisible({ timeout: 5_000 });
     const textBeforeSwitch = await slotText();
-    await page.waitForTimeout(5_000);
-    const textAfterSwitch = await slotText();
-    expect(
-      textAfterSwitch.length,
-      'the reply stream must keep growing after a mid-turn model switch (a crashed agent freezes it)',
-    ).toBeGreaterThan(textBeforeSwitch.length);
+    await expect
+      .poll(async () => (await slotText()).length, { timeout: 30_000, intervals: [500] })
+      .toBeGreaterThan(textBeforeSwitch.length);
     await shot('02-after-mid-turn-switch');
 
     // 3. Send a second message while generating: it must queue.
