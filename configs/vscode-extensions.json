@@ -4,11 +4,11 @@
     "vscode": [
       {
         "name": "typescript-language-features",
-        "version": "1.60.0"
+        "version": "1.95.3"
       },
       {
         "name": "configuration-editing",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "css",
@@ -20,7 +20,7 @@
       },
       {
         "name": "emmet",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "git",
@@ -152,7 +152,7 @@
     "ms-vscode": [
       {
         "name": "js-debug",
-        "version": "1.67.2"
+        "version": "1.95.3"
       }
     ],
     "vscode-icons-team": [
