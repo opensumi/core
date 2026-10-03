@@ -1,3 +1,4 @@
+/* eslint-disable sort-imports */
 import { Injector, Provider } from '@opensumi/di';
 import {
   AppLifeCycleServiceToken,
@@ -79,6 +80,13 @@ import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolba
 import { VariableContribution, VariableRegistry, VariableRegistryImpl } from '../variable';
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
+import {
+  WorkspaceTrustService,
+  WorkspaceTrustContribution,
+  WorkspaceTrustStatusBarContribution,
+  WorkspaceTrustCommandContribution,
+  WorkspaceTrustSettingsContribution,
+} from '../workspace-trust';
 
 import { ClientAppContextContribution } from './context-contribution';
 import { AppLifeCycleService } from './lifecycle.service';
@@ -275,6 +283,11 @@ export function injectInnerProviders(injector: Injector) {
       token: ConnectionHelperFactory,
       useFactory: ConnectionHelperFactory,
     },
+    WorkspaceTrustService,
+    WorkspaceTrustContribution,
+    WorkspaceTrustStatusBarContribution,
+    WorkspaceTrustCommandContribution,
+    WorkspaceTrustSettingsContribution,
   ];
   injector.addProviders(...providers);
 }

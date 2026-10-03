@@ -153,6 +153,13 @@ export interface CommandService {
   tryExecuteCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined>;
   onWillExecuteCommand: Event<ICommandEvent>;
   onDidExecuteCommand: Event<ICommandEvent>;
+  /**
+   * Wait until a command handler is registered for the given command id.
+   * Resolves immediately if a handler already exists.
+   * @param commandId command id to wait for
+   * @param timeoutMs max wait time in milliseconds, default 30000
+   */
+  waitCommandHandlerRegistered(commandId: string, timeoutMs?: number): Promise<void>;
 }
 
 /**
@@ -243,6 +250,13 @@ interface CoreCommandRegistry {
    * @param args
    */
   isPermittedCommand(commandId: string, extensionInfo: IExtensionInfo, ...args: any[]): boolean;
+  /**
+   * Wait until a command handler is registered for the given command id.
+   * Resolves immediately if a handler already exists.
+   * @param commandId command id to wait for
+   * @param timeoutMs max wait time in milliseconds, default 30000
+   */
+  waitCommandHandlerRegistered(commandId: string, timeoutMs?: number): Promise<void>;
 }
 
 export interface CommandRegistry extends CoreCommandRegistry {
@@ -271,6 +285,9 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
   private readonly postCommandInterceptor = new Map<string, PostInterceptorFunction[]>();
 
   private readonly logger = getDebugLogger();
+
+  // Emitters waiting for a handler to be registered for a specific command
+  private readonly _handlerWaitingEmitters = new Map<string, Emitter<void>>();
 
   /**
    * 命令执行方法
@@ -407,6 +424,15 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
       this._handlers[commandId] = handlers = [];
     }
     handlers.unshift(handler);
+
+    // Notify any waiters that a handler is now registered
+    const waitingEmitter = this._handlerWaitingEmitters.get(commandId);
+    if (waitingEmitter) {
+      waitingEmitter.fire();
+      waitingEmitter.dispose();
+      this._handlerWaitingEmitters.delete(commandId);
+    }
+
     return {
       dispose: () => {
         const idx = handlers.indexOf(handler);
@@ -510,6 +536,31 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
       !Array.isArray(handlers) ||
       handlers.every((handler) => !handler.isPermitted || handler.isPermitted(extensionInfo, ...args))
     );
+  }
+
+  waitCommandHandlerRegistered(commandId: string, timeoutMs = 30000): Promise<void> {
+    // Resolve immediately if a handler already exists
+    if (this.getActiveHandler(commandId)) {
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve, reject) => {
+      let waitingEmitter = this._handlerWaitingEmitters.get(commandId);
+      if (!waitingEmitter) {
+        waitingEmitter = new Emitter<void>();
+        this._handlerWaitingEmitters.set(commandId, waitingEmitter);
+      }
+
+      const timer = setTimeout(() => {
+        listener.dispose();
+        reject(new Error(`Timeout waiting for command handler registration: ${commandId}`));
+      }, timeoutMs);
+
+      const listener = waitingEmitter.event(() => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
   }
 
   /**
@@ -726,5 +777,9 @@ export class CommandServiceImpl implements CommandService {
       // no-op: failed when command not found
       getDebugLogger().warn(err);
     }
+  }
+
+  waitCommandHandlerRegistered(commandId: string, timeoutMs?: number): Promise<void> {
+    return this.commandRegistry.waitCommandHandlerRegistered(commandId, timeoutMs);
   }
 }
