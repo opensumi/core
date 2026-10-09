@@ -625,7 +625,7 @@ export class KeymapService implements IKeymapService {
               if (tempItems.length > 1) {
                 tempItems.forEach((tItem) => {
                   const tKeys = tItem.split('+');
-                  spaceIndexArr.push(tKeys.length + spaceIndexArr[-1]);
+                  spaceIndexArr.push(tKeys.length + spaceIndexArr[spaceIndexArr.length - 1]);
                   bindingItems.push(...tKeys);
                 });
               } else {
@@ -665,20 +665,20 @@ export class KeymapService implements IKeymapService {
               if (matchCounter === queryItems.length) {
                 // 处理组合键的渲染
                 if (spaceIndexArr.length > 0) {
-                  const chordRenderedResult = '';
+                  let chordRenderedResult = '';
                   renderedResult.forEach((resultKey, index) => {
                     if (index === 0) {
-                      chordRenderedResult.concat(resultKey);
+                      chordRenderedResult += resultKey;
                     } else if (spaceIndexArr.indexOf(index) !== -1) {
-                      chordRenderedResult.concat(' ' + resultKey);
+                      chordRenderedResult += ' ' + resultKey;
                     } else {
-                      chordRenderedResult.concat('+' + resultKey);
+                      chordRenderedResult += '+' + resultKey;
                     }
                   });
                   item[key] = chordRenderedResult;
+                } else {
+                  item[key] = renderedResult.join('+');
                 }
-
-                item[key] = renderedResult.join('+');
                 matched = true;
               }
             }
