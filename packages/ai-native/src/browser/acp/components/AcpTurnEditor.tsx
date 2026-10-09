@@ -999,8 +999,7 @@ export const AcpTurnEditor = React.forwardRef<AcpTurnEditorHandle, AcpTurnEditor
         const isExpectedInitialSessionPromotion =
           submissionActiveSessionId === undefined &&
           propsRef.current.activeSessionId !== undefined &&
-          activeSessionGenerationRef.current === submissionActiveSessionGeneration + 1 &&
-          draftGenerationRef.current === submissionGeneration + 1;
+          activeSessionGenerationRef.current === submissionActiveSessionGeneration + 1;
         if (
           !mountedRef.current ||
           (draftGenerationRef.current !== submissionGeneration && !isExpectedInitialSessionPromotion)

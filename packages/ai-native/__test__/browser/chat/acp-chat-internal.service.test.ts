@@ -404,6 +404,40 @@ describe('AcpChatInternalService', () => {
       });
     });
 
+    it('carries the bound session unsent draft into the Task Draft phase on a new task launch', async () => {
+      const { model, service } = createService();
+      service._sessionModel = model;
+
+      service.updateInputDraft({
+        message: 'carry me into the new draft',
+        images: [],
+        agentId: '',
+        command: '',
+      });
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/a' });
+
+      // Synchronously the Task Draft starts without a bound session and the seeded
+      // slot is already readable, so the view restore cannot race it to empty.
+      expect(service.sessionModel).toBeUndefined();
+      expect(service.getInputDraft()).toEqual(expect.objectContaining({ message: 'carry me into the new draft' }));
+
+      // Let the draft-bound session preparation settle: either the slot or the
+      // rebound session must still hold the carried text.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(service.getInputDraft()).toEqual(expect.objectContaining({ message: 'carry me into the new draft' }));
+    });
+
+    it('does not carry an empty bound session draft into the Task Draft phase', () => {
+      const { model, service } = createService();
+      service._sessionModel = model;
+
+      service.updateInputDraft({ message: '', images: [], agentId: '', command: '' });
+      service.enterAgenticTaskDraft({ agentId: 'agent-b', cwd: '/work/a' });
+
+      expect(service.sessionModel).toBeUndefined();
+      expect(service.getInputDraft()).toBeUndefined();
+    });
+
     it('declares only the latest Task Draft standby target after 500 milliseconds', async () => {
       jest.useFakeTimers();
       const { aiBackService, service } = createService();

@@ -1726,18 +1726,23 @@ const MentionInputImpl = (
       if (!accepted) {
         return sendResult;
       }
-      if (
-        !mountedRef.current ||
-        editorRef.current !== submittedEditor ||
-        editorGenerationRef.current !== submissionGeneration
-      ) {
+      if (!mountedRef.current) {
         return false;
       }
 
+      // History recall has to survive sends whose acceptance races editor state:
+      // the first send from the Task Draft promotes a Session mid-flight and the
+      // view's session-restore bumps editorGeneration, which used to skip the
+      // push entirely and left ArrowUp recall with nothing to restore. Record the
+      // entry whenever the send was accepted on a mounted editor; the DOM clear
+      // stays behind the generation guard so it never wipes newer user input.
       if (rawContent) {
         setHistory((prev) => [...prev, rawContent]);
         setHistoryIndex(-1);
         setIsNavigatingHistory(false);
+      }
+      if (editorRef.current !== submittedEditor || editorGenerationRef.current !== submissionGeneration) {
+        return false;
       }
 
       editorRef.current.innerHTML = '';
