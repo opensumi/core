@@ -699,7 +699,15 @@ export class AcpChatInternalService extends ChatInternalService {
     const generation = ++this.draftBoundSessionGeneration;
     this.pendingAgenticTarget = target;
     this.scheduleStandbyTarget(target);
+    // Launching a new Task carries the bound Session's unsent input into the Task
+    // Draft slot, mirroring the slot-to-Session migration on send. Seeding it here
+    // (before enterDraftSession clears the slot) keeps the on-screen text stable
+    // regardless of how the session-switch restore races the phase transition.
+    const carriedDraft = this._sessionModel ? this.getInputDraftFor(this._sessionModel.sessionId) : undefined;
     this.enterDraftSession({ force: true });
+    if (carriedDraft && hasAcpChatSendPayload(carriedDraft)) {
+      this.updateInputDraft(carriedDraft);
+    }
     this.setSkillCatalogState(
       this.aiBackService.getSessionCapabilities && this.configProvider.resolveConfigForTarget
         ? 'pending'

@@ -30,3 +30,4 @@ Status: resolved Type: task Blocked by: 01
   - turn 2 完成断言改用「滚到底 + 最后一行消息出现 `Afresh` 操作项」的 `expect.poll`(120s): **发现队列收起后 `AgenticVirtualMessageList` 不再自动跟随流**(`innerText` 冻结、尾部行不挂载),内容其实已到 view(滚到底即可见)。该现象与 Stop 缺失同属排残过渡 UI 观察,记入 issues/03,不阻塞根因回归;
   - 全程 `data-testid=acp-queued-turn` 归零。
 - 结果:pre-fix red(msq-prefix-red2.log,CRASH 15:44:46)→ post-fix green ×3(msq-postfix-green5/6/7.log), 清理后(bundle 无 DEBUG 残留)仍绿。
+- CI 复核(2026-09-30,`fe48477973`):CI ✓ / CHECK ✓;`E2E Test` 工作流整体仍红,但**本 spec 在 CI 通过**(该 spec 计入的 passed 数 32→46,重试后无残留失败),即根因回归在慢环境成立。E2E 工作流的红由既有的 input-send/layout-aware flake 家族造成(pre-fix 基线同样红),另行修复(见 issues/04)。
