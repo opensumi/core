@@ -3,7 +3,7 @@ import path from 'path';
 import * as React from 'react';
 import ts from 'typescript';
 
-import { COMMON_COMMANDS } from '@opensumi/ide-core-browser';
+import { COMMON_COMMANDS, fastdom } from '@opensumi/ide-core-browser';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 
 jest.mock('tiktoken', () => ({
@@ -321,6 +321,58 @@ describe('ChatInputRegistry ACP turn capabilities', () => {
     expect(workspaceSwitch.launchHeaderTask).toHaveBeenCalledWith('agent-b');
     expect(inputHandle.restoreDraft).toHaveBeenCalledTimes(2);
     expect(inputHandle.focus).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries draft focus across layout frames after revealing the chat view', async () => {
+    const frameCallbacks: Array<() => void> = [];
+    const measureAtNextFrame = jest.spyOn(fastdom, 'measureAtNextFrame').mockImplementation((callback) => {
+      frameCallbacks.push(callback);
+      return { dispose: jest.fn() };
+    });
+    const registry = new ChatInputRegistry();
+    const inputHandle = {
+      focus: jest.fn(),
+      isFocused: jest.fn(() => inputHandle.focus.mock.calls.length >= 3),
+    };
+    registry.setActiveInputHandle(inputHandle);
+    const contribution = Object.create(AINativeBrowserContribution.prototype) as AINativeBrowserContribution;
+    Object.defineProperties(contribution, {
+      aiChatService: {
+        configurable: true,
+        value: {
+          enterDraftSession: jest.fn(),
+          getInputDraft: jest.fn(() => undefined),
+          updateInputDraft: jest.fn(),
+        },
+      },
+      chatInputRegistry: { configurable: true, value: registry },
+      mainLayoutService: { configurable: true, value: {} },
+      panelLayoutService: { configurable: true, value: { showAIChatView: jest.fn() } },
+    });
+    let newChatHandler: { execute(): void } | undefined;
+    const commands = {
+      afterExecuteCommand: jest.fn(),
+      beforeExecuteCommand: jest.fn(),
+      registerCommand: jest.fn((command: { id: string }, handler: { execute(): void }) => {
+        if (command.id === AI_CHAT_NEW_CHAT.id) {
+          newChatHandler = handler;
+        }
+      }),
+    };
+
+    contribution.registerCommands(commands as any);
+    newChatHandler?.execute();
+
+    expect(inputHandle.focus).toHaveBeenCalledTimes(1);
+    expect(frameCallbacks).toHaveLength(1);
+    frameCallbacks.shift()?.();
+    expect(inputHandle.focus).toHaveBeenCalledTimes(2);
+    expect(frameCallbacks).toHaveLength(1);
+    frameCallbacks.shift()?.();
+    expect(inputHandle.focus).toHaveBeenCalledTimes(3);
+    expect(frameCallbacks).toHaveLength(0);
+
+    measureAtNextFrame.mockRestore();
   });
 
   it('offers Agent Configuration when the New Task command has no available ACP Agent', async () => {

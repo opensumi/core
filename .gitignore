@@ -10,6 +10,7 @@
 
 .package-temp-dir
 .tmp/
+/tools/playwright/tmp/
 
 # Logs
 logs
@@ -95,6 +96,9 @@ iteration-plan.md
 tools/electron/app
 tools/electron/extensions
 tools/workspace
+# BDD runs that point their workspace at tools/template leave runtime
+# session-store debris in tools/template/.sumi/ — never commit it.
+tools/template/.sumi/
 
 # jupyter
 .ipynb_checkpoints

@@ -93,4 +93,4 @@ export enum AINativeSettingSectionsId {
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';
-export const DEFAULT_ACP_THREAD_POOL_SIZE = 10;
+export const DEFAULT_ACP_THREAD_POOL_SIZE = 20;

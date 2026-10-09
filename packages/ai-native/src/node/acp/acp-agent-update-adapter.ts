@@ -151,6 +151,16 @@ export function toAgentUpdate(notification: SessionNotification): AgentUpdate | 
       };
     }
 
+    case 'session_info_update': {
+      return {
+        type: 'session_state',
+        content: '',
+        sessionId: (notification as any).sessionId,
+        ...(update.title !== undefined ? { title: update.title } : {}),
+        ...(update.updatedAt !== undefined ? { updatedAt: update.updatedAt } : {}),
+      };
+    }
+
     default:
       return null;
   }

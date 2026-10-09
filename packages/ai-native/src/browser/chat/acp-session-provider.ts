@@ -1,8 +1,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { ILogger, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   ACP_THREAD_POOL_SATURATED_ERROR_NAME,
   AIBackSerivcePath,
   AgentProcessConfig,
+  AvailableCommand,
   ChatMessageRole,
   Domain,
   IACPConfigProvider,
@@ -22,7 +24,9 @@ import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/
 import { AgenticTaskRegistryService } from '../acp/agentic-task-registry.service';
 
 import { IChatProgressResponseContent } from './chat-model';
+import { getAvailableAgentConfigs } from './get-default-agent-type';
 import {
+  AcpAgentSessionDescriptor,
   ISessionModel,
   ISessionModelExtension,
   ISessionProvider,
@@ -32,6 +36,15 @@ import {
 } from './session-provider';
 
 const DEFAULT_ACP_CHAT_AGENT_ID = 'Default_Chat_Agent';
+const INTERNAL_WEBMCP_USAGE_HINT_PATTERN = /^\s*<opensumi_mcp_usage_hint\b[^>]*>[\s\S]*?<\/opensumi_mcp_usage_hint>\s*/;
+
+function stripInternalUserPromptMetadata(content: string): string {
+  return content.replace(INTERNAL_WEBMCP_USAGE_HINT_PATTERN, '');
+}
+
+function isAbsoluteWorkspacePath(path: string): boolean {
+  return /^(?:[A-Za-z]:[\\/]|[\\/])/.test(path);
+}
 
 function isAcpThreadPoolSaturatedError(error: unknown): error is { name: string; message?: unknown } {
   return (
@@ -58,6 +71,9 @@ function createAcpThreadPoolSaturatedError(error: { message?: unknown }): Error 
       );
   const mappedError = new Error(message);
   mappedError.name = ACP_THREAD_POOL_SATURATED_ERROR_NAME;
+  if (limit) {
+    (mappedError as Error & { limit?: number }).limit = Number(limit);
+  }
   return mappedError;
 }
 
@@ -79,6 +95,12 @@ export class ACPSessionProvider implements ISessionProvider {
   @Autowired(IMessageService)
   protected messageService: IMessageService;
 
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
+
+  @Autowired(ILogger)
+  private logger: ILogger;
+
   @Autowired(AgenticTaskRegistryService)
   private agenticTaskRegistry: AgenticTaskRegistryService;
 
@@ -89,6 +111,14 @@ export class ACPSessionProvider implements ISessionProvider {
   private loadingSessionsPromise: Promise<ISessionModel[]> | null = null;
 
   private didRetryEmptySessionsResult = false;
+
+  private agentSessionCatalog: AcpAgentSessionDescriptor[] = [];
+
+  private agentSessionTargets = new Map<string, { agentId: string; cwd: string }>();
+
+  private agentSessionRefreshPromise: Promise<AcpAgentSessionDescriptor[]> | undefined;
+
+  private agentSessionRefreshRequested = false;
 
   canHandle(mode: string): boolean {
     return mode.startsWith('acp');
@@ -104,8 +134,9 @@ export class ACPSessionProvider implements ISessionProvider {
         options?.acpTarget && this.configProvider.resolveConfigForTarget
           ? await this.configProvider.resolveConfigForTarget(options.acpTarget)
           : await this.configProvider.resolveConfig();
-      const result = (await this.aiBackService.createSession(config)) as any;
-
+      const result = (await (options?.operationId
+        ? this.aiBackService.createSession(config, options.operationId)
+        : this.aiBackService.createSession(config))) as any;
       if (!result?.sessionId) {
         throw new Error('createSession did not return a valid sessionId');
       }
@@ -137,6 +168,7 @@ export class ACPSessionProvider implements ISessionProvider {
 
       // 新创建的 Session 不需要 load，直接加入缓存
       this.loadedSessionMap.set(sessionId, sessionModel);
+      this.agentSessionTargets.set(sessionId, { agentId: config.agentId, cwd: config.cwd });
 
       return sessionModel;
     } catch (error) {
@@ -145,6 +177,132 @@ export class ACPSessionProvider implements ISessionProvider {
       }
       throw error;
     }
+  }
+
+  getAgentSessions(): AcpAgentSessionDescriptor[] {
+    return this.agentSessionCatalog.map((session) => ({ ...session }));
+  }
+
+  refreshAgentSessions(): Promise<AcpAgentSessionDescriptor[]> {
+    this.agentSessionRefreshRequested = true;
+    if (!this.agentSessionRefreshPromise) {
+      this.agentSessionRefreshPromise = this.drainAgentSessionRefreshes().finally(() => {
+        this.agentSessionRefreshPromise = undefined;
+      });
+    }
+    return this.agentSessionRefreshPromise;
+  }
+
+  private async drainAgentSessionRefreshes(): Promise<AcpAgentSessionDescriptor[]> {
+    let catalog: AcpAgentSessionDescriptor[] = [];
+    do {
+      this.agentSessionRefreshRequested = false;
+      catalog = await this.doRefreshAgentSessions();
+    } while (this.agentSessionRefreshRequested);
+    return catalog;
+  }
+
+  private async doRefreshAgentSessions(): Promise<AcpAgentSessionDescriptor[]> {
+    if (!this.aiBackService?.listSessions || !this.configProvider.resolveConfigForTarget) {
+      this.agentSessionCatalog = [];
+      this.agentSessionTargets.clear();
+      return [];
+    }
+
+    const projects = (await this.agenticTaskRegistry.listProjects()).filter(
+      (project) => project.availability === 'available' && isAbsoluteWorkspacePath(project.workspacePath),
+    );
+    const availableWorkspacePaths = new Set(projects.map((project) => project.workspacePath));
+    const agentIds = Object.keys(getAvailableAgentConfigs(this.preferenceService));
+    const nextCatalog: AcpAgentSessionDescriptor[] = [];
+    const nextTargets = new Map<string, { agentId: string; cwd: string }>();
+
+    for (const agentId of agentIds) {
+      const sessionsForAgent = new Map<string, AcpAgentSessionDescriptor>();
+      let agentFailed = false;
+
+      for (const [projectIndex, project] of projects.entries()) {
+        try {
+          const config = await this.configProvider.resolveConfigForTarget({
+            agentId,
+            cwd: project.workspacePath,
+          });
+          const result = await this.aiBackService.listSessions(config);
+          for (const metadata of result?.sessions || []) {
+            if (
+              !metadata?.sessionId ||
+              !isAbsoluteWorkspacePath(metadata.cwd) ||
+              !availableWorkspacePaths.has(metadata.cwd)
+            ) {
+              continue;
+            }
+            const sessionId = `acp:${metadata.sessionId}`;
+            const candidate: AcpAgentSessionDescriptor = {
+              sessionId,
+              agentSessionId: metadata.sessionId,
+              agentId,
+              cwd: metadata.cwd,
+              title: metadata.title || undefined,
+              updatedAt: metadata.updatedAt || undefined,
+            };
+            const existing = sessionsForAgent.get(sessionId);
+            if (!existing || this.toTimestamp(candidate.updatedAt) >= this.toTimestamp(existing.updatedAt)) {
+              sessionsForAgent.set(sessionId, candidate);
+            }
+          }
+        } catch (error) {
+          agentFailed = true;
+          this.logger.warn(
+            `[ACP Chat][Session Catalog] list failed — agentId=${agentId}, projectOrdinal=${projectIndex}, errorType=${
+              error instanceof Error ? error.name : typeof error
+            }`,
+          );
+          break;
+        }
+      }
+
+      if (agentFailed) {
+        continue;
+      }
+      for (const session of sessionsForAgent.values()) {
+        nextCatalog.push(session);
+        nextTargets.set(session.sessionId, { agentId: session.agentId, cwd: session.cwd });
+      }
+    }
+
+    const agentsByRawSessionId = new Map<string, Set<string>>();
+    for (const session of nextCatalog) {
+      const agents = agentsByRawSessionId.get(session.agentSessionId) || new Set<string>();
+      agents.add(session.agentId);
+      agentsByRawSessionId.set(session.agentSessionId, agents);
+    }
+    const collidingSessionIds = new Set(
+      Array.from(agentsByRawSessionId.entries())
+        .filter(([, agentIds]) => agentIds.size > 1)
+        .map(([sessionId]) => sessionId),
+    );
+    if (collidingSessionIds.size > 0) {
+      const agentCount = Math.max(
+        ...Array.from(collidingSessionIds, (sessionId) => agentsByRawSessionId.get(sessionId)?.size || 0),
+      );
+      this.logger.warn(
+        `[ACP Chat][Session Catalog] excluded cross-Agent Session ID collisions — count=${collidingSessionIds.size}, agentCount=${agentCount}`,
+      );
+    }
+    const acceptedCatalog = nextCatalog.filter((session) => !collidingSessionIds.has(session.agentSessionId));
+    for (const sessionId of collidingSessionIds) {
+      nextTargets.delete(`acp:${sessionId}`);
+    }
+
+    acceptedCatalog.sort((a, b) => this.toTimestamp(b.updatedAt) - this.toTimestamp(a.updatedAt));
+    this.agentSessionCatalog = acceptedCatalog;
+    this.agentSessionTargets = nextTargets;
+    return this.getAgentSessions();
+  }
+
+  private toTimestamp(value: string | undefined): number {
+    const timestamp = value ? Date.parse(value) : 0;
+    return Number.isFinite(timestamp) ? timestamp : 0;
   }
 
   async loadSessions(): Promise<ISessionModel[]> {
@@ -231,8 +389,20 @@ export class ACPSessionProvider implements ISessionProvider {
         return undefined;
       }
 
+      // eslint-disable-next-line no-console
+      console.log('[ACP Chat][session/load] Agent history updates:', agentSession.historyUpdates || []);
+
       // 将 Agent Session 转换为 ISessionModel 格式
       const sessionModel = this.convertAgentSessionToModel(sessionId, agentSession);
+      const target = this.agentSessionTargets.get(sessionId);
+      if (target) {
+        sessionModel.extension = {
+          ...sessionModel.extension,
+          availableCommands: sessionModel.extension?.availableCommands || [],
+          acpTarget: { ...target },
+          metadataOnly: false,
+        };
+      }
 
       // 缓存加载的 Session
       this.loadedSessionMap.set(sessionId, sessionModel);
@@ -260,12 +430,16 @@ export class ACPSessionProvider implements ISessionProvider {
     await this.aiBackService.cancelSession(agentSessionId);
   }
 
-  async disposeSession(sessionId: string): Promise<void> {
+  async disposeSession(sessionId: string, force = false): Promise<void> {
     if (!sessionId || !this.aiBackService?.disposeSession) {
       return;
     }
     const agentSessionId = sessionId.startsWith('acp:') ? sessionId.slice(4) : sessionId;
-    await this.aiBackService.disposeSession(agentSessionId);
+    if (force) {
+      await this.aiBackService.disposeSession(agentSessionId, true);
+    } else {
+      await this.aiBackService.disposeSession(agentSessionId);
+    }
   }
 
   restoreSessionSnapshot(sessionId: string, snapshot: IChatSessionSnapshot): ISessionModel | undefined {
@@ -279,6 +453,7 @@ export class ACPSessionProvider implements ISessionProvider {
       models: snapshot.models,
       currentModelId: snapshot.currentModelId,
       configOptions: snapshot.configOptions,
+      availableCommands: snapshot.availableCommands,
       threadStatus: snapshot.threadStatus,
       historyUpdates: snapshot.historyUpdates,
       messages: [],
@@ -286,17 +461,11 @@ export class ACPSessionProvider implements ISessionProvider {
   }
 
   private async resolveSessionConfig(sessionId: string): Promise<AgentProcessConfig> {
-    const task = await this.agenticTaskRegistry?.getTask(sessionId);
-    if (!task) {
-      return this.configProvider.resolveConfig();
+    const listedTarget = this.agentSessionTargets.get(sessionId);
+    if (listedTarget && this.configProvider.resolveConfigForTarget) {
+      return this.configProvider.resolveConfigForTarget(listedTarget);
     }
-
-    const project = await this.agenticTaskRegistry.getProject(task.projectId);
-    if (!project || !this.configProvider.resolveConfigForTarget) {
-      throw new Error('Agent Task cannot resolve its stored ACP target');
-    }
-
-    return this.configProvider.resolveConfigForTarget({ agentId: task.agentId, cwd: project.workspacePath });
+    return this.configProvider.resolveConfig();
   }
 
   private convertAgentSessionToModel(
@@ -308,6 +477,7 @@ export class ACPSessionProvider implements ISessionProvider {
       models?: ISessionModel['agentModels'];
       currentModelId?: string;
       configOptions?: ISessionModel['configOptions'];
+      availableCommands?: AvailableCommand[];
       threadStatus?: ThreadStatus;
       historyUpdates?: SessionNotification[];
       messages: Array<{
@@ -323,13 +493,16 @@ export class ACPSessionProvider implements ISessionProvider {
     }
 
     // 过滤掉包含 <command-name> 或 <local-command-stdout> 的系统消息
-    const filteredMessages = agentSession.messages.filter((msg, index) => {
-      // 如果内容包含系统命令的 XML 标签，则过滤掉
-      if (msg.content.includes('<command-name>') || msg.content.includes('<local-command-stdout>')) {
-        return false;
-      }
-      return true;
-    });
+    const filteredMessages = agentSession.messages
+      .filter((msg) => {
+        // 如果内容包含系统命令的 XML 标签，则过滤掉
+        if (msg.content.includes('<command-name>') || msg.content.includes('<local-command-stdout>')) {
+          return false;
+        }
+        return true;
+      })
+      .map((msg) => (msg.role === 'user' ? { ...msg, content: stripInternalUserPromptMetadata(msg.content) } : msg))
+      .filter((msg) => msg.role !== 'user' || Boolean(msg.content));
 
     // 转换消息格式
     const messages = filteredMessages.map((msg, index) => ({
@@ -348,6 +521,7 @@ export class ACPSessionProvider implements ISessionProvider {
       currentModeId: agentSession.currentModeId,
       agentModels: agentSession.models,
       configOptions: agentSession.configOptions,
+      extension: agentSession.availableCommands ? { availableCommands: agentSession.availableCommands } : undefined,
       history: {
         additional: {},
         messages,
@@ -366,13 +540,16 @@ export class ACPSessionProvider implements ISessionProvider {
       models?: ISessionModel['agentModels'];
       currentModelId?: string;
       configOptions?: ISessionModel['configOptions'];
+      availableCommands?: AvailableCommand[];
       threadStatus?: ThreadStatus;
       historyUpdates: SessionNotification[];
     },
   ): ISessionModel {
     interface RestoredTurn {
       userContent: string;
+      userMessageId?: string;
       assistantContent: string;
+      assistantMessageId?: string;
       responseParts: IChatProgressResponseContent[];
       toolCalls: Map<string, IChatToolCall>;
     }
@@ -391,8 +568,11 @@ export class ACPSessionProvider implements ISessionProvider {
       return current;
     };
     const flushTurn = () => {
-      if (current && (current.userContent || current.responseParts.length > 0)) {
-        turns.push(current);
+      if (current) {
+        current.userContent = stripInternalUserPromptMetadata(current.userContent);
+        if (current.userContent || current.responseParts.length > 0) {
+          turns.push(current);
+        }
       }
       current = undefined;
     };
@@ -428,16 +608,26 @@ export class ACPSessionProvider implements ISessionProvider {
           if (!text) {
             break;
           }
-          if (current && (current.assistantContent || current.responseParts.length > 0)) {
+          const messageId = typeof update.messageId === 'string' ? update.messageId : undefined;
+          const startsNewUserMessage = current?.userMessageId && messageId && current.userMessageId !== messageId;
+          if (current && (current.assistantContent || current.responseParts.length > 0 || startsNewUserMessage)) {
             flushTurn();
           }
-          ensureTurn().userContent += text;
+          const turn = ensureTurn();
+          turn.userMessageId = turn.userMessageId || messageId;
+          turn.userContent += text;
           break;
         }
         case 'agent_message_chunk': {
           const text = update.content?.type === 'text' ? update.content.text : '';
           if (text) {
-            appendMarkdown(ensureTurn(), text);
+            const messageId = typeof update.messageId === 'string' ? update.messageId : undefined;
+            if (current?.assistantMessageId && messageId && current.assistantMessageId !== messageId) {
+              flushTurn();
+            }
+            const turn = ensureTurn();
+            turn.assistantMessageId = turn.assistantMessageId || messageId;
+            appendMarkdown(turn, text);
           }
           break;
         }
@@ -520,20 +710,23 @@ export class ACPSessionProvider implements ISessionProvider {
     const messages: ISessionModel['history']['messages'] = [];
     const requests: ISessionModel['requests'] = [];
     turns.forEach((turn, index) => {
-      const relationId = `${sessionId}-restored-relation-${index}`;
-      const requestId = `${sessionId}-restored-request-${index}`;
+      const turnIdentity = turn.assistantMessageId || turn.userMessageId || String(index);
+      const relationId = `${sessionId}-restored-relation-${turnIdentity}`;
+      const requestId = `${sessionId}-restored-request-${turnIdentity}`;
+      if (turn.userContent) {
+        messages.push({
+          id: `${sessionId}-restored-user-${turn.userMessageId || index}`,
+          role: ChatMessageRole.User,
+          content: turn.userContent,
+          order: messages.length,
+          relationId,
+          agentId: DEFAULT_ACP_CHAT_AGENT_ID,
+          agentCommand: '',
+          images: [],
+        });
+      }
       messages.push({
-        id: `${sessionId}-restored-user-${index}`,
-        role: ChatMessageRole.User,
-        content: turn.userContent,
-        order: messages.length,
-        relationId,
-        agentId: DEFAULT_ACP_CHAT_AGENT_ID,
-        agentCommand: '',
-        images: [],
-      });
-      messages.push({
-        id: `${sessionId}-restored-assistant-${index}`,
+        id: `${sessionId}-restored-assistant-${turn.assistantMessageId || index}`,
         role: ChatMessageRole.Assistant,
         content: turn.assistantContent,
         order: messages.length,
@@ -571,6 +764,7 @@ export class ACPSessionProvider implements ISessionProvider {
       currentModeId: agentSession.currentModeId,
       agentModels: agentSession.models,
       configOptions: agentSession.configOptions,
+      extension: agentSession.availableCommands ? { availableCommands: agentSession.availableCommands } : undefined,
       history: { additional: {}, messages },
       requests,
     };

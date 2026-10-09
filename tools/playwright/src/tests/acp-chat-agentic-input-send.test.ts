@@ -90,9 +90,20 @@ test.describe('ACP Chat Agentic 输入与发送', () => {
     await expect(chatInput()).toHaveAttribute('aria-disabled', 'false');
     await expect(chatInput()).toHaveText('');
 
-    await chatInput().focus();
-    await page.keyboard.press('ArrowUp');
-    await expect(chatInput()).toContainText(FIRST_LINE);
+    // ArrowUp recall is a single-shot keypress against in-editor history state; on
+    // slow CI the git-popover overlay can steal focus between focus() and the key
+    // press and the recall never lands. Retry the press (idempotent with a single
+    // history entry: the index caps at the newest) until the text returns.
+    await expect
+      .poll(
+        async () => {
+          await chatInput().focus();
+          await page.keyboard.press('ArrowUp');
+          return chatInput().textContent();
+        },
+        { timeout: 30_000, intervals: [500, 1_000] },
+      )
+      .toContain(FIRST_LINE);
     await expect(chatInput()).toContainText(SECOND_LINE);
     await page.keyboard.press('ArrowDown');
     await expect(chatInput()).toHaveText('');

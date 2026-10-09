@@ -1,7 +1,22 @@
+import os from 'os';
+import path from 'path';
+
 import { ElementHandle } from '@playwright/test';
 
 import { OpenSumiApp } from './app';
 import { OpenSumiContextMenu } from './context-menu';
+
+// the file tree abbreviates the user home directory to `~` in node tooltips,
+// expand it back so the path can be matched against tab `data-uri`
+export function expandHomePath(fsPath: string): string {
+  if (fsPath === '~') {
+    return os.homedir();
+  }
+  if (fsPath.startsWith('~/') || fsPath.startsWith('~\\')) {
+    return path.join(os.homedir(), fsPath.slice(2));
+  }
+  return fsPath;
+}
 
 interface ITreeNodeMatchArgs {
   dataId: string | null;

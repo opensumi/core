@@ -261,6 +261,27 @@
   overflow: auto;
 }
 
+.task_list_loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 12px;
+  color: var(--descriptionForeground);
+  font-size: 12px;
+
+  .codicon-loading {
+    font-size: 14px;
+  }
+}
+
+.task_list_empty {
+  padding: 24px 12px;
+  color: var(--descriptionForeground);
+  font-size: 12px;
+  text-align: center;
+}
+
 .project_group,
 .archived_project_group {
   margin: 6px 5px 0;
@@ -436,8 +457,13 @@
   font-size: 12px;
   text-align: left;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: var(--list-hoverBackground);
+  }
+
+  &:disabled {
+    color: var(--disabledForeground);
+    cursor: default;
   }
 
   &:focus-visible {
@@ -445,6 +471,14 @@
     outline-offset: -1px;
     background: var(--list-hoverBackground);
   }
+}
+
+.project_management_menu_reason {
+  max-width: 220px;
+  padding: 2px 7px 5px;
+  color: var(--descriptionForeground);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .project_rename_form {
@@ -483,7 +517,7 @@
 
 .task_row_wrap {
   position: relative;
-  margin: 0 3px;
+  margin: 4px 0px;
 
   > :global(.kt-popover-trigger) {
     width: 100%;
@@ -499,7 +533,7 @@
   width: 100%;
   height: 22px;
   min-height: 22px;
-  padding: 0 6px;
+  padding: 0px 0px 0px 24px;
   border: 0;
   border-radius: 4px;
   background: transparent;

@@ -1,4 +1,4 @@
-# Scenario: ACP Chat Agentic Side Entry Filter - Explorer And Git Only
+# Scenario: ACP Chat Agentic Side Entries Remain Available
 
 **Trigger:** `packages/ai-native/src/browser/layout/tabbar.view.tsx`, `packages/main-layout/src/browser/tabbar/bar.view.tsx`, or `packages/ai-native/src/browser/layout/panel-layout.service.ts`
 
@@ -23,14 +23,13 @@
 
 ## Then
 
-- Agentic layout shows only the `explorer` and `scm` side entries from the standard IDE container set.
-- Agentic layout does not show `search`, `debug`, or `extension` side entries.
+- Agentic layout shows the registered standard IDE side entries, including `explorer`, `search`, `scm`, `debug`, and `extension`.
 - Explorer and Git/SCM entries remain clickable in Agentic layout.
 - Classic layout still shows the standard left Activity Bar entries, including Search, Debug, and Extension Marketplace when those containers are registered.
-- Debug and Extension Marketplace services are not disabled by this scenario; only the Agentic side entry UI is filtered.
+- Agentic and Classic layouts share the registered standard side-entry availability while retaining their own layout presentation.
 
 ## Pass / Fail Judgment
 
-- **PASS** - Agentic side entries are limited to Explorer and Git/SCM, both remaining interactive, while Classic still exposes the broader standard Activity Bar set.
-- **FAIL** - Agentic shows Search, Debug, Extension Marketplace, or hides Explorer/Git; Explorer/Git cannot be activated; or Classic loses the standard side entries.
+- **PASS** - Agentic and Classic expose the registered standard Activity Bar entries, with Explorer and Git/SCM remaining interactive.
+- **FAIL** - Agentic or Classic loses a registered standard side entry, or Explorer/Git cannot be activated.
 - **BLOCKED** - Common Preflight fails, Agentic layout cannot be selected, or the standard left tabbar selectors are unavailable.
