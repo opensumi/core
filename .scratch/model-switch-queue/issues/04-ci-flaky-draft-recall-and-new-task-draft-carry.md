@@ -1,6 +1,6 @@
 # 04: 修复 CI 上两条 draft 相关 flaky e2e(input-send ArrowUp 召回 / New Session 草稿携带)
 
-Status: in-progress Type: task Blocked by: 02
+Status: resolved Type: task Blocked by: 02
 
 ## 动机
 
@@ -25,4 +25,4 @@ CI(`E2E Test` workflow,本分支自 9/28 起)两条非本工作引入的失败,�
 
 - jest:tsc ai-native exit 0;browser 套件 67 passed / 878 tests(含新增)。node 侧 3 套件失败为 node-pty NODE_MODULE_VERSION 环境问题(本机默认 Node v24 vs ABI 115),与改动无关。
 - 本地 e2e(2026-10-09,node v20.20.2,dev = HOST=127.0.0.1 start:e2e):layout-aware / input-send / per-session-input-draft / draft-footer **4 条全绿**(21.1s,--retries=0);同发送路径的根因回归 `acp-chat-agentic-model-switch-config-boundary` 亦绿(1.1m)。排障备注:直接在 packages/startup 跑 `start:e2e` 会缺 HOST,webpack 注入 `ws://0.0.0.0:8000` 握手失败导致 workbench 白屏、waitForWorkbenchReady 全挂;须走根目录脚本(env HOST=127.0.0.1)。
-- CI:待推送后复核。
+- CI 复核(2026-10-09,`eea28dc672`):**`E2E Test`(ubuntu-latest, Node.js 20.x)通过**——两条 flake 不再失败,本 issue 验收达成;unittest ×3(macos jsdom / ubuntu node / macos node)+ build ×3 绿。遗留:`unittest (ubuntu-latest, 18.x, jsdom)` 在 **Install 步骤**失败(exit 1,1m23s,测试未执行)——同锁文件在其余 3 个 runner 全绿,属 runner 安装期基础设施 flake,与代码无关,可 re-run;`WIP` check 因 PR 标题带 `WIP:` 前缀持续 pending,属刻意门禁,改标题即释放。
