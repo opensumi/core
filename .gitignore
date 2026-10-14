@@ -118,5 +118,6 @@ tools/template/.sumi/
 # Local agent docs, issue tracker and research notes
 .scratch/
 docs/
+packages/ai-native/docs/
 
 .understand-anything/
