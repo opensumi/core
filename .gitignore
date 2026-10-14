@@ -117,7 +117,7 @@ tools/template/.sumi/
 
 # Local agent docs, issue tracker and research notes
 .scratch/
-docs/
+/docs/
 packages/ai-native/docs/
 test/bdd/BRANCH_DELTA_*
 
