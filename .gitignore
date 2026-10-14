@@ -2,6 +2,9 @@
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
+!.yarn/releases
+.yarn/releases/*
+!.yarn/releases/yarn-4.4.1.cjs
 !.yarn/sdks
 !.yarn/versions
 
