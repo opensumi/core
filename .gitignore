@@ -119,5 +119,6 @@ tools/template/.sumi/
 .scratch/
 docs/
 packages/ai-native/docs/
+test/bdd/BRANCH_DELTA_*
 
 .understand-anything/
