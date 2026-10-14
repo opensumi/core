@@ -171,7 +171,11 @@ export function AgenticChatPanelHeader({
   const titleRefreshVersionRef = React.useRef(0);
   const isTaskDraft = acpChatService.isActiveAgenticTaskDraft();
   const sessionTitle = sessionModel?.title;
-  const draftTarget = acpChatService.getActiveAgenticTaskTarget();
+  // The pending target is consumed once the draft-bound Session is created; fall
+  // back to the session-scoped target so the draft context keeps showing the
+  // Agent and project name.
+  const draftTarget =
+    acpChatService.getActiveAgenticTaskTarget() ?? acpChatService.getActiveAgenticTaskTarget(sessionModel?.sessionId);
   const draftAgentId = draftTarget?.agentId;
   const draftAgentLabel = draftAgentId
     ? getAvailableAgentConfigs(preferenceService)[draftAgentId]?.description || draftAgentId

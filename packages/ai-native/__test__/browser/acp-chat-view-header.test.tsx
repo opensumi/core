@@ -949,6 +949,7 @@ describe('ACP chat view headers', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     act(() => {
       root.unmount();
     });
@@ -1539,6 +1540,36 @@ describe('ACP chat view headers', () => {
       'What would you like the Agent to do?',
     );
     expect(container.querySelector('[data-testid="agentic-task-draft-close"]')).not.toBeNull();
+  });
+
+  it('resolves the draft context from the bound Session target once the pending target is consumed', async () => {
+    const services = createMockServices({
+      agentConfigs: {
+        'agent-b': { command: 'agent-b', description: 'Agent B' },
+      },
+      panelLayout: 'agentic',
+      session: createMockSession({ messages: [], title: 'New Session' }),
+      chatViewHeaderRender: AcpChatViewHeader,
+    });
+    services.aiChatService.isActiveAgenticTaskDraft.mockReturnValue(true);
+    // After the draft-bound Session is created the pending target is consumed;
+    // only the session-scoped lookup can still resolve the draft target.
+    services.aiChatService.getActiveAgenticTaskTarget.mockImplementation((sessionId?: string) =>
+      sessionId ? { agentId: 'agent-b', cwd: '/work/current' } : undefined,
+    );
+    installInjectableMocks(services);
+
+    await renderHeader(
+      React.createElement(AgenticChatPanelHeader, {
+        preferSessionTitle: true,
+        sessionModel: services.aiChatService.sessionModel as any,
+      }),
+    );
+
+    const context = container.querySelector('[data-testid="agentic-task-draft-context"]');
+    expect(context).not.toBeNull();
+    expect(context?.textContent).toContain('Agent B');
+    expect(context?.textContent).toContain('current');
   });
 
   it('refreshes the panel title when the active Session model title changes in place', async () => {
