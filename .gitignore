@@ -2,7 +2,6 @@
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
-!.yarn/releases
 !.yarn/sdks
 !.yarn/versions
 
@@ -112,5 +111,9 @@ tools/template/.sumi/
 
 # Local agent worktrees
 .worktrees/
+
+# Local agent docs, issue tracker and research notes
+.scratch/
+docs/
 
 .understand-anything/
