@@ -612,7 +612,16 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
       }
     } catch (error) {
       this.reservedThreads.delete(thread);
-      throw error;
+      if (pendingCreation?.cancelled) {
+        throw new AcpSessionCreationCancelledError();
+      }
+      // The warmup failure is already handled by the warmup bookkeeping; let
+      // the caller fall back to a cold start or capacity reclaim instead of
+      // failing the foreground creation.
+      this.logger.warn(
+        `[AcpAgentService] standby-warmup-claim failed — threadId=${thread.threadId}: ${getAcpErrorMessage(error)}`,
+      );
+      return undefined;
     }
 
     this.reservedThreads.delete(thread);
@@ -703,6 +712,11 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
 
   private requestStandbyReconcile(): void {
     if (!this.stopping && this.standbyTarget) {
+      // A pending retry timer means the target is in failure backoff; let the
+      // timer drive the next reconcile instead of bypassing the delay.
+      if (this.standbyRetryTimer) {
+        return;
+      }
       if (this.standbyReconcilePromise) {
         this.standbyReconcileRequested = true;
         return;
@@ -1205,11 +1219,20 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
   }
 
   async getSessionCapabilities(config: AgentProcessConfig): Promise<{ close: boolean; delete: boolean }> {
+    return this.trackForegroundOperation(() => this.doGetSessionCapabilities(config));
+  }
+
+  private async doGetSessionCapabilities(config: AgentProcessConfig): Promise<{ close: boolean; delete: boolean }> {
     const thread = await this.findOrCreateIdleThread(config);
     try {
-      if (!thread.initialized) {
-        await thread.initialize(config as any);
-        this.throwIfStopping();
+      try {
+        if (!thread.initialized) {
+          await thread.initialize(config as any);
+          this.throwIfStopping();
+        }
+      } catch (error) {
+        await this.recoverThreadAfterSessionFailure(thread);
+        throw error;
       }
       const capabilities = thread.agentCapabilities?.sessionCapabilities;
       return {
@@ -1996,6 +2019,10 @@ export class AcpAgentService extends Disposable implements IAcpAgentService {
         webMcpHintsEnabled,
       );
       const promptBlocks = this.buildPromptBlocks(promptForAgent, request.images);
+      // The Agent echoes back the text it was actually sent (capability hint
+      // included); align the expected local echo so the replay is matched and
+      // excluded from the user history, which keeps the original prompt.
+      thread.setPendingLocalUserMessageEcho(promptForAgent);
       this.logger.log(
         `[AcpAgentService] sendPrompt() — sessionId=${request.sessionId}, promptChars=${
           request.prompt.length

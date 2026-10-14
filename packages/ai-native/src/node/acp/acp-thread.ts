@@ -676,7 +676,7 @@ export class AcpThread extends Disposable implements IAcpThread {
   }
 
   private terminateChildProcess(childProcess: ChildProcess): Promise<void> {
-    if (!childProcess.pid || childProcess.exitCode !== null) {
+    if (!childProcess.pid || childProcess.exitCode !== null || childProcess.signalCode !== null) {
       return Promise.resolve();
     }
 
@@ -1187,6 +1187,15 @@ export class AcpThread extends Disposable implements IAcpThread {
     }
     this.fireEntryAdded(threadEntry);
     return entry;
+  }
+
+  /**
+   * Align the expected local echo with the text actually sent to the Agent
+   * (e.g. after a capability hint is appended), so the echo matcher can still
+   * recognize and drop the Agent's user_message_chunk replay.
+   */
+  setPendingLocalUserMessageEcho(content: string): void {
+    this._pendingLocalUserMessageEcho = { content, matchedLength: 0 };
   }
 
   /**

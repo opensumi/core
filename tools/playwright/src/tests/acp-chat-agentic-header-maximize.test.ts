@@ -87,17 +87,11 @@ async function createActiveTask(): Promise<string> {
   await expect(send).toHaveCount(1);
   await send.click();
 
+  // The single send above must land on its own: polling only observes the
+  // request count and never re-clicks, so a lost first send fails the test
+  // instead of being masked by a duplicate send.
   await expect
-    .poll(
-      async () => {
-        const requestCount = (await getSessionState()).session?.requestCount ?? 0;
-        if (requestCount === 0 && (await input.textContent())?.includes(FIRST_PROMPT)) {
-          await send.click();
-        }
-        return requestCount;
-      },
-      { timeout: 60_000 },
-    )
+    .poll(async () => (await getSessionState()).session?.requestCount ?? 0, { timeout: 60_000 })
     .toBeGreaterThanOrEqual(1);
 
   const session = (await getSessionState()).session!;

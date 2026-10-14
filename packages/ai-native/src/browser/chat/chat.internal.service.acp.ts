@@ -1298,6 +1298,14 @@ export class AcpChatInternalService extends ChatInternalService {
     return this.doActivateAgenticSession(session.sessionId, shouldApply, false);
   }
 
+  // A stale load must not release a session another selection is still using:
+  // the model bound to the current session, or one a newer selection is
+  // loading, stays untouched. Loads of models that existed before are still
+  // released — loadSession attaches runtime resources that need the cleanup.
+  private shouldDisposeStaleLoadedSession(sessionId: string): boolean {
+    return this._sessionModel?.sessionId !== sessionId && this.pendingAgenticSessionId !== sessionId;
+  }
+
   private async doActivateAgenticSession(
     sessionId: string,
     shouldApply: () => boolean,
@@ -1315,7 +1323,9 @@ export class AcpChatInternalService extends ChatInternalService {
       if (selectionVersion !== this.sessionSelectionVersion || !shouldApply()) {
         this.agenticSessionLiveReadyStatuses.delete(sessionId);
         this.clearPendingAgenticSession(sessionId);
-        await acpManager.disposeSession(sessionId);
+        if (this.shouldDisposeStaleLoadedSession(sessionId)) {
+          await acpManager.disposeSession(sessionId);
+        }
         return { status: 'superseded' };
       }
       if (!session) {
@@ -1333,7 +1343,9 @@ export class AcpChatInternalService extends ChatInternalService {
       );
       if (!activated) {
         this.agenticSessionLiveReadyStatuses.delete(sessionId);
-        await acpManager.disposeSession(sessionId);
+        if (this.shouldDisposeStaleLoadedSession(sessionId)) {
+          await acpManager.disposeSession(sessionId);
+        }
       } else if (loadResult?.liveReady) {
         releaseLoadingOnReturn = false;
         void loadResult.liveReady.then(
@@ -1382,7 +1394,9 @@ export class AcpChatInternalService extends ChatInternalService {
       const loadResult = await acpManager.loadSession(sessionId);
       await loadResult?.liveReady;
       if (!shouldApply()) {
-        await acpManager.disposeSession(sessionId);
+        if (this.shouldDisposeStaleLoadedSession(sessionId)) {
+          await acpManager.disposeSession(sessionId);
+        }
         return { status: 'superseded' };
       }
       const session = this.chatManagerService.getSession(sessionId);
@@ -1391,7 +1405,9 @@ export class AcpChatInternalService extends ChatInternalService {
         return { status: 'failed' };
       }
       if (!shouldApply()) {
-        await acpManager.disposeSession(sessionId);
+        if (this.shouldDisposeStaleLoadedSession(sessionId)) {
+          await acpManager.disposeSession(sessionId);
+        }
         return { status: 'superseded' };
       }
       return { status: 'validated', taskStatus: this.toAgenticTaskStatus(session.threadStatus) };
@@ -1417,7 +1433,9 @@ export class AcpChatInternalService extends ChatInternalService {
       const loadResult = await acpManager.loadSession(sessionId);
       await loadResult?.liveReady;
       if (selectionVersion !== this.sessionSelectionVersion) {
-        await acpManager.disposeSession(sessionId);
+        if (this.shouldDisposeStaleLoadedSession(sessionId)) {
+          await acpManager.disposeSession(sessionId);
+        }
         return;
       }
       const updatedSession = this.chatManagerService.getSession(sessionId);
@@ -1434,7 +1452,9 @@ export class AcpChatInternalService extends ChatInternalService {
         () => selectionVersion === this.sessionSelectionVersion,
       );
       if (!activated) {
-        await acpManager.disposeSession(sessionId);
+        if (this.shouldDisposeStaleLoadedSession(sessionId)) {
+          await acpManager.disposeSession(sessionId);
+        }
       }
     } catch (error) {
       if (selectionVersion !== this.sessionSelectionVersion) {

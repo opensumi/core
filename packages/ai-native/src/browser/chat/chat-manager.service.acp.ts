@@ -562,7 +562,16 @@ export class AcpChatManagerService extends ChatManagerService {
     if (existingMessages.length === 0 || existingMessages.length !== incomingMessages.length) {
       return false;
     }
-    return incomingMessages.every((message, index) => message.id === existingMessages[index].id);
+    const idsMatch = incomingMessages.every((message, index) => message.id === existingMessages[index].id);
+    if (!idsMatch) {
+      return false;
+    }
+    // Streaming may update the last message's content in place without
+    // changing ids; treat a content drift as a different transcript so the
+    // fresher snapshot is still applied.
+    const lastExistingMessage = existingMessages[existingMessages.length - 1];
+    const lastIncomingMessage = incomingMessages[incomingMessages.length - 1];
+    return lastIncomingMessage.content === lastExistingMessage.content;
   }
 
   private restoreLoadedSession(sessionId: string, sessionData: ISessionModel, existingSession?: ChatModel): void {

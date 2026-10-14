@@ -85,6 +85,7 @@ interface MockThread {
   setError: jest.Mock;
   handleNotification: jest.Mock;
   addUserMessage: jest.Mock;
+  setPendingLocalUserMessageEcho: jest.Mock;
   markAssistantComplete: jest.Mock;
   markToolCallWaiting: jest.Mock;
   respondToToolCall: jest.Mock;
@@ -144,6 +145,7 @@ function createMockThread(overrides: Record<string, any> = {}): MockThread {
     setError: jest.fn(),
     handleNotification: jest.fn(),
     addUserMessage: jest.fn().mockReturnValue({ id: 'msg-1', content: '', timestamp: Date.now() }),
+    setPendingLocalUserMessageEcho: jest.fn(),
     markAssistantComplete: jest.fn(),
     markToolCallWaiting: jest.fn(),
     respondToToolCall: jest.fn(),

@@ -82,12 +82,6 @@ test.describe('ACP agentic: model switch defers to turn boundary', () => {
 
   test.beforeAll(async () => {
     connectionErrors = [];
-    page.setDefaultTimeout(20_000);
-    page.on('console', (msg) => {
-      if (msg.type() === 'error' && /connection closed/i.test(msg.text())) {
-        connectionErrors.push(msg.text());
-      }
-    });
     runtime = await loadAcpBddFixtureWorkbench(page, {
       fixture: 'long-stream',
       profile: 'interactive',
@@ -97,6 +91,15 @@ test.describe('ACP agentic: model switch defers to turn boundary', () => {
       showChatView: true,
       ensureAgenticLayout: true,
       viewport: { width: 1600, height: 900 },
+    });
+    // ensurePage() inside the fixture loader may have replaced the underlying
+    // page; bind the timeout and error collection afterwards so they attach to
+    // the live page.
+    page.setDefaultTimeout(20_000);
+    page.on('console', (msg) => {
+      if (msg.type() === 'error' && /connection closed/i.test(msg.text())) {
+        connectionErrors.push(msg.text());
+      }
     });
   });
 
