@@ -217,7 +217,7 @@ describe('AcpChatManagerService', () => {
       writable: true,
     });
     Object.defineProperty(provider, 'logger', {
-      value: { warn: jest.fn() },
+      value: { warn: jest.fn(), debug: jest.fn() },
     });
     Object.defineProperty(provider, 'preferenceService', {
       value: { get: jest.fn() },
@@ -436,29 +436,6 @@ describe('AcpChatManagerService', () => {
     expect(session.extension).toEqual(
       expect.objectContaining({ acpTarget: { agentId: 'agent-b', cwd: '/work/b' }, metadataOnly: false }),
     );
-  });
-
-  it('logs the complete Agent history update list before converting a loaded session', async () => {
-    const provider = createSessionProvider() as any;
-    const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => undefined);
-    const historyUpdates = [
-      {
-        sessionId: 's1',
-        update: {
-          sessionUpdate: 'user_message_chunk',
-          content: { type: 'text', text: 'first prompt' },
-        },
-      },
-    ];
-    Object.defineProperty(provider, 'aiBackService', {
-      value: {
-        loadAgentSession: jest.fn().mockResolvedValue({ sessionId: 's1', messages: [], historyUpdates }),
-      },
-    });
-
-    await provider.loadSession('acp:s1');
-
-    expect(consoleLog).toHaveBeenCalledWith('[ACP Chat][session/load] Agent history updates:', historyUpdates);
   });
 
   it('disposes an ACP provider session using its raw backend session id', async () => {

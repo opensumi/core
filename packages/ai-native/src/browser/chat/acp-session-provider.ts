@@ -389,8 +389,10 @@ export class ACPSessionProvider implements ISessionProvider {
         return undefined;
       }
 
-      // eslint-disable-next-line no-console
-      console.log('[ACP Chat][session/load] Agent history updates:', agentSession.historyUpdates || []);
+      // 仅记录数量，避免将用户提示、助手回复及工具输入输出输出到控制台
+      this.logger.debug(
+        `[ACP Chat][session/load] Agent history updates count: ${agentSession.historyUpdates?.length ?? 0}`,
+      );
 
       // 将 Agent Session 转换为 ISessionModel 格式
       const sessionModel = this.convertAgentSessionToModel(sessionId, agentSession);
