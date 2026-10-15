@@ -39,6 +39,8 @@ export interface ISessionModel {
   }[];
   lastLoadedAt?: number;
   title?: string;
+  /** Non-persistent metadata supplied by the session provider. */
+  extension?: ISessionModelExtension;
 }
 
 /**
@@ -46,8 +48,23 @@ export interface ISessionModel {
  */
 export interface ISessionModelExtension {
   availableCommands: AvailableCommand[];
-  /** Resolved ACP process identity for a newly created session. Never persisted. */
+  /** Resolved ACP process identity for a created or Agent-listed session. Never persisted. */
   acpTarget?: AcpTargetConfigRequest;
+  /** Agent list metadata that has not yet been hydrated through session/load. */
+  metadataOnly?: boolean;
+  /** Agent-supplied last update time from session/list. */
+  updatedAt?: string;
+}
+
+export interface AcpAgentSessionDescriptor {
+  /** Browser-facing id with the `acp:` prefix. */
+  sessionId: string;
+  /** Raw ACP Agent session id. */
+  agentSessionId: string;
+  agentId: string;
+  cwd: string;
+  title?: string;
+  updatedAt?: string;
 }
 
 export interface AcpSessionModeOption {
@@ -66,6 +83,7 @@ export type AcpSessionConfigOption = Record<string, any>;
 
 export interface SessionCreationOptions {
   acpTarget?: AcpTargetConfigRequest;
+  operationId?: string;
 }
 
 /**
@@ -95,6 +113,12 @@ export interface ISessionProvider {
    */
   loadSessions(): Promise<ISessionModel[]>;
 
+  /** Refresh the Agentic session catalog from every available Agent and known Project. */
+  refreshAgentSessions?(): Promise<AcpAgentSessionDescriptor[]>;
+
+  /** Return the last atomically committed Agentic session catalog. */
+  getAgentSessions?(): AcpAgentSessionDescriptor[];
+
   /**
    * 加载指定会话
    * @param sessionId 本地 Session ID
@@ -108,8 +132,8 @@ export interface ISessionProvider {
   /** Cancel an existing ACP session, including one restored after browser reload. */
   cancelSession?(sessionId: string): Promise<void>;
 
-  /** Release an ACP session and return its process to the reusable pool. */
-  disposeSession?(sessionId: string): Promise<void>;
+  /** Release an ACP session; force disposal bypasses the reusable process pool. */
+  disposeSession?(sessionId: string, force?: boolean): Promise<void>;
 
   /** Convert the first attachment snapshot into the browser session model. */
   restoreSessionSnapshot?(sessionId: string, snapshot: IChatSessionSnapshot): ISessionModel | undefined;
@@ -122,6 +146,10 @@ export interface ISessionProvider {
 }
 
 export function isAcpResponsePending(status: ThreadStatus | undefined): boolean {
+  return status === 'working' || status === 'stopping' || status === 'auth_required';
+}
+
+export function isAcpCancellationAllowed(status: ThreadStatus | undefined): boolean {
   return status === 'working' || status === 'auth_required';
 }
 

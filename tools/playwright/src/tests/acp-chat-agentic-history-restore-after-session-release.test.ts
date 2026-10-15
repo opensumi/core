@@ -39,6 +39,14 @@ async function getActiveSessionId(): Promise<string | undefined> {
   return result.result.session?.sessionId;
 }
 
+async function getActiveRequestCount(): Promise<number> {
+  const result = await page.evaluate(async () =>
+    (navigator as any).modelContext.executeTool('acp_chat_get_session_state', {}),
+  );
+  expect(result.success).toBe(true);
+  return result.result.session?.requestCount ?? 0;
+}
+
 async function notificationText(): Promise<string> {
   return (await page.locator('.kt-notification-wrapper').allInnerTexts()).join('\n');
 }
@@ -57,14 +65,29 @@ async function launchAndCompleteTask(prompt: string): Promise<string> {
   await expect(chatInput()).toBeVisible();
   await chatInput().click();
   await page.keyboard.type(prompt);
-  await sendButton().click();
+  const send = sendButton();
+  await send.click();
+  await expect
+    .poll(
+      async () => {
+        const requestCount = await getActiveRequestCount();
+        if (requestCount === 0 && (await chatInput().textContent())?.includes(prompt)) {
+          await send.click();
+        }
+        return requestCount;
+      },
+      { timeout: 60_000 },
+    )
+    .toBeGreaterThanOrEqual(1);
   await expect(chatSlot().getByText('BDD_ASSISTANT_PART_2 completed.').last()).toBeVisible({ timeout: 30_000 });
 
-  const row = page.locator('[data-testid^="agentic-task-row-"]').filter({ hasText: prompt }).first();
+  const sessionId = await getActiveSessionId();
+  expect(sessionId).toBeTruthy();
+  const row = page.getByTestId(`agentic-session-row-${sessionId}`);
   await expect(row).toBeVisible({ timeout: 30_000 });
-  const testId = await row.getAttribute('data-testid');
-  expect(testId).toBeTruthy();
-  return testId!.replace('agentic-task-row-', '');
+  await expect.poll(getActiveSessionId, { timeout: 30_000 }).toBe(sessionId);
+  await expect(row).toHaveAttribute('aria-current', 'true');
+  return sessionId!;
 }
 
 test.describe('ACP Chat Agentic history restore after backend session release', () => {
@@ -82,7 +105,7 @@ test.describe('ACP Chat Agentic history restore after backend session release', 
 
     try {
       const releasedSessionId = await launchAndCompleteTask(RELEASED_TASK_PROMPT);
-      const releasedRow = page.getByTestId(`agentic-task-row-${releasedSessionId}`);
+      const releasedRow = page.getByTestId(`agentic-session-row-${releasedSessionId}`);
       await expect(releasedRow).toHaveAttribute('aria-current', 'true');
 
       await page.evaluate(async () => {
@@ -97,11 +120,11 @@ test.describe('ACP Chat Agentic history restore after backend session release', 
       await waitForWorkbenchReady(page);
       await showAgenticChat();
 
-      const retainedRow = page.getByTestId(`agentic-task-row-${releasedSessionId}`);
+      const retainedRow = page.getByTestId(`agentic-session-row-${releasedSessionId}`);
       await expect(retainedRow).toBeVisible({ timeout: 30_000 });
 
       const previousActiveSessionId = await launchAndCompleteTask(PREVIOUS_ACTIVE_PROMPT);
-      const previousActiveRow = page.getByTestId(`agentic-task-row-${previousActiveSessionId}`);
+      const previousActiveRow = page.getByTestId(`agentic-session-row-${previousActiveSessionId}`);
       await expect(previousActiveRow).toHaveAttribute('aria-current', 'true');
 
       await retainedRow.click();

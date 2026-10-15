@@ -239,8 +239,15 @@ export interface AgentSessionCreateResult extends AgentSessionStateResult {
   availableCommands: AvailableCommand[];
 }
 
+/** Standard ACP session operations advertised during initialize. */
+export interface AcpSessionCapabilities {
+  close: boolean;
+  delete: boolean;
+}
+
 export interface AgentSessionLoadResult extends AgentSessionStateResult {
   sessionId: string;
+  availableCommands?: AvailableCommand[];
   threadStatus?: ThreadStatus;
   historyUpdates?: SessionNotification[];
   messages: Array<{
@@ -314,17 +321,31 @@ export interface IAIBackService<
 
   cancelSession?(sessionId: string): Promise<void>;
 
-  disposeSession?(sessionId: string): Promise<void>;
+  disposeSession?(sessionId: string, force?: boolean): Promise<void>;
 
   listSessions?(config: AgentProcessConfig): Promise<ListSessionsResponse>;
 
-  createSession?(config: AgentProcessConfig): Promise<AgentSessionCreateResult>;
+  getSessionCapabilities?(config: AgentProcessConfig): Promise<AcpSessionCapabilities>;
+
+  closeSession?(sessionId: string): Promise<void>;
+
+  deleteSession?(sessionId: string): Promise<void>;
+
+  createSession?(config: AgentProcessConfig, operationId?: string): Promise<AgentSessionCreateResult>;
+
+  cancelSessionCreation?(operationId: string): Promise<void>;
 
   /**
    * Start and initialize idle ACP agent processes for the supplied runtime configuration.
    * This does not create an ACP session.
    */
   warmUpAgentPool?(config: AgentProcessConfig): Promise<void>;
+
+  /**
+   * Declare the latest ACP standby target. Passing undefined clears it.
+   * The Node service owns reconciliation and process-pool capacity.
+   */
+  setAcpStandbyTarget?(config?: AgentProcessConfig): Promise<void>;
 
   setSessionMode?(sessionId: string, modeId: string): Promise<void>;
   setSessionConfigOption?(sessionId: string, configId: string, value: boolean | string): Promise<void>;
@@ -526,11 +547,23 @@ export interface IChatSafeProgress {
   kind: 'safeProgress';
 }
 
+export interface IChatRequestAccepted {
+  kind: 'requestAccepted';
+  sessionId: string;
+}
+
 /**
  * Thread status for ACP agent sessions.
  * Mirrors the server-side AcpThread ThreadStatus type.
  */
-export type ThreadStatus = 'idle' | 'working' | 'awaiting_prompt' | 'auth_required' | 'errored' | 'disconnected';
+export type ThreadStatus =
+  | 'idle'
+  | 'working'
+  | 'stopping'
+  | 'awaiting_prompt'
+  | 'auth_required'
+  | 'errored'
+  | 'disconnected';
 
 export interface IChatThreadStatus {
   kind: 'threadStatus';
@@ -545,12 +578,15 @@ export interface IChatSessionState {
   currentModelId?: string;
   configOptions?: Record<string, any>[];
   availableCommands?: AvailableCommand[];
+  title?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface IChatSessionSnapshot extends AgentSessionStateResult {
   kind: 'sessionSnapshot';
   sessionId: string;
   threadStatus: ThreadStatus;
+  availableCommands?: AvailableCommand[];
   historyUpdates: SessionNotification[];
 }
 
@@ -563,6 +599,7 @@ export type IChatProgress =
   | IChatToolContent
   | IChatReasoning
   | IChatSafeProgress
+  | IChatRequestAccepted
   | IChatThreadStatus
   | IChatSessionState
   | IChatSessionSnapshot;

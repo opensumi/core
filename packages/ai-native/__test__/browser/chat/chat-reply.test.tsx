@@ -124,8 +124,12 @@ jest.mock('../../../src/browser/model/msg-history-manager', () => ({
 }));
 
 jest.mock('../../../src/browser/components/ChatMarkdown', () => ({
-  ChatMarkdown: ({ markdown }: any) =>
-    require('react').createElement('div', { 'data-testid': 'chat-markdown' }, markdown.value),
+  ChatMarkdown: ({ agentCwd, markdown }: { agentCwd?: string; markdown: { value: string } }) =>
+    require('react').createElement(
+      'div',
+      { 'data-agent-cwd': agentCwd ?? '', 'data-testid': 'chat-markdown' },
+      markdown.value,
+    ),
 }));
 
 jest.mock('../../../src/browser/components/ChatThinking', () => ({
@@ -135,8 +139,12 @@ jest.mock('../../../src/browser/components/ChatThinking', () => ({
       { 'data-testid': 'chat-thinking' },
       React.Children.count(children) ? children : thinkingText,
     ),
-  ChatThinkingResult: ({ children }: { children: React.ReactNode }) =>
-    require('react').createElement('div', { 'data-testid': 'chat-thinking-result' }, children),
+  ChatThinkingResult: ({ children, copyContent }: { children: React.ReactNode; copyContent?: string }) =>
+    require('react').createElement(
+      'div',
+      { 'data-testid': 'chat-thinking-result', 'data-copy-content': copyContent || '' },
+      children,
+    ),
 }));
 
 import { ChatReply } from '../../../src/browser/components/ChatReply';
@@ -152,7 +160,7 @@ function createRequest(responseContents: ReasoningContent[], isComplete: boolean
   const requestId = `request-${requestIdPool++}`;
   const listeners = new Set<() => void>();
   const response = {
-    errorDetails: undefined,
+    errorDetails: undefined as { message: string } | undefined,
     followups: undefined,
     isComplete,
     onDidChange: jest.fn((listener: () => void) => {
@@ -351,5 +359,79 @@ describe('ChatReply reasoning collapse state', () => {
 
     expect(container.textContent).toContain('Running tool');
     expect(history.updateAssistantMessage).not.toHaveBeenCalled();
+  });
+
+  it('passes response text as copy content for completed replies', () => {
+    const { request, response } = createRequest([], true);
+    response.responseText = 'copyable answer';
+
+    renderReply(request);
+
+    const result = container.querySelector('[data-testid="chat-thinking-result"]');
+    expect(result?.getAttribute('data-copy-content')).toBe('copyable answer');
+  });
+
+  it('omits copy content when the response failed with an error', () => {
+    const { request, response } = createRequest([], true);
+    response.responseText = 'partial answer';
+    response.errorDetails = { message: 'request failed' };
+
+    renderReply(request);
+
+    const result = container.querySelector('[data-testid="chat-thinking-result"]');
+    expect(result?.getAttribute('data-copy-content')).toBe('');
+  });
+
+  it('passes the active agent session cwd to ChatMarkdown', () => {
+    const { request } = createRequest(
+      [{ kind: 'reasoning', content: 'Agent wrote docs/adr/0006-pi-execution-backend.md' }],
+      true,
+    );
+
+    const useInjectableMock = jest.requireMock('@opensumi/ide-core-browser').useInjectable;
+    const originalImplementation = useInjectableMock.getMockImplementation?.();
+    useInjectableMock.mockImplementation((token: any) => {
+      const key = String(token);
+      if (key.includes('IChatInternalService')) {
+        return {
+          sessionModel: {
+            sessionId: 'session-1',
+            acpTarget: { agentId: 'agent-b', cwd: '/agents/root-agent-control-plane' },
+          },
+        };
+      }
+      if (originalImplementation) {
+        return originalImplementation(token);
+      }
+      return {};
+    });
+
+    try {
+      renderReply(request, true);
+
+      act(() => {
+        getThinkingButton().click();
+      });
+
+      const markdown = container.querySelector('[data-testid="chat-markdown"]');
+      expect(markdown?.getAttribute('data-agent-cwd')).toBe('/agents/root-agent-control-plane');
+    } finally {
+      if (originalImplementation) {
+        useInjectableMock.mockImplementation(originalImplementation);
+      }
+    }
+  });
+
+  it('passes no agent cwd when the active session has no acpTarget', () => {
+    const { request } = createRequest([{ kind: 'reasoning', content: 'Classic chat content' }], true);
+
+    renderReply(request, true);
+
+    act(() => {
+      getThinkingButton().click();
+    });
+
+    const markdown = container.querySelector('[data-testid="chat-markdown"]');
+    expect(markdown?.getAttribute('data-agent-cwd')).toBe('');
   });
 });

@@ -22,6 +22,7 @@ export interface ChatInputHandle {
   getDraft?(): AcpTurnDraft;
   restoreDraft?(draft: AcpTurnDraft): void;
   focus?(): void;
+  isFocused?(): boolean;
   setExpanded?(expanded: boolean): void;
   toggleExpanded?(): void;
   closeTransientUi?(): boolean;
@@ -63,6 +64,7 @@ export interface IChatInputProps {
   placeholder?: string;
   enableOptions?: boolean;
   disabled?: boolean;
+  submitDisabled?: boolean;
   loading?: boolean;
   sendBtnClassName?: string;
   defaultHeight?: number;
@@ -118,6 +120,7 @@ export interface IChatInputRegistry {
   preserveActiveDraft(): AcpTurnDraft | undefined;
   restoreActiveDraft(draft: AcpTurnDraft | undefined): void;
   focusActiveInput(): void;
+  isActiveInputFocused(): boolean | undefined;
 }
 
 @Injectable()
@@ -215,6 +218,10 @@ export class ChatInputRegistry extends Disposable implements IChatInputRegistry 
     }
     this.activeInputFocusPending = false;
     handle.focus();
+  }
+
+  isActiveInputFocused(): boolean | undefined {
+    return this.getActiveInputHandle()?.isFocused?.();
   }
 
   private updateActiveContribution(): ChatInputContribution | null {

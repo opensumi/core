@@ -8,5 +8,6 @@ export async function launchTaskInCurrentProject(page: Page, agentId = 'claude-a
   const agentMenu = page.getByTestId('agentic-chat-panel-header').getByTestId('agentic-task-agent-menu');
   await expect(agentMenu).toHaveCount(0);
   await expect(page.getByText('Choose Project', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('textbox', { name: 'Agentic chat input' })).toBeFocused({ timeout: 30_000 });
   return agentId;
 }

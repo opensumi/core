@@ -3,6 +3,8 @@
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
+.yarn/releases/*
+!.yarn/releases/yarn-4.4.1.cjs
 !.yarn/sdks
 !.yarn/versions
 
@@ -10,6 +12,7 @@
 
 .package-temp-dir
 .tmp/
+/tools/playwright/tmp/
 
 # Logs
 logs
@@ -95,6 +98,9 @@ iteration-plan.md
 tools/electron/app
 tools/electron/extensions
 tools/workspace
+# BDD runs that point their workspace at tools/template leave runtime
+# session-store debris in tools/template/.sumi/ — never commit it.
+tools/template/.sumi/
 
 # jupyter
 .ipynb_checkpoints
@@ -108,5 +114,11 @@ tools/workspace
 
 # Local agent worktrees
 .worktrees/
+
+# Local agent docs, issue tracker and research notes
+.scratch/
+/docs/
+packages/ai-native/docs/
+test/bdd/BRANCH_DELTA_*
 
 .understand-anything/

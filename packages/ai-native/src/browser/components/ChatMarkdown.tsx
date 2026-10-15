@@ -18,6 +18,7 @@ import type { Token, Tokens, TokensList } from 'marked';
 interface MarkdownProps {
   markdown: IMarkdownString | string;
   agentId?: string;
+  agentCwd?: string;
   command?: string;
   relationId?: string;
   className?: string;
@@ -189,7 +190,7 @@ export const ChatMarkdown = (props: MarkdownProps) => {
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const commandService = useInjectable<CommandService>(CommandService);
   const panelLayoutService = useInjectable<AIPanelLayoutService>(AIPanelLayoutService);
-  const workspaceDir = appConfig.workspaceDir;
+  const workspaceDir = props.agentCwd || appConfig.workspaceDir;
   const [reactParser, setReactParser] = useState<MarkdownReactParser>();
   const [tokensList, setTokensList] = useState<TokensList>();
 

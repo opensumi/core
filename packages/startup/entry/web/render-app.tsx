@@ -20,11 +20,21 @@ import '@opensumi/ide-i18n';
 import { Injector } from '@opensumi/di';
 import { BrowserModule, IClientAppOpts, SlotLocation, registerLocalStorageProvider } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
-import { CommandService, ConstructorOf, GeneralSettingsId, findFirstTruthy, uuid } from '@opensumi/ide-core-common';
+import {
+  AIBackSerivcePath,
+  CommandService,
+  ConstructorOf,
+  GeneralSettingsId,
+  IAIBackService,
+  URI,
+  findFirstTruthy,
+  uuid,
+} from '@opensumi/ide-core-common';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 
+import { AgenticWorkspaceSwitchService } from '@opensumi/ide-ai-native/lib/browser/acp';
 import { AI_CHAT_LOGO_AVATAR_ID, IChatInternalService } from '@opensumi/ide-ai-native';
 import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
@@ -79,10 +89,26 @@ export async function renderApp(opts: IClientAppOpts) {
     (window as any).__OPENSUMI_E2E__ = {
       executeCommand: (commandId: string, ...args: any[]) =>
         app.injector.get<CommandService>(CommandService).executeCommand(commandId, ...args),
-      disposeAcpSessions: async () => {
+      getAcpInputDraft: () => app.injector.get<any>(IChatInternalService).getInputDraft?.(),
+      disposeAcpSessions: async (additionalSessionIds: string[] = [], force = false) => {
         const aiChatService = app.injector.get<any>(IChatInternalService);
         const sessions = [...aiChatService.getSessions()];
-        await Promise.allSettled(sessions.map((session) => aiChatService.clearSessionModel(session.sessionId)));
+        await Promise.allSettled(sessions.map((session) => aiChatService.clearSessionModel(session.sessionId, force)));
+        const currentSessionIds = new Set(sessions.map((session) => session.sessionId.replace(/^acp:/, '')));
+        const aiBackService = app.injector.get<IAIBackService>(AIBackSerivcePath);
+        await Promise.allSettled(
+          additionalSessionIds
+            .filter((sessionId) => sessionId && !currentSessionIds.has(sessionId.replace(/^acp:/, '')))
+            .map((sessionId) => aiBackService.disposeSession?.(sessionId.replace(/^acp:/, ''), force)),
+        );
+      },
+      // BDD fixture seeding: authorize an existing directory as a Known Workspace
+      // Target so runtime-ui scenarios can launch Agent Sessions whose cwd differs
+      // from the IDE workspace without driving the Project Addition file dialog.
+      addAgenticProject: async (workspacePath: string) => {
+        const workspaceSwitch = app.injector.get<any>(AgenticWorkspaceSwitchService);
+        const record = await workspaceSwitch.addProject(URI.file(workspacePath));
+        return record ? { id: record.id, workspacePath: record.workspacePath } : null;
       },
     };
   }

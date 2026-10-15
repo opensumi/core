@@ -5,6 +5,7 @@ const TASK_REGISTRY_STORAGE_KEY = 'agentic.task-registry.v2';
 const PENDING_TASK_ACTIVATION_STORAGE_KEY = 'agentic.pending-task-activation.v2';
 const PENDING_TASK_LAUNCH_STORAGE_KEY = 'agentic.pending-task-launch.v2';
 const ACTIVE_TASK_SESSION_STORAGE_KEY = 'agentic.active-task-session.v1';
+const ARCHIVED_AGENT_SESSIONS_STORAGE_KEY = 'agentic.archived-agent-sessions.v1';
 
 const ARCHIVABLE_STATUSES = new Set<AgenticTaskStatus>(['ready', 'stopped', 'error']);
 
@@ -31,11 +32,21 @@ export interface AgenticTaskRecord {
   attention?: 'permission' | 'input';
 }
 
-export type AgenticTaskStatus = 'ready' | 'running' | 'stopped' | 'error';
+export type AgenticTaskStatus = 'ready' | 'running' | 'stopping' | 'stopped' | 'error';
 
 export interface AgenticTaskGroup {
   project: AgenticProjectRecord;
   tasks: AgenticTaskRecord[];
+}
+
+export interface AgenticArchivedSessionIdentity {
+  sessionId: string;
+  agentId: string;
+  cwd: string;
+}
+
+export interface AgenticArchivedSessionRecord extends AgenticArchivedSessionIdentity {
+  archivedAt: number;
 }
 
 export interface AgenticTaskRegistryState {
@@ -70,6 +81,7 @@ export class AgenticTaskRegistryService {
 
   private storage: IStorage | undefined;
   private state: AgenticTaskRegistryState | undefined;
+  private archivedAgentSessions: AgenticArchivedSessionRecord[] = [];
   private initialization: Promise<void> | undefined;
   private readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
@@ -122,6 +134,22 @@ export class AgenticTaskRegistryService {
       return false;
     }
 
+    this.currentState.projects = this.currentState.projects.filter((candidate) => candidate.id !== projectId);
+    await this.persist();
+    return true;
+  }
+
+  /**
+   * Remove a Project from the Agent session catalog without deleting legacy
+   * Task records. Legacy records are intentionally retained but are no longer
+   * a runtime source for Agentic Layout.
+   */
+  async removeManagedSessionProject(projectId: string): Promise<boolean> {
+    await this.ensureInitialized();
+    const project = this.findProject(projectId);
+    if (!project?.managed) {
+      return false;
+    }
     this.currentState.projects = this.currentState.projects.filter((candidate) => candidate.id !== projectId);
     await this.persist();
     return true;
@@ -192,6 +220,38 @@ export class AgenticTaskRegistryService {
 
   async listArchivedGroups(query?: string): Promise<AgenticTaskGroup[]> {
     return this.listGroups(true, query);
+  }
+
+  async listArchivedAgentSessions(): Promise<AgenticArchivedSessionRecord[]> {
+    await this.ensureInitialized();
+    return [...this.archivedAgentSessions]
+      .sort((a, b) => b.archivedAt - a.archivedAt)
+      .map((session) => ({ ...session }));
+  }
+
+  async archiveAgentSession(session: AgenticArchivedSessionIdentity): Promise<boolean> {
+    await this.ensureInitialized();
+    const normalized = this.normalizeArchivedAgentSession({ ...session, archivedAt: Date.now() });
+    if (
+      !normalized ||
+      this.archivedAgentSessions.some((candidate) => this.matchesArchivedSession(candidate, session))
+    ) {
+      return false;
+    }
+    this.archivedAgentSessions.push(normalized);
+    await this.persistArchivedAgentSessions();
+    return true;
+  }
+
+  async unarchiveAgentSession(session: AgenticArchivedSessionIdentity): Promise<boolean> {
+    await this.ensureInitialized();
+    const next = this.archivedAgentSessions.filter((candidate) => !this.matchesArchivedSession(candidate, session));
+    if (next.length === this.archivedAgentSessions.length) {
+      return false;
+    }
+    this.archivedAgentSessions = next;
+    await this.persistArchivedAgentSessions();
+    return true;
   }
 
   async markUnread(sessionId: string, unread = true): Promise<AgenticTaskRecord | undefined> {
@@ -343,6 +403,10 @@ export class AgenticTaskRegistryService {
     });
   }
 
+  clearPendingLaunch(): void {
+    this.removeSessionValue(PENDING_TASK_LAUNCH_STORAGE_KEY);
+  }
+
   consumePendingLaunch(): AgenticPendingTaskLaunch | undefined {
     const value = this.consumeSessionValue(PENDING_TASK_LAUNCH_STORAGE_KEY);
     if (!this.isRecord(value) || typeof value.projectId !== 'string' || typeof value.agentId !== 'string') {
@@ -408,6 +472,9 @@ export class AgenticTaskRegistryService {
   private async initialize(): Promise<void> {
     this.storage = await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA);
     this.state = this.normalizeState(this.storage.get<unknown>(TASK_REGISTRY_STORAGE_KEY));
+    this.archivedAgentSessions = this.normalizeArchivedAgentSessions(
+      this.storage.get<unknown>(ARCHIVED_AGENT_SESSIONS_STORAGE_KEY),
+    );
   }
 
   private get currentState(): AgenticTaskRegistryState {
@@ -420,6 +487,63 @@ export class AgenticTaskRegistryService {
   private async persist(): Promise<void> {
     await this.storage?.set(TASK_REGISTRY_STORAGE_KEY, JSON.stringify(this.currentState));
     this.onDidChangeEmitter.fire();
+  }
+
+  private async persistArchivedAgentSessions(): Promise<void> {
+    await this.storage?.set(ARCHIVED_AGENT_SESSIONS_STORAGE_KEY, JSON.stringify(this.archivedAgentSessions));
+    this.onDidChangeEmitter.fire();
+  }
+
+  private normalizeArchivedAgentSessions(value: unknown): AgenticArchivedSessionRecord[] {
+    const source = typeof value === 'string' ? this.parseJSON(value) : value;
+    if (!Array.isArray(source)) {
+      return [];
+    }
+    const keys = new Set<string>();
+    const sessions: AgenticArchivedSessionRecord[] = [];
+    for (const value of source) {
+      const session = this.normalizeArchivedAgentSession(value);
+      if (!session) {
+        continue;
+      }
+      const key = this.archivedSessionKey(session);
+      if (!keys.has(key)) {
+        keys.add(key);
+        sessions.push(session);
+      }
+    }
+    return sessions;
+  }
+
+  private normalizeArchivedAgentSession(value: unknown): AgenticArchivedSessionRecord | undefined {
+    if (
+      !this.isRecord(value) ||
+      typeof value.sessionId !== 'string' ||
+      typeof value.agentId !== 'string' ||
+      typeof value.cwd !== 'string' ||
+      typeof value.archivedAt !== 'number' ||
+      !Number.isFinite(value.archivedAt)
+    ) {
+      return undefined;
+    }
+    const sessionId = value.sessionId.trim();
+    const agentId = value.agentId.trim();
+    const cwd = value.cwd.trim();
+    if (!sessionId || !agentId || !cwd) {
+      return undefined;
+    }
+    return { sessionId, agentId, cwd, archivedAt: value.archivedAt };
+  }
+
+  private matchesArchivedSession(
+    candidate: AgenticArchivedSessionIdentity,
+    session: AgenticArchivedSessionIdentity,
+  ): boolean {
+    return this.archivedSessionKey(candidate) === this.archivedSessionKey(session);
+  }
+
+  private archivedSessionKey(session: AgenticArchivedSessionIdentity): string {
+    return JSON.stringify([session.agentId, session.cwd, session.sessionId]);
   }
 
   private normalizeState(value: unknown): AgenticTaskRegistryState {
@@ -456,10 +580,9 @@ export class AgenticTaskRegistryService {
       }
     });
 
-    const retainedProjectIds = new Set(tasks.map((task) => task.projectId));
     return {
       version: 3,
-      projects: projects.filter((project) => project.managed || retainedProjectIds.has(project.id)),
+      projects,
       tasks,
     };
   }
@@ -590,7 +713,7 @@ export class AgenticTaskRegistryService {
   }
 
   private isAgenticTaskStatus(value: unknown): value is AgenticTaskStatus {
-    return value === 'ready' || value === 'running' || value === 'stopped' || value === 'error';
+    return value === 'ready' || value === 'running' || value === 'stopping' || value === 'stopped' || value === 'error';
   }
 
   private isRecord(value: unknown): value is Record<string, unknown> {

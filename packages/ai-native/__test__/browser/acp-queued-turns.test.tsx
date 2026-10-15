@@ -29,6 +29,7 @@ const baseSnapshot: AcpQueuedTurnSnapshot = {
   entries: [{ id: 'turn-1', message: 'first' }],
   canResume: false,
   canFastTrack: false,
+  initialStartPending: false,
 };
 
 const query = (selector: string) => container.querySelector(selector);
@@ -64,6 +65,7 @@ function renderQueue(
     onDelete?: jest.Mock;
     onImmediateSend?: jest.Mock;
     onEditorReady?: jest.Mock;
+    onOpenCapacitySettings?: jest.Mock;
   } = {},
 ) {
   const snapshot = { ...baseSnapshot, ...overrides };
@@ -97,11 +99,23 @@ function renderQueue(
         onDelete={handlers.onDelete}
         onImmediateSend={handlers.onImmediateSend}
         onEditorReady={handlers.onEditorReady}
+        onOpenCapacitySettings={overrides.onOpenCapacitySettings}
       />,
     );
   });
   return handlers;
 }
+
+it('shows a loading status while the first Task is launching', () => {
+  renderQueue({
+    activeSessionId: undefined,
+    entries: [],
+    initialStartPending: true,
+  });
+
+  expect(query('[data-testid="acp-task-launch-status"]')?.textContent).toContain('Starting task');
+  expect(query('[data-testid="acp-task-launch-status"] button')).toBeNull();
+});
 
 it('renders paused state and resumes', () => {
   renderQueue({ phase: 'paused', pauseReason: 'manual-stop', canResume: true });
@@ -109,6 +123,31 @@ it('renders paused state and resumes', () => {
   expect(query('[data-testid="acp-queued-turn-status"]')?.textContent).toContain('Stopped');
   click('[data-testid="acp-queued-turn-resume"]');
   expect(onResume).toHaveBeenCalledTimes(1);
+});
+
+it('renders capacity exhaustion as a persistent actionable alert', () => {
+  const onOpenCapacitySettings = jest.fn();
+  renderQueue({
+    phase: 'paused',
+    pauseReason: 'start-failed',
+    pauseError: {
+      name: 'ACP_THREAD_POOL_SATURATED',
+      message: 'ACP concurrent tasks have reached the configured limit of 2.',
+      limit: 2,
+    },
+    canResume: true,
+    onOpenCapacitySettings,
+  });
+
+  expect(query('[data-testid="acp-capacity-error"]')?.getAttribute('role')).toBe('alert');
+  expect(query('[data-testid="acp-capacity-error"]')?.textContent).toContain('capacity limit (2) has been reached');
+  expect(query('[data-testid="acp-capacity-error"]')?.textContent).toContain(
+    'Your task draft and unsent content have been preserved',
+  );
+  click('[data-testid="acp-capacity-retry"]');
+  click('[data-testid="acp-capacity-open-settings"]');
+  expect(onResume).toHaveBeenCalledTimes(1);
+  expect(onOpenCapacitySettings).toHaveBeenCalledTimes(1);
 });
 
 it.each([

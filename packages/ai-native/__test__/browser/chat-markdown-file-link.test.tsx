@@ -111,9 +111,9 @@ describe('ChatMarkdown file links', () => {
     jest.clearAllMocks();
   });
 
-  function renderMarkdown(markdown: string) {
+  function renderMarkdown(markdown: string, props?: { agentCwd?: string }) {
     act(() => {
-      root.render(<ChatMarkdown markdown={markdown} />);
+      root.render(<ChatMarkdown markdown={markdown} {...props} />);
     });
   }
 
@@ -240,5 +240,68 @@ describe('ChatMarkdown file links', () => {
       },
       revealRangeInCenter: true,
     });
+  });
+
+  it('resolves relative file paths against the agent cwd when provided', async () => {
+    renderMarkdown('Open `docs/adr/0006-pi-execution-backend.md`', { agentCwd: '/agents/root-agent-control-plane' });
+
+    const link = container.querySelector('a');
+    expect(link?.querySelector('code')?.textContent).toBe('docs/adr/0006-pi-execution-backend.md');
+
+    await act(async () => {
+      Simulate.click(link!);
+    });
+
+    const [uri, options] = editorService.open.mock.calls[0];
+    expect(uri.toString()).toBe('file:///agents/root-agent-control-plane/docs/adr/0006-pi-execution-backend.md');
+    expect(options).toBeUndefined();
+  });
+
+  it('resolves plain relative file paths against the agent cwd', async () => {
+    renderMarkdown('产物在 .scratch/pi-execution-backend/spec.md', {
+      agentCwd: '/agents/root-agent-control-plane',
+    });
+
+    const link = container.querySelector('a');
+    expect(link?.textContent).toBe('.scratch/pi-execution-backend/spec.md');
+
+    await act(async () => {
+      Simulate.click(link!);
+    });
+
+    const [uri] = editorService.open.mock.calls[0];
+    expect(uri.toString()).toBe('file:///agents/root-agent-control-plane/.scratch/pi-execution-backend/spec.md');
+  });
+
+  it('keeps absolute and file URI paths unchanged with an agent cwd', async () => {
+    renderMarkdown('看 /tmp/local-note.md 与 file:///tmp/agent-note.md', {
+      agentCwd: '/agents/root-agent-control-plane',
+    });
+
+    const links = container.querySelectorAll('a');
+    expect(links).toHaveLength(2);
+
+    await act(async () => {
+      Simulate.click(links[0]);
+      Simulate.click(links[1]);
+    });
+
+    expect(editorService.open.mock.calls.map(([uri]) => uri.toString())).toEqual([
+      'file:///tmp/local-note.md',
+      'file:///tmp/agent-note.md',
+    ]);
+  });
+
+  it('falls back to the workspace dir when no agent cwd is provided', async () => {
+    renderMarkdown('Open `docs/adr/0006-pi-execution-backend.md`');
+
+    const link = container.querySelector('a');
+
+    await act(async () => {
+      Simulate.click(link!);
+    });
+
+    const [uri] = editorService.open.mock.calls[0];
+    expect(uri.toString()).toBe('file:///workspace/project/docs/adr/0006-pi-execution-backend.md');
   });
 });

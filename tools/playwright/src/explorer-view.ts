@@ -3,11 +3,12 @@ import { OpenSumiFileTreeView } from './filetree-view';
 import { OpenSumiOpenedEditorView } from './opened-editor-view';
 import { OpenSumiOutlineView } from './outline-view';
 import { OpenSumiPanel } from './panel';
-import { OpenSumiTreeNode } from './tree-node';
+import { OpenSumiTreeNode, expandHomePath } from './tree-node';
 
 export class OpenSumiExplorerFileStatNode extends OpenSumiTreeNode {
   async getFsPath() {
-    return await this.elementHandle.getAttribute('title');
+    const title = await this.elementHandle.getAttribute('title');
+    return title ? expandHomePath(title) : title;
   }
 
   async isFolder() {
@@ -48,7 +49,8 @@ export class OpenSumiExplorerOpenedEditorNode extends OpenSumiTreeNode {
   }
 
   async getFsPath() {
-    return await this.elementHandle.getAttribute('title');
+    const title = await this.elementHandle.getAttribute('title');
+    return title ? expandHomePath(title) : title;
   }
 
   async isGroup() {

@@ -238,6 +238,7 @@ export const AcpChatInput = React.forwardRef((props: IAcpChatInputProps, ref) =>
         propsRef.current.setCommand(draft.command || '');
       },
       focus: () => textareaRef.current?.focus(),
+      isFocused: () => document.activeElement === textareaRef.current,
       setExpanded: (expanded: boolean) => {
         setIsExpand(expanded);
         propsRef.current.onExpand?.(expanded);

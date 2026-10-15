@@ -6,20 +6,25 @@ import { type Page } from '@playwright/test';
 
 import { OpenSumiApp } from '../../app';
 import { OpenSumiWorkspace } from '../../workspace';
+import { ensurePage } from '../hooks';
 
 export const ACP_BDD_FIXTURES = [
   'stream-rich',
   'long-stream',
   'permission',
   'send-failure',
+  'service-failure',
+  'model-not-found',
   'create-failure',
   'load-failure',
+  'list-failure',
   'task-session-missing',
   'auth-required',
   'config-failure',
   'process-exit',
   'history',
   'file-link',
+  'file-link-agent-cwd',
 ] as const;
 
 export type AcpBddFixture = (typeof ACP_BDD_FIXTURES)[number];
@@ -37,7 +42,12 @@ export interface AcpBddFixtureOptions {
   panelLayout?: AiNativePanelLayout;
   workspaceFiles?: string[];
   delayMs?: number;
+  listDelayMs?: number;
+  newSessionDelayMs?: number;
   longStreamTicks?: number;
+  /** Exit the mock agent when a config change arrives during an active prompt (simulates real agents). */
+  crashOnConfigChange?: boolean;
+  historyMessageCount?: number;
   sessionPrefix?: string;
   agentType?: string;
   showChatView?: boolean;
@@ -187,9 +197,25 @@ export function getMockAcpAgentCommand(options: AcpBddFixtureOptions) {
     args.push(`--delay-ms=${options.delayMs}`);
     env.OPENSUMI_ACP_BDD_DELAY_MS = String(options.delayMs);
   }
+  if (options.listDelayMs !== undefined) {
+    args.push(`--list-delay-ms=${options.listDelayMs}`);
+    env.OPENSUMI_ACP_BDD_LIST_DELAY_MS = String(options.listDelayMs);
+  }
+  if (options.newSessionDelayMs !== undefined) {
+    args.push(`--new-session-delay-ms=${options.newSessionDelayMs}`);
+    env.OPENSUMI_ACP_BDD_NEW_SESSION_DELAY_MS = String(options.newSessionDelayMs);
+  }
   if (options.longStreamTicks !== undefined) {
     args.push(`--long-stream-ticks=${options.longStreamTicks}`);
     env.OPENSUMI_ACP_BDD_LONG_STREAM_TICKS = String(options.longStreamTicks);
+  }
+  if (options.crashOnConfigChange) {
+    args.push('--crash-on-config-change');
+    env.OPENSUMI_ACP_BDD_CRASH_ON_CONFIG_CHANGE = '1';
+  }
+  if (options.historyMessageCount !== undefined) {
+    args.push(`--history-message-count=${options.historyMessageCount}`);
+    env.OPENSUMI_ACP_BDD_HISTORY_MESSAGE_COUNT = String(options.historyMessageCount);
   }
   if (options.sessionPrefix) {
     args.push(`--session-prefix=${options.sessionPrefix}`);
@@ -413,6 +439,12 @@ export async function loadAcpBddFixtureWorkbench(
   let workspace: OpenSumiWorkspace | undefined;
 
   try {
+    // A dead shared page (a previous spec file's hooks-level afterAll closed the
+    // context; top-level hooks only ever attach to the first spec file in a
+    // worker) is healed here so multi-spec invocations keep working.
+    if (page.isClosed()) {
+      page = await ensurePage();
+    }
     if (runtimeOptions.viewport) {
       await page.setViewportSize(runtimeOptions.viewport);
     }
@@ -464,7 +496,7 @@ export async function loadAcpBddFixtureWorkbench(
         try {
           try {
             await page.evaluate(async () => {
-              await (window as any).__OPENSUMI_E2E__?.disposeAcpSessions?.();
+              await (window as any).__OPENSUMI_E2E__?.disposeAcpSessions?.([], true);
             });
           } catch {
             // Best-effort: navigation below still terminates WebMCP and RPC.

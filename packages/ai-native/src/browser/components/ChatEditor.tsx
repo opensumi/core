@@ -1,3 +1,4 @@
+import hljs from 'highlight.js';
 import capitalize from 'lodash/capitalize';
 import throttle from 'lodash/throttle';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -48,6 +49,16 @@ interface Props {
   command?: string;
   hideInsert?: boolean;
 }
+
+// Beyond this size, synchronous highlight.js work on the main thread becomes a
+// freeze risk when a restored conversation mounts many blocks at once (ACP
+// tool arguments/results can each carry a full file). Oversized content is
+// rendered as plain text instead.
+const MAX_SYNC_HIGHLIGHT_LENGTH = 10_000;
+
+const normalizeHighlightLanguage = (language?: string): string =>
+  language && hljs.getLanguage(language) ? language : 'plaintext';
+
 export const CodeEditorWithHighlight = (props: Props) => {
   const { input, language, relationId, agentId, command, hideInsert } = props;
   const ref = React.useRef<HTMLDivElement | null>(null);
@@ -102,8 +113,17 @@ export const CodeEditorWithHighlight = (props: Props) => {
     ),
   ).current;
 
+  // Scroll-following only matters while a mounted block is still growing
+  // (live streaming). A block restored from history mounts with its final
+  // content and must not force a layout per mount — restoring a long session
+  // mounts hundreds of blocks in one commit.
+  const didMountRef = useRef(false);
   useEffect(() => {
-    throttledScrollToBottom();
+    if (didMountRef.current) {
+      throttledScrollToBottom();
+    } else {
+      didMountRef.current = true;
+    }
     return () => {
       throttledScrollToBottom.cancel();
     };
@@ -172,9 +192,24 @@ export const CodeEditorWithHighlight = (props: Props) => {
           />
         </Popover>
       </div>
-      <Highlight language={language} ref={ref} className={styles.highlight_editor}>
-        {input}
-      </Highlight>
+      {input.length > MAX_SYNC_HIGHLIGHT_LENGTH ? (
+        <pre
+          className={styles.highlight_editor}
+          ref={(el) => {
+            ref.current = (el ? { el } : null) as HTMLDivElement | null;
+          }}
+        >
+          <code className='hljs language-plaintext'>{input}</code>
+        </pre>
+      ) : (
+        <Highlight
+          language={language}
+          className={`${styles.highlight_editor} language-${normalizeHighlightLanguage(language)}`}
+          ref={ref}
+        >
+          {input}
+        </Highlight>
+      )}
     </div>
   );
 };
@@ -387,8 +422,11 @@ export const CodeBlockWrapperInput = ({
   commandService?: CommandService;
 }) => {
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
+  const clipboardService = useInjectable<IClipboardService>(IClipboardService);
   const [tag, setTag] = useState<string>('');
   const [txt, setTxt] = useState<string>(text);
+  const [isCoping, setIsCoping] = useState<boolean>(false);
+  const copyActionId = useMemo(() => `ai-chat-message-copy-${uuid(8)}`, []);
 
   React.useEffect(() => {
     const { value, nameWithSlash } = chatFeatureRegistry.parseSlashCommand(text);
@@ -403,8 +441,29 @@ export const CodeBlockWrapperInput = ({
     }
   }, [text, chatFeatureRegistry]);
 
+  const handleCopy = useCallback(async () => {
+    await clipboardService.writeText(text);
+    setIsCoping(true);
+    runWhenIdle(() => {
+      setIsCoping(false);
+    }, 1000);
+  }, [clipboardService, text]);
+
   return (
     <div className={styles.ai_chat_code_wrapper}>
+      <Popover
+        id={copyActionId}
+        title={localize(isCoping ? 'aiNative.chat.message.copy.success' : 'aiNative.chat.message.copy')}
+      >
+        <EnhanceIcon
+          className={getIcon('copy')}
+          wrapperClassName={styles.copy_action}
+          onClick={handleCopy}
+          tabIndex={0}
+          role='button'
+          ariaLabel={localize('aiNative.chat.message.copy')}
+        />
+      </Popover>
       {images?.map((image) => (
         <div className={styles.image_wrapper}>
           <Image src={image} />
