@@ -45,3 +45,5 @@ export * from './extensions';
 
 export * from './static-resource';
 export * from './context-key';
+
+export * from './workspace-trust';

@@ -28,6 +28,10 @@ export interface ISelectProps<T = string> {
   onChange?: (value: T) => void;
   onSearchChange?: (value: string) => void;
   /**
+   * 搜索行为不采用默认的 filterOptions 进行筛选，由外部托管
+   */
+  externalSearchBehavior?: boolean;
+  /**
    * 当鼠标划过时触发回调
    * @param value 鼠标划过的是第几个 option
    */
@@ -290,12 +294,15 @@ export function Select<T = string>({
   description,
   notMatchWarning,
   onSearchChange,
+  externalSearchBehavior
 }: ISelectProps<T>) {
   const [open, setOpen] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState('');
 
   const selectRef = React.useRef<HTMLDivElement | null>(null);
   const overlayRef = React.useRef<HTMLDivElement | null>(null);
+
+  externalSearchBehavior = externalSearchBehavior ?? !!onSearchChange
 
   const handleToggleOpen = useCallback(
     (e: React.MouseEvent) => {
@@ -526,7 +533,7 @@ export function Select<T = string>({
       {showWarning && <div className='kt-select-warning-text'>{notMatchWarning}</div>}
 
       {open &&
-        !searchInput &&
+        !(externalSearchBehavior && searchInput) &&
         (isDataOptions(filteredOptions) || isDataOptionGroups(filteredOptions) ? (
           <SelectOptionsList
             optionRenderer={optionRenderer}
